@@ -63,5 +63,12 @@ if [ "$step" = finish ]; then
 	h silk_place --pcb kicad/lite-main.kicad_pcb --apply --ops-out kicad/silk_ops.json --out-report reports/silk-place.json >/dev/null || true
 	python3 kicad/gen/silk.py >kicad/silk-fix-ops.json
 	h place_edit --pcb kicad/lite-main.kicad_pcb --ops kicad/silk-fix-ops.json --allow-routed --out-report reports/silk-fix.json >/dev/null
+	kpy kicad/gen/snap_outline.py kicad/lite-main.kicad_pcb
 	cp kicad/lite-main.kicad_pcb routing/post-silk.kicad_pcb
+fi
+# fab package: Gerbers, drill, BOM, CPL (sh build.sh fab); then the dfm gate
+if [ "$step" = fab ]; then
+	h fab_export --pcb kicad/lite-main.kicad_pcb --out-dir fab --out reports/fab-export.json >/dev/null
+	h bom_cpl --pcb kicad/lite-main.kicad_pcb --out-dir fab --parts parts/parts.json --easyeda-cache parts/easyeda --out reports/bom-cpl.json >/dev/null || true
+	h gate --gate dfm kicad/lite-main.kicad_pcb --workspace . --out reports/dfm-gate.json
 fi

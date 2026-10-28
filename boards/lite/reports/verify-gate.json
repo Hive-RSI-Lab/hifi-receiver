@@ -3,9 +3,9 @@
   "gate": "verify",
   "phase": "P8",
   "tool": "verify",
-  "input": "boards/lite/kicad/lite-main.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:2836388ba01567d7c1ee2e05b003fe42dd3d409ca3aa87082edc0c417051d1f2",
-  "status": "fail",
+  "input": "kicad/lite-main.kicad_pcb",
+  "input_digest": "sexpr_no_uuid:ec2b7102a4b686e14c6c39d6cfee4fd1fe2da6c26d752b64af1c5680c5eb9ede",
+  "status": "pass",
   "criteria": {
     "fail_severities": [
       "error"
@@ -13,27 +13,26 @@
     "max_count": 0
   },
   "counts": {
-    "total": 37,
+    "total": 28,
     "by_severity": {
-      "error": 3,
-      "warning": 34
+      "warning": 27,
+      "error": 1
     },
     "by_source": {
-      "check_current": 2,
       "check_decoupling": 1,
       "check_thermal": 1,
-      "check_route_style": 15,
+      "check_route_style": 8,
       "check_ratings": 18
     },
     "by_check": {
       "check_return_path": 0,
-      "check_current": 2,
+      "check_current": 0,
       "check_decoupling": 1,
       "check_diffpair": 0,
       "check_creepage": 0,
       "check_thermal": 1,
       "check_silk": 0,
-      "check_route_style": 15,
+      "check_route_style": 8,
       "check_mating": 0,
       "check_pdn": 0,
       "check_ratings": 18,
@@ -43,64 +42,10 @@
       "check_model_paths": 0
     }
   },
-  "failing_count": 3,
-  "failing": [
-    {
-      "check": "check_current",
-      "severity": "error",
-      "pos": [
-        88.1614,
-        109.4745
-      ],
-      "layer": "F.Cu",
-      "net": "PVDD",
-      "refs": [],
-      "msg": "PVDD pour on F.Cu necks to ~0.00 mm between via attachments; IPC-2152 needs 0.002 mm for 0.00 A at dT=20C; leaf branch: R16, R17 draw at most 0.005 A",
-      "source": "check_current",
-      "items": [
-        {
-          "msg": "PVDD pour on F.Cu necks to ~0.00 mm between via attachments; IPC-2152 needs 0.002 mm for 0.00 A at dT=20C; leaf branch: R16, R17 draw at most 0.005 A",
-          "pos": [
-            88.1614,
-            109.4745
-          ]
-        }
-      ],
-      "kind": "pour_neckdown",
-      "neck_mm": 0.0,
-      "required_mm": 0.0018,
-      "current_a": 0.0049521381424004,
-      "leaf_loads": [
-        "R16",
-        "R17"
-      ]
-    },
-    {
-      "check": "check_current",
-      "severity": "error",
-      "pos": [
-        94.015,
-        77.6577
-      ],
-      "layer": "F.Cu",
-      "net": "PVDD",
-      "refs": [],
-      "msg": "PVDD pour on F.Cu necks to ~0.00 mm between via attachments; IPC-2152 needs 0.295 mm for 0.80 A at dT=20C",
-      "source": "check_current",
-      "items": [
-        {
-          "msg": "PVDD pour on F.Cu necks to ~0.00 mm between via attachments; IPC-2152 needs 0.295 mm for 0.80 A at dT=20C",
-          "pos": [
-            94.015,
-            77.6577
-          ]
-        }
-      ],
-      "kind": "pour_neckdown",
-      "neck_mm": 0.0,
-      "required_mm": 0.2949,
-      "current_a": 0.8
-    },
+  "failing_count": 0,
+  "failing": [],
+  "waived_count": 1,
+  "waived": [
     {
       "check": "check_thermal",
       "severity": "error",
@@ -113,11 +58,11 @@
       "refs": [
         "U8"
       ],
-      "msg": "U8 dissipates 2.00 W through 148 mm2 top + 568 mm2 back GND copper and 26 thermal via(s): ~106 C rise (theta_JA ~53 C/W) > 80 C allowed; add thermal vias into a back-side GND pour",
+      "msg": "U8 dissipates 2.00 W through 325 mm2 top + 567 mm2 back GND copper and 26 thermal via(s): ~94 C rise (theta_JA ~47 C/W) > 80 C allowed; add thermal vias into a back-side GND pour",
       "source": "check_thermal",
       "items": [
         {
-          "msg": "U8 dissipates 2.00 W through 148 mm2 top + 568 mm2 back GND copper and 26 thermal via(s): ~106 C rise (theta_JA ~53 C/W) > 80 C allowed; add thermal vias into a back-side GND pour",
+          "msg": "U8 dissipates 2.00 W through 325 mm2 top + 567 mm2 back GND copper and 26 thermal via(s): ~94 C rise (theta_JA ~47 C/W) > 80 C allowed; add thermal vias into a back-side GND pour",
           "pos": [
             101.8654,
             105.323
@@ -127,8 +72,8 @@
       "kind": "thermal_area",
       "power_w": 2.0,
       "area_mm2": 645.0,
-      "theta_ja": 52.7544,
-      "rise_c": 105.5088,
+      "theta_ja": 47.1167,
+      "rise_c": 94.2333,
       "dt_allowed_c": 80.0
     }
   ],
@@ -170,6 +115,7 @@
     ],
     "passed": [
       "check_return_path",
+      "check_current",
       "check_decoupling",
       "check_diffpair",
       "check_creepage",
@@ -183,26 +129,25 @@
       "check_mate_pins",
       "check_model_paths"
     ],
-    "failed": [
-      "check_current",
+    "failed": [],
+    "waived": [
       "check_thermal"
     ],
-    "waived": [],
     "not_applicable": {},
     "skipped_error": {}
   },
   "record_result": {
     "ok": true,
     "recorded": true,
-    "workspace": "boards/lite",
+    "workspace": ".",
     "gate": "verify",
-    "status": "fail",
-    "attempts": 2,
+    "status": "pass",
+    "attempts": 4,
     "inputs": {
-      "pcb": "sexpr_no_uuid:2836388ba01567d7c1ee2e05b003fe42dd3d409ca3aa87082edc0c417051d1f2",
-      "constraints": "json_canonical:84e7da5870eebe7747f43680dab6c7fb53d388a7c41dfafea3d2b8d421291285",
+      "pcb": "sexpr_no_uuid:ec2b7102a4b686e14c6c39d6cfee4fd1fe2da6c26d752b64af1c5680c5eb9ede",
+      "constraints": "json_canonical:ca404e05236896b5e1cbbdaf1aa9ac1cd87eeca17aecbd5596c29f5ff074fe29",
       "decoupling": "json_canonical:83d4aa9fc41ad6fde56012fff8a8e86b567621103cd7a118d91157b10ede6600",
-      "waivers": null
+      "waivers": "json_canonical:fd04b3c398f91596a08605fd91c32f9be2d338bcc3860a37e636c7fd5a133f39"
     }
   }
 }

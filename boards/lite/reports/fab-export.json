@@ -1,0 +1,84 @@
+{
+ "script": "fab_export",
+ "status": "pass",
+ "board": "lite-main.kicad_pcb",
+ "name": "lite-main",
+ "layer_count": 2,
+ "copper_layers": [
+  "F.Cu",
+  "B.Cu"
+ ],
+ "layers_exported": [
+  "F.Cu",
+  "B.Cu",
+  "F.Silkscreen",
+  "B.Silkscreen",
+  "F.Mask",
+  "B.Mask",
+  "F.Paste",
+  "B.Paste",
+  "Edge.Cuts"
+ ],
+ "out_dir": "fab",
+ "gerber_dir": "fab/gerbers",
+ "pos_file": "fab/lite-main-pos.csv",
+ "files": [
+  {
+   "name": "lite-main-B_Cu.gbl",
+   "sha256": "38610674ab82bd57c52cfd61fe83f258a158c535a15451c8def125c759cc6b2f",
+   "bytes": 160477
+  },
+  {
+   "name": "lite-main-B_Mask.gbs",
+   "sha256": "385f9a58d457e1126637bad15fc2ba490e55358fceb00c6ae3620540dba1d175",
+   "bytes": 2866
+  },
+  {
+   "name": "lite-main-B_Paste.gbp",
+   "sha256": "ed2d29412ccbf927745422fec692b96352eb42e6ecfff7affcb483305be96294",
+   "bytes": 454
+  },
+  {
+   "name": "lite-main-B_Silkscreen.gbo",
+   "sha256": "0ec16d93c98ec2fbe0de2a449e31f6acfadcc3f3ac99d2c9571a8ea33da118db",
+   "bytes": 455
+  },
+  {
+   "name": "lite-main-Edge_Cuts.gm1",
+   "sha256": "1cda00f86e26039ca926b0652855467ccb81783f30e524e4507e6181a0248c82",
+   "bytes": 986
+  },
+  {
+   "name": "lite-main-F_Cu.gtl",
+   "sha256": "879f0776d30324831a38d04d0a5102cb5acc9a49cb2243c2577f8ed5c308f682",
+   "bytes": 467771
+  },
+  {
+   "name": "lite-main-F_Mask.gts",
+   "sha256": "f2ca06fc5469bb3db9ebab656591516f329a72a6c9e81e02258333f455bcbc49",
+   "bytes": 18059
+  },
+  {
+   "name": "lite-main-F_Paste.gtp",
+   "sha256": "af5c2ab58ea9d94fcb29c4a3dcfc841c6eed262b71b86109277c9d71732a3dad",
+   "bytes": 15671
+  },
+  {
+   "name": "lite-main-F_Silkscreen.gto",
+   "sha256": "5a103a688070dc76a94bf6c89ca7ad906ff00c01c8172cedaf93d7c34e51813b",
+   "bytes": 244581
+  },
+  {
+   "name": "lite-main-job.gbrjob",
+   "sha256": "2475a6faa74a74130a789ba6fa773fd0904ad7f2d0680bc497b51d7345ebd21b",
+   "bytes": 2580
+  },
+  {
+   "name": "lite-main.drl",
+   "sha256": "9e2d482289c2a55b900a580c71cf906ec6c55d803d141877e7250175299e75d9",
+   "bytes": 5640
+  }
+ ],
+ "gerber_zip": "fab/lite-main_gerbers.zip",
+ "gerber_zip_sha256": "f982d9a44b1e317b0540e65f9d818301c02ad952c190a891674674814d2c450f"
+}

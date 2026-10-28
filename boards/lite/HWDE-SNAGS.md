@@ -1,5 +1,9 @@
 # hwde snags hit building lite-main
 
+**hwde version:** the gates last passed on hive-hwde release 94ec4b7
+(installed 2026-10-28 14:18 UTC, after the courtyard check and module test
+landed).
+
 This board was hive-hwde's first real product board in the Hive: 130 parts on
 2 layers, with USB-C PD, an ESP32 module, a codec and a 2 x 43 W class-D amp.
 Below is every place the module got in the way or got something wrong, and
@@ -34,3 +38,6 @@ fixes it. Each workaround names the snag it stands in for.
 | 23 | Freerouting determinism | The same board routes differently on every run (98-100 %, 0-6 leftovers). | The routing step is re-run and the cleanest result kept. Filed with #17. |
 | 24 | P6 view | `render.py` is 3D only, so there's no quick 2D plot of placement for an agent to look at. | `kicad-cli pcb export pdf` + `pdftoppm`. Filed as a small feature. |
 | 25 | CH224Q DFN-10 | Not hwde's fault, but worth knowing: a 0.4 mm-pitch PD sink under a USB-C, with VBUS between CC1 and CFG1, can't be fanned out on 2 layers. | Swapped to the CH224A (same die, ESSOP-10 1.0 mm, same price and stock). |
+| 26 | `route_edit` | Doesn't refill zones after its edits, so drc_routed then sees stale fills (zone-to-via clearance errors on a moved via). | Board-local `kicad/gen/refill.py` after each route_edit. Filed with #17. |
+| 27 | `board_init` + `dfm` | The outline is drawn at a non-round origin (x = 22.864999). KiCad's Gerber writer then leaves the 2 mm corner arcs up to 0.05 um off the straight edges, and dfm calls the outline "not closed" and skips every copper/hole-to-edge check. | Board-local `kicad/gen/snap_outline.py` snaps the outline to 1 um. Filed with #22. |
+| 28 | `bom_cpl` / `dfm` | EasyEDA answers HTTP 403 (rate limit) after ~20 model fetches, and the dfm gate fails until all CPL models are cached. | Retried every few minutes until `parts/easyeda/` was complete, then committed that cache so a check needs no fetch (hive-hwde worker 150527's advice). |
