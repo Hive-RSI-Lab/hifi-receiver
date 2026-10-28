@@ -4,7 +4,7 @@
   "phase": "P6",
   "tool": "place",
   "input": "kicad/ultra-front.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:a3fac0e29d4e87b9fea904ff16f0f2fde47d425e7ef9cebeb534dc2459957d12",
+  "input_digest": "sexpr_no_uuid:b2eadfecc02bff48e4003ea6b9088aa712bf1629d8495d0e5715a60ec2c412db",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -29,7 +29,7 @@
       "check": "place",
       "severity": "error",
       "pos": [
-        -3.41,
+        -6.11,
         47.0
       ],
       "layer": null,
@@ -37,13 +37,13 @@
       "refs": [
         "J2"
       ],
-      "msg": "J2 (fpc_ffc) cannot be mated: its nearest edge is -x (3.5 mm) but its mouth faces +x, into 100.5 mm of board",
+      "msg": "J2 (fpc_ffc) cannot be mated: its nearest edge is -x (0.8 mm) but its mouth faces +x, into 103.2 mm of board",
       "source": "matinglib",
       "items": [
         {
-          "msg": "J2 (fpc_ffc) cannot be mated: its nearest edge is -x (3.5 mm) but its mouth faces +x, into 100.5 mm of board",
+          "msg": "J2 (fpc_ffc) cannot be mated: its nearest edge is -x (0.8 mm) but its mouth faces +x, into 103.2 mm of board",
           "pos": [
-            -3.41,
+            -6.11,
             47.0
           ]
         }
@@ -52,32 +52,33 @@
       "connector": "J2",
       "mouth": "+x",
       "nearest_edge": "-x",
-      "gap_mm": 100.46
+      "gap_mm": 103.16
     },
     {
       "check": "place",
       "severity": "error",
       "pos": [
-        56.4119,
+        55.0669,
         47.0
       ],
       "layer": null,
       "net": null,
       "refs": [
+        "C2",
+        "C3",
         "J2",
-        "R11",
+        "Q1",
         "R5",
-        "R8",
         "SW2",
         "SW4"
       ],
-      "msg": "J2 (fpc_ffc): R11, R5, R8, SW2, SW4 sit in the plug's insertion zone in front of its mouth (8.0 mm plug + 2.0 mm grip)",
+      "msg": "J2 (fpc_ffc): C2, C3, Q1, R5, SW2, SW4 sit in the plug's insertion zone in front of its mouth (8.0 mm plug + 2.0 mm grip)",
       "source": "matinglib",
       "items": [
         {
-          "msg": "J2 (fpc_ffc): R11, R5, R8, SW2, SW4 sit in the plug's insertion zone in front of its mouth (8.0 mm plug + 2.0 mm grip)",
+          "msg": "J2 (fpc_ffc): C2, C3, Q1, R5, SW2, SW4 sit in the plug's insertion zone in front of its mouth (8.0 mm plug + 2.0 mm grip)",
           "pos": [
-            56.4119,
+            55.0669,
             47.0
           ]
         }
@@ -86,9 +87,10 @@
       "connector": "J2",
       "mouth": "+x",
       "blocked_by": [
-        "R11",
+        "C2",
+        "C3",
+        "Q1",
         "R5",
-        "R8",
         "SW2",
         "SW4"
       ]
@@ -132,12 +134,12 @@
     "workspace": ".",
     "gate": "place",
     "status": "pass",
-    "attempts": 4,
+    "attempts": 18,
     "inputs": {
-      "pcb": "sexpr_no_uuid:a3fac0e29d4e87b9fea904ff16f0f2fde47d425e7ef9cebeb534dc2459957d12",
-      "constraints": "json_canonical:362de172091bb4586a4d1e7bf287dd170557e890ed799da281250a9843698f18",
+      "pcb": "sexpr_no_uuid:b2eadfecc02bff48e4003ea6b9088aa712bf1629d8495d0e5715a60ec2c412db",
+      "constraints": "json_canonical:78e4e6d82e69f34bc638b3f6176c3059ea3f98236f174283ff234882ad063fb8",
       "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
-      "place_waivers": "json_canonical:4521e07fa9e5914ad986193afceec0612edeeeea71eaf178784cc002e745f5ad"
+      "place_waivers": "json_canonical:02461801bb6c9faf5be5458a222482bc62f0c46f6992c78f6a2477b2e2a60b04"
     }
   }
 }

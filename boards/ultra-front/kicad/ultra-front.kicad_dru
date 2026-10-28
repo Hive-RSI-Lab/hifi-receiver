@@ -46,3 +46,14 @@
 	(constraint track_width (min 0.0400mm))
 	(condition "A.NetName == '/BL_K' && A.Type == 'track'")
 )
+
+# Board-local (ultra-front): the 0.5 mm FFC/FPC sockets' GND pins join the
+# pours solid (thermal spokes cannot fit between 0.2 mm gaps), and the EC11's
+# GND pins need only one resolved spoke. Appended after rules_gen; re-append
+# if rules_gen is re-run.
+(rule "aiee_local_fpc_gnd_solid"
+	(condition "A.Type == 'Pad' && A.NetName == 'GND' && (A.Parent.Reference == 'J1' || A.Parent.Reference == 'J2')")
+	(constraint zone_connection solid))
+(rule "aiee_local_ec11_spokes"
+	(condition "A.Type == 'Pad' && A.Parent.Reference == 'SW4'")
+	(constraint min_resolved_spokes 1))

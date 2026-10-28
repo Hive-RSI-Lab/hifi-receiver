@@ -38,3 +38,25 @@ islands, which a second GND pour on F.Cu rejoined.
 ## 2026-10-28 [P6][gate] the place/verify gate takes any non-empty `approved`
 A waiver marked "PENDING ... not yet approved" counted as approved. Filed
 (261028-153448-894784a6d8).
+
+## 2026-10-28 [P6][mechanical] model a display tail's real outline, and line its END up with the socket's insertion stop
+The first layout aligned the tail end with J2's contact pads (3 mm too far in)
+and kept out only the 6.5 mm wide end, while the tail is ~20.5 mm wide for
+its last 10 mm at the panel. A fresh reviewer reading the LCD drawing caught
+both; the fix was two keepouts and J2 moved 3.1 mm.
+
+## 2026-10-28 [P7][routing] Freerouting ignores copper-to-edge and hole-to-hole
+It ran tracks 0.28 mm from the edge and put vias 0.43 mm hole-to-hole.
+A 0.5 mm rule-area keepout around the edge plus a 0.2 mm Default clearance
+(via centres >= 0.8 mm) made its output DRC-clean. Worth doing in route_auto.
+
+## 2026-10-28 [P7][routing] route GND as a net before pouring on a dense 2-layer board
+With pours placed first, Freerouting left GND to the pours and the 0.5 mm FFC
+GND pins ended up isolated or starved. Routing with no zones gave 100%, then
+pours went on top. A top pour needs pads solid for 0.5 mm sockets: a
+.kicad_dru zone_connection rule had no effect in kicad-cli 10.0.6, the zone
+property did (kicad/gen/zone_solid.py).
+
+## 2026-10-28 [P7][routing] SES import can drop connections Freerouting reported done
+fr_completion 1.0 but completion 0.93: J1.11 GND and two +3V3 links were
+missing after import; they were routed by hand.

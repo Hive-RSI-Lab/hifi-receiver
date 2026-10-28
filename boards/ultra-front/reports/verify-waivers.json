@@ -14,13 +14,14 @@
    "kind": "mating_zone_blocked",
    "refs": [
     "J2",
-    "R11",
+    "C2",
+    "C3",
+    "Q1",
     "R5",
-    "R8",
     "SW2",
     "SW4"
    ],
-   "reason": "The real insertion zone is the tail corridor between J2 and the LCD (u 9.8-24.5 mm), kept clear by the constraints keepout; the parts listed sit beyond the LCD or beside the corridor, not in the tail's path.",
+   "reason": "The check models J2's mate as a plug pushed in from the +x side along an 11 mm band plus 2 mm grip. The real mate is the LCD tail: 6.5 mm wide where it enters J2 and about 20.5 mm wide for its last 10 mm at the panel, both modelled as keepouts in constraints.json with no part in them. C2, C3 and Q1 sit beside the narrow end, below the tail; R5, SW2 and SW4 are on the far side of the LCD panel, where no tail goes.",
    "approved": "PENDING the person's sign-off at H4 (asked via the hifi-receiver-2 lead, 2026-10-28); not yet approved"
   }
  ]

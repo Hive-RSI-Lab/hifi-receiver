@@ -20,46 +20,46 @@
    "stitched_elsewhere": true,
    "component_facts": [
     {
-     "area_mm2": 3536.0783,
+     "area_mm2": 3297.3645,
      "pos": [
-      49.1319,
-      46.842
+      53.4058,
+      46.8021
      ],
-     "anchors": 26,
+     "anchors": 15,
      "anchored": true
     },
     {
-     "area_mm2": 246.9358,
+     "area_mm2": 178.7884,
      "pos": [
-      74.8531,
-      38.6249
+      13.5672,
+      47.2903
      ],
-     "anchors": 4,
+     "anchors": 1,
      "anchored": true
     },
     {
-     "area_mm2": 41.8488,
+     "area_mm2": 37.2581,
      "pos": [
-      0.2781,
-      50.9201
-     ],
-     "anchors": 2,
-     "anchored": true
-    },
-    {
-     "area_mm2": 41.6997,
-     "pos": [
-      9.6367,
-      37.2827
+      -2.3061,
+      52.9637
      ],
      "anchors": 3,
      "anchored": true
     },
     {
-     "area_mm2": 34.8225,
+     "area_mm2": 4.6767,
      "pos": [
-      5.27,
-      54.3422
+      3.8222,
+      51.0561
+     ],
+     "anchors": 1,
+     "anchored": true
+    },
+    {
+     "area_mm2": 1.5227,
+     "pos": [
+      0.3751,
+      33.3082
      ],
      "anchors": 1,
      "anchored": true
@@ -70,100 +70,73 @@
   {
    "net": "GND",
    "layer": "F.Cu",
-   "components": 10,
-   "anchored_components": 10,
+   "components": 7,
+   "anchored_components": 7,
    "groups": 1,
    "split": false,
    "stitched_elsewhere": true,
    "component_facts": [
     {
-     "area_mm2": 1674.538,
+     "area_mm2": 1523.8774,
      "pos": [
-      89.055,
-      46.8051
+      90.2277,
+      46.827
      ],
-     "anchors": 28,
+     "anchors": 18,
      "anchored": true
     },
     {
-     "area_mm2": 598.7038,
+     "area_mm2": 585.2822,
      "pos": [
-      51.4772,
-      54.0698
+      51.4337,
+      40.55
      ],
-     "anchors": 4,
+     "anchors": 3,
      "anchored": true
     },
     {
-     "area_mm2": 585.2042,
+     "area_mm2": 464.8654,
      "pos": [
-      49.7959,
-      42.6457
+      7.4732,
+      42.8714
      ],
-     "anchors": 4,
+     "anchors": 7,
      "anchored": true
     },
     {
-     "area_mm2": 343.4631,
+     "area_mm2": 43.7902,
      "pos": [
-      12.461,
-      50.2521
+      -2.383,
+      53.0891
+     ],
+     "anchors": 12,
+     "anchored": true
+    },
+    {
+     "area_mm2": 32.0273,
+     "pos": [
+      10.397,
+      58.6178
      ],
      "anchors": 2,
      "anchored": true
     },
     {
-     "area_mm2": 67.9617,
+     "area_mm2": 4.2156,
      "pos": [
-      13.103,
-      41.4598
-     ],
-     "anchors": 4,
-     "anchored": true
-    },
-    {
-     "area_mm2": 49.5049,
-     "pos": [
-      1.3545,
-      55.1958
-     ],
-     "anchors": 8,
-     "anchored": true
-    },
-    {
-     "area_mm2": 43.0864,
-     "pos": [
-      3.4265,
-      52.2049
-     ],
-     "anchors": 4,
-     "anchored": true
-    },
-    {
-     "area_mm2": 7.4033,
-     "pos": [
-      -0.1177,
-      42.2301
+      93.0001,
+      39.1409
      ],
      "anchors": 2,
      "anchored": true
     },
     {
-     "area_mm2": 1.8683,
+     "area_mm2": 0.7889,
      "pos": [
-      -3.4314,
-      44.6263
+      95.1558,
+      37.8791
      ],
-     "anchors": 2,
-     "anchored": true
-    },
-    {
-     "area_mm2": 1.1401,
-     "pos": [
-      2.3413,
-      60.0074
-     ],
-     "anchors": 2,
+     "anchors": 1,
      "anchored": true
     }
    ],
@@ -175,7 +148,7 @@
  "splits_repaired": 0,
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-28T15:30:59+00:00",
+ "generated_at": "2026-10-28T16:12:02+00:00",
  "input": "/work/boards/ultra-front/kicad/ultra-front.kicad_pcb",
- "input_digest": "sexpr_no_uuid:3d5c88c90ec502a91a413b009620e3c3bc6437e870ac818f88f2d290b23167ed"
+ "input_digest": "sexpr_no_uuid:32b04a174bb1b48bdcf1540c11d8a780321111b634a4dee6fc645febd2b920f6"
 }

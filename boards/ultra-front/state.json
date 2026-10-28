@@ -4,8 +4,8 @@
  "workspace_schema": 2,
  "workspace": "boards/ultra-front",
  "created": "2026-10-28T11:01:12",
- "updated": "2026-10-28T11:35:39",
- "phase": "P8",
+ "updated": "2026-10-28T12:13:40",
+ "phase": "P9",
  "gates": {
   "erc": {
    "phase": "P4",
@@ -77,17 +77,17 @@
   "place": {
    "phase": "P6",
    "status": "pass",
-   "attempts": 4,
+   "attempts": 18,
    "last": {
-    "ts": "2026-10-28T11:25:38",
+    "ts": "2026-10-28T12:03:36",
     "status": "pass",
     "failing_count": 0,
     "total": 2,
     "inputs": {
-     "pcb": "sexpr_no_uuid:a3fac0e29d4e87b9fea904ff16f0f2fde47d425e7ef9cebeb534dc2459957d12",
-     "constraints": "json_canonical:362de172091bb4586a4d1e7bf287dd170557e890ed799da281250a9843698f18",
+     "pcb": "sexpr_no_uuid:b2eadfecc02bff48e4003ea6b9088aa712bf1629d8495d0e5715a60ec2c412db",
+     "constraints": "json_canonical:78e4e6d82e69f34bc638b3f6176c3059ea3f98236f174283ff234882ad063fb8",
      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
-     "place_waivers": "json_canonical:4521e07fa9e5914ad986193afceec0612edeeeea71eaf178784cc002e745f5ad"
+     "place_waivers": "json_canonical:02461801bb6c9faf5be5458a222482bc62f0c46f6992c78f6a2477b2e2a60b04"
     }
    },
    "history": [
@@ -138,23 +138,191 @@
       "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
       "place_waivers": "json_canonical:4521e07fa9e5914ad986193afceec0612edeeeea71eaf178784cc002e745f5ad"
      }
+    },
+    {
+     "ts": "2026-10-28T11:45:04",
+     "status": "fail",
+     "failing_count": 9,
+     "total": 11,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:fc23ea75c9a1ccc551bad62aeaebd854d730053657a00b149ca1a62d0ea91020",
+      "constraints": "json_canonical:ce48d2e3c281dc46b52f8ed4e0cac8e3e870a67a63cec1345e2e16f9319904b7",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": "json_canonical:4521e07fa9e5914ad986193afceec0612edeeeea71eaf178784cc002e745f5ad"
+     }
+    },
+    {
+     "ts": "2026-10-28T11:45:29",
+     "status": "fail",
+     "failing_count": 3,
+     "total": 4,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:cd2cec20e61d11c0f4ee9f5d62ffd8daf0b1bd2b0f4f784bccf9429f24aecf1c",
+      "constraints": "json_canonical:ce48d2e3c281dc46b52f8ed4e0cac8e3e870a67a63cec1345e2e16f9319904b7",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": "json_canonical:4521e07fa9e5914ad986193afceec0612edeeeea71eaf178784cc002e745f5ad"
+     }
+    },
+    {
+     "ts": "2026-10-28T11:45:48",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 2,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:b3d5084ec6084209faa85a477b00e574bd2282e4c3c2f448a3034a0901f1ed6f",
+      "constraints": "json_canonical:ce48d2e3c281dc46b52f8ed4e0cac8e3e870a67a63cec1345e2e16f9319904b7",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": "json_canonical:a6bf02daa8393022e93fe6d12e2e3197dc9e6a8f938c7b2b299c92c015d75850"
+     }
+    },
+    {
+     "ts": "2026-10-28T11:50:48",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 2,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:7265f53614749b02eea81a2de876244c70165198d271cf54f4559b197c1cd059",
+      "constraints": "json_canonical:ce48d2e3c281dc46b52f8ed4e0cac8e3e870a67a63cec1345e2e16f9319904b7",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": "json_canonical:a6bf02daa8393022e93fe6d12e2e3197dc9e6a8f938c7b2b299c92c015d75850"
+     }
+    },
+    {
+     "ts": "2026-10-28T11:51:07",
+     "status": "fail",
+     "failing_count": 3,
+     "total": 4,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:af8355bd6544fc2763525fde8ac11dc3fb21c790dc851edab1f33f7832116909",
+      "constraints": "json_canonical:ce48d2e3c281dc46b52f8ed4e0cac8e3e870a67a63cec1345e2e16f9319904b7",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": "json_canonical:a6bf02daa8393022e93fe6d12e2e3197dc9e6a8f938c7b2b299c92c015d75850"
+     }
+    },
+    {
+     "ts": "2026-10-28T11:51:18",
+     "status": "fail",
+     "failing_count": 2,
+     "total": 3,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:c79ae7161808b4120119cb0936e3cc53796554afb1c04d93a1827fb530167162",
+      "constraints": "json_canonical:ce48d2e3c281dc46b52f8ed4e0cac8e3e870a67a63cec1345e2e16f9319904b7",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": "json_canonical:a6bf02daa8393022e93fe6d12e2e3197dc9e6a8f938c7b2b299c92c015d75850"
+     }
+    },
+    {
+     "ts": "2026-10-28T11:51:36",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 2,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:19c9acf83ef859ab7ef5be22f61945820f0d0217cf6335c7dc140073d9059159",
+      "constraints": "json_canonical:ce48d2e3c281dc46b52f8ed4e0cac8e3e870a67a63cec1345e2e16f9319904b7",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": "json_canonical:ccf77a92fb901e6251b764c304bd3bc8090335be01d37138df4423909bc3184c"
+     }
+    },
+    {
+     "ts": "2026-10-28T11:51:57",
+     "status": "fail",
+     "failing_count": 1,
+     "total": 3,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:87792a32ec683f22a96b61b4cfad6c2ee2a0b880d148655c821c1b2a7723f053",
+      "constraints": "json_canonical:ce48d2e3c281dc46b52f8ed4e0cac8e3e870a67a63cec1345e2e16f9319904b7",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": "json_canonical:ccf77a92fb901e6251b764c304bd3bc8090335be01d37138df4423909bc3184c"
+     }
+    },
+    {
+     "ts": "2026-10-28T11:52:09",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 2,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:0abb32af1f5eba8372258c472b72a0160162d484703700b6f3e782c2f340e73a",
+      "constraints": "json_canonical:ce48d2e3c281dc46b52f8ed4e0cac8e3e870a67a63cec1345e2e16f9319904b7",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": "json_canonical:ccf77a92fb901e6251b764c304bd3bc8090335be01d37138df4423909bc3184c"
+     }
+    },
+    {
+     "ts": "2026-10-28T11:57:47",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 2,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:1de9a67f3c81fe5b4f7c69b19d5ef77b7962a3b154f6af15489fcde8351c8696",
+      "constraints": "json_canonical:290f816df546bd9b2b83efbbe80e04eee6edf3776916f45dfe20740ebde0d45a",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": "json_canonical:ccf77a92fb901e6251b764c304bd3bc8090335be01d37138df4423909bc3184c"
+     }
+    },
+    {
+     "ts": "2026-10-28T11:58:20",
+     "status": "fail",
+     "failing_count": 1,
+     "total": 2,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:f76dea658aa52e3e90a6187203d4bb6b9ad81558f131cfe2551893f0fc29bf3a",
+      "constraints": "json_canonical:290f816df546bd9b2b83efbbe80e04eee6edf3776916f45dfe20740ebde0d45a",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": "json_canonical:ccf77a92fb901e6251b764c304bd3bc8090335be01d37138df4423909bc3184c"
+     }
+    },
+    {
+     "ts": "2026-10-28T11:58:49",
+     "status": "fail",
+     "failing_count": 1,
+     "total": 2,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:6af8ec2b75b092b62e2476c1738ecef4ac218de786d87cd7ce1e40dfc3d3c4f7",
+      "constraints": "json_canonical:2359f1ef397426592b3d4c3beee0427cab22705eedd37a1e16da66a6ea99c488",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": "json_canonical:ccf77a92fb901e6251b764c304bd3bc8090335be01d37138df4423909bc3184c"
+     }
+    },
+    {
+     "ts": "2026-10-28T11:58:56",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 2,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:6af8ec2b75b092b62e2476c1738ecef4ac218de786d87cd7ce1e40dfc3d3c4f7",
+      "constraints": "json_canonical:2359f1ef397426592b3d4c3beee0427cab22705eedd37a1e16da66a6ea99c488",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": "json_canonical:02461801bb6c9faf5be5458a222482bc62f0c46f6992c78f6a2477b2e2a60b04"
+     }
+    },
+    {
+     "ts": "2026-10-28T12:03:36",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 2,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:b2eadfecc02bff48e4003ea6b9088aa712bf1629d8495d0e5715a60ec2c412db",
+      "constraints": "json_canonical:78e4e6d82e69f34bc638b3f6176c3059ea3f98236f174283ff234882ad063fb8",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": "json_canonical:02461801bb6c9faf5be5458a222482bc62f0c46f6992c78f6a2477b2e2a60b04"
+     }
     }
    ]
   },
   "drc_routed": {
    "phase": "P7",
    "status": "pass",
-   "attempts": 3,
+   "attempts": 7,
    "last": {
-    "ts": "2026-10-28T11:32:21",
+    "ts": "2026-10-28T12:12:27",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
     "inputs": {
-     "pcb": "sexpr_no_uuid:3f7fbb812ee6d78466c635592cbc126e92fced3c09da92716087901df21e3532",
+     "pcb": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
      "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
-     "pro": "json_canonical:8bd148bb293183a14fdd6bc0724a2bb01153c72975e6f9ff82b9a8480ff67ba0",
-     "dru": "text_eol:9a8876b4af701d4707beb37b77053933d061585d3ed3b4af995fb0ce79c57aaa"
+     "pro": "json_canonical:6ec3460c19d0afad44f5ee8f381b2106e8306a7472ecb16ba7cde0f00a6b960a",
+     "dru": "text_eol:d18f79ca0214f0cdf238b7ed722efe8107bfba58ef12c2d95832240367064201"
     }
    },
    "history": [
@@ -193,23 +361,71 @@
       "pro": "json_canonical:8bd148bb293183a14fdd6bc0724a2bb01153c72975e6f9ff82b9a8480ff67ba0",
       "dru": "text_eol:9a8876b4af701d4707beb37b77053933d061585d3ed3b4af995fb0ce79c57aaa"
      }
+    },
+    {
+     "ts": "2026-10-28T12:02:36",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:9fa85a3cbf1b4516db959867552b514587979a25b7a6a5c93f91d6f0f17a1acf",
+      "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
+      "pro": "json_canonical:6ec3460c19d0afad44f5ee8f381b2106e8306a7472ecb16ba7cde0f00a6b960a",
+      "dru": "text_eol:d18f79ca0214f0cdf238b7ed722efe8107bfba58ef12c2d95832240367064201"
+     }
+    },
+    {
+     "ts": "2026-10-28T12:02:48",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:0b9939eb5cf976964c6514c23a141516a8f69e6b24ccf0f926160d70c52524ef",
+      "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
+      "pro": "json_canonical:6ec3460c19d0afad44f5ee8f381b2106e8306a7472ecb16ba7cde0f00a6b960a",
+      "dru": "text_eol:d18f79ca0214f0cdf238b7ed722efe8107bfba58ef12c2d95832240367064201"
+     }
+    },
+    {
+     "ts": "2026-10-28T12:03:09",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:b2eadfecc02bff48e4003ea6b9088aa712bf1629d8495d0e5715a60ec2c412db",
+      "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
+      "pro": "json_canonical:6ec3460c19d0afad44f5ee8f381b2106e8306a7472ecb16ba7cde0f00a6b960a",
+      "dru": "text_eol:d18f79ca0214f0cdf238b7ed722efe8107bfba58ef12c2d95832240367064201"
+     }
+    },
+    {
+     "ts": "2026-10-28T12:12:27",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
+      "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
+      "pro": "json_canonical:6ec3460c19d0afad44f5ee8f381b2106e8306a7472ecb16ba7cde0f00a6b960a",
+      "dru": "text_eol:d18f79ca0214f0cdf238b7ed722efe8107bfba58ef12c2d95832240367064201"
+     }
     }
    ]
   },
   "verify": {
    "phase": "P8",
    "status": "pass",
-   "attempts": 3,
+   "attempts": 7,
    "last": {
-    "ts": "2026-10-28T11:32:22",
+    "ts": "2026-10-28T12:12:31",
     "status": "pass",
     "failing_count": 0,
-    "total": 16,
+    "total": 19,
     "inputs": {
-     "pcb": "sexpr_no_uuid:3f7fbb812ee6d78466c635592cbc126e92fced3c09da92716087901df21e3532",
-     "constraints": "json_canonical:c78221d71a9bde85156e3c5adb04a43aea9d8fb6cad6e4f453b3f1dd3a5072ca",
+     "pcb": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
+     "constraints": "json_canonical:2359f1ef397426592b3d4c3beee0427cab22705eedd37a1e16da66a6ea99c488",
      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
-     "waivers": "json_canonical:6c26f4d04fcd7c2c1af576dcfaac7cce4e16cbcd6c8d04f25e16c80ea2ce778d"
+     "waivers": "json_canonical:592c380b54ad95b43971d6ca5b89828d705d0b3c2b1a56a62bee1ebdf92ca835"
     }
    },
    "history": [
@@ -248,20 +464,68 @@
       "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
       "waivers": "json_canonical:6c26f4d04fcd7c2c1af576dcfaac7cce4e16cbcd6c8d04f25e16c80ea2ce778d"
      }
+    },
+    {
+     "ts": "2026-10-28T12:02:49",
+     "status": "fail",
+     "failing_count": 1,
+     "total": 24,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:0b9939eb5cf976964c6514c23a141516a8f69e6b24ccf0f926160d70c52524ef",
+      "constraints": "json_canonical:78e4e6d82e69f34bc638b3f6176c3059ea3f98236f174283ff234882ad063fb8",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "waivers": "json_canonical:592c380b54ad95b43971d6ca5b89828d705d0b3c2b1a56a62bee1ebdf92ca835"
+     }
+    },
+    {
+     "ts": "2026-10-28T12:03:10",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 19,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:b2eadfecc02bff48e4003ea6b9088aa712bf1629d8495d0e5715a60ec2c412db",
+      "constraints": "json_canonical:78e4e6d82e69f34bc638b3f6176c3059ea3f98236f174283ff234882ad063fb8",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "waivers": "json_canonical:592c380b54ad95b43971d6ca5b89828d705d0b3c2b1a56a62bee1ebdf92ca835"
+     }
+    },
+    {
+     "ts": "2026-10-28T12:03:37",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 19,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:b2eadfecc02bff48e4003ea6b9088aa712bf1629d8495d0e5715a60ec2c412db",
+      "constraints": "json_canonical:78e4e6d82e69f34bc638b3f6176c3059ea3f98236f174283ff234882ad063fb8",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "waivers": "json_canonical:592c380b54ad95b43971d6ca5b89828d705d0b3c2b1a56a62bee1ebdf92ca835"
+     }
+    },
+    {
+     "ts": "2026-10-28T12:12:31",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 19,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
+      "constraints": "json_canonical:2359f1ef397426592b3d4c3beee0427cab22705eedd37a1e16da66a6ea99c488",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "waivers": "json_canonical:592c380b54ad95b43971d6ca5b89828d705d0b3c2b1a56a62bee1ebdf92ca835"
+     }
     }
    ]
   },
   "dfm": {
    "phase": "P9",
    "status": "pass",
-   "attempts": 1,
+   "attempts": 3,
    "last": {
-    "ts": "2026-10-28T11:33:37",
+    "ts": "2026-10-28T12:12:38",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
     "inputs": {
-     "pcb": "sexpr_no_uuid:3f7fbb812ee6d78466c635592cbc126e92fced3c09da92716087901df21e3532",
+     "pcb": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
      "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
      "parts": null
     }
@@ -277,6 +541,28 @@
       "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
       "parts": null
      }
+    },
+    {
+     "ts": "2026-10-28T12:03:41",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:b2eadfecc02bff48e4003ea6b9088aa712bf1629d8495d0e5715a60ec2c412db",
+      "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
+      "parts": null
+     }
+    },
+    {
+     "ts": "2026-10-28T12:12:38",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
+      "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
+      "parts": null
+     }
     }
    ]
   }
@@ -287,55 +573,55 @@
    "path": "kicad/ultra-front.kicad_sch",
    "kind": "sch",
    "sha256": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
-   "hashed": "2026-10-28T11:33:37"
+   "hashed": "2026-10-28T12:12:38"
   },
   "pro": {
    "path": "kicad/ultra-front.kicad_pro",
    "kind": "pro",
-   "sha256": "json_canonical:8bd148bb293183a14fdd6bc0724a2bb01153c72975e6f9ff82b9a8480ff67ba0",
-   "hashed": "2026-10-28T11:32:21"
+   "sha256": "json_canonical:6ec3460c19d0afad44f5ee8f381b2106e8306a7472ecb16ba7cde0f00a6b960a",
+   "hashed": "2026-10-28T12:12:27"
   },
   "pcb": {
    "path": "kicad/ultra-front.kicad_pcb",
    "kind": "pcb",
-   "sha256": "sexpr_no_uuid:3f7fbb812ee6d78466c635592cbc126e92fced3c09da92716087901df21e3532",
-   "hashed": "2026-10-28T11:33:37"
+   "sha256": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
+   "hashed": "2026-10-28T12:12:38"
   },
   "constraints": {
    "path": "kicad/constraints.json",
    "kind": "constraints",
-   "sha256": "json_canonical:c78221d71a9bde85156e3c5adb04a43aea9d8fb6cad6e4f453b3f1dd3a5072ca",
-   "hashed": "2026-10-28T11:32:22"
+   "sha256": "json_canonical:2359f1ef397426592b3d4c3beee0427cab22705eedd37a1e16da66a6ea99c488",
+   "hashed": "2026-10-28T12:12:31"
   },
   "decoupling": {
    "path": "kicad/decoupling.json",
    "kind": "decoupling",
    "sha256": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
-   "hashed": "2026-10-28T11:32:22"
+   "hashed": "2026-10-28T12:12:31"
   },
   "place_waivers": {
    "path": "reports/place-waivers.json",
    "kind": "place_waivers",
-   "sha256": "json_canonical:4521e07fa9e5914ad986193afceec0612edeeeea71eaf178784cc002e745f5ad",
-   "hashed": "2026-10-28T11:25:38"
+   "sha256": "json_canonical:02461801bb6c9faf5be5458a222482bc62f0c46f6992c78f6a2477b2e2a60b04",
+   "hashed": "2026-10-28T12:03:36"
   },
   "dru": {
    "path": "kicad/ultra-front.kicad_dru",
    "kind": "dru",
-   "sha256": "text_eol:9a8876b4af701d4707beb37b77053933d061585d3ed3b4af995fb0ce79c57aaa",
-   "hashed": "2026-10-28T11:32:21"
+   "sha256": "text_eol:d18f79ca0214f0cdf238b7ed722efe8107bfba58ef12c2d95832240367064201",
+   "hashed": "2026-10-28T12:12:27"
   },
   "waivers": {
    "path": "reports/verify-waivers.json",
    "kind": "waivers",
-   "sha256": "json_canonical:6c26f4d04fcd7c2c1af576dcfaac7cce4e16cbcd6c8d04f25e16c80ea2ce778d",
-   "hashed": "2026-10-28T11:32:22"
+   "sha256": "json_canonical:592c380b54ad95b43971d6ca5b89828d705d0b3c2b1a56a62bee1ebdf92ca835",
+   "hashed": "2026-10-28T12:12:31"
   },
   "parts": {
    "path": "kicad/parts.json",
    "kind": "parts",
    "sha256": null,
-   "hashed": "2026-10-28T11:33:37"
+   "hashed": "2026-10-28T12:12:38"
   }
  },
  "open_issues": [],
@@ -447,6 +733,24 @@
    "why": "Rails survive a mirrored cable but three signals would fight; written into the README and sent to the core board's run",
    "phase": "P4",
    "ts": "2026-10-28T11:35:39"
+  },
+  {
+   "what": "Board review E1/E2: J2 moved 3.1 mm away from the panel (u 3.3) and the LCD placed at u 25.45 so the 20.7 mm tail ends at J2's 2.1 mm insertion stop; the tail modelled as two keepouts (20.5 mm wide x 10 mm at the panel, 6.5 mm into J2) and U1 plus the backlight parts moved out from under it",
+   "why": "The first layout lined the tail end up with J2's pads, which left 3 mm of excess tail, and it put 8 parts under the wide end of the tail (reports/review-board.md)",
+   "phase": "P8",
+   "ts": "2026-10-28T12:13:39"
+  },
+  {
+   "what": "Routing: Freerouting routes GND as a net before any pour, inside a 0.5 mm edge rule-area keepout, with Default clearance 0.2 mm; then B.Cu + F.Cu GND pours (F pour pads solid), one GND via per cap/IC GND pad, and 3 gaps the SES import dropped routed by grid A*",
+   "why": "Pour-first routing left boxed-in FFC GND pins and pour islands; Freerouting ignores copper-to-edge and hole-to-hole rules",
+   "phase": "P7",
+   "ts": "2026-10-28T12:13:40"
+  },
+  {
+   "what": "Accepted as warnings, not fixed: 9 needless-jog route-style findings, 8 check_ratings no-extraction, SPI partly on B.Cu under the F pour",
+   "why": "Cosmetic / checked by hand by the schematic reviewer / adequate at <= 15 MHz (review-board-2 W3)",
+   "phase": "P8",
+   "ts": "2026-10-28T12:13:40"
   }
  ],
  "edits": [],
@@ -458,6 +762,22 @@
    "phase": "P4",
    "tokens": 102769,
    "note": "fresh context; 0 errors, 6 warnings, 7 info (reports/review-schematic.md); orchestrator ran every other role inline"
+  },
+  {
+   "ts": "2026-10-28T12:13:40",
+   "role": "verify-reviewer",
+   "model": "opus",
+   "phase": "P8",
+   "tokens": 138236,
+   "note": "fresh; 2 errors (LCD tail seating, parts under the tail), 3 warnings"
+  },
+  {
+   "ts": "2026-10-28T12:13:40",
+   "role": "verify-reviewer",
+   "model": "opus",
+   "phase": "P8",
+   "tokens": 119829,
+   "note": "fresh re-review after the fixes: 0 errors, 5 warnings (README stale, pour islands, SPI return, CPL rotations, R10 silk) - all but SPI/CPL fixed"
   }
  ],
  "history": [
@@ -718,6 +1038,231 @@
    "ts": "2026-10-28T11:35:39",
    "event": "decision",
    "what": "Schematic review W2: the FFC cable must map pin N to pin N; type (same/opposite-side contacts) fixed by the enclosure once both boards' orientations are known"
+  },
+  {
+   "ts": "2026-10-28T11:45:04",
+   "event": "gate",
+   "gate": "place",
+   "status": "fail",
+   "attempt": 5,
+   "failing_count": 9
+  },
+  {
+   "ts": "2026-10-28T11:45:29",
+   "event": "gate",
+   "gate": "place",
+   "status": "fail",
+   "attempt": 6,
+   "failing_count": 3
+  },
+  {
+   "ts": "2026-10-28T11:45:48",
+   "event": "gate",
+   "gate": "place",
+   "status": "pass",
+   "attempt": 7,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T11:50:48",
+   "event": "gate",
+   "gate": "place",
+   "status": "pass",
+   "attempt": 8,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T11:51:07",
+   "event": "gate",
+   "gate": "place",
+   "status": "fail",
+   "attempt": 9,
+   "failing_count": 3
+  },
+  {
+   "ts": "2026-10-28T11:51:18",
+   "event": "gate",
+   "gate": "place",
+   "status": "fail",
+   "attempt": 10,
+   "failing_count": 2
+  },
+  {
+   "ts": "2026-10-28T11:51:36",
+   "event": "gate",
+   "gate": "place",
+   "status": "pass",
+   "attempt": 11,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T11:51:57",
+   "event": "gate",
+   "gate": "place",
+   "status": "fail",
+   "attempt": 12,
+   "failing_count": 1
+  },
+  {
+   "ts": "2026-10-28T11:52:09",
+   "event": "gate",
+   "gate": "place",
+   "status": "pass",
+   "attempt": 13,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T11:57:47",
+   "event": "gate",
+   "gate": "place",
+   "status": "pass",
+   "attempt": 14,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T11:58:20",
+   "event": "gate",
+   "gate": "place",
+   "status": "fail",
+   "attempt": 15,
+   "failing_count": 1
+  },
+  {
+   "ts": "2026-10-28T11:58:49",
+   "event": "gate",
+   "gate": "place",
+   "status": "fail",
+   "attempt": 16,
+   "failing_count": 1
+  },
+  {
+   "ts": "2026-10-28T11:58:56",
+   "event": "gate",
+   "gate": "place",
+   "status": "pass",
+   "attempt": 17,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T12:02:36",
+   "event": "gate",
+   "gate": "drc_routed",
+   "status": "pass",
+   "attempt": 4,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T12:02:48",
+   "event": "gate",
+   "gate": "drc_routed",
+   "status": "pass",
+   "attempt": 5,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T12:02:49",
+   "event": "gate",
+   "gate": "verify",
+   "status": "fail",
+   "attempt": 4,
+   "failing_count": 1
+  },
+  {
+   "ts": "2026-10-28T12:03:09",
+   "event": "gate",
+   "gate": "drc_routed",
+   "status": "pass",
+   "attempt": 6,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T12:03:10",
+   "event": "gate",
+   "gate": "verify",
+   "status": "pass",
+   "attempt": 5,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T12:03:36",
+   "event": "gate",
+   "gate": "place",
+   "status": "pass",
+   "attempt": 18,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T12:03:37",
+   "event": "gate",
+   "gate": "verify",
+   "status": "pass",
+   "attempt": 6,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T12:03:41",
+   "event": "gate",
+   "gate": "dfm",
+   "status": "pass",
+   "attempt": 2,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T12:12:27",
+   "event": "gate",
+   "gate": "drc_routed",
+   "status": "pass",
+   "attempt": 7,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T12:12:31",
+   "event": "gate",
+   "gate": "verify",
+   "status": "pass",
+   "attempt": 7,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T12:12:38",
+   "event": "gate",
+   "gate": "dfm",
+   "status": "pass",
+   "attempt": 3,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-28T12:13:39",
+   "event": "decision",
+   "what": "Board review E1/E2: J2 moved 3.1 mm away from the panel (u 3.3) and the LCD placed at u 25.45 so the 20.7 mm tail ends at J2's 2.1 mm insertion stop; the tail modelled as two keepouts (20.5 mm wide x 10 mm at the panel, 6.5 mm into J2) and U1 plus the backlight parts moved out from under it"
+  },
+  {
+   "ts": "2026-10-28T12:13:40",
+   "event": "decision",
+   "what": "Routing: Freerouting routes GND as a net before any pour, inside a 0.5 mm edge rule-area keepout, with Default clearance 0.2 mm; then B.Cu + F.Cu GND pours (F pour pads solid), one GND via per cap/IC GND pad, and 3 gaps the SES import dropped routed by grid A*"
+  },
+  {
+   "ts": "2026-10-28T12:13:40",
+   "event": "decision",
+   "what": "Accepted as warnings, not fixed: 9 needless-jog route-style findings, 8 check_ratings no-extraction, SPI partly on B.Cu under the F pour"
+  },
+  {
+   "ts": "2026-10-28T12:13:40",
+   "event": "spawn",
+   "role": "verify-reviewer",
+   "model": "opus"
+  },
+  {
+   "ts": "2026-10-28T12:13:40",
+   "event": "spawn",
+   "role": "verify-reviewer",
+   "model": "opus"
+  },
+  {
+   "ts": "2026-10-28T12:13:40",
+   "event": "phase",
+   "phase": "P9",
+   "prev": "P8"
   }
  ]
 }

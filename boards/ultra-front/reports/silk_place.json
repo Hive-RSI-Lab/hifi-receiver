@@ -9,30 +9,30 @@
  },
  "violations": [],
  "targets": 36,
- "moved": 7,
+ "moved": 1,
  "residual": [],
  "unplaceable": [],
  "skipped": [
   {
    "ref": "H1",
-   "reason": "board_only"
+   "reason": "hidden"
   },
   {
    "ref": "H2",
-   "reason": "board_only"
+   "reason": "hidden"
   },
   {
    "ref": "H3",
-   "reason": "board_only"
+   "reason": "hidden"
   },
   {
    "ref": "H4",
-   "reason": "board_only"
+   "reason": "hidden"
   }
  ],
  "min_silk_clearance": 0.0,
- "median_beyond_extent_mm_before": 0.7286,
- "median_beyond_extent_mm": 0.7286,
+ "median_beyond_extent_mm_before": 0.7932,
+ "median_beyond_extent_mm": 0.7365,
  "ops_out": "kicad/silk_ops.json",
  "results": [
   {
@@ -48,12 +48,6 @@
    "beyond_extent_mm": 0.35
   },
   {
-   "ref": "Q1",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
-  },
-  {
    "ref": "R1",
    "moved": false,
    "clearance_mm": 0.3,
@@ -61,43 +55,43 @@
   },
   {
    "ref": "R2",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.85
   },
   {
    "ref": "R4",
-   "moved": true,
-   "clearance_mm": 0.297,
+   "moved": false,
+   "clearance_mm": 0.288,
    "beyond_extent_mm": 0.6
   },
   {
    "ref": "R9",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.85
+  },
+  {
+   "ref": "C3",
    "moved": true,
-   "clearance_mm": 0.198,
-   "beyond_extent_mm": 0.6
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.605
   },
   {
    "ref": "J1",
    "moved": false,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
+   "beyond_extent_mm": 0.355
   },
   {
-   "ref": "R17",
+   "ref": "R11",
    "moved": false,
-   "clearance_mm": 0.288,
-   "beyond_extent_mm": 0.641
-  },
-  {
-   "ref": "R18",
-   "moved": true,
-   "clearance_mm": 0.288,
-   "beyond_extent_mm": 0.6
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.85
   },
   {
    "ref": "R3",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.293,
    "beyond_extent_mm": 0.6
   },
@@ -108,40 +102,34 @@
    "beyond_extent_mm": 0.3742
   },
   {
+   "ref": "C2",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.728
+  },
+  {
    "ref": "C5",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.85
   },
   {
    "ref": "C6",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.85
+  },
+  {
+   "ref": "J2",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.35
   },
   {
    "ref": "R10",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.85
-  },
-  {
-   "ref": "R12",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.85
-  },
-  {
-   "ref": "R13",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.85
-  },
-  {
-   "ref": "C2",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.855
   },
   {
    "ref": "C7",
@@ -156,28 +144,40 @@
    "beyond_extent_mm": 0.35
   },
   {
-   "ref": "J2",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
-  },
-  {
-   "ref": "R11",
+   "ref": "R12",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.85
   },
   {
-   "ref": "U1",
+   "ref": "R19",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.85
+  },
+  {
+   "ref": "C1",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.7207
+  },
+  {
+   "ref": "C4",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.85
+  },
+  {
+   "ref": "Q1",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
   },
   {
-   "ref": "C3",
+   "ref": "R13",
    "moved": false,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.605
+   "beyond_extent_mm": 0.85
   },
   {
    "ref": "R14",
@@ -198,34 +198,34 @@
    "beyond_extent_mm": 0.85
   },
   {
+   "ref": "R17",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.85
+  },
+  {
+   "ref": "R18",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.85
+  },
+  {
    "ref": "R6",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.85
   },
   {
-   "ref": "C1",
+   "ref": "U1",
    "moved": false,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.7207
-  },
-  {
-   "ref": "R19",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.85
+   "beyond_extent_mm": 0.35
   },
   {
    "ref": "R5",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.85
-  },
-  {
-   "ref": "R7",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.7365
   },
   {
    "ref": "R8",
@@ -246,10 +246,10 @@
    "beyond_extent_mm": 0.3742
   },
   {
-   "ref": "C4",
+   "ref": "R7",
    "moved": false,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.85
+   "beyond_extent_mm": 0.7365
   }
  ],
  "applied": true,
@@ -257,7 +257,7 @@
  "drc_total": 115,
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-28T15:25:38+00:00",
+ "generated_at": "2026-10-28T15:58:48+00:00",
  "input": "kicad/ultra-front.kicad_pcb",
- "input_digest": "sexpr_no_uuid:a3fac0e29d4e87b9fea904ff16f0f2fde47d425e7ef9cebeb534dc2459957d12"
+ "input_digest": "sexpr_no_uuid:6af8ec2b75b092b62e2476c1738ecef4ac218de786d87cd7ce1e40dfc3d3c4f7"
 }

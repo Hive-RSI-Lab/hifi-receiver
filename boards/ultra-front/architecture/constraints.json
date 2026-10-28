@@ -101,13 +101,23 @@
    },
    {
     "rect": [
-     -0.145,
+     -3.045,
      42.8,
-     14.555,
+     4.955,
      51.3
     ],
     "side": "front",
-    "reason": "the LCD's FPC tail lies flat from the panel to J2"
+    "reason": "the LCD's FPC tail, narrow end (6.5 mm wide), lies flat into J2"
+   },
+   {
+    "rect": [
+     4.855,
+     35.6,
+     15.555,
+     56.7
+    ],
+    "side": "front",
+    "reason": "the LCD's FPC tail near the panel is ~20.5 mm wide for ~10 mm (with the backlight sub-flex joints); no parts under it"
    }
   ],
   "edges": [

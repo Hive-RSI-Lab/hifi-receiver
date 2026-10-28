@@ -9,173 +9,886 @@
  },
  "violations": [],
  "requested": 0,
- "placed": 0,
- "skipped": [
-  {
-   "ref": "C1.2",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "C2.2",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "C3.2",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "C4.2",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "C5.2",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "C6.2",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "C7.2",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "J1.1",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "J1.11",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "J1.20",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "J1.21",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "J1.22",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "J1.4",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "J1.6",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "J2.1",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "J2.12",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "J2.13",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "J2.14",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "Q1.2",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "R11.2",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "R19.2",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "SW1.3",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "SW1.4",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "SW2.3",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "SW2.4",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "SW3.3",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "SW3.4",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "U1.12",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "U2.1",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "U2.2",
-   "reason": "already_stitched",
-   "net": "GND"
-  }
- ],
+ "placed": 86,
+ "skipped": [],
  "via_size": 0.6,
  "via_drill": 0.3,
  "clearance_mm": 0.127,
  "dry_run": false,
- "applied": false,
- "refilled": false,
- "apply_by_status": null,
- "ops": [],
+ "applied": true,
+ "refilled": true,
+ "apply_by_status": {
+  "added": 86
+ },
+ "ops": [
+  {
+   "op": "add_via",
+   "at": [
+    -6.945,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    -6.945,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    -6.945,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    -6.945,
+    59.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    -1.945,
+    29.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    -1.945,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    -1.945,
+    44.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    -1.945,
+    59.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    8.055,
+    44.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    8.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    8.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    13.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    13.055,
+    44.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    13.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    13.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    18.055,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    18.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    18.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    18.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    23.055,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    23.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    23.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    23.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    28.055,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    28.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    28.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    28.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    33.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    33.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    33.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    38.055,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    38.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    38.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    38.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    43.055,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    43.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    43.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    43.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    48.055,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    48.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    48.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    48.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    53.055,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    53.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    53.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    53.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    58.055,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    58.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    58.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    58.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    63.055,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    63.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    63.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    63.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    68.055,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    68.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    68.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    68.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    73.055,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    73.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    73.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    73.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    78.055,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    78.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    78.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    78.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    83.055,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    83.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    83.055,
+    44.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    83.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    88.055,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    88.055,
+    44.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    88.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    88.055,
+    64.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    93.055,
+    29.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    93.055,
+    44.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    93.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    93.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    93.055,
+    59.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    93.055,
+    64.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    98.055,
+    34.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    98.055,
+    39.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    98.055,
+    44.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    98.055,
+    49.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    98.055,
+    54.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    98.055,
+    59.8
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  }
+ ],
  "mode": "stitch",
- "pitch_mm": 4.283,
- "t_rise_ns": 1.0,
+ "pitch_mm": 5.0,
+ "t_rise_ns": null,
  "nets": {
   "GND": {
    "plane_layers": [
+    "F.Cu",
     "B.Cu"
    ],
    "pads": {
@@ -184,13 +897,14 @@
     "skipped": 0
    },
    "area": {
-    "candidates": 207,
-    "placed": 0,
+    "candidates": 170,
+    "placed": 86,
     "rejected": {
      "hole_to_hole": 4,
-     "single_layer_contact": 173,
-     "near_same_net_via": 18,
-     "fill_edge": 12
+     "foreign_copper": 64,
+     "near_same_net_via": 1,
+     "fill_edge": 6,
+     "single_layer_contact": 9
     },
     "capped": false
    }
@@ -198,7 +912,7 @@
  },
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-28T15:26:49+00:00",
+ "generated_at": "2026-10-28T15:46:22+00:00",
  "input": "/work/boards/ultra-front/kicad/ultra-front.kicad_pcb",
- "input_digest": "sexpr_no_uuid:4ab9300a872f07c4a71eec10dcf0e66f121659f8190acb1f658f4b5c26eb0e54"
+ "input_digest": "sexpr_no_uuid:dec2afa118ece539ffeda64f9c5e790cedad6b981e2af834c37da77c6015f835"
 }

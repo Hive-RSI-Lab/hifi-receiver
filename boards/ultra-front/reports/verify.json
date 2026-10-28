@@ -4,7 +4,7 @@
   "phase": "P8",
   "tool": "verify",
   "input": "kicad/ultra-front.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:3f7fbb812ee6d78466c635592cbc126e92fced3c09da92716087901df21e3532",
+  "input_digest": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -13,13 +13,13 @@
     "max_count": 0
   },
   "counts": {
-    "total": 16,
+    "total": 19,
     "by_severity": {
-      "warning": 14,
+      "warning": 17,
       "error": 2
     },
     "by_source": {
-      "check_route_style": 6,
+      "check_route_style": 9,
       "check_mating": 2,
       "check_ratings": 8
     },
@@ -31,7 +31,7 @@
       "check_creepage": 0,
       "check_thermal": 0,
       "check_silk": 0,
-      "check_route_style": 6,
+      "check_route_style": 9,
       "check_mating": 2,
       "check_pdn": 0,
       "check_ratings": 8,
@@ -48,7 +48,7 @@
       "check": "mating",
       "severity": "error",
       "pos": [
-        -3.41,
+        -6.11,
         47.0
       ],
       "layer": null,
@@ -56,13 +56,13 @@
       "refs": [
         "J2"
       ],
-      "msg": "J2 (fpc_ffc) cannot be mated: its nearest edge is -x (3.5 mm) but its mouth faces +x, into 100.5 mm of board",
+      "msg": "J2 (fpc_ffc) cannot be mated: its nearest edge is -x (0.8 mm) but its mouth faces +x, into 103.2 mm of board",
       "source": "check_mating",
       "items": [
         {
-          "msg": "J2 (fpc_ffc) cannot be mated: its nearest edge is -x (3.5 mm) but its mouth faces +x, into 100.5 mm of board",
+          "msg": "J2 (fpc_ffc) cannot be mated: its nearest edge is -x (0.8 mm) but its mouth faces +x, into 103.2 mm of board",
           "pos": [
-            -3.41,
+            -6.11,
             47.0
           ]
         }
@@ -71,32 +71,33 @@
       "connector": "J2",
       "mouth": "+x",
       "nearest_edge": "-x",
-      "gap_mm": 100.46
+      "gap_mm": 103.16
     },
     {
       "check": "mating",
       "severity": "error",
       "pos": [
-        56.4119,
+        55.0669,
         47.0
       ],
       "layer": null,
       "net": null,
       "refs": [
+        "C2",
+        "C3",
         "J2",
-        "R11",
+        "Q1",
         "R5",
-        "R8",
         "SW2",
         "SW4"
       ],
-      "msg": "J2 (fpc_ffc): R11, R5, R8, SW2, SW4 sit in the plug's insertion zone in front of its mouth (8.0 mm plug + 2.0 mm grip)",
+      "msg": "J2 (fpc_ffc): C2, C3, Q1, R5, SW2, SW4 sit in the plug's insertion zone in front of its mouth (8.0 mm plug + 2.0 mm grip)",
       "source": "check_mating",
       "items": [
         {
-          "msg": "J2 (fpc_ffc): R11, R5, R8, SW2, SW4 sit in the plug's insertion zone in front of its mouth (8.0 mm plug + 2.0 mm grip)",
+          "msg": "J2 (fpc_ffc): C2, C3, Q1, R5, SW2, SW4 sit in the plug's insertion zone in front of its mouth (8.0 mm plug + 2.0 mm grip)",
           "pos": [
-            56.4119,
+            55.0669,
             47.0
           ]
         }
@@ -105,9 +106,10 @@
       "connector": "J2",
       "mouth": "+x",
       "blocked_by": [
-        "R11",
+        "C2",
+        "C3",
+        "Q1",
         "R5",
-        "R8",
         "SW2",
         "SW4"
       ]
@@ -175,12 +177,12 @@
     "workspace": ".",
     "gate": "verify",
     "status": "pass",
-    "attempts": 3,
+    "attempts": 7,
     "inputs": {
-      "pcb": "sexpr_no_uuid:3f7fbb812ee6d78466c635592cbc126e92fced3c09da92716087901df21e3532",
-      "constraints": "json_canonical:c78221d71a9bde85156e3c5adb04a43aea9d8fb6cad6e4f453b3f1dd3a5072ca",
+      "pcb": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
+      "constraints": "json_canonical:2359f1ef397426592b3d4c3beee0427cab22705eedd37a1e16da66a6ea99c488",
       "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
-      "waivers": "json_canonical:6c26f4d04fcd7c2c1af576dcfaac7cce4e16cbcd6c8d04f25e16c80ea2ce778d"
+      "waivers": "json_canonical:592c380b54ad95b43971d6ca5b89828d705d0b3c2b1a56a62bee1ebdf92ca835"
     }
   }
 }

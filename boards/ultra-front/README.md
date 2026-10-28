@@ -16,7 +16,7 @@ ordering is the person's.**
   4 x M2.5 plated mounting holes (GND) 3.05 mm in from each corner.
 - Everything is on the top side, which faces the user. All parts are SMD
   except the knob (EC11, through-hole).
-- GND is poured on both layers.
+- GND is poured on both layers, plus routed GND tracks and a via at each cap/IC GND pad.
 
 | Ref | What | Part | LCSC | JLC |
 |---|---|---|---|---|
@@ -115,9 +115,29 @@ Pin N on the core board connects to pin N here.
   the detented drop-in on the same footprint.
 - **The board is 110 x 40 mm**, against product.md's "about 100 x 40". The
   51.8 mm panel, its 20.7 mm tail and the 33 mm knob column don't fit in 100.
-- **Both layers are poured with GND.** Two signals were routed by hand at
-  J1's 0.5 mm pins, and their B.Cu tracks split the bottom pour into islands.
-  A top pour joins them back through the vias, and plane_repair passes.
+- **The LCD tail sets the left-end layout.** The panel sits at x 25.45 mm.
+  - **Why there:** its 20.7 mm tail then ends at J2's insertion stop, 2.1 mm
+    inside the socket mouth. The board reviewer measured the tail end
+    within 0.08 mm of the stop, with a tolerance of +-0.5 mm.
+  - **Tail shape:** the tail is about 20.5 mm wide for its first 10 mm, where
+    it leaves the panel, and 6.5 mm wide where it enters J2. Both parts are
+    keepouts, so no part sits under them and it lies flat.
+  - **Moved for this:** the backlight parts and U1. The first board review
+    caught the tail outline and the socket position, and both were fixed
+    before routing (`reports/review-board.md`, then
+    `reports/review-board-2.md`).
+- **Routing:**
+  - **Freerouting routes everything, GND included.** It runs before any pour
+    exists, inside a 0.5 mm edge keepout. Without the keepout it ran tracks
+    along the edge. It also doesn't know JLC's 0.5 mm hole-to-hole rule, so
+    the default clearance is 0.2 mm, which keeps via holes 0.5 mm apart.
+  - **GND vias:** each cap and IC GND pad then gets its own via.
+  - **Pours:** GND is poured on both layers. The top pour joins its pads solid
+    (`kicad/gen/zone_solid.py`), because the 0.5 mm sockets' GND pins can't
+    take two thermal spokes.
+  - **Hand-routed:** three gaps the Freerouting import dropped (J1.11 GND,
+    two +3V3 links) were routed with a small grid router in
+    `route/manual/`.
 
 Every decision is also recorded in `state.json` (`decisions`), with the
 stage digests in `log/P*-digest.md`.
@@ -129,7 +149,7 @@ side (the front). They are centres unless noted.
 
 | What | X | Y | Notes |
 |---|---|---|---|
-| LCD panel outline | 25.0-76.8 | 1.9-38.1 | 51.8 x 36.2 mm module. Active area 40.8 x 30.6 mm, offset in the module per datasheet p.10 |
+| LCD panel outline | 25.45-77.25 | 1.9-38.1 | 51.8 x 36.2 mm module, taped down at this position so its tail ends at J2's stop (+-0.5 mm). The enclosure window should locate it. Active area 40.8 x 30.6 mm, offset in the module per datasheet p.10 |
 | Knob (SW4 shaft) | 99.0 | 21.0 | EC11, 20 mm flat shaft |
 | Buttons SW1 / SW2 / SW3 | 84.0 | 8.0 / 20.0 / 32.0 | 5.1 mm switches, 1.5 mm actuator: the panel needs plungers or caps |
 | IR receiver U2 | 99.0 | 6.0 | needs a window |
@@ -147,7 +167,7 @@ The 3D models aren't committed; pull them first (below).
 | ERC (`erc`) | 0 errors, 0 warnings |
 | Placement (`place`) | pass, 2 waivers awaiting approval (below) |
 | Routed DRC (`drc_routed`) | 0 errors, 0 warnings, 0 unconnected |
-| Verify suite (`verify`, 14 checks) | pass, 2 waivers awaiting approval (below); 14 warnings: 6 short "needless jog" route-style findings, and 8 "no datasheet extraction" from check_ratings, because no datasheet JSON was made. The schematic reviewer checked every rail against each part's absolute maximum instead. |
+| Verify suite (`verify`, 14 checks) | pass, 2 waivers awaiting approval (below); 17 warnings: 9 short "needless jog" route-style findings, and 8 "no datasheet extraction" from check_ratings, because no datasheet JSON was made. The schematic reviewer checked every rail against each part's absolute maximum instead. |
 | JLC DFM on the exported Gerbers (`dfm`) | 0 findings |
 
 **Waivers awaiting the person's approval:** the mating check (place and
@@ -161,7 +181,24 @@ verify) fails J2 twice.
 
 **Reviews:** fresh-context reviewers read the schematic
 (`reports/review-schematic.md`: 0 errors, 6 warnings, all acted on) and the
-board (`reports/review-board.md`).
+board twice (`reports/review-board.md`: 2 errors on the LCD tail, fixed; `reports/review-board-2.md`: 0 errors, warnings below).
+
+**Open items from the reviews**, none of which stops a first build:
+
+- **JLC rotations:** check them in JLC's placement preview before ordering,
+  especially J2, SW4, U1, U2 and D1. DFM can't check rotations visually
+  here.
+- **Front-panel height stack:** the LCD is 2.05 mm thick, the buttons stand
+  1.5 mm and the encoder frame stands several mm, all facing the panel. The
+  enclosure needs a pocket for the screen and plungers or caps for the
+  buttons.
+- **SPI ground return:** SPI runs partly on B.Cu with only the top pour
+  above it, and CS/DC/MOSI are bundled. That's fine at 15 MHz or less;
+  re-route on F.Cu over the bottom pour if a later revision goes faster.
+- **The backlight sub-flex on the LCD tail:** it passes over the board near
+  R13 at 0.13 mm. The datasheet doesn't show which face carries its K/A
+  solder joints. Check on the first panel that nothing exposed touches the
+  board; a strip of Kapton under the tail is the fallback.
 
 ## How to rebuild and re-check it
 
@@ -181,8 +218,14 @@ $H bom_cpl --pcb kicad/ultra-front.kicad_pcb --out-dir fab --parts parts/parts.j
 ```
 
 - **Placement:** `anneal/placement.ops.json` (`place_edit`).
-- **Hand-routed nets:** `route/manual/` holds the ops and the small grid
-  router for /I2C_SDA and /FRONT_INT_N.
+- **Routing, in order:**
+  1. `kicad/gen/edge_keepout.py <board> 0.5`, with KiCad's python, then
+     `route_auto`.
+  2. `planes_gen`, then `kicad/gen/zone_solid.py`.
+  3. The ops in `route/manual/`, applied with `route_edit`: the gap fixes and
+     the GND vias.
+  4. `route_cleanup --snap-only`.
+- **Placement:** silk hiding is in `anneal/silk.ops.json`.
 
 ## The fab package
 

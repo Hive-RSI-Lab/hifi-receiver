@@ -91,3 +91,47 @@ entries:
   proposed_level: null
   targets: []
   status: pending
+- entry: 2026-10-28-model-a-display-tail-s-real-outline
+  line: 42
+  date: '2026-10-28'
+  title: model a display tail's real outline, and line its END up with the socket's insertion stop
+  tags:
+  - P6
+  - mechanical
+  stage: P6
+  proposed_level: null
+  targets: []
+  status: pending
+- entry: 2026-10-28-freerouting-ignores-copper-to-edge-and-hole
+  line: 48
+  date: '2026-10-28'
+  title: Freerouting ignores copper-to-edge and hole-to-hole
+  tags:
+  - P7
+  - routing
+  stage: P7
+  proposed_level: null
+  targets: []
+  status: pending
+- entry: 2026-10-28-route-gnd-as-a-net-before-pouring
+  line: 53
+  date: '2026-10-28'
+  title: route GND as a net before pouring on a dense 2-layer board
+  tags:
+  - P7
+  - routing
+  stage: P7
+  proposed_level: null
+  targets: []
+  status: pending
+- entry: 2026-10-28-ses-import-can-drop-connections-freerouting-reported
+  line: 60
+  date: '2026-10-28'
+  title: SES import can drop connections Freerouting reported done
+  tags:
+  - P7
+  - routing
+  stage: P7
+  proposed_level: null
+  targets: []
+  status: pending
