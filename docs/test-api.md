@@ -8,7 +8,12 @@ are `null`, never made up.
 
 - **Finding the box:** it advertises `_hifi._tcp` over mDNS, with TXT records
   `model=hifi-lite`, `board=lite-main`, `fw=<version>` and `api=1`. Its
-  hostname is squeezelite-esp32's (`squeezelite-xxxxxx.local` until renamed).
+  hostname is `hifi-lite` (Plus and Ultra: `hifi-plus`, `hifi-ultra`), so
+  `http://hifi-lite.local` opens it; if two boxes share a network, ESP-IDF's
+  mDNS answers the second as `hifi-lite-2.local`.
+- **What else is on port 80:** `/` is the web app (`app/`). squeezelite-esp32's
+  own settings page moved to `/squeezelite/`; its JSON endpoints stay where
+  they were (below).
   Over USB, the serial console has the same calls (below).
 - **Format:** JSON in and out, `Content-Type: application/json`. Every reply is
   an object. An error is `{"error": "<what went wrong>"}` with status 400
@@ -29,9 +34,18 @@ What the box is.
 ```json
 {"model": "hifi-lite", "board": "lite-main", "fw": "0.1.0",
  "upstream": "squeezelite-esp32 master-v4.3 ee1720c", "api": 1,
- "mac": "24:0a:c4:12:34:56", "hostname": "squeezelite-123456",
- "flash_mb": 8, "psram_mb": 8}
+ "name": "Living room", "mac": "24:0a:c4:12:34:56", "hostname": "hifi-lite",
+ "flash_mb": 8, "psram_mb": 8,
+ "caps": {"line_modes": ["dj_direct"],
+          "eq_bands": [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000],
+          "eq_min": -12, "eq_max": 12,
+          "sub": {"count": 2, "crossover": false, "per_sub": false},
+          "zones": 1, "eth": false, "pdo_v_max": 20}}
 ```
+
+`name` is the player name people see in AirPlay, Bluetooth, Spotify and
+LMS. `caps` says what this tier can do, so one web app serves all three:
+Plus and Ultra set `crossover`, `per_sub`, `eth` and a `pdo_v_max` of 28.
 
 ## `GET /api/v1/state`
 
@@ -45,8 +59,11 @@ Everything the bench logs, in one read. Poll it at up to 10 Hz.
  "amp": {"enabled": true, "fault": false, "faults": 0, "latched": false, "temp_c": null},
  "governor": {"budget_w": 58.5, "in_w": 7.9, "out_w": 4.4,
               "gain_db": 0.0, "limiting": false, "limit_events": 0},
- "audio": {"source": "lms", "input": "stream", "tone": null, "level_dbfs": -23.4},
- "net": {"ip": "192.168.1.40", "rssi": -61},
+ "audio": {"source": "lms", "input": "stream", "tone": null, "level_dbfs": -23.4,
+           "sub": {"on": true, "level_db": 0.0},
+           "eq": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+ "net": {"mode": "sta", "ssid": "home", "hostname": "hifi-lite",
+         "ip": "192.168.1.40", "rssi": -61},
  "sys": {"heap_free": 81234, "psram_free": 3912345}}
 ```
 
@@ -74,7 +91,9 @@ Everything the bench logs, in one read. Poll it at up to 10 Hz.
   `input` is `stream` or `dj_direct` (Lite: the ES8388's analog bypass from
   the RCA line in). `tone` is the running tone (below) or `null`.
   `level_dbfs` is the 1 s RMS of what goes to the DAC, relative to a full-
-  scale sine.
+  scale sine. `sub` and `eq` are as set below.
+- **`net.mode`** is `ap` while the box runs its own setup access point (no
+  Wi-Fi joined yet), else `sta`.
 
 ## `POST /api/v1/tone`
 
@@ -116,9 +135,28 @@ sub outs through the codec's analog bypass: zero latency for the DJ deck.
 
 ## `POST /api/v1/sub`
 
-`{"level_db": -6}` sets the sub outputs' level, −30 to +6 dB (Lite: the
-ES8388's LOUT2/ROUT2 volume, 1.5 dB steps; the reply gives the level it
-set). Reply: `{"ok": true, "level_db": -6.0}`.
+`{"level_db": -6}` sets the sub outputs' level, −30 to +6 dB; `{"on": false}`
+turns them off (either or both). Lite: the ES8388's LOUT2/ROUT2, 1.5 dB steps
+up to +4.5 dB, so the level it reports is the one it could set. Kept across
+restarts. Reply: the full `/state`.
+
+## `POST /api/v1/eq`
+
+`{"gains": [0, 0, 2, 0, 0, 0, 0, 0, -1, 0]}`: squeezelite-esp32's 10-band
+equalizer (bands in `info.caps.eq_bands`), whole dB, `eq_min` to `eq_max`.
+Applied at once and kept. Reply: the full `/state`.
+
+## `POST /api/v1/name`
+
+`{"name": "Kitchen"}`, 1–32 characters: the player name in AirPlay,
+Bluetooth, Spotify and LMS. The services take it at the next restart. The
+hostname stays `hifi-lite`. Reply: the full `/state`.
+
+## `POST /api/v1/reboot`, `POST /api/v1/reset`
+
+`reboot` restarts the box 0.7 s after replying. `reset` needs
+`{"factory": true}`: it erases every setting (Wi-Fi, names, EQ, sub) and
+restarts. Both reply with the full `/state` first.
 
 ## `POST /api/v1/control`
 
@@ -151,6 +189,27 @@ Nothing in it needs a speaker or a load.
 `pass` is true only if every check passes. A check that can't run (the amp
 on a 5 V port) fails with the reason in `value`; on a 5 V port that is
 expected, and the bench script knows it.
+
+## squeezelite-esp32's own endpoints
+
+The web app also uses these, which squeezelite-esp32 already serves; this
+firmware doesn't wrap them.
+
+| Call | Does |
+|---|---|
+| `GET /scan.json`, then `GET /ap.json` | starts a Wi-Fi scan, then lists what it found |
+| `POST /connect.json` `{"ssid": "...", "pwd": "..."}` | joins a network; `GET /status.json` shows how it went |
+| `DELETE /connect.json` | forgets the network |
+| `POST /config.json` (key `fwurl`), then `POST /reboot_ota.json` | updates the firmware from a URL |
+| `POST /recovery.json`, then `POST /flash.json` (the `.bin`) in recovery | updates from a file |
+
+Their exact bodies are what squeezelite-esp32's own page sends
+(`components/wifi-manager/webapp` at the pinned commit); this API doesn't
+restate them.
+
+Not in this API yet: an absolute volume, mute and maximum volume, the
+now-playing metadata, and learning IR remote codes. Volume works through
+`control` (`volup`/`voldown`), which goes to whatever source is playing.
 
 ## Serial console
 
