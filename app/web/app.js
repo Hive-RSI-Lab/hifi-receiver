@@ -1,8 +1,9 @@
 // The receiver's web app. Plain JS, no build step: the firmware serves these
-// files gzipped from flash. Everything it shows comes from GET /api/state and
-// every control is one POST that answers with the new state (docs/test-api.md,
-// "The app's API"). What a board can do comes from state.caps, so one app
-// serves Lite, Plus and Ultra.
+// files gzipped from flash. It speaks the firmware's /api/v1 (docs/test-api.md;
+// the calls only the app uses are listed in docs/app.md, "The API"). It reads
+// GET info once (what the box is and can do: info.caps, so one app serves
+// Lite, Plus and Ultra) and polls GET state; every write answers with the new
+// state.
 'use strict';
 
 const POLL_MS = 2000;
@@ -13,10 +14,24 @@ const EQ_PRESETS = {
   Vocal: [-2, -1, 0, 1, 3, 3, 2, 1, 0, -1],
   'Treble -': [0, 0, 0, 0, 0, 0, -1, -2, -4, -5],
 };
-const SOURCE_NAMES = { spotify: 'Spotify', airplay: 'AirPlay', bt: 'Bluetooth',
-  lms: 'Lyrion', line: 'Line in', optical: 'Optical', idle: 'Nothing' };
+const SOURCES = { spotify: 'Spotify', airplay: 'AirPlay', bt: 'Bluetooth', lms: 'Lyrion', test: 'Test signal' };
+const INPUTS = { stream: 'Streaming', dj_direct: 'DJ direct', line: 'Line in', optical: 'Optical' };
+const INPUT_NOTES = {
+  stream: 'Plays what you send from Spotify, AirPlay, Bluetooth or Lyrion.',
+  dj_direct: 'The RCA line in goes straight to the amplifier with no delay, for DJ decks and turntables. ' +
+    'Streaming, EQ and the sub settings do not apply.',
+  line: 'The RCA line in through the digital path, so EQ and the sub settings apply. Adds a few milliseconds of delay.',
+  optical: 'The optical (TOSLINK) input, through EQ and the sub settings.',
+};
+const IR_ACTIONS = { volup: 'Volume up', voldown: 'Volume down', mute: 'Mute', toggle: 'Play / pause',
+  next: 'Next', prev: 'Previous', input: 'Input', power: 'Standby' };
+// The firmware's self-test names (docs/test-api.md), as a person reads them.
+const CHECKS = { pd_sink_i2c: 'Charger chip', pd_contract: 'Charger contract', vbus_matches: 'Supply voltage',
+  codec_i2c: 'Audio chip', dac_i2c: 'DAC', pvdd_on: 'Amplifier supply', amp_no_fault: 'Amplifier',
+  psram: 'Memory', heap: 'Free memory', network: 'Network' };
 
-let S = null;          // the last state the receiver sent
+let I = null;          // GET info: what the box is
+let S = null;          // the last GET state
 let tab = 'play';
 let online = false;
 let holding = false;   // a slider is under a finger: don't redraw over it
@@ -50,15 +65,19 @@ function toast(msg) {
 async function api(path, body) {
   const opt = body === undefined ? {} : {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
-  const r = await fetch('api/' + path, opt);
+  const r = await fetch('api/v1/' + path, opt);
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.error || r.statusText);
   return j;
 }
 
-// set() posts a change and takes the state it answers with.
+// set() posts a change and takes the state it answers with; a call whose
+// reply isn't a state (the bench's amp/input/control) is followed by a read.
 async function set(path, body) {
-  try { take(await api(path, body)); } catch (e) { toast(e.message); }
+  try {
+    const r = await api(path, body);
+    take(r.audio ? r : await api('state'));
+  } catch (e) { toast(e.message); }
 }
 
 // A slider sends while it moves, at most every 150 ms, and once when let go.
@@ -81,6 +100,12 @@ function slider({ show, ...attrs }, send) {
     onchange: (e) => { holding = false; send(+e.target.value); } });
 }
 
+function seg(options, current, pick) {
+  return h('div.seg', {}, Object.entries(options).map(([v, label]) =>
+    h('button', { className: String(current) === v ? 'on' : '', onclick: () => pick(v) }, label)));
+}
+const onOff = (cur, pick) => seg({ false: 'Off', true: 'On' }, !!cur, (v) => pick(v === 'true'));
+
 function take(state) {
   if (!state || !state.audio) return;
   S = state;
@@ -88,7 +113,11 @@ function take(state) {
 }
 
 async function poll() {
-  try { take(await api('state')); online = true; } catch { online = false; draw(); }
+  try {
+    if (!I) I = await api('info');
+    take(await api('state'));
+    online = true;
+  } catch { online = false; draw(); }
   $('#conn').classList.toggle('on', online);
   setTimeout(poll, POLL_MS);
 }
@@ -97,11 +126,11 @@ function draw() {
   const typing = document.activeElement && /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName) &&
     document.activeElement.type !== 'range';
   if (holding || typing) return;
-  if (S) $('#name').textContent = S.device.name;
+  if (I) $('#name').textContent = I.name;
   for (const b of document.querySelectorAll('#tabs button')) b.classList.toggle('on', b.dataset.tab === tab);
   const view = $('#view');
   const y = window.scrollY;
-  view.replaceChildren(...(S ? PAGES[tab]() : [offline()]));
+  view.replaceChildren(...(S && I ? PAGES[tab]() : [offline()]).flat().filter((k) => k != null && k !== false));
   window.scrollTo(0, y);
 }
 
@@ -114,40 +143,43 @@ function offline() {
 // ---- Play ---------------------------------------------------------------
 
 function powerNotice() {
-  const p = S.power;
-  if (p.amp_fault) return h('div.card.err', {}, h('b', {}, 'Amplifier fault. '),
+  const p = S.power, a = S.amp, g = S.governor, c = p.contract || {};
+  if (a.latched || a.fault) return h('div.card.err', {}, h('b', {}, 'Amplifier fault. '),
     'It has switched itself off to protect the speakers. Check the speaker wires for a short, then press Clear.',
-    h('div.row', {}, h('button', { onclick: () => set('amp', { clear_fault: true }) }, 'Clear')));
-  if (!p.amp_on && p.pdo_v < 9) return h('div.card.warn', {}, h('b', {}, 'Speakers off: charger too weak. '),
-    `This port gives ${p.pdo_v} V. Use a USB-C charger of 65 W or more` +
-    (S.caps.pdo_v_max > 20 ? ` (${S.caps.pdo_v_max} V / 140 W for full power).` : '.'));
-  if (p.limit_db > 0.5) return h('div.card.warn', {}, h('b', {}, 'Power limit. '),
-    `Turned down ${p.limit_db.toFixed(1)} dB to stay within the charger's ${p.pdo_v * p.pdo_a} W.`);
+    h('div.row', {}, h('button', { onclick: () => set('amp', { reset: true }) }, 'Clear')));
+  if (p.state === 'wait_pd') return h('div.card.warn', {}, h('b', {}, 'Speakers off: charger too weak. '),
+    `This port gives ${c.v ?? 5} V. Use a USB-C charger of 65 W or more` +
+    (I.caps.pdo_v_max > 20 ? ` (a 140 W one with a 240 W cable for full power).` : '.'));
+  if (p.state === 'undervolt' || p.state === 'overvolt') return h('div.card.err', {},
+    h('b', {}, 'Speakers off: the supply is out of range. '), `It reads ${p.vbus_v?.toFixed(1)} V. Try another charger or cable.`);
+  if (g.limiting && g.gain_db < -0.5) return h('div.card.warn', {}, h('b', {}, 'Power limit. '),
+    `Turned down ${(-g.gain_db).toFixed(1)} dB to stay within the charger's ${Math.round(c.w)} W.`);
   return null;
 }
 
 function pagePlay() {
-  const a = S.audio, np = S.playing || {};
-  const src = SOURCE_NAMES[a.source] || a.source;
-  const idle = a.source === 'idle' || !np.title;
+  const a = S.audio, np = a.playing || {};
+  const direct = a.input !== 'stream';
+  const idle = direct || a.source === 'idle' || !np.title;
+  const title = direct ? INPUTS[a.input] : idle ? 'Nothing playing' : np.title;
+  const sub = direct ? 'Playing what is plugged into the RCA line in.'
+    : idle ? `Play to “${I.name}” from Spotify, AirPlay, Bluetooth or Lyrion.`
+      : [np.artist, np.album].filter(Boolean).join(' — ');
   return [
     powerNotice(),
     h('div.card', {},
-      h('h2', {}, idle ? 'Ready' : `Playing from ${src}`),
-      h('div.np-title', {}, idle ? 'Nothing playing' : np.title),
-      h('div.np-sub', {}, idle ? 'Play from Spotify, AirPlay, Bluetooth or Lyrion, or choose Line in below.'
-        : [np.artist, np.album].filter(Boolean).join(' — ')),
-      S.caps.transport.includes(a.source) && h('div.row', { style: 'justify-content:center;margin-top:14px' },
-        h('button.icon', { 'aria-label': 'Previous', onclick: () => set('transport', { cmd: 'prev' }) }, '⏮'),
-        np.state === 'play'
-          ? h('button.icon.pri', { 'aria-label': 'Pause', onclick: () => set('transport', { cmd: 'pause' }) }, '⏸')
-          : h('button.icon.pri', { 'aria-label': 'Play', onclick: () => set('transport', { cmd: 'play' }) }, '▶'),
-        h('button.icon', { 'aria-label': 'Next', onclick: () => set('transport', { cmd: 'next' }) }, '⏭'))),
+      h('h2', {}, direct ? 'Input' : idle ? 'Ready' : `Playing from ${SOURCES[a.source] || a.source}`),
+      h('div.np-title', {}, title), h('div.np-sub', {}, sub),
+      !idle && h('div.row', { style: 'justify-content:center;margin-top:14px' },
+        h('button.icon', { 'aria-label': 'Previous', onclick: () => set('control', { action: 'prev' }) }, '⏮'),
+        h('button.icon.pri', { 'aria-label': np.state === 'play' ? 'Pause' : 'Play',
+          onclick: () => set('control', { action: np.state === 'play' ? 'pause' : 'play' }) }, np.state === 'play' ? '⏸' : '▶'),
+        h('button.icon', { 'aria-label': 'Next', onclick: () => set('control', { action: 'next' }) }, '⏭'))),
     volumeCard(),
-    h('div.card', {}, h('h2', {}, 'Source'),
-      h('div.chips', {}, S.caps.sources.map((s) => h('button', { className: a.source === s ? 'on' : '',
-        onclick: () => set('source', { source: s }) }, SOURCE_NAMES[s] || s)))),
-    a.source === 'line' && lineCard(),
+    h('div.card', {}, h('h2', {}, 'Input'),
+      seg(Object.fromEntries(['stream', ...I.caps.line_modes].map((m) => [m, INPUTS[m] || m])), a.input,
+        (m) => set('input', { input: m })),
+      h('p.dim', {}, INPUT_NOTES[a.input] || '')),
   ];
 }
 
@@ -156,78 +188,73 @@ function volumeCard() {
   const num = h('span.big', {}, String(a.volume));
   return h('div.card', {}, h('h2', {}, 'Volume'),
     h('div.row', {},
-      h('button.icon', { 'aria-label': a.mute ? 'Unmute' : 'Mute', onclick: () => set('mute', { mute: !a.mute }) },
+      h('button.icon', { 'aria-label': a.mute ? 'Unmute' : 'Mute', onclick: () => set('volume', { mute: !a.mute }) },
         a.mute ? '🔇' : '🔊'),
-      h('div.grow', {}, slider({ min: 0, max: 100, value: a.volume, 'aria-label': 'Volume',
+      h('div.grow', {}, slider({ min: 0, max: a.max_volume, value: a.volume, 'aria-label': 'Volume',
         show: (v) => { num.textContent = v; } }, (v) => set('volume', { volume: v }))),
       num),
-    S.caps.zones > 1 && zoneB());
+    I.caps.zones > 1 && zoneB());
 }
 
 function zoneB() {
   const z = S.audio.zone_b || {};
   return h('div', {},
-    h('div.row', {}, h('span.grow', {}, 'Zone B speakers'),
-      h('div.seg', {}, ['Off', 'On'].map((t, i) => h('button', { className: !!z.on === !!i ? 'on' : '',
-        onclick: () => set('zone', { zone: 'b', on: !!i }) }, t)))),
+    h('div.row', {}, h('span.grow', {}, 'Zone B speakers'), onOff(z.on, (on) => set('zone', { zone: 'b', on }))),
     z.on && h('div.row', {}, h('span.dim', {}, 'Level'),
       h('div.grow', {}, slider({ min: 0, max: 100, value: z.volume }, (v) => set('zone', { zone: 'b', volume: v })))));
-}
-
-function lineCard() {
-  const a = S.audio, modes = S.caps.line_modes;
-  return h('div.card', {}, h('h2', {}, 'Line in'),
-    modes.length > 1 && h('div.seg', {}, modes.map((m) => h('button', { className: a.line_mode === m ? 'on' : '',
-      onclick: () => set('line', { mode: m }) }, m === 'direct' ? 'DJ direct' : 'Through EQ'))),
-    h('p.dim', {}, a.line_mode === 'direct'
-      ? 'Straight to the amplifier with no delay, for DJ decks and turntables. EQ and sub settings do not apply.'
-      : 'Through the digital path, so EQ and the sub settings apply. Adds a few milliseconds of delay.'));
 }
 
 // ---- Sound --------------------------------------------------------------
 
 function pageSound() {
-  const a = S.audio, bands = S.caps.eq_bands;
+  const a = S.audio, c = I.caps;
   const fmt = (f) => (f >= 1000 ? f / 1000 + 'k' : String(f));
   const gains = a.eq.slice();
-  const sendEq = () => set('eq', { gains });
   const preset = Object.keys(EQ_PRESETS).find((k) => EQ_PRESETS[k].every((g, i) => g === a.eq[i]));
   return [
+    a.input === 'dj_direct' && h('div.card.warn', {}, 'DJ direct is on, so the line in skips the EQ and sub settings.'),
     h('div.card', {}, h('h2', {}, 'Equaliser'),
       h('div.chips', {}, Object.keys(EQ_PRESETS).map((k) => h('button', { className: preset === k ? 'on' : '',
         onclick: () => set('eq', { gains: EQ_PRESETS[k] }) }, k))),
-      h('div.eq', { style: 'margin-top:14px' }, bands.map((f, i) => h('label', {},
+      h('div.eq', { style: 'margin-top:14px' }, c.eq_bands.map((f, i) => h('label', {},
         h('span', {}, (gains[i] > 0 ? '+' : '') + gains[i]),
-        slider({ min: S.caps.eq_min, max: S.caps.eq_max, step: 1, value: gains[i], 'aria-label': fmt(f) + ' Hz' },
-          (v) => { gains[i] = v; sendEq(); }),
+        slider({ min: c.eq_min, max: c.eq_max, step: 1, value: gains[i], 'aria-label': fmt(f) + ' Hz' },
+          (v) => { gains[i] = v; set('eq', { gains }); }),
         fmt(f))))),
     subCard(),
+    h('div.card', {}, h('h2', {}, 'Volume limit'),
+      h('p.dim', {}, 'The highest the volume can go, from the app, buttons or remote. Turn it down to protect smaller speakers.'),
+      h('div.row', {}, h('div.grow', {}, slider({ min: 30, max: 100, value: a.max_volume, 'aria-label': 'Volume limit',
+        show: (v) => { $('#maxv').textContent = v; } }, (v) => set('volume', { max_volume: v }))),
+      h('span.big', { id: 'maxv' }, String(a.max_volume)))),
   ];
 }
 
 function subCard() {
-  const s = S.audio.sub, c = S.caps.sub;
-  const send = (k) => (v) => set('sub', { [k]: v });
-  const rows = [
-    h('div.row', {}, h('span.grow', {}, 'Sub outputs'),
-      h('div.seg', {}, ['Off', 'On'].map((t, i) => h('button', { className: !!s.on === !!i ? 'on' : '',
-        onclick: () => set('sub', { on: !!i }) }, t)))),
-  ];
-  const line = (label, attrs, key, unit) => {
-    const v = h('span.dim', { style: 'min-width:64px;text-align:right' }, s[key] + unit);
+  const s = S.audio.sub, c = I.caps.sub;
+  const line = (label, attrs, value, unit, send) => {
+    const v = h('span.dim', { style: 'min-width:64px;text-align:right' }, value + unit);
     return h('div.row', {}, h('span', { style: 'min-width:84px' }, label),
-      h('div.grow', {}, slider({ ...attrs, value: s[key], show: (x) => { v.textContent = x + unit; } }, send(key))), v);
+      h('div.grow', {}, slider({ ...attrs, value, show: (x) => { v.textContent = x + unit; } }, send)), v);
   };
+  const rows = [h('div.row', {}, h('span.grow', {}, 'Sub outputs'), onOff(s.on, (on) => set('sub', { on })))];
   if (s.on) {
-    rows.push(line('Level', { min: -15, max: 10, step: 0.5 }, 'db', ' dB'));
-    if (c.crossover) rows.push(line('Crossover', { min: 40, max: 160, step: 5 }, 'xover_hz', ' Hz'));
-    if (c.delay) rows.push(line('Delay', { min: 0, max: 20, step: 0.1 }, 'delay_ms', ' ms'));
-    if (c.phase) rows.push(h('div.row', {}, h('span.grow', {}, 'Phase'),
-      h('div.seg', {}, ['0°', '180°'].map((t, i) => h('button', { className: !!s.invert === !!i ? 'on' : '',
-        onclick: () => set('sub', { invert: !!i }) }, t)))));
-    if (c.mains_hp) rows.push(h('div.row', {}, h('span.grow', {}, 'Take the deep bass off the main speakers'),
-      h('div.seg', {}, ['Off', 'On'].map((t, i) => h('button', { className: !!s.mains_hp === !!i ? 'on' : '',
-        onclick: () => set('sub', { mains_hp: !!i }) }, t)))));
+    rows.push(line('Level', { min: -30, max: 6, step: 0.5 }, s.level_db, ' dB', (x) => set('sub', { level_db: x })));
+    if (c.crossover) {
+      rows.push(line('Crossover', { min: 40, max: 160, step: 5 }, s.xover_hz, ' Hz', (x) => set('sub', { xover_hz: x })));
+      rows.push(h('div.row', {}, h('span.grow', {}, 'Take the deep bass off the main speakers'),
+        onOff(s.mains_hp, (v) => set('sub', { mains_hp: v }))));
+    }
+    if (c.per_sub) {
+      (s.subs || []).forEach((one, i) => {
+        const put = (k) => (x) => set('sub', { sub: i, [k]: x });
+        rows.push(h('h2', { style: 'margin-top:16px' }, `Sub ${i + 1}`),
+          line('Trim', { min: -12, max: 6, step: 0.5 }, one.trim_db, ' dB', put('trim_db')),
+          line('Delay', { min: 0, max: 20, step: 0.1 }, one.delay_ms, ' ms', put('delay_ms')),
+          h('div.row', {}, h('span.grow', {}, 'Phase'),
+            seg({ false: '0°', true: '180°' }, !!one.invert, (v) => put('invert')(v === 'true'))));
+      });
+    }
   }
   return h('div.card', {}, h('h2', {}, 'Subwoofers'), rows,
     !c.crossover && h('p.dim', {}, 'Full-range signal: set the crossover on the subwoofer itself.'));
@@ -241,7 +268,7 @@ function pageSetup() {
     n.mode === 'ap' && h('div.card.warn', {}, h('b', {}, 'Welcome. '),
       'Choose your home Wi-Fi below. The receiver joins it and you then find it at ',
       h('b', {}, `http://${n.hostname}.local`), '.'),
-    wifiCard(), nameCard(), updateCard(), diagCard(),
+    wifiCard(), nameCard(), remoteCard(), updateCard(), diagCard(),
   ];
 }
 
@@ -254,22 +281,25 @@ function wifiCard() {
     set('wifi', { ssid, password: pw.value }).then(() => toast(`Joining ${ssid}…`));
   };
   const nets = scan || [];
+  const j = n.join;
   return h('div.card', {}, h('h2', {}, 'Wi-Fi'),
     n.mode === 'sta' && h('div.row', {}, h('span.grow', {}, h('b', {}, n.ssid), h('div.dim', {},
-      `${n.ip} · signal ${bars(n.rssi)}` + (S.caps.eth ? (n.eth ? ' · Ethernet connected' : '') : ''))),
-      h('button', { onclick: () => set('wifi/forget', {}) }, 'Forget')),
-    n.join && h('p', { className: n.join.state === 'failed' ? 'bad' : 'dim' },
-      n.join.state === 'failed' ? `Could not join ${n.join.ssid}: ${n.join.reason || 'wrong password?'}`
-        : n.join.state === 'ok' ? `Joined ${n.join.ssid}. Reconnect this phone to it and open http://${n.hostname}.local (${n.join.ip}).`
-          : `Joining ${n.join.ssid}…`),
+      `${n.ip} · signal ${bars(n.rssi)}` + (n.eth ? ' · Ethernet connected' : ''))),
+      h('button', { onclick: () => confirm(`Forget ${n.ssid}? The receiver goes back to its own HiFi-… network.`) &&
+        set('wifi/forget', {}) }, 'Forget')),
+    j && h('p', { className: j.state === 'failed' ? 'bad' : 'dim' },
+      j.state === 'failed' ? `Could not join ${j.ssid}: ${j.reason || 'wrong password?'}`
+        : j.state === 'ok' ? `Joined ${j.ssid}. Reconnect this phone to it and open http://${n.hostname}.local (${j.ip}).`
+          : `Joining ${j.ssid}…`),
     h('ul.list', {}, nets.map((w) => h('li', {}, h('span.grow', {}, w.ssid, ' ', h('span.dim', {}, bars(w.rssi) + (w.secure ? ' 🔒' : ''))),
       h('button', { onclick: () => { other.value = w.ssid; pw.focus(); } }, 'Choose')))),
     h('div.row', {}, h('button', { onclick: async () => {
       toast('Scanning…');
-      try { scan = await api('wifi/scan'); draw(); } catch (e) { toast(e.message); }
+      try { scan = (await api('wifi/scan')).networks; draw(); } catch (e) { toast(e.message); }
     } }, nets.length ? 'Scan again' : 'Scan for networks')),
     h('div.row', {}, other), h('div.row', {}, pw),
-    h('div.row', {}, h('button.pri', { onclick: () => join(other.value.trim()) }, 'Join')));
+    h('div.row', {}, h('button.pri', { onclick: () => join(other.value.trim()) }, 'Join')),
+    h('p.dim', {}, '2.4 GHz networks only.'));
 }
 
 function bars(rssi) {
@@ -277,30 +307,47 @@ function bars(rssi) {
 }
 
 function nameCard() {
-  const inp = h('input', { type: 'text', value: S.device.name, maxLength: 32 });
+  const inp = h('input', { type: 'text', value: I.name, maxLength: 32 });
   return h('div.card', {}, h('h2', {}, 'Name'),
-    h('p.dim', {}, 'What Spotify, AirPlay and Bluetooth show this receiver as.'),
-    h('div.row', {}, h('div.grow', {}, inp),
-      h('button', { onclick: () => set('name', { name: inp.value.trim() }).then(() => toast('Renamed')) }, 'Save')));
+    h('p.dim', {}, 'What Spotify, AirPlay and Bluetooth show this receiver as. Bluetooth: pick this name on your ' +
+      'phone; the receiver can be found whenever no other phone is connected to it.'),
+    h('div.row', {}, h('div.grow', {}, inp), h('button', { onclick: async () => {
+      await set('name', { name: inp.value.trim() });
+      I = await api('info').catch(() => I); draw(); toast('Renamed');
+    } }, 'Save')));
+}
+
+function remoteCard() {
+  const ir = S.ir || { learning: null, learned: [] };
+  return h('div.card', {}, h('h2', {}, 'Remote'),
+    h('p.dim', {}, ir.learning ? `Press the button on your remote for “${IR_ACTIONS[ir.learning]}” now…`
+      : 'Any TV or audio remote works. Tap Teach, then press the remote button you want for it.'),
+    h('ul.list', {}, Object.entries(IR_ACTIONS).map(([k, label]) => h('li', {},
+      h('span.grow', {}, label, ' ', h('span', { className: ir.learned.includes(k) ? 'ok' : 'dim' },
+        ir.learned.includes(k) ? '✓' : '')),
+      h('button', { className: ir.learning === k ? 'pri' : '', onclick: () => set('ir/learn', { action: k }) },
+        ir.learning === k ? 'Waiting…' : 'Teach')))),
+    ir.learned.length > 0 && h('div.row', {}, h('button', {
+      onclick: () => confirm('Forget every remote button?') && set('ir/forget', {}) }, 'Forget all')));
 }
 
 function updateCard() {
   const u = S.update || { state: 'idle' };
   const file = h('input', { type: 'file', accept: '.bin', hidden: true, onchange: () => upload(file.files[0]) });
   const busy = u.state === 'downloading' || u.state === 'flashing';
+  const newer = check && check.latest && check.latest !== I.fw;
   return h('div.card', {}, h('h2', {}, 'Updates'),
-    h('div.dim', {}, `Firmware ${S.device.fw}`),
+    h('div.dim', {}, `Firmware ${I.fw}`),
     busy && [h('p', {}, u.state === 'downloading' ? 'Downloading…' : 'Installing… do not unplug.'),
       h('div.bar', {}, h('i', { style: `width:${u.progress || 0}%` }))],
     u.state === 'done' && h('p.ok', {}, 'Updated. The receiver is restarting.'),
     u.state === 'error' && h('p.bad', {}, `Update failed: ${u.error || 'unknown error'}. The old firmware is still in place.`),
-    check && h('p', { className: check.latest && check.latest !== S.device.fw ? '' : 'dim' },
-      check.latest && check.latest !== S.device.fw ? `Version ${check.latest} is available. ${check.notes || ''}` : 'Up to date.'),
+    check && h('p', { className: newer ? '' : 'dim' }, newer ? `Version ${check.latest} is available. ${check.notes || ''}` : 'Up to date.'),
     !busy && h('div.row', {},
-      check && check.latest && check.latest !== S.device.fw
-        ? h('button.pri', { onclick: () => set('update', { url: check.url }) }, 'Install')
-        : h('button', { onclick: async () => {
-          try { check = await api('update/check'); draw(); } catch (e) { toast('No update server: ' + e.message); }
+      newer ? h('button.pri', { onclick: () => set('update', { url: check.url }) }, 'Install')
+        : check !== false && h('button', { onclick: async () => {
+          try { check = await api('update/check'); } catch { check = false; toast('No update server: use a file'); }
+          draw();
         } }, 'Check for updates'),
       h('button', { onclick: () => file.click() }, 'From a file…'), file));
 }
@@ -308,34 +355,37 @@ function updateCard() {
 function upload(f) {
   if (!f) return;
   const x = new XMLHttpRequest();
-  x.open('POST', 'api/update/upload');
+  x.open('POST', 'api/v1/update/upload');
   x.setRequestHeader('Content-Type', 'application/octet-stream');
-  x.upload.onprogress = (e) => { if (e.lengthComputable && S) { S.update = { state: 'downloading', progress: Math.round(e.loaded * 100 / e.total) }; draw(); } };
+  x.upload.onprogress = (e) => {
+    if (e.lengthComputable && S) { S.update = { state: 'downloading', progress: Math.round(e.loaded * 100 / e.total) }; draw(); }
+  };
   x.onload = () => { try { take(JSON.parse(x.responseText)); } catch { /* the next poll shows it */ } };
   x.onerror = () => toast('Upload failed');
   x.send(f);
 }
 
 function diagCard() {
-  const p = S.power, d = S.device;
+  const p = S.power, c = p.contract || {};
   const kv = (k, v) => h('li', {}, h('span.grow.dim', {}, k), h('span', {}, v));
   return h('div.card', {}, h('h2', {}, 'About and diagnostics'),
     h('ul.list', {},
-      kv('Model', d.model_name || d.model), kv('Firmware', d.fw), kv('Address', `${S.net.ip || '—'} · ${d.mac}`),
-      kv('Charger', `${p.pdo_v} V × ${p.pdo_a} A (${Math.round(p.pdo_v * p.pdo_a)} W)`),
+      kv('Model', I.model), kv('Firmware', I.fw), kv('Address', `${S.net.ip || '—'} · ${I.mac}`),
+      kv('Charger', c.protocol && c.protocol !== 'none'
+        ? `${c.v} V` + (c.i_max_a ? ` × ${c.i_max_a} A (${Math.round(c.w)} W)` : '') + ` · ${c.protocol.toUpperCase()}` : 'none'),
       kv('Supply now', p.vbus_v != null ? `${p.vbus_v.toFixed(1)} V` : '—'),
-      kv('Amplifier', p.amp_fault ? 'fault' : p.amp_on ? 'on' : 'off'),
-      p.temp_c != null && kv('Temperature', `${p.temp_c} °C`),
-      kv('Up', uptime(d.uptime_s))),
-    selftest && h('ul.list', { style: 'margin-top:10px' }, selftest.items.map((t) => h('li', {},
-      h('span', { className: t.ok ? 'ok' : 'bad' }, t.ok ? '✓' : '✗'),
-      h('span.grow', {}, t.name, t.detail && h('div.dim', {}, t.detail)), h('span.dim', {}, t.value ?? '')))),
+      kv('Amplifier', S.amp.latched || S.amp.fault ? 'fault' : p.state !== 'on' ? 'off' : S.amp.enabled ? 'on' : 'held off'),
+      S.amp.temp_c != null && kv('Temperature', `${S.amp.temp_c} °C`),
+      kv('Up', uptime(S.uptime_s))),
+    selftest && h('ul.list', { style: 'margin-top:10px' }, selftest.checks.map((t) => h('li', {},
+      h('span', { className: t.pass ? 'ok' : 'bad' }, t.pass ? '✓' : '✗'),
+      h('span.grow', {}, CHECKS[t.name] || t.name), h('span.dim', {}, t.value ?? '')))),
     h('div.row', {}, h('button', { onclick: async () => {
       toast('Running self-test…');
       try { selftest = await api('selftest', {}); draw(); } catch (e) { toast(e.message); }
     } }, 'Run self-test'),
     h('button', { onclick: () => confirm('Restart the receiver?') && set('reboot', {}).then(() => toast('Restarting…')) }, 'Restart'),
-    h('button', { onclick: () => confirm('Erase Wi-Fi, name and sound settings and start again from setup?') &&
+    h('button', { onclick: () => confirm('Erase Wi-Fi, name, remote and sound settings and start again from setup?') &&
       set('reset', { factory: true }).then(() => toast('Reset. Join the HiFi-… Wi-Fi to set it up again.')) }, 'Factory reset')));
 }
 

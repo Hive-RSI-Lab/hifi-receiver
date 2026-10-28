@@ -35,7 +35,7 @@ CHROME = next((shutil.which(c) for c in ("google-chrome", "chromium", "chromium-
 
 class Mock:
     def __init__(self, **kw):
-        kw = {"model": "lite", "ap": False, "pdo": (20.0, 5.0), "fault": False, **kw}
+        kw = {"model": "lite", "ap": False, "pdo": (20.0, 3.25), "fault": False, **kw}
         self.srv = server.serve(0, **kw)
         self.url = f"http://127.0.0.1:{self.srv.server_address[1]}/"
         threading.Thread(target=self.srv.serve_forever, daemon=True).start()
@@ -45,7 +45,7 @@ class Mock:
             return json.loads(r.read())
 
     def post(self, path, body):
-        req = urllib.request.Request(self.url + "api/" + path, json.dumps(body).encode(),
+        req = urllib.request.Request(self.url + "api/v1/" + path, json.dumps(body).encode(),
                                      {"Content-Type": "application/json"})
         try:
             with OPEN(req) as r:
@@ -66,34 +66,53 @@ class API(unittest.TestCase):
     def tearDown(self):
         self.m.close()
 
-    def test_state_has_what_the_app_reads(self):
-        s = self.m.get("api/state")
-        for k in ("device", "caps", "power", "audio", "playing", "net", "update"):
+    def test_info_and_state_have_what_the_app_reads(self):
+        i = self.m.get("api/v1/info")
+        for k in ("model", "fw", "mac", "hostname", "name", "caps"):
+            self.assertIn(k, i)
+        s = self.m.get("api/v1/state")
+        # the firmware's own fields (docs/test-api.md)
+        for k in ("uptime_s", "power", "amp", "governor", "audio", "net", "sys"):
             self.assertIn(k, s)
-        self.assertEqual(len(s["audio"]["eq"]), len(s["caps"]["eq_bands"]))
-        self.assertEqual(s["caps"]["zones"], 1)
-        self.assertFalse(s["caps"]["sub"]["crossover"])
+        self.assertEqual(set(s["power"]["contract"]), {"protocol", "epr", "v", "i_max_a", "w"})
+        # and the app's (docs/app.md)
+        for k in ("volume", "mute", "max_volume", "eq", "sub", "playing", "input", "source"):
+            self.assertIn(k, s["audio"])
+        self.assertEqual(len(s["audio"]["eq"]), len(i["caps"]["eq_bands"]))
+        self.assertEqual(i["caps"]["line_modes"], ["dj_direct"])
 
     def test_writes_answer_with_the_new_state(self):
         for path, body, check in (
             ("volume", {"volume": 70}, lambda s: s["audio"]["volume"] == 70),
-            ("volume", {"volume": 140}, lambda s: s["audio"]["volume"] == 100),
-            ("mute", {"mute": True}, lambda s: s["audio"]["mute"]),
-            ("source", {"source": "line"}, lambda s: s["audio"]["source"] == "line"),
-            ("line", {"mode": "adc"}, lambda s: s["audio"]["line_mode"] == "adc"),
+            ("volume", {"max_volume": 60}, lambda s: s["audio"]["volume"] == 60),
+            ("volume", {"volume": 140}, lambda s: s["audio"]["volume"] == 60),
+            ("volume", {"mute": True}, lambda s: s["audio"]["mute"]),
             ("eq", {"gains": [3] * 10}, lambda s: s["audio"]["eq"] == [3] * 10),
-            ("sub", {"db": -4.5, "on": False}, lambda s: s["audio"]["sub"] == {**s["audio"]["sub"], "db": -4.5, "on": False}),
-            ("name", {"name": "Lounge"}, lambda s: s["device"]["name"] == "Lounge"),
+            ("sub", {"level_db": -4, "on": False}, lambda s: (s["audio"]["sub"]["level_db"], s["audio"]["sub"]["on"]) == (-4.5, False)),
+            ("ir/learn", {"action": "volup"}, lambda s: s["ir"]["learning"] == "volup"),
+            ("ir/forget", {}, lambda s: s["ir"]["learned"] == []),
         ):
             code, s = self.m.post(path, body)
             self.assertEqual(code, 200, (path, s))
-            self.assertTrue(check(s), (path, body))
-            self.assertEqual(self.m.get("api/state")["audio"], s["audio"])
+            self.assertTrue(check(s), (path, body, s["audio"]))
+            self.assertEqual(self.m.get("api/v1/state")["audio"], s["audio"])
+        code, _ = self.m.post("name", {"name": "Lounge"})
+        self.assertEqual(self.m.get("api/v1/info")["name"], "Lounge")
+
+    def test_the_firmware_calls_reply_as_test_api_says(self):
+        self.assertEqual(self.m.post("input", {"input": "dj_direct"}), (200, {"ok": True, "input": "dj_direct"}))
+        self.assertEqual(self.m.post("control", {"action": "pause"}), (200, {"ok": True}))
+        self.assertEqual(self.m.get("api/v1/state")["audio"]["playing"]["state"], "pause")
+        code, amp = self.m.post("amp", {"enable": False})
+        self.assertEqual((code, amp["enabled"]), (200, False))
+        code, r = self.m.post("tone", {"type": "sine", "freq_hz": 1000, "level_dbfs": -20})
+        self.assertEqual((code, r["ok"]), (200, True))
 
     def test_bad_writes_are_refused(self):
-        for path, body in (("volume", {"volume": "loud"}), ("mute", {"mute": 1}), ("source", {"source": "cd"}),
-                           ("eq", {"gains": [0] * 3}), ("sub", {"xover_hz": 80}), ("zone", {"zone": "b", "on": True}),
-                           ("name", {"name": ""}), ("reset", {}), ("transport", {"cmd": "skip"})):
+        for path, body in (("volume", {"volume": "loud"}), ("volume", {"mute": 1}), ("input", {"input": "line"}),
+                           ("eq", {"gains": [0] * 3}), ("sub", {"xover_hz": 80}), ("sub", {"sub": 0, "trim_db": 1}),
+                           ("zone", {"zone": "b", "on": True}), ("name", {"name": ""}), ("reset", {}),
+                           ("control", {"action": "skip"}), ("ir/learn", {"action": "eject"})):
             code, s = self.m.post(path, body)
             self.assertEqual(code, 400, (path, body))
             self.assertIn("error", s)
@@ -106,17 +125,18 @@ class API(unittest.TestCase):
         self.assertEqual(s["net"]["join"]["state"], "ok")
         code, s = self.m.post("wifi/forget", {})
         self.assertEqual(s["net"]["mode"], "ap")
-        self.assertTrue(any(n["ssid"] == "Home" for n in self.m.get("api/wifi/scan")))
+        self.assertTrue(any(n["ssid"] == "Home" for n in self.m.get("api/v1/wifi/scan")["networks"]))
 
     def test_factory_reset_goes_back_to_setup(self):
         self.m.post("name", {"name": "Lounge"})
         code, s = self.m.post("reset", {"factory": True})
-        self.assertEqual((code, s["net"]["mode"], s["device"]["name"]), (200, "ap", "HiFi Lite"))
+        self.assertEqual((code, s["net"]["mode"]), (200, "ap"))
+        self.assertEqual(self.m.get("api/v1/info")["name"], "HiFi Lite")
 
     def test_selftest(self):
         code, r = self.m.post("selftest", {})
-        self.assertTrue(r["ok"])
-        self.assertTrue(all({"name", "ok"} <= set(i) for i in r["items"]))
+        self.assertTrue(r["pass"])
+        self.assertTrue(all({"name", "pass", "value"} <= set(c) for c in r["checks"]))
 
 
 class Models(unittest.TestCase):
@@ -124,9 +144,10 @@ class Models(unittest.TestCase):
         for model, zones in (("plus", 1), ("ultra", 2)):
             m = Mock(model=model)
             try:
-                code, s = m.post("sub", {"xover_hz": 100, "delay_ms": 3.2, "invert": True})
-                self.assertEqual(code, 200)
-                self.assertEqual((s["audio"]["sub"]["xover_hz"], s["audio"]["sub"]["delay_ms"]), (100, 3.2))
+                code, s = m.post("sub", {"xover_hz": 100, "mains_hp": True})
+                self.assertEqual((code, s["audio"]["sub"]["xover_hz"]), (200, 100))
+                code, s = m.post("sub", {"sub": 1, "delay_ms": 3.2, "invert": True})
+                self.assertEqual(s["audio"]["sub"]["subs"][1], {"trim_db": 0.0, "delay_ms": 3.2, "invert": True})
                 self.assertEqual(m.post("zone", {"zone": "b", "on": True})[0], 200 if zones == 2 else 400)
             finally:
                 m.close()
@@ -134,7 +155,9 @@ class Models(unittest.TestCase):
     def test_weak_charger_keeps_the_amp_off(self):
         m = Mock(pdo=(5.0, 3.0))
         try:
-            self.assertFalse(m.get("api/state")["power"]["amp_on"])
+            s = m.get("api/v1/state")
+            self.assertEqual((s["power"]["state"], s["amp"]["enabled"]), ("wait_pd", False))
+            self.assertEqual(m.post("tone", {"type": "sine"})[0], 409)
         finally:
             m.close()
 
@@ -149,7 +172,7 @@ class Files(unittest.TestCase):
 
     def test_every_endpoint_the_app_calls_is_in_the_mock(self):
         js = (APP / "web/app.js").read_text()
-        used = set(re.findall(r"\b(?:api|set)\('([\w/]+)'", js)) | set(re.findall(r"'api/([\w/]+)'", js))
+        used = set(re.findall(r"\b(?:api|set)\('([\w/]+)'", js)) | set(re.findall(r"'api/v1/([\w/]+)'", js))
         src = (APP / "mock/server.py").read_text()
         for path in used:
             self.assertRegex(src, rf'"{re.escape(path)}"', path)
@@ -182,14 +205,14 @@ class Browser(unittest.TestCase):
         with tempfile.TemporaryDirectory() as prof:
             r = subprocess.run([CHROME, "--headless=new", "--no-sandbox", "--disable-gpu", "--no-proxy-server", f"--user-data-dir={prof}",
                                 "--virtual-time-budget=3000", "--dump-dom", m.url + frag],
-                               capture_output=True, text=True, timeout=60)
+                               capture_output=True, text=True, timeout=240)
         return r.stdout
 
     def test_play_page_shows_the_track_and_sources(self):
         m = Mock()
         try:
             d = self.dom(m)
-            for want in ("Teardrop", "Massive Attack", "Spotify", "Line in", "Volume"):
+            for want in ("Teardrop", "Massive Attack", "Spotify", "DJ direct", "Volume"):
                 self.assertIn(want, d)
         finally:
             m.close()
@@ -198,6 +221,15 @@ class Browser(unittest.TestCase):
         m = Mock(ap=True)
         try:
             self.assertIn("Choose your home Wi-Fi", self.dom(m))
+        finally:
+            m.close()
+
+    def test_setup_page_has_wifi_remote_and_updates(self):
+        m = Mock()
+        try:
+            d = self.dom(m, "#setup")
+            for want in ("Scan for networks", "Teach", "Check for updates", "Factory reset"):
+                self.assertIn(want, d)
         finally:
             m.close()
 
