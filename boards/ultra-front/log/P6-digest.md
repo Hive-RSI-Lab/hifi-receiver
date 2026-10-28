@@ -1,0 +1,3 @@
+- P6 placement: manual op list (anneal/manual.ops.json), the panel is mechanical: LCD area u 24.5-77.5 mm and the tail corridor u 9.8-24.5 kept part-free (constraints keepouts).
+- Left: J2 (LCD socket, mouth +x toward the panel), U1, backlight, J1 at the bottom edge. Right: 3 buttons in a column, EC11 knob, IR at top, LED below the knob.
+- place gate: pass with 2 waivers on J2's mating checks (its mate is the on-board LCD tail, not an off-board plug); the waivers await the person's approval at H4.

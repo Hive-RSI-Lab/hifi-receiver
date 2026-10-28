@@ -1,0 +1,160 @@
+{
+ "script": "route_cleanup",
+ "status": "pass",
+ "board": "ultra-front.kicad_pcb",
+ "counts": {
+  "total": 0,
+  "by_severity": {},
+  "by_source": {}
+ },
+ "violations": [],
+ "dry_run": false,
+ "ops_applied": 6,
+ "refilled": true,
+ "drc_before": {
+  "unconnected": 0,
+  "errors": 0,
+  "warnings": 0,
+  "dangling_flagged": 0
+ },
+ "drc_after": {
+  "unconnected": 0,
+  "errors": 0,
+  "warnings": 0,
+  "dangling_flagged": 0
+ },
+ "ops": [
+  {
+   "op": "remove",
+   "uuid": "46b5fb36-4dd1-4e5a-90ac-e2a1fd53b0e8"
+  },
+  {
+   "op": "remove",
+   "uuid": "a53dfccc-f2ec-44af-bdeb-3f3c52981b07"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    1.805,
+    36.11
+   ],
+   "end": [
+    2.485,
+    36.79
+   ],
+   "width": 0.15,
+   "layer": "F.Cu",
+   "net": "/FRONT_INT_N"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    2.485,
+    36.79
+   ],
+   "end": [
+    2.485,
+    36.82
+   ],
+   "width": 0.15,
+   "layer": "F.Cu",
+   "net": "/FRONT_INT_N"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    -4.5,
+    55.5
+   ],
+   "end": [
+    -4.5,
+    54.0
+   ],
+   "width": 0.5,
+   "layer": "F.Cu",
+   "net": "GND"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    -4.5,
+    54.0
+   ],
+   "end": [
+    -4.0,
+    53.5
+   ],
+   "width": 0.5,
+   "layer": "F.Cu",
+   "net": "GND"
+  }
+ ],
+ "dangling_removed": 0,
+ "dangling_segments": 0,
+ "dangling_vias": 0,
+ "loops_broken": 0,
+ "loop_bridge_vetoed": 0,
+ "orphaned_after_loops": 0,
+ "off_angle_snapped": 2,
+ "snaps": [
+  {
+   "uuid": "46b5fb36-4dd1-4e5a-90ac-e2a1fd53b0e8",
+   "net": "GND",
+   "layer": "F.Cu",
+   "pos": [
+    -4.25,
+    54.5
+   ],
+   "bend": "axis_first",
+   "path": [
+    [
+     -4.5,
+     55.5
+    ],
+    [
+     -4.5,
+     54.0
+    ],
+    [
+     -4.0,
+     53.5
+    ]
+   ],
+   "spare_mm": 0.3074
+  },
+  {
+   "uuid": "a53dfccc-f2ec-44af-bdeb-3f3c52981b07",
+   "net": "/FRONT_INT_N",
+   "layer": "F.Cu",
+   "pos": [
+    2.145,
+    36.465
+   ],
+   "bend": "diagonal_first",
+   "path": [
+    [
+     1.805,
+     36.11
+    ],
+    [
+     2.485,
+     36.79
+    ],
+    [
+     2.485,
+     36.82
+    ]
+   ],
+   "spare_mm": 0.3164
+  }
+ ],
+ "off_angle_left": [],
+ "jogs_merged": 0,
+ "corners_smoothed": 0,
+ "corners": [],
+ "report_schema": 1,
+ "checker_version": 1,
+ "generated_at": "2026-10-28T15:31:09+00:00",
+ "input": "/work/boards/ultra-front/kicad/ultra-front.kicad_pcb",
+ "input_digest": "sexpr_no_uuid:02e9dd468d0b47701712715d4a4d6ea916785f996a9c69b8dd5e7954395d9c7b"
+}

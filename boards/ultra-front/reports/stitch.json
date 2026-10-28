@@ -1,0 +1,204 @@
+{
+ "script": "stitch_vias",
+ "status": "pass",
+ "board": "ultra-front.kicad_pcb",
+ "counts": {
+  "total": 0,
+  "by_severity": {},
+  "by_source": {}
+ },
+ "violations": [],
+ "requested": 0,
+ "placed": 0,
+ "skipped": [
+  {
+   "ref": "C1.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C2.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C3.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C4.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C5.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C6.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C7.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "J1.1",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "J1.11",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "J1.20",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "J1.21",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "J1.22",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "J1.4",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "J1.6",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "J2.1",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "J2.12",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "J2.13",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "J2.14",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "Q1.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "R11.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "R19.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "SW1.3",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "SW1.4",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "SW2.3",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "SW2.4",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "SW3.3",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "SW3.4",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U1.12",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U2.1",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U2.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  }
+ ],
+ "via_size": 0.6,
+ "via_drill": 0.3,
+ "clearance_mm": 0.127,
+ "dry_run": false,
+ "applied": false,
+ "refilled": false,
+ "apply_by_status": null,
+ "ops": [],
+ "mode": "stitch",
+ "pitch_mm": 4.283,
+ "t_rise_ns": 1.0,
+ "nets": {
+  "GND": {
+   "plane_layers": [
+    "B.Cu"
+   ],
+   "pads": {
+    "requested": 0,
+    "placed": 0,
+    "skipped": 0
+   },
+   "area": {
+    "candidates": 207,
+    "placed": 0,
+    "rejected": {
+     "hole_to_hole": 4,
+     "single_layer_contact": 173,
+     "near_same_net_via": 18,
+     "fill_edge": 12
+    },
+    "capped": false
+   }
+  }
+ },
+ "report_schema": 1,
+ "checker_version": 1,
+ "generated_at": "2026-10-28T15:26:49+00:00",
+ "input": "/work/boards/ultra-front/kicad/ultra-front.kicad_pcb",
+ "input_digest": "sexpr_no_uuid:4ab9300a872f07c4a71eec10dcf0e66f121659f8190acb1f658f4b5c26eb0e54"
+}

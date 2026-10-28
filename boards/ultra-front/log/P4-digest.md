@@ -1,0 +1,3 @@
+- P4 schematic: kicad/gen/root.py -> kicad/ultra-front.kicad_sch, one sheet; decoupling.json 5 associations.
+- ERC gate: 0 errors / 0 warnings. Netlist read back net by net against blocks.md: correct (encoder letter pins kept).
+- Fresh schematic-reviewer: reports/review-schematic.md.

@@ -1,0 +1,137 @@
+{
+"version": 1,
+"ops": [
+{
+"op": "add_track",
+"start": [
+3.135,
+30.78
+],
+"end": [
+3.135,
+34.68
+],
+"width": 0.15,
+"layer": "F.Cu",
+"net": "/I2C_SDA"
+},
+{
+"op": "add_track",
+"start": [
+3.135,
+34.68
+],
+"end": [
+2.335,
+35.48
+],
+"width": 0.15,
+"layer": "F.Cu",
+"net": "/I2C_SDA"
+},
+{
+"op": "add_via",
+"at": [
+2.335,
+35.48
+],
+"size": 0.6,
+"drill": 0.3,
+"net": "/I2C_SDA"
+},
+{
+"op": "add_track",
+"start": [
+2.335,
+35.48
+],
+"end": [
+2.335,
+47.48
+],
+"width": 0.15,
+"layer": "B.Cu",
+"net": "/I2C_SDA"
+},
+{
+"op": "add_track",
+"start": [
+2.335,
+47.48
+],
+"end": [
+4.535,
+49.68
+],
+"width": 0.15,
+"layer": "B.Cu",
+"net": "/I2C_SDA"
+},
+{
+"op": "add_track",
+"start": [
+4.535,
+49.68
+],
+"end": [
+4.535,
+59.18
+],
+"width": 0.15,
+"layer": "B.Cu",
+"net": "/I2C_SDA"
+},
+{
+"op": "add_track",
+"start": [
+4.535,
+59.18
+],
+"end": [
+5.435,
+60.08
+],
+"width": 0.15,
+"layer": "B.Cu",
+"net": "/I2C_SDA"
+},
+{
+"op": "add_via",
+"at": [
+5.435,
+60.08
+],
+"size": 0.6,
+"drill": 0.3,
+"net": "/I2C_SDA"
+},
+{
+"op": "add_track",
+"start": [
+5.435,
+60.08
+],
+"end": [
+5.435,
+60.98
+],
+"width": 0.15,
+"layer": "F.Cu",
+"net": "/I2C_SDA"
+},
+{
+"op": "add_track",
+"start": [
+5.435,
+60.98
+],
+"end": [
+5.305,
+61.11
+],
+"width": 0.15,
+"layer": "F.Cu",
+"net": "/I2C_SDA"
+}
+]
+}

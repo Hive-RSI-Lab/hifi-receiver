@@ -1,0 +1,3 @@
+- P0 intake: requirements.md from hifi-receiver-2 docs/product.md (Board split, Ultra) and plan.md item 21. No mode token.
+- check_requirements: 0 violations, sections 1-9 present. No open questions (person: "Done = fab files complete").
+- The 20-pin FFC pinout was proposed to the core board's run (261028-145641) at 15:00Z.

@@ -1,0 +1,17 @@
+{
+ "script": "check_mate_pins",
+ "status": "pass",
+ "board": "ultra-front.kicad_pcb",
+ "counts": {
+  "total": 0,
+  "by_severity": {},
+  "by_source": {}
+ },
+ "violations": [],
+ "pairs": [],
+ "report_schema": 1,
+ "checker_version": 1,
+ "generated_at": "2026-10-28T15:31:43+00:00",
+ "input": "kicad/ultra-front.kicad_pcb",
+ "input_digest": "sexpr_no_uuid:02e9dd468d0b47701712715d4a4d6ea916785f996a9c69b8dd5e7954395d9c7b"
+}

@@ -1,0 +1,4 @@
+- P7 routing: planes_gen (B.Cu GND), route_auto (Freerouting rung 1: 98 -> 1 unrouted; KRT not vendored, finish skipped), route_critical not run (needs KRT; the board has no diff pairs, RF or high-current nets).
+- /I2C_SDA was boxed in at J1 pin 13 between SCL and INT; FRONT_INT_N ripped and both rerouted with a small grid A* (route/manual/, ops applied through route_edit).
+- Those B.Cu tracks split the GND pour into 5 islands; plane_repair found no bridge. Fix: a second GND pour on F.Cu (constraints planes), then plane_repair pass.
+- snap45 (route_cleanup --snap-only): pass. drc_routed gate: PASS, 0 errors 0 warnings 0 unconnected.

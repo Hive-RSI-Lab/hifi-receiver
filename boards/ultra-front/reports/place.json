@@ -1,0 +1,143 @@
+{
+  "script": "gate",
+  "gate": "place",
+  "phase": "P6",
+  "tool": "place",
+  "input": "kicad/ultra-front.kicad_pcb",
+  "input_digest": "sexpr_no_uuid:a3fac0e29d4e87b9fea904ff16f0f2fde47d425e7ef9cebeb534dc2459957d12",
+  "status": "pass",
+  "criteria": {
+    "fail_severities": [
+      "error"
+    ],
+    "max_count": 0
+  },
+  "counts": {
+    "total": 2,
+    "by_severity": {
+      "error": 2
+    },
+    "by_source": {
+      "matinglib": 2
+    }
+  },
+  "failing_count": 0,
+  "failing": [],
+  "waived_count": 2,
+  "waived": [
+    {
+      "check": "place",
+      "severity": "error",
+      "pos": [
+        -3.41,
+        47.0
+      ],
+      "layer": null,
+      "net": null,
+      "refs": [
+        "J2"
+      ],
+      "msg": "J2 (fpc_ffc) cannot be mated: its nearest edge is -x (3.5 mm) but its mouth faces +x, into 100.5 mm of board",
+      "source": "matinglib",
+      "items": [
+        {
+          "msg": "J2 (fpc_ffc) cannot be mated: its nearest edge is -x (3.5 mm) but its mouth faces +x, into 100.5 mm of board",
+          "pos": [
+            -3.41,
+            47.0
+          ]
+        }
+      ],
+      "kind": "mating_faces_inward",
+      "connector": "J2",
+      "mouth": "+x",
+      "nearest_edge": "-x",
+      "gap_mm": 100.46
+    },
+    {
+      "check": "place",
+      "severity": "error",
+      "pos": [
+        56.4119,
+        47.0
+      ],
+      "layer": null,
+      "net": null,
+      "refs": [
+        "J2",
+        "R11",
+        "R5",
+        "R8",
+        "SW2",
+        "SW4"
+      ],
+      "msg": "J2 (fpc_ffc): R11, R5, R8, SW2, SW4 sit in the plug's insertion zone in front of its mouth (8.0 mm plug + 2.0 mm grip)",
+      "source": "matinglib",
+      "items": [
+        {
+          "msg": "J2 (fpc_ffc): R11, R5, R8, SW2, SW4 sit in the plug's insertion zone in front of its mouth (8.0 mm plug + 2.0 mm grip)",
+          "pos": [
+            56.4119,
+            47.0
+          ]
+        }
+      ],
+      "kind": "mating_zone_blocked",
+      "connector": "J2",
+      "mouth": "+x",
+      "blocked_by": [
+        "R11",
+        "R5",
+        "R8",
+        "SW2",
+        "SW4"
+      ]
+    }
+  ],
+  "coverage": {
+    "strict": false,
+    "required": [
+      "courtyard",
+      "outline",
+      "edges",
+      "keepouts",
+      "decoupler_distance",
+      "mating"
+    ],
+    "ran": [
+      "courtyard",
+      "outline",
+      "edges",
+      "keepouts",
+      "decoupler_distance",
+      "mating"
+    ],
+    "passed": [
+      "courtyard",
+      "outline",
+      "edges",
+      "keepouts",
+      "decoupler_distance"
+    ],
+    "failed": [
+      "mating"
+    ],
+    "waived": [],
+    "not_applicable": {},
+    "skipped_error": {}
+  },
+  "record_result": {
+    "ok": true,
+    "recorded": true,
+    "workspace": ".",
+    "gate": "place",
+    "status": "pass",
+    "attempts": 4,
+    "inputs": {
+      "pcb": "sexpr_no_uuid:a3fac0e29d4e87b9fea904ff16f0f2fde47d425e7ef9cebeb534dc2459957d12",
+      "constraints": "json_canonical:362de172091bb4586a4d1e7bf287dd170557e890ed799da281250a9843698f18",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": "json_canonical:4521e07fa9e5914ad986193afceec0612edeeeea71eaf178784cc002e745f5ad"
+    }
+  }
+}

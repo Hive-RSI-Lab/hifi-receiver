@@ -1,0 +1,27 @@
+{
+ "waivers": [
+  {
+   "check": "place",
+   "kind": "mating_faces_inward",
+   "refs": [
+    "J2"
+   ],
+   "reason": "J2 is the LCD's FPC socket. Its mate is the 20.7 mm tail of the HS20HS072RX panel that lies on this board's top side, entering from the LCD at +x; it is not plugged from off the board, so it must face inward.",
+   "approved": "PENDING the person's sign-off at H4 (asked via the hifi-receiver-2 lead, 2026-10-28); not yet approved"
+  },
+  {
+   "check": "place",
+   "kind": "mating_zone_blocked",
+   "refs": [
+    "J2",
+    "R11",
+    "R5",
+    "R8",
+    "SW2",
+    "SW4"
+   ],
+   "reason": "The real insertion zone is the tail corridor between J2 and the LCD (u 9.8-24.5 mm), kept clear by the constraints keepout; the parts listed sit beyond the LCD or beside the corridor, not in the tail's path.",
+   "approved": "PENDING the person's sign-off at H4 (asked via the hifi-receiver-2 lead, 2026-10-28); not yet approved"
+  }
+ ]
+}

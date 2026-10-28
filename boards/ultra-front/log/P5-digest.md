@@ -1,0 +1,3 @@
+- P5 board setup: board_init 2L JLC2313_1.6, outline 110 x 40 mm, 2 mm corners, 4 x M2.5 plated holes on GND (MountingHole_2.7mm_M2.5_Pad; the _Pad_Via variant's via ring breaks JLC's 0.5 mm hole-to-hole floor).
+- Self-check: parity 0; setup violations were only shelf-pack edge overlaps (gone after placement). Fab profile 2layer_1oz.
+- rules_gen: pass, class 2layer_1oz.
