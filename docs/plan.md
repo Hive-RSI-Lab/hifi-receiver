@@ -19,10 +19,11 @@ Items 21–24 do Ultra.
 
 ## Lite
 
-1. **Bench and score.** Add the project check and score: the hwde gate state
-   for each board, plus `tools/bom_estimate.py --unit lite 100`. This is brief
-   261028-141256, held until this doc merges. *Done:* the Hive measures
-   merges here.
+1. **Bench and score.** Done in brief 261028-141256: `tools/hwcheck.py`
+   ([checks.md](checks.md)). The test re-runs every board's hwde gates, and
+   the score is Lite's unit cost at 100 from `lite-main`'s own BOM (1000
+   until that board passes its gates; the estimate isn't used as a
+   stand-in).
 2. **`lite-main` research and block diagram (hwde stages through
    architecture).** Fix the pin map on the WROVER-E against its strapping
    pins (GPIO0/2/5/12/15) and PSRAM (GPIO16/17):
