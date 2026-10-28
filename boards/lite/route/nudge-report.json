@@ -1,0 +1,32 @@
+{
+ "script": "route_edit",
+ "status": "pass",
+ "board": "kicad/lite-main.kicad_pcb",
+ "applied": 4,
+ "verified": true,
+ "by_status": {
+  "removed": 1,
+  "added": 3
+ },
+ "results": [
+  {
+   "op": "remove",
+   "status": "removed"
+  },
+  {
+   "op": "add_via",
+   "status": "added",
+   "uuid": "51b5589d-c83e-4fca-b67c-d373a1e30c8a"
+  },
+  {
+   "op": "add_track",
+   "status": "added",
+   "uuid": "34927fe8-3b85-485e-80eb-0470a8a352f2"
+  },
+  {
+   "op": "add_track",
+   "status": "added",
+   "uuid": "404d1ae0-902d-40d7-b971-56ab28d857d1"
+  }
+ ]
+}

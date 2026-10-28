@@ -2,7 +2,7 @@
  "script": "place_edit",
  "status": "pass",
  "board": "kicad/lite-main.kicad_pcb",
- "applied": 15,
+ "applied": 16,
  "verified": true,
  "results": [
   {
@@ -63,6 +63,12 @@
    "ref": "J1",
    "layer": "F.SilkS",
    "removed": 11,
+   "only_offboard": false
+  },
+  {
+   "ref": "U9",
+   "layer": "F.SilkS",
+   "removed": 8,
    "only_offboard": false
   },
   {

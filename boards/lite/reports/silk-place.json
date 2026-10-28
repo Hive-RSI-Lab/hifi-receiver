@@ -165,16 +165,16 @@
    "beyond_extent_mm": 0.35
   },
   {
-   "ref": "C58",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 1.375
-  },
-  {
    "ref": "J3",
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 4.2665
+  },
+  {
+   "ref": "C58",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 1.375
   },
   {
    "ref": "D1",
@@ -765,12 +765,6 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "R16",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
    "ref": "R17",
    "moved": true,
    "clearance_mm": 0.3,
@@ -861,6 +855,12 @@
    "beyond_extent_mm": 0.35
   },
   {
+   "ref": "R16",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
    "ref": "R23",
    "moved": true,
    "clearance_mm": 0.3,
@@ -948,7 +948,7 @@
  "applied": true,
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-28T19:35:27+00:00",
+ "generated_at": "2026-10-28T20:13:19+00:00",
  "input": "kicad/lite-main.kicad_pcb",
- "input_digest": "sexpr_no_uuid:2c55d61f96101d4e3d161a48d51905d6b421fbe6d8af59f32be2eb31c4b791e4"
+ "input_digest": "sexpr_no_uuid:951d3a846d06783fc64ed62c667bd79e91c3ad9f44d85686cd704b0d4f4e74fc"
 }

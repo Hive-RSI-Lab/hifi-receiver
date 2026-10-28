@@ -47,40 +47,6 @@
     },
     "setup_violations": [
       {
-        "check": "clearance",
-        "severity": "error",
-        "pos": [
-          25.305,
-          65.295
-        ],
-        "layer": "F.Cu",
-        "net": "VBUS",
-        "refs": [
-          "D1",
-          "H1"
-        ],
-        "msg": "Clearance violation (rule 'aiee_clearance_floor' clearance 0.1270 mm; actual 0.0364 mm)",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Pad 1 [VBUS] of D1 on F.Cu",
-            "pos": [
-              25.305,
-              65.295
-            ],
-            "uuid": "0d0f270c-59fe-44c3-8b07-9b3fee018da5"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H1",
-            "pos": [
-              24.717943,
-              65.570109
-            ],
-            "uuid": "a2d685ca-792b-4ca5-a48f-20001ec36d5e"
-          }
-        ]
-      },
-      {
         "check": "shorting_items",
         "severity": "error",
         "pos": [
@@ -102,7 +68,7 @@
               25.305,
               65.295
             ],
-            "uuid": "0d0f270c-59fe-44c3-8b07-9b3fee018da5"
+            "uuid": "55b42236-1457-4375-be3f-c135d54d9169"
           },
           {
             "msg": "PTH pad 1 [GND] of H1",
@@ -110,7 +76,7 @@
               26.414999,
               66.273053
             ],
-            "uuid": "931ed275-451e-4643-980a-205428346859"
+            "uuid": "7e56519e-da9c-43fc-ad37-e5777ae9b86b"
           }
         ]
       },
@@ -136,7 +102,7 @@
               25.305,
               65.295
             ],
-            "uuid": "0d0f270c-59fe-44c3-8b07-9b3fee018da5"
+            "uuid": "55b42236-1457-4375-be3f-c135d54d9169"
           },
           {
             "msg": "PTH pad 1 [GND] of H1",
@@ -144,7 +110,41 @@
               24.014999,
               63.873053
             ],
-            "uuid": "d6628c1b-3b91-43d9-b6c3-f52bed7ae686"
+            "uuid": "ae293cf0-db94-4079-a7be-9483ba2b62cf"
+          }
+        ]
+      },
+      {
+        "check": "clearance",
+        "severity": "error",
+        "pos": [
+          25.305,
+          65.295
+        ],
+        "layer": "F.Cu",
+        "net": "VBUS",
+        "refs": [
+          "D1",
+          "H1"
+        ],
+        "msg": "Clearance violation (rule 'aiee_clearance_floor' clearance 0.1270 mm; actual 0.0364 mm)",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "Pad 1 [VBUS] of D1 on F.Cu",
+            "pos": [
+              25.305,
+              65.295
+            ],
+            "uuid": "55b42236-1457-4375-be3f-c135d54d9169"
+          },
+          {
+            "msg": "PTH pad 1 [GND] of H1",
+            "pos": [
+              24.717943,
+              65.570109
+            ],
+            "uuid": "3a7d434e-6b2b-40ca-a8ab-b3b8aea5085b"
           }
         ]
       },
@@ -170,7 +170,7 @@
               25.305,
               65.295
             ],
-            "uuid": "0d0f270c-59fe-44c3-8b07-9b3fee018da5"
+            "uuid": "55b42236-1457-4375-be3f-c135d54d9169"
           },
           {
             "msg": "PTH pad 1 [GND] of H1",
@@ -178,7 +178,7 @@
               26.414999,
               63.873053
             ],
-            "uuid": "bc5b6c07-4ffc-42ba-a89c-1d1a4ecb579b"
+            "uuid": "c16d3c7c-266f-4a7f-8cfc-6bd8676b9356"
           }
         ]
       },
@@ -204,7 +204,7 @@
               27.665,
               65.295
             ],
-            "uuid": "6ebdff50-1bf8-4da7-a63e-b13d230ccf68"
+            "uuid": "18170634-6321-404f-87d4-00e47a01e458"
           },
           {
             "msg": "Footprint H1",
@@ -212,7 +212,7 @@
               26.414999,
               63.873053
             ],
-            "uuid": "cee7d17d-6a42-48ed-b9a4-0acaeeecb209"
+            "uuid": "c62d1920-f3e6-4c1c-bab5-f1c8de2394ca"
           }
         ]
       },
@@ -238,7 +238,7 @@
               24.014999,
               63.873053
             ],
-            "uuid": "d6628c1b-3b91-43d9-b6c3-f52bed7ae686"
+            "uuid": "ae293cf0-db94-4079-a7be-9483ba2b62cf"
           },
           {
             "msg": "Footprint D1",
@@ -246,7 +246,7 @@
               27.665,
               65.295
             ],
-            "uuid": "6ebdff50-1bf8-4da7-a63e-b13d230ccf68"
+            "uuid": "18170634-6321-404f-87d4-00e47a01e458"
           }
         ]
       },
@@ -272,7 +272,7 @@
               24.717943,
               65.570109
             ],
-            "uuid": "a2d685ca-792b-4ca5-a48f-20001ec36d5e"
+            "uuid": "3a7d434e-6b2b-40ca-a8ab-b3b8aea5085b"
           },
           {
             "msg": "Footprint D1",
@@ -280,7 +280,7 @@
               27.665,
               65.295
             ],
-            "uuid": "6ebdff50-1bf8-4da7-a63e-b13d230ccf68"
+            "uuid": "18170634-6321-404f-87d4-00e47a01e458"
           }
         ]
       },
@@ -306,7 +306,7 @@
               26.414999,
               63.873053
             ],
-            "uuid": "bc5b6c07-4ffc-42ba-a89c-1d1a4ecb579b"
+            "uuid": "c16d3c7c-266f-4a7f-8cfc-6bd8676b9356"
           },
           {
             "msg": "Footprint D1",
@@ -314,7 +314,7 @@
               27.665,
               65.295
             ],
-            "uuid": "6ebdff50-1bf8-4da7-a63e-b13d230ccf68"
+            "uuid": "18170634-6321-404f-87d4-00e47a01e458"
           }
         ]
       },
@@ -340,7 +340,7 @@
               26.414999,
               66.273053
             ],
-            "uuid": "931ed275-451e-4643-980a-205428346859"
+            "uuid": "7e56519e-da9c-43fc-ad37-e5777ae9b86b"
           },
           {
             "msg": "Footprint D1",
@@ -348,7 +348,7 @@
               27.665,
               65.295
             ],
-            "uuid": "6ebdff50-1bf8-4da7-a63e-b13d230ccf68"
+            "uuid": "18170634-6321-404f-87d4-00e47a01e458"
           }
         ]
       },
@@ -374,7 +374,7 @@
               28.112055,
               65.570109
             ],
-            "uuid": "e9ac21eb-0450-4d5d-ab8e-b5c13c4974a8"
+            "uuid": "462095a1-86e1-4d85-858f-eefcadc7954b"
           },
           {
             "msg": "Footprint D1",
@@ -382,7 +382,7 @@
               27.665,
               65.295
             ],
-            "uuid": "6ebdff50-1bf8-4da7-a63e-b13d230ccf68"
+            "uuid": "18170634-6321-404f-87d4-00e47a01e458"
           }
         ]
       },
@@ -408,7 +408,7 @@
               28.814999,
               63.873053
             ],
-            "uuid": "c908938f-290a-4370-ada8-e887eb620045"
+            "uuid": "a680c13d-cf86-4e2d-a1e1-6331dca78cdc"
           },
           {
             "msg": "Footprint D1",
@@ -416,7 +416,7 @@
               27.665,
               65.295
             ],
-            "uuid": "6ebdff50-1bf8-4da7-a63e-b13d230ccf68"
+            "uuid": "18170634-6321-404f-87d4-00e47a01e458"
           }
         ]
       },
@@ -442,7 +442,7 @@
               117.955,
               143.475
             ],
-            "uuid": "b7a1be31-22d3-44d8-b5bb-7480dd689a56"
+            "uuid": "a077f773-72b4-484c-b318-c0f3909c1dbe"
           },
           {
             "msg": "Footprint H3",
@@ -450,7 +450,7 @@
               119.314999,
               146.773053
             ],
-            "uuid": "fed7f153-e4b8-440e-8de0-a28dad47be49"
+            "uuid": "f85cb6dc-4b87-4c99-ac86-c380f2d16316"
           }
         ]
       },
@@ -476,7 +476,7 @@
               117.617943,
               145.075997
             ],
-            "uuid": "ab961a21-57d7-43db-89b0-c646afa6b908"
+            "uuid": "cada4cd1-b6cd-4530-ae50-5f8f4ae8a0cb"
           },
           {
             "msg": "Footprint SW3",
@@ -484,7 +484,7 @@
               117.955,
               143.475
             ],
-            "uuid": "b7a1be31-22d3-44d8-b5bb-7480dd689a56"
+            "uuid": "a077f773-72b4-484c-b318-c0f3909c1dbe"
           }
         ]
       },
@@ -510,7 +510,7 @@
               119.314999,
               144.373053
             ],
-            "uuid": "5413b352-dbbb-4003-bc0b-e6f323aa7fa1"
+            "uuid": "66e8a1d9-d4d3-46fc-9190-f11c29cb7c66"
           },
           {
             "msg": "Footprint SW3",
@@ -518,7 +518,7 @@
               117.955,
               143.475
             ],
-            "uuid": "b7a1be31-22d3-44d8-b5bb-7480dd689a56"
+            "uuid": "a077f773-72b4-484c-b318-c0f3909c1dbe"
           }
         ]
       },
@@ -544,7 +544,7 @@
               119.314999,
               146.773053
             ],
-            "uuid": "02200884-b0c4-4e12-bc4d-291a2150a22d"
+            "uuid": "b1e47880-db97-44e5-a344-71ca8fd6a36c"
           },
           {
             "msg": "Footprint SW3",
@@ -552,7 +552,7 @@
               117.955,
               143.475
             ],
-            "uuid": "b7a1be31-22d3-44d8-b5bb-7480dd689a56"
+            "uuid": "a077f773-72b4-484c-b318-c0f3909c1dbe"
           }
         ]
       },
@@ -578,7 +578,7 @@
               121.012055,
               145.075997
             ],
-            "uuid": "bca0e822-7340-479f-b437-c35b09d4d5a3"
+            "uuid": "b610cbe9-c45d-4ef5-9496-bab1128b4976"
           },
           {
             "msg": "Footprint SW3",
@@ -586,7 +586,7 @@
               117.955,
               143.475
             ],
-            "uuid": "b7a1be31-22d3-44d8-b5bb-7480dd689a56"
+            "uuid": "a077f773-72b4-484c-b318-c0f3909c1dbe"
           }
         ]
       },
@@ -611,7 +611,7 @@
               22.864999,
               148.323053
             ],
-            "uuid": "de0c8bf0-9c15-499a-8efb-f1ffd7953c61"
+            "uuid": "5037842b-f06b-4184-8704-2f68b3db13ea"
           },
           {
             "msg": "PTH pad 2 [/SPK_L_N] of J4",
@@ -619,41 +619,7 @@
               23.344999,
               100.685
             ],
-            "uuid": "a9136457-c08b-4df7-883b-8c3d1c494ef0"
-          }
-        ]
-      },
-      {
-        "check": "solder_mask_bridge",
-        "severity": "error",
-        "pos": [
-          25.305,
-          65.295
-        ],
-        "layer": "F.Cu",
-        "net": "VBUS",
-        "refs": [
-          "D1",
-          "H1"
-        ],
-        "msg": "Front solder mask aperture bridges items with different nets",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Pad 1 [VBUS] of D1 on F.Cu",
-            "pos": [
-              25.305,
-              65.295
-            ],
-            "uuid": "0d0f270c-59fe-44c3-8b07-9b3fee018da5"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H1",
-            "pos": [
-              26.414999,
-              66.273053
-            ],
-            "uuid": "931ed275-451e-4643-980a-205428346859"
+            "uuid": "d0fa1cb6-ef48-410f-8475-f8e8717bb2e4"
           }
         ]
       },
@@ -679,7 +645,7 @@
               24.717943,
               65.570109
             ],
-            "uuid": "a2d685ca-792b-4ca5-a48f-20001ec36d5e"
+            "uuid": "3a7d434e-6b2b-40ca-a8ab-b3b8aea5085b"
           },
           {
             "msg": "Pad 1 [VBUS] of D1 on F.Cu",
@@ -687,7 +653,41 @@
               25.305,
               65.295
             ],
-            "uuid": "0d0f270c-59fe-44c3-8b07-9b3fee018da5"
+            "uuid": "55b42236-1457-4375-be3f-c135d54d9169"
+          }
+        ]
+      },
+      {
+        "check": "solder_mask_bridge",
+        "severity": "error",
+        "pos": [
+          26.414999,
+          63.873053
+        ],
+        "layer": "F.Cu",
+        "net": "GND",
+        "refs": [
+          "D1",
+          "H1"
+        ],
+        "msg": "Front solder mask aperture bridges items with different nets",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "PTH pad 1 [GND] of H1",
+            "pos": [
+              26.414999,
+              63.873053
+            ],
+            "uuid": "c16d3c7c-266f-4a7f-8cfc-6bd8676b9356"
+          },
+          {
+            "msg": "Pad 1 [VBUS] of D1 on F.Cu",
+            "pos": [
+              25.305,
+              65.295
+            ],
+            "uuid": "55b42236-1457-4375-be3f-c135d54d9169"
           }
         ]
       },
@@ -713,15 +713,15 @@
               25.305,
               65.295
             ],
-            "uuid": "0d0f270c-59fe-44c3-8b07-9b3fee018da5"
+            "uuid": "55b42236-1457-4375-be3f-c135d54d9169"
           },
           {
             "msg": "PTH pad 1 [GND] of H1",
             "pos": [
               26.414999,
-              63.873053
+              66.273053
             ],
-            "uuid": "bc5b6c07-4ffc-42ba-a89c-1d1a4ecb579b"
+            "uuid": "7e56519e-da9c-43fc-ad37-e5777ae9b86b"
           }
         ]
       },
@@ -746,7 +746,7 @@
               47.364999,
               63.735
             ],
-            "uuid": "b24c481c-846f-48e8-86db-478f512aa29c"
+            "uuid": "7c93f2bf-dd6c-4f09-b209-82662deb66ed"
           },
           {
             "msg": "PTH pad 1 [GND] of J1",
@@ -754,7 +754,7 @@
               47.514999,
               64.765
             ],
-            "uuid": "c07908a5-ff1d-4050-8f4b-e218284fa8f4"
+            "uuid": "b5450026-24df-4c06-aa68-92943adb9226"
           }
         ]
       }
@@ -781,7 +781,7 @@
               22.864999,
               148.323053
             ],
-            "uuid": "de0c8bf0-9c15-499a-8efb-f1ffd7953c61"
+            "uuid": "5037842b-f06b-4184-8704-2f68b3db13ea"
           },
           {
             "msg": "Segment of J4 on F.Silkscreen",
@@ -789,7 +789,7 @@
               15.724999,
               95.685
             ],
-            "uuid": "7ea8bff8-a1ca-48aa-bbef-332436eda366"
+            "uuid": "d9dbb977-6c74-4428-b8d1-e3985777b709"
           }
         ]
       },
@@ -814,7 +814,7 @@
               22.864999,
               148.323053
             ],
-            "uuid": "de0c8bf0-9c15-499a-8efb-f1ffd7953c61"
+            "uuid": "5037842b-f06b-4184-8704-2f68b3db13ea"
           },
           {
             "msg": "Segment of J4 on F.Silkscreen",
@@ -822,7 +822,7 @@
               15.724999,
               105.885
             ],
-            "uuid": "a001ba1b-f1c4-4c61-9909-6f969022ed6e"
+            "uuid": "d641d447-810e-44b4-b7d8-a1b84df08b82"
           }
         ]
       },
@@ -847,7 +847,7 @@
               22.864999,
               148.323053
             ],
-            "uuid": "de0c8bf0-9c15-499a-8efb-f1ffd7953c61"
+            "uuid": "5037842b-f06b-4184-8704-2f68b3db13ea"
           },
           {
             "msg": "Polygon of J4 on F.Silkscreen",
@@ -855,7 +855,7 @@
               23.344999,
               103.18497
             ],
-            "uuid": "c0344cc7-63b9-4c21-9c3a-61c489ed9b6c"
+            "uuid": "fcb1cfa4-e62b-4044-8a1f-72636b378962"
           }
         ]
       },
@@ -880,7 +880,7 @@
               22.864999,
               148.323053
             ],
-            "uuid": "de0c8bf0-9c15-499a-8efb-f1ffd7953c61"
+            "uuid": "5037842b-f06b-4184-8704-2f68b3db13ea"
           },
           {
             "msg": "Polygon of J4 on F.Silkscreen",
@@ -888,7 +888,7 @@
               22.845,
               104.184968
             ],
-            "uuid": "1f1ef7ce-d78f-4e8a-a2e5-044a76a22f72"
+            "uuid": "e9a90785-7978-4e91-a9d1-ca38cc898f18"
           }
         ]
       },
@@ -896,8 +896,8 @@
         "check": "silk_overlap",
         "severity": "warning",
         "pos": [
-          26.414999,
-          142.623053
+          25.277741,
+          142.077499
         ],
         "layer": "F.Silkscreen",
         "net": null,
@@ -909,20 +909,20 @@
         "source": "drc",
         "items": [
           {
-            "msg": "Reference field of H4",
-            "pos": [
-              26.414999,
-              142.623053
-            ],
-            "uuid": "490ad29a-94f1-42d1-aef4-a9bf865bedfa"
-          },
-          {
             "msg": "Segment of R54 on F.Silkscreen",
             "pos": [
               25.277741,
               142.077499
             ],
-            "uuid": "749d2631-1abb-4592-a289-f048268a2794"
+            "uuid": "8fc8b54f-fee8-4c0c-b4d1-dc019b061770"
+          },
+          {
+            "msg": "Reference field of H4",
+            "pos": [
+              26.414999,
+              142.623053
+            ],
+            "uuid": "a66d38a7-bda0-4bec-bea2-d09d80308821"
           }
         ]
       },
@@ -948,7 +948,7 @@
               119.755,
               142.575
             ],
-            "uuid": "3e073367-e3ae-49f6-ade4-5ab6ba493bb1"
+            "uuid": "deab4a47-d664-4f90-b686-67034b416f61"
           },
           {
             "msg": "Reference field of H3",
@@ -956,7 +956,7 @@
               119.314999,
               142.623053
             ],
-            "uuid": "dea67373-ee37-4d66-839d-b349873584c8"
+            "uuid": "fb1d91b6-6d82-4d77-8f3b-de1e26d63cd0"
           }
         ]
       },
@@ -982,7 +982,7 @@
               117.955,
               143.475
             ],
-            "uuid": "b730e48b-45a3-41bf-987b-0baf03460d03"
+            "uuid": "bca3125b-88b1-4e0e-b006-f06d621d7bc4"
           },
           {
             "msg": "Reference field of H3",
@@ -990,7 +990,7 @@
               119.314999,
               142.623053
             ],
-            "uuid": "dea67373-ee37-4d66-839d-b349873584c8"
+            "uuid": "fb1d91b6-6d82-4d77-8f3b-de1e26d63cd0"
           }
         ]
       },
@@ -1016,7 +1016,7 @@
               118.855,
               141.675
             ],
-            "uuid": "694c57ab-e982-44b5-929e-5709d6d4809d"
+            "uuid": "2c376166-d6b9-4334-82fa-e5dc52cf104b"
           },
           {
             "msg": "Reference field of H3",
@@ -1024,279 +1024,7 @@
               119.314999,
               142.623053
             ],
-            "uuid": "dea67373-ee37-4d66-839d-b349873584c8"
-          }
-        ]
-      },
-      {
-        "check": "silk_over_copper",
-        "severity": "warning",
-        "pos": [
-          27.665,
-          62.508
-        ],
-        "layer": null,
-        "net": "GND",
-        "refs": [
-          "D1",
-          "H1"
-        ],
-        "msg": "Silkscreen clipped by solder mask",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Reference field of D1",
-            "pos": [
-              27.665,
-              62.508
-            ],
-            "uuid": "8159eab3-fea7-46f4-99f4-5e4db17adcf1"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H1",
-            "pos": [
-              26.414999,
-              63.873053
-            ],
-            "uuid": "bc5b6c07-4ffc-42ba-a89c-1d1a4ecb579b"
-          }
-        ]
-      },
-      {
-        "check": "silk_over_copper",
-        "severity": "warning",
-        "pos": [
-          27.665,
-          62.508
-        ],
-        "layer": null,
-        "net": "GND",
-        "refs": [
-          "D1",
-          "H1"
-        ],
-        "msg": "Silkscreen clipped by solder mask",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Reference field of D1",
-            "pos": [
-              27.665,
-              62.508
-            ],
-            "uuid": "8159eab3-fea7-46f4-99f4-5e4db17adcf1"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H1",
-            "pos": [
-              28.112055,
-              62.175997
-            ],
-            "uuid": "7125d5a5-1a57-42de-8f0d-4a36089a9dd1"
-          }
-        ]
-      },
-      {
-        "check": "silk_over_copper",
-        "severity": "warning",
-        "pos": [
-          24.925,
-          63.405
-        ],
-        "layer": "F.Silkscreen",
-        "net": "GND",
-        "refs": [
-          "D1",
-          "H1"
-        ],
-        "msg": "Silkscreen clipped by solder mask",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Segment of D1 on F.Silkscreen",
-            "pos": [
-              24.925,
-              63.405
-            ],
-            "uuid": "c8bc2b88-5548-4a66-8524-20080662e5a2"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H1",
-            "pos": [
-              26.414999,
-              63.873053
-            ],
-            "uuid": "bc5b6c07-4ffc-42ba-a89c-1d1a4ecb579b"
-          }
-        ]
-      },
-      {
-        "check": "silk_over_copper",
-        "severity": "warning",
-        "pos": [
-          24.925,
-          63.405
-        ],
-        "layer": "F.Silkscreen",
-        "net": "GND",
-        "refs": [
-          "D1",
-          "H1"
-        ],
-        "msg": "Silkscreen clipped by solder mask",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Segment of D1 on F.Silkscreen",
-            "pos": [
-              24.925,
-              63.405
-            ],
-            "uuid": "c8bc2b88-5548-4a66-8524-20080662e5a2"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H1",
-            "pos": [
-              28.814999,
-              63.873053
-            ],
-            "uuid": "c908938f-290a-4370-ada8-e887eb620045"
-          }
-        ]
-      },
-      {
-        "check": "silk_over_copper",
-        "severity": "warning",
-        "pos": [
-          26.645,
-          63.405
-        ],
-        "layer": "F.Silkscreen",
-        "net": "GND",
-        "refs": [
-          "D1",
-          "H1"
-        ],
-        "msg": "Silkscreen clipped by solder mask",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Segment of D1 on F.Silkscreen",
-            "pos": [
-              26.645,
-              63.405
-            ],
-            "uuid": "5971fc59-7487-4789-872f-fc99d325cbe7"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H1",
-            "pos": [
-              26.414999,
-              66.273053
-            ],
-            "uuid": "931ed275-451e-4643-980a-205428346859"
-          }
-        ]
-      },
-      {
-        "check": "silk_over_copper",
-        "severity": "warning",
-        "pos": [
-          26.645,
-          63.405
-        ],
-        "layer": "F.Silkscreen",
-        "net": "GND",
-        "refs": [
-          "D1",
-          "H1"
-        ],
-        "msg": "Silkscreen clipped by solder mask",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Segment of D1 on F.Silkscreen",
-            "pos": [
-              26.645,
-              63.405
-            ],
-            "uuid": "5971fc59-7487-4789-872f-fc99d325cbe7"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H1",
-            "pos": [
-              26.414999,
-              63.873053
-            ],
-            "uuid": "bc5b6c07-4ffc-42ba-a89c-1d1a4ecb579b"
-          }
-        ]
-      },
-      {
-        "check": "silk_over_copper",
-        "severity": "warning",
-        "pos": [
-          24.997492,
-          63.332596
-        ],
-        "layer": "F.Silkscreen",
-        "net": "GND",
-        "refs": [
-          "D1",
-          "H1"
-        ],
-        "msg": "Silkscreen clipped by solder mask",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Polygon of D1 on F.Silkscreen",
-            "pos": [
-              24.997492,
-              63.332596
-            ],
-            "uuid": "f907d160-ff30-45a3-96b5-7ea6fc8e3c35"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H1",
-            "pos": [
-              26.414999,
-              63.873053
-            ],
-            "uuid": "bc5b6c07-4ffc-42ba-a89c-1d1a4ecb579b"
-          }
-        ]
-      },
-      {
-        "check": "silk_over_copper",
-        "severity": "warning",
-        "pos": [
-          24.997492,
-          67.257404
-        ],
-        "layer": "F.Silkscreen",
-        "net": "GND",
-        "refs": [
-          "D1",
-          "H1"
-        ],
-        "msg": "Silkscreen clipped by solder mask",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Polygon of D1 on F.Silkscreen",
-            "pos": [
-              24.997492,
-              67.257404
-            ],
-            "uuid": "e5b5ae8e-edea-463c-99c9-732024c2e5bf"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H1",
-            "pos": [
-              26.414999,
-              63.873053
-            ],
-            "uuid": "bc5b6c07-4ffc-42ba-a89c-1d1a4ecb579b"
+            "uuid": "fb1d91b6-6d82-4d77-8f3b-de1e26d63cd0"
           }
         ]
       },
@@ -1322,7 +1050,7 @@
               26.414999,
               142.623053
             ],
-            "uuid": "490ad29a-94f1-42d1-aef4-a9bf865bedfa"
+            "uuid": "a66d38a7-bda0-4bec-bea2-d09d80308821"
           },
           {
             "msg": "Pad 2 [/AMP_SDZ] of R54 on F.Cu",
@@ -1330,211 +1058,7 @@
               26.339999,
               141.554999
             ],
-            "uuid": "a2b05fb0-eb06-4da2-af7f-343e2ac00856"
-          }
-        ]
-      },
-      {
-        "check": "silk_over_copper",
-        "severity": "warning",
-        "pos": [
-          119.755,
-          142.575
-        ],
-        "layer": "F.Silkscreen",
-        "net": "GND",
-        "refs": [
-          "H3",
-          "SW3"
-        ],
-        "msg": "Silkscreen clipped by solder mask",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Segment of SW3 on F.Silkscreen",
-            "pos": [
-              119.755,
-              142.575
-            ],
-            "uuid": "3e073367-e3ae-49f6-ade4-5ab6ba493bb1"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H3",
-            "pos": [
-              119.314999,
-              144.373053
-            ],
-            "uuid": "5413b352-dbbb-4003-bc0b-e6f323aa7fa1"
-          }
-        ]
-      },
-      {
-        "check": "silk_over_copper",
-        "severity": "warning",
-        "pos": [
-          119.755,
-          142.575
-        ],
-        "layer": "F.Silkscreen",
-        "net": "GND",
-        "refs": [
-          "H3",
-          "SW3"
-        ],
-        "msg": "Silkscreen clipped by solder mask",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Segment of SW3 on F.Silkscreen",
-            "pos": [
-              119.755,
-              142.575
-            ],
-            "uuid": "3e073367-e3ae-49f6-ade4-5ab6ba493bb1"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H3",
-            "pos": [
-              119.314999,
-              146.773053
-            ],
-            "uuid": "02200884-b0c4-4e12-bc4d-291a2150a22d"
-          }
-        ]
-      },
-      {
-        "check": "silk_over_copper",
-        "severity": "warning",
-        "pos": [
-          117.955,
-          143.475
-        ],
-        "layer": "F.Silkscreen",
-        "net": "GND",
-        "refs": [
-          "H3",
-          "SW3"
-        ],
-        "msg": "Silkscreen clipped by solder mask",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Circle of SW3 on F.Silkscreen",
-            "pos": [
-              117.955,
-              143.475
-            ],
-            "uuid": "b730e48b-45a3-41bf-987b-0baf03460d03"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H3",
-            "pos": [
-              117.617943,
-              145.075997
-            ],
-            "uuid": "ab961a21-57d7-43db-89b0-c646afa6b908"
-          }
-        ]
-      },
-      {
-        "check": "silk_over_copper",
-        "severity": "warning",
-        "pos": [
-          117.955,
-          143.475
-        ],
-        "layer": "F.Silkscreen",
-        "net": "GND",
-        "refs": [
-          "H3",
-          "SW3"
-        ],
-        "msg": "Silkscreen clipped by solder mask",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Circle of SW3 on F.Silkscreen",
-            "pos": [
-              117.955,
-              143.475
-            ],
-            "uuid": "b730e48b-45a3-41bf-987b-0baf03460d03"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H3",
-            "pos": [
-              119.314999,
-              144.373053
-            ],
-            "uuid": "5413b352-dbbb-4003-bc0b-e6f323aa7fa1"
-          }
-        ]
-      },
-      {
-        "check": "silk_over_copper",
-        "severity": "warning",
-        "pos": [
-          117.955,
-          143.475
-        ],
-        "layer": "F.Silkscreen",
-        "net": "GND",
-        "refs": [
-          "H3",
-          "SW3"
-        ],
-        "msg": "Silkscreen clipped by solder mask",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Circle of SW3 on F.Silkscreen",
-            "pos": [
-              117.955,
-              143.475
-            ],
-            "uuid": "b730e48b-45a3-41bf-987b-0baf03460d03"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H3",
-            "pos": [
-              119.314999,
-              146.773053
-            ],
-            "uuid": "02200884-b0c4-4e12-bc4d-291a2150a22d"
-          }
-        ]
-      },
-      {
-        "check": "silk_over_copper",
-        "severity": "warning",
-        "pos": [
-          120.505,
-          142.305
-        ],
-        "layer": "F.Silkscreen",
-        "net": "GND",
-        "refs": [
-          "H3",
-          "SW3"
-        ],
-        "msg": "Silkscreen clipped by solder mask",
-        "source": "drc",
-        "items": [
-          {
-            "msg": "Segment of SW3 on F.Silkscreen",
-            "pos": [
-              120.505,
-              142.305
-            ],
-            "uuid": "79d69a21-bfca-420c-9702-056d32b8c4f9"
-          },
-          {
-            "msg": "PTH pad 1 [GND] of H3",
-            "pos": [
-              119.314999,
-              146.773053
-            ],
-            "uuid": "02200884-b0c4-4e12-bc4d-291a2150a22d"
+            "uuid": "24683546-2e13-4bd9-b137-d73f24cf1f94"
           }
         ]
       },
@@ -1560,7 +1084,7 @@
               116.675,
               146.025
             ],
-            "uuid": "1da76e5f-2399-455a-a0ba-59b75b34e8ec"
+            "uuid": "419338f4-653c-48b4-b526-c9544fb0214f"
           },
           {
             "msg": "PTH pad 1 [GND] of H3",
@@ -1568,7 +1092,7 @@
               119.314999,
               146.773053
             ],
-            "uuid": "02200884-b0c4-4e12-bc4d-291a2150a22d"
+            "uuid": "b1e47880-db97-44e5-a344-71ca8fd6a36c"
           }
         ]
       },
@@ -1594,7 +1118,7 @@
               117.055,
               145.375
             ],
-            "uuid": "3dc57d03-7910-4043-abd9-4bf95554a2ee"
+            "uuid": "23151c00-08d3-47d9-9281-1785dfc7e036"
           },
           {
             "msg": "PTH pad 1 [GND] of H3",
@@ -1602,7 +1126,7 @@
               119.314999,
               146.773053
             ],
-            "uuid": "02200884-b0c4-4e12-bc4d-291a2150a22d"
+            "uuid": "b1e47880-db97-44e5-a344-71ca8fd6a36c"
           }
         ]
       },
@@ -1628,7 +1152,7 @@
               118.755,
               145.375
             ],
-            "uuid": "e10baa69-545a-4608-b77d-7f421c36b7e1"
+            "uuid": "39443961-3839-4b9a-a369-59345fd9a11d"
           },
           {
             "msg": "PTH pad 1 [GND] of H3",
@@ -1636,7 +1160,7 @@
               117.617943,
               145.075997
             ],
-            "uuid": "ab961a21-57d7-43db-89b0-c646afa6b908"
+            "uuid": "cada4cd1-b6cd-4530-ae50-5f8f4ae8a0cb"
           }
         ]
       },
@@ -1662,7 +1186,7 @@
               118.755,
               145.375
             ],
-            "uuid": "e10baa69-545a-4608-b77d-7f421c36b7e1"
+            "uuid": "39443961-3839-4b9a-a369-59345fd9a11d"
           },
           {
             "msg": "PTH pad 1 [GND] of H3",
@@ -1670,7 +1194,7 @@
               119.314999,
               146.773053
             ],
-            "uuid": "02200884-b0c4-4e12-bc4d-291a2150a22d"
+            "uuid": "b1e47880-db97-44e5-a344-71ca8fd6a36c"
           }
         ]
       },
@@ -1696,7 +1220,7 @@
               119.755,
               144.375
             ],
-            "uuid": "a94aed6d-e1b9-45cb-8bb4-6f8c93236805"
+            "uuid": "e9fd09d5-8e4f-4417-ae77-b6f82e5d452c"
           },
           {
             "msg": "PTH pad 1 [GND] of H3",
@@ -1704,7 +1228,7 @@
               119.314999,
               144.373053
             ],
-            "uuid": "5413b352-dbbb-4003-bc0b-e6f323aa7fa1"
+            "uuid": "66e8a1d9-d4d3-46fc-9190-f11c29cb7c66"
           }
         ]
       },
@@ -1730,7 +1254,7 @@
               119.755,
               144.375
             ],
-            "uuid": "a94aed6d-e1b9-45cb-8bb4-6f8c93236805"
+            "uuid": "e9fd09d5-8e4f-4417-ae77-b6f82e5d452c"
           },
           {
             "msg": "PTH pad 1 [GND] of H3",
@@ -1738,7 +1262,7 @@
               119.314999,
               146.773053
             ],
-            "uuid": "02200884-b0c4-4e12-bc4d-291a2150a22d"
+            "uuid": "b1e47880-db97-44e5-a344-71ca8fd6a36c"
           }
         ]
       },
@@ -1764,7 +1288,7 @@
               120.125,
               145.135
             ],
-            "uuid": "5c84842d-5495-4989-9909-ada5b07ccc68"
+            "uuid": "a273d798-5330-41af-a063-dd5a9d485f8d"
           },
           {
             "msg": "PTH pad 1 [GND] of H3",
@@ -1772,7 +1296,211 @@
               119.314999,
               146.773053
             ],
-            "uuid": "02200884-b0c4-4e12-bc4d-291a2150a22d"
+            "uuid": "b1e47880-db97-44e5-a344-71ca8fd6a36c"
+          }
+        ]
+      },
+      {
+        "check": "silk_over_copper",
+        "severity": "warning",
+        "pos": [
+          119.755,
+          142.575
+        ],
+        "layer": "F.Silkscreen",
+        "net": "GND",
+        "refs": [
+          "H3",
+          "SW3"
+        ],
+        "msg": "Silkscreen clipped by solder mask",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "Segment of SW3 on F.Silkscreen",
+            "pos": [
+              119.755,
+              142.575
+            ],
+            "uuid": "deab4a47-d664-4f90-b686-67034b416f61"
+          },
+          {
+            "msg": "PTH pad 1 [GND] of H3",
+            "pos": [
+              119.314999,
+              144.373053
+            ],
+            "uuid": "66e8a1d9-d4d3-46fc-9190-f11c29cb7c66"
+          }
+        ]
+      },
+      {
+        "check": "silk_over_copper",
+        "severity": "warning",
+        "pos": [
+          119.755,
+          142.575
+        ],
+        "layer": "F.Silkscreen",
+        "net": "GND",
+        "refs": [
+          "H3",
+          "SW3"
+        ],
+        "msg": "Silkscreen clipped by solder mask",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "Segment of SW3 on F.Silkscreen",
+            "pos": [
+              119.755,
+              142.575
+            ],
+            "uuid": "deab4a47-d664-4f90-b686-67034b416f61"
+          },
+          {
+            "msg": "PTH pad 1 [GND] of H3",
+            "pos": [
+              119.314999,
+              146.773053
+            ],
+            "uuid": "b1e47880-db97-44e5-a344-71ca8fd6a36c"
+          }
+        ]
+      },
+      {
+        "check": "silk_over_copper",
+        "severity": "warning",
+        "pos": [
+          117.955,
+          143.475
+        ],
+        "layer": "F.Silkscreen",
+        "net": "GND",
+        "refs": [
+          "H3",
+          "SW3"
+        ],
+        "msg": "Silkscreen clipped by solder mask",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "Circle of SW3 on F.Silkscreen",
+            "pos": [
+              117.955,
+              143.475
+            ],
+            "uuid": "bca3125b-88b1-4e0e-b006-f06d621d7bc4"
+          },
+          {
+            "msg": "PTH pad 1 [GND] of H3",
+            "pos": [
+              119.314999,
+              144.373053
+            ],
+            "uuid": "66e8a1d9-d4d3-46fc-9190-f11c29cb7c66"
+          }
+        ]
+      },
+      {
+        "check": "silk_over_copper",
+        "severity": "warning",
+        "pos": [
+          117.955,
+          143.475
+        ],
+        "layer": "F.Silkscreen",
+        "net": "GND",
+        "refs": [
+          "H3",
+          "SW3"
+        ],
+        "msg": "Silkscreen clipped by solder mask",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "Circle of SW3 on F.Silkscreen",
+            "pos": [
+              117.955,
+              143.475
+            ],
+            "uuid": "bca3125b-88b1-4e0e-b006-f06d621d7bc4"
+          },
+          {
+            "msg": "PTH pad 1 [GND] of H3",
+            "pos": [
+              117.617943,
+              145.075997
+            ],
+            "uuid": "cada4cd1-b6cd-4530-ae50-5f8f4ae8a0cb"
+          }
+        ]
+      },
+      {
+        "check": "silk_over_copper",
+        "severity": "warning",
+        "pos": [
+          117.955,
+          143.475
+        ],
+        "layer": "F.Silkscreen",
+        "net": "GND",
+        "refs": [
+          "H3",
+          "SW3"
+        ],
+        "msg": "Silkscreen clipped by solder mask",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "Circle of SW3 on F.Silkscreen",
+            "pos": [
+              117.955,
+              143.475
+            ],
+            "uuid": "bca3125b-88b1-4e0e-b006-f06d621d7bc4"
+          },
+          {
+            "msg": "PTH pad 1 [GND] of H3",
+            "pos": [
+              119.314999,
+              146.773053
+            ],
+            "uuid": "b1e47880-db97-44e5-a344-71ca8fd6a36c"
+          }
+        ]
+      },
+      {
+        "check": "silk_over_copper",
+        "severity": "warning",
+        "pos": [
+          120.505,
+          142.305
+        ],
+        "layer": "F.Silkscreen",
+        "net": "GND",
+        "refs": [
+          "H3",
+          "SW3"
+        ],
+        "msg": "Silkscreen clipped by solder mask",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "Segment of SW3 on F.Silkscreen",
+            "pos": [
+              120.505,
+              142.305
+            ],
+            "uuid": "c59e4325-2e97-478c-b34a-735db28bce7e"
+          },
+          {
+            "msg": "PTH pad 1 [GND] of H3",
+            "pos": [
+              119.314999,
+              146.773053
+            ],
+            "uuid": "b1e47880-db97-44e5-a344-71ca8fd6a36c"
           }
         ]
       },
@@ -1798,7 +1526,7 @@
               115.785,
               145.135
             ],
-            "uuid": "768560fd-c0ad-4a00-ada8-8e0360ad3ee4"
+            "uuid": "151dde94-09b1-4e9a-b4cb-0cc2579dfbb5"
           },
           {
             "msg": "PTH pad 1 [GND] of H3",
@@ -1806,7 +1534,279 @@
               119.314999,
               146.773053
             ],
-            "uuid": "02200884-b0c4-4e12-bc4d-291a2150a22d"
+            "uuid": "b1e47880-db97-44e5-a344-71ca8fd6a36c"
+          }
+        ]
+      },
+      {
+        "check": "silk_over_copper",
+        "severity": "warning",
+        "pos": [
+          27.665,
+          62.508
+        ],
+        "layer": null,
+        "net": "GND",
+        "refs": [
+          "D1",
+          "H1"
+        ],
+        "msg": "Silkscreen clipped by solder mask",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "Reference field of D1",
+            "pos": [
+              27.665,
+              62.508
+            ],
+            "uuid": "fe7a940d-dee2-4952-a878-18cffa9f5e0b"
+          },
+          {
+            "msg": "PTH pad 1 [GND] of H1",
+            "pos": [
+              26.414999,
+              63.873053
+            ],
+            "uuid": "c16d3c7c-266f-4a7f-8cfc-6bd8676b9356"
+          }
+        ]
+      },
+      {
+        "check": "silk_over_copper",
+        "severity": "warning",
+        "pos": [
+          27.665,
+          62.508
+        ],
+        "layer": null,
+        "net": "GND",
+        "refs": [
+          "D1",
+          "H1"
+        ],
+        "msg": "Silkscreen clipped by solder mask",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "Reference field of D1",
+            "pos": [
+              27.665,
+              62.508
+            ],
+            "uuid": "fe7a940d-dee2-4952-a878-18cffa9f5e0b"
+          },
+          {
+            "msg": "PTH pad 1 [GND] of H1",
+            "pos": [
+              28.112055,
+              62.175997
+            ],
+            "uuid": "31841a50-24b1-4335-9e6c-180f18696aef"
+          }
+        ]
+      },
+      {
+        "check": "silk_over_copper",
+        "severity": "warning",
+        "pos": [
+          24.925,
+          63.405
+        ],
+        "layer": "F.Silkscreen",
+        "net": "GND",
+        "refs": [
+          "D1",
+          "H1"
+        ],
+        "msg": "Silkscreen clipped by solder mask",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "Segment of D1 on F.Silkscreen",
+            "pos": [
+              24.925,
+              63.405
+            ],
+            "uuid": "66a45c83-c082-467f-8d39-80453e53171e"
+          },
+          {
+            "msg": "PTH pad 1 [GND] of H1",
+            "pos": [
+              26.414999,
+              63.873053
+            ],
+            "uuid": "c16d3c7c-266f-4a7f-8cfc-6bd8676b9356"
+          }
+        ]
+      },
+      {
+        "check": "silk_over_copper",
+        "severity": "warning",
+        "pos": [
+          24.925,
+          63.405
+        ],
+        "layer": "F.Silkscreen",
+        "net": "GND",
+        "refs": [
+          "D1",
+          "H1"
+        ],
+        "msg": "Silkscreen clipped by solder mask",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "Segment of D1 on F.Silkscreen",
+            "pos": [
+              24.925,
+              63.405
+            ],
+            "uuid": "66a45c83-c082-467f-8d39-80453e53171e"
+          },
+          {
+            "msg": "PTH pad 1 [GND] of H1",
+            "pos": [
+              28.814999,
+              63.873053
+            ],
+            "uuid": "a680c13d-cf86-4e2d-a1e1-6331dca78cdc"
+          }
+        ]
+      },
+      {
+        "check": "silk_over_copper",
+        "severity": "warning",
+        "pos": [
+          26.645,
+          63.405
+        ],
+        "layer": "F.Silkscreen",
+        "net": "GND",
+        "refs": [
+          "D1",
+          "H1"
+        ],
+        "msg": "Silkscreen clipped by solder mask",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "Segment of D1 on F.Silkscreen",
+            "pos": [
+              26.645,
+              63.405
+            ],
+            "uuid": "6aba82f7-7ac8-4c36-9813-519906757d73"
+          },
+          {
+            "msg": "PTH pad 1 [GND] of H1",
+            "pos": [
+              26.414999,
+              66.273053
+            ],
+            "uuid": "7e56519e-da9c-43fc-ad37-e5777ae9b86b"
+          }
+        ]
+      },
+      {
+        "check": "silk_over_copper",
+        "severity": "warning",
+        "pos": [
+          26.645,
+          63.405
+        ],
+        "layer": "F.Silkscreen",
+        "net": "GND",
+        "refs": [
+          "D1",
+          "H1"
+        ],
+        "msg": "Silkscreen clipped by solder mask",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "Segment of D1 on F.Silkscreen",
+            "pos": [
+              26.645,
+              63.405
+            ],
+            "uuid": "6aba82f7-7ac8-4c36-9813-519906757d73"
+          },
+          {
+            "msg": "PTH pad 1 [GND] of H1",
+            "pos": [
+              26.414999,
+              63.873053
+            ],
+            "uuid": "c16d3c7c-266f-4a7f-8cfc-6bd8676b9356"
+          }
+        ]
+      },
+      {
+        "check": "silk_over_copper",
+        "severity": "warning",
+        "pos": [
+          24.997492,
+          63.332596
+        ],
+        "layer": "F.Silkscreen",
+        "net": "GND",
+        "refs": [
+          "D1",
+          "H1"
+        ],
+        "msg": "Silkscreen clipped by solder mask",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "Polygon of D1 on F.Silkscreen",
+            "pos": [
+              24.997492,
+              63.332596
+            ],
+            "uuid": "3f1c6752-5722-44c5-8acc-43ffc8063fae"
+          },
+          {
+            "msg": "PTH pad 1 [GND] of H1",
+            "pos": [
+              26.414999,
+              63.873053
+            ],
+            "uuid": "c16d3c7c-266f-4a7f-8cfc-6bd8676b9356"
+          }
+        ]
+      },
+      {
+        "check": "silk_over_copper",
+        "severity": "warning",
+        "pos": [
+          24.997492,
+          67.257404
+        ],
+        "layer": "F.Silkscreen",
+        "net": "GND",
+        "refs": [
+          "D1",
+          "H1"
+        ],
+        "msg": "Silkscreen clipped by solder mask",
+        "source": "drc",
+        "items": [
+          {
+            "msg": "Polygon of D1 on F.Silkscreen",
+            "pos": [
+              24.997492,
+              67.257404
+            ],
+            "uuid": "92b7b9cc-1bd6-4cd0-be77-19bcd12de409"
+          },
+          {
+            "msg": "PTH pad 1 [GND] of H1",
+            "pos": [
+              26.414999,
+              63.873053
+            ],
+            "uuid": "c16d3c7c-266f-4a7f-8cfc-6bd8676b9356"
           }
         ]
       }

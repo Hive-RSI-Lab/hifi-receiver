@@ -8,12 +8,12 @@
   "by_source": {}
  },
  "violations": [],
- "requested": 29,
- "placed": 30,
+ "requested": 27,
+ "placed": 28,
  "skipped": [
   {
    "ref": "C1.2",
-   "reason": "already_stitched",
+   "reason": "track_connected_no_local_spot",
    "net": "GND"
   },
   {
@@ -87,7 +87,7 @@
    "net": "GND"
   },
   {
-   "ref": "C30.2",
+   "ref": "C31.2",
    "reason": "already_stitched",
    "net": "GND"
   },
@@ -157,6 +157,11 @@
    "net": "GND"
   },
   {
+   "ref": "C52.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
    "ref": "C58.2",
    "reason": "already_stitched",
    "net": "GND"
@@ -168,6 +173,16 @@
   },
   {
    "ref": "C61.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C63.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C68.2",
    "reason": "already_stitched",
    "net": "GND"
   },
@@ -223,6 +238,16 @@
   },
   {
    "ref": "R12.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "R14.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "R16.2",
    "reason": "already_stitched",
    "net": "GND"
   },
@@ -352,22 +377,7 @@
    "net": "GND"
   },
   {
-   "ref": "U7.18",
-   "reason": "track_connected_no_local_spot",
-   "net": "GND"
-  },
-  {
-   "ref": "U7.26",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
    "ref": "U7.29",
-   "reason": "already_stitched",
-   "net": "GND"
-  },
-  {
-   "ref": "U7.4",
    "reason": "already_stitched",
    "net": "GND"
   },
@@ -414,14 +424,14 @@
  "applied": true,
  "refilled": true,
  "apply_by_status": {
-  "added": 36
+  "added": 33
  },
  "ops": [
   {
    "op": "add_via",
    "at": [
-    51.1,
-    102.583
+    51.29,
+    100.323
    ],
    "size": 0.6,
    "drill": 0.3,
@@ -430,25 +440,11 @@
   {
    "op": "add_via",
    "at": [
-    57.64,
-    90.723
+    58.29,
+    89.823
    ],
    "size": 0.6,
    "drill": 0.3,
-   "net": "GND"
-  },
-  {
-   "op": "add_track",
-   "start": [
-    57.64,
-    89.823
-   ],
-   "end": [
-    57.64,
-    90.723
-   ],
-   "width": 0.3,
-   "layer": "F.Cu",
    "net": "GND"
   },
   {
@@ -456,16 +452,6 @@
    "at": [
     111.965,
     106.523
-   ],
-   "size": 0.6,
-   "drill": 0.3,
-   "net": "GND"
-  },
-  {
-   "op": "add_via",
-   "at": [
-    111.965,
-    104.323
    ],
    "size": 0.6,
    "drill": 0.3,
@@ -504,8 +490,8 @@
   {
    "op": "add_via",
    "at": [
-    95.59,
-    102.323
+    95.4,
+    102.783
    ],
    "size": 0.6,
    "drill": 0.3,
@@ -515,27 +501,7 @@
    "op": "add_via",
    "at": [
     95.4,
-    100.063
-   ],
-   "size": 0.6,
-   "drill": 0.3,
-   "net": "GND"
-  },
-  {
-   "op": "add_via",
-   "at": [
-    109.79,
-    115.223
-   ],
-   "size": 0.6,
-   "drill": 0.3,
-   "net": "GND"
-  },
-  {
-   "op": "add_via",
-   "at": [
-    91.99,
-    78.823
+    100.983
    ],
    "size": 0.6,
    "drill": 0.3,
@@ -554,59 +520,11 @@
   {
    "op": "add_via",
    "at": [
-    82.965,
-    96.923
+    82.315,
+    96.273
    ],
    "size": 0.6,
    "drill": 0.3,
-   "net": "GND"
-  },
-  {
-   "op": "add_via",
-   "at": [
-    65.34,
-    109.623
-   ],
-   "size": 0.6,
-   "drill": 0.3,
-   "net": "GND"
-  },
-  {
-   "op": "add_track",
-   "start": [
-    64.69,
-    109.623
-   ],
-   "end": [
-    65.34,
-    109.623
-   ],
-   "width": 0.3,
-   "layer": "F.Cu",
-   "net": "GND"
-  },
-  {
-   "op": "add_via",
-   "at": [
-    88.54,
-    115.923
-   ],
-   "size": 0.6,
-   "drill": 0.3,
-   "net": "GND"
-  },
-  {
-   "op": "add_track",
-   "start": [
-    87.89,
-    115.923
-   ],
-   "end": [
-    88.54,
-    115.923
-   ],
-   "width": 0.3,
-   "layer": "F.Cu",
    "net": "GND"
   },
   {
@@ -636,8 +554,8 @@
   {
    "op": "add_via",
    "at": [
-    38.096,
-    131.175
+    38.259,
+    131.645
    ],
    "size": 0.6,
    "drill": 0.3,
@@ -646,8 +564,8 @@
   {
    "op": "add_via",
    "at": [
-    40.764,
-    131.051
+    39.805,
+    131.773
    ],
    "size": 0.6,
    "drill": 0.3,
@@ -666,25 +584,11 @@
   {
    "op": "add_via",
    "at": [
-    37.914,
-    130.168
+    38.145,
+    130.072
    ],
    "size": 0.6,
    "drill": 0.3,
-   "net": "GND"
-  },
-  {
-   "op": "add_track",
-   "start": [
-    38.745,
-    129.823
-   ],
-   "end": [
-    37.914,
-    130.168
-   ],
-   "width": 0.3,
-   "layer": "F.Cu",
    "net": "GND"
   },
   {
@@ -700,11 +604,83 @@
   {
    "op": "add_via",
    "at": [
-    40.644,
-    128.029
+    39.731,
+    127.924
    ],
    "size": 0.6,
    "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    52.865,
+    94.043
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    52.865,
+    93.393
+   ],
+   "end": [
+    52.865,
+    94.043
+   ],
+   "width": 0.23,
+   "layer": "F.Cu",
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    51.811,
+    95.569
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    50.935,
+    95.773
+   ],
+   "end": [
+    51.811,
+    95.569
+   ],
+   "width": 0.23,
+   "layer": "F.Cu",
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    52.865,
+    96.603
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    52.865,
+    97.253
+   ],
+   "end": [
+    52.865,
+    96.603
+   ],
+   "width": 0.23,
+   "layer": "F.Cu",
    "net": "GND"
   },
   {
@@ -811,18 +787,18 @@
     "B.Cu"
    ],
    "pads": {
-    "requested": 29,
-    "placed": 25,
+    "requested": 27,
+    "placed": 23,
     "skipped": 4
    },
    "area": {
-    "candidates": 407,
+    "candidates": 424,
     "placed": 5,
     "rejected": {
      "hole_to_hole": 4,
-     "single_layer_contact": 308,
-     "fill_edge": 32,
-     "near_same_net_via": 58
+     "single_layer_contact": 336,
+     "fill_edge": 25,
+     "near_same_net_via": 54
     },
     "capped": false
    }
@@ -830,7 +806,7 @@
  },
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-28T19:30:33+00:00",
+ "generated_at": "2026-10-28T20:03:48+00:00",
  "input": "/work/boards/lite/kicad/lite-main.kicad_pcb",
- "input_digest": "sexpr_no_uuid:fcce213bd97b833c9d9ecdc7b062e204148ef0d2ce90679e936ac0ce89eda407"
+ "input_digest": "sexpr_no_uuid:7bd73d6aa011236172dc56f94f70b68d67187beede03bbdff560491df483f322"
 }

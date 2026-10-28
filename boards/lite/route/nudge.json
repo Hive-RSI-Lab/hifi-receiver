@@ -3,87 +3,45 @@
  "ops": [
   {
    "op": "remove",
-   "uuid": "548bc4b1-3e54-485b-83cf-5597d0aca46f"
+   "uuid": "cbc6f41f-1285-4739-855a-44cbc0df9b33"
   },
   {
    "op": "add_via",
    "at": [
-    52.1609,
-    117.6801
+    73.2311,
+    81.1243
    ],
    "size": 0.6,
    "drill": 0.3,
-   "net": "/I2C_SDA"
+   "net": "/PVDD_EN"
   },
   {
    "op": "add_track",
    "start": [
-    52.2068,
-    117.6363
+    73.3032,
+    81.1406
    ],
    "end": [
-    52.1609,
-    117.6801
+    73.2311,
+    81.1243
    ],
    "width": 0.2,
    "layer": "F.Cu",
-   "net": "/I2C_SDA"
+   "net": "/PVDD_EN"
   },
   {
    "op": "add_track",
    "start": [
-    52.2068,
-    117.6363
+    73.3032,
+    81.1406
    ],
    "end": [
-    52.1609,
-    117.6801
+    73.2311,
+    81.1243
    ],
    "width": 0.2,
    "layer": "B.Cu",
-   "net": "/I2C_SDA"
-  },
-  {
-   "op": "remove",
-   "uuid": "0dbccba8-ddd5-4c45-a03f-4ca65586ec6b"
-  },
-  {
-   "op": "add_via",
-   "at": [
-    44.8829,
-    135.0223
-   ],
-   "size": 0.6,
-   "drill": 0.3,
-   "net": "/I2S_BCLK"
-  },
-  {
-   "op": "add_track",
-   "start": [
-    44.7824,
-    135.0185
-   ],
-   "end": [
-    44.8829,
-    135.0223
-   ],
-   "width": 0.2,
-   "layer": "F.Cu",
-   "net": "/I2S_BCLK"
-  },
-  {
-   "op": "add_track",
-   "start": [
-    44.7824,
-    135.0185
-   ],
-   "end": [
-    44.8829,
-    135.0223
-   ],
-   "width": 0.2,
-   "layer": "B.Cu",
-   "net": "/I2S_BCLK"
+   "net": "/PVDD_EN"
   }
  ]
 }

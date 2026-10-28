@@ -4,7 +4,7 @@
   "phase": "P6",
   "tool": "place",
   "input": "kicad/lite-main.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:2836388ba01567d7c1ee2e05b003fe42dd3d409ca3aa87082edc0c417051d1f2",
+  "input_digest": "sexpr_no_uuid:23997887143c0b21f9cceb4f18cd71946697f6ba081879f64c659155d67651e7",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -60,10 +60,10 @@
     "workspace": ".",
     "gate": "place",
     "status": "pass",
-    "attempts": 15,
+    "attempts": 17,
     "inputs": {
-      "pcb": "sexpr_no_uuid:2836388ba01567d7c1ee2e05b003fe42dd3d409ca3aa87082edc0c417051d1f2",
-      "constraints": "json_canonical:84e7da5870eebe7747f43680dab6c7fb53d388a7c41dfafea3d2b8d421291285",
+      "pcb": "sexpr_no_uuid:23997887143c0b21f9cceb4f18cd71946697f6ba081879f64c659155d67651e7",
+      "constraints": "json_canonical:ca404e05236896b5e1cbbdaf1aa9ac1cd87eeca17aecbd5596c29f5ff074fe29",
       "decoupling": "json_canonical:83d4aa9fc41ad6fde56012fff8a8e86b567621103cd7a118d91157b10ede6600",
       "place_waivers": null
     }

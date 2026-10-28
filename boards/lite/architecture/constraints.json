@@ -265,8 +265,20 @@
    "region": [
     92.265,
     62.823,
+    95.265,
+    69.923
+   ],
+   "priority": 1,
+   "connect": "solid"
+  },
+  {
+   "net": "PVDD",
+   "layer": "B.Cu",
+   "region": [
+    92.265,
+    63.323,
     95.765,
-    82.323
+    80.123
    ],
    "priority": 1,
    "connect": "solid"
@@ -311,18 +323,6 @@
    "net": "PVDD",
    "layer": "F.Cu",
    "region": [
-    81.365,
-    103.823,
-    95.665,
-    117.323
-   ],
-   "priority": 1,
-   "connect": "solid"
-  },
-  {
-   "net": "PVDD",
-   "layer": "F.Cu",
-   "region": [
     108.865,
     93.323,
     122.365,
@@ -339,18 +339,6 @@
     98.323,
     122.365,
     103.823
-   ],
-   "priority": 1,
-   "connect": "solid"
-  },
-  {
-   "net": "PVDD",
-   "layer": "F.Cu",
-   "region": [
-    108.665,
-    103.823,
-    122.365,
-    116.323
    ],
    "priority": 1,
    "connect": "solid"

@@ -98,7 +98,7 @@ for ref, v in (("C54", 40.2), ("C53", 42.0), ("C52", 44.0), ("C51", 46.2)):
 for ref, v in (("C57", 40.2), ("C56", 42.0), ("C55", 44.0)):
     P(ref, 71.3, v, 0)             # pins 31/32
 P("C58", 64.2, 48.0, 270)          # 470 uF polymer, left, + pad up
-P("R16", 64.2, 55.6, 0)            # PVDD bleeder (inside the PVDD pour)
+P("R16", 60.0, 60.4, 0)            # PVDD bleeder, beside the PVDD divider
 P("C59", 94.5, 48.0, 270)          # 220 uF, right, + pad up
 P("C50", 78.2, 53.0, 90)           # GVDD
 P("R50", 80.2, 53.0, 90)           # gain to GND

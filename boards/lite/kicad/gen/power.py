@@ -31,8 +31,11 @@ planes = [
     # Q1's source; J1's right VBUS pad (A4+B9) reaches it by a 1 mm track
     # (a pour around the receptacle's pads broke into islands)
     {"net": "VBUS", "layer": "F.Cu", "region": R(63.6, 2.5, 66.9, 10.2), "priority": 1, "connect": "solid"},
-    # Q1's drain, down between the filter caps C68/C69 to the B.Cu PVDD pour
-    {"net": "PVDD", "layer": "F.Cu", "region": R(69.4, 2.5, 72.9, 22.0), "priority": 1, "connect": "solid"},
+    # Q1's drain pads, and vias straight down to a B.Cu PVDD column that runs
+    # under the filter caps to the B.Cu pour (on F.Cu the speaker lines from
+    # J4 to L1/L2 have to cross that path, and cut an F.Cu strip in two)
+    {"net": "PVDD", "layer": "F.Cu", "region": R(69.4, 2.5, 72.4, 9.6), "priority": 1, "connect": "solid"},
+    {"net": "PVDD", "layer": "B.Cu", "region": R(69.4, 3.0, 72.9, 19.8), "priority": 1, "connect": "solid"},
     # B.Cu PVDD under the inductors only: it stops 5 mm short of the TPA3118 so
     # the B.Cu ground under the chip spreads its heat in every direction
     {"net": "PVDD", "layer": "B.Cu", "region": R(63.5, 19.8, 98.7, 35.0), "priority": 1, "connect": "solid"},
@@ -40,10 +43,8 @@ planes = [
     # each reaching up to the B.Cu pour's edge (v 33-35) for its vias
     {"net": "PVDD", "layer": "F.Cu", "region": R(58.5, 33.0, 72.0, 38.0), "priority": 1, "connect": "solid"},
     {"net": "PVDD", "layer": "F.Cu", "region": R(58.5, 38.0, 74.6, 43.5), "priority": 1, "connect": "solid"},
-    {"net": "PVDD", "layer": "F.Cu", "region": R(58.5, 43.5, 72.8, 57.0), "priority": 1, "connect": "solid"},
     {"net": "PVDD", "layer": "F.Cu", "region": R(86.0, 33.0, 99.5, 38.0), "priority": 1, "connect": "solid"},
     {"net": "PVDD", "layer": "F.Cu", "region": R(82.4, 38.0, 99.5, 43.5), "priority": 1, "connect": "solid"},
-    {"net": "PVDD", "layer": "F.Cu", "region": R(85.8, 43.5, 99.5, 56.0), "priority": 1, "connect": "solid"},
 ]
 ops = []
 
@@ -75,14 +76,15 @@ trk((60.9, 8.9), (64.0, 8.9), 1.0, "F.Cu", "VBUS")
 # same-net pours that only abut are joined by a track across the seams
 # (overlapping them makes planes_gen raise one's priority, and KiCad then
 # keeps the two fills apart)
-trk((62.0, 35.5), (62.0, 46.0), 1.0, "F.Cu", "PVDD")
-trk((98.4, 35.5), (98.4, 46.0), 1.0, "F.Cu", "PVDD")
-# C2 (Miller cap) PVDD pad into the drain strip
-trk((68.9, 11.7), (70.4, 11.7), 0.6, "F.Cu", "PVDD")
-# PVDD layer changes: F.Cu strip -> B.Cu pour -> the two PVCC groups
-for u in (70.2, 71.3, 72.4):
-    for v in (20.6, 21.6):
-        via(u, v, "PVDD")
+trk((62.0, 35.5), (62.0, 43.0), 1.0, "F.Cu", "PVDD")
+trk((98.4, 35.5), (98.4, 43.0), 1.0, "F.Cu", "PVDD")
+trk((71.15, 18.8), (71.15, 21.0), 1.5, "B.Cu", "PVDD")    # column -> pour seam
+# C2 (Miller cap) PVDD pad to a via into the column
+trk((68.9, 11.7), (70.6, 11.7), 0.6, "F.Cu", "PVDD")
+via(70.6, 11.7, "PVDD", 0.6, 0.3)
+# PVDD layer changes: Q1's drain -> B.Cu column, B.Cu pour -> the PVCC groups
+for v in (3.6, 4.85, 6.1, 7.35, 8.6):
+    via(71.75, v, "PVDD")
 for u in (64.0, 65.3, 66.6, 67.9, 69.2):
     via(u, 34.0, "PVDD")
 for u in (88.0, 90.0, 92.0, 94.0, 96.0):
