@@ -1075,17 +1075,17 @@
   },
   {
    "Designator": "C10",
-   "Mid X": "71.3650",
-   "Mid Y": "-101.3230",
+   "Mid X": "74.8650",
+   "Mid Y": "-97.9230",
    "Layer": "Top",
-   "Rotation": "90.0000"
+   "Rotation": "0.0000"
   },
   {
    "Designator": "C11",
-   "Mid X": "71.3650",
-   "Mid Y": "-104.8230",
+   "Mid X": "74.8650",
+   "Mid Y": "-99.7230",
    "Layer": "Top",
-   "Rotation": "90.0000"
+   "Rotation": "0.0000"
   },
   {
    "Designator": "C12",
@@ -1453,10 +1453,10 @@
   },
   {
    "Designator": "D1",
-   "Mid X": "83.8650",
-   "Mid Y": "-80.3230",
+   "Mid X": "84.8650",
+   "Mid Y": "-72.2230",
    "Layer": "Top",
-   "Rotation": "90.0000"
+   "Rotation": "180.0000"
   },
   {
    "Designator": "D2",
@@ -1559,7 +1559,7 @@
   {
    "Designator": "Q4",
    "Mid X": "86.8650",
-   "Mid Y": "-72.1230",
+   "Mid Y": "-75.9230",
    "Layer": "Top",
    "Rotation": "0.0000"
   },
@@ -1607,8 +1607,8 @@
   },
   {
    "Designator": "R7",
-   "Mid X": "87.3650",
-   "Mid Y": "-76.9230",
+   "Mid X": "83.3650",
+   "Mid Y": "-77.0230",
    "Layer": "Top",
    "Rotation": "0.0000"
   },
@@ -2188,9 +2188,9 @@
   {
    "ref": "C10",
    "package": "C_0603_1608Metric",
-   "base_rot": 90.0,
+   "base_rot": 0.0,
    "correction": 0.0,
-   "final_rot": 90.0,
+   "final_rot": 0.0,
    "matched": null,
    "source": "lcsc_model",
    "layer": "Top"
@@ -2198,9 +2198,9 @@
   {
    "ref": "C11",
    "package": "C_0603_1608Metric",
-   "base_rot": 90.0,
+   "base_rot": 0.0,
    "correction": 0.0,
-   "final_rot": 90.0,
+   "final_rot": 0.0,
    "matched": null,
    "source": "lcsc_model",
    "layer": "Top"
@@ -2728,9 +2728,9 @@
   {
    "ref": "D1",
    "package": "SMB_L4.6-W3.6-LS5.3-RD",
-   "base_rot": 90.0,
+   "base_rot": 180.0,
    "correction": 0.0,
-   "final_rot": 90.0,
+   "final_rot": 180.0,
    "matched": null,
    "source": "lcsc_model",
    "layer": "Top"

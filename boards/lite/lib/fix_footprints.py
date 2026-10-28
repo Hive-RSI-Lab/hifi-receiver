@@ -39,8 +39,15 @@ s = f.read_text()
 # 3 x 3 vias at 1 mm with 4 x 4 at 0.85 mm (0.55 mm hole to hole, all inside
 # the 3.81 x 3.71 mm pad)
 s2 = re.sub(r'\t\(pad (?:""|33) thru_hole circle \(at [-\d.]+ [-\d.]+\) \(size 0\.61 0\.61\) \(drill 0\.30\) \(layers [^)]*\)(?: \(zone_connect 2\))?\)\n', '', s)
-grid = "".join(f"\t(pad 33 thru_hole circle (at {x:.3f} {y:.3f}) (size 0.61 0.61) (drill 0.30) (layers *.Cu *.Mask) (zone_connect 2))\n"
+grid = "".join(f"\t(pad 33 thru_hole circle (at {x:.3f} {y:.3f}) (size 0.61 0.61) (drill 0.30) (layers *.Cu) (zone_connect 2))\n"
                for x in (-1.275, -0.425, 0.425, 1.275) for y in (-1.275, -0.425, 0.425, 1.275))
+# EP copper + mask without paste; 4 paste windows (~55 %) so solder doesn't
+# all wick into the (tented) vias
+s2 = s2.replace("(pad 33 smd rect (at 0.00 0.00 0.00) (size 3.810 3.710) (layers F.Cu F.Paste F.Mask))",
+                "(pad 33 smd rect (at 0.00 0.00 0.00) (size 3.810 3.710) (layers F.Cu F.Mask))")
+s2 = re.sub(r'\t\(pad "" smd rect \(at [-\d.]+ [-\d.]+\) \(size 1\.400 1\.400\) \(layers F\.Paste\)\)\n', '', s2)
+grid += "".join(f'\t(pad "" smd rect (at {x:.2f} {y:.2f}) (size 1.400 1.400) (layers F.Paste))\n'
+                for x in (-0.95, 0.95) for y in (-0.95, 0.95))
 i = s2.index("\t(pad 33 smd rect")
 s2 = s2[:s2.index("\n", i) + 1] + grid + s2[s2.index("\n", i) + 1:]
 if s2 != s:

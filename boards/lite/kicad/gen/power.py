@@ -30,7 +30,7 @@ planes = [
     {"net": "GND", "layer": "B.Cu", "priority": 0},
     # Q1's source; J1's right VBUS pad (A4+B9) reaches it by a 1 mm track
     # (a pour around the receptacle's pads broke into islands)
-    {"net": "VBUS", "layer": "F.Cu", "region": R(63.6, 2.5, 66.9, 10.2), "priority": 1, "connect": "solid"},
+    {"net": "VBUS", "layer": "F.Cu", "region": R(63.6, 2.5, 66.9, 13.4), "priority": 1, "connect": "solid"},  # + D1 cathode
     # Q1's drain pads, and vias straight down to a B.Cu PVDD column that runs
     # under the filter caps to the B.Cu pour (on F.Cu the speaker lines from
     # J4 to L1/L2 have to cross that path, and cut an F.Cu strip in two)
@@ -62,9 +62,10 @@ def trk(a, b, w, layer, net):
 trk((56.1, 7.5), (56.1, 8.9), 0.5, "F.Cu", "VBUS")
 via(56.1, 8.9, "VBUS", 0.6, 0.3)
 trk((55.75, 9.85), (56.1, 9.2), 0.3, "F.Cu", "VBUS")
-trk((56.1, 8.9), (56.1, 12.2), 1.2, "B.Cu", "VBUS")
-trk((56.1, 12.2), (64.2, 12.2), 1.2, "B.Cu", "VBUS")
-trk((64.2, 12.2), (64.2, 9.4), 1.2, "B.Cu", "VBUS")
+# (straight across under J1's pad row: further down it would run over the
+# CH224A's exposed-pad GND vias, which planes_gen adds)
+trk((56.1, 8.9), (64.2, 8.9), 1.2, "B.Cu", "VBUS")
+trk((64.2, 8.9), (64.2, 9.4), 1.2, "B.Cu", "VBUS")
 via(64.2, 9.4, "VBUS")
 # J1's SMD ground pads tie sideways to the shell's through-hole pads
 trk((55.3, 7.5), (54.4, 7.5), 0.4, "F.Cu", "GND")

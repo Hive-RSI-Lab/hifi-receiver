@@ -8,12 +8,12 @@
   "by_source": {}
  },
  "violations": [],
- "requested": 27,
- "placed": 28,
+ "requested": 24,
+ "placed": 27,
  "skipped": [
   {
    "ref": "C1.2",
-   "reason": "track_connected_no_local_spot",
+   "reason": "already_stitched",
    "net": "GND"
   },
   {
@@ -87,12 +87,17 @@
    "net": "GND"
   },
   {
+   "ref": "C30.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
    "ref": "C31.2",
    "reason": "already_stitched",
    "net": "GND"
   },
   {
-   "ref": "C33.2",
+   "ref": "C32.2",
    "reason": "already_stitched",
    "net": "GND"
   },
@@ -218,11 +223,6 @@
   },
   {
    "ref": "J1.A1-B12",
-   "reason": "track_connected_no_local_spot",
-   "net": "GND"
-  },
-  {
-   "ref": "J1.B1-A12",
    "reason": "track_connected_no_local_spot",
    "net": "GND"
   },
@@ -377,6 +377,11 @@
    "net": "GND"
   },
   {
+   "ref": "U7.26",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
    "ref": "U7.29",
    "reason": "already_stitched",
    "net": "GND"
@@ -424,24 +429,14 @@
  "applied": true,
  "refilled": true,
  "apply_by_status": {
-  "added": 33
+  "added": 31
  },
  "ops": [
   {
    "op": "add_via",
    "at": [
-    51.29,
-    100.323
-   ],
-   "size": 0.6,
-   "drill": 0.3,
-   "net": "GND"
-  },
-  {
-   "op": "add_via",
-   "at": [
-    58.29,
-    89.823
+    58.1,
+    91.163
    ],
    "size": 0.6,
    "drill": 0.3,
@@ -530,8 +525,8 @@
   {
    "op": "add_via",
    "at": [
-    103.065,
-    111.848
+    77.556,
+    68.784
    ],
    "size": 0.6,
    "drill": 0.3,
@@ -540,12 +535,12 @@
   {
    "op": "add_track",
    "start": [
-    103.065,
-    112.498
+    78.165,
+    67.808
    ],
    "end": [
-    103.065,
-    111.848
+    77.556,
+    68.784
    ],
    "width": 0.3,
    "layer": "F.Cu",
@@ -554,8 +549,8 @@
   {
    "op": "add_via",
    "at": [
-    38.259,
-    131.645
+    102.605,
+    112.038
    ],
    "size": 0.6,
    "drill": 0.3,
@@ -564,8 +559,8 @@
   {
    "op": "add_via",
    "at": [
-    39.805,
-    131.773
+    38.096,
+    131.175
    ],
    "size": 0.6,
    "drill": 0.3,
@@ -574,8 +569,18 @@
   {
    "op": "add_via",
    "at": [
-    36.729,
-    129.999
+    39.506,
+    131.375
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    36.788,
+    129.505
    ],
    "size": 0.6,
    "drill": 0.3,
@@ -604,8 +609,8 @@
   {
    "op": "add_via",
    "at": [
-    39.731,
-    127.924
+    39.489,
+    128.359
    ],
    "size": 0.6,
    "drill": 0.3,
@@ -638,32 +643,8 @@
   {
    "op": "add_via",
    "at": [
-    51.811,
-    95.569
-   ],
-   "size": 0.6,
-   "drill": 0.3,
-   "net": "GND"
-  },
-  {
-   "op": "add_track",
-   "start": [
-    50.935,
-    95.773
-   ],
-   "end": [
-    51.811,
-    95.569
-   ],
-   "width": 0.23,
-   "layer": "F.Cu",
-   "net": "GND"
-  },
-  {
-   "op": "add_via",
-   "at": [
     52.865,
-    96.603
+    96.103
    ],
    "size": 0.6,
    "drill": 0.3,
@@ -677,7 +658,7 @@
    ],
    "end": [
     52.865,
-    96.603
+    96.103
    ],
    "width": 0.23,
    "layer": "F.Cu",
@@ -787,18 +768,18 @@
     "B.Cu"
    ],
    "pads": {
-    "requested": 27,
-    "placed": 23,
-    "skipped": 4
+    "requested": 24,
+    "placed": 22,
+    "skipped": 2
    },
    "area": {
-    "candidates": 424,
+    "candidates": 422,
     "placed": 5,
     "rejected": {
      "hole_to_hole": 4,
-     "single_layer_contact": 336,
-     "fill_edge": 25,
-     "near_same_net_via": 54
+     "single_layer_contact": 319,
+     "fill_edge": 32,
+     "near_same_net_via": 62
     },
     "capped": false
    }
@@ -806,7 +787,7 @@
  },
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-28T20:03:48+00:00",
+ "generated_at": "2026-10-28T21:04:31+00:00",
  "input": "/work/boards/lite/kicad/lite-main.kicad_pcb",
- "input_digest": "sexpr_no_uuid:7bd73d6aa011236172dc56f94f70b68d67187beede03bbdff560491df483f322"
+ "input_digest": "sexpr_no_uuid:b2a39385611d9daab5a346d106894fc770164563ed6b1834665069b99d0aa274"
 }

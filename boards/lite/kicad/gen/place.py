@@ -50,16 +50,16 @@ P("C1", 51.8, 17.0, 90)            # VHV (pin 1)
 P("R2", 54.2, 19.4, 0)             # I2C 0R links, below SCL/SDA (pins 2/3)
 P("R3", 57.5, 19.4, 0)
 P("R15", 60.5, 14.8, 0)            # Miller series
-P("D1", 61.0, 20.0, 90)            # TVS on VBUS
+P("D1", 62.0, 11.9, 180)          # TVS: cathode (pad 1) in the VBUS pour at Q1, anode to GND
 
 # PVDD switch between USB-C and the amp; its drain feeds a PVDD strip on F.Cu
 # (u 69.4-72.9) down between the filter caps to the B.Cu PVDD pour
 P("Q1", 67.7, 6.0, 270)            # source (VBUS) toward J1, drain (PVDD) right
-P("Q4", 64.0, 11.8, 0)
+P("Q4", 64.0, 15.6, 0)
 P("C2", 68.9, 12.5, 90)           # Miller cap, PVDD pad in the drain strip
 P("R5", 67.4, 11.0, 90)
 P("R6", 67.4, 14.6, 90)
-P("R7", 64.5, 16.6, 0)
+P("R7", 60.5, 16.7, 0)
 P("R8", 21.0, 55.5, 90)            # PVDD_EN pull-down, at the ESP32's GPIO18
 
 # ---------------------------------------------------------------- 5 V buck
@@ -78,7 +78,8 @@ P("C9", 47.0, 25.5, 90)
 
 # ---------------------------------------------------------------- 3.3 V buck
 P("U3", 52.0, 42.0, 0)             # SY8089
-col(["C10", "C11"], 48.5, 41.0, 3.5, 90)
+P("C10", 52.0, 37.6, 0)            # input caps across U3 (IN pin 4 left, GND pin 2 right)
+P("C11", 52.0, 39.4, 0)
 P("L6", 56.5, 42.0, 90)            # 2.2 uH
 P("C12", 56.5, 47.0, 0)
 P("C13", 52.5, 47.0, 0)

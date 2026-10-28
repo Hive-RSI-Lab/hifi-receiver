@@ -2,7 +2,7 @@
  "script": "place_edit",
  "status": "pass",
  "board": "kicad/lite-main.kicad_pcb",
- "applied": 16,
+ "applied": 20,
  "verified": true,
  "results": [
   {
@@ -107,6 +107,34 @@
    "layer": "F.SilkS",
    "x": 120.465,
    "y": 104.123,
+   "deg": 0.0
+  },
+  {
+   "text": "L+",
+   "layer": "F.SilkS",
+   "x": 98.045,
+   "y": 72.623,
+   "deg": 0.0
+  },
+  {
+   "text": "L-",
+   "layer": "F.SilkS",
+   "x": 103.125,
+   "y": 72.623,
+   "deg": 0.0
+  },
+  {
+   "text": "R+",
+   "layer": "F.SilkS",
+   "x": 108.205,
+   "y": 72.623,
+   "deg": 0.0
+  },
+  {
+   "text": "R-",
+   "layer": "F.SilkS",
+   "x": 113.285,
+   "y": 72.623,
    "deg": 0.0
   }
  ]

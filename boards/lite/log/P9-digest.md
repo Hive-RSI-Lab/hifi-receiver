@@ -1,0 +1,4 @@
+- P9 fab_export (JLC layer set, zipped) + bom_cpl (BOM.csv/CPL.csv with LCSC, BOM-full, prebuy) - every CPL rotation checked against the LCSC model (cache parts/easyeda, needed 3 tries past EasyEDA's 403 rate limit).
+- dfm gate PASS 0 errors, 3 warnings (thin footprint silk; J2/J3 model pad centre 0.79 mm off from the added locating pegs).
+- Outline arcs had to be snapped to 1 um first (dfm read the outline as open).
+- P10 (quote, order, pay) is the person's: nothing ordered.

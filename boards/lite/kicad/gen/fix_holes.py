@@ -1,4 +1,6 @@
-"""Remove stitch vias that land under the 0.5 mm hole-to-hole floor.
+"""Remove stitch vias that land under the 0.5 mm hole-to-hole floor or on
+another net's track (stitch_vias checks neither: it dropped GND vias onto
+the pre-routed B.Cu VBUS track).
 
 hwde's stitch_vias keeps copper clearance but not JLC's hole-to-hole minimum,
 so some of its GND vias sit 0.23-0.48 mm from a mounting-hole via ring, the
@@ -16,7 +18,7 @@ gate = json.loads((ws / "reports" / "drc_routed-gate.json").read_text())
 stitched = [tuple(o["at"]) for o in json.loads((ws / "route" / "stitch_vias.json").read_text())["ops"] if "at" in o]
 ops, seen = [], set()
 for v in gate["failing"]:
-    if v.get("check") != "hole_to_hole":
+    if v.get("check") not in ("hole_to_hole", "shorting_items", "clearance", "hole_clearance"):
         continue
     for it in v["items"]:
         if not it["msg"].startswith("Via"):

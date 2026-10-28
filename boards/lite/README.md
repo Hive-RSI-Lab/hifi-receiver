@@ -15,9 +15,9 @@ the person's.
 ## What it is
 
 - **Board:** 2 layers, 1.6 mm FR-4, 1 oz, HASL, 100 x 90 mm, four M3 plated
-  holes, 2 mm corners. 130 parts: 127 on the top side, SMT plus 3
-  through-hole connectors; the 4 mounting holes are not BOM parts. JLC
-  assembly with LCSC part numbers.
+  holes, 2 mm corners. 134 parts, all on the top side. 130 are SMT; 4 are
+  through-hole (J2, J3, J4 and U9). The 4 mounting holes are not BOM parts.
+  JLC assembly with LCSC part numbers.
 - **Rear edge, left to right:**
   - **J2:** RCA line in (FLX4). Top jack white = L, bottom red = R.
   - **J3:** RCA sub out L/R.
@@ -92,9 +92,11 @@ was done about each finding is in
 - **TPA3118 gain 26 dB.** The ES8388's full scale (~0.9 Vrms) x 20 clips at
   20 V into 4 ohm 3.7 dB before 0 dBFS, so firmware caps the codec volume.
   20 dB would leave only 20 W.
-- **Power copper is pours, not tracks.** VBUS (J1 to Q1) and PVDD (Q1 down a
-  F.Cu strip between the filter caps, a B.Cu pour under the inductors, F.Cu
-  islands at both PVCC groups) carry up to 5 A, joined by 17 vias. The pours
+- **Power copper is pours, not tracks.** VBUS (J1 to Q1) and PVDD carry up
+  to 5 A, joined by 16 vias. PVDD runs from Q1's drain down a B.Cu column
+  under the filter caps, so the speaker lines cross it on F.Cu. It continues
+  as a B.Cu pour under the inductors, stopping 5 mm short of the amp so the
+  ground under it is unbroken, then F.Cu islands at both PVCC groups. The pours
   are in `kicad/gen/power.py`. Tracks only feed the small taps.
 - **Amp OUT runs (pin to inductor) are 0.31 mm minimum** at the HTSSOP pins
   (0.65 mm pitch, 0.34 mm pins), sized for 1.0 A rms / 30 C. That is music at
@@ -120,17 +122,44 @@ was done about each finding is in
 
 | Gate | Result |
 |---|---|
-| ERC (`erc`) | TBD |
-| Placement (`place`) | TBD |
-| Routed DRC (`drc_routed`) | TBD |
-| Verify suite (`verify`) | TBD |
-| JLC DFM on the exported Gerbers (`dfm`) | TBD |
+| ERC (`erc`) | 0 errors, 0 warnings (every pulled pin is typed passive, so the schematic review checked pins by hand) |
+| Placement (`place`) | pass, 0 errors |
+| Routed DRC (`drc_routed`) | 0 errors, 0 warnings, 0 unconnected |
+| Verify suite (`verify`) | pass, with one signed waiver (U8 thermal, below) and 27 warnings (route-style jogs, part ratings with no voltage attribute) |
+| JLC DFM on the exported Gerbers (`dfm`) | pass, 0 errors. 3 warnings: thin silk strokes inside stock/EasyEDA footprints, and J2/J3's LCSC model pad centre 0.79 mm off because of the added locating pegs. Every CPL rotation was checked against the LCSC model. |
 
-TBD reviewers.
+All gates last passed on hive-hwde release 94ec4b7.
+
+**The one waiver: TPA3118 thermal**
+([`reports/verify-waivers.json`](reports/verify-waivers.json)):
+
+- **The two estimates:** hwde's copper-area model gives the amp ~47 C/W on
+  this board, which is ~94 C rise at 2 W (1/8 power into 4 ohm). TI's
+  datasheet gives 22 C/W for this package on its 2-layer EVM, ~44 C rise.
+- **What the board does about it:** both sides are ground-poured around the
+  chip, with 16 solid EP vias and unbroken B.Cu ground under it.
+- **Backstops:** the chip shuts itself down on over-temperature and reports it
+  on FAULTZ, which the firmware reads.
+- **Bring-up must measure it** at 1/8 power into 4 ohm. Above 100 C, stick a
+  heatsink on the package top or lower the governor's limit.
+
+**Reviews:**
+
+- **Schematic:** a fresh-context review found 1 error and 14 warnings,
+  answered in
+  [`reports/review-schematic-response.md`](reports/review-schematic-response.md).
+- **Routed board:** [`reports/review-board.md`](reports/review-board.md).
 
 ## Cost
 
-TBD
+About **$14.37 per unit at 100**: parts $10.91, JLC assembly $1.63, PCB $0.62
+and four binding posts $1.20. At 10 units it is $22.90.
+`python3 tools/bom_estimate.py` totals the real BOM in `docs/bom-estimate.csv`.
+
+- **Parts:** 48 distinct; 29 JLC Basic, 19 Extended. Extended parts cost $3
+  each per order and may need pre-buying: see `fab/prebuy.csv`.
+- **Quote:** none yet. JLC's quote is the real price, and ordering and paying
+  are the person's.
 
 ## How to rebuild and re-check it
 
@@ -155,12 +184,67 @@ for g in place drc_routed verify dfm; do $H gate --gate $g kicad/lite-main.kicad
 $H gate --gate erc kicad/lite-main.kicad_sch --workspace .
 ```
 
-TBD finishing steps.
+After routing, the committed board also went through:
+
+```sh
+sh build.sh finish   # plane_repair, 45-degree snap, silk_place + kicad/gen/silk.py, outline snap
+sh build.sh fab      # fab_export, bom_cpl (LCSC models cached in parts/easyeda/), dfm gate
+```
+
+Two fixes, between `route` and `finish`, only where drc_routed asked for them:
+
+- `kicad/gen/nudge_vias.py` + `kicad/gen/refill.py` for Freerouting's vias
+  under the 0.5 mm hole-to-hole floor.
+- The route run was repeated until only those were left.
+
+The fab package in `fab/`:
+
+- `lite-main_gerbers.zip`: Gerbers and drill.
+- `BOM.csv` and `CPL.csv`: the JLC upload pair.
+- `BOM-full.csv`
+- `prebuy.csv`
 
 ## How to test a built board
 
-TBD
+1. **Visual:** check D1 (TVS, cathode bar to VBUS), C58/C59 (+ up), D2 and
+   the RCA jacks seated on their pegs.
+2. **Power, from a 5 V USB port** (a laptop) with nothing connected:
+   - +5V (C7) reads 4.7–5 V, +3V3 (C12) 3.3 V, +3V3A (C16) 3.3 V.
+   - PVDD (C58+) reads 0 V: the amp switch must stay off on 5 V.
+   - The CH340C enumerates as a serial port, and the ESP32 boot log appears
+     at 115200.
+3. **Flash:** flash the firmware over the same port; auto-program needs no
+   buttons.
+4. **On a 65–100 W PD charger:**
+   - VBUS reads 20 V.
+   - The CH224A at I2C 0x22 reports PD active (0x09) and the PDO current
+     (0x50).
+   - Firmware sets GPIO18. PVDD rises in ~6 ms and GPIO39 reads ~1.8 V.
+   - Watch the charger doesn't drop out (inrush ~1.6 A).
+5. **Audio:**
+   - Line in, both routes: the analog bypass to the speakers, and the ADC.
+   - Sub outs: about 2 Vrms max with no load.
+   - The amp, into 4 ohm dummy loads: ~43 W/ch at clipping.
+   - **The TPA3118's case temperature at 1/8 power** (the waiver above).
+   - FAULTZ stays high.
+6. **Controls:** the IR receiver with any NEC remote, the three buttons and
+   the LED.
+
+The bench scripts (plan item 9) will automate this.
 
 ## Open items
 
-TBD
+1. **U8 temperature at 1/8 power:** measure at bring-up (the waiver).
+2. **RCA jack depth:** check J2/J3 against a real XDJK-0271-1650.
+   - The board edge sits at the footprint silk's face line.
+   - The EasyEDA 3D model sits 13.5 mm low and 6 mm inboard (found by the
+     enclosure worker); only renders are affected.
+3. **Speaker terminal wire entry:** which side J4's wires enter on is not
+   confirmed from a drawing. The enclosure takes them from the top/rear.
+4. **CH224A I2C pull-ups:** if bring-up measures CFG2/CFG3 idling above 3.6 V,
+   depopulate R2/R3. The I2C readout is then lost, and VBUS sense still works.
+5. **USB ESD:** none on this tier (decision above). Plus/Ultra should add a
+   USBLC6.
+6. **cSnkBulk:** VBUS has ~15 uF of ceramic at 5 V, above USB-C's 10 uF
+   attach limit. PD sources tolerate it in practice; check at bring-up with
+   two or three chargers.

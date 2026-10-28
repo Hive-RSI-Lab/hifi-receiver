@@ -4,7 +4,7 @@
   "phase": "P8",
   "tool": "verify",
   "input": "kicad/lite-main.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:ec2b7102a4b686e14c6c39d6cfee4fd1fe2da6c26d752b64af1c5680c5eb9ede",
+  "input_digest": "sexpr_no_uuid:5d4d3eefa08ac13660882ad6cc8c5ed1b8f0ccd651f3d521eb5411635ca9c576",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -13,15 +13,15 @@
     "max_count": 0
   },
   "counts": {
-    "total": 28,
+    "total": 35,
     "by_severity": {
-      "warning": 27,
+      "warning": 34,
       "error": 1
     },
     "by_source": {
       "check_decoupling": 1,
       "check_thermal": 1,
-      "check_route_style": 8,
+      "check_route_style": 15,
       "check_ratings": 18
     },
     "by_check": {
@@ -32,7 +32,7 @@
       "check_creepage": 0,
       "check_thermal": 1,
       "check_silk": 0,
-      "check_route_style": 8,
+      "check_route_style": 15,
       "check_mating": 0,
       "check_pdn": 0,
       "check_ratings": 18,
@@ -58,11 +58,11 @@
       "refs": [
         "U8"
       ],
-      "msg": "U8 dissipates 2.00 W through 325 mm2 top + 567 mm2 back GND copper and 26 thermal via(s): ~94 C rise (theta_JA ~47 C/W) > 80 C allowed; add thermal vias into a back-side GND pour",
+      "msg": "U8 dissipates 2.00 W through 306 mm2 top + 573 mm2 back GND copper and 26 thermal via(s): ~95 C rise (theta_JA ~48 C/W) > 80 C allowed; add thermal vias into a back-side GND pour",
       "source": "check_thermal",
       "items": [
         {
-          "msg": "U8 dissipates 2.00 W through 325 mm2 top + 567 mm2 back GND copper and 26 thermal via(s): ~94 C rise (theta_JA ~47 C/W) > 80 C allowed; add thermal vias into a back-side GND pour",
+          "msg": "U8 dissipates 2.00 W through 306 mm2 top + 573 mm2 back GND copper and 26 thermal via(s): ~95 C rise (theta_JA ~48 C/W) > 80 C allowed; add thermal vias into a back-side GND pour",
           "pos": [
             101.8654,
             105.323
@@ -72,8 +72,8 @@
       "kind": "thermal_area",
       "power_w": 2.0,
       "area_mm2": 645.0,
-      "theta_ja": 47.1167,
-      "rise_c": 94.2333,
+      "theta_ja": 47.548,
+      "rise_c": 95.0961,
       "dt_allowed_c": 80.0
     }
   ],
@@ -142,10 +142,10 @@
     "workspace": ".",
     "gate": "verify",
     "status": "pass",
-    "attempts": 4,
+    "attempts": 5,
     "inputs": {
-      "pcb": "sexpr_no_uuid:ec2b7102a4b686e14c6c39d6cfee4fd1fe2da6c26d752b64af1c5680c5eb9ede",
-      "constraints": "json_canonical:ca404e05236896b5e1cbbdaf1aa9ac1cd87eeca17aecbd5596c29f5ff074fe29",
+      "pcb": "sexpr_no_uuid:5d4d3eefa08ac13660882ad6cc8c5ed1b8f0ccd651f3d521eb5411635ca9c576",
+      "constraints": "json_canonical:bddbb1b84a07eaf0b52456568888c02226ad1317a93e8020e9b9e780b98c7ab5",
       "decoupling": "json_canonical:83d4aa9fc41ad6fde56012fff8a8e86b567621103cd7a118d91157b10ede6600",
       "waivers": "json_canonical:fd04b3c398f91596a08605fd91c32f9be2d338bcc3860a37e636c7fd5a133f39"
     }

@@ -2,12 +2,20 @@
  "script": "route_edit",
  "status": "pass",
  "board": "kicad/lite-main.kicad_pcb",
- "applied": 6,
+ "applied": 8,
  "verified": true,
  "by_status": {
-  "removed": 6
+  "removed": 8
  },
  "results": [
+  {
+   "op": "remove",
+   "status": "removed"
+  },
+  {
+   "op": "remove",
+   "status": "removed"
+  },
   {
    "op": "remove",
    "status": "removed"

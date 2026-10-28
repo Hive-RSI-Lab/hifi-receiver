@@ -2,166 +2,161 @@
  "script": "route_edit",
  "status": "pass",
  "board": "kicad/lite-main.kicad_pcb",
- "applied": 31,
+ "applied": 30,
  "verified": true,
  "by_status": {
-  "added": 31
+  "added": 30
  },
  "results": [
   {
    "op": "add_track",
    "status": "added",
-   "uuid": "fbe9f80f-91c0-4bc3-8f76-7e7bd64d6204"
+   "uuid": "6817bdd3-1dbc-4564-8190-52c4cf73deef"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "e7ea9f1b-8e97-4b51-92c4-cee295f999b8"
+   "uuid": "a7e303ae-64c7-4e8d-8ac3-398259e62586"
   },
   {
    "op": "add_track",
    "status": "added",
-   "uuid": "f12e79c8-b87d-4020-bfd7-60972044bea2"
+   "uuid": "24ba869a-eb83-47d4-81f6-2ae6fadbdbdc"
   },
   {
    "op": "add_track",
    "status": "added",
-   "uuid": "e24c5f73-f1d8-422c-b88d-34d8a934d524"
+   "uuid": "7842aa77-9fa9-48aa-9d62-11aa5c0684c6"
   },
   {
    "op": "add_track",
    "status": "added",
-   "uuid": "23d8a7c2-299a-41be-9030-1aeb8bb4bbb5"
+   "uuid": "3981dc83-07f2-437d-9fc0-32bb36b261fd"
+  },
+  {
+   "op": "add_via",
+   "status": "added",
+   "uuid": "9244747a-3ea7-4627-931f-62db4136aae5"
   },
   {
    "op": "add_track",
    "status": "added",
-   "uuid": "5964ad43-7498-42c6-8a42-4a49027bd681"
-  },
-  {
-   "op": "add_via",
-   "status": "added",
-   "uuid": "4f2fc2e5-a755-4ef1-b007-1b76f7edf6cb"
+   "uuid": "af11ecab-ab55-4cdd-9e36-2a8c3aa6a855"
   },
   {
    "op": "add_track",
    "status": "added",
-   "uuid": "6e3d58d8-df29-46cb-86e6-09edf8460fbe"
+   "uuid": "b77d938e-7f76-4ea1-a316-6ff2fa03bdb1"
   },
   {
    "op": "add_track",
    "status": "added",
-   "uuid": "e185aba4-c17d-4bea-83b9-933ab9930a82"
+   "uuid": "61e0b9df-76b0-4cfa-a835-4c29d025ceec"
   },
   {
    "op": "add_track",
    "status": "added",
-   "uuid": "5bcaf1bd-0621-4526-8da1-5daa6389851c"
+   "uuid": "2e75c72d-aefc-4383-ab40-0e013e3d9e88"
   },
   {
    "op": "add_track",
    "status": "added",
-   "uuid": "c11d9073-2e2d-49b6-94e8-9cddb5829dff"
+   "uuid": "d48ad848-6000-42d3-be2f-208aa5ba1c72"
   },
   {
    "op": "add_track",
    "status": "added",
-   "uuid": "8fd3934b-8c27-49e7-96be-8fd173318ed1"
+   "uuid": "e045ee64-15c7-4426-9566-598fc2843d5e"
   },
   {
    "op": "add_track",
    "status": "added",
-   "uuid": "3f0fd76a-ec2f-4415-b984-5f2e5452fa8b"
+   "uuid": "550f2190-a327-4aa9-8e31-e43fb1369e7a"
   },
   {
    "op": "add_track",
    "status": "added",
-   "uuid": "c0da75b3-a79c-4f87-9f1e-675babcff2d9"
-  },
-  {
-   "op": "add_track",
-   "status": "added",
-   "uuid": "e9286240-de38-4bd3-a9d2-7172a44bb940"
+   "uuid": "583da0dc-7e64-448a-b0c8-c21ff2f205c7"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "ae9f78bf-ee51-4228-ab7c-df7f14c48ecb"
+   "uuid": "e369d12c-9d2f-40c8-8e9a-6b46b1e285c3"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "500095da-6dcd-4974-9db9-bfe2c9f7995b"
+   "uuid": "16bc3acd-4173-4437-92e7-3ed287eb7307"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "5022143e-9089-473f-b959-0392e9801105"
+   "uuid": "8df1a7c3-3453-4bd1-b202-5a5924100cd7"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "31d17ae0-57f2-4d1f-b46b-6b8f941f25c9"
+   "uuid": "e7584c67-a883-4f25-a6ea-2d87977a2c18"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "5d834363-d98f-40e0-9201-78a5748e68a5"
+   "uuid": "7740349d-cd8d-4aae-b65a-6594232e4e89"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "00ecfed1-fc2b-4ba7-abe1-11a9b6a6dc9e"
+   "uuid": "d2fcdbeb-c5a3-49c4-a688-36ae913ea36f"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "ed706195-3eb6-4d11-8005-5cfa5513d5d0"
+   "uuid": "b75354be-258d-4963-82ea-241e57c58513"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "989fb3d1-bbd3-47cc-a139-f0b7cf986649"
+   "uuid": "7cbfa6e5-3383-48dd-8ad4-354fdd87e534"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "ad8dbbf7-aa8a-4533-a431-7dffc6b9b729"
+   "uuid": "19723f89-b820-4b2a-9cc3-8794ed4a80fe"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "85bc7f41-d2e7-4369-8127-60a11678aca4"
+   "uuid": "31294e04-2aa1-4730-9d11-54a7549d5a09"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "ed3daa67-72ba-4fb8-9d86-24d83c23b186"
+   "uuid": "68fffdc1-b71a-4ab9-a59d-7b15787eaabb"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "43eedb88-8d72-4b53-8a3e-799a30a2289f"
+   "uuid": "fb230dfb-e1b8-4707-b5ed-7054a9aaa0bb"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "274988d9-05b2-412d-83dc-d045db9faa0f"
+   "uuid": "b8a269fc-e15c-43fb-bc52-1549eaafbb5e"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "1d7d85cd-2e49-434d-b7fb-00413c1de582"
+   "uuid": "22b85317-b121-4359-8482-cd24480f1465"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "34d91ace-3cf4-44bc-811f-fd8044e0fb02"
+   "uuid": "42a1a087-cdb9-4a1c-9c79-e3244d7da0c9"
   },
   {
    "op": "add_via",
    "status": "added",
-   "uuid": "4aa8de75-0e05-4ce3-b97b-234fb318a291"
+   "uuid": "8a4749e8-a8b7-4ec2-bfc3-bde4ea116377"
   }
  ]
 }
