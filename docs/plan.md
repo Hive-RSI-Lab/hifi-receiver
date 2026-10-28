@@ -75,7 +75,10 @@ Items 21–24 do Ultra.
    run the self-test, then sweep power into 4/6/8 Ω dummy loads and log THD,
    power, PVDD and temperature. Use hwde's `bench.py` where it fits, and file
    gaps to hive-hwde. *Done:* the scripts run against a mock and are ready
-   for the first board.
+   for the first board. **Done in brief 261028-165628:** `bench/`
+   ([bench.md](bench.md)), with its tests in the project check. hwde's
+   `bench.py` tunes pipeline stages, not boards. Filed to hive-hwde: bring-up
+   carries no measured evidence (task 261028-184258).
 10. **Lite bring-up and test** (needs boards in hand, ordered by the person).
     - **Power up:** in stages, from a laptop port at 5 V, then from 65 W and
       100 W chargers.
