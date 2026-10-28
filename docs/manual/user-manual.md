@@ -114,8 +114,9 @@ connector's printed label]
 - **Plus and Ultra:** the receiver does the crossover, so set the
   subwoofer's crossover to its highest setting, or **LFE/bypass** if it has
   one. Then tune it in the app (section 9).
-- **Two subs:** both get the same bass, in mono. Each has its own level,
-  delay and phase, so the two can be placed in different parts of the room.
+- **Two subs:** both get the same bass, in mono, with one level, delay and
+  phase setting for the pair [TBD: web app/firmware: product.md plans a
+  setting per sub]. Balance the two with the subs' own level knobs.
 
 ### Line in: DJ deck, TV, phone
 
@@ -185,17 +186,20 @@ address automatically. Wi-Fi setup is not needed.
 The receiver uses 2.4 GHz Wi-Fi, which nearly every home router provides.
 
 1. **Start setup.** If it has not been set up yet, or after a factory reset,
-   the receiver makes its own Wi-Fi network called **`hifi-setup`**
-   [TBD: firmware: the setup network's name, its password, and whether setup
-   is over BLE or SoftAP]. The status light blinks [TBD: firmware: the
-   colour].
-2. **Join it.** On your phone or laptop, join `hifi-setup`. A setup page
-   opens by itself. If it doesn't, browse to **http://192.168.4.1**.
-3. **Connect.** Choose your home network, type its password, and press
-   **Connect**.
-4. **Done.** After about 20 seconds the receiver is on your network and the
-   setup network goes away. Rejoin your home Wi-Fi on the phone and open
+   the receiver makes its own Wi-Fi network, named **`HiFi-…`** (for example
+   `HiFi-3A7F`) [TBD: firmware: the exact name and whether it has a
+   password]. The status light blinks [TBD: firmware: the colour].
+2. **Join it.** On your phone or laptop, join that network. The app opens by
+   itself on its **Setup** page. If it doesn't, browse to
+   **http://192.168.4.1**.
+3. **Connect.** Under **Wi-Fi**, press **Scan for networks**, then **Choose**
+   your home network. Type its password and press **Join**.
+4. **Done.** The page says **Joined …** and gives the new address. The setup
+   network goes away. Rejoin your home Wi-Fi on the phone and open
    **http://hifi.local**.
+
+**If the page says it could not join,** the reason is shown, usually a
+wrong password. Type it again and press **Join**.
 
 **If it doesn't join:**
 
@@ -211,13 +215,13 @@ The receiver uses 2.4 GHz Wi-Fi, which nearly every home router provides.
 - **The address:** the receiver calls itself **`hifi`**, so on most phones
   and computers it is **http://hifi.local**.
 - **Renaming:** if you have more than one receiver, rename each in
-  **Settings → Device name**. That name is used everywhere: in Spotify,
+  **Setup → Name**. That name is used everywhere: in Spotify,
   AirPlay, Bluetooth and the address.
 - **If `hifi.local` doesn't open**, which happens on some Android phones and
   older Windows:
-  - find the receiver's IP address in your router's list of devices, or in
-    the app's **Settings → Network** once you are in, and open
-    `http://<that address>`.
+  - find the receiver's IP address in your router's list of devices, and
+    open `http://<that address>`. Once you are in, **Setup → About and
+    diagnostics** shows it as **Address**.
 
 ## 7. Playing music
 
@@ -235,7 +239,7 @@ The receiver uses 2.4 GHz Wi-Fi, which nearly every home router provides.
 
 - **Lite:** hold **▶** for [TBD: firmware: the hold time].
 - **Plus and Ultra:** [TBD: firmware: the pairing button].
-- **From the app:** tap **Bluetooth → Pair**.
+- **From the app:** [TBD: web app: no pairing button yet].
 
 The light blinks blue for two minutes while the receiver can be found.
 
@@ -258,11 +262,23 @@ Open **http://hifi.local** in any browser on the same network.
 - **Keeping it like an app:**
   - iPhone: Safari → Share → **Add to Home Screen**.
   - Android: Chrome → ⋮ → **Install app**.
-- **What's in it:** [TBD: web app: page names and layout]
-  - **Now playing:** source, track, play/pause and volume.
-  - **Sources:** pick the input.
-  - **Sound:** EQ, balance, and the subwoofer settings.
-  - **Settings:** network, device name, remote, power, updates and reset.
+- **What's in it:** three tabs along the bottom.
+  - **Play:** what is playing and from where, previous/play/pause/next,
+    the **Source**, **Volume** and mute. Also **Line in** (DJ direct or
+    Through EQ) and, on Ultra, **Zone B speakers**.
+  - **Sound:** the **Equaliser** and the **Subwoofers**.
+  - **Setup:** **Wi-Fi**, **Name**, **Updates**, and **About and
+    diagnostics**: the model, firmware, address, charger, supply voltage,
+    the amplifier's state and temperature, and **Run self-test**.
+- **Notices** at the top of **Play**:
+  - **Speakers off: charger too weak.** The port gives too little voltage
+    for the amplifier (section 5).
+  - **Power limit.** The receiver has turned the sound down a little to
+    stay within what the charger can give.
+  - **Amplifier fault.** The amplifier switched itself off to protect the
+    speakers. Check the speaker wires for a short, then press **Clear**.
+- **"Looking for the receiver…"** means the app can't reach it. Check that
+  it is powered and that the phone is on the same Wi-Fi.
 
 Lyrion control apps such as Material Skin, iPeng and Squeezer also control
 it when you use a Lyrion server.
@@ -292,7 +308,8 @@ screen. [TBD: firmware: the Ultra button map]
   the remote's battery type]
 - **Any tier can learn another remote,** for example the TV's, so one remote
   does both:
-  1. In the app, open **Settings → Remote → Learn**.
+  1. In the app, open **Setup → Remote → Learn** [TBD: web app: not in
+     the app yet].
   2. Pick a function, such as Volume +.
   3. Point the remote at the front of the receiver and press the key you
      want for it.
@@ -309,26 +326,29 @@ and lights when you touch a control.
 
 | Setting | Where | What it does | Tiers |
 |---|---|---|---|
-| Device name | Settings | The name in Spotify, AirPlay, Bluetooth and the `.local` address | all |
-| Volume limit | Sound | The highest the volume can go, from any source. Set this to protect the speakers. | all |
-| Balance | Sound | Left/right | all |
-| EQ | Sound | Bass and treble, or a multi-band EQ [TBD: firmware: which] | all |
-| Sub level | Sound → Subwoofer | Each sub's level, −12 to +12 dB [TBD] | all |
-| Sub crossover | Sound → Subwoofer | The frequency the subs take over, 40–150 Hz [TBD] | Plus, Ultra |
-| Sub delay, phase | Sound → Subwoofer | Line the subs up with the speakers. Set the phase to whichever sounds fuller at the seat. | Plus, Ultra |
-| High-pass mains | Sound → Subwoofer | Take the deepest bass off the main speakers, which then play louder cleanly | Plus, Ultra |
-| DJ direct | Sources → Line in | Line in straight to the amplifier: no delay, no EQ | Plus, Ultra (always on in Lite) |
-| Zone B | Sound | On/off and volume for the second speaker pair | Ultra |
-| Power | Settings → Power | Shows the charger's contract (volts and amps) and the power being drawn. Auto-standby time. | all |
-| Network | Settings → Network | Wi-Fi network, IP address, Ethernet status | all |
+| Name | Setup | The name in Spotify, AirPlay, Bluetooth and the `.local` address | all |
+| Equaliser | Sound | 10 bands, 31 Hz to 16 kHz, ±12 dB. Presets: **Flat**, **Bass +**, **Loudness**, **Vocal**, **Treble −** | all |
+| Sub outputs | Sound → Subwoofers | **On** or **Off** | all |
+| Level | Sound → Subwoofers | The subwoofers' level, −15 to +10 dB | all |
+| Crossover | Sound → Subwoofers | Where the subs take over the bass, 40–160 Hz | Plus, Ultra |
+| Delay | Sound → Subwoofers | 0–20 ms, to line the subs up with the speakers | Plus, Ultra |
+| Phase | Sound → Subwoofers | **0°** or **180°**. Pick whichever sounds fuller at your seat. | Plus, Ultra |
+| Take the deep bass off the main speakers | Sound → Subwoofers | A high-pass on the mains, so they play louder cleanly | Plus, Ultra |
+| Line in | Play | **DJ direct**: straight to the amplifier, no delay, no EQ. **Through EQ**: EQ and subs apply, 5–15 ms late. | Plus, Ultra (Lite is always direct) |
+| Zone B speakers | Play | On/off and **Level** for the second pair | Ultra |
+| Wi-Fi | Setup | Scan, join or **Forget** a network | all |
+| Volume limit, balance | | [TBD: web app: not in the app yet] | all |
+
+On Lite the sub outputs carry the full-range signal, and the app says to set
+the crossover on the subwoofer itself.
 
 **Setting up two subwoofers (Plus, Ultra):**
 
 1. **Crossover:** set it to 80 Hz.
-2. **Level:** play music with steady bass and adjust each sub's level until
-   the bass sounds even with the speakers.
-3. **Phase:** sit in your listening seat and flip **Phase** on each sub in
-   turn. Keep whichever setting gives more bass.
+2. **Level:** play music with steady bass and adjust **Level** until the
+   bass sounds even with the speakers.
+3. **Phase:** sit in your listening seat and switch **Phase** between 0° and
+   180°. Keep whichever setting gives more bass.
 4. **Delay:** if a sub is much nearer or farther than the speakers, set its
    delay to the distance difference. 1 ms is about 34 cm.
 
@@ -336,20 +356,23 @@ and lights when you touch a control.
 
 **Updates:**
 
-- **When:** the receiver checks for updates when the app is open [TBD:
-  firmware/app: automatic or manual, and from where].
-- **How:** **Settings → Update → Install**. Keep it plugged in while it
-  updates. It takes about a minute and restarts by itself.
+- **Online:** **Setup → Updates → Check for updates**, then **Install** if
+  one is offered. [TBD: firmware: where updates are published]
+- **From a file:** **Setup → Updates → From a file…** and pick the `.bin`
+  firmware file.
+- **While it updates:** the app shows **Downloading…** then **Installing…
+  do not unplug.** Keep it plugged in. It restarts by itself.
 - **Fallback:** if an update is interrupted, the receiver starts on the
   previous version.
 
 **Factory reset** forgets Wi-Fi, paired Bluetooth devices, learned remote
 keys and all settings.
 
-- **From the app:** **Settings → Reset → Factory reset**.
+- **From the app:** **Setup → Factory reset** [TBD: web app: not in the
+  app yet].
 - **From the buttons:** [TBD: firmware: the combination, for example hold −
   and + together for 10 s with the power on].
-- **Afterwards:** the light shows setup mode and the `hifi-setup` network
+- **Afterwards:** the light shows setup mode and the `HiFi-…` setup network
   comes back.
 
 ## 11. Status light
@@ -360,7 +383,7 @@ LED; the Lite and Plus LEDs are set by their boards.]
 | Light | Meaning |
 |---|---|
 | off | no power, or standby with the light off |
-| blinking [TBD] | setup mode: join `hifi-setup` |
+| blinking [TBD] | setup mode: join the `HiFi-…` network |
 | steady white [TBD] | on the network, ready |
 | blinking blue | Bluetooth pairing |
 | steady blue | Bluetooth connected |
@@ -372,17 +395,17 @@ LED; the Lite and Plus LEDs are set by their boards.]
 | Problem | Likely cause | What to do |
 |---|---|---|
 | Light off | No power | Try another USB-C charger and cable. A data-only cable doesn't carry power. |
-| Light on, no sound at all | Amplifier off on a 5 V charger | Use a PD charger (section 5). The app's **Settings → Power** shows the contract. |
+| Light on, no sound at all | Amplifier off on a 5 V charger | Use a PD charger (section 5). The app says **Speakers off: charger too weak**, and **Setup → About and diagnostics** shows the **Charger**. |
 | No sound from one source | Wrong source, or volume at 0 | Check the source and volume in the app. |
 | No sound from one speaker | A loose wire, or the balance | Check the wires at both ends. Check **Balance**. |
 | Thin bass, vague image | One speaker wired backwards | Check **+** to **+** on both. |
 | Cuts out at high volume | Charger too small, or a 3 A cable on 28 V | Use a 140 W charger and a 240 W cable (Plus, Ultra) or a 65 W+ charger (Lite). |
-| Sound stops after loud playing for a long time, then returns | Overheating protection | Clear the vents. Leave space above. |
+| Sound stops after loud playing for a long time, then returns | Overheating protection | Clear the vents. Leave space above. If the app shows **Amplifier fault**, press **Clear**. |
 | Hum from the subwoofer | A ground loop between the sub and another mains device | Plug the sub into the same power strip as the other gear. Try a different RCA cable. |
 | Spotify doesn't list it | Different network, or a guest network | Put the phone on the same Wi-Fi. Restart the Spotify app. |
 | AirPlay doesn't list it | Same as above | Same as above. |
 | `hifi.local` won't open | Android or Windows lacks mDNS | Use the IP address from the router (section 6). |
-| Bluetooth won't pair | Not in pairing mode, or it remembers too many devices | Start pairing (section 7). In the app, **Bluetooth → Forget all**. |
+| Bluetooth won't pair | Not in pairing mode | Start pairing (section 7). |
 | DJ deck is late against the headphones | DJ direct is off | Turn on **DJ direct** (Plus, Ultra). |
 | Line in distorts | The source is too loud | Turn down the deck's master or the phone's volume to about 75%. |
 | Optical: no sound | The TV is sending Dolby/DTS | Set the TV to PCM/Stereo out. |

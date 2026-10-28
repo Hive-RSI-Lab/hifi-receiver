@@ -52,7 +52,7 @@ from, and its status. When something here changes, change the manual too.
 | Fact | Manual says now | Status |
 |---|---|---|
 | Device name | `hifi`, so `hifi.local`, and the name in Spotify, AirPlay and BT | proposed (product.md gives `hifi.local`) |
-| Setup network | SoftAP `hifi-setup`, portal at 192.168.4.1 (the squeezelite-esp32 default address) | TBD: name, password, BLE or SoftAP |
+| Setup network | SoftAP `HiFi-…` (the app's text), portal at 192.168.4.1 | TBD: exact name, password |
 | Fallback to setup when the saved Wi-Fi is gone | after a timeout | TBD: the timeout |
 | BT pairing | Lite: hold ▶; app: Bluetooth → Pair; discoverable 2 min, blinking blue | proposed; TBD: hold time, Plus button |
 | BT memory and "Forget all" | | proposed; TBD: device count |
@@ -61,18 +61,25 @@ from, and its status. When something here changes, change the manual too.
 | Factory reset combination | hold − and + for 10 s | proposed |
 | Status light colours | white = ready, blue = BT, amber = reduced power, red = fault | proposed |
 | Auto-standby timeout, screen dim timeout | | TBD |
-| Update path: Settings → Update; falls back to the old image if interrupted (OTA A/B) | | proposed; TBD: automatic or manual |
+| Update: falls back to the old image if interrupted (OTA A/B) | | proposed; TBD: where updates are published |
 | Test API base path and endpoints; licence file location | | TBD |
 
 ## From the web app (261028-165625-c782eda91e)
 
-| Fact | Manual says now | Status |
-|---|---|---|
-| Pages | Now playing, Sources, Sound, Settings | proposed |
-| Settings names and ranges | §9 table: sub level ±12 dB, crossover 40–150 Hz, volume limit, balance, EQ | proposed; TBD: EQ type |
-| Settings → Power shows the PD contract and power drawn | | proposed |
-| Settings → Remote → Learn | | proposed |
+Read from its draft `app/web/index.html` and `app.js` (in its turn log, not
+yet on a branch), against `docs/test-api.md`'s app API.
 
+| Fact | Status |
+|---|---|
+| Tabs **Play**, **Sound**, **Setup**; Setup cards Wi-Fi, Name, Updates, About and diagnostics | source (draft) |
+| Wi-Fi flow: Scan for networks → Choose → Join; "Joined …"; Forget | source (draft) |
+| Setup network named `HiFi-…`; the app opens on Setup in AP mode | source (draft); TBD firmware: exact name, password |
+| EQ: 10 bands 31 Hz–16 kHz, ±12 dB, presets Flat, Bass +, Loudness, Vocal, Treble − | source (draft) |
+| Subwoofers: On/Off, Level −15..+10 dB, Crossover 40–160 Hz, Delay 0–20 ms, Phase 0°/180°, mains high-pass | source (draft). One setting for both subs: product.md plans one per sub |
+| Line in: DJ direct / Through EQ; Zone B speakers + Level | source (draft) |
+| Notices: charger too weak, power limit, amplifier fault + Clear; "Looking for the receiver…" | source (draft) |
+| Updates: Check for updates, Install, From a file… | source (draft) |
+| Remote learn, factory reset, Bluetooth pair button, volume limit, balance | proposed: not in the app yet |
 ## From the enclosure (261028-170022-cd0342e233)
 
 | Fact | Status |

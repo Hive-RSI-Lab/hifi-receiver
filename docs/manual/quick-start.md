@@ -44,10 +44,12 @@ comes on.
 
 - **Ethernet (Plus, Ultra):** plug in a network cable. That's all.
 - **Wi-Fi:**
-  1. On your phone, join the Wi-Fi network **`hifi-setup`**
-     [TBD: firmware: the setup network's name and password].
-  2. A setup page opens. If it doesn't, browse to **http://192.168.4.1**.
-  3. Pick your home Wi-Fi, type its password, and press **Connect**.
+  1. On your phone, join the receiver's own Wi-Fi network, **`HiFi-…`**
+     [TBD: firmware: the exact name and password].
+  2. The app opens on **Setup**. If it doesn't, browse to
+     **http://192.168.4.1**.
+  3. Press **Scan for networks**, **Choose** your home Wi-Fi, type its
+     password, and press **Join**.
   4. The receiver joins your network, and the status light turns steady.
      [TBD: firmware: the light's colours]
 
@@ -70,7 +72,7 @@ comes on.
   - Lite: **−**, **+** and **▶** on the front.
   - Plus and Ultra: turn the knob for volume, and press it to play or pause.
 - **Remote:** Plus and Ultra come with one. On Lite, any TV remote can be
-  taught in the app: **Settings → Remote → Learn**.
+  taught in the app [TBD: web app: the remote-learn page].
 
 **Start with the volume low.** The Plus and Ultra put out up to 77 W per
 channel. That is enough to damage speakers if you turn it straight up.
