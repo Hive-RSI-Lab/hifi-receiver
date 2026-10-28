@@ -196,7 +196,7 @@ The receiver uses 2.4 GHz Wi-Fi, which nearly every home router provides.
    your home network. Type its password and press **Join**.
 4. **Done.** The page says **Joined …** and gives the new address. The setup
    network goes away. Rejoin your home Wi-Fi on the phone and open
-   **http://hifi.local**.
+   **http://hifi-lite.local** (section 6, *Finding it on the network*).
 
 **If the page says it could not join,** the reason is shown, usually a
 wrong password. Type it again and press **Join**.
@@ -212,12 +212,19 @@ wrong password. Type it again and press **Join**.
 
 ### Finding it on the network
 
-- **The address:** the receiver calls itself **`hifi`**, so on most phones
-  and computers it is **http://hifi.local**.
+- **The address** depends on the tier:
+
+  | Tier | Address |
+  |---|---|
+  | Lite | **http://hifi-lite.local** |
+  | Plus | **http://hifi-plus.local** |
+  | Ultra | **http://hifi-ultra.local** |
+
+  This manual writes `hifi-lite.local`. Use your tier's address instead.
 - **Renaming:** if you have more than one receiver, rename each in
-  **Setup → Name**. That name is used everywhere: in Spotify,
-  AirPlay, Bluetooth and the address.
-- **If `hifi.local` doesn't open**, which happens on some Android phones and
+  **Setup → Name**. That is the name Spotify, AirPlay and Bluetooth show.
+  The `.local` address stays the same.
+- **If the `.local` address doesn't open**, which happens on some Android phones and
   older Windows:
   - find the receiver's IP address in your router's list of devices, and
     open `http://<that address>`. Once you are in, **Setup → About and
@@ -257,11 +264,14 @@ are lower than that by nature. A home music server gets the most from it.
 
 ### Web app
 
-Open **http://hifi.local** in any browser on the same network.
+Open **http://hifi-lite.local** (Plus: `hifi-plus.local`, Ultra:
+`hifi-ultra.local`) in any browser on the same network.
 
 - **Keeping it like an app:**
   - iPhone: Safari → Share → **Add to Home Screen**.
-  - Android: Chrome → ⋮ → **Install app**.
+  - Android: Chrome → ⋮ → **Add to Home screen**. It is a shortcut, not
+    a full install, because Chrome only installs from `https` sites, and
+    a device on your home network can't have one. It works the same way.
 - **What's in it:** three tabs along the bottom.
   - **Play:** what is playing and from where, previous/play/pause/next,
     the **Source**, **Volume** and mute. Also **Line in** (DJ direct or
@@ -275,6 +285,8 @@ Open **http://hifi.local** in any browser on the same network.
     for the amplifier (section 5).
   - **Power limit.** The receiver has turned the sound down a little to
     stay within what the charger can give.
+  - **Update failed.** The old firmware is still in place, so the
+    receiver keeps working. Try again.
   - **Amplifier fault.** The amplifier switched itself off to protect the
     speakers. Check the speaker wires for a short, then press **Clear**.
 - **"Looking for the receiver…"** means the app can't reach it. Check that
@@ -365,11 +377,12 @@ the crossover on the subwoofer itself.
 - **Fallback:** if an update is interrupted, the receiver starts on the
   previous version.
 
-**Factory reset** forgets Wi-Fi, paired Bluetooth devices, learned remote
-keys and all settings.
+**Factory reset** erases the Wi-Fi network, the name and all sound
+settings [TBD: firmware: whether it also forgets paired Bluetooth devices
+and learned remote keys].
 
-- **From the app:** **Setup → Factory reset** [TBD: web app: not in the
-  app yet].
+- **From the app:** **Setup → About and diagnostics → Factory reset**.
+  The same card has **Restart**.
 - **From the buttons:** [TBD: firmware: the combination, for example hold −
   and + together for 10 s with the power on].
 - **Afterwards:** the light shows setup mode and the `HiFi-…` setup network
@@ -404,7 +417,7 @@ LED; the Lite and Plus LEDs are set by their boards.]
 | Hum from the subwoofer | A ground loop between the sub and another mains device | Plug the sub into the same power strip as the other gear. Try a different RCA cable. |
 | Spotify doesn't list it | Different network, or a guest network | Put the phone on the same Wi-Fi. Restart the Spotify app. |
 | AirPlay doesn't list it | Same as above | Same as above. |
-| `hifi.local` won't open | Android or Windows lacks mDNS | Use the IP address from the router (section 6). |
+| The `.local` address won't open | Android or Windows lacks mDNS | Use the IP address from the router (section 6). |
 | Bluetooth won't pair | Not in pairing mode | Start pairing (section 7). |
 | DJ deck is late against the headphones | DJ direct is off | Turn on **DJ direct** (Plus, Ultra). |
 | Line in distorts | The source is too loud | Turn down the deck's master or the phone's volume to about 75%. |

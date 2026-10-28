@@ -55,19 +55,19 @@ comes on.
 
 ## 4. Play
 
-- **Spotify:** open Spotify, tap the devices icon, and choose **hifi**. This
+- **Spotify:** open Spotify, tap the devices icon, and choose the receiver (**HiFi** unless you renamed it) [TBD: firmware: the default name]. This
   needs Spotify Premium.
 - **AirPlay (iPhone, iPad, Mac):** in Control Centre, tap AirPlay and choose
-  **hifi**.
+  the receiver.
 - **Bluetooth:** hold **▶ PLAY** for 3 seconds [TBD: firmware: the button and
-  hold time] until the light blinks blue. On your phone, pair with **hifi**.
+  hold time] until the light blinks blue. On your phone, pair with the receiver.
 - **LINE IN:** choose **Line in** in the app. On Plus, you can also press
   **SOURCE** until it is selected. [TBD: firmware: the source button on Lite]
 
 ## 5. Control it
 
-- **App:** open **http://hifi.local** on any phone or computer on the same
-  network. Choose **Add to Home Screen** to keep it like an app.
+- **App:** open **http://hifi-lite.local** (Plus: `hifi-plus.local`, Ultra:
+  `hifi-ultra.local`) on any phone or computer on the same network. Choose **Add to Home Screen** to keep it like an app.
 - **Buttons:**
   - Lite: **−**, **+** and **▶** on the front.
   - Plus and Ultra: turn the knob for volume, and press it to play or pause.
@@ -83,5 +83,5 @@ channel. That is enough to damage speakers if you turn it straight up.
 |---|---|
 | No sound | Check the source in the app. Check the volume. Check the speaker wires are firm. |
 | Plays, then cuts out at high volume | The charger is too small. Use the charger in the table above. |
-| `hifi.local` won't open | Android or Windows: open the receiver by its IP address. Your router lists it as `hifi`. |
-| Start again | Factory reset. See the manual, section 9. |
+| The `.local` address won't open | Android or Windows: open the receiver by its IP address. Your router lists it as `hifi-lite` (or `hifi-plus`, `hifi-ultra`). |
+| Start again | In the app: **Setup → About and diagnostics → Factory reset**. See the manual, section 10. |

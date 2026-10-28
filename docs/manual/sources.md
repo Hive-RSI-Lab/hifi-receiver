@@ -30,7 +30,7 @@ from, and its status. When something here changes, change the manual too.
 | Ultra optical in (TOSLINK) | §4 |
 | Wi-Fi 2.4 GHz only; Ethernet on Plus/Ultra | §6 |
 | Streaming: Spotify (cspot, Premium), AirPlay 1, BT A2DP SBC, Lyrion | §7 |
-| Web app at `http://hifi.local`, installable PWA; LMS apps also work | §8 |
+| Installable PWA; LMS apps also work (product.md's `hifi.local` became `hifi-<model>.local`, see the web app) | §8 |
 | Lite buttons vol−, vol+, play (hold = BT pairing); Plus knob + source + preset; Ultra screen + knob + 3 buttons | §8 |
 | IR learn mode; Plus/Ultra ship a 21-key NEC remote | §8 |
 | CH340C serial on USB-C; `_hifi._tcp` mDNS; test API (PD, VBUS I, faults, tones, self-test) | §14 |
@@ -51,7 +51,7 @@ from, and its status. When something here changes, change the manual too.
 
 | Fact | Manual says now | Status |
 |---|---|---|
-| Device name | `hifi`, so `hifi.local`, and the name in Spotify, AirPlay and BT | proposed (product.md gives `hifi.local`) |
+| Default display name in Spotify, AirPlay and BT | `HiFi` | TBD (the app's header defaults to HiFi) |
 | Setup network | SoftAP `HiFi-…` (the app's text), portal at 192.168.4.1 | TBD: exact name, password |
 | Fallback to setup when the saved Wi-Fi is gone | after a timeout | TBD: the timeout |
 | BT pairing | Lite: hold ▶; app: Bluetooth → Pair; discoverable 2 min, blinking blue | proposed; TBD: hold time, Plus button |
@@ -79,7 +79,13 @@ yet on a branch), against `docs/test-api.md`'s app API.
 | Line in: DJ direct / Through EQ; Zone B speakers + Level | source (draft) |
 | Notices: charger too weak, power limit, amplifier fault + Clear; "Looking for the receiver…" | source (draft) |
 | Updates: Check for updates, Install, From a file… | source (draft) |
-| Remote learn, factory reset, Bluetooth pair button, volume limit, balance | proposed: not in the app yet |
+| Hostname `hifi-<model>.local` (lite/plus/ultra); rename changes only the display name | source (app worker, 14:22) |
+| Setup → About and diagnostics: Run self-test, Restart, Factory reset (erases Wi-Fi, name, sound settings) | source (app worker, 14:22) |
+| Android: Add to Home screen (no https, so no full install) | source (app worker, 14:22) |
+| "Update failed: … The old firmware is still in place." | source (app worker, 14:22) |
+| No power-mode setting: the limiter is automatic | source (app worker, 14:22) |
+| Screenshots: `docs/app.md` on the app's branch | to read when it lands |
+| Remote learn, Bluetooth pair button, per-sub settings, volume limit, balance | proposed: not in the app yet |
 ## From the enclosure (261028-170022-cd0342e233)
 
 | Fact | Status |
