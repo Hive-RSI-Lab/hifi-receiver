@@ -1,0 +1,827 @@
+{
+ "script": "stitch_vias",
+ "status": "pass",
+ "board": "lite-main.kicad_pcb",
+ "counts": {
+  "total": 0,
+  "by_severity": {},
+  "by_source": {}
+ },
+ "violations": [],
+ "requested": 30,
+ "placed": 31,
+ "skipped": [
+  {
+   "ref": "C1.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C10.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C11.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C12.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C13.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C15.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C16.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C17.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C20.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C21.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C22.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C23.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C24.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C3.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C30.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C31.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C33.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C34.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C36.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C37.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C38.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C39.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C4.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C40.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C42.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C45.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C5.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C58.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C59.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C61.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C69.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C7.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C70.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C71.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "C80.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "D1.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "D2.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "J1.A1-B12",
+   "reason": "track_connected_no_local_spot",
+   "net": "GND"
+  },
+  {
+   "ref": "J1.B1-A12",
+   "reason": "track_connected_no_local_spot",
+   "net": "GND"
+  },
+  {
+   "ref": "R1.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "R10.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "R12.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "R14.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "R31.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "R34.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "R37.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "R39.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "R50.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "R8.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "SW1.3",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "SW1.4",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "SW2.3",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "SW2.4",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "SW3.3",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "SW3.4",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U1.11",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U2.1",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U3.2",
+   "reason": "track_connected_no_local_spot",
+   "net": "GND"
+  },
+  {
+   "ref": "U4.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U5.1",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U5.15",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U5.38",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U5.39",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U5.39",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U5.39",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U6.1",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U7.13",
+   "reason": "track_connected_no_local_spot",
+   "net": "GND"
+  },
+  {
+   "ref": "U7.26",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U7.29",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U7.4",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U8.12",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U8.14",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U8.22",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U8.25",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U8.28",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U8.9",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U9.1",
+   "reason": "already_stitched",
+   "net": "GND"
+  },
+  {
+   "ref": "U9.2",
+   "reason": "already_stitched",
+   "net": "GND"
+  }
+ ],
+ "via_size": 0.6,
+ "via_drill": 0.3,
+ "clearance_mm": 0.127,
+ "dry_run": false,
+ "applied": true,
+ "refilled": true,
+ "apply_by_status": {
+  "added": 36
+ },
+ "ops": [
+  {
+   "op": "add_via",
+   "at": [
+    62.795,
+    79.205
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    65.295,
+    84.705
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    105.57,
+    101.28
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    116.47,
+    95.905
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    116.47,
+    93.705
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    116.295,
+    91.705
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    116.295,
+    89.905
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    100.27,
+    93.705
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    99.905,
+    91.245
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    99.905,
+    90.365
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    114.295,
+    104.605
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    96.495,
+    68.205
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    87.47,
+    86.305
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    93.045,
+    105.305
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    92.395,
+    105.305
+   ],
+   "end": [
+    93.045,
+    105.305
+   ],
+   "width": 0.3,
+   "layer": "F.Cu",
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    99.87,
+    100.73
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    99.87,
+    101.38
+   ],
+   "end": [
+    99.87,
+    100.73
+   ],
+   "width": 0.3,
+   "layer": "F.Cu",
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    42.764,
+    121.027
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    44.011,
+    120.757
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    41.234,
+    119.381
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    42.65,
+    119.454
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    42.601,
+    117.776
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    43.994,
+    117.741
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    57.37,
+    83.425
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    57.37,
+    82.775
+   ],
+   "end": [
+    57.37,
+    83.425
+   ],
+   "width": 0.23,
+   "layer": "F.Cu",
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    100.973,
+    98.819
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    101.49,
+    98.425
+   ],
+   "end": [
+    100.973,
+    98.819
+   ],
+   "width": 0.3,
+   "layer": "F.Cu",
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    109.702,
+    98.936
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    109.951,
+    98.467
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    110.6,
+    98.425
+   ],
+   "end": [
+    109.951,
+    98.467
+   ],
+   "width": 0.3,
+   "layer": "F.Cu",
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    105.47,
+    94.705
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    30.011,
+    56.629
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    30.011,
+    133.719
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    30.011,
+    138.001
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    34.294,
+    52.346
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    124.232,
+    56.629
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "GND"
+  }
+ ],
+ "mode": "stitch",
+ "pitch_mm": 4.283,
+ "t_rise_ns": 1.0,
+ "nets": {
+  "GND": {
+   "plane_layers": [
+    "B.Cu"
+   ],
+   "pads": {
+    "requested": 30,
+    "placed": 26,
+    "skipped": 4
+   },
+   "area": {
+    "candidates": 408,
+    "placed": 5,
+    "rejected": {
+     "hole_to_hole": 4,
+     "single_layer_contact": 316,
+     "near_same_net_via": 63,
+     "fill_edge": 20
+    },
+    "capped": false
+   }
+  }
+ },
+ "report_schema": 1,
+ "checker_version": 1,
+ "generated_at": "2026-10-28T18:26:22+00:00",
+ "input": "/work/boards/lite/kicad/lite-main.kicad_pcb",
+ "input_digest": "sexpr_no_uuid:2a7fb7b83e3ac11b2fa0084279c2d0b9faaa027640dafe2a9a69e3c58b996439"
+}

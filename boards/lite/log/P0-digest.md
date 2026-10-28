@@ -1,0 +1,3 @@
+- P0 intake: requirements are docs/product.md's Lite column + brief/brief.md; no requirements-analyst spawn (the product page already fixes them and was reviewed in PR #3).
+- No build-mode token: a product board, full scope.
+- Safety: USB-C PD at 20 V, up to 5 A; no mains, no battery.

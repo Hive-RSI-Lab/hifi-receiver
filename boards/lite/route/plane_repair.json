@@ -1,0 +1,161 @@
+{
+ "script": "plane_repair",
+ "status": "pass",
+ "board": "lite-main.kicad_pcb",
+ "counts": {
+  "total": 0,
+  "by_severity": {},
+  "by_source": {}
+ },
+ "violations": [],
+ "mode": "repair",
+ "planes": [
+  {
+   "net": "GND",
+   "layer": "B.Cu",
+   "components": 3,
+   "anchored_components": 2,
+   "groups": 1,
+   "split": false,
+   "stitched_elsewhere": true,
+   "component_facts": [
+    {
+     "area_mm2": 7418.8142,
+     "pos": [
+      40.691,
+      94.705
+     ],
+     "anchors": 147,
+     "anchored": true
+    },
+    {
+     "area_mm2": 78.6174,
+     "pos": [
+      65.6703,
+      93.2001
+     ],
+     "anchors": 6,
+     "anchored": true
+    },
+    {
+     "area_mm2": 0.1552,
+     "pos": [
+      90.19,
+      57.5723
+     ],
+     "anchors": 0,
+     "anchored": false
+    }
+   ],
+   "dead_islands": [
+    {
+     "area_mm2": 0.1552,
+     "pos": [
+      90.19,
+      57.5723
+     ],
+     "anchors": 0,
+     "anchored": false
+    }
+   ]
+  },
+  {
+   "net": "PVDD",
+   "layer": "B.Cu",
+   "components": 1,
+   "anchored_components": 1,
+   "groups": 1,
+   "split": false,
+   "stitched_elsewhere": false,
+   "component_facts": [
+    {
+     "area_mm2": 612.653,
+     "pos": [
+      110.52,
+      79.355
+     ],
+     "anchors": 16,
+     "anchored": true
+    }
+   ],
+   "dead_islands": []
+  },
+  {
+   "net": "PVDD",
+   "layer": "F.Cu",
+   "components": 4,
+   "anchored_components": 4,
+   "groups": 1,
+   "split": false,
+   "stitched_elsewhere": true,
+   "component_facts": [
+    {
+     "area_mm2": 238.0051,
+     "pos": [
+      92.6167,
+      97.1998
+     ],
+     "anchors": 10,
+     "anchored": true
+    },
+    {
+     "area_mm2": 237.4982,
+     "pos": [
+      121.5529,
+      96.7191
+     ],
+     "anchors": 14,
+     "anchored": true
+    },
+    {
+     "area_mm2": 29.2332,
+     "pos": [
+      99.131,
+      64.8643
+     ],
+     "anchors": 6,
+     "anchored": true
+    },
+    {
+     "area_mm2": 25.2581,
+     "pos": [
+      97.9514,
+      57.6856
+     ],
+     "anchors": 4,
+     "anchored": true
+    }
+   ],
+   "dead_islands": []
+  },
+  {
+   "net": "VBUS",
+   "layer": "F.Cu",
+   "components": 1,
+   "anchored_components": 1,
+   "groups": 1,
+   "split": false,
+   "stitched_elsewhere": false,
+   "component_facts": [
+    {
+     "area_mm2": 39.4587,
+     "pos": [
+      92.5427,
+      55.9525
+     ],
+     "anchors": 5,
+     "anchored": true
+    }
+   ],
+   "dead_islands": []
+  }
+ ],
+ "bridges": [],
+ "splits_found": 0,
+ "splits_repaired": 0,
+ "report_schema": 1,
+ "checker_version": 1,
+ "generated_at": "2026-10-28T17:24:20+00:00",
+ "input": "/work/boards/lite/kicad/lite-main.kicad_pcb",
+ "input_digest": "sexpr_no_uuid:be66f58465a0ad403ea1a466874968ff417bf90a8f96821ed998872158eb9a0a"
+}
