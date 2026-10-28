@@ -586,8 +586,8 @@ static bool hifi_init(void) {
 	gpio_config(&in);
 
 	adc1_config_width(ADC_WIDTH_BIT_12);
-	adc1_config_channel_atten(ADC_VBUS, ADC_ATTEN_DB_11);
-	esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
+	adc1_config_channel_atten(ADC_VBUS, ADC_ATTEN_DB_12);
+	esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 1100, &adc_chars);
 
 	hifi_power_cfg_t pc;
 	hifi_power_cfg_lite(&pc);

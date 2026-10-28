@@ -1,7 +1,8 @@
 # lite-main board defaults: squeezelite-esp32's build-scripts/I2S-4MFlash-sdkconfig.defaults
 # at the commit in firmware/upstream.lock, with the board set to HIFI_LITE (our Kconfig
 # patch carries its pins and codec setup), the board-specific lines that would
-# override those removed, and the player/AP/Bluetooth names set to hifi-lite.
+# override those removed, the player/AP/Bluetooth names set to hifi-lite, and
+# 8 MB flash with board/lite-main/partitions.csv.
 #
 # Automatically generated file. DO NOT EDIT.
 # Espressif IoT Development Framework (ESP-IDF) Project Configuration
@@ -96,10 +97,10 @@ CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
 CONFIG_ESPTOOLPY_FLASHFREQ="80m"
 # CONFIG_ESPTOOLPY_FLASHSIZE_1MB is not set
 # CONFIG_ESPTOOLPY_FLASHSIZE_2MB is not set
-CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
-# CONFIG_ESPTOOLPY_FLASHSIZE_8MB is not set
+# CONFIG_ESPTOOLPY_FLASHSIZE_4MB is not set
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
 # CONFIG_ESPTOOLPY_FLASHSIZE_16MB is not set
-CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
+CONFIG_ESPTOOLPY_FLASHSIZE="8MB"
 CONFIG_ESPTOOLPY_FLASHSIZE_DETECT=y
 CONFIG_ESPTOOLPY_BEFORE_RESET=y
 # CONFIG_ESPTOOLPY_BEFORE_NORESET is not set
@@ -125,8 +126,8 @@ CONFIG_ESPTOOLPY_MONITOR_BAUD=115200
 # CONFIG_PARTITION_TABLE_SINGLE_APP is not set
 # CONFIG_PARTITION_TABLE_TWO_OTA is not set
 CONFIG_PARTITION_TABLE_CUSTOM=y
-CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
-CONFIG_PARTITION_TABLE_FILENAME="partitions.csv"
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-hifi.csv"
+CONFIG_PARTITION_TABLE_FILENAME="partitions-hifi.csv"
 CONFIG_PARTITION_TABLE_OFFSET=0x8000
 CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table

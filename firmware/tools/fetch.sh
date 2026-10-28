@@ -40,10 +40,9 @@ if [ -f "$REPO/app/build.py" ]; then
 	python3 "$REPO/app/build.py" --out "$DEST/components/hifi/esp/webapp" >/dev/null
 fi
 
+# as upstream's CI does: the board's defaults become the starting sdkconfig
+# (upstream commits an sdkconfig of its own, which the reset above restores)
 cp "$FW/board/$BOARD/sdkconfig.defaults" "$DEST/sdkconfig.defaults"
-if [ -f "$DEST/sdkconfig" ] && ! cmp -s "$FW/board/$BOARD/sdkconfig.defaults" "$DEST/build/.hifi-defaults" 2>/dev/null; then
-	rm -f "$DEST/sdkconfig"   # defaults changed: regenerate
-fi
-mkdir -p "$DEST/build"
-cp "$FW/board/$BOARD/sdkconfig.defaults" "$DEST/build/.hifi-defaults"
+cp "$FW/board/$BOARD/sdkconfig.defaults" "$DEST/sdkconfig"
+cp "$FW/board/$BOARD/partitions.csv" "$DEST/partitions-hifi.csv"
 echo "$DEST"

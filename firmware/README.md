@@ -55,6 +55,7 @@ python3 ~/esp/esp-idf-v4.4.8/tools/idf_tools.py install xtensa-esp32-elf esp32ul
 uv venv --seed --python 3.10 ~/esp/tools/python_env/idf4.4_py3.10_env
 ~/esp/tools/python_env/idf4.4_py3.10_env/bin/pip install -r <(grep -v windows-curses ~/esp/esp-idf-v4.4.8/requirements.txt | grep -v gdbgui)
 ~/esp/tools/python_env/idf4.4_py3.10_env/bin/pip install --no-deps gdbgui==0.13.2.0   # export.sh checks it's there
+~/esp/tools/python_env/idf4.4_py3.10_env/bin/pip install "setuptools<70" "protobuf>=3.20,<4" "grpcio-tools>=1.48,<1.49"   # cspot's nanopb generator
 ```
 
 `build.sh` finds that install by itself. The Hive's `hive-fw` module is
