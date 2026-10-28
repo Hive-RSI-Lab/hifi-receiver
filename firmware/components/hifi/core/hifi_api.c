@@ -1,0 +1,397 @@
+#include "hifi_api.h"
+
+#include <math.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "hifi_json.h"
+
+#define PREFIX "/api/v1/"
+
+static int error(char *out, size_t cap, int status, const char *msg) {
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_str(&j, "error", msg);
+	hj_obj_end(&j);
+	return status;
+}
+
+static void write_tone(hj_t *j, const char *key, const hifi_tone_params_t *p) {
+	hj_obj(j, key);
+	hj_str(j, "type", hifi_tone_type_name(p->type));
+	if (p->type == HIFI_TONE_SINE) hj_num(j, "freq_hz", p->freq_hz, 1);
+	if (p->type == HIFI_TONE_SWEEP) {
+		hj_num(j, "start_hz", p->start_hz, 1);
+		hj_num(j, "end_hz", p->end_hz, 1);
+	}
+	if (p->type != HIFI_TONE_SILENCE) hj_num(j, "level_dbfs", p->level_dbfs, 1);
+	if (p->type == HIFI_TONE_SINE) hj_str(j, "channel", hifi_channel_name(p->channel));
+	hj_num(j, "duration_s", p->duration_s, 1);
+	hj_obj_end(j);
+}
+
+static void write_amp(hj_t *j, const char *key, const hifi_snapshot_t *s) {
+	hj_obj(j, key);
+	hj_bool(j, "enabled", s->amp_enabled);
+	hj_bool(j, "fault", s->amp_fault);
+	hj_int(j, "faults", s->amp_faults);
+	hj_bool(j, "latched", s->amp_latched);
+	hj_num(j, "temp_c", s->amp_temp_c, 1);
+	hj_obj_end(j);
+}
+
+void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) {
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_int(&j, "uptime_s", s->uptime_s);
+
+	hj_obj(&j, "power");
+	hj_str(&j, "state", hifi_power_state_name(s->pwr_state));
+	hj_num(&j, "vbus_v", s->vbus_v, 2);
+	hj_bool(&j, "pg", s->pg);
+	hj_obj(&j, "contract");
+	if (s->contract.known) hj_str(&j, "protocol", hifi_proto_name(s->contract.proto));
+	else hj_null(&j, "protocol");
+	hj_bool(&j, "epr", s->contract.epr);
+	hj_num(&j, "v", s->contract.v, 1);
+	hj_num(&j, "i_max_a", s->contract.i_max_a, 2);
+	hj_num(&j, "w", s->contract.w, 1);
+	hj_obj_end(&j);
+	hj_bool(&j, "pvdd_on", s->pvdd_on);
+	hj_num(&j, "pvdd_v", s->pvdd_v, 2);
+	hj_num(&j, "vbus_i_a", s->vbus_i_a, 2);
+	hj_obj_end(&j);
+
+	write_amp(&j, "amp", s);
+
+	hj_obj(&j, "governor");
+	hj_num(&j, "budget_w", s->gov_budget_w, 1);
+	hj_num(&j, "in_w", s->gov_in_w, 1);
+	hj_num(&j, "out_w", s->gov_out_w, 1);
+	hj_num(&j, "gain_db", s->gov_gain_db, 1);
+	hj_bool(&j, "limiting", s->gov_limiting);
+	hj_int(&j, "limit_events", s->gov_events);
+	hj_obj_end(&j);
+
+	hj_obj(&j, "audio");
+	hj_str(&j, "source", s->source ? s->source : "idle");
+	hj_str(&j, "input", s->input == HIFI_INPUT_DJ_DIRECT ? "dj_direct" : "stream");
+	if (s->tone_active) write_tone(&j, "tone", &s->tone);
+	else hj_null(&j, "tone");
+	hj_num(&j, "level_dbfs", s->level_dbfs, 1);
+	hj_obj_end(&j);
+
+	hj_obj(&j, "net");
+	hj_str(&j, "ip", s->ip[0] ? s->ip : NULL);
+	if (s->rssi) hj_int(&j, "rssi", s->rssi);
+	else hj_null(&j, "rssi");
+	hj_obj_end(&j);
+
+	hj_obj(&j, "sys");
+	hj_int(&j, "heap_free", s->heap_free);
+	hj_int(&j, "psram_free", s->psram_free);
+	hj_obj_end(&j);
+
+	hj_obj_end(&j);
+}
+
+void hifi_selftest_add(hifi_selftest_t *t, const char *name, bool pass, const char *fmt, ...) {
+	if (t->n >= HIFI_SELFTEST_MAX) return;
+	hifi_check_t *c = &t->c[t->n++];
+	snprintf(c->name, sizeof(c->name), "%s", name);
+	c->pass = pass;
+	va_list ap;
+	va_start(ap, fmt);
+	vsnprintf(c->value, sizeof(c->value), fmt, ap);
+	va_end(ap);
+}
+
+/* ------------------------------------------------------------------ routes */
+
+static int r_info(const hifi_ops_t *ops, char *out, size_t cap) {
+	hifi_info_t i = {0};
+	ops->info(&i);
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_str(&j, "model", i.model);
+	hj_str(&j, "board", i.board);
+	hj_str(&j, "fw", i.fw);
+	hj_str(&j, "upstream", i.upstream);
+	hj_int(&j, "api", HIFI_API_VERSION);
+	hj_str(&j, "mac", i.mac);
+	hj_str(&j, "hostname", i.hostname);
+	hj_int(&j, "flash_mb", i.flash_mb);
+	hj_int(&j, "psram_mb", i.psram_mb);
+	hj_obj_end(&j);
+	return 200;
+}
+
+static int r_state(const hifi_ops_t *ops, char *out, size_t cap) {
+	hifi_snapshot_t *s = calloc(1, sizeof(*s));
+	if (!s) return error(out, cap, 500, "out of memory");
+	ops->snapshot(s);
+	hifi_api_write_state(s, out, cap);
+	free(s);
+	return 200;
+}
+
+static double num_or(const char *body, const char *key, double dflt) {
+	double v;
+	return hj_get_num(body, key, &v) ? v : dflt;
+}
+
+static int r_tone(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	char type[16] = "", channel[8] = "both";
+	bool force = false;
+	if (!hj_get_str(body, "type", type, sizeof(type))) return error(out, cap, 400, "type is required");
+	hj_get_bool(body, "force", &force);
+
+	hj_t j;
+	if (!strcmp(type, "stop")) {
+		ops->tone_stop();
+		hj_init(&j, out, cap);
+		hj_obj(&j, NULL);
+		hj_bool(&j, "ok", true);
+		hj_null(&j, "tone");
+		hj_obj_end(&j);
+		return 200;
+	}
+
+	hifi_tone_params_t p = {
+		.type = hifi_tone_type_from(type),
+		.freq_hz = (float) num_or(body, "freq_hz", 1000),
+		.start_hz = (float) num_or(body, "start_hz", 20),
+		.end_hz = (float) num_or(body, "end_hz", 20000),
+		.level_dbfs = (float) num_or(body, "level_dbfs", -20),
+		.duration_s = (float) num_or(body, "duration_s", 5),
+	};
+	if (hj_get_str(body, "channel", channel, sizeof(channel))) {
+		if (!strcmp(channel, "left")) p.channel = HIFI_CH_LEFT;
+		else if (!strcmp(channel, "right")) p.channel = HIFI_CH_RIGHT;
+		else if (strcmp(channel, "both")) return error(out, cap, 400, "channel must be both, left or right");
+	}
+	const char *why = hifi_tone_check(&p, force);
+	if (why) return error(out, cap, 400, why);
+
+	const char *err = "can't play now";
+	int st = ops->tone_start(&p, force, &err);
+	if (st) return error(out, cap, st, err);
+
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_bool(&j, "ok", true);
+	write_tone(&j, "tone", &p);
+	hj_obj_end(&j);
+	return 200;
+}
+
+static int r_amp(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	bool v, any = false;
+	if (hj_get_bool(body, "reset", &v)) {
+		if (v) ops->amp_reset();
+		any = true;
+	}
+	if (hj_get_bool(body, "enable", &v)) {
+		ops->amp_enable(v);
+		any = true;
+	}
+	if (!any) return error(out, cap, 400, "send {\"enable\": true|false} or {\"reset\": true}");
+
+	hifi_snapshot_t *s = calloc(1, sizeof(*s));
+	if (!s) return error(out, cap, 500, "out of memory");
+	ops->snapshot(s);
+	hj_t j;
+	hj_init(&j, out, cap);
+	write_amp(&j, NULL, s);
+	free(s);
+	return 200;
+}
+
+static int r_input(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	char in[16];
+	hifi_input_t v;
+	if (!hj_get_str(body, "input", in, sizeof(in))) return error(out, cap, 400, "input is required");
+	if (!strcmp(in, "stream")) v = HIFI_INPUT_STREAM;
+	else if (!strcmp(in, "dj_direct")) v = HIFI_INPUT_DJ_DIRECT;
+	else return error(out, cap, 400, "input must be stream or dj_direct");
+	if (ops->set_input(v)) return error(out, cap, 500, "codec didn't take it");
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_bool(&j, "ok", true);
+	hj_str(&j, "input", in);
+	hj_obj_end(&j);
+	return 200;
+}
+
+static int r_sub(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	double db;
+	if (!hj_get_num(body, "level_db", &db)) return error(out, cap, 400, "level_db is required");
+	if (db < -30 || db > 6) return error(out, cap, 400, "level_db must be -30 to +6");
+	float set = ops->set_sub_db((float) db);
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_bool(&j, "ok", true);
+	hj_num(&j, "level_db", set, 1);
+	hj_obj_end(&j);
+	return 200;
+}
+
+static int r_control(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	char action[16];
+	if (!hj_get_str(body, "action", action, sizeof(action))) return error(out, cap, 400, "action is required");
+	if (ops->control(action)) return error(out, cap, 400, "unknown action");
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_bool(&j, "ok", true);
+	hj_obj_end(&j);
+	return 200;
+}
+
+static int r_selftest(const hifi_ops_t *ops, char *out, size_t cap) {
+	hifi_selftest_t *t = calloc(1, sizeof(*t));
+	if (!t) return error(out, cap, 500, "out of memory");
+	ops->selftest(t);
+	bool pass = t->n > 0;
+	for (int i = 0; i < t->n; i++) pass &= t->c[i].pass;
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_bool(&j, "pass", pass);
+	hj_arr(&j, "checks");
+	for (int i = 0; i < t->n; i++) {
+		hj_obj(&j, NULL);
+		hj_str(&j, "name", t->c[i].name);
+		hj_bool(&j, "pass", t->c[i].pass);
+		hj_str(&j, "value", t->c[i].value);
+		hj_obj_end(&j);
+	}
+	hj_arr_end(&j);
+	hj_obj_end(&j);
+	free(t);
+	return 200;
+}
+
+int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
+		    const char *body, char *out, size_t cap) {
+	char route[32];
+	size_t plen = strlen(PREFIX);
+	if (strncmp(path, PREFIX, plen)) return error(out, cap, 404, "no such path");
+	snprintf(route, sizeof(route), "%s", path + plen);
+	route[strcspn(route, "?")] = '\0';
+	bool get = !strcmp(method, "GET"), post = !strcmp(method, "POST");
+
+	if (post && (!body || !*body)) body = "{}";
+	if (post && !hj_valid_object(body)) return error(out, cap, 400, "body must be a JSON object");
+
+	int status;
+	if (!strcmp(route, "info")) status = get ? r_info(ops, out, cap) : -1;
+	else if (!strcmp(route, "state")) status = get ? r_state(ops, out, cap) : -1;
+	else if (!strcmp(route, "tone")) status = post ? r_tone(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "amp")) status = post ? r_amp(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "input")) status = post ? r_input(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "sub")) status = post ? r_sub(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "control")) status = post ? r_control(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "selftest")) status = post ? r_selftest(ops, out, cap) : -1;
+	else return error(out, cap, 404, "no such path");
+
+	if (status < 0) return error(out, cap, 405, "wrong method for this path");
+	return status;
+}
+
+/* ------------------------------------------------------------------ console */
+
+static const char USAGE[] =
+	"usage: hifi info|state|selftest | tone sine <hz> <dBFS> [both|left|right] [s] | "
+	"tone sweep <from> <to> <dBFS> [s] | tone noise <dBFS> [s] | tone silence [s] | tone stop | "
+	"amp on|off|reset | input stream|dj_direct | sub <dB> | control <action>";
+
+static bool usage(char *out, size_t cap) {
+	snprintf(out, cap, "%s", USAGE);
+	return false;
+}
+
+static bool is_num(const char *s) {
+	char *end;
+	if (!s || !*s) return false;
+	strtod(s, &end);
+	return *end == '\0';
+}
+
+bool hifi_cli_request(int argc, const char *const *argv, const char **method,
+		      const char **path, char *body, size_t bc, char *out, size_t cap) {
+	*method = "POST";
+	body[0] = '\0';
+	if (argc < 1) return usage(out, cap);
+	const char *cmd = argv[0];
+
+	if (!strcmp(cmd, "info") || !strcmp(cmd, "state")) {
+		*method = "GET";
+		*path = !strcmp(cmd, "info") ? PREFIX "info" : PREFIX "state";
+		return argc == 1 || usage(out, cap);
+	}
+	if (!strcmp(cmd, "selftest")) {
+		*path = PREFIX "selftest";
+		snprintf(body, bc, "{}");
+		return argc == 1 || usage(out, cap);
+	}
+	if (!strcmp(cmd, "amp") && argc == 2) {
+		*path = PREFIX "amp";
+		if (!strcmp(argv[1], "on")) snprintf(body, bc, "{\"enable\":true}");
+		else if (!strcmp(argv[1], "off")) snprintf(body, bc, "{\"enable\":false}");
+		else if (!strcmp(argv[1], "reset")) snprintf(body, bc, "{\"reset\":true}");
+		else return usage(out, cap);
+		return true;
+	}
+	if (!strcmp(cmd, "input") && argc == 2) {
+		*path = PREFIX "input";
+		snprintf(body, bc, "{\"input\":\"%s\"}", argv[1]);
+		return !strcmp(argv[1], "stream") || !strcmp(argv[1], "dj_direct") || usage(out, cap);
+	}
+	if (!strcmp(cmd, "sub") && argc == 2 && is_num(argv[1])) {
+		*path = PREFIX "sub";
+		snprintf(body, bc, "{\"level_db\":%s}", argv[1]);
+		return true;
+	}
+	if (!strcmp(cmd, "control") && argc == 2 && strlen(argv[1]) < 16 && !strpbrk(argv[1], "\"\\")) {
+		*path = PREFIX "control";
+		snprintf(body, bc, "{\"action\":\"%s\"}", argv[1]);
+		return true;
+	}
+	if (!strcmp(cmd, "tone") && argc >= 2) {
+		const char *t = argv[1];
+		int n = argc - 2;
+		const char *const *a = argv + 2;
+		*path = PREFIX "tone";
+		for (int i = 0; i < n; i++) {
+			bool chan = !strcmp(t, "sine") && i == 2;
+			if (!chan && !is_num(a[i])) return usage(out, cap);
+		}
+		if (!strcmp(t, "stop") && n == 0) {
+			snprintf(body, bc, "{\"type\":\"stop\"}");
+		} else if (!strcmp(t, "sine") && n >= 2 && n <= 4) {
+			const char *ch = n >= 3 ? a[2] : "both";
+			if (strcmp(ch, "both") && strcmp(ch, "left") && strcmp(ch, "right")) return usage(out, cap);
+			snprintf(body, bc, "{\"type\":\"sine\",\"freq_hz\":%s,\"level_dbfs\":%s,\"channel\":\"%s\",\"duration_s\":%s}",
+				 a[0], a[1], ch, n == 4 ? a[3] : "5");
+		} else if (!strcmp(t, "sweep") && n >= 3 && n <= 4) {
+			snprintf(body, bc, "{\"type\":\"sweep\",\"start_hz\":%s,\"end_hz\":%s,\"level_dbfs\":%s,\"duration_s\":%s}",
+				 a[0], a[1], a[2], n == 4 ? a[3] : "10");
+		} else if (!strcmp(t, "noise") && n >= 1 && n <= 2) {
+			snprintf(body, bc, "{\"type\":\"noise\",\"level_dbfs\":%s,\"duration_s\":%s}", a[0], n == 2 ? a[1] : "5");
+		} else if (!strcmp(t, "silence") && n <= 1) {
+			snprintf(body, bc, "{\"type\":\"silence\",\"duration_s\":%s}", n == 1 ? a[0] : "5");
+		} else {
+			return usage(out, cap);
+		}
+		return true;
+	}
+	return usage(out, cap);
+}
