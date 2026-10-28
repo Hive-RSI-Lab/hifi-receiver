@@ -14,50 +14,277 @@
    "net": "GND",
    "layer": "B.Cu",
    "components": 3,
-   "anchored_components": 2,
+   "anchored_components": 3,
    "groups": 1,
    "split": false,
    "stitched_elsewhere": true,
    "component_facts": [
     {
-     "area_mm2": 7418.8142,
+     "area_mm2": 7488.5444,
      "pos": [
-      40.691,
-      94.705
+      106.1944,
+      105.3045
      ],
-     "anchors": 147,
+     "anchors": 165,
      "anchored": true
     },
     {
-     "area_mm2": 78.6174,
+     "area_mm2": 96.7352,
      "pos": [
-      65.6703,
-      93.2001
+      52.0682,
+      114.9907
+     ],
+     "anchors": 3,
+     "anchored": true
+    },
+    {
+     "area_mm2": 39.1236,
+     "pos": [
+      77.4009,
+      87.7269
+     ],
+     "anchors": 3,
+     "anchored": true
+    }
+   ],
+   "dead_islands": []
+  },
+  {
+   "net": "GND",
+   "layer": "F.Cu",
+   "components": 25,
+   "anchored_components": 25,
+   "groups": 1,
+   "split": false,
+   "stitched_elsewhere": true,
+   "component_facts": [
+    {
+     "area_mm2": 5282.6164,
+     "pos": [
+      35.6341,
+      105.3181
+     ],
+     "anchors": 209,
+     "anchored": true
+    },
+    {
+     "area_mm2": 114.5469,
+     "pos": [
+      79.915,
+      82.6716
      ],
      "anchors": 6,
      "anchored": true
     },
     {
-     "area_mm2": 0.1552,
+     "area_mm2": 98.3741,
      "pos": [
-      90.19,
-      57.5723
+      65.5873,
+      140.4888
      ],
-     "anchors": 0,
-     "anchored": false
+     "anchors": 2,
+     "anchored": true
+    },
+    {
+     "area_mm2": 77.9796,
+     "pos": [
+      82.5045,
+      103.043
+     ],
+     "anchors": 11,
+     "anchored": true
+    },
+    {
+     "area_mm2": 73.9285,
+     "pos": [
+      71.6861,
+      126.555
+     ],
+     "anchors": 6,
+     "anchored": true
+    },
+    {
+     "area_mm2": 45.6372,
+     "pos": [
+      80.865,
+      141.8648
+     ],
+     "anchors": 2,
+     "anchored": true
+    },
+    {
+     "area_mm2": 23.7829,
+     "pos": [
+      66.4246,
+      109.6364
+     ],
+     "anchors": 4,
+     "anchored": true
+    },
+    {
+     "area_mm2": 13.4337,
+     "pos": [
+      94.7522,
+      112.5214
+     ],
+     "anchors": 5,
+     "anchored": true
+    },
+    {
+     "area_mm2": 12.4173,
+     "pos": [
+      72.5403,
+      107.9514
+     ],
+     "anchors": 2,
+     "anchored": true
+    },
+    {
+     "area_mm2": 10.0762,
+     "pos": [
+      101.8819,
+      111.5208
+     ],
+     "anchors": 4,
+     "anchored": true
+    },
+    {
+     "area_mm2": 8.3491,
+     "pos": [
+      37.0626,
+      139.9956
+     ],
+     "anchors": 2,
+     "anchored": true
+    },
+    {
+     "area_mm2": 7.612,
+     "pos": [
+      87.065,
+      112.5819
+     ],
+     "anchors": 4,
+     "anchored": true
+    },
+    {
+     "area_mm2": 7.2826,
+     "pos": [
+      117.365,
+      112.043
+     ],
+     "anchors": 4,
+     "anchored": true
+    },
+    {
+     "area_mm2": 7.2464,
+     "pos": [
+      90.1287,
+      115.9867
+     ],
+     "anchors": 3,
+     "anchored": true
+    },
+    {
+     "area_mm2": 6.175,
+     "pos": [
+      99.364,
+      114.3714
+     ],
+     "anchors": 2,
+     "anchored": true
+    },
+    {
+     "area_mm2": 1.8132,
+     "pos": [
+      111.54,
+      104.323
+     ],
+     "anchors": 2,
+     "anchored": true
+    },
+    {
+     "area_mm2": 1.7832,
+     "pos": [
+      111.54,
+      106.5439
+     ],
+     "anchors": 2,
+     "anchored": true
+    },
+    {
+     "area_mm2": 1.1914,
+     "pos": [
+      95.3523,
+      102.3161
+     ],
+     "anchors": 2,
+     "anchored": true
+    },
+    {
+     "area_mm2": 1.1908,
+     "pos": [
+      95.3534,
+      100.5026
+     ],
+     "anchors": 2,
+     "anchored": true
+    },
+    {
+     "area_mm2": 1.1708,
+     "pos": [
+      111.379,
+      100.41
+     ],
+     "anchors": 2,
+     "anchored": true
+    },
+    {
+     "area_mm2": 1.0927,
+     "pos": [
+      111.4424,
+      102.3215
+     ],
+     "anchors": 2,
+     "anchored": true
+    },
+    {
+     "area_mm2": 0.3009,
+     "pos": [
+      112.8001,
+      99.501
+     ],
+     "anchors": 1,
+     "anchored": true
+    },
+    {
+     "area_mm2": 0.3009,
+     "pos": [
+      112.9127,
+      106.9374
+     ],
+     "anchors": 1,
+     "anchored": true
+    },
+    {
+     "area_mm2": 0.3009,
+     "pos": [
+      112.8001,
+      102.2298
+     ],
+     "anchors": 1,
+     "anchored": true
+    },
+    {
+     "area_mm2": 0.3009,
+     "pos": [
+      112.9127,
+      103.8038
+     ],
+     "anchors": 1,
+     "anchored": true
     }
    ],
-   "dead_islands": [
-    {
-     "area_mm2": 0.1552,
-     "pos": [
-      90.19,
-      57.5723
-     ],
-     "anchors": 0,
-     "anchored": false
-    }
-   ]
+   "dead_islands": []
   },
   {
    "net": "PVDD",
@@ -69,10 +296,10 @@
    "stitched_elsewhere": false,
    "component_facts": [
     {
-     "area_mm2": 612.653,
+     "area_mm2": 535.0245,
      "pos": [
-      110.52,
-      79.355
+      103.965,
+      87.723
      ],
      "anchors": 16,
      "anchored": true
@@ -83,46 +310,64 @@
   {
    "net": "PVDD",
    "layer": "F.Cu",
-   "components": 4,
-   "anchored_components": 4,
+   "components": 6,
+   "anchored_components": 6,
    "groups": 1,
    "split": false,
    "stitched_elsewhere": true,
    "component_facts": [
     {
-     "area_mm2": 238.0051,
+     "area_mm2": 295.5029,
      "pos": [
-      92.6167,
-      97.1998
+      117.1617,
+      104.8101
      ],
-     "anchors": 10,
+     "anchors": 12,
      "anchored": true
     },
     {
-     "area_mm2": 237.4982,
+     "area_mm2": 243.0899,
      "pos": [
-      121.5529,
-      96.7191
+      89.2027,
+      104.3284
      ],
-     "anchors": 14,
+     "anchors": 11,
      "anchored": true
     },
     {
-     "area_mm2": 29.2332,
+     "area_mm2": 34.1926,
      "pos": [
-      99.131,
-      64.8643
+      94.015,
+      66.9693
      ],
-     "anchors": 6,
+     "anchors": 5,
      "anchored": true
     },
     {
-     "area_mm2": 25.2581,
+     "area_mm2": 25.4455,
      "pos": [
-      97.9514,
-      57.6856
+      94.015,
+      77.6577
      ],
-     "anchors": 4,
+     "anchors": 7,
+     "anchored": true
+    },
+    {
+     "area_mm2": 8.357,
+     "pos": [
+      84.3637,
+      115.923
+     ],
+     "anchors": 3,
+     "anchored": true
+    },
+    {
+     "area_mm2": 5.9472,
+     "pos": [
+      109.741,
+      95.2123
+     ],
+     "anchors": 1,
      "anchored": true
     }
    ],
@@ -138,12 +383,12 @@
    "stitched_elsewhere": false,
    "component_facts": [
     {
-     "area_mm2": 39.4587,
+     "area_mm2": 22.5897,
      "pos": [
-      92.5427,
-      55.9525
+      88.115,
+      65.3638
      ],
-     "anchors": 5,
+     "anchors": 4,
      "anchored": true
     }
    ],
@@ -155,7 +400,7 @@
  "splits_repaired": 0,
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-28T17:24:20+00:00",
+ "generated_at": "2026-10-28T19:34:53+00:00",
  "input": "/work/boards/lite/kicad/lite-main.kicad_pcb",
- "input_digest": "sexpr_no_uuid:be66f58465a0ad403ea1a466874968ff417bf90a8f96821ed998872158eb9a0a"
+ "input_digest": "sexpr_no_uuid:0f0f3b264e99c5efb257978ac78df5c223fe6a424bac77834e5a0d0a94752bf3"
 }

@@ -2,7 +2,7 @@
  "script": "place_edit",
  "status": "pass",
  "board": "kicad/lite-main.kicad_pcb",
- "applied": 12,
+ "applied": 15,
  "verified": true,
  "results": [
   {
@@ -60,6 +60,12 @@
    "only_offboard": false
   },
   {
+   "ref": "J1",
+   "layer": "F.SilkS",
+   "removed": 11,
+   "only_offboard": false
+  },
+  {
    "ref": "U2",
    "field": "reference",
    "layer": "F.SilkS",
@@ -82,6 +88,20 @@
    "hidden": true,
    "size": 1.0,
    "thickness": 0.15
+  },
+  {
+   "text": "+",
+   "layer": "F.SilkS",
+   "x": 83.865,
+   "y": 104.123,
+   "deg": 0.0
+  },
+  {
+   "text": "+",
+   "layer": "F.SilkS",
+   "x": 120.465,
+   "y": 104.123,
+   "deg": 0.0
   }
  ]
 }

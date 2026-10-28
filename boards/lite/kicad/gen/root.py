@@ -250,12 +250,16 @@ c(B_PWR, "C16", "1uF", "+3V3A", role="LDO output")
 r(B_PWR, "R13", "100k", "VBUS", "VBUS_SENSE", role="VBUS divider top")
 r(B_PWR, "R14", "10k", "VBUS_SENSE", "GND", role="VBUS divider bottom (21 V -> 1.9 V)")
 c(B_PWR, "C17", "100nF", "VBUS_SENSE", role="ADC filter")
+# PVDD sense (firmware ask): same divider on the switched side of Q1
+r(B_PWR, "R17", "100k", "PVDD", "PVDD_SENSE", role="PVDD divider top")
+r(B_PWR, "R18", "10k", "PVDD_SENSE", "GND", role="PVDD divider bottom (21 V -> 1.9 V)")
+c(B_PWR, "C18", "100nF", "PVDD_SENSE", role="ADC filter")
 
 # ---- B6 ESP32-WROVER-E ------------------------------------------------------
 ESP = {
     "1": "GND", "15": "GND", "38": "GND", "39": "GND", "2": "+3V3", "3": "ESP_EN",
     "4": "BTN_VOLDN",     # GPIO36 (SENSOR_VP), input only
-    "5": "NC",            # GPIO39: glitches with ADC/Wi-Fi (ESP32 errata 3.11)
+    "5": "PVDD_SENSE",    # GPIO39 (input only, ADC1): PVDD/11, firmware checks the switch closed
     "6": "VBUS_SENSE",    # GPIO34 ADC1
     "7": "I2S_DIN",       # GPIO35 <- codec ASDOUT
     "8": "I2C_SCL",       # GPIO32
@@ -403,9 +407,13 @@ for i, net in enumerate(("BTN_VOLDN", "BTN_VOLUP", "BTN_PLAY")):
     ic(B_IO, f"SW{1 + i}", "C318884", "TS-1187A",
        {"1": net, "2": net, "3": "GND", "4": "GND"}, role="button")
     r(B_IO, f"R{60 + i}", "10k", "+3V3", net, role="button pull-up")
-ic(B_IO, "U9", "C91447", "IRM-H638T",
-   {"1": "GND", "2": "GND", "3": "IR_IN", "4": "+3V3"}, expect={"3": "VOUT", "4": "VCC"}, role="IR receiver 38 kHz")
-c(B_IO, "C80", "100nF", "+3V3", ic_ref="U9", pin=4)
+# IRM-3638T: through-hole, standing at the front edge with its lens facing
+# forward through the enclosure's front wall (the top-looking IRM-H638T sat
+# 31 mm under the lid, outside a remote's cone). Everlight's RC supply filter.
+ic(B_IO, "U9", "C42421366", "IRM-3638T", {"1": "IR_IN", "2": "GND", "3": "IR_VCC"},
+   expect={"1": "OUT", "3": "VCC"}, role="IR receiver 38 kHz, front-facing")
+r(B_IO, "R65", "100R", "+3V3", "IR_VCC", role="IR supply filter")
+c(B_IO, "C80", "4.7uF", "IR_VCC", ic_ref="U9", pin=3)
 r(B_IO, "R63", "10k", "+3V3", "IR_IN", role="IR pull-up")
 r(B_IO, "R64", "1k", "LED_DRV", "LED_A", role="LED current 1.3 mA")
 ic(B_IO, "D2", "C2286", "red", {"1": "LED_A", "2": "GND"}, expect={"1": "A", "2": "K"},

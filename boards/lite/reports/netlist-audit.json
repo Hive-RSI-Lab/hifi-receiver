@@ -38,13 +38,13 @@
   }
  ],
  "mode": "audit",
- "nets": 115,
- "components": 130,
- "unconnected_pins": 32,
+ "nets": 116,
+ "components": 134,
+ "unconnected_pins": 31,
  "constraint_nets_checked": 16,
  "constraint_refs_checked": 2,
- "pins_expected": 423,
- "pins_connected": 423,
+ "pins_expected": 430,
+ "pins_connected": 430,
  "decoupling_associations": 25,
  "power": [
   {
@@ -59,16 +59,17 @@
   },
   {
    "net": "PVDD",
-   "nodes": 20,
+   "nodes": 21,
    "power_in": 0,
    "power_out": 0,
    "passive_fed_via": [
-    "C2"
+    "C2",
+    "R17"
    ]
   },
   {
    "net": "GND",
-   "nodes": 102,
+   "nodes": 103,
    "power_in": 0,
    "power_out": 0,
    "passive_fed_via": [
@@ -80,6 +81,7 @@
     "C15",
     "C16",
     "C17",
+    "C18",
     "C20",
     "C21",
     "C22",
@@ -127,6 +129,7 @@
     "R12",
     "R14",
     "R16",
+    "R18",
     "R31",
     "R34",
     "R37",
@@ -149,7 +152,7 @@
   },
   {
    "net": "+3V3",
-   "nodes": 28,
+   "nodes": 27,
    "power_in": 0,
    "power_out": 0,
    "passive_fed_via": [
@@ -165,7 +168,8 @@
     "R60",
     "R61",
     "R62",
-    "R63"
+    "R63",
+    "R65"
    ]
   },
   {
@@ -272,7 +276,7 @@
  ],
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-28T17:28:13+00:00",
+ "generated_at": "2026-10-28T19:02:24+00:00",
  "input": "kicad/lite-main.net",
- "input_digest": "netlist_canonical:e367288d57f5fb0ce6137ddff94dbe245a62195937d8280e6cd03a68877d60e4"
+ "input_digest": "netlist_canonical:5e70c9d9339252253db3c46bcdf20112446186ebafb903f61d351f7d3f37e295"
 }

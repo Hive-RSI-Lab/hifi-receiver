@@ -16,24 +16,24 @@
     "net": "GND",
     "layer": "B.Cu",
     "region": [
-     27.87,
-     50.205,
-     126.87,
-     139.205
+     23.365,
+     60.823,
+     122.365,
+     149.823
     ],
     "priority": 0,
     "status": "added",
-    "area_mm2": 7994.496,
+    "area_mm2": 7982.31,
     "islands": 1
    },
    {
     "net": "VBUS",
     "layer": "F.Cu",
     "region": [
-     90.97,
-     52.205,
-     94.27,
-     59.905
+     86.465,
+     62.823,
+     89.765,
+     70.523
     ],
     "priority": 1,
     "status": "added",
@@ -44,10 +44,10 @@
     "net": "PVDD",
     "layer": "F.Cu",
     "region": [
-     96.77,
-     52.205,
-     100.27,
-     71.705
+     92.265,
+     62.823,
+     95.765,
+     82.323
     ],
     "priority": 1,
     "status": "added",
@@ -58,10 +58,10 @@
     "net": "PVDD",
     "layer": "B.Cu",
     "region": [
-     90.87,
-     69.505,
-     126.07,
-     84.705
+     86.365,
+     80.123,
+     121.565,
+     95.323
     ],
     "priority": 1,
     "status": "added",
@@ -72,10 +72,10 @@
     "net": "PVDD",
     "layer": "F.Cu",
     "region": [
-     85.87,
-     82.705,
-     99.37,
-     87.705
+     81.365,
+     93.323,
+     94.865,
+     98.323
     ],
     "priority": 3,
     "status": "added",
@@ -86,10 +86,10 @@
     "net": "PVDD",
     "layer": "F.Cu",
     "region": [
-     85.87,
-     87.705,
-     101.97,
-     93.205
+     81.365,
+     98.323,
+     97.465,
+     103.823
     ],
     "priority": 2,
     "status": "added",
@@ -100,10 +100,10 @@
     "net": "PVDD",
     "layer": "F.Cu",
     "region": [
-     85.87,
-     93.205,
-     100.17,
-     106.705
+     81.365,
+     103.823,
+     95.665,
+     117.323
     ],
     "priority": 1,
     "status": "added",
@@ -114,10 +114,10 @@
     "net": "PVDD",
     "layer": "F.Cu",
     "region": [
-     113.37,
-     82.705,
-     126.87,
-     87.705
+     108.865,
+     93.323,
+     122.365,
+     98.323
     ],
     "priority": 3,
     "status": "added",
@@ -128,10 +128,10 @@
     "net": "PVDD",
     "layer": "F.Cu",
     "region": [
-     109.77,
-     87.705,
-     126.87,
-     93.205
+     105.265,
+     98.323,
+     122.365,
+     103.823
     ],
     "priority": 2,
     "status": "added",
@@ -142,10 +142,10 @@
     "net": "PVDD",
     "layer": "F.Cu",
     "region": [
-     113.17,
-     93.205,
-     126.87,
-     105.705
+     108.665,
+     103.823,
+     122.365,
+     116.323
     ],
     "priority": 1,
     "status": "added",
@@ -199,7 +199,7 @@
  },
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-28T18:26:48+00:00",
+ "generated_at": "2026-10-28T19:26:48+00:00",
  "input": "/work/boards/lite/kicad/lite-main.kicad_pcb",
- "input_digest": "sexpr_no_uuid:082b83326074ba89067bba90bbaba88168c6b91b7b7a937fa5556dedb42fefc7"
+ "input_digest": "sexpr_no_uuid:a368a24faf1fc8e7d9a9c5c233488a2e4128bb2b2262a11968335a8307ae4e16"
 }

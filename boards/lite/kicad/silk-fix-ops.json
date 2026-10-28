@@ -47,6 +47,16 @@
    "layer": "F.SilkS"
   },
   {
+   "op": "silk_clear",
+   "ref": "J1",
+   "layer": "F.SilkS"
+  },
+  {
+   "op": "silk_clear",
+   "ref": "U9",
+   "layer": "F.SilkS"
+  },
+  {
    "op": "set_text",
    "ref": "U2",
    "field": "reference",
@@ -65,15 +75,10 @@
    "hide": true
   },
   {
-   "op": "silk_clear",
-   "ref": "J1",
-   "layer": "F.SilkS"
-  },
-  {
    "op": "add_text",
    "text": "+",
-   "x": 88.37,
-   "y": 93.505,
+   "x": 83.865,
+   "y": 104.123,
    "layer": "F.SilkS",
    "size": 1.2,
    "thickness": 0.2
@@ -81,8 +86,8 @@
   {
    "op": "add_text",
    "text": "+",
-   "x": 124.97,
-   "y": 93.505,
+   "x": 120.465,
+   "y": 104.123,
    "layer": "F.SilkS",
    "size": 1.2,
    "thickness": 0.2

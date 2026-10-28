@@ -258,6 +258,24 @@
   "role": "ADC filter"
  },
  {
+  "ref": "R17",
+  "lcsc": "C25803",
+  "value": "100k",
+  "role": "PVDD divider top"
+ },
+ {
+  "ref": "R18",
+  "lcsc": "C25804",
+  "value": "10k",
+  "role": "PVDD divider bottom (21 V -> 1.9 V)"
+ },
+ {
+  "ref": "C18",
+  "lcsc": "C14663",
+  "value": "100nF",
+  "role": "ADC filter"
+ },
+ {
   "ref": "U5",
   "lcsc": "C2973667",
   "value": "ESP32-WROVER-E-N8R8",
@@ -751,14 +769,20 @@
  },
  {
   "ref": "U9",
-  "lcsc": "C91447",
-  "value": "IRM-H638T",
-  "role": "IR receiver 38 kHz"
+  "lcsc": "C42421366",
+  "value": "IRM-3638T",
+  "role": "IR receiver 38 kHz, front-facing"
+ },
+ {
+  "ref": "R65",
+  "lcsc": "C22775",
+  "value": "100R",
+  "role": "IR supply filter"
  },
  {
   "ref": "C80",
-  "lcsc": "C14663",
-  "value": "100nF",
+  "lcsc": "C19666",
+  "value": "4.7uF",
   "role": ""
  },
  {

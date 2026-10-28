@@ -3,13 +3,12 @@
  "status": "violations",
  "board": "lite-main.kicad_pcb",
  "counts": {
-  "total": 33,
+  "total": 2,
   "by_severity": {
-   "warning": 3,
-   "error": 30
+   "warning": 2
   },
   "by_source": {
-   "silk_place": 33
+   "silk_place": 2
   }
  },
  "violations": [
@@ -54,40 +53,6 @@
    "layer": null,
    "net": null,
    "refs": [
-    "U2"
-   ],
-   "msg": "U2: unplaceable - none of 37 collision-free spots passes check_silk; the closest is 1.05 mm beyond its own pads and 0.00 mm from L5 (silk_misattributed); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "U2: unplaceable - none of 37 collision-free spots passes check_silk; the closest is 1.05 mm beyond its own pads and 0.00 mm from L5 (silk_misattributed); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
-     "pos": null
-    }
-   ],
-   "kind": "silk_residual",
-   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
-   "fix_ops": {
-    "shrink": {
-     "op": "set_text",
-     "ref": "U2",
-     "field": "reference",
-     "size": 0.8
-    },
-    "hide": {
-     "op": "set_text",
-     "ref": "U2",
-     "field": "reference",
-     "hide": true
-    }
-   }
-  },
-  {
-   "check": "silk_place",
-   "severity": "warning",
-   "pos": null,
-   "layer": null,
-   "net": null,
-   "refs": [
     "R4"
    ],
    "msg": "R4: unplaceable - none of 34 collision-free spots passes check_silk; the closest is 1.56 mm beyond its own pads and 0.00 mm from J3 (silk_misattributed); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
@@ -114,768 +79,10 @@
      "hide": true
     }
    }
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    29.37,
-    49.705
-   ],
-   "layer": "Edge.Cuts",
-   "net": null,
-   "refs": [
-    "J3"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by board edge",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by board edge",
-     "pos": [
-      29.37,
-      49.705
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    29.37,
-    49.705
-   ],
-   "layer": "Edge.Cuts",
-   "net": null,
-   "refs": [
-    "J3"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by board edge",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by board edge",
-     "pos": [
-      29.37,
-      49.705
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    29.37,
-    49.705
-   ],
-   "layer": "Edge.Cuts",
-   "net": null,
-   "refs": [
-    "J3"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by board edge",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by board edge",
-     "pos": [
-      29.37,
-      49.705
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    29.37,
-    49.705
-   ],
-   "layer": "Edge.Cuts",
-   "net": null,
-   "refs": [
-    "J3"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by board edge",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by board edge",
-     "pos": [
-      29.37,
-      49.705
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    29.37,
-    49.705
-   ],
-   "layer": "Edge.Cuts",
-   "net": null,
-   "refs": [
-    "J3"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by board edge",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by board edge",
-     "pos": [
-      29.37,
-      49.705
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    76.82,
-    63.305
-   ],
-   "layer": null,
-   "net": null,
-   "refs": [
-    "J3",
-    "R4"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by board edge",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by board edge",
-     "pos": [
-      76.82,
-      63.305
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    29.37,
-    49.705
-   ],
-   "layer": "Edge.Cuts",
-   "net": null,
-   "refs": [
-    "J2"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by board edge",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by board edge",
-     "pos": [
-      29.37,
-      49.705
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    29.37,
-    49.705
-   ],
-   "layer": "Edge.Cuts",
-   "net": null,
-   "refs": [
-    "J2"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by board edge",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by board edge",
-     "pos": [
-      29.37,
-      49.705
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    29.37,
-    49.705
-   ],
-   "layer": "Edge.Cuts",
-   "net": null,
-   "refs": [
-    "J2"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by board edge",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by board edge",
-     "pos": [
-      29.37,
-      49.705
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    29.37,
-    49.705
-   ],
-   "layer": "Edge.Cuts",
-   "net": null,
-   "refs": [
-    "J2"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by board edge",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by board edge",
-     "pos": [
-      29.37,
-      49.705
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    29.37,
-    49.705
-   ],
-   "layer": "Edge.Cuts",
-   "net": null,
-   "refs": [
-    "J2"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by board edge",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by board edge",
-     "pos": [
-      29.37,
-      49.705
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    29.37,
-    49.705
-   ],
-   "layer": "Edge.Cuts",
-   "net": null,
-   "refs": [
-    "J1"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by board edge",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by board edge",
-     "pos": [
-      29.37,
-      49.705
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    29.37,
-    49.705
-   ],
-   "layer": "Edge.Cuts",
-   "net": null,
-   "refs": [
-    "J1"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by board edge",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by board edge",
-     "pos": [
-      29.37,
-      49.705
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    29.37,
-    49.705
-   ],
-   "layer": "Edge.Cuts",
-   "net": null,
-   "refs": [
-    "J1"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by board edge",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by board edge",
-     "pos": [
-      29.37,
-      49.705
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    90.3324,
-    72.3725
-   ],
-   "layer": "F.Silkscreen",
-   "net": null,
-   "refs": [
-    "D1",
-    "L1"
-   ],
-   "msg": "post-apply DRC: Silkscreen clearance",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clearance",
-     "pos": [
-      90.3324,
-      72.3725
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    90.3324,
-    72.3725
-   ],
-   "layer": "F.Silkscreen",
-   "net": null,
-   "refs": [
-    "D1",
-    "L1"
-   ],
-   "msg": "post-apply DRC: Silkscreen clearance",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clearance",
-     "pos": [
-      90.3324,
-      72.3725
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    80.37,
-    74.194
-   ],
-   "layer": "F.Silkscreen",
-   "net": null,
-   "refs": [
-    "C6",
-    "U2"
-   ],
-   "msg": "post-apply DRC: Silkscreen clearance",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clearance",
-     "pos": [
-      80.37,
-      74.194
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    92.42,
-    102.935
-   ],
-   "layer": "F.Silkscreen",
-   "net": "GND",
-   "refs": [
-    "C58"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-     "pos": [
-      92.42,
-      102.935
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    121.09,
-    101.885
-   ],
-   "layer": "F.Silkscreen",
-   "net": "GND",
-   "refs": [
-    "C59"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-     "pos": [
-      121.09,
-      101.885
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    122.65,
-    101.885
-   ],
-   "layer": "F.Silkscreen",
-   "net": "GND",
-   "refs": [
-    "C59"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-     "pos": [
-      122.65,
-      101.885
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    119.38,
-    93.475
-   ],
-   "layer": "F.Silkscreen",
-   "net": "PVDD",
-   "refs": [
-    "C59"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-     "pos": [
-      119.38,
-      93.475
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    124.36,
-    93.475
-   ],
-   "layer": "F.Silkscreen",
-   "net": "PVDD",
-   "refs": [
-    "C59"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-     "pos": [
-      124.36,
-      93.475
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    88.48,
-    92.475
-   ],
-   "layer": "F.Silkscreen",
-   "net": "PVDD",
-   "refs": [
-    "C58"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-     "pos": [
-      88.48,
-      92.475
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    94.66,
-    92.475
-   ],
-   "layer": "F.Silkscreen",
-   "net": "PVDD",
-   "refs": [
-    "C58"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-     "pos": [
-      94.66,
-      92.475
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    90.72,
-    102.935
-   ],
-   "layer": "F.Silkscreen",
-   "net": "GND",
-   "refs": [
-    "C58"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-     "pos": [
-      90.72,
-      102.935
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    90.34,
-    57.605
-   ],
-   "layer": "F.Silkscreen",
-   "net": "GND",
-   "refs": [
-    "J1"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-     "pos": [
-      90.34,
-      57.605
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    80.37,
-    74.194
-   ],
-   "layer": "F.Cu",
-   "net": "/BUCK5_BST",
-   "refs": [
-    "C6",
-    "U2"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-     "pos": [
-      80.37,
-      74.194
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    77.74,
-    63.505
-   ],
-   "layer": null,
-   "net": null,
-   "refs": [
-    "J3",
-    "R4"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-     "pos": [
-      77.74,
-      63.505
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    57.37,
-    79.575
-   ],
-   "layer": "F.Cu",
-   "net": "GND",
-   "refs": [
-    "C37",
-    "C38"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-     "pos": [
-      57.37,
-      79.575
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
-  },
-  {
-   "check": "silk_place",
-   "severity": "error",
-   "pos": [
-    57.37,
-    79.575
-   ],
-   "layer": "F.Cu",
-   "net": "/CODEC_DACVREF",
-   "refs": [
-    "C37",
-    "C38"
-   ],
-   "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "post-apply DRC: Silkscreen clipped by solder mask",
-     "pos": [
-      57.37,
-      79.575
-     ]
-    }
-   ],
-   "kind": "silk_drc_regression"
   }
  ],
- "targets": 130,
- "moved": 126,
+ "targets": 134,
+ "moved": 131,
  "residual": [
   {
    "ref": "C38",
@@ -892,26 +99,6 @@
     "hide": {
      "op": "set_text",
      "ref": "C38",
-     "field": "reference",
-     "hide": true
-    }
-   }
-  },
-  {
-   "ref": "U2",
-   "reason": "none of 37 collision-free spots passes check_silk; the closest is 1.05 mm beyond its own pads and 0.00 mm from L5 (silk_misattributed)",
-   "unplaceable": true,
-   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
-   "fix_ops": {
-    "shrink": {
-     "op": "set_text",
-     "ref": "U2",
-     "field": "reference",
-     "size": 0.8
-    },
-    "hide": {
-     "op": "set_text",
-     "ref": "U2",
      "field": "reference",
      "hide": true
     }
@@ -940,7 +127,6 @@
  ],
  "unplaceable": [
   "C38",
-  "U2",
   "R4"
  ],
  "skipped": [
@@ -973,25 +159,7 @@
    "beyond_extent_mm": 0.3545
   },
   {
-   "ref": "J3",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 4.2665
-  },
-  {
-   "ref": "U7",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
-  },
-  {
-   "ref": "D1",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 1.304
-  },
-  {
-   "ref": "C3",
+   "ref": "C4",
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
@@ -1003,21 +171,51 @@
    "beyond_extent_mm": 1.375
   },
   {
+   "ref": "J3",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 4.2665
+  },
+  {
+   "ref": "D1",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.35
+  },
+  {
    "ref": "U1",
    "moved": true,
    "clearance_mm": 0.275,
    "beyond_extent_mm": 0.6
   },
   {
-   "ref": "C4",
+   "ref": "U7",
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
   },
   {
+   "ref": "C3",
+   "moved": true,
+   "clearance_mm": 0.255,
+   "beyond_extent_mm": 0.35
+  },
+  {
+   "ref": "R38",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.605
+  },
+  {
+   "ref": "C48",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
    "ref": "L5",
    "moved": true,
-   "clearance_mm": 0.242,
+   "clearance_mm": 0.3,
    "beyond_extent_mm": 0.353
   },
   {
@@ -1025,6 +223,30 @@
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
+  },
+  {
+   "ref": "R2",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "R39",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.855
+  },
+  {
+   "ref": "R9",
+   "moved": true,
+   "clearance_mm": 0.055,
+   "beyond_extent_mm": 1.2598
+  },
+  {
+   "ref": "C1",
+   "moved": true,
+   "clearance_mm": 0.055,
+   "beyond_extent_mm": 1.11
   },
   {
    "ref": "C44",
@@ -1039,16 +261,16 @@
    "beyond_extent_mm": 0.355
   },
   {
+   "ref": "C5",
+   "moved": true,
+   "clearance_mm": 0.143,
+   "beyond_extent_mm": 0.355
+  },
+  {
    "ref": "C68",
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
-  },
-  {
-   "ref": "C9",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
   },
   {
    "ref": "L2",
@@ -1063,46 +285,22 @@
    "beyond_extent_mm": 0.35
   },
   {
-   "ref": "L6",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
-  },
-  {
-   "ref": "R10",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 3.105
-  },
-  {
    "ref": "R11",
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 3.355
   },
   {
-   "ref": "R2",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "R38",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.605
-  },
-  {
-   "ref": "R9",
+   "ref": "R3",
    "moved": true,
    "clearance_mm": 0.142,
    "beyond_extent_mm": 0.25
   },
   {
-   "ref": "C1",
+   "ref": "U2",
    "moved": true,
-   "clearance_mm": 0.055,
-   "beyond_extent_mm": 1.11
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.354
   },
   {
    "ref": "C13",
@@ -1113,7 +311,7 @@
   {
    "ref": "C2",
    "moved": true,
-   "clearance_mm": 0.036,
+   "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
@@ -1135,18 +333,6 @@
    "beyond_extent_mm": 0.605
   },
   {
-   "ref": "C48",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "C6",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
    "ref": "C60",
    "moved": true,
    "clearance_mm": 0.237,
@@ -1159,10 +345,10 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "C7",
+   "ref": "C9",
    "moved": true,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
+   "beyond_extent_mm": 1.858
   },
   {
    "ref": "L1",
@@ -1171,10 +357,16 @@
    "beyond_extent_mm": 0.35
   },
   {
-   "ref": "R15",
-   "moved": false,
-   "clearance_mm": 0.272,
-   "beyond_extent_mm": 0.38
+   "ref": "L6",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.35
+  },
+  {
+   "ref": "R10",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
   },
   {
    "ref": "R30",
@@ -1201,12 +393,6 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "R39",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
    "ref": "R50",
    "moved": true,
    "clearance_mm": 0.3,
@@ -1215,7 +401,7 @@
   {
    "ref": "R7",
    "moved": true,
-   "clearance_mm": 0.03,
+   "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
@@ -1223,6 +409,12 @@
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.605
+  },
+  {
+   "ref": "C18",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
   },
   {
    "ref": "C32",
@@ -1233,8 +425,8 @@
   {
    "ref": "C33",
    "moved": true,
-   "clearance_mm": 0.237,
-   "beyond_extent_mm": 2.355
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 1.855
   },
   {
    "ref": "C39",
@@ -1273,22 +465,16 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "C8",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
-  },
-  {
    "ref": "J1",
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
   },
   {
-   "ref": "R3",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
+   "ref": "R15",
+   "moved": false,
+   "clearance_mm": 0.273,
+   "beyond_extent_mm": 0.38
   },
   {
    "ref": "R36",
@@ -1306,10 +492,22 @@
    "ref": "R5",
    "moved": true,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.605
+   "beyond_extent_mm": 2.855
   },
   {
    "ref": "R52",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "R53",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.3992
+  },
+  {
+   "ref": "R54",
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
@@ -1357,12 +555,6 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "C5",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
    "ref": "C50",
    "moved": true,
    "clearance_mm": 0.237,
@@ -1391,6 +583,12 @@
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 1.105
+  },
+  {
+   "ref": "C6",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
   },
   {
    "ref": "C62",
@@ -1429,6 +627,18 @@
    "beyond_extent_mm": 0.35
   },
   {
+   "ref": "C80",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "Q1",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 1.1899
+  },
+  {
    "ref": "Q2",
    "moved": true,
    "clearance_mm": 0.3,
@@ -1459,25 +669,13 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "R53",
+   "ref": "SW3",
    "moved": true,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "R54",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
+   "beyond_extent_mm": 0.3742
   },
   {
    "ref": "U4",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
-  },
-  {
-   "ref": "U9",
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
@@ -1537,16 +735,22 @@
    "beyond_extent_mm": 0.355
   },
   {
+   "ref": "C7",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.35
+  },
+  {
+   "ref": "C8",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.35
+  },
+  {
    "ref": "J2",
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 2.0008
-  },
-  {
-   "ref": "Q1",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 1.1899
   },
   {
    "ref": "R12",
@@ -1559,6 +763,24 @@
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "R16",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "R17",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "R18",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.605
   },
   {
    "ref": "R20",
@@ -1585,16 +807,16 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "SW3",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.3742
-  },
-  {
    "ref": "U6",
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
+  },
+  {
+   "ref": "U9",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.36
   },
   {
    "ref": "C10",
@@ -1621,10 +843,10 @@
    "beyond_extent_mm": 0.35
   },
   {
-   "ref": "C80",
+   "ref": "J4",
    "moved": true,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
+   "beyond_extent_mm": 0.5324
   },
   {
    "ref": "L4",
@@ -1640,12 +862,6 @@
   },
   {
    "ref": "R23",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "R62",
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
@@ -1669,13 +885,19 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "J4",
+   "ref": "R21",
    "moved": true,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.5324
+   "beyond_extent_mm": 0.355
   },
   {
-   "ref": "R21",
+   "ref": "R62",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "R65",
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
@@ -1705,12 +927,6 @@
    "beyond_extent_mm": 0.85
   },
   {
-   "ref": "R16",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
    "ref": "R60",
    "moved": true,
    "clearance_mm": 0.3,
@@ -1730,11 +946,9 @@
   }
  ],
  "applied": true,
- "drc_silk_total": 30,
- "drc_total": 30,
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-28T17:24:46+00:00",
+ "generated_at": "2026-10-28T19:35:27+00:00",
  "input": "kicad/lite-main.kicad_pcb",
- "input_digest": "sexpr_no_uuid:ef5172d074cc891005946765e9c7381b8a18ca3c6293fa2b6025fa7d32cd79ab"
+ "input_digest": "sexpr_no_uuid:2c55d61f96101d4e3d161a48d51905d6b421fbe6d8af59f32be2eb31c4b791e4"
 }

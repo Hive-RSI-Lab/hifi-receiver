@@ -378,6 +378,7 @@
     "R4",
     "R7",
     "R14",
+    "R18",
     "R20",
     "R21",
     "R24",
@@ -457,7 +458,7 @@
      "value": "±100ppm/℃"
     }
    ],
-   "role": "PG pull-up; Q4 base; VBUS divider bottom (21 V -> 1.9 V); EN pull-up; GPIO0 pull-up (boot); Q2 base; Q3 base; line-in attenuator; FAULTZ pull-up; button pull-up; IR pull-up",
+   "role": "PG pull-up; Q4 base; VBUS divider bottom (21 V -> 1.9 V); PVDD divider bottom (21 V -> 1.9 V); EN pull-up; GPIO0 pull-up (boot); Q2 base; Q3 base; line-in attenuator; FAULTZ pull-up; button pull-up; IR pull-up",
    "ref_prefix_hint": "R"
   },
   {
@@ -641,6 +642,7 @@
     "R8",
     "R9",
     "R13",
+    "R17",
     "R51",
     "R52",
     "R54"
@@ -710,7 +712,7 @@
      "value": "±100ppm/℃"
     }
    ],
-   "role": "Q1 gate-source; PVDD off until firmware enables it; FB top: 5.18 V; VBUS divider top; gain 26 dB master (table 1); amp off until firmware enables it; SDZ series: TI 10 V/ms and PVCC+0.3 V limits",
+   "role": "Q1 gate-source; PVDD off until firmware enables it; FB top: 5.18 V; VBUS divider top; PVDD divider top; gain 26 dB master (table 1); amp off until firmware enables it; SDZ series: TI 10 V/ms and PVCC+0.3 V limits",
    "ref_prefix_hint": "R"
   },
   {
@@ -795,6 +797,7 @@
     "C6",
     "C11",
     "C17",
+    "C18",
     "C21",
     "C23",
     "C24",
@@ -806,8 +809,7 @@
     "C38",
     "C40",
     "C53",
-    "C56",
-    "C80"
+    "C56"
    ],
    "value": "100nF",
    "mpn": "CC0603KRX7R9BB104",
@@ -2433,7 +2435,8 @@
   {
    "lcsc": "C19666",
    "refdes": [
-    "C32"
+    "C32",
+    "C80"
    ],
    "value": "4.7uF",
    "mpn": "CL10A475KO8NNNC",
@@ -2495,7 +2498,8 @@
    "lcsc": "C22775",
    "refdes": [
     "R36",
-    "R38"
+    "R38",
+    "R65"
    ],
    "value": "100R",
    "mpn": "0603WAF1000T5E",
@@ -2562,7 +2566,7 @@
      "value": "±100ppm/℃"
     }
    ],
-   "role": "sub out build-out",
+   "role": "sub out build-out; IR supply filter",
    "ref_prefix_hint": "R"
   },
   {
@@ -3505,68 +3509,47 @@
    "ref_prefix_hint": "SW"
   },
   {
-   "lcsc": "C91447",
+   "lcsc": "C42421366",
    "refdes": [
     "U9"
    ],
-   "value": "IRM-H638T",
-   "mpn": "IRM-H638T/TR2",
+   "value": "IRM-3638T",
+   "mpn": "IRM-3638T",
    "brand": "Everlight Elec",
-   "package": "SMD-4P,5x4mm",
+   "package": "SIP-3-2.54mm",
    "basic": false,
-   "stock": 138216,
-   "price": 0.2599,
+   "stock": 102387,
+   "price": 0.1859,
    "price_breaks": [
     {
      "qty": 1,
-     "price": 0.2599
+     "price": 0.1859
     },
     {
      "qty": 50,
-     "price": 0.1989
+     "price": 0.1424
     },
     {
      "qty": 150,
-     "price": 0.1691
+     "price": 0.1212
     },
     {
-     "qty": 1500,
-     "price": 0.1435
+     "qty": 500,
+     "price": 0.1022
     },
     {
-     "qty": 3000,
-     "price": 0.1361
+     "qty": 2500,
+     "price": 0.097
     },
     {
-     "qty": 4500,
-     "price": 0.1317
+     "qty": 5000,
+     "price": 0.0939
     }
    ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/1810121714_Everlight-Elec-IRM-H638T-TR2_C91447.pdf",
-   "description": "-25℃~+85℃ 1.2mA 2.7V~5.5V 38kHz 45°、45° SMD-4P,5x4mm Infrared Remote Receiver (IRM) ROHS",
-   "attributes": [
-    {
-     "name": "Frequency - Center",
-     "value": "38kHz"
-    },
-    {
-     "name": "Operating Temperature",
-     "value": "-25℃~+85℃"
-    },
-    {
-     "name": "Viewing Angle",
-     "value": "45°"
-    },
-    {
-     "name": "Voltage - Supply",
-     "value": "2.7V~5.5V"
-    },
-    {
-     "name": "Current - Supply",
-     "value": "1.2mA"
-    }
-   ],
-   "role": "IR receiver 38 kHz",
+   "datasheet": "",
+   "description": "SIP-3-2.54mm Infrared Remote Receiver (IRM) ROHS",
+   "attributes": [],
+   "role": "IR receiver 38 kHz, front-facing",
    "ref_prefix_hint": "U"
   },
   {

@@ -25,14 +25,14 @@ the person's.
   - **J4:** speaker terminal, L+ L- R+ R-. The enclosure's 4 mm binding posts
     are wired to it.
 - **Front edge:** SW1 vol-, SW2 vol+, SW3 play/source (hold = BT pairing),
-  the IR receiver U9 (top-looking: it needs a window above it) and a red
-  status LED D2.
+  the IR receiver U9 (an IRM-3638T standing at the edge with its lens facing
+  forward through the front wall) and a red status LED D2.
 - **ESP32 antenna:** at the left edge. A copper keep-out on both layers sits
   under it.
 
 | Block | Parts | Notes |
 |---|---|---|
-| USB-C + PD | J1 USB4105 (48 V/5 A), U1 CH224A, D1 SMBJ20A | asks for 20 V (Rset 120k); I2C 0x22 on the codec's bus, so firmware reads the contract |
+| USB-C + PD | J1 USB4105 (48 V/5 A), U1 CH224A, D1 SMBJ20A | asks for 20 V (Rset 120k); I2C 0x22 on the codec's bus, so firmware reads the protocol status (0x09) and the PDO's max current (0x50). The CH224A has no SRCCAP registers (CH224Q only). |
 | PVDD switch | Q1 AO4485, Q4 MMBT3904 | on only when GPIO18 is high **and** the PD contract is good (Q4's emitter is CH224A PG); Miller soft start ~6 ms, ~1.6 A inrush; R16 bleeder |
 | 5 V | U2 TPS54302, L5 10 uH | TI design-example values |
 | 3.3 V | U3 SY8089 (digital), U4 LP5907 (codec analog) | |
@@ -55,6 +55,7 @@ ESP32 pin map:
 | 22 | LED |
 | 23 | amp fault |
 | 34 | VBUS/11 |
+| 39 | PVDD/11 (firmware confirms the switch closed) |
 | 36 | vol- |
 | 1/3 | UART0 |
 
@@ -108,7 +109,12 @@ was done about each finding is in
 - **Red LED (Basic part) at 1.3 mm.** The white one the first schematic had ran
   at 0.2-0.6 mA, too dim.
 - **IR on GPIO14**, not 39: GPIO36/39 glitch with ADC/Wi-Fi (errata 3.11).
-  vol- stays on 36; a polled, debounced button tolerates the glitch.
+  vol- stays on 36; a polled, debounced button tolerates the glitch. GPIO39
+  reads PVDD/11 instead (firmware worker's ask), which is sampled, not edge-triggered.
+- **Front-facing IR receiver.** The enclosure worker found the top-looking
+  IRM-H638T would sit 31 mm under the lid, outside a remote's 45 degree cone.
+  It is now a through-hole IRM-3638T whose lens faces through the front wall,
+  with Everlight's 100 ohm / 4.7 uF supply filter.
 
 ## The checks it passed
 
