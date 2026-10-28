@@ -27,7 +27,7 @@ and say why.
 | Streaming | Spotify Connect, AirPlay 1, Bluetooth, Lyrion (LMS) | same | same |
 | Control | web app, 3 buttons, IR (bring your own remote) | web app, knob + 2 buttons, IR remote in box | web app, 2" colour screen, knob + 3 buttons, IR remote |
 | Boards | 1: `lite-main` (2-layer) | 1: `core` (4-layer) | 2: `core` fully populated + `ultra-front` |
-| Unit cost at 100, board + assembly + PCB | **$14.4** (as designed; was $12.3 estimated) | **$25.0** | **$34.5** |
+| Unit cost at 100, board + assembly + PCB | **$14.4** incl. binding posts (board alone $13.1 per `tools/hwcheck.py score`; $12.3 estimated) | **$25.0** | **$34.5** |
 | Target retail (charger not included / with charger) | **$59 / $79** | **$129 / $159** | **$199 / $229** |
 | Build order | **first** | second | third |
 
@@ -106,7 +106,7 @@ amplifier held off, so it can be flashed and tested from that port.
 The PD sink is the WCH **CH224Q** (C46061833, $0.27) on Plus/Ultra; Lite uses the
 **CH224A** (C42459160, $0.43 at 1, 9.5k in stock), the same chip in a 1.0 mm-pitch
 ESSOP-10, because the CH224Q's 0.4 mm DFN could not be fanned out under the USB-C
-on 2 layers (`boards/lite/README.md`). Both: PD 3.2, EPR, 5–28 V,
+on 2 layers (`boards/lite-main-main/README.md`). Both: PD 3.2, EPR, 5–28 V,
 140 W. hwde has already built CH224-class boards, so the part is known.
 
 **Is 140 W enough?**
@@ -397,7 +397,7 @@ units the Hive builds for the person need none of it.
 
 ### Board split
 
-- **`lite-main`: Lite, one 2-layer board** of 100 × 90 mm (built: `boards/lite/`;
+- **`lite-main`: Lite, one 2-layer board** of 100 × 90 mm (built: `boards/lite-main-main/`;
   80 mm left no room for the PVDD switch between USB-C and the amp). Everything on
   one board is the cheapest to make and assemble, and the ESP32-A1S-style
   circuit plus the TPA3118 are known to work on 2 layers.
@@ -470,7 +470,7 @@ The brief asks for a 3D-printable enclosure made in Onshape.
 3. **Checks for the schematic tasks:**
    - **CH224Q:** the I²C readout and how it behaves when a requested voltage
      isn't on offer. Partly settled: the WCH datasheet V2.0 (English copy at
-     done.land, see `boards/lite/parts/datasheets.md`) gives I²C address 0x22,
+     done.land, see `boards/lite-main-main/parts/datasheets.md`) gives I²C address 0x22,
      a status register (0x09), a voltage-request register (0x0A), the PDO
      current (0x50) and the full SRCCAP (0x60-0x8F). The fallback when a
      voltage isn't offered is still unstated; Lite's firmware reads 0x09/0x50

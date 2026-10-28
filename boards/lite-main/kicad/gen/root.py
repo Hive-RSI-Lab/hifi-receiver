@@ -18,7 +18,7 @@ from pathlib import Path
 
 import schlib
 
-WS = Path(__file__).resolve().parents[2]          # boards/lite
+WS = Path(__file__).resolve().parents[2]          # boards/lite-main
 LIB = WS / "lib" / "aiee.kicad_sym"
 BOARD = "lite-main"
 

@@ -8,9 +8,11 @@ or any IR remote control it.
 
 It was designed with the hive-hwde module (KiCad 10), from schematic to JLC fab
 package, on 2026-10-28. **Nothing has been ordered.** Ordering and paying are
-the person's.
+the person's. The workspace is named after the board, `boards/lite-main/` (the
+brief said `boards/lite/`): that is the path `tools/hwcheck.py` scores, from
+product.md's Boards row.
 
-![top](reports/renders/lite-main-top.png)
+![top](reports/renders/review-top.png)
 
 ## What it is
 
@@ -152,9 +154,13 @@ All gates last passed on hive-hwde release 94ec4b7.
 
 ## Cost
 
-About **$14.37 per unit at 100**: parts $10.91, JLC assembly $1.63, PCB $0.62
-and four binding posts $1.20. At 10 units it is $22.90.
-`python3 tools/bom_estimate.py` totals the real BOM in `docs/bom-estimate.csv`.
+**$13.05 per board at 100**: parts $10.40, JLC assembly $2.02, PCB $0.62.
+This is the project score, `python3 tools/hwcheck.py score`, priced from the
+real `fab/BOM.csv`, the board's pad counts and its outline.
+
+Adding the four binding posts the enclosure carries (~$1.20) makes about
+$14.3 per unit. `python3 tools/bom_estimate.py` gives $14.37 at 100 and
+$22.90 at 10.
 
 - **Parts:** 48 distinct; 29 JLC Basic, 19 Extended. Extended parts cost $3
   each per order and may need pre-buying: see `fab/prebuy.csv`.
@@ -167,7 +173,7 @@ You need a Hive checkout with the hive-hwde module (`$HIVE_MODULES/hive-hwde`),
 its KiCad 10 and Freerouting.
 
 ```sh
-cd boards/lite
+cd boards/lite-main
 sh build.sh sch      # footprint repairs, schematic from kicad/gen/root.py, ERC gate, netlist, parts.json
 sh build.sh board    # board_init, rules_gen, placement (kicad/gen/place.py), keep-outs, pours, power vias
 sh build.sh route    # Freerouting (route_auto), stitch vias, drop vias under the hole-to-hole floor

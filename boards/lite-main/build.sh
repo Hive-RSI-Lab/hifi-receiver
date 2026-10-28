@@ -1,5 +1,5 @@
 #!/bin/sh
-# Rebuild lite-main from its sources, in hwde's order. Run from boards/lite:
+# Rebuild lite-main from its sources, in hwde's order. Run from boards/lite-main:
 #   sh build.sh sch      footprint repairs, schematic, ERC gate, netlist, parts.json
 #   sh build.sh board    fresh board: board_init, rules_gen, placement, antenna
 #                        keep-out, pours, power vias (unrouted)

@@ -1,5 +1,10 @@
 # hwde snags hit building lite-main
 
+**Filed to hive-hwde:** 261028-181236-e777fe2a1d (routing: #15-#20, #23, #26, #29) and
+261028-181244-a3c523d45b (library/setup: #3, #5, #10-#14, #21, #22, #27).
+Others were already open: #1/#4 in 261028-153449, #6 in 261028-141933, #7 in 261028-143613
+and #9 in 261028-141932.
+
 **hwde version:** the gates last passed on hive-hwde release 94ec4b7
 (installed 2026-10-28 14:18 UTC, after the courtyard check and module test
 landed).
