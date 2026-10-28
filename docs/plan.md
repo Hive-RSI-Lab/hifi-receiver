@@ -19,10 +19,11 @@ Items 21–24 do Ultra.
 
 ## Lite
 
-1. **Bench and score.** Add the project check and score: the hwde gate state
-   for each board, plus `tools/bom_estimate.py --unit lite 100`. This is brief
-   261028-141256, held until this doc merges. *Done:* the Hive measures
-   merges here.
+1. **Bench and score.** Done in brief 261028-141256: `tools/hwcheck.py`
+   ([checks.md](checks.md)). The test re-runs every board's hwde gates, and
+   the score is Lite's unit cost at 100 from `lite-main`'s own BOM (1000
+   until that board passes its gates; the estimate isn't used as a
+   stand-in).
 2. **`lite-main` research and block diagram (hwde stages through
    architecture).** Fix the pin map on the WROVER-E against its strapping
    pins (GPIO0/2/5/12/15) and PSRAM (GPIO16/17):
@@ -93,7 +94,10 @@ Items 21–24 do Ultra.
 
     *Done:* STL and STEP files are in the repo, with a fit check against the
     STEP board.
-12. **Lite user manual.** `docs/manual-lite.md`, exported to PDF:
+12. **User manual.** One manual for all three tiers, each section marked
+    with the tiers it applies to: `docs/manual/user-manual.md`, the boxed
+    `docs/manual/quick-start.md`, and `docs/manual/sources.md` (where each fact
+    comes from and what is still TBD). Exported to PDF once the TBDs are closed:
     - what's in the box, and the charger and cable to use
     - connecting speakers, subs and the FLX4
     - Wi-Fi setup
@@ -154,7 +158,7 @@ Items 21–24 do Ultra.
 
     *Done:* a results page.
 20. **Plus enclosure and manual.** Same as items 11–12, with heatsink venting
-    and the remote. *Done:* the files and `docs/manual-plus.md`.
+    and the remote. *Done:* the files, and the manual's Plus TBDs closed.
 
 ## Ultra
 
@@ -167,8 +171,8 @@ Items 21–24 do Ultra.
 23. **Ultra bring-up and test.** The full `core` population plus the front
     board: optical, zone A+B under the 140 W budget, and the display.
     *Done:* a results page.
-24. **Ultra enclosure and manual.** *Done:* the files and
-    `docs/manual-ultra.md`.
+24. **Ultra enclosure and manual.** *Done:* the files, and the manual's
+    Ultra TBDs closed.
 
 ## Running alongside
 
