@@ -12,6 +12,10 @@ static struct {
 	bool power_on;
 	hifi_input_t input;
 	float sub_db;
+	int sub_on;
+	float eq[HIFI_EQ_BANDS];
+	char name[65];
+	bool rebooted, reset;
 	char action[16];
 } m;
 
@@ -24,6 +28,9 @@ static void m_info(hifi_info_t *i) {
 	snprintf(i->hostname, sizeof(i->hostname), "squeezelite-123456");
 	i->flash_mb = 8;
 	i->psram_mb = 8;
+	snprintf(i->name, sizeof(i->name), "%s", m.name[0] ? m.name : "Living room");
+	i->caps = (hifi_caps_t) {.dj_direct = true, .eq_min_db = -12, .eq_max_db = 12, .sub_count = 2,
+				 .zones = 1, .pdo_v_max = 20};
 }
 
 static void m_snapshot(hifi_snapshot_t *s) {
@@ -44,6 +51,12 @@ static void m_snapshot(hifi_snapshot_t *s) {
 	s->source = "lms";
 	s->input = m.input;
 	s->level_dbfs = -23.4f;
+	s->sub_on = m.sub_on != 0;
+	s->sub_db = m.sub_db;
+	memcpy(s->eq, m.eq, sizeof(m.eq));
+	s->net_mode = "sta";
+	snprintf(s->ssid, sizeof(s->ssid), "home");
+	snprintf(s->hostname, sizeof(s->hostname), "hifi-lite");
 	snprintf(s->ip, sizeof(s->ip), "192.168.1.40");
 	s->rssi = -61;
 	s->heap_free = 81234;
@@ -67,10 +80,21 @@ static int m_set_input(hifi_input_t in) {
 	m.input = in;
 	return 0;
 }
-static float m_set_sub_db(float db) {
-	m.sub_db = db;
-	return db > 4.5f ? 4.5f : db;
+static float m_set_sub(int on, float db) {
+	if (on >= 0) m.sub_on = on;
+	if (!isnan(db)) m.sub_db = db > 4.5f ? 4.5f : db;
+	return m.sub_db;
 }
+static int m_set_eq(const float g[HIFI_EQ_BANDS]) {
+	memcpy(m.eq, g, sizeof(m.eq));
+	return 0;
+}
+static int m_set_name(const char *n) {
+	snprintf(m.name, sizeof(m.name), "%s", n);
+	return 0;
+}
+static void m_reboot(void) { m.rebooted = true; }
+static void m_factory_reset(void) { m.reset = true; }
 static int m_control(const char *a) {
 	snprintf(m.action, sizeof(m.action), "%s", a);
 	return strcmp(a, "volup") && strcmp(a, "toggle") ? -1 : 0;
@@ -80,8 +104,11 @@ static void m_selftest(hifi_selftest_t *t) {
 	hifi_selftest_add(t, "network", m.power_on, m.power_on ? "192.168.1.40" : "not connected");
 }
 
-static const hifi_ops_t ops = {m_info, m_snapshot, m_tone_start, m_tone_stop, m_amp_enable,
-			       m_amp_reset, m_set_input, m_set_sub_db, m_control, m_selftest};
+static const hifi_ops_t ops = {
+	.info = m_info, .snapshot = m_snapshot, .tone_start = m_tone_start, .tone_stop = m_tone_stop,
+	.amp_enable = m_amp_enable, .amp_reset = m_amp_reset, .set_input = m_set_input,
+	.set_sub = m_set_sub, .set_eq = m_set_eq, .set_name = m_set_name, .reboot = m_reboot,
+	.factory_reset = m_factory_reset, .control = m_control, .selftest = m_selftest};
 
 static char out[2048];
 
@@ -96,8 +123,11 @@ static int call(const char *method, const char *path, const char *body) {
 static void info_and_state(void) {
 	CHECK(call("GET", "/api/v1/info", NULL) == 200);
 	CHECK_STR(out, "{\"model\":\"hifi-lite\",\"board\":\"lite-main\",\"fw\":\"0.1.0\","
-		       "\"upstream\":\"squeezelite-esp32 master-v4.3 ee1720c\",\"api\":1,"
-		       "\"mac\":\"24:0a:c4:12:34:56\",\"hostname\":\"squeezelite-123456\",\"flash_mb\":8,\"psram_mb\":8}");
+		       "\"upstream\":\"squeezelite-esp32 master-v4.3 ee1720c\",\"api\":1,\"name\":\"Living room\","
+		       "\"mac\":\"24:0a:c4:12:34:56\",\"hostname\":\"squeezelite-123456\",\"flash_mb\":8,\"psram_mb\":8,"
+		       "\"caps\":{\"line_modes\":[\"dj_direct\"],\"eq_bands\":[31,62,125,250,500,1000,2000,4000,8000,16000],"
+		       "\"eq_min\":-12,\"eq_max\":12,\"sub\":{\"count\":2,\"crossover\":false,\"per_sub\":false},"
+		       "\"zones\":1,\"eth\":false,\"pdo_v_max\":20}}");
 
 	m.power_on = true;
 	m.amp_enabled = true;
@@ -109,8 +139,9 @@ static void info_and_state(void) {
 		  "\"pvdd_on\":true,\"pvdd_v\":null,\"vbus_i_a\":null},"
 		  "\"amp\":{\"enabled\":true,\"fault\":false,\"faults\":0,\"latched\":false,\"temp_c\":null},"
 		  "\"governor\":{\"budget_w\":58.5,\"in_w\":7.9,\"out_w\":4.4,\"gain_db\":0.0,\"limiting\":false,\"limit_events\":0},"
-		  "\"audio\":{\"source\":\"lms\",\"input\":\"stream\",\"tone\":null,\"level_dbfs\":-23.4},"
-		  "\"net\":{\"ip\":\"192.168.1.40\",\"rssi\":-61},"
+		  "\"audio\":{\"source\":\"lms\",\"input\":\"stream\",\"tone\":null,\"level_dbfs\":-23.4,"
+		  "\"sub\":{\"on\":false,\"level_db\":0.0},\"eq\":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"
+		  "\"net\":{\"mode\":\"sta\",\"ssid\":\"home\",\"hostname\":\"hifi-lite\",\"ip\":\"192.168.1.40\",\"rssi\":-61},"
 		  "\"sys\":{\"heap_free\":81234,\"psram_free\":3912345}}");
 
 	CHECK(call("POST", "/api/v1/state", "{}") == 405);
@@ -171,8 +202,30 @@ static void amp_input_sub_control(void) {
 	CHECK(call("POST", "/api/v1/input", "{\"input\":\"phono\"}") == 400);
 
 	CHECK(call("POST", "/api/v1/sub", "{\"level_db\":6}") == 200);
-	CHECK_STR(out, "{\"ok\":true,\"level_db\":4.5}"); /* what the codec could do */
+	CHECK_HAS(out, "\"sub\":{\"on\":false,\"level_db\":4.5}"); /* what the codec could do */
+	CHECK(call("POST", "/api/v1/sub", "{\"on\":true}") == 200);
+	CHECK(m.sub_on == 1 && m.sub_db == 4.5f);
 	CHECK(call("POST", "/api/v1/sub", "{\"level_db\":-40}") == 400);
+	CHECK(call("POST", "/api/v1/sub", "{}") == 400);
+
+	CHECK(call("POST", "/api/v1/eq", "{\"gains\":[1,2,3,4,5,6,7,8,9,-12]}") == 200);
+	CHECK(m.eq[0] == 1 && m.eq[9] == -12);
+	CHECK_HAS(out, "\"eq\":[1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,-12.0]");
+	CHECK(call("POST", "/api/v1/eq", "{\"gains\":[1,2,3]}") == 400);
+	CHECK(call("POST", "/api/v1/eq", "{\"gains\":[1,2,3,4,5,6,7,8,9,13]}") == 400);
+	CHECK(call("POST", "/api/v1/eq", "{\"gains\":[1,2,3,4,5,6,7,8,9,\"x\"]}") == 400);
+
+	CHECK(call("POST", "/api/v1/name", "{\"name\":\"Kitchen\"}") == 200);
+	CHECK_STR(m.name, "Kitchen");
+	CHECK(call("POST", "/api/v1/name", "{\"name\":\"\"}") == 400);
+	CHECK(call("POST", "/api/v1/name", "{\"name\":\"0123456789012345678901234567890123\"}") == 400);
+
+	CHECK(call("POST", "/api/v1/reset", "{}") == 400);
+	CHECK(!m.reset);
+	CHECK(call("POST", "/api/v1/reset", "{\"factory\":true}") == 200);
+	CHECK(m.reset);
+	CHECK(call("POST", "/api/v1/reboot", NULL) == 200);
+	CHECK(m.rebooted);
 
 	CHECK(call("POST", "/api/v1/control", "{\"action\":\"volup\"}") == 200);
 	CHECK_STR(m.action, "volup");

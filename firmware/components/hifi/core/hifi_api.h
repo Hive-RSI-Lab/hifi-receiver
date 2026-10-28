@@ -16,11 +16,26 @@
 
 #define HIFI_API_VERSION 1
 
+#define HIFI_EQ_BANDS 10
+
+/* What the tier can do, so one web app serves all three. */
+typedef struct {
+	bool dj_direct;
+	float eq_min_db, eq_max_db;
+	int sub_count;
+	bool sub_crossover, sub_per_sub;
+	int zones;
+	bool eth;
+	float pdo_v_max;
+} hifi_caps_t;
+
 typedef struct {
 	const char *model, *board, *fw, *upstream;
+	char name[65];     /* the player name people see in their apps */
 	char mac[18];
 	char hostname[33];
 	int flash_mb, psram_mb;
+	hifi_caps_t caps;
 } hifi_info_t;
 
 typedef enum { HIFI_INPUT_STREAM = 0, HIFI_INPUT_DJ_DIRECT } hifi_input_t;
@@ -47,7 +62,13 @@ typedef struct {
 	bool tone_active;
 	hifi_tone_params_t tone;
 	float level_dbfs;
+	bool sub_on;
+	float sub_db;
+	float eq[HIFI_EQ_BANDS];
 	/* net, sys */
+	const char *net_mode; /* "sta" or "ap" */
+	char ssid[33];
+	char hostname[33];
 	char ip[16];        /* empty when not connected */
 	int rssi;           /* 0 when unknown */
 	uint32_t heap_free, psram_free;
@@ -75,8 +96,13 @@ typedef struct {
 	void (*amp_enable)(bool on);
 	void (*amp_reset)(void);
 	int (*set_input)(hifi_input_t in);
-	/* sets the sub level as near as the hardware can; returns what it set */
-	float (*set_sub_db)(float db);
+	/* on: -1 leaves it; db: NaN leaves it, else set as near as the
+	 * hardware can. Returns the level it set. */
+	float (*set_sub)(int on, float db);
+	int (*set_eq)(const float gains_db[HIFI_EQ_BANDS]);
+	int (*set_name)(const char *name);
+	void (*reboot)(void);        /* after the reply has gone */
+	void (*factory_reset)(void); /* likewise */
 	int (*control)(const char *action); /* 0 ok, -1 unknown action */
 	void (*selftest)(hifi_selftest_t *out);
 } hifi_ops_t;

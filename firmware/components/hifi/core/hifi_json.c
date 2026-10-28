@@ -229,3 +229,23 @@ bool hj_get_bool(const char *json, const char *k, bool *out) {
 	else return false;
 	return true;
 }
+
+int hj_get_num_array(const char *json, const char *k, double *out, int max) {
+	const char *p = find(json, k);
+	if (!p || *p != '[') return -1;
+	int n = 0;
+	p = ws(p + 1);
+	if (*p == ']') return 0;
+	for (;;) {
+		char *end;
+		if (!(*p == '-' || isdigit((unsigned char) *p))) return -1;
+		double v = strtod(p, &end);
+		if (n < max) out[n] = v;
+		n++;
+		p = ws(end);
+		if (*p == ']') break;
+		if (*p++ != ',') return -1;
+		p = ws(p);
+	}
+	return n < max ? n : max;
+}

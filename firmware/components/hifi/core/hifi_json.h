@@ -39,3 +39,6 @@ bool hj_get_num(const char *json, const char *key, double *out);
 bool hj_get_bool(const char *json, const char *key, bool *out);
 /* true if `json` is one well-formed object (whitespace around it allowed) */
 bool hj_valid_object(const char *json);
+/* A top-level array of numbers; returns how many were read (at most max), or
+ * -1 if the key is missing, isn't an array, or holds a non-number. */
+int hj_get_num_array(const char *json, const char *key, double *out, int max);

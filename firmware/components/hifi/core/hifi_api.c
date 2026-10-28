@@ -10,6 +10,9 @@
 
 #define PREFIX "/api/v1/"
 
+/* squeezelite-esp32's 10-band equalizer */
+static const int EQ_BANDS_HZ[HIFI_EQ_BANDS] = {31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000};
+
 static int error(char *out, size_t cap, int status, const char *msg) {
 	hj_t j;
 	hj_init(&j, out, cap);
@@ -83,9 +86,19 @@ void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) {
 	if (s->tone_active) write_tone(&j, "tone", &s->tone);
 	else hj_null(&j, "tone");
 	hj_num(&j, "level_dbfs", s->level_dbfs, 1);
+	hj_obj(&j, "sub");
+	hj_bool(&j, "on", s->sub_on);
+	hj_num(&j, "level_db", s->sub_db, 1);
+	hj_obj_end(&j);
+	hj_arr(&j, "eq");
+	for (int i = 0; i < HIFI_EQ_BANDS; i++) hj_num(&j, NULL, s->eq[i], 1);
+	hj_arr_end(&j);
 	hj_obj_end(&j);
 
 	hj_obj(&j, "net");
+	hj_str(&j, "mode", s->net_mode ? s->net_mode : "sta");
+	hj_str(&j, "ssid", s->ssid[0] ? s->ssid : NULL);
+	hj_str(&j, "hostname", s->hostname);
 	hj_str(&j, "ip", s->ip[0] ? s->ip : NULL);
 	if (s->rssi) hj_int(&j, "rssi", s->rssi);
 	else hj_null(&j, "rssi");
@@ -123,10 +136,29 @@ static int r_info(const hifi_ops_t *ops, char *out, size_t cap) {
 	hj_str(&j, "fw", i.fw);
 	hj_str(&j, "upstream", i.upstream);
 	hj_int(&j, "api", HIFI_API_VERSION);
+	hj_str(&j, "name", i.name);
 	hj_str(&j, "mac", i.mac);
 	hj_str(&j, "hostname", i.hostname);
 	hj_int(&j, "flash_mb", i.flash_mb);
 	hj_int(&j, "psram_mb", i.psram_mb);
+	hj_obj(&j, "caps");
+	hj_arr(&j, "line_modes");
+	if (i.caps.dj_direct) hj_str(&j, NULL, "dj_direct");
+	hj_arr_end(&j);
+	hj_arr(&j, "eq_bands");
+	for (int b = 0; b < HIFI_EQ_BANDS; b++) hj_int(&j, NULL, EQ_BANDS_HZ[b]);
+	hj_arr_end(&j);
+	hj_num(&j, "eq_min", i.caps.eq_min_db, 0);
+	hj_num(&j, "eq_max", i.caps.eq_max_db, 0);
+	hj_obj(&j, "sub");
+	hj_int(&j, "count", i.caps.sub_count);
+	hj_bool(&j, "crossover", i.caps.sub_crossover);
+	hj_bool(&j, "per_sub", i.caps.sub_per_sub);
+	hj_obj_end(&j);
+	hj_int(&j, "zones", i.caps.zones);
+	hj_bool(&j, "eth", i.caps.eth);
+	hj_num(&j, "pdo_v_max", i.caps.pdo_v_max, 0);
+	hj_obj_end(&j);
 	hj_obj_end(&j);
 	return 200;
 }
@@ -230,17 +262,49 @@ static int r_input(const hifi_ops_t *ops, const char *body, char *out, size_t ca
 }
 
 static int r_sub(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
-	double db;
-	if (!hj_get_num(body, "level_db", &db)) return error(out, cap, 400, "level_db is required");
-	if (db < -30 || db > 6) return error(out, cap, 400, "level_db must be -30 to +6");
-	float set = ops->set_sub_db((float) db);
-	hj_t j;
-	hj_init(&j, out, cap);
-	hj_obj(&j, NULL);
-	hj_bool(&j, "ok", true);
-	hj_num(&j, "level_db", set, 1);
-	hj_obj_end(&j);
-	return 200;
+	double db = NAN;
+	bool on, has_on = hj_get_bool(body, "on", &on), has_db = hj_get_num(body, "level_db", &db);
+	if (!has_on && !has_db) return error(out, cap, 400, "send level_db and/or on");
+	if (has_db && (db < -30 || db > 6)) return error(out, cap, 400, "level_db must be -30 to +6");
+	ops->set_sub(has_on ? on : -1, (float) db);
+	return r_state(ops, out, cap);
+}
+
+static int r_eq(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	double g[HIFI_EQ_BANDS];
+	hifi_info_t i = {0};
+	ops->info(&i);
+	if (hj_get_num_array(body, "gains", g, HIFI_EQ_BANDS) != HIFI_EQ_BANDS)
+		return error(out, cap, 400, "gains must be 10 numbers, 31 Hz to 16 kHz");
+	float f[HIFI_EQ_BANDS];
+	for (int b = 0; b < HIFI_EQ_BANDS; b++) {
+		if (g[b] < i.caps.eq_min_db || g[b] > i.caps.eq_max_db) return error(out, cap, 400, "a gain is out of range");
+		f[b] = (float) g[b];
+	}
+	if (ops->set_eq(f)) return error(out, cap, 500, "couldn't save the equalizer");
+	return r_state(ops, out, cap);
+}
+
+static int r_name(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	char name[65];
+	if (!hj_get_str(body, "name", name, sizeof(name)) || !name[0]) return error(out, cap, 400, "name is required");
+	if (strlen(name) > 32) return error(out, cap, 400, "name must be 32 characters or fewer");
+	for (const char *c = name; *c; c++)
+		if ((unsigned char) *c < 0x20) return error(out, cap, 400, "name has a control character");
+	if (ops->set_name(name)) return error(out, cap, 500, "couldn't save the name");
+	return r_state(ops, out, cap);
+}
+
+static int r_reboot(const hifi_ops_t *ops, const char *body, char *out, size_t cap, bool reset) {
+	if (reset) {
+		bool factory = false;
+		if (!hj_get_bool(body, "factory", &factory) || !factory)
+			return error(out, cap, 400, "send {\"factory\": true} to erase every setting");
+		ops->factory_reset();
+	} else {
+		ops->reboot();
+	}
+	return r_state(ops, out, cap);
 }
 
 static int r_control(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
@@ -298,6 +362,10 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "amp")) status = post ? r_amp(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "input")) status = post ? r_input(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "sub")) status = post ? r_sub(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "eq")) status = post ? r_eq(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "name")) status = post ? r_name(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "reboot")) status = post ? r_reboot(ops, body, out, cap, false) : -1;
+	else if (!strcmp(route, "reset")) status = post ? r_reboot(ops, body, out, cap, true) : -1;
 	else if (!strcmp(route, "control")) status = post ? r_control(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "selftest")) status = post ? r_selftest(ops, out, cap) : -1;
 	else return error(out, cap, 404, "no such path");
