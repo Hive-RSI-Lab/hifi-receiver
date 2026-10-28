@@ -15,7 +15,7 @@ Run either one by hand from the repo root. `python3 tools/hwcheck.py cost
 
 ## The test
 
-It fails (exit 1) if either of these fails:
+It fails (exit 1) if any of these fails:
 
 1. **`docs/product.md`.** The tier table (its header row names Lite, Plus
    and Ultra) has to have:
@@ -25,7 +25,13 @@ It fails (exit 1) if either of these fails:
      rounds to the dime), so the page can't drift from `bom-estimate.csv`
    - a **Boards** row that names each tier's board(s) in backticks
    - a **Build order** row with exactly one tier marked `first`
-2. **Every board's hwde gates.** Every workspace under `boards/` (a folder
+2. **The firmware's host tests.** `make -C firmware/test` (plain `cc` with
+   ASan/UBSan, no ESP-IDF): the power sequencer, governor, PD decode, test
+   tones, JSON and every test-API call and console command, against a mock
+   board. Built in a scratch folder. Skipped with a note where there is no
+   `make` or `cc`. The full ESP-IDF build is not part of the check: it needs
+   ESP-IDF v4.4.8 and takes minutes ([firmware/README.md](../firmware/README.md)).
+3. **Every board's hwde gates.** Every workspace under `boards/` (a folder
    with a `state.json`) runs all four of hwde's gates: `erc` on
    `kicad/<board>.kicad_sch`, then `drc_routed`, `verify` and `dfm` on
    `kicad/<board>.kicad_pcb`. `<board>` is the `board` field in `state.json`.

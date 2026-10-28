@@ -22,7 +22,7 @@ $(BIN)/%: %.c $(SRCS) $(wildcard $(CORE)/*.h) check.h | $(BIN)
 	$(CC) $(CFLAGS) -o $@ $< $(SRCS) $(LDLIBS)
 
 run: $(addprefix $(BIN)/,$(TESTS))
-	@fail=0; for t in $^; do ./$$t || fail=1; done; exit $$fail
+	@fail=0; for t in $(abspath $^); do $$t || fail=1; done; exit $$fail
 
 clean:
 	rm -rf $(BIN)

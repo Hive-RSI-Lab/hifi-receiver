@@ -61,6 +61,17 @@ uv venv --seed --python 3.10 ~/esp/tools/python_env/idf4.4_py3.10_env
 `build.sh` finds that install by itself. The Hive's `hive-fw` module is
 making a shared copy; when it lands, set `IDF_PATH` and `build.sh` uses it.
 
+**What has been checked (2026-10-28):** the full build, both images, on
+this machine with ESP-IDF v4.4.8: `squeezelite.bin` 2.69 MB in its 4 MB
+slot, `recovery.bin` 1.38 MB in its 2 MB slot; the hooks link
+(`target_hifi`, `hifi_dsp_process`, `hifi_http_register`, `hifi_sink_start`
+in `squeezelite.elf`). **Not yet:** a boot. Espressif's QEMU (esp-develop
+9.2.2) gets through the PSRAM test and then asserts in ESP-IDF's own startup
+(`esp_vfs_console_register`), before any of our code runs; the hive-fw
+module is looking at booting squeezelite in QEMU. QEMU needs
+`CONFIG_ESP32_REV_MIN_0`; the board's config keeps rev 1, which the
+WROVER-E's rev-3 chip meets.
+
 ## Flash it
 
 Over the board's USB-C (the CH340C console; DTR/RTS do the boot-mode dance):

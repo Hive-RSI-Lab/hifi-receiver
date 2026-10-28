@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """The project's test and score.
 
-    python3 tools/hwcheck.py test    the check: docs/product.md, then every
+    python3 tools/hwcheck.py test    the check: docs/product.md, the
+                                     firmware's host tests, then every
                                      board's hwde gates
     python3 tools/hwcheck.py score   the first-built tier's unit cost at 100,
                                      in USD, from its board(s)' BOM, printed
@@ -279,12 +280,29 @@ def say_cost(c: dict) -> None:
 
 # ---- commands -----------------------------------------------------------------
 
+def check_firmware() -> list[str]:
+    """firmware/test: the firmware core's host unit tests (plain cc, no ESP-IDF)."""
+    tests = ROOT / "firmware" / "test"
+    if not (tests / "Makefile").exists():
+        return []
+    if not shutil.which("make") or not shutil.which(os.environ.get("CC", "cc")):
+        print("firmware/test: no make or cc here, host tests not run")
+        return []
+    with tempfile.TemporaryDirectory() as tmp:  # build outside the checkout
+        r = subprocess.run(["make", "-s", "-C", str(tests), f"BIN={tmp}"],
+                           capture_output=True, text=True)
+    out = (r.stdout + r.stderr).strip()
+    print(out)
+    return [] if r.returncode == 0 else ["firmware host tests"]
+
+
 def cmd_test() -> int:
     bad, _ = check_product()
     for b in bad:
         print(f"FAIL {b}")
     if not bad:
         print("docs/product.md: every tier has its target price and BOM total; one tier is first")
+    bad += check_firmware()
     dirs = boards()
     if not dirs:
         print("boards/: no boards yet, no gates to run")
