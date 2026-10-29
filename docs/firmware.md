@@ -86,8 +86,11 @@ and you hear that as a dropout. Two Lite channels at full sine into 4 Ω would
 draw about 94 W. So the governor holds the 1 s average input power under
 90% of the contract:
 
-1. On every output block, after squeezelite's volume, it takes each
-   channel's mean square.
+1. On every output block, after squeezelite's volume, equalizer and
+   loudness (the last thing before I2S), it takes each channel's mean
+   square. The order matters: the API's EQ allows +12 dB a band, and a
+   governor that measured before the EQ would see a sixteenth of the bass
+   power the amp actually gets.
 2. It turns that into speaker power through the analog chain: the ES8388's
    full scale (≈0.9 Vrms) × the −3 dB cap × the TPA3118's 26 dB, which is
    17.98 V peak for a 0 dBFS sine, into 4 Ω, capped at the amp's clipping

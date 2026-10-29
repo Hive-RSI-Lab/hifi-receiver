@@ -46,8 +46,15 @@ static esp_err_t api_handler(httpd_req_t *req) {
 			if (r <= 0) break;
 			got += r;
 		}
-		const char *method = req->method == HTTP_POST ? "POST" : "GET";
-		st = hifi_api_handle(ops, method, req->uri, body ? body : "", out, REPLY_MAX);
+		if (!body || got < req->content_len) {
+			/* never act on half a request */
+			snprintf(out, REPLY_MAX, "{\"error\":\"body cut off after %u of %u bytes\"}",
+				 (unsigned) got, (unsigned) req->content_len);
+			st = 400;
+		} else {
+			const char *method = req->method == HTTP_POST ? "POST" : "GET";
+			st = hifi_api_handle(ops, method, req->uri, body, out, REPLY_MAX);
+		}
 	}
 	httpd_resp_set_status(req, status_line(st));
 	httpd_resp_set_type(req, "application/json");

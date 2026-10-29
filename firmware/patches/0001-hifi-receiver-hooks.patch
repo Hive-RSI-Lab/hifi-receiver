@@ -80,21 +80,37 @@ index b33f70a..f6413cc 100644
   * BT sink data handler
   */
 diff --git a/components/squeezelite/equalizer.c b/components/squeezelite/equalizer.c
-index b02f5f0..65ff0e9 100644
+index b02f5f0..6530271 100644
 --- a/components/squeezelite/equalizer.c
 +++ b/components/squeezelite/equalizer.c
 @@ -198,7 +198,11 @@ void equalizer_set_loudness(uint8_t loudness) {
  /****************************************************************************************
   * process equalizer
   */
-+/* hifi-receiver: the power governor (components/hifi) */
+-void equalizer_process(uint8_t *buf, uint32_t bytes) {
++/* hifi-receiver: the power governor (components/hifi) runs after the
++ * equalizer and loudness, on exactly what goes to I2S (equalizer_process below) */
 +extern void hifi_dsp_process(uint8_t *buf, uint32_t frames, int bytes_per_frame, uint32_t rate) __attribute__((weak));
 +
- void equalizer_process(uint8_t *buf, uint32_t bytes) {
-+	if (hifi_dsp_process) hifi_dsp_process(buf, bytes / BYTES_PER_FRAME, BYTES_PER_FRAME, equalizer.samplerate);
++static void equalizer_apply(uint8_t *buf, uint32_t bytes) {
  #if BYTES_PER_FRAME == 4    
  	// don't want to process with output locked, so take the small risk to miss one parametric update
  	if (equalizer.update) {
+@@ -231,4 +235,12 @@ void equalizer_process(uint8_t *buf, uint32_t bytes) {
+ 		esp_equalizer_process(equalizer.handle, buf, bytes, equalizer.samplerate, 2);
+ 	}
+ #endif    
+-}
+\ No newline at end of file
++}
++
++/****************************************************************************************
++ * equalizer, then the hifi-receiver power governor on the equalized samples
++ */
++void equalizer_process(uint8_t *buf, uint32_t bytes) {
++	equalizer_apply(buf, bytes);
++	if (hifi_dsp_process) hifi_dsp_process(buf, bytes / BYTES_PER_FRAME, BYTES_PER_FRAME, equalizer.samplerate);
++}
 diff --git a/components/targets/CMakeLists.txt b/components/targets/CMakeLists.txt
 index 9e97b3e..d01b40c 100644
 --- a/components/targets/CMakeLists.txt

@@ -95,8 +95,9 @@ endpoints").
   hostname.
 - **`components/targets`:** registers `target_hifi`, so our component starts
   at boot.
-- **`components/squeezelite/equalizer.c`:** calls `hifi_dsp_process` on every
-  output block (the power governor).
+- **`components/squeezelite/equalizer.c`:** calls `hifi_dsp_process` (the
+  power governor) on every output block, after the equalizer and loudness,
+  so it measures and limits exactly what reaches I2S.
 - **`components/squeezelite/decode_external.c`:** a test-signal source beside
   Bluetooth/AirPlay/Spotify (`hifi_sink_*`).
 - **`components/wifi-manager`:** `/` goes to the web app and squeezelite's
@@ -108,4 +109,4 @@ endpoints").
 Every hook is a weak symbol, so the patched tree still builds without our
 component. To move to a newer upstream: change `upstream.lock`, run
 `fetch.sh`, fix what doesn't apply, and regenerate the patch with
-`git -C ~/fw-build/squeezelite-esp32 diff > firmware/patches/0001-hifi-receiver-hooks.patch`.
+`git -C ~/fw-build/squeezelite-esp32 -c core.fileMode=false diff -- . ':!sdkconfig' ':!sdkconfig.defaults' > firmware/patches/0001-hifi-receiver-hooks.patch` (the board's sdkconfig files are copied in, not patched).

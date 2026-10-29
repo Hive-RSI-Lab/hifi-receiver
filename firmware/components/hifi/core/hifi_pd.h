@@ -45,9 +45,10 @@ float hifi_pd_nominal_v(float vbus_v);
 
 /*
  * Builds the contract. `sink_ok` false means the CH224 didn't answer: the
- * contract is then unknown, and its power is what a USB 2.0 port guarantees.
- * When the source doesn't say its current (QC, BC), the power assumed is the
- * protocol's floor: 18 W for QC, 7.5 W for BC/none.
+ * contract is then unknown and assumed to be 7.5 W (5 V at 1.5 A, a USB-C or
+ * BC 1.2 port's floor). When the source doesn't say its current (QC, BC),
+ * the power assumed is the protocol's floor: 18 W for QC, 7.5 W for BC/none.
+ * (Until PG says the contract is good, the board code budgets 2.5 W anyway.)
  */
 void hifi_contract_from(bool sink_ok, uint8_t status, uint8_t current_reg,
 			float vbus_v, hifi_contract_t *out);

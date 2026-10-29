@@ -491,7 +491,13 @@ static void op_selftest(hifi_selftest_t *t) {
 
 	/* the amp: wake it for a moment and watch FAULTZ */
 	selftest_hold_until = now_ms() + 1500;
-	for (int i = 0; i < 100 && power.state != HIFI_PWR_ON && amp_ok_supply; i++) vTaskDelay(pdMS_TO_TICKS(10));
+	for (int i = 0; i < 100 && amp_ok_supply; i++) {
+		LOCK();
+		bool on = power.state == HIFI_PWR_ON;
+		UNLOCK();
+		if (on) break;
+		vTaskDelay(pdMS_TO_TICKS(10));
+	}
 	vTaskDelay(pdMS_TO_TICKS(200));
 	op_snapshot(s);
 	hifi_selftest_add(t, "pvdd_on", s->pvdd_on && s->pwr_state == HIFI_PWR_ON, "%s", hifi_power_state_name(s->pwr_state));

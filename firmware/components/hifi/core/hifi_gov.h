@@ -10,8 +10,10 @@
  * would pass the budget, a gain below 1 is applied to the samples (fast
  * attack, slow release) so the average sits on the budget.
  *
- * It runs on the samples after squeezelite's volume, just before I2S, so it
- * sees every source (LMS, AirPlay, Spotify, Bluetooth, test tones).
+ * It runs on the samples after squeezelite's volume, equalizer and loudness,
+ * just before I2S (the patch calls it at the end of equalizer_process), so it
+ * sees what the amp will get from every source (LMS, AirPlay, Spotify,
+ * Bluetooth, test tones), EQ boost included.
  * Plus/Ultra have an INA180 on VBUS; their firmware will correct the
  * estimate with the measured current (plan item 18).
  */
