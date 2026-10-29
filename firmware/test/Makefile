@@ -10,6 +10,7 @@ CFLAGS := -std=gnu11 -O1 -g -Wall -Wextra -Werror -Wno-unused-function -I$(CORE)
 LDLIBS := -lm
 
 SRCS := $(wildcard $(CORE)/*.c)
+BIN := build
 TESTS := test_json_pd test_power test_gov_tone test_vol_ir_meta test_api test_remote
 
 # test_remote signs and checks commands with real Ed25519 where the host has
@@ -19,7 +20,6 @@ ifeq ($(HAVE_OPENSSL),1)
 $(BIN)/test_remote: CFLAGS += -DHAVE_OPENSSL
 $(BIN)/test_remote: LDLIBS += -lcrypto
 endif
-BIN := build
 
 all: run
 
