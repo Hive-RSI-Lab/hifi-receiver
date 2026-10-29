@@ -26,7 +26,7 @@ enclosure on main at 18ceb29.
 |---|---|
 | Tier names, chargers (20 V / 28 V EPR, 140 W, 240 W cable) | QS 2, §3, §5 |
 | Power per channel: 43 / 77 W at 4 Ω; 39 W at 20 V fallback; 8 Ω figures | §3, §5, §13 |
-| Zone B shares 140 W; no parallel speakers (2 Ω) | §2, §3 |
+| Zone B shares 140 W; no parallel speakers (2 Ω) | QS 1, §2, §3 |
 | 5 V port boots with the amp held off | QS 2, §5, §14 |
 | Power governor: 90% of the PDO, averaged over 1 s | §5 |
 | DAC/amp/ADC part numbers, 24/96 target | §13 |
@@ -34,7 +34,7 @@ enclosure on main at 18ceb29.
 | Lite line in is the codec's analog bypass; Plus/Ultra DJ direct switch; 5–15 ms digital path | §4, §9 |
 | Ultra optical in (TOSLINK) | §4 |
 | Wi-Fi 2.4 GHz only; Ethernet on Plus/Ultra | §6 |
-| Streaming: Spotify (cspot, Premium), AirPlay 1, BT A2DP SBC, Lyrion | §7 |
+| Streaming: Spotify (cspot, Premium), AirPlay 1, BT A2DP SBC, Lyrion | §1, §7 |
 | Installable PWA; LMS apps also work (product.md's `hifi.local` became `hifi-<model>.local`, see the web app) | §8 |
 | Plus knob + source + preset; Ultra screen + knob + 3 buttons (Lite's buttons now come from the firmware) | §8 |
 | IR learn mode; Plus/Ultra ship a 21-key NEC remote | §8 |
@@ -52,7 +52,7 @@ enclosure on main at 18ceb29.
 | Lite top: vol−, vol+, ▶ left to right along the front edge; status light pipe to their left; IR window front, bottom right | `enclosure/README.md` | source |
 | Lite status LED is one red LED (D2) | `boards/lite-main/README.md` | source |
 | Lite case 106 × 96 × 46.8 mm, PETG/ASA; no moulded labels yet (sticker) | `enclosure/README.md` | source |
-| Ultra front: screen, knob (EC11, no detents), 3 buttons, IR, RGB status LED | `boards/ultra-front/README.md` (branch of 261028-145644-e1975aa761, PR #10) | source |
+| Ultra front: screen, knob (EC11, no detents), 3 buttons, IR, RGB status LED | boards/ultra-front/README.md on PR #10's branch (task 261028-145644-e1975aa761), not on main yet | proposed until PR #10 lands |
 | Plus control: knob, 2 buttons, IR, status LED; SUB1/SUB2; screw speaker terminals | `boards/core/README.md` | source |
 | Plus and Ultra rear panels, size, terminals | their enclosures | TBD |
 | Ventilation clearance: 5 cm above and behind | the manual | proposed |
