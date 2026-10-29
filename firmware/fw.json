@@ -1,0 +1,2 @@
+{"idf": "v4.4.8", "target": "esp32",
+ "python": ["setuptools<70", "protobuf>=3.20,<4", "grpcio-tools>=1.48,<1.49"]}

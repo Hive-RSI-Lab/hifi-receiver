@@ -42,3 +42,10 @@ bool hj_valid_object(const char *json);
 /* A top-level array of numbers; returns how many were read (at most max), or
  * -1 if the key is missing, isn't an array, or holds a non-number. */
 int hj_get_num_array(const char *json, const char *key, double *out, int max);
+/* The raw text of a top-level key's value (an object, array, string with its
+ * quotes, number...), without copying it: for a nested body or a long
+ * base64 string. */
+bool hj_get_raw(const char *json, const char *key, const char **val, size_t *len);
+/* The same, for a value known to be one string: its characters between the
+ * quotes, unescaped only if it has no escapes (base64 never does). */
+bool hj_get_str_span(const char *json, const char *key, const char **val, size_t *len);

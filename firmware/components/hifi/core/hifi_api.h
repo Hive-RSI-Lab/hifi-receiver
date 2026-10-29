@@ -10,6 +10,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "hifi_capture.h"
+#include "hifi_ota.h"
 #include "hifi_pd.h"
 #include "hifi_power.h"
 #include "hifi_tone.h"
@@ -87,6 +89,22 @@ typedef struct {
 	hifi_check_t c[HIFI_SELFTEST_MAX];
 } hifi_selftest_t;
 
+/* The relay link (docs/remote.md) */
+typedef struct {
+	bool configured, connected;
+	char url[96], user[48], prefix[24];
+	char dev[13];
+	int keys;                   /* trusted signing keys in this build */
+	uint32_t accepted, rejected; /* commands since boot */
+} hifi_remote_status_t;
+
+/* Which image runs, and what the last rollback was */
+typedef struct {
+	const char *slot;  /* "ota_0", "ota_1" or "recovery" */
+	const char *state; /* "valid", "pending_verify" (on trial) or "unknown" */
+	char last_from[32], last_reason[96]; /* empty: no rollback recorded */
+} hifi_ota_status_t;
+
 typedef struct {
 	void (*info)(hifi_info_t *out);
 	void (*snapshot)(hifi_snapshot_t *out);
@@ -105,11 +123,24 @@ typedef struct {
 	void (*factory_reset)(void); /* likewise */
 	int (*control)(const char *action); /* 0 ok, -1 unknown action */
 	void (*selftest)(hifi_selftest_t *out);
+
+	/* Optional: NULL where the build or board can't (the call answers 404,
+	 * or 409 for capture). */
+	/* fills frames of interleaved stereo; 0, or an HTTP status with *err */
+	int (*capture)(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_info_t *info, const char **err);
+	int (*set_wifi)(const char *ssid, const char *password); /* 0: joining */
+	void (*remote_status)(hifi_remote_status_t *out);
+	int (*remote_set)(const char *url, const char *user, const char *password, const char *prefix);
+	hifi_ota_t *ota;   /* the update session, with the board's flash writes */
+	void (*ota_status)(hifi_ota_status_t *out);
 } hifi_ops_t;
 
 /* Returns the HTTP status; the reply (always a JSON object) is in out. */
 int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 		    const char *body, char *out, size_t cap);
+
+/* The reply buffer a request needs: 4 KB, or more for a capture. */
+size_t hifi_api_reply_cap(const char *path, const char *body);
 
 /* Shared by /state and the console */
 void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap);

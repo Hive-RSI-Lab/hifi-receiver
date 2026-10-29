@@ -32,3 +32,24 @@
 #define ES8388_ROUT2VOL 0x31
 
 #define TONE_RATE 48000
+
+/* ES8388 ADC, for the captures (docs/remote.md). Values from the datasheet,
+ * not yet checked on a board. */
+#define ES8388_ADCCONTROL1 0x09  /* PGA gain, 0 = 0 dB */
+#define ES8388_ADCCONTROL2 0x0A  /* bits 7:6 LINSEL, 5:4 RINSEL: 00 = input 1, 01 = input 2 */
+#define ES8388_ADCCONTROL4 0x0C  /* I2S, 16 bit */
+#define ES8388_ADCCONTROL5 0x0D  /* MCLK/LRCK 256 */
+#define ES8388_ADCCONTROL8 0x10  /* left ADC digital volume, 0 = 0 dB */
+#define ES8388_ADCCONTROL9 0x11
+#define ES8388_ADCCONTROL10 0x12 /* bits 7:6 ALC: 00 = off */
+#define ES8388_ADCPOWER_CAPTURE 0x08 /* inputs and ADCs on, mic bias off */
+
+/* The loopback taps: each speaker's + leg through 100k over 10k into LIN2/RIN2.
+ * lite-main rev A has no taps (they come with the board rev the review task
+ * 261029-020622 builds); set HIFI_HAS_TAPS for that rev or "hifi_taps"=1 in NVS. */
+#ifndef HIFI_HAS_TAPS
+#define HIFI_HAS_TAPS 0
+#endif
+#define TAP_DIVIDER 11.0f      /* 100k + 10k over 10k */
+#define ADC_FS_PEAK_V 1.27f    /* ES8388 ADC full scale at 0 dB PGA, about 0.9 Vrms: calibrate at bring-up */
+#define LINE_DIVIDER 2.0f      /* the line in's -6 dB attenuator (R30/R31) */

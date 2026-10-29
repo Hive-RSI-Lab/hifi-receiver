@@ -190,6 +190,65 @@ Nothing in it needs a speaker or a load.
 on a 5 V port) fails with the reason in `value`; on a 5 V port that is
 expected, and the bench script knows it.
 
+## Remote bring-up: `capture`, `ota`, `wifi`, `remote`
+
+These serve the hands-off bring-up in [remote.md](remote.md). They work the
+same over HTTP, the console and the relay; over the relay every call is a
+signed command.
+
+### `POST /api/v1/capture`
+
+`{"source": "loopback", "frames": 4096}` records 64 to 16384 frames of the
+codec's ADC at the output's rate: `loopback` is the speaker taps, `line` the
+RCA input. The output must be running (a tone or a stream), else 409. 409
+too on a board revision without taps.
+
+```json
+{"source": "loopback", "rate": 48000, "frames": 4096,
+ "channels": ["spk_l+", "spk_r+"], "v_per_fs": [13.970, 13.970],
+ "stats": [{"rms_fs": 0.0223, "peak_fs": 0.0316, "dc_fs": 0.0001, "clipped": 0}, {...}],
+ "pcm": "<base64: 16-bit little-endian, interleaved L R>"}
+```
+
+`v_per_fs` is the peak volts at the tap's source (a speaker leg, or the RCA
+jack) for an ADC full scale: the divider times the ADC's full scale, a
+datasheet figure until bring-up calibrates it.
+
+### `GET /api/v1/ota`, `POST /api/v1/ota/begin|chunk|finish|abort`
+
+```json
+{"slot": "ota_0", "fw": "0.1.0", "state": "valid",
+ "update": {"active": true, "size": 2690000, "written": 409600, "version": "0.2.0", "slot": "ota_1"},
+ "last_rollback": {"from": "0.2.0", "reason": "relay not reached after 120 s"}}
+```
+
+- `begin` `{"size", "sha256", "version"}` → `{"ok": true, "slot": "ota_1", "chunk_max": 4096}`.
+- `chunk` `{"off", "data"}` (base64, at most 4096 bytes) → `{"ok": true, "next": N}`; a
+  chunk at the wrong offset is 409 with the `next` offset expected.
+- `finish` (`{"reboot": false}` to stay up) checks the SHA-256, sets the new
+  slot to boot and restarts: `{"ok": true, "reboot": true, "slot": "ota_1"}`;
+  400 `sha256 mismatch` drops the update.
+- `state` is `pending_verify` while a new image is on trial (remote.md,
+  "Rollback").
+
+### `POST /api/v1/wifi`
+
+`{"ssid": "home", "password": "..."}` joins a network and keeps it once
+joined. Reply `{"ok": true}`; `/state`'s `net` shows how it went.
+
+### `GET|POST /api/v1/remote`
+
+The relay link. POST `{"url": "mqtts://host:8883", "user", "password",
+"prefix": "hifi"}` sets it (an empty `url` turns it off); both reply
+
+```json
+{"configured": true, "connected": true, "url": "mqtts://host:8883", "user": "board",
+ "prefix": "hifi", "dev": "240ac4123456", "keys": 1, "accepted": 12, "rejected": 0}
+```
+
+`keys` is how many Hive signing keys the build trusts; with 0 the board
+reports but takes no command from the relay.
+
 ## squeezelite-esp32's own endpoints
 
 The web app also uses these, which squeezelite-esp32 already serves; this
@@ -228,6 +287,17 @@ hifi amp on|off|reset
 hifi input stream|dj_direct
 hifi sub <dB>
 hifi selftest
+```
+
+And any call in one line, as the bench and `provision.py` use it: `api <op>`
+is a GET, `api <op> "<json>"` a POST, with the JSON in double quotes and its
+`"` and `\` backslash-escaped (the console splits on spaces). The reply is
+one line `API {json}`, with `"status"` added on an error:
+
+```
+api state
+api wifi "{\"ssid\": \"home\", \"password\": \"secret\"}"
+API {"ok":true}
 ```
 
 squeezelite-esp32's own console commands (`help`, `nvsset`, `join`, …) are

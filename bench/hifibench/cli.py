@@ -7,7 +7,7 @@ import sys
 import time
 from pathlib import Path
 
-from . import discover, flash, mock, predict, report, run
+from . import discover, flash, mock, predict, relay, remote, report, run
 from .api import ApiError, Console, Device, Http
 from .capture import Arecord, SoundDevice, TempProbe, WavFile, differential
 from .serialport import open_port
@@ -307,12 +307,87 @@ def _end(b: Bench, s: dict, code: int) -> int:
 def cmd_mock(a, b: Bench):
     print("mock HTTP:", b.mock_url)
     print("mock console:", mock.serve_pty(b.sim))
+    if a.relay:
+        br, sim, rb, cfg = mock.relay_rig(b.cfg.board, a.mock_charger, logins={"hive": "hive-pw", "board": "board-pw"})
+        path = Path(cfg["key"]).with_name("relay.json")
+        path.write_text(json.dumps(cfg, indent=1) + "\n")
+        print(f"mock relay: broker {br.url}, board {rb.dev}")
+        print(f"  relay.json: {path}  (HIFI_RELAY={path} bench.py remote list)")
     print("Ctrl-C to stop")
     try:
         while True:
             time.sleep(3600)
     except KeyboardInterrupt:
         return 0
+
+
+# ---- the relay: a board left at home (docs/remote.md) -------------------------
+
+def _remote_rig(a, b: Bench):
+    """(link, cfg, mock relay board or None) for a remote command."""
+    if a.mock:
+        br, sim, rb, cfg = mock.relay_rig(b.cfg.board, a.mock_charger)
+        a.dev = a.dev or rb.dev
+        b.relay_mock = (br, sim, rb)
+        return relay.Link(cfg), cfg, rb
+    cfg = relay.load_config(a.relay)
+    return relay.Link(cfg), cfg, None
+
+
+def _pick_dev(a, link: relay.Link) -> str:
+    if a.dev:
+        return a.dev
+    on = [d for d, st in link.boards().items() if st.get("online")]
+    if len(on) != 1:
+        sys.exit("give --dev: boards online: " + (", ".join(on) or "none"))
+    return on[0]
+
+
+def cmd_remote(a, b: Bench):
+    if a.rcmd == "keygen":
+        pub = relay.write_seed(a.path)
+        print(f"signing key written to {a.path} (keep it; it never leaves the Hive)")
+        print(f"public key: {pub.hex()}")
+        print(f"for the firmware build: HIFI_HIVE_PUBKEY={pub.hex()}")
+        return 0
+    link, cfg, rb = _remote_rig(a, b)
+    try:
+        if a.rcmd == "list":
+            for d, st in sorted(link.boards().items()):
+                print(f"{d}  {'online ' if st.get('online') else 'offline'}  {st.get('board', '')} fw {st.get('fw', '?')} "
+                      f"ip {st.get('ip', '?')} ota {(st.get('ota') or {}).get('state', '?')}")
+            return 0
+        dev = Device(relay.Relay(link, _pick_dev(a, link), timeout=a.timeout))
+        if a.rcmd in ("info", "state"):
+            print(json.dumps(getattr(dev, a.rcmd)(), indent=1))
+            return 0
+        if a.rcmd == "selftest":
+            r = remote.selftest(dev, dev.state())
+            for i in r["items"]:
+                print(f"  {'ok ' if i['pass'] else ('exp' if i.get('expected') else 'BAD')} {i['name']}: {i.get('value')}")
+            print("self-test:", "pass" if r["pass"] else "FAIL")
+            return 0 if r["pass"] else 1
+        if a.rcmd == "ota":
+            image = Path(a.image).read_bytes()
+            r = relay.ota_push(dev.t, image, a.version or Path(a.image).stem, timeout=a.wait)
+            print("ota:", r["result"], json.dumps(r.get("event") or r.get("status") or {}))
+            return 0 if r["result"] == "valid" else 1
+        if a.rcmd == "bringup":
+            s = remote.bringup(dev, a.board, a.loud, a.max_dbfs)
+            s["mock"] = bool(a.mock)
+            if a.out:
+                out = Path(a.out)
+            else:
+                out = RESULTS / (("mock-" if a.mock else "") + f"remote-{dev.t.dev}-{time.strftime('%Y%m%d-%H%M%S')}")
+            print("wrote", remote.write(out, s))
+            for k, v in s["verdicts"].items():
+                print(f"  {k}: {v}")
+            return 1 if any(v.startswith("fail") for v in s["verdicts"].values()) else 0
+    finally:
+        link.close()
+        if rb:
+            rb.close()
+    return 2
 
 
 def main(argv=None) -> int:
@@ -367,7 +442,25 @@ def main(argv=None) -> int:
     p = sub.add_parser("soak", help="the chip temperature at 1/8 power")
     p.add_argument("--ohm", type=float, default=4)
     p.add_argument("--soak-s", type=float)
-    sub.add_parser("mock", help="serve the mock board (HTTP and a pty console) for the app or by hand")
+    p = sub.add_parser("mock", help="serve the mock board (HTTP and a pty console) for the app or by hand")
+    p.add_argument("--relay", action="store_true", help="also a broker and a mock board on it, with a relay.json")
+    p = sub.add_parser("remote", help="a board through the relay (docs/remote.md)")
+    p.add_argument("--relay", help="relay.json (default $HIFI_RELAY or ~/.config/hifi-receiver/relay.json)")
+    p.add_argument("--dev", help="the board's id (its MAC, hex); default: the one board online")
+    p.add_argument("--timeout", type=float, default=15, help="seconds to wait for each reply")
+    rs = p.add_subparsers(dest="rcmd", required=True)
+    rs.add_parser("list", help="boards the broker has a status for")
+    for n in ("info", "state", "selftest"):
+        rs.add_parser(n)
+    q = rs.add_parser("ota", help="push a firmware image; waits for ota_valid or rolled_back")
+    q.add_argument("image", help="the app image (build/squeezelite.bin)")
+    q.add_argument("--version", help="the version it reports (default: the file's name)")
+    q.add_argument("--wait", type=float, default=240, help="seconds to wait for the trial boot")
+    q = rs.add_parser("bringup", help="the unattended bring-up from the board's own measurements")
+    q.add_argument("--loud", action="store_true", help="allow tones above -30 dBFS (dummy loads or no speakers)")
+    q.add_argument("--max-dbfs", type=float, help="the highest level (quiet: at most -30; loud: default 0)")
+    q = rs.add_parser("keygen", help="make the Hive's signing key")
+    q.add_argument("path")
     a = ap.parse_args(argv)
     if a.cmd == "mock":
         a.mock = True

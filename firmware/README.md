@@ -40,8 +40,15 @@ firmware/tools/build.sh            # builds into ~/fw-build/squeezelite-esp32
 It runs `fetch.sh` (clone upstream at the pinned commit with its submodules,
 apply `patches/`, copy `components/hifi` and the board's defaults in, and
 build the web app from `app/` if it is there), then `idf.py reconfigure` and
-`ninja -j4` at nice 19. The outputs are `build/recovery.bin` (the factory
-app), `build/squeezelite.bin` (the main app, OTA slot 0), the bootloader and
+`ninja -j4` at nice 19. The Hive's signing key and a built-in relay come
+from the environment, never from git (docs/remote.md):
+`HIFI_HIVE_PUBKEY=<hex>` (comma-separate two while rotating), and optionally
+`HIFI_RELAY_URL`, `HIFI_RELAY_USER`, `HIFI_RELAY_PASS`. Without
+`HIFI_HIVE_PUBKEY` the board takes no command from the relay.
+
+With the hive-fw module: `eval "$(fw env firmware)"` (it reads `fw.json`)
+and then `firmware/tools/build.sh`. The outputs are `build/recovery.bin` (the factory
+app), `build/squeezelite.bin` (the main app, for either OTA slot), the bootloader and
 the partition table.
 
 **Installing ESP-IDF v4.4.8 on a machine whose Python is new** (the Hive's is
