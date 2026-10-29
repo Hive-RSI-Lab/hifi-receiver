@@ -21,9 +21,10 @@ Items 21–24 do Ultra.
 
 1. **Bench and score.** Done in brief 261028-141256: `tools/hwcheck.py`
    ([checks.md](checks.md)). The test re-runs every board's hwde gates, and
-   the score is Lite's unit cost at 100 from `lite-main`'s own BOM (1000
-   until that board passes its gates; the estimate isn't used as a
-   stand-in).
+   the score was Lite's unit cost at 100 from `lite-main`'s own BOM. Since
+   brief 261028-201609 it counts the whole product: every tier's boards,
+   which must carry their tier's functions, and the firmware, app, bench,
+   enclosure and manual pieces.
 2. **`lite-main` research and block diagram (hwde stages through
    architecture).** Fix the pin map on the WROVER-E against its strapping
    pins (GPIO0/2/5/12/15) and PSRAM (GPIO16/17):
@@ -48,12 +49,12 @@ Items 21–24 do Ultra.
 5. **`lite-main` JLC package and quote.** Gerbers, BOM, CPL and a rendered
    check, then a JLC quote at 10 and 100. *Done:* the package is ready and the
    quote is in `docs/boards/lite-main.md`. The order goes to the person.
-6. **Firmware base.** Fork squeezelite-esp32 into `firmware/` and build it
+6. **Firmware base.** Done in brief 261028-165619 (with item 7): `firmware/`, [firmware.md](firmware.md). Not yet run on hardware: no dev kit. Fork squeezelite-esp32 into `firmware/` and build it
    for the WROVER-E. Add a `lite-main` board config: the ES8388 on our pins,
    the buttons, IR, and amp mute/fault. *Done:* the build is reproducible
    (`firmware/README.md`), and on an ESP32-A1S-class dev kit, if the bench
    has one, it plays Spotify, AirPlay and BT.
-7. **Firmware: power, bring-up and test API.**
+7. **Firmware: power, bring-up and test API.** Done in brief 261028-165619; [test-api.md](test-api.md).
    - PD contract readout from the CH224Q.
    - Amp held off below 9 V.
    - The power governor: a level-based limiter holding about 90% of the PDO.
@@ -88,6 +89,12 @@ Items 21–24 do Ultra.
     - **Sub outputs:** checked as well.
 
     *Done:* a results page, with every item measured or marked as failing.
+
+    **Hands-off from 2026-10-28** ([remote.md](remote.md)): the board
+    measures its own outputs (loopback taps), so gain, clipping point,
+    THD+N, response and noise come from `bench.py remote bringup` with no
+    bench gear. Power into a load and the chip temperature still need the
+    dummy loads and a probe once.
 11. **Lite enclosure.** In Onshape if the person grants access (an API key
     pair is a credential, so it goes through them). Otherwise CadQuery or
     OpenSCAD in `enclosure/`, from the board's STEP export.
