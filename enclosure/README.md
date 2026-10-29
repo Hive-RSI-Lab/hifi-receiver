@@ -110,7 +110,7 @@ build123d and matplotlib go in a venv of your own, outside the repo:
 ```sh
 /hive/tools/uv/bin/uv venv --python 3.12 ~/venv-cad
 VIRTUAL_ENV=~/venv-cad /hive/tools/uv/bin/uv pip install build123d matplotlib
-python3 enclosure/kicad_board.py boards/lite/kicad/lite-main.kicad_pcb > enclosure/lite-main.board.json
+python3 enclosure/kicad_board.py boards/lite-main/kicad/lite-main.kicad_pcb > enclosure/lite-main.board.json
 ~/venv-cad/bin/python enclosure/lite.py      # STEP + STL into out/lite/
 ~/venv-cad/bin/python enclosure/fit.py       # fit check, out/lite/fit.md; exit 1 on a failure
 ~/venv-cad/bin/python enclosure/render.py    # PNG views
@@ -151,9 +151,10 @@ edit by hand or to make drawings from. The code here stays the source:
 - **Button stalks are long:** each is 4 mm wide and about 35 mm long, hanging
   from a 1.2 mm flexure tongue. That is printable, but untested. If they
   wobble, add a guide comb under the lid.
-- **Board snapshot:** the snapshot of the board in `lite-main.board.json` is
-  the Lite worker's uncommitted board of 2026-10-28 15:03, before its final
-  route. Its four holes, rear connectors, switches, LED and IR receiver are
-  set, and that worker has said so. Re-run the three commands above when
-  `boards/lite` lands.
+- **Board snapshot:** `lite-main.board.json` is read from the committed,
+  routed `boards/lite-main` (main at 18ceb29, 2026-10-28). Against the
+  15:03 snapshot the box was first cut to, only C10, C11, D1, Q4, R7 and R16
+  moved; the holes, rear connectors, switches, LED and IR receiver did not,
+  and the fit check still passes 28/28. Re-run the commands above whenever
+  the board changes.
 - **Labels:** none yet (see Panels).
