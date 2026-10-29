@@ -2,19 +2,19 @@
  "script": "bom_cpl",
  "status": "pass",
  "board": "lite-main.kicad_pcb",
- "n_parts": 134,
- "n_placed": 134,
+ "n_parts": 145,
+ "n_placed": 145,
  "bom": "fab/BOM.csv",
  "bom_full": "fab/BOM-full.csv",
  "cpl": "fab/CPL.csv",
  "prebuy": "fab/prebuy.csv",
  "build_qty": 5,
  "distributor_boms": {
-  "digikey": "fab/lite_BOM_digikey.csv",
-  "mouser": "fab/lite_BOM_mouser.csv",
+  "digikey": "fab/lite-main_BOM_digikey.csv",
+  "mouser": "fab/lite-main_BOM_mouser.csv",
   "cost": null,
   "boards": 1,
-  "lines": 48,
+  "lines": 53,
   "priced": {
    "digikey": false,
    "mouser": false
@@ -28,7 +28,7 @@
  "bom_rows": [
   {
    "Comment": "1uF",
-   "Designator": "C1,C15,C16,C22,C41,C44,C50,C60,C61,C62,C63",
+   "Designator": "C1,C15,C16,C22,C41,C44,C50,C60,C61,C62,C63,C82,C84",
    "Footprint": "C_0603_1608Metric",
    "LCSC": "C15849"
   },
@@ -52,15 +52,15 @@
   },
   {
    "Comment": "22uF",
-   "Designator": "C7,C8,C12",
+   "Designator": "C7,C8,C12,C25",
    "Footprint": "C_0805_2012Metric",
    "LCSC": "C45783"
   },
   {
-   "Comment": "100pF",
-   "Designator": "C9,C42,C45",
+   "Comment": "47pF",
+   "Designator": "C9",
    "Footprint": "C_0603_1608Metric",
-   "LCSC": "C14858"
+   "LCSC": "C1671"
   },
   {
    "Comment": "10uF",
@@ -76,9 +76,21 @@
   },
   {
    "Comment": "4.7uF",
-   "Designator": "C32,C80",
+   "Designator": "C19,C32,C80",
    "Footprint": "C_0603_1608Metric",
    "LCSC": "C19666"
+  },
+  {
+   "Comment": "47nF",
+   "Designator": "C26",
+   "Footprint": "C_0603_1608Metric",
+   "LCSC": "C1622"
+  },
+  {
+   "Comment": "100pF",
+   "Designator": "C42,C45",
+   "Footprint": "C_0603_1608Metric",
+   "LCSC": "C14858"
   },
   {
    "Comment": "1uF",
@@ -117,6 +129,12 @@
    "LCSC": "C1848"
   },
   {
+   "Comment": "470pF",
+   "Designator": "C81,C83",
+   "Footprint": "C_0603_1608Metric",
+   "LCSC": "C1620"
+  },
+  {
    "Comment": "SMBJ20A",
    "Designator": "D1",
    "Footprint": "SMB_L4.6-W3.6-LS5.3-RD",
@@ -129,10 +147,10 @@
    "LCSC": "C2286"
   },
   {
-   "Comment": "USB4105-GF-A-120",
+   "Comment": "TYPE-C-31-M-12",
    "Designator": "J1",
-   "Footprint": "USB-C-SMD_MC-311D",
-   "LCSC": "C5184243"
+   "Footprint": "USB-C_SMD-TYPE-C-31-M-12_1",
+   "LCSC": "C165948"
   },
   {
    "Comment": "RCA line in",
@@ -190,21 +208,21 @@
   },
   {
    "Comment": "10k",
-   "Designator": "R4,R7,R14,R18,R20,R21,R24,R25,R30,R31,R33,R34,R53,R60,R61,R62,R63",
+   "Designator": "R4,R7,R14,R18,R20,R21,R24,R25,R31,R34,R53,R54,R60,R61,R62,R63,R67,R69",
    "Footprint": "R_0603_1608Metric",
    "LCSC": "C25804"
   },
   {
    "Comment": "100k",
-   "Designator": "R5,R8,R9,R13,R17,R51,R52,R54",
+   "Designator": "R5,R8,R9,R13,R17,R51,R52,R66,R68",
    "Footprint": "R_0603_1608Metric",
    "LCSC": "C25803"
   },
   {
-   "Comment": "47k",
-   "Designator": "R6,R37,R39",
+   "Comment": "220k",
+   "Designator": "R6",
    "Footprint": "R_0603_1608Metric",
-   "LCSC": "C25819"
+   "LCSC": "C22961"
   },
   {
    "Comment": "13k",
@@ -243,10 +261,22 @@
    "LCSC": "C4190"
   },
   {
+   "Comment": "15k",
+   "Designator": "R30,R33",
+   "Footprint": "R_0603_1608Metric",
+   "LCSC": "C22809"
+  },
+  {
    "Comment": "100R",
    "Designator": "R36,R38,R65",
    "Footprint": "R_0603_1608Metric",
    "LCSC": "C22775"
+  },
+  {
+   "Comment": "47k",
+   "Designator": "R37,R39",
+   "Footprint": "R_0603_1608Metric",
+   "LCSC": "C25819"
   },
   {
    "Comment": "20k",
@@ -291,10 +321,10 @@
    "LCSC": "C2973667"
   },
   {
-   "Comment": "CH340C",
+   "Comment": "CH340B",
    "Designator": "U6",
    "Footprint": "SOP-16_L10.0-W3.9-P1.27-LS6.0-BL",
-   "LCSC": "C84681"
+   "LCSC": "C81010"
   },
   {
    "Comment": "ES8388",
@@ -347,9 +377,9 @@
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
-   "LCSC": "C5184243",
-   "MPN": "USB4105-GF-A-120",
-   "Comment": "USB4105-GF-A-120",
+   "LCSC": "C165948",
+   "MPN": "TYPE-C-31-M-12",
+   "Comment": "TYPE-C-31-M-12",
    "Designator": "J1",
    "Qty Per Board": "1",
    "Boards": "5",
@@ -467,9 +497,9 @@
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
-   "LCSC": "C84681",
-   "MPN": "CH340C",
-   "Comment": "CH340C",
+   "LCSC": "C81010",
+   "MPN": "CH340B",
+   "Comment": "CH340B",
    "Designator": "U6",
    "Qty Per Board": "1",
    "Boards": "5",
@@ -510,8 +540,8 @@
  "bom_full_rows": [
   {
    "Comment": "1uF",
-   "Designator": "C1,C15,C16,C22,C41,C44,C50,C60,C61,C62,C63",
-   "Qty Per Board": "11",
+   "Designator": "C1,C15,C16,C22,C41,C44,C50,C60,C61,C62,C63,C82,C84",
+   "Qty Per Board": "13",
    "Footprint": "C_0603_1608Metric",
    "MPN": "CL10A105KB8NNNC",
    "LCSC": "C15849",
@@ -550,8 +580,8 @@
   },
   {
    "Comment": "22uF",
-   "Designator": "C7,C8,C12",
-   "Qty Per Board": "3",
+   "Designator": "C7,C8,C12,C25",
+   "Qty Per Board": "4",
    "Footprint": "C_0805_2012Metric",
    "MPN": "CL21A226MAQNNNE",
    "LCSC": "C45783",
@@ -559,12 +589,12 @@
    "Instructions": ""
   },
   {
-   "Comment": "100pF",
-   "Designator": "C9,C42,C45",
-   "Qty Per Board": "3",
+   "Comment": "47pF",
+   "Designator": "C9",
+   "Qty Per Board": "1",
    "Footprint": "C_0603_1608Metric",
-   "MPN": "CL10C101JB8NNNC",
-   "LCSC": "C14858",
+   "MPN": "CL10C470JB8NNNC",
+   "LCSC": "C1671",
    "Assembly Class": "smt_placed",
    "Instructions": ""
   },
@@ -590,11 +620,31 @@
   },
   {
    "Comment": "4.7uF",
-   "Designator": "C32,C80",
-   "Qty Per Board": "2",
+   "Designator": "C19,C32,C80",
+   "Qty Per Board": "3",
    "Footprint": "C_0603_1608Metric",
    "MPN": "CL10A475KO8NNNC",
    "LCSC": "C19666",
+   "Assembly Class": "smt_placed",
+   "Instructions": ""
+  },
+  {
+   "Comment": "47nF",
+   "Designator": "C26",
+   "Qty Per Board": "1",
+   "Footprint": "C_0603_1608Metric",
+   "MPN": "CL10B473KB8NNNC",
+   "LCSC": "C1622",
+   "Assembly Class": "smt_placed",
+   "Instructions": ""
+  },
+  {
+   "Comment": "100pF",
+   "Designator": "C42,C45",
+   "Qty Per Board": "2",
+   "Footprint": "C_0603_1608Metric",
+   "MPN": "CL10C101JB8NNNC",
+   "LCSC": "C14858",
    "Assembly Class": "smt_placed",
    "Instructions": ""
   },
@@ -659,6 +709,16 @@
    "Instructions": ""
   },
   {
+   "Comment": "470pF",
+   "Designator": "C81,C83",
+   "Qty Per Board": "2",
+   "Footprint": "C_0603_1608Metric",
+   "MPN": "0603B471K500NT",
+   "LCSC": "C1620",
+   "Assembly Class": "smt_placed",
+   "Instructions": ""
+  },
+  {
    "Comment": "SMBJ20A",
    "Designator": "D1",
    "Qty Per Board": "1",
@@ -679,12 +739,12 @@
    "Instructions": ""
   },
   {
-   "Comment": "USB4105-GF-A-120",
+   "Comment": "TYPE-C-31-M-12",
    "Designator": "J1",
    "Qty Per Board": "1",
-   "Footprint": "USB-C-SMD_MC-311D",
-   "MPN": "USB4105-GF-A-120",
-   "LCSC": "C5184243",
+   "Footprint": "USB-C_SMD-TYPE-C-31-M-12_1",
+   "MPN": "TYPE-C-31-M-12",
+   "LCSC": "C165948",
    "Assembly Class": "smt_placed",
    "Instructions": ""
   },
@@ -790,8 +850,8 @@
   },
   {
    "Comment": "10k",
-   "Designator": "R4,R7,R14,R18,R20,R21,R24,R25,R30,R31,R33,R34,R53,R60,R61,R62,R63",
-   "Qty Per Board": "17",
+   "Designator": "R4,R7,R14,R18,R20,R21,R24,R25,R31,R34,R53,R54,R60,R61,R62,R63,R67,R69",
+   "Qty Per Board": "18",
    "Footprint": "R_0603_1608Metric",
    "MPN": "0603WAF1002T5E",
    "LCSC": "C25804",
@@ -800,8 +860,8 @@
   },
   {
    "Comment": "100k",
-   "Designator": "R5,R8,R9,R13,R17,R51,R52,R54",
-   "Qty Per Board": "8",
+   "Designator": "R5,R8,R9,R13,R17,R51,R52,R66,R68",
+   "Qty Per Board": "9",
    "Footprint": "R_0603_1608Metric",
    "MPN": "0603WAF1003T5E",
    "LCSC": "C25803",
@@ -809,12 +869,12 @@
    "Instructions": ""
   },
   {
-   "Comment": "47k",
-   "Designator": "R6,R37,R39",
-   "Qty Per Board": "3",
+   "Comment": "220k",
+   "Designator": "R6",
+   "Qty Per Board": "1",
    "Footprint": "R_0603_1608Metric",
-   "MPN": "0603WAF4702T5E",
-   "LCSC": "C25819",
+   "MPN": "0603WAF2203T5E",
+   "LCSC": "C22961",
    "Assembly Class": "smt_placed",
    "Instructions": ""
   },
@@ -879,12 +939,32 @@
    "Instructions": ""
   },
   {
+   "Comment": "15k",
+   "Designator": "R30,R33",
+   "Qty Per Board": "2",
+   "Footprint": "R_0603_1608Metric",
+   "MPN": "0603WAF1502T5E",
+   "LCSC": "C22809",
+   "Assembly Class": "smt_placed",
+   "Instructions": ""
+  },
+  {
    "Comment": "100R",
    "Designator": "R36,R38,R65",
    "Qty Per Board": "3",
    "Footprint": "R_0603_1608Metric",
    "MPN": "0603WAF1000T5E",
    "LCSC": "C22775",
+   "Assembly Class": "smt_placed",
+   "Instructions": ""
+  },
+  {
+   "Comment": "47k",
+   "Designator": "R37,R39",
+   "Qty Per Board": "2",
+   "Footprint": "R_0603_1608Metric",
+   "MPN": "0603WAF4702T5E",
+   "LCSC": "C25819",
    "Assembly Class": "smt_placed",
    "Instructions": ""
   },
@@ -959,12 +1039,12 @@
    "Instructions": ""
   },
   {
-   "Comment": "CH340C",
+   "Comment": "CH340B",
    "Designator": "U6",
    "Qty Per Board": "1",
    "Footprint": "SOP-16_L10.0-W3.9-P1.27-LS6.0-BL",
-   "MPN": "CH340C",
-   "LCSC": "C84681",
+   "MPN": "CH340B",
+   "LCSC": "C81010",
    "Assembly Class": "smt_placed",
    "Instructions": ""
   },
@@ -1137,6 +1217,13 @@
    "Rotation": "0.0000"
   },
   {
+   "Designator": "C19",
+   "Mid X": "85.6000",
+   "Mid Y": "-79.1300",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
    "Designator": "C20",
    "Mid X": "33.3650",
    "Mid Y": "-140.8230",
@@ -1168,6 +1255,20 @@
    "Designator": "C24",
    "Mid X": "75.3650",
    "Mid Y": "-122.8230",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "C25",
+   "Mid X": "86.9000",
+   "Mid Y": "-99.0000",
+   "Layer": "Top",
+   "Rotation": "90.0000"
+  },
+  {
+   "Designator": "C26",
+   "Mid X": "97.9900",
+   "Mid Y": "-116.5300",
    "Layer": "Top",
    "Rotation": "0.0000"
   },
@@ -1448,6 +1549,34 @@
    "Designator": "C80",
    "Mid X": "111.8650",
    "Mid Y": "-142.3230",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "C81",
+   "Mid X": "49.0000",
+   "Mid Y": "-83.9000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "C82",
+   "Mid X": "49.0000",
+   "Mid Y": "-85.5000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "C83",
+   "Mid X": "52.6000",
+   "Mid Y": "-83.9000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "C84",
+   "Mid X": "52.6000",
+   "Mid Y": "-85.5000",
    "Layer": "Top",
    "Rotation": "0.0000"
   },
@@ -1865,6 +1994,34 @@
    "Rotation": "0.0000"
   },
   {
+   "Designator": "R66",
+   "Mid X": "84.6700",
+   "Mid Y": "-82.3100",
+   "Layer": "Top",
+   "Rotation": "90.0000"
+  },
+  {
+   "Designator": "R67",
+   "Mid X": "49.0000",
+   "Mid Y": "-82.3000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "R68",
+   "Mid X": "103.4700",
+   "Mid Y": "-79.0200",
+   "Layer": "Top",
+   "Rotation": "90.0000"
+  },
+  {
+   "Designator": "R69",
+   "Mid X": "52.6000",
+   "Mid Y": "-82.3000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
    "Designator": "SW1",
    "Mid X": "80.8650",
    "Mid Y": "-146.8230",
@@ -1968,11 +2125,14 @@
   "C16": "smt_placed",
   "C17": "smt_placed",
   "C18": "smt_placed",
+  "C19": "smt_placed",
   "C20": "smt_placed",
   "C21": "smt_placed",
   "C22": "smt_placed",
   "C23": "smt_placed",
   "C24": "smt_placed",
+  "C25": "smt_placed",
+  "C26": "smt_placed",
   "C30": "smt_placed",
   "C31": "smt_placed",
   "C32": "smt_placed",
@@ -2013,6 +2173,10 @@
   "C70": "smt_placed",
   "C71": "smt_placed",
   "C80": "smt_placed",
+  "C81": "smt_placed",
+  "C82": "smt_placed",
+  "C83": "smt_placed",
+  "C84": "smt_placed",
   "D1": "smt_placed",
   "D2": "smt_placed",
   "H1": "board_feature",
@@ -2076,6 +2240,10 @@
   "R63": "smt_placed",
   "R64": "smt_placed",
   "R65": "smt_placed",
+  "R66": "smt_placed",
+  "R67": "smt_placed",
+  "R68": "smt_placed",
+  "R69": "smt_placed",
   "SW1": "smt_placed",
   "SW2": "smt_placed",
   "SW3": "smt_placed",
@@ -2090,7 +2258,7 @@
   "U9": "smt_placed"
  },
  "class_counts": {
-  "smt_placed": 134,
+  "smt_placed": 145,
   "board_feature": 4
  },
  "not_placed": [],
@@ -2276,6 +2444,16 @@
    "layer": "Top"
   },
   {
+   "ref": "C19",
+   "package": "C_0603_1608Metric",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
    "ref": "C20",
    "package": "C_0603_1608Metric",
    "base_rot": 0.0,
@@ -2317,6 +2495,26 @@
   },
   {
    "ref": "C24",
+   "package": "C_0603_1608Metric",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "C25",
+   "package": "C_0805_2012Metric",
+   "base_rot": 90.0,
+   "correction": 0.0,
+   "final_rot": 90.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "C26",
    "package": "C_0603_1608Metric",
    "base_rot": 0.0,
    "correction": 0.0,
@@ -2726,6 +2924,46 @@
    "layer": "Top"
   },
   {
+   "ref": "C81",
+   "package": "C_0603_1608Metric",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "C82",
+   "package": "C_0603_1608Metric",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "C83",
+   "package": "C_0603_1608Metric",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "C84",
+   "package": "C_0603_1608Metric",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
    "ref": "D1",
    "package": "SMB_L4.6-W3.6-LS5.3-RD",
    "base_rot": 180.0,
@@ -2747,7 +2985,7 @@
   },
   {
    "ref": "J1",
-   "package": "USB-C-SMD_MC-311D",
+   "package": "USB-C_SMD-TYPE-C-31-M-12_1",
    "base_rot": 180.0,
    "correction": 0.0,
    "final_rot": 180.0,
@@ -3307,6 +3545,46 @@
   },
   {
    "ref": "R65",
+   "package": "R_0603_1608Metric",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "R66",
+   "package": "R_0603_1608Metric",
+   "base_rot": 90.0,
+   "correction": 0.0,
+   "final_rot": 90.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "R67",
+   "package": "R_0603_1608Metric",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "R68",
+   "package": "R_0603_1608Metric",
+   "base_rot": 90.0,
+   "correction": 0.0,
+   "final_rot": 90.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "R69",
    "package": "R_0603_1608Metric",
    "base_rot": 0.0,
    "correction": 0.0,

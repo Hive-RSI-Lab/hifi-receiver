@@ -1,0 +1,71 @@
+{
+ "script": "sim_run",
+ "status": "violations",
+ "board": "eth_clk_fast.cir",
+ "counts": {
+  "total": 1,
+  "by_severity": {
+   "error": 1
+  },
+  "by_source": {
+   "sim.ngspice": 1
+  }
+ },
+ "violations": [
+  {
+   "check": "sim",
+   "severity": "error",
+   "pos": null,
+   "layer": null,
+   "net": null,
+   "refs": [],
+   "msg": "eth_clk_fast.cir: esp_max = 3.60962 outside <= 3.6 - ESP32 VIH max VDD+0.3",
+   "source": "sim.ngspice",
+   "items": [
+    {
+     "msg": "eth_clk_fast.cir: esp_max = 3.60962 outside <= 3.6 - ESP32 VIH max VDD+0.3",
+     "pos": null
+    }
+   ],
+   "kind": "sim_bound_fail",
+   "measure": "esp_max",
+   "testbench": "eth_clk_fast.cir",
+   "bound": {
+    "min": null,
+    "max": 3.6
+   },
+   "value": 3.609619
+  }
+ ],
+ "input": "eth_clk_fast.cir",
+ "engine": {
+  "dll": "/hive/home/.cache/hwde/bin/libngspice.so",
+  "ngspice_version": 45
+ },
+ "timeout_s": 60.0,
+ "testbenches": [
+  {
+   "name": "eth_clk_fast",
+   "cir": "eth_clk_fast.cir",
+   "bounds": 6,
+   "elapsed_s": 0.368,
+   "measures": {
+    "phy_vil": 2.6981e-09,
+    "phy_vih": 3.97129e-09,
+    "phy_trans": 1.27318e-09,
+    "esp_vil": 2.91835e-09,
+    "esp_vih": 3.52902e-09,
+    "esp_trans": 6.10664e-10,
+    "phy_max": 3.558528,
+    "esp_max": 3.609619,
+    "phy_min_hi": 2.851042,
+    "esp_min_hi": 2.824197
+   },
+   "status": "violations"
+  }
+ ],
+ "report_schema": 1,
+ "checker_version": 1,
+ "generated_at": "2026-10-29T04:04:38+00:00",
+ "input_digest": "text_eol:ade83dbedc74eae198f92ee3a64820ab77e5873a27c248b1fb7eb54b298fc871"
+}

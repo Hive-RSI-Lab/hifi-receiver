@@ -1,0 +1,17 @@
+core: attach at 5 V, then PD EPR 5 -> 28 V at 30 V/ms, firmware OFF (PVDD_EN low)
+.include models.inc
+.param vto_p=1.7
+.include core_pvdd_fix.inc
+.param sr=30
+.param tstep=150m
+.param tr={23/sr*1m}
+Vsrc vsrc 0 PWL(0 0 1m 0 1.5m 5 {tstep} 5 {tstep+tr} 28 1 28)
+Ven PVDD_EN 0 0
+.tran 20u 400m 0 20u uic
+.meas tran pvdd_at_attach_max max v(PVDD) from=1m to=149m
+.meas tran pvdd_after_step_max max v(PVDD) from=150m to=400m
+.meas tran isrc_attach_pk max i(Lcab) from=1m to=149m
+.meas tran ifet_step_pk max par('-i(Vfetm)') from=150m to=400m
+.meas tran isrc_step_pk max i(Lcab) from=150m to=400m
+.meas tran vsg_step_max max par('v(VBUS)-v(PVDD_G)') from=150m to=400m
+.end

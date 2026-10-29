@@ -8,13 +8,13 @@
    "refdes_class": {
     "J1": "smt_placed"
    },
-   "lcsc": "C5184243",
-   "mpn": "USB4105-GF-A-120",
-   "value": "USB4105-GF-A-120",
-   "package": "USB-C-SMD_MC-311D",
+   "lcsc": "C7095263",
+   "mpn": "USB4085-GF-A",
+   "value": "USB4085-GF-A",
+   "package": "USC-C-SMD_USB4085-GF-A",
    "block": "power_in",
    "basic": false,
-   "role": "USB-C receptacle, 48 V/5 A rated (EPR 28 V)"
+   "role": "USB-C receptacle, 48 V/5 A, 240 W (EPR 28 V)"
   },
   {
    "refdes": [
@@ -78,6 +78,67 @@
   },
   {
    "refdes": [
+    "R20",
+    "R8",
+    "R9",
+    "R30",
+    "R31",
+    "R32",
+    "R33",
+    "R36",
+    "R50",
+    "R51",
+    "R52",
+    "R53",
+    "R54",
+    "R55",
+    "R56",
+    "R57",
+    "R58",
+    "R67",
+    "R70",
+    "R121",
+    "R122",
+    "R131",
+    "R137",
+    "R135"
+   ],
+   "refdes_class": {
+    "R20": "smt_placed",
+    "R8": "smt_placed",
+    "R9": "smt_placed",
+    "R30": "smt_placed",
+    "R31": "smt_placed",
+    "R32": "smt_placed",
+    "R33": "smt_placed",
+    "R36": "smt_placed",
+    "R50": "smt_placed",
+    "R51": "smt_placed",
+    "R52": "smt_placed",
+    "R53": "smt_placed",
+    "R54": "smt_placed",
+    "R55": "smt_placed",
+    "R56": "smt_placed",
+    "R57": "smt_placed",
+    "R58": "smt_placed",
+    "R67": "smt_placed",
+    "R70": "smt_placed",
+    "R121": "smt_placed",
+    "R122": "smt_placed",
+    "R131": "smt_placed",
+    "R137": "smt_placed",
+    "R135": "smt_placed"
+   },
+   "lcsc": "C25744",
+   "mpn": "10k",
+   "value": "10k",
+   "package": "R0402",
+   "block": "power_in",
+   "basic": true,
+   "role": "CH224Q PG pull-up"
+  },
+  {
+   "refdes": [
     "R17",
     "R18",
     "R19"
@@ -98,7 +159,6 @@
   {
    "refdes": [
     "C1",
-    "C8",
     "C207",
     "C209",
     "C226",
@@ -114,7 +174,6 @@
    ],
    "refdes_class": {
     "C1": "smt_placed",
-    "C8": "smt_placed",
     "C207": "smt_placed",
     "C209": "smt_placed",
     "C226": "smt_placed",
@@ -173,7 +232,6 @@
     "C33",
     "C34",
     "C46",
-    "C47",
     "C41",
     "C42",
     "C43",
@@ -188,6 +246,7 @@
     "C120",
     "C121",
     "C125",
+    "C132",
     "C126",
     "C202",
     "C302"
@@ -198,7 +257,6 @@
     "C33": "smt_placed",
     "C34": "smt_placed",
     "C46": "smt_placed",
-    "C47": "smt_placed",
     "C41": "smt_placed",
     "C42": "smt_placed",
     "C43": "smt_placed",
@@ -213,6 +271,7 @@
     "C120": "smt_placed",
     "C121": "smt_placed",
     "C125": "smt_placed",
+    "C132": "smt_placed",
     "C126": "smt_placed",
     "C202": "smt_placed",
     "C302": "smt_placed"
@@ -298,49 +357,15 @@
   {
    "refdes": [
     "R4",
-    "R5",
-    "R7",
-    "R10",
-    "R11",
-    "R12",
-    "R15",
-    "R40",
-    "R41",
-    "R42",
-    "R43",
-    "R44",
-    "R45",
-    "R102",
-    "R112",
-    "R120",
-    "R213",
-    "R214",
-    "R215"
+    "R5"
    ],
    "refdes_class": {
     "R4": "smt_placed",
-    "R5": "smt_placed",
-    "R7": "smt_placed",
-    "R10": "smt_placed",
-    "R11": "smt_placed",
-    "R12": "smt_placed",
-    "R15": "smt_placed",
-    "R40": "smt_placed",
-    "R41": "smt_placed",
-    "R42": "smt_placed",
-    "R43": "smt_placed",
-    "R44": "smt_placed",
-    "R45": "smt_placed",
-    "R102": "smt_placed",
-    "R112": "smt_placed",
-    "R120": "smt_placed",
-    "R213": "smt_placed",
-    "R214": "smt_placed",
-    "R215": "smt_placed"
+    "R5": "smt_placed"
    },
-   "lcsc": "C25741",
-   "mpn": "100k",
-   "value": "100k",
+   "lcsc": "C25790",
+   "mpn": "470k",
+   "value": "470k",
    "package": "R0402",
    "block": "power_in",
    "basic": true,
@@ -373,6 +398,21 @@
   },
   {
    "refdes": [
+    "C8"
+   ],
+   "refdes_class": {
+    "C8": "smt_placed"
+   },
+   "lcsc": "C377773",
+   "mpn": "2.2uF",
+   "value": "2.2uF",
+   "package": "C0805",
+   "block": "power_in",
+   "basic": true,
+   "role": "gate-source: holds Q1 off while VBUS steps (attach, 5 V to 28 V)"
+  },
+  {
+   "refdes": [
     "D4"
    ],
    "refdes_class": {
@@ -399,6 +439,61 @@
    "package": "SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
    "block": "power_in",
    "basic": true,
+   "role": "PVDD enable: firmware (PVDD_EN) AND the PD contract (PG low)"
+  },
+  {
+   "refdes": [
+    "R7",
+    "R10",
+    "R11",
+    "R12",
+    "R15",
+    "R40",
+    "R41",
+    "R42",
+    "R43",
+    "R44",
+    "R102",
+    "R112",
+    "R120",
+    "R132",
+    "R149",
+    "R138",
+    "R150",
+    "R134",
+    "R213",
+    "R214",
+    "R215"
+   ],
+   "refdes_class": {
+    "R7": "smt_placed",
+    "R10": "smt_placed",
+    "R11": "smt_placed",
+    "R12": "smt_placed",
+    "R15": "smt_placed",
+    "R40": "smt_placed",
+    "R41": "smt_placed",
+    "R42": "smt_placed",
+    "R43": "smt_placed",
+    "R44": "smt_placed",
+    "R102": "smt_placed",
+    "R112": "smt_placed",
+    "R120": "smt_placed",
+    "R132": "smt_placed",
+    "R149": "smt_placed",
+    "R138": "smt_placed",
+    "R150": "smt_placed",
+    "R134": "smt_placed",
+    "R213": "smt_placed",
+    "R214": "smt_placed",
+    "R215": "smt_placed"
+   },
+   "lcsc": "C25741",
+   "mpn": "100k",
+   "value": "100k",
+   "package": "R0402",
+   "block": "power_in",
+   "basic": true,
    "role": ""
   },
   {
@@ -418,69 +513,18 @@
   },
   {
    "refdes": [
-    "R8",
-    "R9",
-    "R30",
-    "R31",
-    "R32",
-    "R33",
-    "R36",
-    "R50",
-    "R51",
-    "R52",
-    "R53",
-    "R54",
-    "R55",
-    "R56",
-    "R57",
-    "R58",
-    "R67",
-    "R70",
-    "R121",
-    "R122"
-   ],
-   "refdes_class": {
-    "R8": "smt_placed",
-    "R9": "smt_placed",
-    "R30": "smt_placed",
-    "R31": "smt_placed",
-    "R32": "smt_placed",
-    "R33": "smt_placed",
-    "R36": "smt_placed",
-    "R50": "smt_placed",
-    "R51": "smt_placed",
-    "R52": "smt_placed",
-    "R53": "smt_placed",
-    "R54": "smt_placed",
-    "R55": "smt_placed",
-    "R56": "smt_placed",
-    "R57": "smt_placed",
-    "R58": "smt_placed",
-    "R67": "smt_placed",
-    "R70": "smt_placed",
-    "R121": "smt_placed",
-    "R122": "smt_placed"
-   },
-   "lcsc": "C25744",
-   "mpn": "10k",
-   "value": "10k",
-   "package": "R0402",
-   "block": "power_in",
-   "basic": true,
-   "role": ""
-  },
-  {
-   "refdes": [
     "Q3",
     "Q4",
     "Q5",
-    "Q6"
+    "Q6",
+    "Q7"
    ],
    "refdes_class": {
     "Q3": "smt_placed",
     "Q4": "smt_placed",
     "Q5": "smt_placed",
-    "Q6": "smt_placed"
+    "Q6": "smt_placed",
+    "Q7": "smt_placed"
    },
    "lcsc": "C2146",
    "mpn": "S8050",
@@ -709,19 +753,18 @@
     "C18",
     "C19",
     "C32",
+    "C47",
     "C40",
     "C50",
     "C52",
     "C68",
     "C69",
     "C70",
-    "C101",
-    "C102",
-    "C111",
-    "C112",
     "C122",
     "C123",
     "C124",
+    "C131",
+    "C137",
     "C204",
     "C206",
     "C304",
@@ -731,19 +774,18 @@
     "C18": "smt_placed",
     "C19": "smt_placed",
     "C32": "smt_placed",
+    "C47": "smt_placed",
     "C40": "smt_placed",
     "C50": "smt_placed",
     "C52": "smt_placed",
     "C68": "smt_placed",
     "C69": "smt_placed",
     "C70": "smt_placed",
-    "C101": "smt_placed",
-    "C102": "smt_placed",
-    "C111": "smt_placed",
-    "C112": "smt_placed",
     "C122": "smt_placed",
     "C123": "smt_placed",
     "C124": "smt_placed",
+    "C131": "smt_placed",
+    "C137": "smt_placed",
     "C204": "smt_placed",
     "C206": "smt_placed",
     "C304": "smt_placed",
@@ -798,9 +840,9 @@
    "refdes_class": {
     "U8": "smt_placed"
    },
-   "lcsc": "C84681",
-   "mpn": "CH340C",
-   "value": "CH340C",
+   "lcsc": "C81010",
+   "mpn": "CH340B",
+   "value": "CH340B",
    "package": "SOP-16_L10.0-W3.9-P1.27-LS6.0-BL",
    "block": "mcu",
    "basic": false,
@@ -809,11 +851,13 @@
   {
    "refdes": [
     "R34",
-    "R35"
+    "R35",
+    "R45"
    ],
    "refdes_class": {
     "R34": "smt_placed",
-    "R35": "smt_placed"
+    "R35": "smt_placed",
+    "R45": "smt_placed"
    },
    "lcsc": "C25879",
    "mpn": "2.2k",
@@ -830,13 +874,13 @@
    "refdes_class": {
     "U17": "smt_placed"
    },
-   "lcsc": "C465732",
-   "mpn": "TCA9555",
-   "value": "TCA9555",
+   "lcsc": "C131972",
+   "mpn": "TCA9539",
+   "value": "TCA9539",
    "package": "TSSOP-24_L7.8-W4.4-P0.65-LS6.4-BL",
    "block": "mcu",
    "basic": false,
-   "role": "I2C I/O expander, 0x20"
+   "role": "I2C I/O expander, 0x74, reset with the ESP32"
   },
   {
    "refdes": [
@@ -855,12 +899,10 @@
   },
   {
    "refdes": [
-    "Y2",
-    "Y1"
+    "Y2"
    ],
    "refdes_class": {
-    "Y2": "smt_placed",
-    "Y1": "smt_placed"
+    "Y2": "smt_placed"
    },
    "lcsc": "C717684",
    "mpn": "50MHz",
@@ -908,18 +950,10 @@
   },
   {
    "refdes": [
-    "R62",
-    "R73",
-    "R75",
-    "R81",
-    "R83"
+    "R62"
    ],
    "refdes_class": {
-    "R62": "smt_placed",
-    "R73": "smt_placed",
-    "R75": "smt_placed",
-    "R81": "smt_placed",
-    "R83": "smt_placed"
+    "R62": "smt_placed"
    },
    "lcsc": "C25867",
    "mpn": "1.5k",
@@ -983,10 +1017,18 @@
   {
    "refdes": [
     "C56",
+    "C101",
+    "C102",
+    "C111",
+    "C112",
     "C400"
    ],
    "refdes_class": {
     "C56": "smt_placed",
+    "C101": "smt_placed",
+    "C102": "smt_placed",
+    "C111": "smt_placed",
+    "C112": "smt_placed",
     "C400": "dnp"
    },
    "lcsc": "C19666",
@@ -996,6 +1038,21 @@
    "block": "dac",
    "basic": true,
    "role": ""
+  },
+  {
+   "refdes": [
+    "Y1"
+   ],
+   "refdes_class": {
+    "Y1": "smt_placed"
+   },
+   "lcsc": "C7431354",
+   "mpn": "49.152MHz",
+   "value": "49.152MHz",
+   "package": "OSC-SMD_4P-L3.2-W2.5-BL",
+   "block": "dac",
+   "basic": false,
+   "role": "DAC master clock, 1.7 % under the 50 MHz internal-DVDD limit"
   },
   {
    "refdes": [
@@ -1011,6 +1068,27 @@
    "block": "dac",
    "basic": false,
    "role": "DAC output stage"
+  },
+  {
+   "refdes": [
+    "R73",
+    "R75",
+    "R81",
+    "R83"
+   ],
+   "refdes_class": {
+    "R73": "smt_placed",
+    "R75": "smt_placed",
+    "R81": "smt_placed",
+    "R83": "smt_placed"
+   },
+   "lcsc": "C25866",
+   "mpn": "1.3k",
+   "value": "1.3k",
+   "package": "R0402",
+   "block": "dac",
+   "basic": true,
+   "role": ""
   },
   {
    "refdes": [
@@ -1104,7 +1182,7 @@
     "J5": "smt_placed"
    },
    "lcsc": "C7527522",
-   "mpn": "SUB OUT",
+   "mpn": "XDJK-0271-1650",
    "value": "SUB OUT",
    "package": "CONN-TH_XDJK-0271-1650",
    "block": "dac",
@@ -1166,10 +1244,12 @@
   },
   {
    "refdes": [
-    "U14"
+    "U14",
+    "U20"
    ],
    "refdes_class": {
-    "U14": "smt_placed"
+    "U14": "smt_placed",
+    "U20": "smt_placed"
    },
    "lcsc": "C11133",
    "mpn": "TS5A23157",
@@ -1178,6 +1258,61 @@
    "block": "linein",
    "basic": false,
    "role": "DAC path / DJ direct selector"
+  },
+  {
+   "refdes": [
+    "R130",
+    "R136"
+   ],
+   "refdes_class": {
+    "R130": "smt_placed",
+    "R136": "smt_placed"
+   },
+   "lcsc": "C22807",
+   "mpn": "150k",
+   "value": "150k",
+   "package": "R0603",
+   "block": "linein",
+   "basic": true,
+   "role": "speaker tap divider top (28 V)"
+  },
+  {
+   "refdes": [
+    "C130",
+    "C136"
+   ],
+   "refdes_class": {
+    "C130": "smt_placed",
+    "C136": "smt_placed"
+   },
+   "lcsc": "C1620",
+   "mpn": "470pF",
+   "value": "470pF",
+   "package": "C0603",
+   "block": "linein",
+   "basic": true,
+   "role": "tap carrier filter"
+  },
+  {
+   "refdes": [
+    "R133",
+    "R216",
+    "R217",
+    "R314"
+   ],
+   "refdes_class": {
+    "R133": "smt_placed",
+    "R216": "smt_placed",
+    "R217": "smt_placed",
+    "R314": "smt_placed"
+   },
+   "lcsc": "C25792",
+   "mpn": "47k",
+   "value": "47k",
+   "package": "R0402",
+   "block": "linein",
+   "basic": true,
+   "role": ""
   },
   {
    "refdes": [
@@ -1298,25 +1433,6 @@
   },
   {
    "refdes": [
-    "R216",
-    "R217",
-    "R314"
-   ],
-   "refdes_class": {
-    "R216": "smt_placed",
-    "R217": "smt_placed",
-    "R314": "smt_placed"
-   },
-   "lcsc": "C25792",
-   "mpn": "47k",
-   "value": "47k",
-   "package": "R0402",
-   "block": "amp_a",
-   "basic": true,
-   "role": ""
-  },
-  {
-   "refdes": [
     "C218",
     "C219",
     "C220",
@@ -1416,7 +1532,7 @@
     "J11": "smt_placed"
    },
    "lcsc": "C474881",
-   "mpn": "SPK A L",
+   "mpn": "KF301-5.0-2P",
    "value": "SPK A L",
    "package": "CONN-TH_P5.00_KF301-5.0-2P",
    "block": "amp_a",
@@ -1478,7 +1594,7 @@
     "SW3": "dnp"
    },
    "lcsc": "C318884",
-   "mpn": "BTN1",
+   "mpn": "TS-1187A-B-A-B",
    "value": "BTN1",
    "package": "SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
    "block": "ui",
@@ -1492,13 +1608,13 @@
    "refdes_class": {
     "U18": "dnp"
    },
-   "lcsc": "C91447",
-   "mpn": "IRM-H638T",
-   "value": "IRM-H638T",
-   "package": "SENSOR-SMD_IRM-H638T-TR2-TL",
+   "lcsc": "C42421366",
+   "mpn": "IRM-3638T",
+   "value": "IRM-3638T",
+   "package": "OPTO-TH_IRM-3638T",
    "block": "ui",
    "basic": false,
-   "role": "38 kHz IR receiver [Plus]"
+   "role": "38 kHz IR receiver, front-facing [Plus]"
   },
   {
    "refdes": [

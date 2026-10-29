@@ -1,0 +1,8 @@
+[
+ {"measure":"phy_trans","max":2e-9,"severity":"warning","msg":"CLKIN edge through the undefined band (0.99-2.31 V) should stay under 2 ns (no staircase)"},
+ {"measure":"esp_trans","max":2e-9,"severity":"warning","msg":"GPIO0 edge through 0.825-2.475 V should stay under 2 ns"},
+ {"measure":"phy_max","max":3.9,"severity":"warning","msg":"overshoot under VDD+0.6"},
+ {"measure":"esp_max","max":3.6,"severity":"error","msg":"ESP32 VIH max VDD+0.3"},
+ {"measure":"phy_min_hi","min":2.31,"severity":"error","msg":"no ringback into the undefined band while high"},
+ {"measure":"esp_min_hi","min":2.475,"severity":"error","msg":"no ringback while high"}
+]
