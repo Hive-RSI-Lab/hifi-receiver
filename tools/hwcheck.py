@@ -3,9 +3,10 @@
 
     python3 tools/hwcheck.py test [--all]
                                      the check: docs/product.md, the software's
-                                     unit tests, then the hwde gates of each board
-                                     whose files changed since the merge base with
-                                     main (every board with --all or HWCHECK_ALL=1)
+                                     unit tests, the firmware's host tests, then
+                                     the hwde gates of each board whose files
+                                     changed since the merge base with main
+                                     (every board with --all or HWCHECK_ALL=1)
     python3 tools/hwcheck.py score   the first-built tier's unit cost at 100,
                                      in USD, from its board(s)' BOM, printed
                                      only when their gates pass (lower is better)
@@ -353,6 +354,22 @@ def run_unittests() -> list[str]:
     return bad
 
 
+def check_firmware() -> list[str]:
+    """firmware/test: the firmware core's host unit tests (plain cc, no ESP-IDF)."""
+    tests = ROOT / "firmware" / "test"
+    if not (tests / "Makefile").exists():
+        return []
+    if not shutil.which("make") or not shutil.which(os.environ.get("CC", "cc")):
+        print("firmware/test: no make or cc here, host tests not run")
+        return []
+    with tempfile.TemporaryDirectory() as tmp:  # build outside the checkout
+        r = subprocess.run(["make", "-s", "-C", str(tests), f"BIN={tmp}"],
+                           capture_output=True, text=True)
+    out = (r.stdout + r.stderr).strip()
+    print(out)
+    return [] if r.returncode == 0 else ["firmware host tests"]
+
+
 def cmd_test(all_boards: bool = False) -> int:
     bad, _ = check_product()
     for b in bad:
@@ -360,6 +377,7 @@ def cmd_test(all_boards: bool = False) -> int:
     if not bad:
         print("docs/product.md: every tier has its target price and BOM total; one tier is first")
     bad += run_unittests()
+    bad += check_firmware()
     dirs = boards()
     if not dirs:
         print("boards/: no boards yet, no gates to run")
