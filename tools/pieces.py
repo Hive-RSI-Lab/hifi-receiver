@@ -218,7 +218,7 @@ def firmware(root: Path, piece: dict) -> list[str]:
         for name, _, off, size in sorted(rows, key=lambda r: r[2]):
             if off < end:
                 bad.append(f"partitions.csv: {name} overlaps the one before it")
-            end = off + size
+            end = max(end, off + size)
         if end > mb << 20:
             bad.append(f"partitions.csv ends at {end:#x}, past {mb} MB of flash")
         if not any(t == "app" for _, t, _, _ in rows):
