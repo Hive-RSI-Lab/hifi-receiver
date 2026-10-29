@@ -1,0 +1,38 @@
+{
+ "power:1": {
+  "status": "verified",
+  "how": "WCH CH224 datasheet V2.0 (done.land mirror, fetched 2026-10-29): table 4-1 pin 8 VBUS 'needs to be shorted to VHV'; table 8.1.1 VIOHV (PG, VBUS) -0.5..32 V; reference schematic 6.1.1 ties VBUS to VHV. The 3.8 V in sect. 7.1 is in the CH224K-substitution notes and repeats the CFG1 figure: a copy error. Lite runs VBUS at 20 V (37 % under 32 V)."
+ },
+ "parts:15": {
+  "status": "verified",
+  "how": "Same as power:1: CH224 V2.0 table 4-1 and table 8.1.1 rate VBUS to 32 V; sect. 7.1's 3.8 V is a copy error in the CH224K-substitution notes."
+ },
+ "power:4": {
+  "status": "resolved",
+  "how": "CH224 V2.0 reference schematic 6.1.1 is this exact circuit: Rset on CFG1 with an MCU's I2C on CFG2/CFG3. Contingency on both boards: the I2C links are 0R (Lite R2/R3); depopulated, CFG2/CFG3 float on their internal pull-ups, which 6.1.1 names as the plain single-resistor case."
+ },
+ "power:6": {
+  "status": "resolved",
+  "how": "Fail-safe by direction: if PG never asserts or can't sink Q4's ~0.35 mA (2.6 V/10k base + VBUS/220k), PVDD simply stays off (no amp, no damage) and firmware reports it (GPIO4 reads PG, GPIO39 reads PVDD). Firmware also drops PVDD before any renegotiation (firmware-requirements L4). Rework: short Q4's emitter pad to the adjacent GND pour."
+ },
+ "power:9": {
+  "status": "resolved",
+  "how": "With R6 220k + C19 2.2 uF the turn-on peak is 5.8 W for a ~28 ms ramp (sim tb_lite_fw_on_20v_FIX), against the AOS AO4485 single-pulse SOA of about 25 W at 5 ms and 20 W at 10 ms that the power review read (POWER-2/4): >3x margin, so a clone with up to a third less SOA still passes. Steady state 5 A x 15 mohm = 0.38 W."
+ },
+ "audio:3": {
+  "status": "resolved",
+  "how": "R54 100k -> 10k: SDZ sits at 3.2 V - 50 uA x 10k = 2.7 V worst case (TI SLOS708G IIH max 50 uA) against VIH 2.0 V: 0.7 V margin."
+ },
+ "digital:22": {
+  "status": "verified",
+  "how": "Everest ES8388 datasheet rev 5.0 (July 2018) sect. 5.2: 2-wire chip address 001000x, x = AD0 (the CE pin): 0x10 with CE (pin 26) on GND, as Lite wires it. Fetched 2026-10-29."
+ },
+ "thermal:8": {
+  "status": "resolved",
+  "how": "Margin holds even at hwde's pessimistic 47 C/W: 1.75 W at 1/8 power into 4 ohm gives Tj = 45 + 82 = 127 C, 23 K under the 150 C trip (reviewer's own estimate 94-106 C). Above that, the firmware governor (firmware-requirements L1) and the chip's own latched OTP with FAULTZ recovery (L2) protect it: the failure mode is a mute, not damage. Bring-up measures the case temperature at 1/8 power."
+ },
+ "dfm:9": {
+  "status": "resolved",
+  "how": "Lite J1 HRO TYPE-C-31-M-12 (C165948): footprint from EasyEDA (lib_pull 2026-10-29), its VBUS/GND pads redrawn as plain 0.6 x 1.3 mm rectangles (EasyEDA's 0.1 mm stroke left a 0.1 mm VBUS-GND gap) and its signal pads trimmed to 1.13 mm at the tail end (the USB4105's inner edge); shell legs 0.8 mm slots as HRO draws them. CPL: hwde cpl_verify against the LCSC model passes in the dfm gate (2026-10-29), no offset warning."
+ }
+}
