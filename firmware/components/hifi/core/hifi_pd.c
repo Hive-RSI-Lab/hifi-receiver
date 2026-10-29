@@ -41,3 +41,9 @@ void hifi_contract_from(bool sink_ok, uint8_t status, uint8_t current_reg,
 	else if (out->proto == HIFI_PROTO_QC2 || out->proto == HIFI_PROTO_QC3) out->w = 18.0f;
 	else out->w = 7.5f;
 }
+
+float hifi_ch224_request(uint8_t status, uint8_t *code) {
+	bool epr = status & CH224_ST_EPR_OFFERED;
+	*code = epr ? 5 : 4;
+	return epr ? 28.0f : 20.0f;
+}

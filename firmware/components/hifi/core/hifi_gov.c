@@ -22,10 +22,24 @@ void hifi_gov_cfg_lite(hifi_gov_cfg_t *cfg) {
 	};
 }
 
+void hifi_gov_cfg_core(hifi_gov_cfg_t *cfg) {
+	hifi_gov_cfg_lite(cfg);
+	/* the ES9018K2M's OPA1678 stage gives about 1.15 Vrms at full scale
+	 * (boards/core/architecture/blocks.md B7), the TPA3221 24 dB: 1.15 x
+	 * 15.85 x sqrt 2 = 25.8 V peak, near the 28 V rail. Not yet measured */
+	cfg->vfs_peak_v = 1.15f * 15.85f * 1.4142f;
+	cfg->swing = 0.95f;
+	cfg->efficiency = 0.88f;
+	/* the ESP32, PHY, DAC, ADC and an amp idling at 28 V: an estimate for
+	 * bring-up to replace (the INA186 reads it directly) */
+	cfg->p_idle_w = 4.0f;
+}
+
 void hifi_gov_init(hifi_gov_t *g, const hifi_gov_cfg_t *cfg) {
 	memset(g, 0, sizeof(*g));
 	g->cfg = *cfg;
 	g->gain = g->target = 1.0f;
+	g->amps = 1;
 	/* until a contract is known: a USB 2.0 port */
 	hifi_gov_set_supply(g, 5.0f, 2.5f);
 }
@@ -67,7 +81,7 @@ void hifi_gov_process(hifi_gov_t *g, void *buf, size_t frames, int bytes_per_fra
 	float msl = (float) (sl / frames), msr = (float) (sr / frames);
 	float dt = (float) frames / rate;
 	float a = 1.0f - expf(-dt / c->tau_s);
-	float p_now = channel_w(g, msl) + channel_w(g, msr);
+	float p_now = (channel_w(g, msl) + channel_w(g, msr)) * g->amps;
 	g->p_out_pre += a * (p_now - g->p_out_pre);
 	g->ms_avg += a * ((msl + msr) / 2 - g->ms_avg);
 

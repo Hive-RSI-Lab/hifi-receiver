@@ -17,6 +17,7 @@
 #include "hifi_pd.h"
 #include "hifi_power.h"
 #include "hifi_tone.h"
+#include "hifi_update.h"
 
 #define HIFI_API_VERSION 1
 
@@ -71,6 +72,8 @@ typedef struct {
 	float eq[HIFI_EQ_BANDS];
 	int volume, max_volume;   /* hifi_vol.h */
 	bool mute;
+	int zones;                /* 2: zone B below is reported */
+	bool zone_b_on;           /* zone B plays zone A's program at its volume */
 	hifi_meta_t playing;      /* elapsed_ms as of now; state NONE: null */
 	/* remote */
 	int ir_learning;          /* an action, or -1 */
@@ -79,11 +82,13 @@ typedef struct {
 	uint32_t ir_last_code;
 	/* net, sys */
 	const char *net_mode; /* "sta" or "ap" */
+	bool eth_present, eth_up; /* a board with Ethernet; its link has an address */
 	char ssid[33];
 	char hostname[33];
 	char ip[16];        /* empty when not connected */
 	int rssi;           /* 0 when unknown */
 	uint32_t heap_free, psram_free;
+	hifi_update_status_t update; /* the app's updates; idle: not reported */
 } hifi_snapshot_t;
 
 #define HIFI_SELFTEST_MAX 16
@@ -107,6 +112,15 @@ typedef struct {
 	int keys;                   /* trusted signing keys in this build */
 	uint32_t accepted, rejected; /* commands since boot */
 } hifi_remote_status_t;
+
+/* A Wi-Fi network a scan found */
+typedef struct {
+	char ssid[33];
+	int rssi;
+	bool secure;
+} hifi_wifi_ap_t;
+
+#define HIFI_WIFI_SCAN_MAX 20
 
 /* Which image runs, and what the last rollback was */
 typedef struct {
@@ -147,6 +161,17 @@ typedef struct {
 	int (*remote_set)(const char *url, const char *user, const char *password, const char *prefix);
 	hifi_ota_t *ota;   /* the update session, with the board's flash writes */
 	void (*ota_status)(hifi_ota_status_t *out);
+	/* the networks in range: how many it wrote, or -1 while the radio is busy */
+	int (*wifi_scan)(hifi_wifi_ap_t *aps, int max);
+	int (*wifi_forget)(void); /* back to the receiver's own network; 0 ok */
+	/* zone B's amp on or off (Ultra; core has no level of its own for it) */
+	void (*set_zone)(bool on);
+	/* the update manifest's offer: 0, or an HTTP status with *err set */
+	int (*update_check)(hifi_update_offer_t *out, const char **err);
+	/* downloads and installs an image in the background (state's "update");
+	 * sha256 NULL: the one the last check offered for that url, if any.
+	 * 0, or an HTTP status with *err set */
+	int (*update_start)(const char *url, const char *sha256, const char **err);
 } hifi_ops_t;
 
 /* Returns the HTTP status; the reply (always a JSON object) is in out. */

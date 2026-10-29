@@ -17,6 +17,8 @@
 #define CH224_I2C_ADDR 0x22
 #define CH224_REG_STATUS 0x09
 #define CH224_REG_CURRENT 0x50
+#define CH224_REG_VREQ 0x0A /* write: 0 5 V, 1 9 V, 2 12 V, 3 15 V, 4 20 V, 5 28 V */
+#define CH224_ST_EPR_OFFERED 0x20
 
 typedef enum {
 	HIFI_PROTO_NONE = 0,
@@ -52,3 +54,12 @@ float hifi_pd_nominal_v(float vbus_v);
  */
 void hifi_contract_from(bool sink_ok, uint8_t status, uint8_t current_reg,
 			float vbus_v, hifi_contract_t *out);
+
+/*
+ * The core board's CH224Q has no VBUS divider on the ESP32 to read back, so
+ * the firmware asks for the voltage itself and takes the contract to be
+ * what it asked for once PG says it is good: 28 V when the source offers
+ * EPR (status bit 5), else 20 V. Returns that voltage; *code is what goes
+ * in CH224_REG_VREQ.
+ */
+float hifi_ch224_request(uint8_t status, uint8_t *code);

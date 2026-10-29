@@ -58,6 +58,10 @@ void hifi_vol_step(hifi_vol_t *v, int dir) {
 	hifi_vol_set(v, clampi(v->volume + (dir > 0 ? HIFI_VOL_STEP : -HIFI_VOL_STEP), 0, v->max_volume), 0, -1);
 }
 
+void hifi_vol_turn(hifi_vol_t *v, int detents) {
+	hifi_vol_set(v, clampi(v->volume + detents * HIFI_VOL_KNOB_STEP, 0, v->max_volume), 0, -1);
+}
+
 uint32_t hifi_vol_gain(const hifi_vol_t *v) { return v->mute ? 0 : v->gain; }
 
 int hifi_vol_codec_code(const hifi_vol_t *v, int full_code) {

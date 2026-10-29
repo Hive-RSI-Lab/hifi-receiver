@@ -18,6 +18,7 @@
 #define HIFI_VOL_UNITY 65536u
 #define HIFI_VOL_MAX_MIN 30 /* the lowest maximum the app can set */
 #define HIFI_VOL_STEP 5     /* a button or remote press */
+#define HIFI_VOL_KNOB_STEP 2 /* a knob detent: 50 clicks from silent to full */
 
 typedef struct {
 	int volume;     /* 0..max_volume */
@@ -42,6 +43,9 @@ bool hifi_vol_set(hifi_vol_t *v, int volume, int mute, int max_volume);
 
 /* A button or remote step (+1 up, -1 down): HIFI_VOL_STEP, and unmutes. */
 void hifi_vol_step(hifi_vol_t *v, int dir);
+
+/* A knob turn of `detents` (+ clockwise): HIFI_VOL_KNOB_STEP each, and unmutes. */
+void hifi_vol_turn(hifi_vol_t *v, int detents);
 
 /* The gain to apply now: 0 when muted. */
 uint32_t hifi_vol_gain(const hifi_vol_t *v);
