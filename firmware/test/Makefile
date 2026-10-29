@@ -10,7 +10,7 @@ CFLAGS := -std=gnu11 -O1 -g -Wall -Wextra -Werror -Wno-unused-function -I$(CORE)
 LDLIBS := -lm
 
 SRCS := $(wildcard $(CORE)/*.c)
-TESTS := test_json_pd test_power test_gov_tone test_api
+TESTS := test_json_pd test_power test_gov_tone test_vol_ir_meta test_api
 BIN := build
 
 all: run

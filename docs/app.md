@@ -137,6 +137,11 @@ Every one of them replies with the full `GET state`, so the app redraws from
 one reply. `app/mock/server.py` implements all of it, and is the reference
 until the firmware does.
 
+**In the firmware now** (task 261028-201030, [test-api.md](test-api.md)):
+`audio.volume`, `mute`, `max_volume`, `audio.playing`, `ir`, `POST volume`,
+`POST ir/learn` and `POST ir/forget`, as below. The mock follows the
+firmware's rules for them: a volume outside 0–100 is a 400, not clamped.
+
 **`GET info` adds:**
 - `name`: the player name.
 - `caps`: what the board can do.
@@ -159,13 +164,13 @@ On Plus, `line_modes` is `["dj_direct", "line"]`, and `crossover` and
 | `audio.max_volume` | 30–100 |
 | `audio.eq` | 10 gains in dB |
 | `audio.sub` | `{on, level_db}`, plus `xover_hz`, `mains_hp` and `subs: [{trim_db, delay_ms, invert}]` where caps say so |
-| `audio.playing` | `{state: "play"\|"pause"\|"stop", title, artist, album}` or `null` |
+| `audio.playing` | `{state: "play"\|"pause"\|"stop", title, artist, album, elapsed_s, duration_s}` or `null`; for Lyrion the text is `null` |
 | `audio.zone_b` | `{on, volume}` (Ultra) |
 | `net.mode` | `sta` or `ap` |
 | `net.ssid`, `net.hostname`, `net.eth` | the network it is on, its name, and whether Ethernet is connected |
 | `net.join` | `{ssid, state: "joining"\|"ok"\|"failed", ip, reason}` |
 | `update` | `{state: "idle"\|"downloading"\|"flashing"\|"done"\|"error", progress, error}` |
-| `ir` | `{learning: <action>\|null, learned: [<action>…]}` |
+| `ir` | `{learning: <action>\|null, learned: [<action>…], last_code}` |
 
 **Writes:**
 
@@ -180,7 +185,7 @@ On Plus, `line_modes` is `["dj_direct", "line"]`, and `crossover` and
 | `POST wifi` | `{ssid, password}` |
 | `POST wifi/forget` | |
 | `POST ir/learn` | `{action}`: the next IR code the receiver sees is bound to that action |
-| `POST ir/forget` | |
+| `POST ir/forget` | `{}` for all, or `{action}` for one |
 | `GET update/check` | replies `{current, latest, url, notes}`; optional |
 | `POST update` | `{url}` |
 | `POST update/upload` | a raw `.bin` body |

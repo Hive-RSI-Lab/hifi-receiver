@@ -59,12 +59,16 @@ Everything the bench logs, in one read. Poll it at up to 10 Hz.
  "amp": {"enabled": true, "fault": false, "faults": 0, "latched": false, "temp_c": null},
  "governor": {"budget_w": 58.5, "in_w": 7.9, "out_w": 4.4,
               "gain_db": 0.0, "limiting": false, "limit_events": 0},
- "audio": {"source": "lms", "input": "stream", "tone": null, "level_dbfs": -23.4,
+ "audio": {"source": "spotify", "input": "stream", "tone": null, "level_dbfs": -23.4,
            "sub": {"on": true, "level_db": 0.0},
-           "eq": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
+           "eq": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+           "volume": 35, "mute": false, "max_volume": 100,
+           "playing": {"state": "play", "title": "Teardrop", "artist": "Massive Attack",
+                       "album": "Mezzanine", "elapsed_s": 61, "duration_s": 330}},
  "net": {"mode": "sta", "ssid": "home", "hostname": "hifi-lite",
          "ip": "192.168.1.40", "rssi": -61},
- "sys": {"heap_free": 81234, "psram_free": 3912345}}
+ "sys": {"heap_free": 81234, "psram_free": 3912345},
+ "ir": {"learning": null, "learned": ["volup", "voldown", "mute"], "last_code": "0x00ff40bf"}}
 ```
 
 - **`power.state`** is the power sequencer's state:
@@ -92,6 +96,21 @@ Everything the bench logs, in one read. Poll it at up to 10 Hz.
   the RCA line in). `tone` is the running tone (below) or `null`.
   `level_dbfs` is the 1 s RMS of what goes to the DAC, relative to a full-
   scale sine. `sub` and `eq` are as set below.
+- **`audio.volume`** (0–100), **`mute`** and **`max_volume`** (30–100): the
+  receiver's one volume (`POST /api/v1/volume` below). It follows whatever
+  source plays: when a phone or LMS moves its own slider, `volume` moves
+  with it.
+- **`audio.playing`** is `null` when no source holds the player, else
+  `state` (`play`, `pause` or `stop`), `title`, `artist`, `album`,
+  `elapsed_s` and `duration_s`. Anything not known is `null`. AirPlay,
+  Bluetooth and Spotify send all of it. A phone over Bluetooth sends text
+  only if it supports AVRCP metadata. LMS sends its track text only as
+  display graphics, so for LMS this is `{"state": "play"}` with the rest
+  `null`. `elapsed_s` counts on while playing, from the source's last report.
+- **`ir`:** `learning` is the action waiting for a remote button
+  (`POST /api/v1/ir/learn`), else `null`. `learned` lists the actions that
+  have a button. `last_code` is the last code the IR receiver decoded since
+  boot, learned or not: the bench's check that the receiver works.
 - **`net.mode`** is `ap` while the box runs its own setup access point (no
   Wi-Fi joined yet), else `sta`.
 
@@ -158,11 +177,78 @@ hostname stays `hifi-lite`. Reply: the full `/state`.
 `{"factory": true}`: it erases every setting (Wi-Fi, names, EQ, sub) and
 restarts. Both reply with the full `/state` first.
 
+## `POST /api/v1/volume`
+
+`{"volume": 40}`, `{"mute": true}`, `{"max_volume": 70}`, or any of them
+together. Each is optional, and a `null` leaves that one as it is.
+- **`volume`:** a whole number, 0–100. It is held to `max_volume`, so 80
+  with a maximum of 70 sets 70.
+- **`max_volume`:** a whole number, 30–100. It is applied first, and a
+  volume above it comes down to it. Raising it doesn't turn the volume up.
+- **`mute`:** `true` or `false`.
+
+A value out of range or of the wrong type is a 400 and changes nothing.
+The reply is the full `/state`. `max_volume` and the volume are kept across
+restarts. Mute isn't: the box always starts unmuted.
+
+How it works:
+- The volume is squeezelite's output gain. The curve is
+  `gain = (volume / 100)³`, which squeezelite already uses for AirPlay and
+  Bluetooth, so their sliders read back as the same number.
+  - Spotify sends a gain with its own curve (a 4th power). LMS sends its
+    own as well. `volume` is that gain read back on our curve.
+  - The source gets nothing back. After the app sets 40, the phone's slider
+    stays where it was until the phone moves it, which then sets the volume
+    again.
+- **`max_volume`** caps every source, the buttons and the remote. A phone
+  at full scale plays at the maximum.
+- **`mute`** holds the gain at 0. A source's volume change while muted is
+  remembered, not played. A volume step from the remote or the buttons
+  unmutes.
+- **In DJ direct** the line in skips squeezelite. The volume goes on the
+  ES8388's speaker outputs instead (LOUT1/ROUT1, 1.5 dB steps below its
+  usual -3 dB), down to -45 dB. Mute takes the line in out of the mix. The
+  sub outputs keep their own level.
+- **While a test tone plays**, it plays at the level asked for. Volume
+  changes are kept and applied when it ends.
+
+## `POST /api/v1/ir/learn`, `POST /api/v1/ir/forget`
+
+`{"action": "mute"}` teaches the remote. The next IR code the receiver
+decodes, within 30 s, becomes that action's button.
+- **Actions:** `volup`, `voldown`, `mute`, `toggle` (play/pause), `next`,
+  `prev`, `input` (stream ↔ DJ direct) and `power`.
+- **One button per action:** a code already used for another action moves
+  to this one.
+- **What a learned button does:**
+  - `mute` and `input` act on the receiver.
+  - `volup` and `voldown` step the receiver's volume by 5 when nothing
+    streams or the input is DJ direct. Otherwise they go to the source, like
+    the board's buttons.
+  - The rest go to whatever is playing.
+  - Held, a volume button steps about 5 times a second. Any other held
+    button fires once.
+- **Codes nobody learned** go on to squeezelite as before: LMS's own remote
+  map and squeezelite's default codes.
+- **Storage:** codes are kept across restarts (NVS key `hifi_ir`).
+- **Forgetting:** `ir/forget` with `{"action": "mute"}` forgets one button.
+  With `{}` it forgets them all.
+
+Both reply with the full `/state`; watch `ir.learning` go back to `null`
+and the action appear in `ir.learned`.
+
+The receiver decodes NEC by default (`set_GPIO` `14=ir:nec`), which most
+cheap remotes and TVs' universal remotes send. An RC5 remote needs
+`14=ir:rc5` in squeezelite's settings.
+
 ## `POST /api/v1/control`
 
 `{"action": "volup"}`: what a button press does, sent to whatever is
 playing (LMS, AirPlay, Spotify, Bluetooth). Actions: `volup`, `voldown`,
-`toggle`, `play`, `pause`, `stop`, `next`, `prev`, `power`. (There is no
+`toggle`, `play`, `pause`, `stop`, `next`, `prev`, `power`, plus the
+receiver's own `mute` (toggles it) and `input` (stream ↔ DJ direct).
+`volup`/`voldown` step the receiver's own volume when nothing streams or in
+DJ direct, as the remote does. (There is no
 Bluetooth pairing action: squeezelite-esp32's Bluetooth sink is discoverable
 whenever no other phone is connected.)
 Reply: `{"ok": true}`.
@@ -207,10 +293,6 @@ Their exact bodies are what squeezelite-esp32's own page sends
 (`components/wifi-manager/webapp` at the pinned commit); this API doesn't
 restate them.
 
-Not in this API yet: an absolute volume, mute and maximum volume, the
-now-playing metadata, and learning IR remote codes. Volume works through
-`control` (`volup`/`voldown`), which goes to whatever source is playing.
-
 ## Serial console
 
 The same calls over the USB serial console (115200 8N1, CH340C), for a
@@ -227,6 +309,12 @@ hifi tone stop
 hifi amp on|off|reset
 hifi input stream|dj_direct
 hifi sub <dB>
+hifi control <action>
+hifi volume <0-100>
+hifi mute on|off
+hifi maxvol <30-100>
+hifi ir learn <action>
+hifi ir forget [action]
 hifi selftest
 ```
 

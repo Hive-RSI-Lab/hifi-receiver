@@ -85,7 +85,7 @@ class API(unittest.TestCase):
         for path, body, check in (
             ("volume", {"volume": 70}, lambda s: s["audio"]["volume"] == 70),
             ("volume", {"max_volume": 60}, lambda s: s["audio"]["volume"] == 60),
-            ("volume", {"volume": 140}, lambda s: s["audio"]["volume"] == 60),
+            ("volume", {"volume": 90}, lambda s: s["audio"]["volume"] == 60),
             ("volume", {"mute": True}, lambda s: s["audio"]["mute"]),
             ("eq", {"gains": [3] * 10}, lambda s: s["audio"]["eq"] == [3] * 10),
             ("sub", {"level_db": -4, "on": False}, lambda s: (s["audio"]["sub"]["level_db"], s["audio"]["sub"]["on"]) == (-4.5, False)),
@@ -109,7 +109,9 @@ class API(unittest.TestCase):
         self.assertEqual((code, r["ok"]), (200, True))
 
     def test_bad_writes_are_refused(self):
-        for path, body in (("volume", {"volume": "loud"}), ("volume", {"mute": 1}), ("input", {"input": "line"}),
+        for path, body in (("volume", {"volume": "loud"}), ("volume", {"mute": 1}), ("volume", {"volume": 140}),
+                           ("volume", {"volume": 20.5}), ("volume", {"max_volume": 29}), ("volume", {}),
+                           ("ir/forget", {"action": "eject"}), ("input", {"input": "line"}),
                            ("eq", {"gains": [0] * 3}), ("sub", {"xover_hz": 80}), ("sub", {"sub": 0, "trim_db": 1}),
                            ("zone", {"zone": "b", "on": True}), ("name", {"name": ""}), ("reset", {}),
                            ("control", {"action": "skip"}), ("ir/learn", {"action": "eject"})):

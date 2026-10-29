@@ -105,6 +105,18 @@ endpoints").
   `hifi_http_register`.
 - **`main/esp_app_main.c`:** the hostname defaults to `hifi-lite` without a
   MAC suffix.
+- **`components/squeezelite/output_embedded.c`:**
+  - `set_volume` (every source's volume) calls `hifi_volume_hook` first,
+    for the receiver's own volume, maximum and mute.
+  - `hifi_output_gain` lets our component set the gain itself.
+- **`components/display/display.c`:** `displayer_control`,
+  `displayer_metadata` and `displayer_timer` call `hifi_display_*` before
+  their "no display" return. That is how AirPlay's, Bluetooth's and
+  Spotify's now-playing reach the API.
+- **`components/services/audio_controls.c`:**
+  - `ir_handler` calls `hifi_ir_hook`, for learned remote codes.
+  - The button handler calls `hifi_button_hook`, so vol+/vol− work when
+    nothing streams.
 
 Every hook is a weak symbol, so the patched tree still builds without our
 component. To move to a newer upstream: change `upstream.lock`, run

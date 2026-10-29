@@ -28,6 +28,9 @@
 #define ES8388_DACPOWER 0x04 /* bits 5..2: LOUT1 ROUT1 LOUT2 ROUT2 on */
 #define ES8388_DACCONTROL17 0x27 /* left mixer: bit7 DAC, bit6 LIN, bits5:3 LIN gain */
 #define ES8388_DACCONTROL20 0x2A /* right mixer, same layout */
+#define ES8388_LOUT1VOL 0x2E /* speaker amp L: same scale as LOUT2 */
+#define ES8388_ROUT1VOL 0x2F
+#define ES8388_OUT1_FULL 28  /* squeezelite's controlset sets LOUT1/ROUT1 to 28, -3 dB */
 #define ES8388_LOUT2VOL 0x30 /* sub out L: 0 = -45 dB, 30 = 0 dB, 33 = +4.5 dB */
 #define ES8388_ROUT2VOL 0x31
 

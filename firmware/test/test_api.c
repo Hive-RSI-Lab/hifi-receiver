@@ -1,6 +1,7 @@
 #include "check.h"
 #include "hifi_api.h"
 #include "hifi_json.h"
+#include "hifi_vol.h"
 
 /* ------------------------------------------------------------ mock board */
 
@@ -17,6 +18,10 @@ static struct {
 	char name[65];
 	bool rebooted, reset;
 	char action[16];
+	hifi_vol_t vol;
+	hifi_meta_t playing;
+	int ir_learning, ir_forgot;
+	bool ir_learned[HIFI_IR_N];
 } m;
 
 static void m_info(hifi_info_t *i) {
@@ -54,6 +59,12 @@ static void m_snapshot(hifi_snapshot_t *s) {
 	s->sub_on = m.sub_on != 0;
 	s->sub_db = m.sub_db;
 	memcpy(s->eq, m.eq, sizeof(m.eq));
+	s->volume = m.vol.volume;
+	s->mute = m.vol.mute;
+	s->max_volume = m.vol.max_volume;
+	s->playing = m.playing;
+	s->ir_learning = m.ir_learning;
+	memcpy(s->ir_learned, m.ir_learned, sizeof(m.ir_learned));
 	s->net_mode = "sta";
 	snprintf(s->ssid, sizeof(s->ssid), "home");
 	snprintf(s->hostname, sizeof(s->hostname), "hifi-lite");
@@ -99,6 +110,13 @@ static int m_control(const char *a) {
 	snprintf(m.action, sizeof(m.action), "%s", a);
 	return strcmp(a, "volup") && strcmp(a, "toggle") ? -1 : 0;
 }
+static int m_set_volume(int v, int mute, int max) { return hifi_vol_set(&m.vol, v, mute, max) ? 0 : -1; }
+static void m_ir_learn(int a) { m.ir_learning = a; }
+static void m_ir_forget(int a) {
+	m.ir_forgot = a;
+	if (a < 0) memset(m.ir_learned, 0, sizeof(m.ir_learned));
+	else m.ir_learned[a] = false;
+}
 static void m_selftest(hifi_selftest_t *t) {
 	hifi_selftest_add(t, "pd_sink_i2c", true, "0x%02x acks", 0x22);
 	hifi_selftest_add(t, "network", m.power_on, m.power_on ? "192.168.1.40" : "not connected");
@@ -108,7 +126,8 @@ static const hifi_ops_t ops = {
 	.info = m_info, .snapshot = m_snapshot, .tone_start = m_tone_start, .tone_stop = m_tone_stop,
 	.amp_enable = m_amp_enable, .amp_reset = m_amp_reset, .set_input = m_set_input,
 	.set_sub = m_set_sub, .set_eq = m_set_eq, .set_name = m_set_name, .reboot = m_reboot,
-	.factory_reset = m_factory_reset, .control = m_control, .selftest = m_selftest};
+	.factory_reset = m_factory_reset, .control = m_control, .selftest = m_selftest,
+	.set_volume = m_set_volume, .ir_learn = m_ir_learn, .ir_forget = m_ir_forget};
 
 static char out[2048];
 
@@ -140,9 +159,11 @@ static void info_and_state(void) {
 		  "\"amp\":{\"enabled\":true,\"fault\":false,\"faults\":0,\"latched\":false,\"temp_c\":null},"
 		  "\"governor\":{\"budget_w\":58.5,\"in_w\":7.9,\"out_w\":4.4,\"gain_db\":0.0,\"limiting\":false,\"limit_events\":0},"
 		  "\"audio\":{\"source\":\"lms\",\"input\":\"stream\",\"tone\":null,\"level_dbfs\":-23.4,"
-		  "\"sub\":{\"on\":false,\"level_db\":0.0},\"eq\":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},"
+		  "\"sub\":{\"on\":false,\"level_db\":0.0},\"eq\":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"
+		  "\"volume\":35,\"mute\":false,\"max_volume\":100,\"playing\":null},"
 		  "\"net\":{\"mode\":\"sta\",\"ssid\":\"home\",\"hostname\":\"hifi-lite\",\"ip\":\"192.168.1.40\",\"rssi\":-61},"
-		  "\"sys\":{\"heap_free\":81234,\"psram_free\":3912345}}");
+		  "\"sys\":{\"heap_free\":81234,\"psram_free\":3912345},"
+		  "\"ir\":{\"learning\":null,\"learned\":[],\"last_code\":null}}");
 
 	CHECK(call("POST", "/api/v1/state", "{}") == 405);
 	CHECK(call("GET", "/api/v1/nope", NULL) == 404);
@@ -232,6 +253,68 @@ static void amp_input_sub_control(void) {
 	CHECK(call("POST", "/api/v1/control", "{\"action\":\"explode\"}") == 400);
 }
 
+static void volume_playing_ir(void) {
+	CHECK(call("POST", "/api/v1/volume", "{\"volume\":60}") == 200);
+	CHECK_HAS(out, "\"volume\":60,\"mute\":false,\"max_volume\":100,");
+	CHECK(call("POST", "/api/v1/volume", "{\"max_volume\":50}") == 200);
+	CHECK_HAS(out, "\"volume\":50,\"mute\":false,\"max_volume\":50,");
+	CHECK(call("POST", "/api/v1/volume", "{\"volume\":80}") == 200); /* held to the maximum, as the app's mock does */
+	CHECK_HAS(out, "\"volume\":50,");
+	CHECK(call("POST", "/api/v1/volume", "{\"mute\":true,\"volume\":20,\"max_volume\":100}") == 200);
+	CHECK_HAS(out, "\"volume\":20,\"mute\":true,\"max_volume\":100,");
+	CHECK(m.vol.mute && m.vol.volume == 20);
+
+	/* refused, and nothing changes */
+	CHECK(call("POST", "/api/v1/volume", "{}") == 400);
+	CHECK(call("POST", "/api/v1/volume", "{\"volume\":101}") == 400);
+	CHECK(call("POST", "/api/v1/volume", "{\"volume\":-1}") == 400);
+	CHECK(call("POST", "/api/v1/volume", "{\"volume\":20.5}") == 400);
+	CHECK(call("POST", "/api/v1/volume", "{\"volume\":\"50\"}") == 400);
+	CHECK(call("POST", "/api/v1/volume", "{\"max_volume\":29}") == 400);
+	CHECK(call("POST", "/api/v1/volume", "{\"mute\":\"yes\"}") == 400);
+	CHECK(call("POST", "/api/v1/volume", "{\"mute\":false,\"volume\":true}") == 400);
+	CHECK(call("GET", "/api/v1/volume", NULL) == 405);
+	CHECK(m.vol.mute && m.vol.volume == 20 && m.vol.max_volume == 100);
+	CHECK(call("POST", "/api/v1/volume", "{\"volume\":null,\"mute\":false}") == 200); /* null leaves it */
+	CHECK(!m.vol.mute && m.vol.volume == 20);
+
+	/* now playing */
+	hifi_meta_active(&m.playing);
+	CHECK(call("GET", "/api/v1/state", NULL) == 200);
+	CHECK_HAS(out, "\"playing\":{\"state\":\"stop\",\"title\":null,\"artist\":null,\"album\":null,"
+		       "\"elapsed_s\":null,\"duration_s\":null}}");
+	hifi_meta_track(&m.playing, "Bj\xc3\xb6rk", "Homogenic", "J\xc3\xb3ga \"live\"");
+	hifi_meta_timer(&m.playing, 61500, 305000, 0);
+	hifi_meta_play(&m.playing, 0);
+	CHECK(call("GET", "/api/v1/state", NULL) == 200);
+	CHECK_HAS(out, "\"playing\":{\"state\":\"play\",\"title\":\"J\xc3\xb3ga \\\"live\\\"\",\"artist\":\"Bj\xc3\xb6rk\","
+		       "\"album\":\"Homogenic\",\"elapsed_s\":61,\"duration_s\":305}}");
+
+	/* the remote */
+	m.ir_learning = -1;
+	CHECK(call("POST", "/api/v1/ir/learn", "{\"action\":\"mute\"}") == 200);
+	CHECK(m.ir_learning == HIFI_IR_MUTE);
+	CHECK_HAS(out, "\"ir\":{\"learning\":\"mute\",\"learned\":[],\"last_code\":null}");
+	m.ir_learning = -1;
+	m.ir_learned[HIFI_IR_MUTE] = m.ir_learned[HIFI_IR_VOLUP] = true;
+	CHECK(call("GET", "/api/v1/state", NULL) == 200);
+	CHECK_HAS(out, "\"ir\":{\"learning\":null,\"learned\":[\"volup\",\"mute\"],");
+	CHECK(call("POST", "/api/v1/ir/learn", "{\"action\":\"explode\"}") == 400);
+	CHECK(call("POST", "/api/v1/ir/learn", "{}") == 400);
+	CHECK(call("POST", "/api/v1/ir/forget", "{\"action\":\"volup\"}") == 200);
+	CHECK(m.ir_forgot == HIFI_IR_VOLUP && !m.ir_learned[HIFI_IR_VOLUP] && m.ir_learned[HIFI_IR_MUTE]);
+	CHECK(call("POST", "/api/v1/ir/forget", "{\"action\":\"nope\"}") == 400);
+	CHECK(call("POST", "/api/v1/ir/forget", NULL) == 200);
+	CHECK(m.ir_forgot == -1 && !m.ir_learned[HIFI_IR_MUTE]);
+	CHECK_HAS(out, "\"learned\":[]");
+
+	hifi_snapshot_t s = {.ir_learning = -1, .ir_have_last = true, .ir_last_code = 0x00ff40bf};
+	char st[2048];
+	hifi_api_write_state(&s, st, sizeof(st));
+	CHECK_HAS(st, "\"last_code\":\"0x00ff40bf\"");
+	hifi_meta_idle(&m.playing);
+}
+
 static void selftest(void) {
 	m.power_on = true;
 	CHECK(call("POST", "/api/v1/selftest", NULL) == 200);
@@ -277,6 +360,26 @@ static void console(void) {
 	CHECK(CLI("control", "volup"));
 	CHECK(CLI("selftest"));
 	CHECK(CLI("info"));
+	CHECK(CLI("volume", "40"));
+	CHECK_STR(path, "/api/v1/volume");
+	CHECK_STR(body, "{\"volume\":40}");
+	CHECK(CLI("maxvol", "70"));
+	CHECK_STR(body, "{\"max_volume\":70}");
+	CHECK(CLI("mute", "on"));
+	CHECK_STR(body, "{\"mute\":true}");
+	CHECK(call(method, path, body) == 200);
+	CHECK(CLI("ir", "learn", "volup"));
+	CHECK_STR(path, "/api/v1/ir/learn");
+	CHECK_STR(body, "{\"action\":\"volup\"}");
+	CHECK(CLI("ir", "forget"));
+	CHECK_STR(path, "/api/v1/ir/forget");
+	CHECK_STR(body, "{}");
+	CHECK(CLI("ir", "forget", "mute"));
+	CHECK(!CLI("ir", "learn"));
+	CHECK(!CLI("ir", "learn", "x\"y"));
+	CHECK(!CLI("ir", "dance"));
+	CHECK(!CLI("volume", "loud"));
+	CHECK(!CLI("mute", "maybe"));
 
 	/* garbage doesn't become a request, and can't inject JSON */
 	CHECK(!CLI("tone", "sine", "1000", "-20\",\"force\":true"));
@@ -293,9 +396,12 @@ static void console(void) {
 }
 
 int main(void) {
+	hifi_vol_init(&m.vol, 35, 100);
+	m.ir_learning = -1;
 	info_and_state();
 	tones();
 	amp_input_sub_control();
+	volume_playing_ir();
 	selftest();
 	console();
 	return check_report("api");

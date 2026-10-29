@@ -10,6 +10,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "hifi_ir.h"
+#include "hifi_meta.h"
 #include "hifi_pd.h"
 #include "hifi_power.h"
 #include "hifi_tone.h"
@@ -65,6 +67,14 @@ typedef struct {
 	bool sub_on;
 	float sub_db;
 	float eq[HIFI_EQ_BANDS];
+	int volume, max_volume;   /* hifi_vol.h */
+	bool mute;
+	hifi_meta_t playing;      /* elapsed_ms as of now; state NONE: null */
+	/* remote */
+	int ir_learning;          /* an action, or -1 */
+	bool ir_learned[HIFI_IR_N];
+	bool ir_have_last;        /* any code seen since boot */
+	uint32_t ir_last_code;
 	/* net, sys */
 	const char *net_mode; /* "sta" or "ap" */
 	char ssid[33];
@@ -104,6 +114,10 @@ typedef struct {
 	void (*reboot)(void);        /* after the reply has gone */
 	void (*factory_reset)(void); /* likewise */
 	int (*control)(const char *action); /* 0 ok, -1 unknown action */
+	/* -1 leaves a field; 0 ok, -1 out of range (hifi_vol_set) */
+	int (*set_volume)(int volume, int mute, int max_volume);
+	void (*ir_learn)(int action);  /* hifi_ir_action_t */
+	void (*ir_forget)(int action); /* -1: all of them */
 	void (*selftest)(hifi_selftest_t *out);
 } hifi_ops_t;
 

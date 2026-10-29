@@ -3,10 +3,12 @@
  * sequencer and governor from core/, plays test signals into squeezelite's
  * output, and implements the test API's operations (hifi_ops_t).
  *
- * Squeezelite-esp32 calls in through three hooks our patch adds
- * (firmware/patches): target_hifi.init at boot, hifi_dsp_process on every
- * output block, hifi_http_register when its web server starts. They all live
- * in this file so the linker pulls it in with the target.
+ * Squeezelite-esp32 calls in through hooks our patch adds (firmware/patches):
+ * target_hifi.init at boot, hifi_dsp_process on every output block,
+ * hifi_http_register when its web server starts, hifi_volume_hook on every
+ * source's volume, hifi_display_* with what is playing, hifi_ir_hook and
+ * hifi_button_hook on each remote code and button. They all live in this
+ * file so the linker pulls it in with the target.
  */
 #include <math.h>
 #include <stdio.h>
@@ -37,10 +39,13 @@
 #include "hifi_board.h"
 #include "hifi_gov.h"
 #include "hifi_http.h"
+#include "hifi_ir.h"
 #include "hifi_json.h"
+#include "hifi_meta.h"
 #include "hifi_pd.h"
 #include "hifi_power.h"
 #include "hifi_tone.h"
+#include "hifi_vol.h"
 
 static const char TAG[] = "hifi";
 
@@ -53,6 +58,7 @@ extern int hifi_sink_source(void) __attribute__((weak));
 extern void equalizer_set_gain(int8_t *gain) __attribute__((weak));
 extern int set_squeezelite_player_name(FILE *f, const char *name) __attribute__((weak));
 extern int set_cspot_player_name(FILE *f, const char *name) __attribute__((weak));
+extern bool hifi_output_gain(unsigned left, unsigned right) __attribute__((weak));
 
 /* ------------------------------------------------------------------ state */
 
@@ -68,6 +74,12 @@ static bool sub_on = true;
 static float sub_db = 0;
 static volatile bool codec_dirty = true; /* re-apply input/sub to the codec */
 static volatile uint32_t selftest_hold_until; /* keeps the amp awake for the self-test */
+
+static hifi_vol_t vol;               /* under lock, like what follows */
+static bool vol_dirty, vol_from_source;
+static uint32_t vol_changed_ms;
+static hifi_meta_t meta;
+static hifi_ir_t ir;
 
 static volatile bool audio_active;   /* set by the audio thread */
 static esp_adc_cal_characteristics_t adc_chars;
@@ -141,19 +153,28 @@ static esp_err_t codec_apply(void) {
 	hifi_input_t in = input;
 	bool on = sub_on;
 	int code = sub_code(sub_db);
+	/* the bypass skips squeezelite, so the volume goes on the codec's outputs */
+	int out1 = hifi_vol_codec_code(&vol, ES8388_OUT1_FULL);
 	UNLOCK();
 	esp_err_t err = ESP_OK;
 	if (in == HIFI_INPUT_DJ_DIRECT) {
 		/* analog inputs on (ADCs stay off), mixers take LIN1/RIN1 at 0 dB, DAC out
-		 * of the mix: the line in reaches the amp and sub outs with no latency */
+		 * of the mix: the line in reaches the amp and sub outs with no latency.
+		 * Muted: the line in leaves the mix too */
+		uint8_t mix = out1 < 0 ? 0x10 : 0x50;
 		err |= i2c_write(ES8388_ADDR, ES8388_ADCPOWER, 0x38);
-		err |= i2c_write(ES8388_ADDR, ES8388_DACCONTROL17, 0x50);
-		err |= i2c_write(ES8388_ADDR, ES8388_DACCONTROL20, 0x50);
+		err |= i2c_write(ES8388_ADDR, ES8388_DACCONTROL17, mix);
+		err |= i2c_write(ES8388_ADDR, ES8388_DACCONTROL20, mix);
+		err |= i2c_write(ES8388_ADDR, ES8388_LOUT1VOL, out1 < 0 ? 0 : out1);
+		err |= i2c_write(ES8388_ADDR, ES8388_ROUT1VOL, out1 < 0 ? 0 : out1);
 	} else {
-		/* squeezelite's own setting: DAC into the mixers, inputs powered down */
+		/* squeezelite's own setting: DAC into the mixers, inputs powered down;
+		 * the volume is squeezelite's digital gain (hifi_volume_hook) */
 		err |= i2c_write(ES8388_ADDR, ES8388_DACCONTROL17, 0xB8);
 		err |= i2c_write(ES8388_ADDR, ES8388_DACCONTROL20, 0xB8);
 		err |= i2c_write(ES8388_ADDR, ES8388_ADCPOWER, 0xFC);
+		err |= i2c_write(ES8388_ADDR, ES8388_LOUT1VOL, ES8388_OUT1_FULL);
+		err |= i2c_write(ES8388_ADDR, ES8388_ROUT1VOL, ES8388_OUT1_FULL);
 	}
 	err |= i2c_write(ES8388_ADDR, ES8388_DACPOWER, on ? 0x3C : 0x30);
 	err |= i2c_write(ES8388_ADDR, ES8388_LOUT2VOL, on ? code : 0);
@@ -216,6 +237,10 @@ static void power_task(void *arg) {
 			.audio = audio_active || tone_active || input == HIFI_INPUT_DJ_DIRECT ||
 				 (int32_t) (selftest_hold_until - now) > 0,
 		};
+		/* the volume goes to flash once it has settled for 3 s */
+		bool save_vol = vol_dirty && now - vol_changed_ms > 3000;
+		int save_v = vol.volume, save_max = vol.max_volume;
+		if (save_vol) vol_dirty = false;
 		hifi_pwr_state_t before = power.state;
 		const hifi_power_out_t *o = hifi_power_step(&power, &in);
 		/* the amp goes into shutdown before PVDD opens, and comes out after */
@@ -226,7 +251,157 @@ static void power_task(void *arg) {
 			ESP_LOGI(TAG, "power %s -> %s (VBUS %.2f V, PG %d)", hifi_power_state_name(before),
 				 hifi_power_state_name(power.state), v, g);
 		UNLOCK();
+		if (save_vol) {
+			char sv[8];
+			snprintf(sv, sizeof(sv), "%d", save_v);
+			config_set_value(NVS_TYPE_STR, "hifi_volume", sv);
+			snprintf(sv, sizeof(sv), "%d", save_max);
+			config_set_value(NVS_TYPE_STR, "hifi_max_vol", sv);
+		}
 	}
+}
+
+/* ------------------------------------------------------------------ volume */
+
+/* Puts the volume where it plays: squeezelite's gain for streams, the codec
+ * for DJ direct. Called with the lock not held (squeezelite takes its own). */
+static void apply_volume(void) {
+	LOCK();
+	uint32_t g = hifi_vol_gain(&vol);
+	bool direct = input == HIFI_INPUT_DJ_DIRECT;
+	vol_dirty = true;
+	vol_changed_ms = now_ms();
+	UNLOCK();
+	if (direct) codec_dirty = true;
+	if (hifi_output_gain && !tone_active) hifi_output_gain(g, g);
+}
+
+/* A source set its volume (set_volume in squeezelite). */
+bool hifi_volume_hook(unsigned *left, unsigned *right) {
+	LOCK();
+	/* sources send one gain for both sides; keep the louder as the volume */
+	uint32_t g = hifi_vol_source(&vol, *left > *right ? *left : *right);
+	vol_from_source = true;
+	vol_dirty = true;
+	vol_changed_ms = now_ms();
+	UNLOCK();
+	*left = *right = g;
+	return !tone_active; /* a test signal plays at unity; the volume comes back after */
+}
+
+/* volume up/down here rather than at the source: nothing streams, or DJ direct */
+static bool volume_is_local(void) {
+	LOCK();
+	bool direct = input == HIFI_INPUT_DJ_DIRECT;
+	UNLOCK();
+	int s = hifi_sink_source ? hifi_sink_source() : 0;
+	return direct || s == 0;
+}
+
+static void toggle_input(void) {
+	LOCK();
+	input = input == HIFI_INPUT_DJ_DIRECT ? HIFI_INPUT_STREAM : HIFI_INPUT_DJ_DIRECT;
+	UNLOCK();
+	codec_dirty = true;
+	apply_volume();
+}
+
+/* A remote or button action that is the receiver's own; false: the source's. */
+static bool local_action(int a, bool pressed) {
+	if (a == HIFI_IR_MUTE || a == HIFI_IR_INPUT) {
+		if (!pressed) return true;
+		if (a == HIFI_IR_INPUT) {
+			toggle_input();
+		} else {
+			LOCK();
+			hifi_vol_set(&vol, -1, !vol.mute, -1);
+			UNLOCK();
+			apply_volume();
+		}
+		return true;
+	}
+	if ((a == HIFI_IR_VOLUP || a == HIFI_IR_VOLDOWN) && volume_is_local()) {
+		if (pressed) {
+			LOCK();
+			hifi_vol_step(&vol, a == HIFI_IR_VOLUP ? 1 : -1);
+			UNLOCK();
+			apply_volume();
+		}
+		return true;
+	}
+	return false;
+}
+
+static const actrls_action_e IR_TO_ACTRLS[HIFI_IR_N] = {
+	[HIFI_IR_VOLUP] = ACTRLS_VOLUP, [HIFI_IR_VOLDOWN] = ACTRLS_VOLDOWN, [HIFI_IR_MUTE] = ACTRLS_NONE,
+	[HIFI_IR_TOGGLE] = ACTRLS_TOGGLE, [HIFI_IR_NEXT] = ACTRLS_NEXT, [HIFI_IR_PREV] = ACTRLS_PREV,
+	[HIFI_IR_INPUT] = ACTRLS_NONE, [HIFI_IR_POWER] = ACTRLS_POWER,
+};
+
+/* An action from the remote or the API: ours, else to whatever is playing. */
+static void do_action(int a) {
+	if (local_action(a, true)) return;
+	actrls_handler h = IR_TO_ACTRLS[a] != ACTRLS_NONE ? get_ctrl_handler(IR_TO_ACTRLS[a]) : NULL;
+	if (h) h(true); /* like a button press (LMS's handlers act on the release too) */
+}
+
+/* A button press on the board (squeezelite's audio controls). */
+bool hifi_button_hook(int action, bool pressed) {
+	if (action == ACTRLS_VOLUP) return local_action(HIFI_IR_VOLUP, pressed);
+	if (action == ACTRLS_VOLDOWN) return local_action(HIFI_IR_VOLDOWN, pressed);
+	return false;
+}
+
+/* ------------------------------------------------------------------ remote */
+
+static void ir_save(void) {
+	char s[160];
+	LOCK();
+	hifi_ir_save(&ir, s, sizeof(s));
+	UNLOCK();
+	config_set_value(NVS_TYPE_STR, "hifi_ir", s);
+}
+
+/* Every IR frame squeezelite decodes; true when it was ours. */
+bool hifi_ir_hook(uint16_t addr, uint16_t cmd) {
+	bool changed;
+	uint32_t code = ((uint32_t) addr << 16) | cmd;
+	LOCK();
+	int a = hifi_ir_code(&ir, code, now_ms(), &changed);
+	UNLOCK();
+	if (changed) {
+		ESP_LOGI(TAG, "remote: learned %08lx", (unsigned long) code);
+		ir_save();
+	}
+	if (a == HIFI_IR_PASS) return false;
+	if (a >= 0) do_action(a);
+	return true;
+}
+
+/* ------------------------------------------------------------------ now playing */
+
+void hifi_display_control(int cmd) {
+	/* display.h: SHUTDOWN, ACTIVATE, SUSPEND, TIMER_PAUSE, TIMER_RUN */
+	LOCK();
+	switch (cmd) {
+	case 1: hifi_meta_active(&meta); break;
+	case 3: hifi_meta_pause(&meta, now_ms()); break;
+	case 4: hifi_meta_play(&meta, now_ms()); break;
+	default: hifi_meta_idle(&meta); break;
+	}
+	UNLOCK();
+}
+
+void hifi_display_metadata(const char *artist, const char *album, const char *title) {
+	LOCK();
+	hifi_meta_track(&meta, artist, album, title);
+	UNLOCK();
+}
+
+void hifi_display_timer(int elapsed, int duration) {
+	LOCK();
+	hifi_meta_timer(&meta, elapsed, duration, now_ms());
+	UNLOCK();
 }
 
 /* ------------------------------------------------------------------ tones */
@@ -252,6 +427,7 @@ static void tone_main(void *arg) {
 		}
 		for (int i = 0; i < 50 && hifi_sink_queued_ms() > 0; i++) vTaskDelay(pdMS_TO_TICKS(10));
 		hifi_sink_stop();
+		apply_volume(); /* anything set while the tone played */
 	}
 }
 
@@ -312,6 +488,16 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	s->input = input;
 	s->sub_on = sub_on;
 	s->sub_db = (sub_code(sub_db) - 30) * 1.5f;
+	s->volume = vol.volume;
+	s->mute = vol.mute;
+	s->max_volume = vol.max_volume;
+	uint32_t t = now_ms();
+	s->playing = meta;
+	s->playing.elapsed_ms = hifi_meta_elapsed_ms(&meta, t);
+	s->ir_learning = hifi_ir_learning(&ir, t);
+	for (int a = 0; a < HIFI_IR_N; a++) s->ir_learned[a] = ir.have[a];
+	s->ir_have_last = ir.have_last;
+	s->ir_last_code = ir.last_code;
 	UNLOCK();
 	s->pvdd_v = s->vbus_i_a = s->amp_temp_c = NAN; /* no sensors on lite-main */
 	s->gov_budget_w = gov.budget_w;
@@ -322,6 +508,8 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	s->gov_events = gov.events;
 	s->level_dbfs = hifi_gov_level_dbfs(&gov);
 	s->source = source_name();
+	/* LMS sends its track text only as display graphics: the state, no text */
+	if (s->playing.state == HIFI_PLAY_NONE && !strcmp(s->source, "lms")) s->playing.state = HIFI_PLAY_PLAY;
 	s->tone_active = tone_active;
 	s->tone = tone_params;
 	read_eq(s->eq);
@@ -454,6 +642,10 @@ static void op_reboot(void) { restart_later(false); }
 static void op_factory_reset(void) { restart_later(true); }
 
 static int op_control(const char *a) {
+	if (!strcmp(a, "mute") || !strcmp(a, "input") || !strcmp(a, "volup") || !strcmp(a, "voldown")) {
+		do_action(hifi_ir_action_from(a)); /* the receiver's own when nothing streams */
+		return 0;
+	}
 	static const struct { const char *name; actrls_action_e action; } map[] = {
 		{"volup", ACTRLS_VOLUP}, {"voldown", ACTRLS_VOLDOWN}, {"toggle", ACTRLS_TOGGLE},
 		{"play", ACTRLS_PLAY}, {"pause", ACTRLS_PAUSE}, {"stop", ACTRLS_STOP},
@@ -514,11 +706,33 @@ static void op_selftest(hifi_selftest_t *t) {
 	free(s);
 }
 
+static int op_set_volume(int v, int mute, int max) {
+	LOCK();
+	bool ok = hifi_vol_set(&vol, v, mute, max);
+	UNLOCK();
+	if (ok) apply_volume();
+	return ok ? 0 : -1;
+}
+
+static void op_ir_learn(int a) {
+	LOCK();
+	hifi_ir_learn(&ir, a, now_ms());
+	UNLOCK();
+}
+
+static void op_ir_forget(int a) {
+	LOCK();
+	hifi_ir_forget(&ir, a);
+	UNLOCK();
+	ir_save();
+}
+
 const hifi_ops_t hifi_ops = {
 	.info = op_info, .snapshot = op_snapshot, .tone_start = op_tone_start, .tone_stop = op_tone_stop,
 	.amp_enable = op_amp_enable, .amp_reset = op_amp_reset, .set_input = op_set_input,
 	.set_sub = op_set_sub, .set_eq = op_set_eq, .set_name = op_set_name, .reboot = op_reboot,
 	.factory_reset = op_factory_reset, .control = op_control, .selftest = op_selftest,
+	.set_volume = op_set_volume, .ir_learn = op_ir_learn, .ir_forget = op_ir_forget,
 };
 
 /* ------------------------------------------------------------------ console, mDNS */
@@ -544,9 +758,18 @@ static int cmd_hifi(int argc, char **argv) {
 
 /* the console and mDNS come up after us; keep trying until they take it */
 static void services_task(void *arg) {
-	bool console = false, mdns = false;
-	while (!console || !mdns) {
+	bool console = false, mdns = false, volume = !hifi_output_gain;
+	while (!console || !mdns || !volume) {
 		vTaskDelay(pdMS_TO_TICKS(1000));
+		if (!volume) {
+			/* the saved volume, once squeezelite's output is up, unless a
+			 * source has set its own already */
+			LOCK();
+			bool src = vol_from_source;
+			uint32_t g = hifi_vol_gain(&vol);
+			UNLOCK();
+			volume = src || (!tone_active && hifi_output_gain(g, g));
+		}
 		if (!console) {
 			const esp_console_cmd_t c = {
 				.command = "hifi",
@@ -607,6 +830,16 @@ static bool hifi_init(void) {
 	free(s);
 	s = config_alloc_get_str("hifi_sub_on", NULL, "1");
 	sub_on = !s || strcmp(s, "0");
+	free(s);
+	char *sv = config_alloc_get_str("hifi_volume", NULL, "30");
+	s = config_alloc_get_str("hifi_max_vol", NULL, "100");
+	hifi_vol_init(&vol, sv ? atoi(sv) : 30, s ? atoi(s) : 100);
+	free(sv);
+	free(s);
+	hifi_meta_init(&meta);
+	hifi_ir_init(&ir);
+	s = config_alloc_get_str("hifi_ir", NULL, "");
+	hifi_ir_load(&ir, s);
 	free(s);
 
 	xTaskCreatePinnedToCore(power_task, "hifi_power", 3072, NULL, ESP_TASK_PRIO_MIN + 3, NULL, 0);

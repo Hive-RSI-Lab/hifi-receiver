@@ -1,3 +1,73 @@
+diff --git a/components/display/display.c b/components/display/display.c
+index 1e47051..f15a349 100644
+--- a/components/display/display.c
++++ b/components/display/display.c
+@@ -313,10 +313,18 @@ bool displayer_can_artwork(void) {
+ /****************************************************************************************
+  * 
+  */
++/* hifi-receiver: what is playing goes to the receiver's API too, display or not
++ * (components/hifi) */
++extern void hifi_display_metadata(const char *artist, const char *album, const char *title) __attribute__((weak));
++extern void hifi_display_control(int cmd) __attribute__((weak));
++extern void hifi_display_timer(int elapsed, int duration) __attribute__((weak));
++
+ void displayer_metadata(char *artist, char *album, char *title) {
+ 	char *string = displayer.string, *p;
+ 	int len = SCROLLABLE_SIZE;
+ 	
++	if (hifi_display_metadata) hifi_display_metadata(artist, album, title);
++	
+ 	// need a display!
+ 	if (!display) return;
+ 	
+@@ -406,6 +414,8 @@ void displayer_scroll(char *string, int speed, int pause) {
+  * 
+  */
+ void displayer_timer(enum displayer_time_e mode, int elapsed, int duration) {
++	if (hifi_display_timer && mode == DISPLAYER_ELAPSED) hifi_display_timer(elapsed, duration);
++	
+ 	// need a display!
+ 	if (!display) return;
+ 	
+@@ -442,6 +452,8 @@ void displayer_timer(enum displayer_time_e mode, int elapsed, int duration) {
+ void displayer_control(enum displayer_cmd_e cmd, ...) {
+ 	va_list args;
+ 	
++	if (hifi_display_control) hifi_display_control(cmd);
++	
+ 	if (!display) return;
+ 	
+ 	va_start(args, cmd);
+diff --git a/components/services/audio_controls.c b/components/services/audio_controls.c
+index dff7cda..1f4ded9 100644
+--- a/components/services/audio_controls.c
++++ b/components/services/audio_controls.c
+@@ -113,8 +113,14 @@ bool actrls_ir_action(uint16_t addr, uint16_t cmd) {
+ /****************************************************************************************
+  * 
+  */
++/* hifi-receiver: the receiver's learned remote codes and its own volume when
++ * nothing streams (components/hifi) see IR codes and button actions first */
++extern bool hifi_ir_hook(uint16_t addr, uint16_t cmd) __attribute__((weak));
++extern bool hifi_button_hook(int action, bool pressed) __attribute__((weak));
++
+ static void ir_handler(uint16_t addr, uint16_t cmd) {
+ 	ESP_LOGD(TAG, "recaived IR %04hx:%04hx", addr, cmd);
++	if (hifi_ir_hook && hifi_ir_hook(addr, cmd)) return;
+ 	if (current_ir_handler) current_ir_handler(addr, cmd);
+ }
+ 
+@@ -206,6 +212,9 @@ static void control_handler(void *client, button_event_e event, button_press_e p
+ 	
+ 	ESP_LOGD(TAG, "control gpio:%u press:%u long:%u event:%u action:%u", key->gpio, press, long_press, event, action_detail.action);
+ 
++	if (hifi_button_hook && action_detail.action != ACTRLS_NONE &&
++		hifi_button_hook(action_detail.action, event == BUTTON_PRESSED)) return;
++
+ 	// stop here if control hook served the request
+ 	if (current_hook && (*current_hook)(key->gpio, action_detail.action, event, press, long_press)) return;
+     
 diff --git a/components/squeezelite/decode_external.c b/components/squeezelite/decode_external.c
 index b33f70a..f6413cc 100644
 --- a/components/squeezelite/decode_external.c
@@ -111,6 +181,45 @@ index b02f5f0..6530271 100644
 +	equalizer_apply(buf, bytes);
 +	if (hifi_dsp_process) hifi_dsp_process(buf, bytes / BYTES_PER_FRAME, BYTES_PER_FRAME, equalizer.samplerate);
 +}
+diff --git a/components/squeezelite/output_embedded.c b/components/squeezelite/output_embedded.c
+index 4bc7d6b..f0e1163 100644
+--- a/components/squeezelite/output_embedded.c
++++ b/components/squeezelite/output_embedded.c
+@@ -115,8 +115,12 @@ void output_close_embedded(void) {
+ 	output_visu_close();
+ }
+ 
+-void set_volume(unsigned left, unsigned right) { 
+-	LOG_DEBUG("setting internal gain left: %u right: %u", left, right);
++/* hifi-receiver: the receiver keeps one volume over every source (components/hifi).
++ * It sees each source's gain first, and may lower it (its maximum, mute) or hold it
++ * (a test signal is playing) */
++extern bool hifi_volume_hook(unsigned *left, unsigned *right) __attribute__((weak));
++
++static void apply_volume(unsigned left, unsigned right) {
+ 	if (!volume_cb || !(*volume_cb)(left, right)) {
+ 		LOCK;
+ 		output.gainL = left;
+@@ -126,6 +130,19 @@ void set_volume(unsigned left, unsigned right) {
+     equalizer_set_volume(left, right);
+ }
+ 
++/* hifi-receiver sets the gain itself (the app, the remote); false until the output is up */
++bool hifi_output_gain(unsigned left, unsigned right) {
++	if (!output.write_cb || !outputbuf->buf) return false;
++	apply_volume(left, right);
++	return true;
++}
++
++void set_volume(unsigned left, unsigned right) { 
++	LOG_DEBUG("setting internal gain left: %u right: %u", left, right);
++	if (hifi_volume_hook && !hifi_volume_hook(&left, &right)) return;
++	apply_volume(left, right);
++}
++
+ bool test_open(const char *device, unsigned rates[], bool userdef_rates) {
+ 	memset(rates, 0, MAX_SUPPORTED_SAMPLERATES * sizeof(unsigned));
+ 	if (!strcasecmp(device, "I2S")) {
 diff --git a/components/targets/CMakeLists.txt b/components/targets/CMakeLists.txt
 index 9e97b3e..d01b40c 100644
 --- a/components/targets/CMakeLists.txt

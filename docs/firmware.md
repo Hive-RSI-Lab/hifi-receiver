@@ -19,7 +19,8 @@ master-v4.3 `ee1720c`, ESP-IDF v4.4.8) plus:
 
 - **one patch** of hooks (`firmware/patches/`), small enough to carry to a
   newer upstream: a board choice in Kconfig, a boot hook, a DSP hook on
-  every output block, a test-signal source, and HTTP registration;
+  every output block, a test-signal source, HTTP registration, and hooks on
+  the volume, the now-playing display calls, IR codes and button actions;
 - **one component**, `components/hifi`, which is ours: the power path, the
   governor, test signals, the test API and the web app.
 
@@ -38,7 +39,7 @@ GPIOs and squeezelite.
 |---|---|---|
 | ES8388 I2S (MCLK 0, BCLK 27, LRCK 25, DOUT 26, DIN 35), I2C (SDA 33, SCL 32) | | squeezelite (`dac_config`, `dac_controlset` in the Kconfig patch) |
 | Buttons: vol+ 13, vol− 36, play 19 | | squeezelite (`actrls_config`): short = vol+/vol−/play-pause, long = next/previous/power |
-| IR receiver | 14 | squeezelite (`set_GPIO 14=ir:nec`) |
+| IR receiver | 14 | squeezelite decodes (`set_GPIO 14=ir:nec`); `hifi` sees each code first and keeps the learned ones |
 | Status LED | 22 | squeezelite (`set_GPIO 22=green:1`): blinks during Wi-Fi setup |
 | PD contract: CH224A at I2C 0x22, PG | 4 | `hifi` |
 | PVDD switch enable | 18 | `hifi` |
@@ -131,6 +132,50 @@ the volume is unity so the level is what was asked for; the previous volume
 comes back after. At most 100 ms is queued, so `stop` is prompt (with a
 10 ms fade).
 
+## Volume, now playing and the remote
+
+These are the parts the app needs beyond the test API's first version. Each
+one is a small hook in the patch, with the logic in `core/`.
+
+- **One volume** (`core/hifi_vol.c`). Every source sets squeezelite's
+  output gain through `set_volume()`: LMS (`audg`), Bluetooth (AVRC),
+  AirPlay and Spotify. The patch hands that gain to `hifi_volume_hook` first.
+  - The receiver keeps it as `volume`, caps it at `max_volume` and holds it
+    at 0 while muted.
+  - The app, and the remote and buttons when nothing streams, set the gain
+    directly with `hifi_output_gain()`.
+  - The volume and the maximum go to NVS once they have been still for 3 s.
+    At boot the saved volume is applied once the output is up, unless a
+    source has already set its own. Without that, a phone that doesn't send
+    a volume would play at squeezelite's initial gain.
+  - **In DJ direct** the volume goes on the codec's LOUT1/ROUT1 instead.
+  - The curve, and what a source does and doesn't learn back, are in
+    [test-api.md](test-api.md#post-apiv1volume).
+- **Now playing** (`core/hifi_meta.c`). The AirPlay, Bluetooth and Spotify
+  sinks call squeezelite's displayer:
+  - `displayer_control` when a source takes over, plays, pauses or lets go;
+  - `displayer_metadata` with artist, album and title;
+  - `displayer_timer` with elapsed and duration.
+
+  The patch passes the same calls to `hifi_display_*` before the
+  displayer's "no display" early return, so Lite gets them with no screen.
+  Text is cut at a whole UTF-8 character.
+
+  LMS has no text path: it draws its now-playing as display graphics. For
+  LMS, `playing` is only `{"state": "play"}`. Reading LMS's track would
+  need its JSON-RPC from the app or the box. That is left for later.
+- **The remote** (`core/hifi_ir.c`). The patch shows squeezelite's
+  `ir_handler` each decoded frame first (`hifi_ir_hook`):
+  - While learning, the frame binds to the action.
+  - A learned code runs its action. Repeats closer than 250 ms are a held
+    button.
+  - Any other code goes on to squeezelite (LMS's remote, its default map).
+
+  Board buttons pass through `hifi_button_hook` for one reason: vol+/vol−
+  step the receiver's own volume when nothing streams or in DJ direct.
+  Without it they would go to LMS, which may not be there. Everything else
+  stays squeezelite's.
+
 ## The DJ input and the subs (ES8388)
 
 - **DJ direct** routes LIN1/RIN1 into the output mixers at 0 dB and takes the
@@ -170,6 +215,8 @@ in the Plus firmware task.
   auto-program transistor on the same pin; the CH224A's I2C idle levels
   (lite-main's R2/R3 can be removed if they sit above 3.6 V); the DJ-direct
   register values; FAULTZ's behaviour in shutdown.
-- **Not built yet:** absolute volume, mute and max volume in the API, the
-  now-playing metadata, IR remote learning, and the Plus/Ultra board code
-  (Sabre, sub DAC, Ethernet, INA180, display).
+- **Unchecked until a board:** volume, now playing and the remote. That
+  means the ES8388 LOUT1/ROUT1 volume and mute in DJ direct, which phones
+  send AVRCP metadata, and NEC decoding of real remotes on GPIO14.
+- **Not built yet:** LMS's track text (see above), and the Plus/Ultra board
+  code (Sabre, sub DAC, Ethernet, INA180, display).

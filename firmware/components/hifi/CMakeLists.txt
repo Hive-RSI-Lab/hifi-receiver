@@ -3,7 +3,7 @@
 # host-tested (firmware/test); esp/ ties it to ESP-IDF and squeezelite-esp32.
 set(srcs
 	core/hifi_api.c core/hifi_gov.c core/hifi_json.c core/hifi_pd.c
-	core/hifi_power.c core/hifi_tone.c
+	core/hifi_ir.c core/hifi_meta.c core/hifi_power.c core/hifi_tone.c core/hifi_vol.c
 	esp/hifi_main.c esp/hifi_http.c)
 
 # app/build.py writes the web app here (firmware/tools/fetch.sh runs it);

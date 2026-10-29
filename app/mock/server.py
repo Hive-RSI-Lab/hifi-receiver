@@ -23,7 +23,7 @@ from pathlib import Path
 
 WEB = Path(__file__).resolve().parent.parent / "web"
 EQ_BANDS = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
-CONTROL = ("volup", "voldown", "toggle", "play", "pause", "stop", "next", "prev", "power")
+CONTROL = ("volup", "voldown", "toggle", "play", "pause", "stop", "next", "prev", "power", "mute", "input")
 IR_ACTIONS = ("volup", "voldown", "mute", "toggle", "next", "prev", "input", "power")
 
 CAPS = {
@@ -41,7 +41,8 @@ SCAN = [{"ssid": "Home", "rssi": -48, "secure": True},
         {"ssid": "Neighbour", "rssi": -81, "secure": True},
         {"ssid": "Cafe guest", "rssi": -74, "secure": False}]
 PASSWORDS = {"Home": "hunter22", "Home-ext": "hunter22", "Cafe guest": ""}
-PLAYING = {"state": "play", "title": "Teardrop", "artist": "Massive Attack", "album": "Mezzanine"}
+PLAYING = {"state": "play", "title": "Teardrop", "artist": "Massive Attack", "album": "Mezzanine",
+           "elapsed_s": 61, "duration_s": 330}
 
 
 def initial_info(model: str) -> dict:
@@ -77,7 +78,7 @@ def initial_state(model: str, ap: bool, pdo: tuple[float, float], fault: bool) -
                 "hostname": "hifi-" + model, "eth": model != "lite", "join": None},
         "sys": {"heap_free": 81234, "psram_free": 3912345},
         "update": {"state": "idle", "progress": 0},
-        "ir": {"learning": None, "learned": []},
+        "ir": {"learning": None, "learned": [], "last_code": None},
     }
     if CAPS[model]["zones"] > 1:
         s["audio"]["zone_b"] = {"on": False, "volume": 30}
@@ -113,8 +114,9 @@ class Receiver:
         # An IR learn ends with the next key the remote sends; here, at once.
         ir = s["ir"]
         if ir["learning"] and time.time() - ir.get("_since", 0) > 3:
-            ir["learned"] = sorted(set(ir["learned"]) | {ir["learning"]})
+            ir["learned"] = [x for x in IR_ACTIONS if x in set(ir["learned"]) | {ir["learning"]}]
             ir["learning"] = None
+            ir["last_code"] = "0x00ff40bf"
 
     def post(self, path: str, b: dict) -> dict:
         """Apply one write; return the reply. Raises ValueError for a request
@@ -124,13 +126,19 @@ class Receiver:
             s = self.s
             a, caps = s["audio"], self.info["caps"]
             if path == "volume":
-                if "volume" in b:
-                    a["volume"] = clamp(num(b, "volume"), 0, a["max_volume"], int)
-                if "max_volume" in b:
-                    a["max_volume"] = clamp(num(b, "max_volume"), 30, 100, int)
-                    a["volume"] = min(a["volume"], a["max_volume"])
-                if "mute" in b:
-                    a["mute"] = boolean(b, "mute")
+                # as the firmware: whole numbers in range or a 400 that changes
+                # nothing; null leaves a field; the maximum first, the volume held to it
+                vol, mx = (whole(b, "volume", 0, 100), whole(b, "max_volume", 30, 100))
+                mute = boolean(b, "mute") if b.get("mute") is not None else None
+                if vol is None and mx is None and mute is None:
+                    raise ValueError("send volume, mute and/or max_volume")
+                if mx is not None:
+                    a["max_volume"] = mx
+                    a["volume"] = min(a["volume"], mx)
+                if vol is not None:
+                    a["volume"] = min(vol, a["max_volume"])
+                if mute is not None:
+                    a["mute"] = mute
             elif path == "input":
                 if b.get("input") not in ["stream"] + caps["line_modes"]:
                     raise ValueError("input must be one of " + ", ".join(["stream"] + caps["line_modes"]))
@@ -158,6 +166,11 @@ class Receiver:
                     raise ValueError("action must be one of " + ", ".join(CONTROL))
                 if act in ("volup", "voldown"):
                     a["volume"] = clamp(a["volume"] + (5 if act == "volup" else -5), 0, a["max_volume"], int)
+                    a["mute"] = False
+                elif act == "mute":
+                    a["mute"] = not a["mute"]
+                elif act == "input":
+                    a["input"] = "stream" if a["input"] != "stream" else caps["line_modes"][0]
                 elif a["playing"]:
                     st = a["playing"]["state"]
                     a["playing"]["state"] = {"play": "play", "pause": "pause", "stop": "stop",
@@ -198,7 +211,11 @@ class Receiver:
                     raise ValueError("action must be one of " + ", ".join(IR_ACTIONS))
                 s["ir"].update(learning=b["action"], _since=time.time())
             elif path == "ir/forget":
-                s["ir"] = {"learning": None, "learned": []}
+                act = b.get("action")
+                if act is not None and act not in IR_ACTIONS:
+                    raise ValueError("action must be one of " + ", ".join(IR_ACTIONS))
+                s["ir"]["learned"] = [x for x in s["ir"]["learned"] if act is not None and x != act]
+                s["ir"]["learning"] = None
             elif path == "update":
                 if not str(b.get("url", "")).startswith(("http://", "https://")):
                     raise ValueError("url must be http(s)")
@@ -289,6 +306,15 @@ def num(b, k):
     if isinstance(v, bool) or not isinstance(v, (int, float)):
         raise ValueError(f"{k} must be a number")
     return v
+
+
+def whole(b, k, lo, hi):
+    if b.get(k) is None:
+        return None
+    v = num(b, k)
+    if v != int(v) or not lo <= v <= hi:
+        raise ValueError(f"{k} must be a whole number {lo} to {hi}")
+    return int(v)
 
 
 def boolean(b, k):
