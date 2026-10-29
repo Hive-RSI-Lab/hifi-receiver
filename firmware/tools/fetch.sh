@@ -2,7 +2,8 @@
 # Puts squeezelite-esp32 at the pinned commit (upstream.lock) into DEST,
 # applies our patches and copies our component and board defaults in.
 # Run it again any time: it resets DEST's sources to the pinned commit first,
-# keeping DEST/build so rebuilds stay incremental.
+# keeping DEST/build and DEST/build-qemu (fw build --qemu) so rebuilds stay
+# incremental.
 #   firmware/tools/fetch.sh [DEST]     default: $HOME/fw-build/squeezelite-esp32
 set -eu
 FW=$(cd "$(dirname "$0")/.." && pwd)
@@ -23,7 +24,7 @@ if [ "$(g rev-parse -q --verify HEAD 2>/dev/null || true)" != "$commit" ]; then
 	g checkout -q -f "$commit"
 fi
 g reset -q --hard "$commit"
-g clean -q -fdx -e build -e /sdkconfig.old
+g clean -q -fdx -e build -e build-qemu -e /sdkconfig.old
 g submodule -q update --init --recursive --depth 1 --jobs 2
 
 for p in "$FW"/patches/*.patch; do
