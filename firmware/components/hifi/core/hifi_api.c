@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "hifi_json.h"
+#include "hifi_vol.h"
 
 #define PREFIX "/api/v1/"
 
@@ -43,6 +44,26 @@ static void write_amp(hj_t *j, const char *key, const hifi_snapshot_t *s) {
 	hj_int(j, "faults", s->amp_faults);
 	hj_bool(j, "latched", s->amp_latched);
 	hj_num(j, "temp_c", s->amp_temp_c, 1);
+	hj_obj_end(j);
+}
+
+static void str_or_null(hj_t *j, const char *key, const char *v) { hj_str(j, key, v && *v ? v : NULL); }
+
+static void write_playing(hj_t *j, const hifi_meta_t *m) {
+	const char *st = hifi_play_name(m->state);
+	if (!st) {
+		hj_null(j, "playing");
+		return;
+	}
+	hj_obj(j, "playing");
+	hj_str(j, "state", st);
+	str_or_null(j, "title", m->title);
+	str_or_null(j, "artist", m->artist);
+	str_or_null(j, "album", m->album);
+	if (m->elapsed_ms >= 0) hj_int(j, "elapsed_s", m->elapsed_ms / 1000);
+	else hj_null(j, "elapsed_s");
+	if (m->duration_ms > 0) hj_int(j, "duration_s", m->duration_ms / 1000);
+	else hj_null(j, "duration_s");
 	hj_obj_end(j);
 }
 
@@ -93,6 +114,10 @@ void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) {
 	hj_arr(&j, "eq");
 	for (int i = 0; i < HIFI_EQ_BANDS; i++) hj_num(&j, NULL, s->eq[i], 1);
 	hj_arr_end(&j);
+	hj_int(&j, "volume", s->volume);
+	hj_bool(&j, "mute", s->mute);
+	hj_int(&j, "max_volume", s->max_volume);
+	write_playing(&j, &s->playing);
 	hj_obj_end(&j);
 
 	hj_obj(&j, "net");
@@ -107,6 +132,21 @@ void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) {
 	hj_obj(&j, "sys");
 	hj_int(&j, "heap_free", s->heap_free);
 	hj_int(&j, "psram_free", s->psram_free);
+	hj_obj_end(&j);
+
+	hj_obj(&j, "ir");
+	hj_str(&j, "learning", s->ir_learning >= 0 ? hifi_ir_action_name(s->ir_learning) : NULL);
+	hj_arr(&j, "learned");
+	for (int a = 0; a < HIFI_IR_N; a++)
+		if (s->ir_learned[a]) hj_str(&j, NULL, hifi_ir_action_name(a));
+	hj_arr_end(&j);
+	if (s->ir_have_last) {
+		char code[11];
+		snprintf(code, sizeof(code), "0x%08lx", (unsigned long) s->ir_last_code);
+		hj_str(&j, "last_code", code);
+	} else {
+		hj_null(&j, "last_code");
+	}
 	hj_obj_end(&j);
 
 	hj_obj_end(&j);
@@ -319,6 +359,48 @@ static int r_control(const hifi_ops_t *ops, const char *body, char *out, size_t 
 	return 200;
 }
 
+/* true if the body has `key` with a value of another type than the caller read */
+static bool other_type(const char *body, const char *key) {
+	char t[2];
+	bool b;
+	double d;
+	return hj_get_str(body, key, t, sizeof(t)) || hj_get_bool(body, key, &b) || hj_get_num(body, key, &d);
+}
+
+/* *out is a whole number lo..hi, or -1 when the key is missing (or null) */
+static bool get_int(const char *body, const char *key, int lo, int hi, int *out) {
+	double v;
+	*out = -1;
+	if (!hj_get_num(body, key, &v)) return !other_type(body, key);
+	if (v != floor(v) || v < lo || v > hi) return false;
+	*out = (int) v;
+	return true;
+}
+
+static int r_volume(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	int vol, max, m = -1;
+	bool mute;
+	if (hj_get_bool(body, "mute", &mute)) m = mute;
+	else if (other_type(body, "mute")) return error(out, cap, 400, "mute must be true or false");
+	if (!get_int(body, "volume", 0, 100, &vol)) return error(out, cap, 400, "volume must be a whole number 0 to 100");
+	if (!get_int(body, "max_volume", HIFI_VOL_MAX_MIN, 100, &max))
+		return error(out, cap, 400, "max_volume must be a whole number 30 to 100");
+	if (vol == -1 && max == -1 && m == -1) return error(out, cap, 400, "send volume, mute and/or max_volume");
+	if (ops->set_volume(vol, m, max)) return error(out, cap, 400, "volume out of range");
+	return r_state(ops, out, cap);
+}
+
+static int r_ir(const hifi_ops_t *ops, const char *body, char *out, size_t cap, bool learn) {
+	char name[16] = "";
+	bool has = hj_get_str(body, "action", name, sizeof(name));
+	int a = has ? hifi_ir_action_from(name) : -1;
+	if ((learn || has) && a < 0)
+		return error(out, cap, 400, "action must be volup, voldown, mute, toggle, next, prev, input or power");
+	if (learn) ops->ir_learn(a);
+	else ops->ir_forget(a);
+	return r_state(ops, out, cap);
+}
+
 static int r_selftest(const hifi_ops_t *ops, char *out, size_t cap) {
 	hifi_selftest_t *t = calloc(1, sizeof(*t));
 	if (!t) return error(out, cap, 500, "out of memory");
@@ -367,6 +449,9 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "reboot")) status = post ? r_reboot(ops, body, out, cap, false) : -1;
 	else if (!strcmp(route, "reset")) status = post ? r_reboot(ops, body, out, cap, true) : -1;
 	else if (!strcmp(route, "control")) status = post ? r_control(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "volume")) status = post ? r_volume(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "ir/learn")) status = post ? r_ir(ops, body, out, cap, true) : -1;
+	else if (!strcmp(route, "ir/forget")) status = post ? r_ir(ops, body, out, cap, false) : -1;
 	else if (!strcmp(route, "selftest")) status = post ? r_selftest(ops, out, cap) : -1;
 	else return error(out, cap, 404, "no such path");
 
@@ -379,7 +464,8 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 static const char USAGE[] =
 	"usage: hifi info|state|selftest | tone sine <hz> <dBFS> [both|left|right] [s] | "
 	"tone sweep <from> <to> <dBFS> [s] | tone noise <dBFS> [s] | tone silence [s] | tone stop | "
-	"amp on|off|reset | input stream|dj_direct | sub <dB> | control <action>";
+	"amp on|off|reset | input stream|dj_direct | sub <dB> | control <action> | "
+	"volume <0-100> | mute on|off | maxvol <30-100> | ir learn <action> | ir forget [action]";
 
 static bool usage(char *out, size_t cap) {
 	snprintf(out, cap, "%s", USAGE);
@@ -431,6 +517,33 @@ bool hifi_cli_request(int argc, const char *const *argv, const char **method,
 	if (!strcmp(cmd, "control") && argc == 2 && strlen(argv[1]) < 16 && !strpbrk(argv[1], "\"\\")) {
 		*path = PREFIX "control";
 		snprintf(body, bc, "{\"action\":\"%s\"}", argv[1]);
+		return true;
+	}
+	if (!strcmp(cmd, "volume") && argc == 2 && is_num(argv[1])) {
+		*path = PREFIX "volume";
+		snprintf(body, bc, "{\"volume\":%s}", argv[1]);
+		return true;
+	}
+	if (!strcmp(cmd, "maxvol") && argc == 2 && is_num(argv[1])) {
+		*path = PREFIX "volume";
+		snprintf(body, bc, "{\"max_volume\":%s}", argv[1]);
+		return true;
+	}
+	if (!strcmp(cmd, "mute") && argc == 2) {
+		*path = PREFIX "volume";
+		if (!strcmp(argv[1], "on")) snprintf(body, bc, "{\"mute\":true}");
+		else if (!strcmp(argv[1], "off")) snprintf(body, bc, "{\"mute\":false}");
+		else return usage(out, cap);
+		return true;
+	}
+	if (!strcmp(cmd, "ir") && argc >= 2 && argc <= 3) {
+		bool learn = !strcmp(argv[1], "learn");
+		if (!learn && strcmp(argv[1], "forget")) return usage(out, cap);
+		if (learn && argc != 3) return usage(out, cap);
+		if (argc == 3 && hifi_ir_action_from(argv[2]) < 0) return usage(out, cap);
+		*path = learn ? PREFIX "ir/learn" : PREFIX "ir/forget";
+		if (argc == 3) snprintf(body, bc, "{\"action\":\"%s\"}", argv[2]);
+		else snprintf(body, bc, "{}");
 		return true;
 	}
 	if (!strcmp(cmd, "tone") && argc >= 2) {
