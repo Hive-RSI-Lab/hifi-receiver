@@ -178,8 +178,12 @@ one is a small hook in the patch, with the logic in `core/`.
 
 ## The DJ input and the subs (ES8388)
 
-- **DJ direct** routes LIN1/RIN1 into the output mixers at 0 dB and takes the
-  DAC out of the mix (DACCONTROL17/20 = 0x50, analog inputs powered with
+- **Speaker level cap.** The first-spin board review (task 261029-020622)
+  caps the speaker outputs (LOUT1/ROUT1) at −4.5 dB, code 27, and the line-in
+  bypass at −3 dB, because 0 dB overdrives the amp. `hifi` writes those
+  codes after squeezelite's codec init, in both modes.
+- **DJ direct** routes LIN1/RIN1 into the output mixers at −3 dB and takes the
+  DAC out of the mix (DACCONTROL17/20 = 0x58, analog inputs powered with
   ADCPOWER = 0x38). **Stream** restores squeezelite's setting (0xB8, 0xFC).
   These register values are from the ES8388 datasheet and are **not yet
   checked on a board**.

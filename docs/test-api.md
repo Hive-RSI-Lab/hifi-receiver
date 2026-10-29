@@ -206,8 +206,8 @@ How it works:
   remembered, not played. A volume step from the remote or the buttons
   unmutes.
 - **In DJ direct** the line in skips squeezelite. The volume goes on the
-  ES8388's speaker outputs instead (LOUT1/ROUT1, 1.5 dB steps below its
-  usual -3 dB), down to -45 dB. Mute takes the line in out of the mix. The
+  ES8388's speaker outputs instead (LOUT1/ROUT1, 1.5 dB steps below their
+  −4.5 dB cap), down to −45 dB. Mute takes the line in out of the mix. The
   sub outputs keep their own level.
 - **While a test tone plays**, it plays at the level asked for. Volume
   changes are kept and applied when it ends.

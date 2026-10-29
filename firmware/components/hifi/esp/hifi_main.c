@@ -159,10 +159,10 @@ static esp_err_t codec_apply(void) {
 	UNLOCK();
 	esp_err_t err = ESP_OK;
 	if (in == HIFI_INPUT_DJ_DIRECT) {
-		/* analog inputs on (ADCs stay off), mixers take LIN1/RIN1 at 0 dB, DAC out
+		/* analog inputs on (ADCs stay off), mixers take LIN1/RIN1 at -3 dB, DAC out
 		 * of the mix: the line in reaches the amp and sub outs with no latency.
 		 * Muted: the line in leaves the mix too */
-		uint8_t mix = out1 < 0 ? 0x10 : 0x50;
+		uint8_t mix = ES8388_MIX_LIN_M3DB | (out1 < 0 ? 0 : 0x40); /* bit6: LIN into the mixer */
 		err |= i2c_write(ES8388_ADDR, ES8388_ADCPOWER, 0x38);
 		err |= i2c_write(ES8388_ADDR, ES8388_DACCONTROL17, mix);
 		err |= i2c_write(ES8388_ADDR, ES8388_DACCONTROL20, mix);
