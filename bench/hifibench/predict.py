@@ -2,16 +2,17 @@
 
 The table there fits P = (PVDD * R / (R + Rs)) ** 2 / (2 R), with the
 output stage's on-resistance and filter loss as Rs in series: 0.3 ohm for
-the TPA3118D2 at 20 V, 0.51 ohm for the TPA3221 at 28 V. The bench
-reports the measurement against both the table and that model at the PVDD
-the board actually held, so a sagging charger isn't mistaken for a weak amp.
+the TPA3118D2 at 20 V, 0.51 ohm for the TPA3220 at 28 V (the TPA3221's
+output stage, pad down). The bench reports the measurement against both
+the table and that model at the PVDD the board actually held, so a sagging
+charger isn't mistaken for a weak amp.
 """
 from __future__ import annotations
 
 # board -> nominal PVDD, then load ohm -> watts per channel at 1% THD.
 TIERS = {
     "lite-main": {"pvdd": 20.0, "rs": 0.3, "p1": {4: 43.0, 6: 30.0, 8: 23.0}, "amp": "TPA3118D2"},
-    "core": {"pvdd": 28.0, "rs": 0.51, "p1": {4: 77.0, 6: 55.0, 8: 43.0}, "amp": "TPA3221"},
+    "core": {"pvdd": 28.0, "rs": 0.51, "p1": {4: 77.0, 6: 55.0, 8: 43.0}, "amp": "TPA3220"},
 }
 # A measurement under this share of the prediction is a fail.
 PASS_RATIO = 0.85

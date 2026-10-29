@@ -102,7 +102,7 @@ gates pass.
 A BOM line with no price in `parts.json`, or a reference that isn't on the
 board, is an error, and the score prints no number.
 
-Off-board items (heatsink, remote, cable) and the charger aren't on a
+Off-board items (remote, cable) and the charger aren't on a
 board's BOM, so they aren't in the score. Lite has none. `product.md`'s
 estimate counts them for Plus and Ultra.
 

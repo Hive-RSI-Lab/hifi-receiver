@@ -180,10 +180,12 @@ fit report and renders (`iso.png`, `top.png`, `port-<edge>.png`).
   - **Mounting:** the front board screws to four bosses on the wall with
     M2.5 x 6 thread-forming screws from behind. Fit it **before** the core.
   - **Core LED:** Ultra keeps the top light pipe for the core's D3.
-- **Heat:** there is room for a heatsink on each fitted TPA3221's top slug:
-  19 x 12 mm, up to 1 mm under the lid (`HS_U15`, `HS_U16` in the fit
-  check). It is fixed with thermal tape until the board gets heatsink
-  holes. There are vent slots over it in the lid and under it in the floor.
+- **Heat:** core's amps are now the pad-down TPA3220, which cools into the
+  board, so no heatsink is fitted (docs/review-2/heatsink-options.md). The
+  19 x 12 mm room over each amp is still kept clear, up to 1 mm under the lid
+  (`HS_U15`, `HS_U16` in the fit check). Vent slots sit over it in the lid
+  and under it in the floor. They matter more now, because the board sheds
+  the amps' heat into the box air.
 - **Screws, feet:** 4 x M3 x 12 screws go up from underneath, through the
   base and the board's holes, into the lid's pillars (as on Lite), plus 4
   rubber feet of 11 mm or less.
@@ -210,7 +212,7 @@ contacts)**:
 - **Dropped:** parts the tier doesn't fit (from `boards/core/parts/parts*.json`).
 - **RCA jacks:** J4/J5 are cut to their body inside the rear wall. Their
   barrels are checked as ports through the round holes.
-- **Added as boxes:** the binding-post nuts and lugs, the heatsinks, and
+- **Added as boxes:** the binding-post nuts and lugs, the room kept over the amps, and
   for Ultra the front board, its parts and the LCD.
 - **Plus SW1:** counts as the EC11's body and bushing. Its shaft runs up
   the knob's bore.
@@ -247,11 +249,8 @@ python3 enclosure/fit_md.py plus ultra
   (task 261029-020622) is taking it, and the box is re-cut when it lands.
 - **RCA pegs:** core's RCA footprint lacks the jack's two locating-peg
   holes, which Lite's has. Also in that review.
-- **Heatsink fixing:** the board has no heatsink holes, though
-  `architecture/blocks.md` plans them. Until it has them, the heatsink is
-  stuck on with tape. 19 x 12 mm is the room there is before the output
-  inductors. That is enough for music (about 3 W) but not for long
-  full-power sine tests.
+- **Heatsink:** none any more. The TPA3220 swap (task 261029-075354) took
+  the hand-fitted heatsink out of the box.
 - **Ultra's front panel:** it prints as part of the base, on its edge.
   That makes a 47 mm bridge over the screen window. If the bridge sags,
   split the panel off as a separate part printed face down.

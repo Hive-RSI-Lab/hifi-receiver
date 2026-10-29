@@ -20,7 +20,7 @@ hifi-audio,DAC for the sub outputs (2 Vrms line driver),C107671,PCM5102APWR,exte
 hifi-audio,ADC for the RCA line input,C2929446,ES7243E,extended,0.434,0.316,21,smt,0,1,1,LCSC live 2026-10-28
 hifi-audio,Dual op-amp (DAC output stage),C192421,OPA1678IDR,extended,0.619,0.468,8,smt,0,1,1,LCSC live 2026-10-28
 hifi-audio,Analog switch (DJ direct path; ADC source RCA/speaker taps),C11133,TS5A23157DGSR,extended,0.382,0.279,10,smt,0,2,2,"core as built, LCSC 2026-10-29 (review-2)"
-hifi-audio,Class-D amp 2x BTL 30 V 88 W/4 ohm,C475500,TPA3221DDVR,extended,2.090,1.647,45,smt,0,1,2,LCSC live 2026-10-28
+hifi-audio,"Class-D amp 2x BTL 32 V 89 W/4 ohm, pad-down (no heatsink)",C2879306,TPA3220DDWR,extended,4.507,3.737,45,smt,0,1,2,"Mouser 595-TPA3220DDWR 2026-10-29 (LCSC 0 stock: bought into the JLC inventory, prebuy.csv)"
 hifi-audio,VBUS current sense amplifier,C48533472,INA180A1IDBVR(LX),extended,0.149,0.119,5,smt,0,1,1,LCSC live 2026-10-28
 hifi-audio,"I2C I/O expander, resets with the ESP32",C131972,TCA9539PWR,extended,1.0252,0.7959,24,smt,0,1,1,"core as built, LCSC 2026-10-29 (review-2)"
 hifi-audio,NPN level shift for the tap select,C2146,S8050,basic,0.0110,0.0110,3,smt,0,1,1,"core as built, LCSC 2026-10-29 (review-2)"
@@ -38,7 +38,6 @@ ultra,FFC connector 20P 0.5 mm (core<->front board),C262667,AFC01-S20FCA-00,exte
 misc,Small passives (R/C 0402-0805 basic; per-tier count in qty columns) (+18 for the review-2 taps and bias),,(estimate),basic,0.004,0.003,2,smt,0,168,218,estimate: JLC basic R/C 0.001-0.01 each
 misc,Buck inductors + 10 uF/22 uF bulk MLCC + ferrites (lump),,(estimate),basic,0.40,0.30,20,smt,0,1,1,estimate
 misc,Status LEDs 0603,,(estimate),basic,0.010,0.010,2,smt,0,2,3,estimate
-offboard,"Heatsink 19x12 mm base, fins to the lid, <=20 C/W, + 0.2 mm 3 W/mK pad, per TPA3221 (lid-pressed)",,(not on LCSC),offboard,0.90,0.60,0,hand,0,1,2,estimate AliExpress-class; fitted by hand
 offboard,IR remote (NEC 21-key),,(not on LCSC),offboard,1.20,0.80,0,hand,0,1,1,estimate AliExpress-class
 offboard,FFC cable 20P 0.5 mm 100 mm,,(estimate),offboard,0.20,0.15,0,hand,0,0,1,estimate
 lite-board,USB-C 20 V/5 A  power + CH340B data,C165948,TYPE-C-31-M-12,extended,0.2468,0.1871,16,smt,1,0,0,"boards/lite-main parts.json, LCSC 2026-10-29 (review-2)"

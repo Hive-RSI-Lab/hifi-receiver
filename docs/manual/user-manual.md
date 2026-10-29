@@ -48,15 +48,16 @@ The hifi-receiver is a streaming amplifier: speakers in, music out.
   - **Only a USB-C PD charger.** No adapters that turn other supplies into
     USB-C.
 - **Ventilation:** leave **5 cm** clear above and behind the receiver. The
-  Plus and Ultra heatsink gets hot after long, loud playback, so don't
-  touch it then.
+  Plus and Ultra get warm over the vents after long, loud playback. That
+  is normal. When it gets hot, the receiver turns itself down a little
+  until it cools.
   - **Don't cover the vents** with cloth, books or another device.
 - **Loudness:** at full power the Plus and Ultra can reach over 105 dB at
   1 m. That level can damage hearing and speakers. Start low.
 - **Use indoors and dry, 0–35 °C.**
 - **No user-serviceable parts inside.** Open it only with the power
   unplugged. The enclosure is printed in PETG or ASA. A PLA replacement
-  can soften near the heatsink, so don't use one.
+  can soften over the amplifier, so don't use one.
 - **Children:** the remote's coin battery, and any small parts, are a
   danger if swallowed. Keep them away from children.
 
@@ -485,7 +486,7 @@ screen. Their patterns come with their firmware.]
 
 | | Lite | Plus | Ultra |
 |---|---|---|---|
-| Amplifier | TI TPA3118D2, class D | TI TPA3221, class D | 2 × TI TPA3221, class D |
+| Amplifier | TI TPA3118D2, class D | TI TPA3220, class D | 2 × TI TPA3220, class D |
 | Power, 4 Ω, 1% THD, per channel | 43 W | 77 W | 77 W (140 W total for 4 channels) |
 | Power, 8 Ω | 23 W | 43 W | 43 W |
 | DAC | Everest ES8388 | ESS ES9018K2M Sabre (mains), TI PCM5102A (subs) | same as Plus |

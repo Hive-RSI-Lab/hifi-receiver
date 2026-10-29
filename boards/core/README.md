@@ -9,7 +9,7 @@ streaming amplifier on one 4-layer 120 x 100 mm board:
 - **Mains DAC:** Sabre ES9018K2M.
 - **Subwoofers:** a separate sub DAC for two sub outputs.
 - **Line in:** RCA, with a zero-latency "DJ direct" path.
-- **Amp:** a TPA3221 class-D amp giving 2 x 77 W into 4 ohm.
+- **Amp:** a TPA3220 class-D amp (the pad-down TPA3221) giving 2 x 77 W into 4 ohm peak. It needs no heatsink.
 - **Ultra population options:** a second amp (zone B), an optical input
   and the FFC to the `ultra-front` display board.
 
@@ -66,7 +66,7 @@ pinout and the power tree are in
 | Sub DAC | PCM5102A to a stacked dual RCA (SUB1, SUB2) |
 | Line in | stacked dual RCA, ES7243E ADC, TS5A23157 DAC/DJ-direct selector |
 | Self-measurement | zone A's A_SPK_L+/R+ through 150k/10k, 470 pF, 1 uF onto a 1.65 V bias; TS5A23157 U20 picks RCA input (default) or the taps for the ADC; select from expander P17 through Q7 |
-| Zone A amp | TPA3221 (24 dB, AD mode, 600 kHz), 10 µH / 10 A filters, 2 screw terminals |
+| Zone A amp | TPA3220 (24 dB, AD mode, 600 kHz; pad down, 15 vias into the GND planes), 10 µH / 10 A filters, 2 screw terminals |
 | Zone B amp [Ultra] | the same, synchronised to zone A as a peripheral |
 | Control | TCA9539 I/O expander (0x74, reset with the ESP32's EN); Plus front-edge knob, 2 buttons, IR receiver, status LED |
 | Optical [Ultra] | PLR237 TOSLINK into the ES9018K2M's S/PDIF mux |
@@ -94,7 +94,7 @@ pin-to-pad) read this board from its KiCad files and the vendor datasheets:
 |---|---|---|
 | DIGITAL-1/2, PARTS-4 (blocker): the TCA9555's pull-ups left PHY_RST (the 50 MHz oscillator into GPIO0, a boot strap), PVDD_EN and the amp/DAC resets mid-rail at power-up, and its outputs held through ESP32 resets | TCA9555, R45 100k | TCA9539 (no pull-ups; RESET = ESP_EN), R45 10k |
 | POWER-1 (blocker): the 5 A path ran through 0.25 mm tracks and 1-3 vias | SMD USB4105, few vias | through-hole USB4085 (power pins solid into the In2 VBUS_IN plane), copper patches with 8 vias at R1's input, 10 from R1's output to Q1's source, 8 at Q1's drain; 3-4 per TPA3221 PVDD pin group |
-| THERMAL-1/DFM-3 (blocker): TPA3221 is pad-up with no heatsink | none | a heatsink pressed onto each TPA3221 from the lid (thermal pad under it), and a firmware power governor (`docs/review-2/firmware-requirements.md` C2/C3); no room for clip holes beside the chip without moving its PVDD decouplers |
+| THERMAL-1/DFM-3 (blocker): TPA3221 is pad-up with no heatsink | none | U15/U16 swapped to the pin-identical pad-down TPA3220. Its EP is soldered to GND with 15 x 0.3 mm vias into In1/B.Cu, so nothing is fitted by hand. A firmware power governor holds the chip at about 2.5 W continuous (≤ 16 W in, 60 s average). See `docs/review-2/heatsink-options.md` and `firmware-requirements.md` C2/C3 |
 | DFM-1 (blocker): RCA J4/J5 had no holes for the jack's snap-in legs | none | Lite's footprint: 2.0 x 3.0 leg holes, signal pins as slots that fit either reading of the drawing |
 | PARTS-7/DFM-12 (blocker, Ultra): TOSLINK T8BK on a T10BK footprint | no post holes | the T8BK's two 1.70 mm post holes added |
 | DIGITAL-19 (major): copper under the Wi-Fi antenna on all 4 layers | GND/+3V3 pours, two tracks | `ANT_KEEPOUT` rule area x 148.9-154.64, y 189.6-213.5 on every layer; I2S_DIN and RMII_TXD1 rerouted |
@@ -138,7 +138,7 @@ These are the decisions that differ from, or add to, docs/product.md.
   clamp. Without it, the P-FET turned on while VBUS stepped from 5 to 28 V
   and charged the bulk caps at source slew. A schematic review caught it.
 - **Overvoltage cut-off:** a 33 V zener (trips about 32-36 V). It is a
-  backstop against gross faults only: the TPA3221's absolute maximum is
+  backstop against gross faults only: the TPA3220's absolute maximum is
   37 V, and a zener cannot trip accurately at 30 V without tripping at the
   legitimate 29.4 V EPR maximum.
 - **Snubbers:** on the speaker side of the output filter, as in TI's
@@ -149,7 +149,7 @@ These are the decisions that differ from, or add to, docs/product.md.
   that a real banana plug fits them. The enclosure's banana sockets or
   binding posts wire to the terminals, which product.md already allowed
   for.
-- **Amp polarity:** the TPA3221 inverts, so OUTx_M goes to the speaker's
+- **Amp polarity:** the TPA3220 inverts, so OUTx_M goes to the speaker's
   + terminal.
 - **DJ switch logic:** the expander's 3.3 V output can't drive the 5 V
   switch's logic (it needs VIH 3.5 V), so Q6 inverts it up to 5 V.
@@ -219,8 +219,7 @@ regions and the solid F.Cu/B.Cu pours, which the width rules don't see
    about 15 ms. Then release AMP_A_RST (P00) with DAC_EN (P04) set.
 5. **Speaker polarity:** play a 1 kHz tone at low level into a 4 Ω dummy
    load and check the output polarity.
-6. **Thermals:** check the TPA3221 heatsink temperature at 1/8 power.
-   The thermal check is still open in product.md.
+6. **Thermals:** play 1/8 power into 8 ohm for 10 min and check for no OTW. Then do the same into 4 ohm with the governor on, and log the board temperature next to U15.
 7. **Ethernet:** set PHY_RST (P05). This starts the 50 MHz clock, and the
    link should come up.
 
@@ -231,10 +230,8 @@ Every fact this board relies on, and whether it's verified, is in
 `python3 tools/known_unknowns.py --check` before ordering. The ones that are
 this board's to settle:
 
-- **Heatsink (each TPA3221):** the enclosure presses it on (19 x 12 mm base,
-  fins to the lid, at most 20 C/W in still air, 0.2 mm pad of 3 W/mK or
-  better). Its exact part is the person's to buy with the enclosure; bring-up
-  checks for no OTW at 1/8 power for 10 min (firmware C3).
+- **Amp cooling (TPA3220, no heatsink):** the board's GND planes are the heatsink, at about 26 C/W (23.5 on TI's JEDEC board). That holds 1/8 power into 8 ohm (Tj ≈ 84 C in a 45 C box). Into 4 ohm, the firmware governor caps the 60 s average at about 2.5 W of chip loss, about 2 x 4.5 W out. Bring-up measures the real figure (step 6) and sets the governor from it.
+- **TPA3220 stock:** LCSC has none. Buy it into the JLC parts inventory (Mouser/DigiKey through JLC global sourcing) before the order (`fab/prebuy.csv`).
 - **5 V buck bootstrap loop:** C12 sits below L9, so its BS and LX links
   are long routed tracks. Watch U4's switch node for ringing at bring-up.
 - **Hidden reference texts:** about 210 hidden to clear silk overlaps on

@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/work/boards/core/kicad/core.kicad_sch")
-		(date "2026-10-29T03:20:46")
+		(date "2026-10-29T10:30:11")
 		(tool "Eeschema 10.0.6")
 		(sheet
 			(number "1")
@@ -15204,13 +15204,13 @@
 		)
 		(comp
 			(ref "U15")
-			(value "TPA3221")
-			(footprint "aiee:HTSSOP-44_L14.0-W6.1-P0.64-LS8.1-BL")
+			(value "TPA3220")
+			(footprint "aiee:HTSSOP-44-1EP_L14.0-W6.1-P0.64-LS8.1-EP7.3x4.43")
 			(fields
 				(field
-					(name "LCSC") "C475500")
+					(name "LCSC") "C2879306")
 				(field
-					(name "Footprint") "aiee:HTSSOP-44_L14.0-W6.1-P0.64-LS8.1-BL")
+					(name "Footprint") "aiee:HTSSOP-44-1EP_L14.0-W6.1-P0.64-LS8.1-EP7.3x4.43")
 				(field
 					(name "Datasheet")
 				)
@@ -15220,12 +15220,12 @@
 			)
 			(libsource
 				(lib "aiee")
-				(part "TPA3221DDVR")
+				(part "TPA3220DDWR")
 				(description "")
 			)
 			(property
 				(name "LCSC")
-				(value "C475500")
+				(value "C2879306")
 			)
 			(property
 				(name "Sheetname")
@@ -15313,6 +15313,9 @@
 						)
 						(pin
 							(num "22")
+						)
+						(pin
+							(num "45")
 						)
 						(pin
 							(num "44")
@@ -19196,13 +19199,13 @@
 		)
 		(comp
 			(ref "U16")
-			(value "TPA3221")
-			(footprint "aiee:HTSSOP-44_L14.0-W6.1-P0.64-LS8.1-BL")
+			(value "TPA3220")
+			(footprint "aiee:HTSSOP-44-1EP_L14.0-W6.1-P0.64-LS8.1-EP7.3x4.43")
 			(fields
 				(field
-					(name "LCSC") "C475500")
+					(name "LCSC") "C2879306")
 				(field
-					(name "Footprint") "aiee:HTSSOP-44_L14.0-W6.1-P0.64-LS8.1-BL")
+					(name "Footprint") "aiee:HTSSOP-44-1EP_L14.0-W6.1-P0.64-LS8.1-EP7.3x4.43")
 				(field
 					(name "Datasheet")
 				)
@@ -19212,12 +19215,12 @@
 			)
 			(libsource
 				(lib "aiee")
-				(part "TPA3221DDVR")
+				(part "TPA3220DDWR")
 				(description "")
 			)
 			(property
 				(name "LCSC")
-				(value "C475500")
+				(value "C2879306")
 			)
 			(property
 				(name "Sheetname")
@@ -19308,6 +19311,9 @@
 						)
 						(pin
 							(num "22")
+						)
+						(pin
+							(num "45")
 						)
 						(pin
 							(num "44")
@@ -21859,26 +21865,26 @@
 		)
 		(libpart
 			(lib "aiee")
-			(part "TPA3221DDVR")
-			(docs "https://lcsc.com/product-detail/Audio-Power-OpAmps_Texas-Instruments-Texas-Instruments-TPA3221DDVR_C475500.html")
+			(part "TPA3220DDWR")
+			(docs "https://www.ti.com/lit/ds/symlink/tpa3220.pdf")
 			(fields
 				(field
 					(name "Reference") "U")
 				(field
-					(name "Value") "TPA3221DDVR")
+					(name "Value") "TPA3220DDWR")
 				(field
-					(name "Footprint") "aiee:HTSSOP-44_L14.0-W6.1-P0.64-LS8.1-BL")
+					(name "Footprint") "aiee:HTSSOP-44-1EP_L14.0-W6.1-P0.64-LS8.1-EP7.3x4.43")
 				(field
-					(name "Datasheet") "https://lcsc.com/product-detail/Audio-Power-OpAmps_Texas-Instruments-Texas-Instruments-TPA3221DDVR_C475500.html")
+					(name "Datasheet") "https://www.ti.com/lit/ds/symlink/tpa3220.pdf")
 				(field
 					(name "Description")
 				)
 				(field
 					(name "Manufacturer") "TI(德州仪器)")
 				(field
-					(name "MPN") "TPA3221DDVR")
+					(name "MPN") "TPA3220DDWR")
 				(field
-					(name "LCSC Part") "C475500")
+					(name "LCSC Part") "C2879306")
 			)
 			(pins
 				(pin
@@ -22099,6 +22105,11 @@
 				(pin
 					(num "44")
 					(name "BST1_P")
+					(type "passive")
+				)
+				(pin
+					(num "45")
+					(name "GND")
 					(type "passive")
 				)
 			)
@@ -27963,6 +27974,12 @@
 			)
 			(node
 				(ref "U15")
+				(pin "45")
+				(pinfunction "GND_45")
+				(pintype "passive")
+			)
+			(node
+				(ref "U15")
 				(pin "5")
 				(pinfunction "GND_5")
 				(pintype "passive")
@@ -28037,6 +28054,12 @@
 				(ref "U16")
 				(pin "42")
 				(pinfunction "GND_42")
+				(pintype "passive")
+			)
+			(node
+				(ref "U16")
+				(pin "45")
+				(pinfunction "GND_45")
 				(pintype "passive")
 			)
 			(node

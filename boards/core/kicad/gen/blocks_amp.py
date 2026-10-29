@@ -1,4 +1,4 @@
-"""core: TPA3221 zones A and B (B10, B11) and the UI (B12, B14)."""
+"""core: TPA3220 zones A and B (B10, B11) and the UI (B12, B14)."""
 from __future__ import annotations
 
 from design import C, P, R, sheet
@@ -7,12 +7,14 @@ A = "aiee:"
 
 
 def zone(z: str, base: int, ultra: bool):
-    """One TPA3221 stereo BTL stage. Zone A is the controller, zone B the
-    peripheral clocked from it."""
+    """One TPA3220 stereo BTL stage. Zone A is the controller, zone B the
+    peripheral clocked from it. The TPA3220 is the TPA3221 with its thermal
+    pad underneath (pin-for-pin, SLASEN3B table 5), so it cools into the
+    board's GND planes and needs no heatsink fitted by hand."""
     sheet(f"amp_{z.lower()}", dnp=ultra)
     u = f"U{15 if z == 'A' else 16}"
     n = lambda s: f"{z}_{s}"  # noqa: E731
-    P(u, A + "TPA3221DDVR", "TPA3221", A + "HTSSOP-44_L14.0-W6.1-P0.64-LS8.1-BL",
+    P(u, A + "TPA3220DDWR", "TPA3220", A + "HTSSOP-44-1EP_L14.0-W6.1-P0.64-LS8.1-EP7.3x4.43",
       {"n:VDD": "+5V", "n:GAIN/SLV": n("GAIN"), "n:~{OTW_CLIP}": "AMP_OTW",
        "n:~{FAULT}": "AMP_FAULT", "n:GND": "GND", "n:IN1_P": n("IN1P"),
        "n:IN1_M": n("IN1M"), "n:~{RESET}": f"AMP_{z}_RST", "n:HEAD": "GND",
@@ -22,7 +24,7 @@ def zone(z: str, base: int, ultra: bool):
        "n:BST1_P": n("BST1P"), "n:BST2_M": n("BST2M"), "n:BST2_P": n("BST2P"),
        "n:OUT1_M": n("OUT1M"), "n:OUT1_P": n("OUT1P"), "n:OUT2_M": n("OUT2M"),
        "n:OUT2_P": n("OUT2P"), "n:PVDD": "PVDD"},
-      lcsc="C475500", role=f"zone {z} class-D amp, 2 x 77 W into 4 ohm at 28 V")
+      lcsc="C2879306", role=f"zone {z} class-D amp, pad-down, 2 x 77 W into 4 ohm at 28 V (1% THD peak)")
     i = base
     def nr():
         nonlocal i

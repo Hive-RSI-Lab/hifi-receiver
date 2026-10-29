@@ -90,9 +90,14 @@ the EC11E encoder (C361165), with 3204 free.
 |---|---|---|---|
 | U19 PLR237/T8BK, C17223620 | core/ultra | 100 | 234 |
 | U10 ES9018K2M, C2688377 | core, core/ultra | 100 each | 660 |
-| TPA3221, C475500 | core (U15), core/ultra (U15, U16) | 100, 200 | 1057 |
 | L1–L4 10 µH 8 A, C48391614 | lite-main | 400 | 1598 |
 
 The script checks each board on its own. A part shared by Plus and Ultra in
-one order needs both boards' counts together. TPA3221 at 100 Plus + 100 Ultra boards
-needs 300 of the 1057 free.
+one order needs both boards' counts together.
+
+**Short by design: the TPA3220 (C2879306), U15 and U16 on core.** It
+replaced the TPA3221 (task 261029-075354) so that no heatsink is fitted by
+hand. JLC and LCSC hold none, so bom_stock.py reports it short. Buy it into
+the JLC parts inventory before ordering. Mouser had 6,566 and DigiKey 2,032
+on 2026-10-29, and `boards/core/fab/prebuy.csv` lists the counts. 100 Plus +
+100 Ultra boards need 300.

@@ -197,11 +197,11 @@
   },
   {
    "ref": "U15",
-   "power_w": 3.0,
+   "power_w": 2.4,
    "net": "GND",
-   "dt_c": 60,
-   "theta_ja_c_w": 8.0,
-   "theta_source": "TPA3221 SLASEE9C 6.4: RthJC(top) 1.1 C/W into a bolted 40x40x20 mm heatsink (~4 C/W) + ~2.9 C/W interface/pad; the slug is on top, so PCB copper is not the heat path"
+   "dt_c": 65,
+   "theta_ja_c_w": 26.0,
+   "theta_source": "TPA3220DDW pad-down (task 261029-075354): TI SLASEN3B 7.4 gives RthJA 23.5 C/W on JEDEC 2s2p (2 oz outer / 1 oz inner). Core is 1 oz / 0.5 oz, sits in a box and shares its board with zone B and the buck, so 26 C/W (+10 %) is used. power_w is the governed continuous chip loss: firmware C2 holds it near 2.4 W (16 W in, 60 s average). Unguarded 1/8 power into 4 ohm is 3.5 W, Tj about 136 C, and OTW asserts (docs/review-2/heatsink-options.md)."
   }
  ],
  "placement": {
@@ -316,12 +316,12 @@
    {
     "ref": "U15",
     "side": "front",
-    "reason": "heatsink on top slug"
+    "reason": "thermal pad soldered to the GND planes; vents over and under it"
    },
    {
     "ref": "U16",
     "side": "front",
-    "reason": "heatsink on top slug"
+    "reason": "thermal pad soldered to the GND planes; vents over and under it"
    }
   ],
   "fixed": [

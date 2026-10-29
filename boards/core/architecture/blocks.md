@@ -18,8 +18,8 @@ those controls instead.
 | B7 Sabre DAC | U10 ES9018K2M, Y1 50 MHz oscillator, U11 OPA1678 | A 50 MHz MCLK, not 100 MHz: with the internal DVDD the datasheet allows 50 MHz at most, and 100 MHz would need an external 1.3 V DVDD. 50 MHz still covers 24/96 PCM and 96 kHz S/PDIF, which is the product's hi-res target. The OPA1678 runs differential to single-ended at gain 0.54 on +5VA, around a stiff 470R/470R VREF of about 2.4 V (the 2 x 4.3k DAC legs load it): about 1.15 Vrms at full scale. |
 | B8 Subs DAC | U12 PCM5102A | Its outputs are ground-centred at 2.1 Vrms, through 470 Ω to J4 (dual RCA: SUB1, SUB2). |
 | B9 Line in | J5 dual RCA, U13 ES7243E ADC, U14 TS5A23157 | The input is halved (4.7k/4.7k, low enough to drive the amp input), so the FLX4's 2 Vrms becomes 1 Vrms and matches the DAC path. The ADC takes it AC-coupled and gets its MCLK from BCLK (reg 0x02 bit 7), so no MCLK pin is needed. The switch picks between the DAC path (NO, selected when DJ_SEL is high, the default) and DJ direct (NC). Q6 inverts the 3.3 V expander output up to the switch's 5 V logic, which needs VIH 3.5 V. Both of its inputs sit at 2.5 V, so it switches without a pop. |
-| B10 Amp zone A | U15 TPA3221, L1-L4 10 µH (Isat 10 A), J6/J7 KF301 2-way screw terminals | AD mode, controller, 24 dB, single-ended inputs (IN_M AC-grounded), 600 kHz. VDD comes from +5V, with AVDD and GVDD each through 4.7 Ω + 1 µF, which bypasses the internal LDO (datasheet fig. 8-3). Each output has 10 µH + 1 µF, plus a 4.7 Ω + 1 nF snubber on the speaker side, as in TI fig. 9-1. On the switching node it would dissipate 0.47 W. The TPA3221 inverts, so OUTx_M goes to the + terminal and the speaker keeps absolute polarity. Speakers connect through screw terminals, not on-board 4 mm sockets. The GC4010-F socket the product page named has no EasyEDA model and was never confirmed to take a real banana plug. The enclosure's banana sockets or binding posts wire to these terminals (product.md open item 4). |
-| B11 Amp zone B **[Ultra]** | U16 TPA3221, L5-L8, J10/J11, C bulk 470 µF | It runs as a peripheral (FREQ_ADJ to AVDD, OSCM/OSCP from U15), switched in sync with zone A. Its input is the same switched signal as zone A, so zone B plays zone A's program and has its own enable (AMP_B_RST). |
+| B10 Amp zone A | U15 TPA3220 (pad-down TPA3221, same pins), L1-L4 10 µH (Isat 10 A), J6/J7 KF301 2-way screw terminals | AD mode, controller, 24 dB, single-ended inputs (IN_M AC-grounded), 600 kHz. VDD comes from +5V, with AVDD and GVDD each through 4.7 Ω + 1 µF, which bypasses the internal LDO (datasheet fig. 8-3). Each output has 10 µH + 1 µF, plus a 4.7 Ω + 1 nF snubber on the speaker side, as in TI fig. 9-1. On the switching node it would dissipate 0.47 W. The TPA3221 inverts, so OUTx_M goes to the + terminal and the speaker keeps absolute polarity. Speakers connect through screw terminals, not on-board 4 mm sockets. The GC4010-F socket the product page named has no EasyEDA model and was never confirmed to take a real banana plug. The enclosure's banana sockets or binding posts wire to these terminals (product.md open item 4). |
+| B11 Amp zone B **[Ultra]** | U16 TPA3220, L5-L8, J10/J11, C bulk 470 µF | It runs as a peripheral (FREQ_ADJ to AVDD, OSCM/OSCP from U15), switched in sync with zone A. Its input is the same switched signal as zone A, so zone B plays zone A's program and has its own enable (AMP_B_RST). |
 | B12 Control | U17 TCA9555 (0x20), SW1 EC11 knob **[Plus]**, SW2/SW3 buttons **[Plus]**, U18 IRM-H638T **[Plus]**, D3 red status LED | The ESP32 has no pins left (see below), so the slow controls go through the expander. |
 | B13 Optical **[Ultra]** | U19 PLR237 TOSLINK | Goes to the ES9018K2M GPIO1, which is S/PDIF input 4 (spdif_sel). The board has a 10k pull-down, so the pin is defined when the part isn't fitted. |
 | B14 Front-board FFC **[Ultra]** | J3 FPC-05F-20PH20 (20 pin 0.5 mm, bottom contact) | The pinout is below. |
@@ -99,8 +99,8 @@ Plus-only front-edge controls.
 USB-C VBUS_IN (5-28 V) feeds three branches:
 
 - **PVDD (switched):** through the TVS, the 10 mΩ shunt and the AO4485
-  switch to PVDD, for TPA3221 x2.
-- **+5V (5.1 V):** SY8303 to +5V, which feeds the TPA3221 VDD/AVDD/GVDD,
+  switch to PVDD, for TPA3220 x2.
+- **+5V (5.1 V):** SY8303 to +5V, which feeds the TPA3220 VDD/AVDD/GVDD,
   the CH340C VBUS clamp, the FFC and LP5907 3V3A. It also feeds +5VA through
   a ferrite (OPA1678, TS5A23157, the 2.5 V reference) and the SY8089 3V3
   (ESP32, LAN8720 via ferrite, CH340C, expander, logic).
@@ -111,8 +111,9 @@ USB-C VBUS_IN (5-28 V) feeds three branches:
 - **Rear edge:** zone A bananas, sub RCA, line-in RCA, zone B bananas.
 - **Left edge:** USB-C, RJ45, TOSLINK.
 - **Front edge:** EC11 knob, IR, two buttons, status LED, FFC.
-- **Heatsinks:** each TPA3221 takes a bolted heatsink on its top slug,
-  with two M3 holes per amp.
+- **Heatsinks:** none. Each TPA3220 has its thermal pad underneath,
+  soldered to an EP land with 15 x 0.3 mm vias into the In1 GND plane and the
+  B.Cu GND pour (docs/review-2/heatsink-options.md).
 
 ## Firmware notes from the schematic review
 
