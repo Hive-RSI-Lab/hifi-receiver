@@ -761,6 +761,61 @@
    "source": "Everlight PLR237/T8BK p5 PCB layout needs 2x 1.70 peg holes",
    "could_stop_board": true,
    "date": "2026-10-28"
+  },
+  {
+   "fact": "OPA1678IDR (C192421) SOIC-8 pinout matches",
+   "board": "core",
+   "refs": [
+    "U11"
+   ],
+   "status": "verified",
+   "source": "TI SBOS855E Pin Functions: OPA1678 p4",
+   "could_stop_board": false,
+   "date": "2026-10-28"
+  },
+  {
+   "fact": "TS5A23157DGSR (C11133) MSOP-10 pinout matches; footprint fits DGS",
+   "board": "core",
+   "refs": [
+    "U14"
+   ],
+   "status": "verified",
+   "source": "TI SCDS165F Pin Functions p3",
+   "could_stop_board": false,
+   "date": "2026-10-28"
+  },
+  {
+   "fact": "HR911105A (C12074) pin functions (TD+/-, RD+/-, CTs 4/5, NC 7, CHS 8, LEDs 9-12) and row orientation match",
+   "board": "core",
+   "refs": [
+    "J2"
+   ],
+   "status": "verified",
+   "source": "HanRun HR911105A REV A/2 p1-2",
+   "could_stop_board": true,
+   "date": "2026-10-28"
+  },
+  {
+   "fact": "EC11E1834403 (C361165) fits the 2.54-pitch EC11E1820402 footprint (Alps pitch 2.5, holes 1.2 vs 1.0)",
+   "board": "core",
+   "refs": [
+    "SW1"
+   ],
+   "status": "verified",
+   "source": "Alps EC11 catalogue (LCSC copy) EC11E vertical drawing",
+   "could_stop_board": false,
+   "date": "2026-10-28"
+  },
+  {
+   "fact": "EC11 mounting-tab slot positions (footprint +/-6.25, 1.7x2.8 drill) vs Alps bracket",
+   "board": "core",
+   "refs": [
+    "SW1"
+   ],
+   "status": "unverified",
+   "source": "Alps catalogue text extraction did not yield tab dims; check against drawing before order",
+   "could_stop_board": false,
+   "date": "2026-10-28"
   }
  ],
  "tools_wanted": []

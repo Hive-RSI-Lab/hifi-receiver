@@ -584,6 +584,39 @@
    "source": "hwde cpl_verify 2026-10-29, sims/dfm/cpl_lite.json",
    "date": "2026-10-28",
    "could_stop_board": true
+  },
+  {
+   "fact": "core CPL rotations/pin1 match JLC EasyEDA models: Plus 230/230, Ultra 271/272 (U19 no model)",
+   "board": "core",
+   "refs": [],
+   "status": "verified",
+   "source": "hwde cpl_verify offline 2026-10-29, sims/dfm/cpl_plus.json, cpl_ultra.json",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "U19 PLR237/T8BK CPL rotation",
+   "board": "core",
+   "refs": [
+    "U19"
+   ],
+   "status": "unverified",
+   "source": "no EasyEDA model for C17223620",
+   "date": "2026-10-28",
+   "could_stop_board": false
+  },
+  {
+   "fact": "CPL for new J1 (C165948 / C7095263) and CH340B after the swap",
+   "board": "both",
+   "refs": [
+    "J1",
+    "U6",
+    "U8"
+   ],
+   "status": "unverified",
+   "source": "parts not yet on the boards; models cached in sims/dfm/easyeda-cache",
+   "date": "2026-10-28",
+   "could_stop_board": true
   }
  ],
  "tools_wanted": [

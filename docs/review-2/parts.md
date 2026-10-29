@@ -352,3 +352,12 @@ Source: GCT drawing USB4085 rev B (28/02/23), sheets 1-2.
   with the port side forward. Whichever part is used, renumber the symbol to Everlight's numbering and check pad 1's position against the vendor
   drawing before ordering. Supply: Vcc 3.3 V (FB3 from +3V3) against a 3.0-5.5 V operating range (T8BK p2), so 10 % margin at the low end.
 
+## 9. Analog switch, op-amp, RJ45, encoder
+
+| Ref | Board | Part (LCSC) | Datasheet | Result |
+|---|---|---|---|---|
+| U11 | core | OPA1678IDR (C192421, SOIC-8) | TI SBOS855E, "Pin Functions: OPA1678" p4: 1 OUT A, 2 -IN A, 3 +IN A, 4 V-, 5 +IN B, 6 -IN B, 7 OUT B, 8 V+ | all 8 match (OUTA = MAIN_L, OUTB = MAIN_R, V- = GND, V+ = +5VA). The 5 V single supply is 11 % above the 4.5 V minimum. Output swing on a 5 V rail is the analog review's question. Footprint is the same SOIC-8 as Q1 (0.568 x 1.95, rows 5.42). Verified. |
+| U14 | core | TS5A23157DGSR (C11133, MSOP-10) | TI SCDS165F Pin Functions p3: 1 IN1, 2 NO1, 3 GND, 4 NO2, 5 IN2, 6 COM2, 7 NC2, 8 V+, 9 NC1, 10 COM1 | all 10 match. V+ = +5VA, within the 1.65-5.5 V range (9 % below the max). Footprint 0.28 x 1.62 at 0.5 pitch, rows 4.22, against TI DGS land 0.3 x 1.45, rows 4.4. Pin 1 at (-1.0, +2.11), CCW. Verified. |
+| J2 | core | HR911105A, HanRun (C12074) | HanRun HR911105A REV A/2 p1 schematic: P1 TD+, P2 TD-, P3 RD+, P4 TX CT, P5 RX CT, P6 RD-, P7 NC, P8 CHS GND (via 1000 pF), 9/10 green LED, 11/12 yellow LED; p2 bottom view: odd row 7-5-3-1 on the mouth side, even row 8-6-4-2 behind it | 1 ETH_TXP, 2 ETH_TXN, 3 ETH_RXP, 4/5 +3V3E (centre taps, the supply-referenced arrangement the LAN8720A's current-mode driver uses), 6 ETH_RXN, 7 open, 8 GND, LEDs open (allowed). Footprint: odd row at y = -4.35 toward the LED/mouth side, even row 2.54 behind, 1.27 stagger, and pin 1 lands on the left in a top view with the mouth toward the viewer (the bottom view mirrored). Verified. |
+| SW1 | core (Plus) | EC11E1834403, Alps (C361165) | Alps EC11 catalogue (LCSC copy) "EC11E Vertical" drawing: terminal pitch **2.5 mm**, "5-ø1 holes" | footprint SW-TH_EC11E1820402 puts A/C/B at **2.54** pitch and D/E 5.08 apart, with 1.2 mm drills. Cumulative offset at the outer pins is 0.04 mm in a 1.2 mm hole (vs Alps' 1.0), so it inserts. **Note.** The footprint name refers to a different variant (1820402: no push switch; 1834403 has one); the switch pins D/E are present and wired (ENC_SW, GND). A/B order only sets the rotation sense in firmware. |
+

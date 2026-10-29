@@ -3,7 +3,7 @@
 Reviewer: independent DFM/assembly pass, 2026-10-28. Both boards. Read-only on `boards/`.
 Scripts used are kept in `docs/review-2/sims/dfm/` (footprint dump, Gerber read, EP/via check).
 JLC capability numbers below are from https://jlcpcb.com/capabilities/pcb-capabilities fetched 2026-10-28.
-This file is written block by block; a block marked *(in progress)* is not finished.
+Written block by block; complete as of 2026-10-29.
 
 ## Summary
 
@@ -23,7 +23,7 @@ This file is written block by block; a block marked *(in progress)* is not finis
 | DFM-5, 10, 14 | note | both | 3D models (Lite's paths broken; core's 470 uF model 4 mm short); no fiducials/tooling; EC11 shaft offset 0.25 mm, FFC and IR orientation unverified. |
 
 Checked and passing, with margins: USB4105 footprint against GCT B4 on both boards (all features within 0.005 mm; the shortened pads give 0.245/0.275 mm to the NPTH against JLC's 0.20).
-HR911105A, DB128V, TS-1187A and IRM-3638T footprints match their drawings. Lite CPL is 134/134 by hwde cpl_verify, including the polarised parts by role.
+HR911105A, DB128V, TS-1187A and IRM-3638T footprints match their drawings. CPL by hwde cpl_verify: Lite 134/134, core Plus 230/230, Ultra 271/272 (U19 has no EasyEDA model), polarised parts checked by role.
 Gerber annuli, mask webs (0.20 / 0.176 against 0.10) and slots are inside JLC limits. Plus/Ultra DNP sets are consistent. Lite enclosure snapshot equals the board. Courtyards: 0 courtyard_pads errors on either board.
 
 ## JLC numbers used (fetched 2026-10-28)
@@ -341,10 +341,15 @@ Cache in `sims/dfm/easyeda-cache`, reports `sims/dfm/cpl_{lite,plus,ultra}.json`
 - **Lite: 134 / 134 parts pass** (status pass, 0 failed). This includes the polarised parts by role: D1 SMBJ20A at 180, D2 LED at 0, C58 polymer
   at 270, C59 at 270, and every IC's pin 1 (U1 CH224A, U2-U4, U5 ESP32, U6 CH340C at 90, U7 ES8388, U8 TPA3118, U9).
   J2/J3 (RCA) show a 0.79 mm model-centre offset. That is the EasyEDA model's origin, not an error, and as THT parts they're placed by their holes.
-- **core:** *(in progress; EasyEDA rate-limits fetches and the re-run loop is still going)*. So far Plus is 192 of 230 OK and Ultra 225 of 272, with 0 wrong.
-  The verified ones include every polarised part: D1 SMBJ30A, D2 BZT52C33, D4 BZT52C15, D3 LED, and C5/C6/C311 radial 470 uF.
-  Not yet fetched: U1-U4, U9-U15/U16, U17, U18/U19, Y1/Y2 and some resistors. U19 PLR237/T8BK has **no EasyEDA model**, so it can't be checked by script,
-  and as a THT part it's placed by hand.
+- **core Plus: 230 / 230 pass** (status pass). **core Ultra: 271 / 272 pass**. The one failure is U19 PLR237/T8BK, `no_model`:
+  LCSC C17223620 has no EasyEDA footprint, so the script can't check it. It's a THT part placed by hand, and its real issue is DFM-12.
+  Run offline on 2026-10-29 once every model was cached. Every polarised part was checked by role and passes: D1 SMBJ30A, D2 BZT52C33,
+  D4 BZT52C15, D3 LED, C5/C6/C311 radial 470 uF. Every IC's pin 1 passes too: U1 CH224Q, U2 USBLC6, U3 INA186, U4 SY8303 (CPL 180), U5, U6, U7 ESP32, U8 CH340C,
+  U9 LAN8720A, U10 ES9018K2M, U11 OPA1678, U12 PCM5102A, U13 ES7243E, U14 TS5A23157, U15/U16 TPA3221, U17 TCA9555, U18, and Y1/Y2.
+  J2 RJ45 has a 0.43 mm model-centre offset (EasyEDA origin, THT, not an error).
+- Limit of this check: it confirms the CPL against the board footprint's own pad numbers. It says nothing about whether the
+  footprint's pad numbers match the symbol pin map (the parts/digital reviews cover that), and it can't see the new J1 parts or CH340B
+  until they're in the board. The EasyEDA models for C165948 / C7095263 / C81010 are cached, so a re-run after the swap is offline.
 
 ## Plus vs Ultra BOM/CPL (DNP consistency)
 Built from `core/fab/BOM.csv` + `CPL.csv` (Plus) and `core/fab/ultra/` (Ultra), diffed line by line:

@@ -51,3 +51,6 @@ t("tht_pin_vs_hole","For each THT part: pin cross-section and tolerance from the
 t("cpl_verify --rate-limit-wait","Back off and resume EasyEDA fetches inside one run instead of failing every later part","Core verification needed many reruns over 30+ min")
 t("paste_ep_check","Paste coverage % per exposed pad and vias under paste apertures","hwde has no check for EP paste/via wicking")
 t("edge_overhang_check","Report each connector's body front vs Edge.Cuts (overhang/recess) from the maker's PCB-edge line","USB/RJ45 overhang drives panel rails and enclosure openings")
+k("core CPL rotations/pin1 match JLC EasyEDA models: Plus 230/230, Ultra 271/272 (U19 no model)","core",[],"verified","hwde cpl_verify offline 2026-10-29, sims/dfm/cpl_plus.json, cpl_ultra.json",True)
+k("U19 PLR237/T8BK CPL rotation","core",["U19"],"unverified","no EasyEDA model for C17223620",False)
+k("CPL for new J1 (C165948 / C7095263) and CH340B after the swap","both",["J1","U6","U8"],"unverified","parts not yet on the boards; models cached in sims/dfm/easyeda-cache",True)

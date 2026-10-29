@@ -1,74 +1,14 @@
 {
  "script": "cpl_verify",
  "board": "core.kicad_pcb",
- "status": "violations",
+ "status": "pass",
  "n_checked": 230,
- "n_failed": 29,
- "failed": [
-  "R100",
-  "R101",
-  "R110",
-  "R111",
-  "R203",
-  "R205",
-  "R212",
-  "R216",
-  "R217",
-  "R227",
-  "R230",
-  "R233",
-  "R236",
-  "R400",
-  "U1",
-  "U2",
-  "U3",
-  "U4",
-  "U9",
-  "U10",
-  "U11",
-  "U12",
-  "U13",
-  "U14",
-  "U15",
-  "U17",
-  "U18",
-  "Y1",
-  "Y2"
- ],
+ "n_failed": 0,
+ "failed": [],
  "offset_warnings": [],
- "fetch_failed": [
-  "R100",
-  "R101",
-  "R110",
-  "R111",
-  "R203",
-  "R205",
-  "R212",
-  "R216",
-  "R217",
-  "R227",
-  "R230",
-  "R233",
-  "R236",
-  "R400",
-  "U1",
-  "U2",
-  "U3",
-  "U4",
-  "U9",
-  "U10",
-  "U11",
-  "U12",
-  "U13",
-  "U14",
-  "U15",
-  "U17",
-  "U18",
-  "Y1",
-  "Y2"
- ],
- "rate_limited": "HTTP 403 from EasyEDA (rate limited)",
- "cache_dir": "/work/docs/review-2/sims/dfm/easyeda-cache",
+ "fetch_failed": [],
+ "rate_limited": null,
+ "cache_dir": "easyeda-cache",
  "parts": [
   {
    "ref": "C1",
@@ -3926,24 +3866,44 @@
   {
    "ref": "R100",
    "footprint": "aiee:R0402",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C25900",
+   "model_package": "R0402",
    "board_rot": 90.0,
    "cpl_rot": 90.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C25900 (HTTP 403 from EasyEDA (rate limited)); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "HTTP 403 from EasyEDA (rate limited)"
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "R101",
    "footprint": "aiee:R0402",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C25900",
+   "model_package": "R0402",
    "board_rot": 90.0,
    "cpl_rot": 90.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C25900 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "R102",
@@ -3969,24 +3929,44 @@
   {
    "ref": "R110",
    "footprint": "aiee:R0402",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C25900",
+   "model_package": "R0402",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C25900 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "R111",
    "footprint": "aiee:R0402",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C25900",
+   "model_package": "R0402",
    "board_rot": 90.0,
    "cpl_rot": 90.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C25900 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "R112",
@@ -4075,35 +4055,65 @@
   {
    "ref": "R203",
    "footprint": "aiee:R0603",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C23164",
+   "model_package": "R0603",
    "board_rot": 90.0,
    "cpl_rot": 90.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C23164 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "R205",
    "footprint": "aiee:R0603",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C23164",
+   "model_package": "R0603",
    "board_rot": 90.0,
    "cpl_rot": 90.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C23164 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "R212",
    "footprint": "aiee:R0402",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C25765",
+   "model_package": "R0402",
    "board_rot": 90.0,
    "cpl_rot": 90.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C25765 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "R213",
@@ -4171,79 +4181,149 @@
   {
    "ref": "R216",
    "footprint": "aiee:R0402",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C25792",
+   "model_package": "R0402",
    "board_rot": 90.0,
    "cpl_rot": 90.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C25792 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "R217",
    "footprint": "aiee:R0402",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C25792",
+   "model_package": "R0402",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C25792 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "R227",
    "footprint": "aiee:R0603",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C23164",
+   "model_package": "R0603",
    "board_rot": 90.0,
    "cpl_rot": 90.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C23164 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "R230",
    "footprint": "aiee:R0603",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C23164",
+   "model_package": "R0603",
    "board_rot": 90.0,
    "cpl_rot": 90.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C23164 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "R233",
    "footprint": "aiee:R0603",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C23164",
+   "model_package": "R0603",
    "board_rot": 90.0,
    "cpl_rot": 90.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C23164 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "R236",
    "footprint": "aiee:R0603",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C23164",
+   "model_package": "R0603",
    "board_rot": 90.0,
    "cpl_rot": 90.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C23164 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "R400",
    "footprint": "aiee:R0402",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C25076",
+   "model_package": "R0402",
    "board_rot": 90.0,
    "cpl_rot": 90.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C25076 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "R401",
@@ -4326,46 +4406,78 @@
   {
    "ref": "U1",
    "footprint": "aiee:DFN-10_L2.0-W2.0-P0.40-BL-EP",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C46061833",
+   "model_package": "DFN-10_L2.0-W2.0-P0.40-BL-EP",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C46061833 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.2,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "U2",
    "footprint": "aiee:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C2687116",
+   "model_package": "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C2687116 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.475,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "U3",
    "footprint": "aiee:SC-70-6_L2.2-W1.3-P0.65-LS2.1-BR",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C2058311",
+   "model_package": "SC-70-6_L2.2-W1.3-P0.65-LS2.1-BR",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C2058311 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.325,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "U4",
    "footprint": "aiee:TSOT-23-8_L2.9-W1.6-P0.65-LS2.8-BR",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C97054",
+   "model_package": "TSOT-23-8_L2.9-W1.6-P0.65-LS2.8-BR",
    "board_rot": 180.0,
    "cpl_rot": 180.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C97054 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.325,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    180.0
+   ],
+   "offset_mm": 0.002
   },
   {
    "ref": "U5",
@@ -4446,123 +4558,211 @@
   {
    "ref": "U9",
    "footprint": "aiee:QFN-24_L4.0-W4.0-P0.50-BL-EP2.6",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C45223",
+   "model_package": "QFN-24_L4.0-W4.0-P0.50-BL-EP2.6",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C45223 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.25,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "U10",
    "footprint": "aiee:QFN-28_L5.0-W5.0-P0.50-BL-EP3.3",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C2688377",
+   "model_package": "QFN-28_L5.0-W5.0-P0.50-BL-EP3.3",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C2688377 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.25,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "U11",
    "footprint": "aiee:SOIC-8_L5.0-W4.0-P1.27-LS6.0-BL",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C192421",
+   "model_package": "SOIC-8_L5.0-W4.0-P1.27-LS6.0-BL",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C192421 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.63,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "U12",
    "footprint": "aiee:TSSOP-20_L6.5-W4.4-P0.65-LS6.4-BL",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C107671",
+   "model_package": "TSSOP-20_L6.5-W4.4-P0.65-LS6.4-BL",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C107671 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.325,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.001
   },
   {
    "ref": "U13",
    "footprint": "aiee:QFN-20_L3.0-W3.0-P0.40-BL-EP1.7",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C2929446",
+   "model_package": "QFN-20_L3.0-W3.0-P0.40-BL-EP1.7",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C2929446 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.2,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "U14",
    "footprint": "aiee:MSOP-10_L3.0-W3.0-P0.50-LS5.0-BL",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C11133",
+   "model_package": "MSOP-10_L3.0-W3.0-P0.50-LS5.0-BL",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C11133 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.25,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "U15",
    "footprint": "aiee:HTSSOP-44_L14.0-W6.1-P0.64-LS8.1-BL",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C475500",
+   "model_package": "HTSSOP-44_L14.0-W6.1-P0.64-LS8.1-BL",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C475500 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.315,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "U17",
    "footprint": "aiee:TSSOP-24_L7.8-W4.4-P0.65-LS6.4-BL",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C465732",
+   "model_package": "TSSOP-24_L7.8-W4.4-P0.65-LS6.4-BL",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C465732 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.32,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.003
   },
   {
    "ref": "U18",
    "footprint": "aiee:SENSOR-SMD_IRM-H638T-TR2-TL",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C91447",
+   "model_package": "SENSOR-SMD_IRM-H638T-TR2-TL",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C91447 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 1.27,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "Y1",
    "footprint": "aiee:OSC-SMD_4P-L3.2-W2.5-BL",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C717684",
+   "model_package": "OSC-SMD_4P-L3.2-W2.5-BL",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C717684 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.88,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
   },
   {
    "ref": "Y2",
    "footprint": "aiee:OSC-SMD_4P-L3.2-W2.5-BL",
-   "lcsc": null,
-   "model_package": null,
+   "lcsc": "C717684",
+   "model_package": "OSC-SMD_4P-L3.2-W2.5-BL",
    "board_rot": 0.0,
    "cpl_rot": 0.0,
-   "verdict": "fetch_failed",
-   "why": "could not fetch the LCSC model for C717684 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /work/docs/review-2/sims/dfm/easyeda-cache - this is not a pin-1 result",
-   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+   "polar": false,
+   "tol_mm": 0.88,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
   }
  ]
 }
