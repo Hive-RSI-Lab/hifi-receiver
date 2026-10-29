@@ -30,8 +30,18 @@ It fails (exit 1) if any of these fails:
    <dir>/tests`. These are stdlib only, need no board, and take about
    10 s. The bench's run against its mock board ([bench.md](bench.md)).
    Add the firmware's host tests or the app's here the same way.
-3. **Every board's hwde gates.** Every workspace under `boards/` (a folder
-   with a `state.json`) runs all four of hwde's gates: `erc` on
+3. **The hwde gates of each board that changed.** A workspace under
+   `boards/` (a folder with a `state.json`) is gated only when a file in it
+   differs from the merge base with main (`origin/main`, else `main`, or
+   `$HWCHECK_BASE`): committed, edited or new. A PR that touches no board
+   runs no gates; one that touches a board runs that board's alone. Every
+   board is gated when `tools/hwcheck.py` itself changes, when git can't
+   find the merge base (no main ref, not a git checkout), and with
+   `test --all` or `HWCHECK_ALL=1`. The first line under `boards/` names
+   which boards it gates and why. Workers run their board's gates before
+   they finish, and the score re-runs the first tier's gates on main after
+   every merge, so a change in hive-hwde that breaks a board still shows
+   there. A gated board runs all four of hwde's gates: `erc` on
    `kicad/<board>.kicad_sch`, then `drc_routed`, `verify` and `dfm` on
    `kicad/<board>.kicad_pcb`. `<board>` is the `board` field in `state.json`.
    Each gate is `hwde gate --gate <g> <input> --workspace .`, run in a
@@ -42,10 +52,11 @@ It fails (exit 1) if any of these fails:
 When there are no boards yet, the test checks `docs/product.md` and passes.
 
 The gates run through hive-hwde's `bin/hwde`. The script looks for it in
-this order: `$HWDE_BIN`, `hwde` on `PATH`, then
+this order: `$HWDE_BIN`, `${HIVE_TOOLS:-/hive/tools}/hwde/bin/hwde` (the
+path a check sandbox has), `hwde` on `PATH`, then
 `$HIVE_MODULES/hive-hwde/bin/hwde` (with `/hive/modules` used when
 `HIVE_MODULES` is unset). If there are boards to check and `hwde` isn't
-found, the script runs `sh -c hwde`. The shell prints its own
+found, the script prints every place it looked, then runs `sh -c hwde`. The shell prints its own
 `hwde: not found` and exits 127. The Hive reads that as "couldn't run": a
 fault in the environment, not a verdict on the commit.
 
