@@ -25,8 +25,27 @@ the waiver sign-off rule and `sim_board` (below).
 | S-4 | core | note | TCA9539 has no I/O pull-ups, so LCD_BL (P06, only on J3) floats from reset until firmware drives it: the Ultra display's backlight is undefined during boot. Harmless to the board; a 100k to GND would fix it at the next spin. | Listed for the next core ECO. |
 | S-5 | both | follow-up | The enclosures in main were fitted to the base boards. After #48: core U18 is a front-facing THT IRM-3638T at the front edge (core_box.py still cuts a lid window over a top-looking IRM-H638T), core J1 is a THT USB4085 (core.board.json still has the SMD USB4105), Lite J1 is the HRO part, and THERMAL-1's heatsink is pressed from the lid, which no enclosure models. | For the enclosure re-fit once #48 lands. |
 | S-6 | core | note | Y1 49.152 MHz (C7431354) has 451 sellable at JLC today: enough for 5 boards, thin for 100. | Watch at order time. |
+| S-7 | both | major (bring-up) | Self-monitoring gaps from hwde's check_observability (task 261029-020701): neither board has a single test point; core has no PVDD sense and no GPIO for PD_PG; no rail other than VBUS/PVDD (Lite) or VBUS current (core) has an ADC path. | Per rail below. Needs an ECO on #48's branch, which this branch can't reach. |
 
 No blocker found.
+
+## S-7: what each board can see of itself (read on #48's PCBs)
+
+**There are no free ADC1 pins on either board**, and ADC2 is unusable with
+Wi-Fi up. Core's WROVER uses GPIO36 (I2S_DIN), 39 (EXP_INT), 34 (ISENSE) and
+35 (IR_IN). Lite's uses 36 (BTN_VOLDN), 39 (PVDD_SENSE), 34 (VBUS_SENSE), 35
+(I2S_DIN) and 32/33 (I2C). Every core GPIO is taken, and all 16 TCA9539 pins
+are too (P17 is now TAP_SEL_IO). So a new sense path costs a moved function
+as well as the parts.
+
+| Board | Signal | Today | Proposal | Cost |
+|---|---|---|---|---|
+| both | every rail (VBUS, PVDD, +5V, +3V3, +3V3A, core's +5VA and +3V3E) | no test point anywhere | a 1.0 mm round SMD test-point pad on each rail and GND, bottom side, on the bench fixture's grid (`docs/bench.md`) | none in the BOM: copper only |
+| lite-main | +5V | no ADC path | move BTN_VOLDN from GPIO36 to GPIO15. A strap pin, but its pull-up and a button to GND only change the boot log when held at reset, and the existing 10k R60 is the pull-up. Then put a 100k/47k divider (+5V × 0.32 = 1.66 V) and 100 nF on GPIO36 | 3 passives, about $0.003 + 6 joints |
+| lite-main | +3V3, +3V3A | no ADC path | justified. A dead +3V3 is a dead ESP32: its brownout detector logs the reset reason, and the test point covers the bench. +3V3A feeds only the ES8388's analog side, so the speaker-tap loopback (taps on LIN2/RIN2) already fails when it is missing | none |
+| core | PD_PG | gates Q2 only | justified for this spin. A lost contract drops PVDD in hardware, and firmware sees it as the INA186 current (ISENSE) falling to the buck's draw and the amps' FAULT on the expander. The CH224Q's own I2C status (address 0x22, contract and voltage registers) can also report it, but which register bit means 'contract lost' isn't verified yet: a known unknown for the firmware task. Next spin: PG to a TCA9535 input on Ultra's front board, or a second expander | none now |
+| core | PVDD | no sense | for this spin, the only free ADC1 pin would be GPIO39, by dropping EXP_INT (firmware polls the TCA9539 over I2C, about 0.1 ms per read at 400 kHz; the encoder needs ~1 kHz polling). Then 100k/10k (PVDD/11, 2.55 V at 28 V, as on Lite) and 100 nF on GPIO39. Otherwise justified by ISENSE plus the amps' FAULT/OTW | 3 passives + one firmware change |
+| core | +5V, +5VA, +3V3, +3V3A, +3V3E | no ADC path | justified: +3V3 as on Lite; +3V3A and +5VA by the speaker-tap/RCA loopback through U20 and the ES7243E; +3V3E by the LAN8720A answering on MDIO (PHY ID registers) and reporting link; +5V feeds +3V3, the TPA3221s' VDD and the op-amp, so it fails loud | test points only |
 
 ## What checks out (each fix, on the board files)
 
