@@ -18,6 +18,7 @@
 #include "driver/adc.h"
 #include "driver/gpio.h"
 #include "driver/i2c.h"
+#include "driver/i2s.h"
 #include "esp_adc_cal.h"
 #include "esp_console.h"
 #include "esp_heap_caps.h"
@@ -34,10 +35,12 @@
 #include "nvs_flash.h"
 
 #include "audio_controls.h"
+#include "network_manager.h"
 #include "platform_config.h"
 
 #include "hifi_api.h"
 #include "hifi_board.h"
+#include "hifi_esp.h"
 #include "hifi_gov.h"
 #include "hifi_http.h"
 #include "hifi_ir.h"
@@ -75,6 +78,7 @@ static bool sub_on = true;
 static float sub_db = 0;
 static volatile bool codec_dirty = true; /* re-apply input/sub to the codec */
 static volatile uint32_t selftest_hold_until; /* keeps the amp awake for the self-test */
+static volatile bool capture_busy;   /* the codec's ADC is ours until the capture ends */
 
 static hifi_vol_t vol;               /* under lock, like what follows */
 static bool vol_dirty, vol_from_source;
@@ -213,7 +217,7 @@ static void power_task(void *arg) {
 		}
 
 		/* the codec: re-apply our routing once it answers, and on request */
-		if (codec_dirty) {
+		if (codec_dirty && !capture_busy) {
 			uint8_t dummy;
 			if (i2c_read(ES8388_ADDR, 0x00, &dummy) == ESP_OK) {
 				if (!codec_ok_at) codec_ok_at = now; /* let squeezelite finish its init */
@@ -728,12 +732,103 @@ static void op_ir_forget(int a) {
 	ir_save();
 }
 
+/* ------------------------------------------------------------------ remote bring-up */
+
+static bool has_taps(void) {
+	if (HIFI_HAS_TAPS) return true;
+	char *s = config_alloc_get_str("hifi_taps", NULL, "0");
+	bool on = s && !strcmp(s, "1");
+	free(s);
+	return on;
+}
+
+/*
+ * Records the codec's ADC: the loopback taps (LIN2/RIN2) or the RCA line in
+ * (LIN1/RIN1). The ADC shares I2S with the DAC (squeezelite opens it full
+ * duplex, firmware/patches), so a capture needs the output running: a tone
+ * or a stream. The analog DJ-direct path doesn't pass the ADC's input
+ * switch, so it keeps playing.
+ */
+static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_info_t *info, const char **err) {
+	if (src == HIFI_CAP_LOOPBACK && !has_taps()) return *err = "this board revision has no loopback taps", 409;
+	if (!tone_active && !audio_active && input != HIFI_INPUT_DJ_DIRECT)
+		return *err = "output idle: play a tone or a stream first", 409;
+	if (capture_busy) return *err = "a capture is running", 409;
+	capture_busy = true;
+	esp_err_t e = ESP_OK;
+	e |= i2c_write(ES8388_ADDR, ES8388_ADCCONTROL1, 0x00);
+	e |= i2c_write(ES8388_ADDR, ES8388_ADCCONTROL2, src == HIFI_CAP_LOOPBACK ? 0x50 : 0x00);
+	e |= i2c_write(ES8388_ADDR, ES8388_ADCCONTROL4, 0x0C);
+	e |= i2c_write(ES8388_ADDR, ES8388_ADCCONTROL5, 0x02);
+	e |= i2c_write(ES8388_ADDR, ES8388_ADCCONTROL8, 0x00);
+	e |= i2c_write(ES8388_ADDR, ES8388_ADCCONTROL9, 0x00);
+	e |= i2c_write(ES8388_ADDR, ES8388_ADCCONTROL10, 0x00);
+	e |= i2c_write(ES8388_ADDR, ES8388_ADCPOWER, ES8388_ADCPOWER_CAPTURE);
+	int st = 0;
+	if (e != ESP_OK) {
+		*err = "codec didn't take the ADC settings";
+		st = 500;
+		goto out;
+	}
+	/* the coupling capacitors settle, and what the DMA held from before goes */
+	vTaskDelay(pdMS_TO_TICKS(200));
+	size_t got = 0, want = (size_t) frames * 4;
+	for (int i = 0; i < 4; i++) i2s_read(CONFIG_I2S_NUM, pcm, want < 4096 ? want : 4096, &got, pdMS_TO_TICKS(50));
+	size_t have = 0;
+	while (have < want) {
+		if (i2s_read(CONFIG_I2S_NUM, (uint8_t *) pcm + have, want - have, &got, pdMS_TO_TICKS(300)) != ESP_OK || !got) break;
+		have += got;
+	}
+	if (have < want) {
+		*err = "the I2S input stopped: is the output running?";
+		st = 409;
+		goto out;
+	}
+	info->rate = TONE_RATE;
+	if (src == HIFI_CAP_LOOPBACK) {
+		info->ch[0] = "spk_l+";
+		info->ch[1] = "spk_r+";
+		info->v_per_fs[0] = info->v_per_fs[1] = ADC_FS_PEAK_V * TAP_DIVIDER;
+	} else {
+		info->ch[0] = "line_l";
+		info->ch[1] = "line_r";
+		info->v_per_fs[0] = info->v_per_fs[1] = ADC_FS_PEAK_V * LINE_DIVIDER;
+	}
+out:
+	capture_busy = false;
+	codec_dirty = true; /* back to the routing for the input in use */
+	return st;
+}
+
+static int op_set_wifi(const char *ssid, const char *password) {
+	network_async_connect(ssid, password); /* the network manager saves it once joined */
+	return 0;
+}
+
+static bool wifi_has_ip(void) {
+	esp_netif_ip_info_t ip = {0};
+	esp_netif_t *sta = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+	return sta && esp_netif_get_ip_info(sta, &ip) == ESP_OK && ip.ip.addr;
+}
+
+void hifi_main_trial_inputs(hifi_trial_t *t) {
+	uint8_t v;
+	t->component_ok = lock != NULL;
+	t->i2c_ok = i2c_read(CH224_I2C_ADDR, CH224_REG_STATUS, &v) == ESP_OK && i2c_read(ES8388_ADDR, 0x00, &v) == ESP_OK;
+	t->heap_ok = heap_caps_get_free_size(MALLOC_CAP_INTERNAL) > 20000;
+	wifi_config_t wc = {0};
+	t->wifi_configured = esp_wifi_get_config(WIFI_IF_STA, &wc) == ESP_OK && wc.sta.ssid[0];
+	t->wifi_ok = wifi_has_ip();
+}
+
 const hifi_ops_t hifi_ops = {
 	.info = op_info, .snapshot = op_snapshot, .tone_start = op_tone_start, .tone_stop = op_tone_stop,
 	.amp_enable = op_amp_enable, .amp_reset = op_amp_reset, .set_input = op_set_input,
 	.set_sub = op_set_sub, .set_eq = op_set_eq, .set_name = op_set_name, .reboot = op_reboot,
 	.factory_reset = op_factory_reset, .control = op_control, .selftest = op_selftest,
 	.set_volume = op_set_volume, .ir_learn = op_ir_learn, .ir_forget = op_ir_forget,
+	.capture = op_capture, .set_wifi = op_set_wifi, .remote_status = hifi_remote_status,
+	.remote_set = hifi_remote_set, .ota = &hifi_ota_session, .ota_status = hifi_ota_status,
 };
 
 /* ------------------------------------------------------------------ console, mDNS */
@@ -757,6 +852,31 @@ static int cmd_hifi(int argc, char **argv) {
 	return rc;
 }
 
+/*
+ * `api <op> ["<json>"]`: any test API call over the console, for the bench
+ * and provisioning (docs/remote.md). With a body it is a POST, without one a
+ * GET. The reply is one line, `API {json}`, with "status" added on an error.
+ */
+static int cmd_api(int argc, char **argv) {
+	if (argc < 2 || argc > 3) {
+		printf("API {\"error\":\"usage: api <op> [json]\",\"status\":400}\n");
+		return 1;
+	}
+	char path[64];
+	snprintf(path, sizeof(path), "/api/v1/%s", argv[1]);
+	const char *body = argc == 3 ? argv[2] : NULL;
+	size_t cap = hifi_api_reply_cap(path, body);
+	char *out = heap_caps_malloc(cap + 24, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+	if (!out) out = malloc(cap + 24);
+	if (!out) return 1;
+	int st = hifi_api_handle(&hifi_ops, body ? "POST" : "GET", path, body, out, cap);
+	size_t n = strlen(out);
+	if (st != 200 && n && out[n - 1] == '}') snprintf(out + n - 1, 24, ",\"status\":%d}", st);
+	printf("API %s\n", out);
+	free(out);
+	return st != 200;
+}
+
 /* the console and mDNS come up after us; keep trying until they take it */
 static void services_task(void *arg) {
 	bool console = false, mdns = false, volume = !hifi_output_gain;
@@ -777,7 +897,12 @@ static void services_task(void *arg) {
 				.help = "Receiver test API: hifi info|state|selftest|tone ...|amp ...|input ...|sub ...|control ...",
 				.func = cmd_hifi,
 			};
-			console = esp_console_cmd_register(&c) == ESP_OK;
+			const esp_console_cmd_t a = {
+				.command = "api",
+				.help = "Test API call: api <op> [\"json\"], replies API {json} (docs/remote.md)",
+				.func = cmd_api,
+			};
+			console = esp_console_cmd_register(&c) == ESP_OK && esp_console_cmd_register(&a) == ESP_OK;
 		}
 		if (!mdns) {
 			esp_netif_ip_info_t ip = {0};
@@ -846,6 +971,7 @@ static bool hifi_init(void) {
 	xTaskCreatePinnedToCore(power_task, "hifi_power", 3072, NULL, ESP_TASK_PRIO_MIN + 3, NULL, 0);
 	if (hifi_sink_start) xTaskCreatePinnedToCore(tone_main, "hifi_tone", 4096, NULL, ESP_TASK_PRIO_MIN + 2, &tone_task, 1);
 	xTaskCreate(services_task, "hifi_svc", 3072, NULL, ESP_TASK_PRIO_MIN + 1, NULL);
+	hifi_remote_start(&hifi_ops);
 	ESP_LOGI(TAG, "%s on %s, firmware %s", HIFI_MODEL, HIFI_BOARD, HIFI_FW_VERSION);
 	return true;
 }

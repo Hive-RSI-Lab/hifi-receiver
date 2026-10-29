@@ -201,6 +201,43 @@ one is a small hook in the patch, with the logic in `core/`.
 - **Names:** AirPlay, Bluetooth and the setup access point are `hifi-lite`
   until renamed (`POST /api/v1/name`).
 
+## Remote bring-up, updates and self-measurement
+
+Designed in [remote.md](remote.md); here is where it lives in the code.
+
+- **`core/hifi_remote.c`:** a signed command off the relay is checked
+  (Ed25519 against the build's `HIFI_HIVE_PUBKEY`, the board's own id, ids
+  only going up, the clock once SNTP has set it) and run through the test
+  API. `esp/hifi_relay.c` is the MQTT client (esp-mqtt, TLS with ESP-IDF's
+  certificate bundle) and the libsodium check; it publishes the retained
+  status, the replies and the events.
+- **`core/hifi_ota.c` + `core/hifi_sha256.c`:** the update session (begin,
+  chunks in order, the hash, commit); `esp/hifi_relay.c` writes it with
+  `esp_ota_*` into the slot that isn't running.
+- **`core/hifi_boot.c`:** the trial of a new image. `esp/hifi_relay.c` asks
+  it every 2 s and marks the image good or bad
+  (`CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE`), keeping the reason in NVS
+  (`hifi_rb_from`, `hifi_rb_why`) for `/api/v1/ota` and the `rolled_back`
+  event.
+- **`core/hifi_capture.c`:** stats of a capture. `esp/hifi_main.c` routes the
+  ES8388's ADC to LIN2/RIN2 (the taps) or LIN1/RIN1 (the line in), with the
+  PGA at 0 dB and the ALC off, and reads I2S, which squeezelite now opens full
+  duplex (`di=35` in the board's `dac_config`; the patch makes it parse
+  `di`). The routing goes back to the input in use afterwards.
+- **Partition table:** two 3.06 MB app slots plus the 1.75 MB recovery app
+  (`board/lite-main/partitions.csv`).
+
+**Unchecked on hardware:** the ES8388 ADC register values, I2S full duplex
+with squeezelite's DMA settings, the rollback on a real flash, and the relay
+over TLS. lite-main rev A has no taps, so `capture` with `loopback` answers
+409 there; the review task (261029-020622) adds them. `HIFI_HAS_TAPS=1` in
+the build or `hifi_taps=1` in NVS turns it on for that revision.
+
+**The LAN and console are not signed.** As in squeezelite-esp32 itself,
+anyone on the home network can call the HTTP API, firmware updates
+included. Only the relay, which reaches past the home network, demands a
+signature.
+
 ## Hi-res
 
 The build is squeezelite-esp32's 16-bit one (`DEPTH=16`): 16-bit samples at
