@@ -2,19 +2,19 @@
  "script": "bom_cpl",
  "status": "pass",
  "board": "core.kicad_pcb",
- "n_parts": 278,
- "n_placed": 272,
+ "n_parts": 297,
+ "n_placed": 291,
  "bom": "fab/ultra/BOM.csv",
  "bom_full": "fab/ultra/BOM-full.csv",
  "cpl": "fab/ultra/CPL.csv",
  "prebuy": "fab/ultra/prebuy.csv",
- "build_qty": 10,
+ "build_qty": 5,
  "distributor_boms": {
   "digikey": "fab/ultra/core-ultra_BOM_digikey.csv",
   "mouser": "fab/ultra/core-ultra_BOM_mouser.csv",
   "cost": null,
   "boards": 1,
-  "lines": 65,
+  "lines": 70,
   "priced": {
    "digikey": false,
    "mouser": false
@@ -28,13 +28,13 @@
  "bom_rows": [
   {
    "Comment": "1uF",
-   "Designator": "C1,C8,C207,C209,C226,C229,C232,C235,C307,C309,C324,C327,C330,C333",
+   "Designator": "C1,C207,C209,C226,C229,C232,C235,C307,C309,C324,C327,C330,C333",
    "Footprint": "C0805",
    "LCSC": "C28323"
   },
   {
    "Comment": "100nF",
-   "Designator": "C2,C31,C33,C34,C41,C42,C43,C44,C45,C46,C47,C51,C53,C54,C55,C57,C58,C120,C121,C125,C126,C202,C302",
+   "Designator": "C2,C31,C33,C34,C41,C42,C43,C44,C45,C46,C51,C53,C54,C55,C57,C58,C120,C121,C125,C126,C132,C202,C302",
    "Footprint": "C0402",
    "LCSC": "C1525"
   },
@@ -63,6 +63,12 @@
    "LCSC": "C13585"
   },
   {
+   "Comment": "2.2uF",
+   "Designator": "C8",
+   "Footprint": "C0805",
+   "LCSC": "C377773"
+  },
+  {
    "Comment": "100nF",
    "Designator": "C9",
    "Footprint": "C0402",
@@ -82,13 +88,13 @@
   },
   {
    "Comment": "1uF",
-   "Designator": "C18,C19,C32,C40,C50,C52,C68,C69,C70,C101,C102,C111,C112,C122,C123,C124,C204,C206,C304,C306",
+   "Designator": "C18,C19,C32,C40,C47,C50,C52,C68,C69,C70,C122,C123,C124,C131,C137,C204,C206,C304,C306",
    "Footprint": "C0402",
    "LCSC": "C52923"
   },
   {
    "Comment": "4.7uF",
-   "Designator": "C56",
+   "Designator": "C56,C101,C102,C111,C112",
    "Footprint": "C0603",
    "LCSC": "C19666"
   },
@@ -109,6 +115,12 @@
    "Designator": "C100,C110",
    "Footprint": "C0805",
    "LCSC": "C1779"
+  },
+  {
+   "Comment": "470pF",
+   "Designator": "C130,C136",
+   "Footprint": "C0603",
+   "LCSC": "C1620"
   },
   {
    "Comment": "33nF",
@@ -159,10 +171,10 @@
    "LCSC": "C14709"
   },
   {
-   "Comment": "USB4105-GF-A-120",
+   "Comment": "USB4085-GF-A",
    "Designator": "J1",
-   "Footprint": "USB-C-SMD_MC-311D",
-   "LCSC": "C5184243"
+   "Footprint": "USC-C-SMD_USB4085-GF-A",
+   "LCSC": "C7095263"
   },
   {
    "Comment": "HR911105A",
@@ -220,7 +232,7 @@
   },
   {
    "Comment": "S8050",
-   "Designator": "Q3,Q4,Q5,Q6",
+   "Designator": "Q3,Q4,Q5,Q6,Q7",
    "Footprint": "SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR",
    "LCSC": "C2146"
   },
@@ -243,14 +255,20 @@
    "LCSC": "C11702"
   },
   {
+   "Comment": "470k",
+   "Designator": "R4,R5",
+   "Footprint": "R0402",
+   "LCSC": "C25790"
+  },
+  {
    "Comment": "100k",
-   "Designator": "R4,R5,R7,R10,R11,R12,R15,R40,R41,R42,R43,R44,R45,R102,R112,R120,R213,R214,R215",
+   "Designator": "R7,R10,R11,R12,R15,R40,R41,R42,R43,R44,R102,R112,R120,R132,R134,R138,R149,R150,R213,R214,R215",
    "Footprint": "R0402",
    "LCSC": "C25741"
   },
   {
    "Comment": "10k",
-   "Designator": "R8,R9,R30,R31,R32,R33,R36,R50,R51,R52,R53,R54,R55,R56,R57,R58,R67,R70,R121,R122",
+   "Designator": "R8,R9,R20,R30,R31,R32,R33,R36,R45,R50,R51,R52,R53,R54,R55,R56,R57,R58,R67,R70,R121,R122,R131,R135,R137",
    "Footprint": "R0402",
    "LCSC": "C25744"
   },
@@ -298,7 +316,7 @@
   },
   {
    "Comment": "1.5k",
-   "Designator": "R62,R73,R75,R81,R83",
+   "Designator": "R62",
    "Footprint": "R0402",
    "LCSC": "C25867"
   },
@@ -307,6 +325,12 @@
    "Designator": "R63,R64,R65,R66",
    "Footprint": "R0402",
    "LCSC": "C25120"
+  },
+  {
+   "Comment": "1.3k",
+   "Designator": "R73,R75,R81,R83",
+   "Footprint": "R0402",
+   "LCSC": "C25866"
   },
   {
    "Comment": "470R",
@@ -321,6 +345,18 @@
    "LCSC": "C25900"
   },
   {
+   "Comment": "150k",
+   "Designator": "R130,R136",
+   "Footprint": "R0603",
+   "LCSC": "C22807"
+  },
+  {
+   "Comment": "47k",
+   "Designator": "R133,R216,R217,R314",
+   "Footprint": "R0402",
+   "LCSC": "C25792"
+  },
+  {
    "Comment": "4.7R",
    "Designator": "R203,R205,R227,R230,R233,R236,R303,R305,R325,R328,R331,R334",
    "Footprint": "R0603",
@@ -331,12 +367,6 @@
    "Designator": "R212",
    "Footprint": "R0402",
    "LCSC": "C25765"
-  },
-  {
-   "Comment": "47k",
-   "Designator": "R216,R217,R314",
-   "Footprint": "R0402",
-   "LCSC": "C25792"
   },
   {
    "Comment": "75k",
@@ -393,10 +423,10 @@
    "LCSC": "C2973667"
   },
   {
-   "Comment": "CH340C",
+   "Comment": "CH340B",
    "Designator": "U8",
    "Footprint": "SOP-16_L10.0-W3.9-P1.27-LS6.0-BL",
-   "LCSC": "C84681"
+   "LCSC": "C81010"
   },
   {
    "Comment": "LAN8720A",
@@ -430,7 +460,7 @@
   },
   {
    "Comment": "TS5A23157",
-   "Designator": "U14",
+   "Designator": "U14,U20",
    "Footprint": "MSOP-10_L3.0-W3.0-P0.50-LS5.0-BL",
    "LCSC": "C11133"
   },
@@ -441,10 +471,10 @@
    "LCSC": "C475500"
   },
   {
-   "Comment": "TCA9555",
+   "Comment": "TCA9539",
    "Designator": "U17",
    "Footprint": "TSSOP-24_L7.8-W4.4-P0.65-LS6.4-BL",
-   "LCSC": "C465732"
+   "LCSC": "C131972"
   },
   {
    "Comment": "PLR237/T8BK",
@@ -453,8 +483,14 @@
    "LCSC": "C17223620"
   },
   {
+   "Comment": "49.152MHz",
+   "Designator": "Y1",
+   "Footprint": "OSC-SMD_4P-L3.2-W2.5-BL",
+   "LCSC": "C7431354"
+  },
+  {
    "Comment": "50MHz",
-   "Designator": "Y1,Y2",
+   "Designator": "Y2",
    "Footprint": "OSC-SMD_4P-L3.2-W2.5-BL",
    "LCSC": "C717684"
   }
@@ -466,8 +502,8 @@
    "Comment": "470uF/50V",
    "Designator": "C5,C6,C311",
    "Qty Per Board": "3",
-   "Boards": "10",
-   "Qty To Buy": "30",
+   "Boards": "5",
+   "Qty To Buy": "15",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -476,8 +512,8 @@
    "Comment": "SMBJ30A",
    "Designator": "D1",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -486,8 +522,8 @@
    "Comment": "BZT52C33",
    "Designator": "D2",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -496,18 +532,18 @@
    "Comment": "BZT52C15",
    "Designator": "D4",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
-   "LCSC": "C5184243",
-   "MPN": "USB4105-GF-A-120",
-   "Comment": "USB4105-GF-A-120",
+   "LCSC": "C7095263",
+   "MPN": "USB4085-GF-A",
+   "Comment": "USB4085-GF-A",
    "Designator": "J1",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -516,8 +552,8 @@
    "Comment": "HR911105A",
    "Designator": "J2",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -526,28 +562,28 @@
    "Comment": "FFC 20P",
    "Designator": "J3",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
    "LCSC": "C7527522",
-   "MPN": "SUB OUT",
+   "MPN": "XDJK-0271-1650",
    "Comment": "SUB OUT",
    "Designator": "J4,J5",
    "Qty Per Board": "2",
-   "Boards": "10",
-   "Qty To Buy": "20",
+   "Boards": "5",
+   "Qty To Buy": "10",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
    "LCSC": "C474881",
-   "MPN": "SPK A L",
+   "MPN": "KF301-5.0-2P",
    "Comment": "SPK A L",
    "Designator": "J6,J7,J10,J11",
    "Qty Per Board": "4",
-   "Boards": "10",
-   "Qty To Buy": "40",
+   "Boards": "5",
+   "Qty To Buy": "20",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -556,8 +592,8 @@
    "Comment": "10uH",
    "Designator": "L1,L2,L3,L4,L5,L6,L7,L8",
    "Qty Per Board": "8",
-   "Boards": "10",
-   "Qty To Buy": "80",
+   "Boards": "5",
+   "Qty To Buy": "40",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -566,8 +602,8 @@
    "Comment": "4.7uH",
    "Designator": "L9",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -576,8 +612,8 @@
    "Comment": "2.2uH",
    "Designator": "L10",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -586,8 +622,8 @@
    "Comment": "AO4485",
    "Designator": "Q1",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -596,8 +632,8 @@
    "Comment": "10m",
    "Designator": "R1",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -606,8 +642,8 @@
    "Comment": "210k",
    "Designator": "R2",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -616,8 +652,8 @@
    "Comment": "75k",
    "Designator": "R313",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -626,8 +662,8 @@
    "Comment": "CH224Q",
    "Designator": "U1",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -636,8 +672,8 @@
    "Comment": "USBLC6-2SC6",
    "Designator": "U2",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -646,8 +682,8 @@
    "Comment": "INA186A1",
    "Designator": "U3",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -656,8 +692,8 @@
    "Comment": "SY8303AIC",
    "Designator": "U4",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -666,8 +702,8 @@
    "Comment": "SY8089A1AAC",
    "Designator": "U5",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -676,8 +712,8 @@
    "Comment": "LP5907-3.3",
    "Designator": "U6",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -686,18 +722,18 @@
    "Comment": "ESP32-WROVER-E-N8R8",
    "Designator": "U7",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
-   "LCSC": "C84681",
-   "MPN": "CH340C",
-   "Comment": "CH340C",
+   "LCSC": "C81010",
+   "MPN": "CH340B",
+   "Comment": "CH340B",
    "Designator": "U8",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -706,8 +742,8 @@
    "Comment": "LAN8720A",
    "Designator": "U9",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -716,8 +752,8 @@
    "Comment": "ES9018K2M",
    "Designator": "U10",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -726,8 +762,8 @@
    "Comment": "OPA1678",
    "Designator": "U11",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -736,8 +772,8 @@
    "Comment": "PCM5102A",
    "Designator": "U12",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -746,17 +782,17 @@
    "Comment": "ES7243E",
    "Designator": "U13",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
    "LCSC": "C11133",
    "MPN": "TS5A23157",
    "Comment": "TS5A23157",
-   "Designator": "U14",
-   "Qty Per Board": "1",
-   "Boards": "10",
+   "Designator": "U14,U20",
+   "Qty Per Board": "2",
+   "Boards": "5",
    "Qty To Buy": "10",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
@@ -766,18 +802,18 @@
    "Comment": "TPA3221",
    "Designator": "U15,U16",
    "Qty Per Board": "2",
-   "Boards": "10",
-   "Qty To Buy": "20",
+   "Boards": "5",
+   "Qty To Buy": "10",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
-   "LCSC": "C465732",
-   "MPN": "TCA9555",
-   "Comment": "TCA9555",
+   "LCSC": "C131972",
+   "MPN": "TCA9539",
+   "Comment": "TCA9539",
    "Designator": "U17",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -786,26 +822,36 @@
    "Comment": "PLR237/T8BK",
    "Designator": "U19",
    "Qty Per Board": "1",
-   "Boards": "10",
-   "Qty To Buy": "10",
+   "Boards": "5",
+   "Qty To Buy": "5",
+   "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
+  },
+  {
+   "LCSC": "C7431354",
+   "MPN": "49.152MHz",
+   "Comment": "49.152MHz",
+   "Designator": "Y1",
+   "Qty Per Board": "1",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
    "LCSC": "C717684",
    "MPN": "50MHz",
    "Comment": "50MHz",
-   "Designator": "Y1,Y2",
-   "Qty Per Board": "2",
-   "Boards": "10",
-   "Qty To Buy": "20",
+   "Designator": "Y2",
+   "Qty Per Board": "1",
+   "Boards": "5",
+   "Qty To Buy": "5",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   }
  ],
  "bom_full_rows": [
   {
    "Comment": "1uF",
-   "Designator": "C1,C8,C207,C209,C226,C229,C232,C235,C307,C309,C324,C327,C330,C333",
-   "Qty Per Board": "14",
+   "Designator": "C1,C207,C209,C226,C229,C232,C235,C307,C309,C324,C327,C330,C333",
+   "Qty Per Board": "13",
    "Footprint": "C0805",
    "MPN": "1uF",
    "LCSC": "C28323",
@@ -814,7 +860,7 @@
   },
   {
    "Comment": "100nF",
-   "Designator": "C2,C31,C33,C34,C41,C42,C43,C44,C45,C46,C47,C51,C53,C54,C55,C57,C58,C120,C121,C125,C126,C202,C302",
+   "Designator": "C2,C31,C33,C34,C41,C42,C43,C44,C45,C46,C51,C53,C54,C55,C57,C58,C120,C121,C125,C126,C132,C202,C302",
    "Qty Per Board": "23",
    "Footprint": "C0402",
    "MPN": "100nF",
@@ -863,6 +909,16 @@
    "Instructions": ""
   },
   {
+   "Comment": "2.2uF",
+   "Designator": "C8",
+   "Qty Per Board": "1",
+   "Footprint": "C0805",
+   "MPN": "2.2uF",
+   "LCSC": "C377773",
+   "Assembly Class": "smt_placed",
+   "Instructions": ""
+  },
+  {
    "Comment": "100nF",
    "Designator": "C9",
    "Qty Per Board": "1",
@@ -894,8 +950,8 @@
   },
   {
    "Comment": "1uF",
-   "Designator": "C18,C19,C32,C40,C50,C52,C68,C69,C70,C101,C102,C111,C112,C122,C123,C124,C204,C206,C304,C306",
-   "Qty Per Board": "20",
+   "Designator": "C18,C19,C32,C40,C47,C50,C52,C68,C69,C70,C122,C123,C124,C131,C137,C204,C206,C304,C306",
+   "Qty Per Board": "19",
    "Footprint": "C0402",
    "MPN": "1uF",
    "LCSC": "C52923",
@@ -904,8 +960,8 @@
   },
   {
    "Comment": "4.7uF",
-   "Designator": "C56",
-   "Qty Per Board": "1",
+   "Designator": "C56,C101,C102,C111,C112",
+   "Qty Per Board": "5",
    "Footprint": "C0603",
    "MPN": "4.7uF",
    "LCSC": "C19666",
@@ -939,6 +995,16 @@
    "Footprint": "C0805",
    "MPN": "4.7uF",
    "LCSC": "C1779",
+   "Assembly Class": "smt_placed",
+   "Instructions": ""
+  },
+  {
+   "Comment": "470pF",
+   "Designator": "C130,C136",
+   "Qty Per Board": "2",
+   "Footprint": "C0603",
+   "MPN": "470pF",
+   "LCSC": "C1620",
    "Assembly Class": "smt_placed",
    "Instructions": ""
   },
@@ -1023,12 +1089,12 @@
    "Instructions": ""
   },
   {
-   "Comment": "USB4105-GF-A-120",
+   "Comment": "USB4085-GF-A",
    "Designator": "J1",
    "Qty Per Board": "1",
-   "Footprint": "USB-C-SMD_MC-311D",
-   "MPN": "USB4105-GF-A-120",
-   "LCSC": "C5184243",
+   "Footprint": "USC-C-SMD_USB4085-GF-A",
+   "MPN": "USB4085-GF-A",
+   "LCSC": "C7095263",
    "Assembly Class": "smt_placed",
    "Instructions": ""
   },
@@ -1057,7 +1123,7 @@
    "Designator": "J4",
    "Qty Per Board": "1",
    "Footprint": "CONN-TH_XDJK-0271-1650",
-   "MPN": "SUB OUT",
+   "MPN": "XDJK-0271-1650",
    "LCSC": "C7527522",
    "Assembly Class": "smt_placed",
    "Instructions": ""
@@ -1067,7 +1133,7 @@
    "Designator": "J5",
    "Qty Per Board": "1",
    "Footprint": "CONN-TH_XDJK-0271-1650",
-   "MPN": "SUB OUT",
+   "MPN": "XDJK-0271-1650",
    "LCSC": "C7527522",
    "Assembly Class": "smt_placed",
    "Instructions": ""
@@ -1077,7 +1143,7 @@
    "Designator": "J6",
    "Qty Per Board": "1",
    "Footprint": "CONN-TH_P5.00_KF301-5.0-2P",
-   "MPN": "SPK A L",
+   "MPN": "KF301-5.0-2P",
    "LCSC": "C474881",
    "Assembly Class": "smt_placed",
    "Instructions": ""
@@ -1087,7 +1153,7 @@
    "Designator": "J7",
    "Qty Per Board": "1",
    "Footprint": "CONN-TH_P5.00_KF301-5.0-2P",
-   "MPN": "SPK A L",
+   "MPN": "KF301-5.0-2P",
    "LCSC": "C474881",
    "Assembly Class": "smt_placed",
    "Instructions": ""
@@ -1097,7 +1163,7 @@
    "Designator": "J10",
    "Qty Per Board": "1",
    "Footprint": "CONN-TH_P5.00_KF301-5.0-2P",
-   "MPN": "SPK A L",
+   "MPN": "KF301-5.0-2P",
    "LCSC": "C474881",
    "Assembly Class": "smt_placed",
    "Instructions": ""
@@ -1107,7 +1173,7 @@
    "Designator": "J11",
    "Qty Per Board": "1",
    "Footprint": "CONN-TH_P5.00_KF301-5.0-2P",
-   "MPN": "SPK A L",
+   "MPN": "KF301-5.0-2P",
    "LCSC": "C474881",
    "Assembly Class": "smt_placed",
    "Instructions": ""
@@ -1164,8 +1230,8 @@
   },
   {
    "Comment": "S8050",
-   "Designator": "Q3,Q4,Q5,Q6",
-   "Qty Per Board": "4",
+   "Designator": "Q3,Q4,Q5,Q6,Q7",
+   "Qty Per Board": "5",
    "Footprint": "SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR",
    "MPN": "S8050",
    "LCSC": "C2146",
@@ -1203,9 +1269,19 @@
    "Instructions": ""
   },
   {
+   "Comment": "470k",
+   "Designator": "R4,R5",
+   "Qty Per Board": "2",
+   "Footprint": "R0402",
+   "MPN": "470k",
+   "LCSC": "C25790",
+   "Assembly Class": "smt_placed",
+   "Instructions": ""
+  },
+  {
    "Comment": "100k",
-   "Designator": "R4,R5,R7,R10,R11,R12,R15,R40,R41,R42,R43,R44,R45,R102,R112,R120,R213,R214,R215",
-   "Qty Per Board": "19",
+   "Designator": "R7,R10,R11,R12,R15,R40,R41,R42,R43,R44,R102,R112,R120,R132,R134,R138,R149,R150,R213,R214,R215",
+   "Qty Per Board": "21",
    "Footprint": "R0402",
    "MPN": "100k",
    "LCSC": "C25741",
@@ -1214,8 +1290,8 @@
   },
   {
    "Comment": "10k",
-   "Designator": "R8,R9,R30,R31,R32,R33,R36,R50,R51,R52,R53,R54,R55,R56,R57,R58,R67,R70,R121,R122",
-   "Qty Per Board": "20",
+   "Designator": "R8,R9,R20,R30,R31,R32,R33,R36,R45,R50,R51,R52,R53,R54,R55,R56,R57,R58,R67,R70,R121,R122,R131,R135,R137",
+   "Qty Per Board": "25",
    "Footprint": "R0402",
    "MPN": "10k",
    "LCSC": "C25744",
@@ -1294,8 +1370,8 @@
   },
   {
    "Comment": "1.5k",
-   "Designator": "R62,R73,R75,R81,R83",
-   "Qty Per Board": "5",
+   "Designator": "R62",
+   "Qty Per Board": "1",
    "Footprint": "R0402",
    "MPN": "1.5k",
    "LCSC": "C25867",
@@ -1309,6 +1385,16 @@
    "Footprint": "R0402",
    "MPN": "49.9R",
    "LCSC": "C25120",
+   "Assembly Class": "smt_placed",
+   "Instructions": ""
+  },
+  {
+   "Comment": "1.3k",
+   "Designator": "R73,R75,R81,R83",
+   "Qty Per Board": "4",
+   "Footprint": "R0402",
+   "MPN": "1.3k",
+   "LCSC": "C25866",
    "Assembly Class": "smt_placed",
    "Instructions": ""
   },
@@ -1333,6 +1419,26 @@
    "Instructions": ""
   },
   {
+   "Comment": "150k",
+   "Designator": "R130,R136",
+   "Qty Per Board": "2",
+   "Footprint": "R0603",
+   "MPN": "150k",
+   "LCSC": "C22807",
+   "Assembly Class": "smt_placed",
+   "Instructions": ""
+  },
+  {
+   "Comment": "47k",
+   "Designator": "R133,R216,R217,R314",
+   "Qty Per Board": "4",
+   "Footprint": "R0402",
+   "MPN": "47k",
+   "LCSC": "C25792",
+   "Assembly Class": "smt_placed",
+   "Instructions": ""
+  },
+  {
    "Comment": "4.7R",
    "Designator": "R203,R205,R227,R230,R233,R236,R303,R305,R325,R328,R331,R334",
    "Qty Per Board": "12",
@@ -1349,16 +1455,6 @@
    "Footprint": "R0402",
    "MPN": "20k",
    "LCSC": "C25765",
-   "Assembly Class": "smt_placed",
-   "Instructions": ""
-  },
-  {
-   "Comment": "47k",
-   "Designator": "R216,R217,R314",
-   "Qty Per Board": "3",
-   "Footprint": "R0402",
-   "MPN": "47k",
-   "LCSC": "C25792",
    "Assembly Class": "smt_placed",
    "Instructions": ""
   },
@@ -1453,12 +1549,12 @@
    "Instructions": ""
   },
   {
-   "Comment": "CH340C",
+   "Comment": "CH340B",
    "Designator": "U8",
    "Qty Per Board": "1",
    "Footprint": "SOP-16_L10.0-W3.9-P1.27-LS6.0-BL",
-   "MPN": "CH340C",
-   "LCSC": "C84681",
+   "MPN": "CH340B",
+   "LCSC": "C81010",
    "Assembly Class": "smt_placed",
    "Instructions": ""
   },
@@ -1514,8 +1610,8 @@
   },
   {
    "Comment": "TS5A23157",
-   "Designator": "U14",
-   "Qty Per Board": "1",
+   "Designator": "U14,U20",
+   "Qty Per Board": "2",
    "Footprint": "MSOP-10_L3.0-W3.0-P0.50-LS5.0-BL",
    "MPN": "TS5A23157",
    "LCSC": "C11133",
@@ -1533,12 +1629,12 @@
    "Instructions": ""
   },
   {
-   "Comment": "TCA9555",
+   "Comment": "TCA9539",
    "Designator": "U17",
    "Qty Per Board": "1",
    "Footprint": "TSSOP-24_L7.8-W4.4-P0.65-LS6.4-BL",
-   "MPN": "TCA9555",
-   "LCSC": "C465732",
+   "MPN": "TCA9539",
+   "LCSC": "C131972",
    "Assembly Class": "smt_placed",
    "Instructions": ""
   },
@@ -1553,9 +1649,19 @@
    "Instructions": ""
   },
   {
+   "Comment": "49.152MHz",
+   "Designator": "Y1",
+   "Qty Per Board": "1",
+   "Footprint": "OSC-SMD_4P-L3.2-W2.5-BL",
+   "MPN": "49.152MHz",
+   "LCSC": "C7431354",
+   "Assembly Class": "smt_placed",
+   "Instructions": ""
+  },
+  {
    "Comment": "50MHz",
-   "Designator": "Y1,Y2",
-   "Qty Per Board": "2",
+   "Designator": "Y2",
+   "Qty Per Board": "1",
    "Footprint": "OSC-SMD_4P-L3.2-W2.5-BL",
    "MPN": "50MHz",
    "LCSC": "C717684",
@@ -1597,7 +1703,7 @@
    "Designator": "SW2",
    "Qty Per Board": "1",
    "Footprint": "SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
-   "MPN": "BTN1",
+   "MPN": "TS-1187A-B-A-B",
    "LCSC": "C318884",
    "Assembly Class": "dnp",
    "Instructions": "DO NOT POPULATE - this land ships empty."
@@ -1607,18 +1713,18 @@
    "Designator": "SW3",
    "Qty Per Board": "1",
    "Footprint": "SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
-   "MPN": "BTN1",
+   "MPN": "TS-1187A-B-A-B",
    "LCSC": "C318884",
    "Assembly Class": "dnp",
    "Instructions": "DO NOT POPULATE - this land ships empty."
   },
   {
-   "Comment": "IRM-H638T",
+   "Comment": "IRM-3638T",
    "Designator": "U18",
    "Qty Per Board": "1",
-   "Footprint": "SENSOR-SMD_IRM-H638T-TR2-TL",
-   "MPN": "IRM-H638T",
-   "LCSC": "C91447",
+   "Footprint": "OPTO-TH_IRM-3638T",
+   "MPN": "IRM-3638T",
+   "LCSC": "C42421366",
    "Assembly Class": "dnp",
    "Instructions": "DO NOT POPULATE - this land ships empty."
   },
@@ -2035,17 +2141,17 @@
   },
   {
    "Designator": "C101",
-   "Mid X": "120.5900",
-   "Mid Y": "-159.8200",
+   "Mid X": "131.3100",
+   "Mid Y": "-155.9900",
    "Layer": "Top",
    "Rotation": "90.0000"
   },
   {
    "Designator": "C102",
-   "Mid X": "138.0490",
-   "Mid Y": "-149.4690",
+   "Mid X": "138.3400",
+   "Mid Y": "-149.1600",
    "Layer": "Top",
-   "Rotation": "90.0000"
+   "Rotation": "0.0000"
   },
   {
    "Designator": "C110",
@@ -2056,15 +2162,15 @@
   },
   {
    "Designator": "C111",
-   "Mid X": "119.6960",
-   "Mid Y": "-157.2430",
+   "Mid X": "131.3100",
+   "Mid Y": "-159.0400",
    "Layer": "Top",
-   "Rotation": "0.0000"
+   "Rotation": "90.0000"
   },
   {
    "Designator": "C112",
-   "Mid X": "131.0530",
-   "Mid Y": "-151.5230",
+   "Mid X": "140.3000",
+   "Mid Y": "-153.5000",
    "Layer": "Top",
    "Rotation": "90.0000"
   },
@@ -2116,6 +2222,41 @@
    "Mid Y": "-132.5070",
    "Layer": "Top",
    "Rotation": "90.0000"
+  },
+  {
+   "Designator": "C130",
+   "Mid X": "96.5000",
+   "Mid Y": "-144.0000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "C131",
+   "Mid X": "99.3000",
+   "Mid Y": "-140.8000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "C132",
+   "Mid X": "100.9400",
+   "Mid Y": "-157.7000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "C136",
+   "Mid X": "102.1000",
+   "Mid Y": "-144.0000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "C137",
+   "Mid X": "99.3000",
+   "Mid Y": "-144.0000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
   },
   {
    "Designator": "C142",
@@ -2553,8 +2694,8 @@
   },
   {
    "Designator": "J1",
-   "Mid X": "38.5870",
-   "Mid Y": "-178.6970",
+   "Mid X": "38.5070",
+   "Mid Y": "-178.7000",
    "Layer": "Top",
    "Rotation": "270.0000"
   },
@@ -2727,6 +2868,13 @@
    "Rotation": "0.0000"
   },
   {
+   "Designator": "Q7",
+   "Mid X": "103.7300",
+   "Mid Y": "-149.0200",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
    "Designator": "R1",
    "Mid X": "47.5870",
    "Mid Y": "-180.6970",
@@ -2856,6 +3004,13 @@
    "Designator": "R19",
    "Mid X": "46.6310",
    "Mid Y": "-188.9610",
+   "Layer": "Top",
+   "Rotation": "90.0000"
+  },
+  {
+   "Designator": "R20",
+   "Mid X": "52.1900",
+   "Mid Y": "-185.5000",
    "Layer": "Top",
    "Rotation": "90.0000"
   },
@@ -3231,6 +3386,83 @@
    "Rotation": "90.0000"
   },
   {
+   "Designator": "R130",
+   "Mid X": "96.5000",
+   "Mid Y": "-140.8000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "R131",
+   "Mid X": "96.5000",
+   "Mid Y": "-142.4000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "R132",
+   "Mid X": "99.3000",
+   "Mid Y": "-142.4000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "R133",
+   "Mid X": "106.6000",
+   "Mid Y": "-155.0000",
+   "Layer": "Top",
+   "Rotation": "90.0000"
+  },
+  {
+   "Designator": "R134",
+   "Mid X": "106.8500",
+   "Mid Y": "-157.0300",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "R135",
+   "Mid X": "101.5000",
+   "Mid Y": "-159.1900",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "R136",
+   "Mid X": "102.1000",
+   "Mid Y": "-140.8000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "R137",
+   "Mid X": "102.1000",
+   "Mid Y": "-142.4000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "R138",
+   "Mid X": "99.3000",
+   "Mid Y": "-145.4000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
+   "Designator": "R149",
+   "Mid X": "94.1500",
+   "Mid Y": "-145.0900",
+   "Layer": "Top",
+   "Rotation": "90.0000"
+  },
+  {
+   "Designator": "R150",
+   "Mid X": "102.8100",
+   "Mid Y": "-145.7000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
    "Designator": "R203",
    "Mid X": "49.5030",
    "Mid Y": "-172.8090",
@@ -3525,6 +3757,13 @@
    "Rotation": "180.0000"
   },
   {
+   "Designator": "U20",
+   "Mid X": "103.8000",
+   "Mid Y": "-154.2000",
+   "Layer": "Top",
+   "Rotation": "0.0000"
+  },
+  {
    "Designator": "Y1",
    "Mid X": "120.5870",
    "Mid Y": "-143.1970",
@@ -3609,6 +3848,11 @@
   "C124": "smt_placed",
   "C125": "smt_placed",
   "C126": "smt_placed",
+  "C130": "smt_placed",
+  "C131": "smt_placed",
+  "C132": "smt_placed",
+  "C136": "smt_placed",
+  "C137": "smt_placed",
   "C142": "smt_placed",
   "C143": "smt_placed",
   "C150": "smt_placed",
@@ -3701,6 +3945,7 @@
   "Q4": "smt_placed",
   "Q5": "smt_placed",
   "Q6": "smt_placed",
+  "Q7": "smt_placed",
   "R1": "smt_placed",
   "R2": "smt_placed",
   "R3": "smt_placed",
@@ -3720,6 +3965,7 @@
   "R17": "smt_placed",
   "R18": "smt_placed",
   "R19": "smt_placed",
+  "R20": "smt_placed",
   "R30": "smt_placed",
   "R31": "smt_placed",
   "R32": "smt_placed",
@@ -3773,6 +4019,17 @@
   "R120": "smt_placed",
   "R121": "smt_placed",
   "R122": "smt_placed",
+  "R130": "smt_placed",
+  "R131": "smt_placed",
+  "R132": "smt_placed",
+  "R133": "smt_placed",
+  "R134": "smt_placed",
+  "R135": "smt_placed",
+  "R136": "smt_placed",
+  "R137": "smt_placed",
+  "R138": "smt_placed",
+  "R149": "smt_placed",
+  "R150": "smt_placed",
   "R203": "smt_placed",
   "R205": "smt_placed",
   "R212": "smt_placed",
@@ -3820,11 +4077,12 @@
   "U17": "smt_placed",
   "U18": "dnp",
   "U19": "smt_placed",
+  "U20": "smt_placed",
   "Y1": "smt_placed",
   "Y2": "smt_placed"
  },
  "class_counts": {
-  "smt_placed": 272,
+  "smt_placed": 291,
   "dnp": 6,
   "board_feature": 4
  },
@@ -4433,7 +4691,7 @@
   },
   {
    "ref": "C101",
-   "package": "C0402",
+   "package": "C0603",
    "base_rot": 90.0,
    "correction": 0.0,
    "final_rot": 90.0,
@@ -4443,10 +4701,10 @@
   },
   {
    "ref": "C102",
-   "package": "C0402",
-   "base_rot": 90.0,
+   "package": "C0603",
+   "base_rot": 0.0,
    "correction": 0.0,
-   "final_rot": 90.0,
+   "final_rot": 0.0,
    "matched": null,
    "source": "lcsc_model",
    "layer": "Top"
@@ -4463,17 +4721,17 @@
   },
   {
    "ref": "C111",
-   "package": "C0402",
-   "base_rot": 0.0,
+   "package": "C0603",
+   "base_rot": 90.0,
    "correction": 0.0,
-   "final_rot": 0.0,
+   "final_rot": 90.0,
    "matched": null,
    "source": "lcsc_model",
    "layer": "Top"
   },
   {
    "ref": "C112",
-   "package": "C0402",
+   "package": "C0603",
    "base_rot": 90.0,
    "correction": 0.0,
    "final_rot": 90.0,
@@ -4547,6 +4805,56 @@
    "base_rot": 90.0,
    "correction": 0.0,
    "final_rot": 90.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "C130",
+   "package": "C0603",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "C131",
+   "package": "C0402",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "C132",
+   "package": "C0402",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "C136",
+   "package": "C0603",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "C137",
+   "package": "C0402",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
    "matched": null,
    "source": "lcsc_model",
    "layer": "Top"
@@ -5173,7 +5481,7 @@
   },
   {
    "ref": "J1",
-   "package": "USB-C-SMD_MC-311D",
+   "package": "USC-C-SMD_USB4085-GF-A",
    "base_rot": -90.0,
    "correction": 0.0,
    "final_rot": 270.0,
@@ -5422,6 +5730,16 @@
    "layer": "Top"
   },
   {
+   "ref": "Q7",
+   "package": "SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
    "ref": "R1",
    "package": "R2512",
    "base_rot": 0.0,
@@ -5603,6 +5921,16 @@
   },
   {
    "ref": "R19",
+   "package": "R0402",
+   "base_rot": 90.0,
+   "correction": 0.0,
+   "final_rot": 90.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "R20",
    "package": "R0402",
    "base_rot": 90.0,
    "correction": 0.0,
@@ -6142,6 +6470,116 @@
    "layer": "Top"
   },
   {
+   "ref": "R130",
+   "package": "R0603",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "R131",
+   "package": "R0402",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "R132",
+   "package": "R0402",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "R133",
+   "package": "R0402",
+   "base_rot": 90.0,
+   "correction": 0.0,
+   "final_rot": 90.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "R134",
+   "package": "R0402",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "R135",
+   "package": "R0402",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "R136",
+   "package": "R0603",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "R137",
+   "package": "R0402",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "R138",
+   "package": "R0402",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "R149",
+   "package": "R0402",
+   "base_rot": 90.0,
+   "correction": 0.0,
+   "final_rot": 90.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "R150",
+   "package": "R0402",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
    "ref": "R203",
    "package": "R0603",
    "base_rot": 90.0,
@@ -6562,6 +7000,16 @@
    "layer": "Top"
   },
   {
+   "ref": "U20",
+   "package": "MSOP-10_L3.0-W3.0-P0.50-LS5.0-BL",
+   "base_rot": 0.0,
+   "correction": 0.0,
+   "final_rot": 0.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
    "ref": "Y1",
    "package": "OSC-SMD_4P-L3.2-W2.5-BL",
    "base_rot": 0.0,
@@ -6586,7 +7034,7 @@
  "rotation_from_table": [
   "U19"
  ],
- "easyeda_cache": "/hive/home/.cache/hwde/easyeda",
+ "easyeda_cache": "parts/easyeda",
  "model_fetch_failed": [],
  "easyeda_rate_limited": null,
  "missing_lcsc": [],
