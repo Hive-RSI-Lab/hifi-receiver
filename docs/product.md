@@ -126,7 +126,7 @@ on 2 layers (`boards/lite-main-main/README.md`). Both: PD 3.2, EPR, 5–28 V,
 
 The rule that makes it safe: **a firmware power governor.**
 
-- **What it measures:** an INA180 shunt amp reads VBUS current (Plus/Ultra).
+- **What it measures:** an INA186 shunt amp reads VBUS current (Plus/Ultra). The INA180 was replaced on the core board because its 26 V common-mode limit is below the 28 V rail.
   Lite uses a level-based estimate instead.
 - **What it does:** a limiter in the DSP holds the 1-second average input
   power under 90% of the negotiated PDO (126 W at 28 V/5 A, 90 W at 20 V/5 A,
@@ -464,6 +464,22 @@ The brief asks for a 3D-printable enclosure made in Onshape.
   `lite-main`'s KiCad file and fit-checked against it, and exported as STEP
   and STL. That is about 110 g of PETG, plus 4 M3 screws, 4 binding posts and
   4 feet. Onshape can import its STEP files.
+
+### Core board as built (2026-10-28)
+
+`boards/core` (see its README) changed these decisions on the way to a
+routed board:
+
+- **Current sense:** INA186, not INA180, which can't take 28 V common mode.
+- **DAC master clock:** 50 MHz, not 100 MHz. That is the ES9018K2M's limit
+  on its internal DVDD.
+- **Ethernet clock:** a gated 50 MHz oscillator. The ESP32 GPIO0 clock-out
+  is experimental in ESP-IDF.
+- **Speaker connections:** 2-way screw terminals on the board. The
+  enclosure's banana sockets or binding posts wire to them, which closes
+  open item 4.
+- **Front-board FFC:** ultra-front's pinout, with SPI, I2C and an interrupt
+  line. The front board carries its own expander.
 
 ### Open items
 
