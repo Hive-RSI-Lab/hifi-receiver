@@ -42,7 +42,9 @@ It fails (exit 1) if any of these fails:
    `$HWCHECK_BASE`): committed, edited or new. A PR that touches no board
    runs no gates; one that touches a board runs that board's alone. Every
    board is gated when `tools/hwcheck.py` itself changes, when git can't
-   find the merge base (no main ref, not a git checkout), and with
+   find the merge base (no main ref, not a git checkout), when nothing
+   differs from it (main itself: every test on main re-gates every board,
+   so a fix or a break in hive-hwde reaches all of them), and with
    `test --all` or `HWCHECK_ALL=1`. The first line under `boards/` names
    which boards it gates and why. Workers run their board's gates before
    they finish, and the score re-runs the first tier's gates on main after
