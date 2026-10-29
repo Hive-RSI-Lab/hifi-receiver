@@ -40,8 +40,8 @@
   "how": "TI SLASEE9C (rev. May 2025) section 5 and the pin table: the DDV PowerPAD is on the top side, 'connect to grounded heatsink'; RthJA 44.8 C/W without one (DFM-3, THERMAL-1). The 'pad on bottom' feature bullet contradicts the drawing and pin table. Handled by the lid-pressed heatsink (docs/review-2/dispositions.json THERMAL-1)."
  },
  "parts:23": {
-  "status": "resolved",
-  "how": "Pad-up confirmed (audio:20). The heatsink is pressed on from the enclosure lid; the firmware governor and OTW/FAULT handling keep a missing or poor heatsink to reduced volume, not damage (firmware C2/C3)."
+  "status": "unresolved",
+  "how": "Lead (00:39Z) rejects a hand-fitted heatsink: needs a JLC-fittable board-mount part or a pad-down amp. See docs/review-2/heatsink-options.md: none found that holds 18 C/W."
  },
  "audio:29": {
   "status": "resolved",
@@ -80,8 +80,8 @@
   "how": "Enclosure not yet designed; the Plus/Ultra enclosure task carries the heatsink and vent spec (core README, THERMAL-1); the OTW/governor backstop applies."
  },
  "thermal:34": {
-  "status": "resolved",
-  "how": "Spec in core README: 19 x 12 mm base, fins to the lid, <=20 C/W in still air, 0.2 mm >=3 W/mK pad; bought with the enclosure. Backstop as thermal:3."
+  "status": "unresolved",
+  "how": "Lead (00:39Z) rejects a hand-fitted heatsink: needs a JLC-fittable board-mount part or a pad-down amp. See docs/review-2/heatsink-options.md: none found that holds 18 C/W."
  },
  "dfm:0": {
   "status": "resolved",
