@@ -1,0 +1,5 @@
+- P7 routing: planes_gen (B.Cu GND; VBUS/PVDD pours from kicad/gen/power.py) + pre-routed power taps and vias (route_edit), route_auto (Freerouting + KRT finish) to 100 %, stitch_vias, post-route F.Cu GND pour, fix_holes.
+- route_critical skipped (KRT shorted into pours; the USB pair is plain at full speed).
+- Freerouting differs run to run: the route step was repeated, keeping the cleanest run; the last hole-to-hole via nudged (nudge_vias.py + refill.py).
+- finish: plane_repair 0 splits, snap45 (off-angle 0 left), silk_place + silk.py, outline snapped to 1 um.
+- drc_routed PASS 0/0/0.

@@ -1,0 +1,4 @@
+- P8 verify gate PASS with 1 waiver (U8 check_thermal: hwde model ~47 C/W vs TI's 22 C/W EVM figure; bring-up must measure at 1/8 power) and 27 warnings (route-style jogs, parts with no voltage-rating attribute).
+- Earlier verify rounds caught: BUCK5_SW through a via (buck re-laid out, SW now F.Cu only), the F.Cu PVDD strip cut by speaker lines (moved to a B.Cu column), the bleeder on a zero-width pour sliver (moved out).
+- Fresh-context board review: reports/review-board.md.
+- H4: delegate approval recorded.

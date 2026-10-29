@@ -1,0 +1,3 @@
+- P6 placement by explicit op list (kicad/gen/place.py -> place_edit): rear edge RCA in, RCA sub out, USB-C, speaker terminal; front edge buttons, LED, IR; ESP32 antenna at the left edge with a both-layer copper keep-out (kicad/gen/keepout.py).
+- Amp output row faces the terminal (channel swap at the chip, no crossing).
+- place gate PASS 0 errors after 6 iterations (overlaps, decoupler distances).
