@@ -106,8 +106,8 @@ image is written beside the running one and the old one stays bootable:
 
 | Partition | Size | Holds |
 |---|---|---|
-| `recovery` (factory) | 1.5 MB | squeezelite-esp32's recovery app (1.38 MB built) |
-| `ota_0`, `ota_1` | 3.19 MB each | the main app (2.69 MB built) |
+| `recovery` (factory) | 1.75 MB | squeezelite-esp32's recovery app (1.52 MB built) |
+| `ota_0`, `ota_1` | 3.06 MB each | the main app (2.77 MB built, with the relay) |
 
 The old table had one 4 MB app slot, so an update could only be written by
 rebooting into recovery, and a bad image had nothing to fall back to but

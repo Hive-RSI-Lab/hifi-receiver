@@ -69,7 +69,7 @@ hifi_ota_t hifi_ota_session;
 /* ------------------------------------------------------------------ settings */
 
 static void load_str(const char *key, const char *dflt, char *out, size_t n) {
-	char *s = config_alloc_get_str(key, NULL, dflt);
+	char *s = config_alloc_get_str(key, NULL, (char *) dflt); /* it only reads the default */
 	snprintf(out, n, "%s", s ? s : dflt);
 	free(s);
 }

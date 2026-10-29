@@ -68,7 +68,12 @@ uv venv --seed --python 3.10 ~/esp/tools/python_env/idf4.4_py3.10_env
 `build.sh` finds that install by itself. The Hive's `hive-fw` module is
 making a shared copy; when it lands, set `IDF_PATH` and `build.sh` uses it.
 
-**What has been checked (2026-10-28):** the full build, both images, on
+**Checked again with the relay, OTA and capture (2026-10-28, task
+261029-014757):** the full build with `fw` (ESP-IDF v4.4.8), our component,
+esp-mqtt and libsodium linked; `squeezelite.bin` 2.77 MB of its 3.06 MB slot,
+`recovery.bin` 1.52 MB of 1.75 MB (`build.sh` checks both).
+
+**What was checked before (2026-10-28):** the full build, both images, on
 this machine with ESP-IDF v4.4.8: `squeezelite.bin` 2.69 MB in its 4 MB
 slot, `recovery.bin` 1.38 MB in its 2 MB slot; the hooks link
 (`target_hifi`, `hifi_dsp_process`, `hifi_http_register`, `hifi_sink_start`

@@ -175,7 +175,7 @@ Designed in [remote.md](remote.md); here is where it lives in the code.
   PGA at 0 dB and the ALC off, and reads I2S, which squeezelite now opens full
   duplex (`di=35` in the board's `dac_config`; the patch makes it parse
   `di`). The routing goes back to the input in use afterwards.
-- **Partition table:** two 3.19 MB app slots plus the 1.5 MB recovery app
+- **Partition table:** two 3.06 MB app slots plus the 1.75 MB recovery app
   (`board/lite-main/partitions.csv`).
 
 **Unchecked on hardware:** the ES8388 ADC register values, I2S full duplex
