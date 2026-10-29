@@ -4,15 +4,15 @@
  "workspace_schema": 2,
  "workspace": "/work/boards/core",
  "created": "2026-10-28T11:07:23",
- "updated": "2026-10-29T03:14:51",
+ "updated": "2026-10-29T03:20:44",
  "phase": "P9",
  "gates": {
   "erc": {
    "phase": "P4",
    "status": "pass",
-   "attempts": 13,
+   "attempts": 14,
    "last": {
-    "ts": "2026-10-29T03:06:59",
+    "ts": "2026-10-29T03:20:44",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
@@ -144,6 +144,16 @@
     },
     {
      "ts": "2026-10-29T03:06:59",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
+      "pro": "json_canonical:ade210d648016346219e733a80aa291be83b7604227024277df89bb7b23acc28"
+     }
+    },
+    {
+     "ts": "2026-10-29T03:20:44",
      "status": "pass",
      "failing_count": 0,
      "total": 0,
@@ -4587,15 +4597,15 @@
   "verify": {
    "phase": "P8",
    "status": "pass",
-   "attempts": 8,
+   "attempts": 9,
    "last": {
-    "ts": "2026-10-29T03:14:38",
+    "ts": "2026-10-29T03:18:54",
     "status": "pass",
     "failing_count": 0,
     "total": 165,
     "inputs": {
      "pcb": "sexpr_no_uuid:bd8e6b3043c1b7a6ae6c5089e6be7bea70688dc56850572b30552596a26d718a",
-     "constraints": "json_canonical:2f7a74751ee47d818c7b7a4114344127ae05157cc64c5d31d615825cd17417dd",
+     "constraints": "json_canonical:79ac6f7f649e43c1ae962cf7ac7d0114366e7ea7cab6459c60e8da80dc6f97d0",
      "decoupling": "json_canonical:7e759350e42c493293b29d46193ba5934d5c131dd8262b3f6f08de943ba02362",
      "waivers": "json_canonical:b617b01d130b74a9c5e33240470e7ef866d297c5b8d1032d7b06f0753517010a"
     }
@@ -4696,6 +4706,18 @@
       "decoupling": "json_canonical:7e759350e42c493293b29d46193ba5934d5c131dd8262b3f6f08de943ba02362",
       "waivers": "json_canonical:b617b01d130b74a9c5e33240470e7ef866d297c5b8d1032d7b06f0753517010a"
      }
+    },
+    {
+     "ts": "2026-10-29T03:18:54",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 165,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:bd8e6b3043c1b7a6ae6c5089e6be7bea70688dc56850572b30552596a26d718a",
+      "constraints": "json_canonical:79ac6f7f649e43c1ae962cf7ac7d0114366e7ea7cab6459c60e8da80dc6f97d0",
+      "decoupling": "json_canonical:7e759350e42c493293b29d46193ba5934d5c131dd8262b3f6f08de943ba02362",
+      "waivers": "json_canonical:b617b01d130b74a9c5e33240470e7ef866d297c5b8d1032d7b06f0753517010a"
+     }
     }
    ]
   },
@@ -4768,31 +4790,31 @@
    "path": "kicad/core.kicad_sch",
    "kind": "sch",
    "sha256": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
-   "hashed": "2026-10-29T03:14:51"
+   "hashed": "2026-10-29T03:20:44"
   },
   "pro": {
    "path": "kicad/core.kicad_pro",
    "kind": "pro",
-   "sha256": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
-   "hashed": "2026-10-29T03:14:16"
+   "sha256": "json_canonical:ade210d648016346219e733a80aa291be83b7604227024277df89bb7b23acc28",
+   "hashed": "2026-10-29T03:20:44"
   },
   "pcb": {
    "path": "kicad/core.kicad_pcb",
    "kind": "pcb",
    "sha256": "sexpr_no_uuid:bd8e6b3043c1b7a6ae6c5089e6be7bea70688dc56850572b30552596a26d718a",
-   "hashed": "2026-10-29T03:14:51"
+   "hashed": "2026-10-29T03:18:54"
   },
   "constraints": {
    "path": "kicad/constraints.json",
    "kind": "constraints",
-   "sha256": "json_canonical:2f7a74751ee47d818c7b7a4114344127ae05157cc64c5d31d615825cd17417dd",
-   "hashed": "2026-10-29T03:14:38"
+   "sha256": "json_canonical:79ac6f7f649e43c1ae962cf7ac7d0114366e7ea7cab6459c60e8da80dc6f97d0",
+   "hashed": "2026-10-29T03:18:54"
   },
   "decoupling": {
    "path": "kicad/decoupling.json",
    "kind": "decoupling",
    "sha256": "json_canonical:7e759350e42c493293b29d46193ba5934d5c131dd8262b3f6f08de943ba02362",
-   "hashed": "2026-10-29T03:14:38"
+   "hashed": "2026-10-29T03:18:54"
   },
   "place_waivers": {
    "path": "reports/place-waivers.json",
@@ -4810,7 +4832,7 @@
    "path": "reports/verify-waivers.json",
    "kind": "waivers",
    "sha256": "json_canonical:b617b01d130b74a9c5e33240470e7ef866d297c5b8d1032d7b06f0753517010a",
-   "hashed": "2026-10-29T03:14:38"
+   "hashed": "2026-10-29T03:18:54"
   },
   "parts": {
    "path": "kicad/parts.json",
@@ -8016,6 +8038,22 @@
    "gate": "dfm",
    "status": "pass",
    "attempt": 4,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-29T03:18:54",
+   "event": "gate",
+   "gate": "verify",
+   "status": "pass",
+   "attempt": 9,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-29T03:20:44",
+   "event": "gate",
+   "gate": "erc",
+   "status": "pass",
+   "attempt": 14,
    "failing_count": 0
   }
  ]

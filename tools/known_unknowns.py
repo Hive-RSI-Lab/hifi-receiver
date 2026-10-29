@@ -8,9 +8,12 @@ docs/review-2/resolutions.json, and writes docs/known-unknowns.md.
     python3 tools/known_unknowns.py            # write the page
     python3 tools/known_unknowns.py --check    # exit 1 if anything that could
                                                # stop a board is still open
+    python3 tools/known_unknowns.py --check --tier plus   # an order of one tier:
+                                               # facts marked open-ultra don't block it
 
 `--check` is the order-step gate: nothing unverified that could stop a board
-working may be open when the person orders. A row is closed when it is
+working may be open when the person orders. A fact about an Ultra-only part
+can be marked open-ultra: it blocks an Ultra order but not a Lite or Plus one. A row is closed when it is
 verified (source and date) or resolved (fixed in the design, or
 justified with its margin) in resolutions.json, keyed "<domain>:<n>" by the
 row's position in its domain's list.
@@ -46,16 +49,22 @@ def rows():
             yield key, d, k, status, how
 
 
-def is_open(k, status):
+def is_open(k, status, tier=None):
+    if status == "open-ultra" and tier in ("lite", "plus"):
+        return False
+    board = k.get("board")
+    if (tier == "lite" and board == "core") or (tier in ("plus", "ultra") and board == "lite-main"):
+        return False
     return bool(k.get("could_stop_board")) and status not in ("verified", "resolved")
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true")
+    ap.add_argument("--tier", choices=["lite", "plus", "ultra"])
     a = ap.parse_args()
     all_rows = list(rows())
-    open_rows = [r for r in all_rows if is_open(r[2], r[3])]
+    open_rows = [r for r in all_rows if is_open(r[2], r[3], a.tier)]
     if a.check:
         for key, d, k, status, _ in open_rows:
             print(f"OPEN {key} [{k.get('board')}] {k.get('fact')}")

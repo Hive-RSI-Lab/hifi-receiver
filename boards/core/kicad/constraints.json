@@ -197,11 +197,11 @@
   },
   {
    "ref": "U15",
-   "power_w": 3.0,
+   "power_w": 3.5,
    "net": "GND",
-   "dt_c": 60,
-   "theta_ja_c_w": 8.0,
-   "theta_source": "TPA3221 SLASEE9C 6.4: RthJC(top) 1.1 C/W into a bolted 40x40x20 mm heatsink (~4 C/W) + ~2.9 C/W interface/pad; the slug is on top, so PCB copper is not the heat path"
+   "dt_c": 65,
+   "theta_ja_c_w": 18.0,
+   "theta_source": "review-2 THERMAL-1/9 (2026-10-29): 3.5 W at 1/8 power into 4 ohm (SLASEE9C fig 6-9). RthJC(top) 1.1 C/W + 0.2 mm 3 W/mK pad ~0.9 C/W + a lid-pressed 19x12 mm finned heatsink <= 20 C/W in still air, in parallel with the board (44.8 C/W no-heatsink RthJA): ~18 C/W, Tj ~45 + 63 = 108 C. Not the 8 C/W of a bolted 40x40 heatsink, which the board has no room for."
   }
  ],
  "placement": {

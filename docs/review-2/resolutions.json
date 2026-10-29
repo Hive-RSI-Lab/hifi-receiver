@@ -34,5 +34,77 @@
  "dfm:9": {
   "status": "resolved",
   "how": "Lite J1 HRO TYPE-C-31-M-12 (C165948): footprint from EasyEDA (lib_pull 2026-10-29), its VBUS/GND pads redrawn as plain 0.6 x 1.3 mm rectangles (EasyEDA's 0.1 mm stroke left a 0.1 mm VBUS-GND gap) and its signal pads trimmed to 1.13 mm at the tail end (the USB4105's inner edge); shell legs 0.8 mm slots as HRO draws them. CPL: hwde cpl_verify against the LCSC model passes in the dfm gate (2026-10-29), no offset warning."
+ },
+ "audio:20": {
+  "status": "verified",
+  "how": "TI SLASEE9C (rev. May 2025) section 5 and the pin table: the DDV PowerPAD is on the top side, 'connect to grounded heatsink'; RthJA 44.8 C/W without one (DFM-3, THERMAL-1). The 'pad on bottom' feature bullet contradicts the drawing and pin table. Handled by the lid-pressed heatsink (docs/review-2/dispositions.json THERMAL-1)."
+ },
+ "parts:23": {
+  "status": "resolved",
+  "how": "Pad-up confirmed (audio:20). The heatsink is pressed on from the enclosure lid; the firmware governor and OTW/FAULT handling keep a missing or poor heatsink to reduced volume, not damage (firmware C2/C3)."
+ },
+ "audio:29": {
+  "status": "resolved",
+  "how": "Firmware's (C7): the register set is written over I2C after boot and can be changed by OTA; the hardware (I2S at 49.152 MHz MCLK, 1.7 % under the limit) fits ESS's documented modes."
+ },
+ "audio:32": {
+  "status": "resolved",
+  "how": "PCM5102A DIN is a plain high-impedance CMOS input (TI SLAS859 pin table: no internal pull); with its +-10 uA max leakage against the ESP32's ~45k IO12 pull-down at reset, IO12 sits at <=0.45 V, under VIL 0.825 V: the strap reads low (3.3 V flash)."
+ },
+ "audio:34": {
+  "status": "resolved",
+  "how": "ES7243E BCLK-as-MCLK (register 0x02 bit 7) is set by firmware (C10). If it didn't work, only the line-in/self-measurement ADC would be lost; streaming to the DAC and amps doesn't use it. Bring-up checks the ADC first thing."
+ },
+ "audio:37": {
+  "status": "verified",
+  "how": "Parts review (docs/review-2/parts.md, 2026-10-29): every SOT-23 transistor checked datasheet pin -> symbol -> pad; S8050 (C2146) B=1, E=2, C=3 matches."
+ },
+ "digital:2": {
+  "status": "resolved",
+  "how": "R45 is now 2.2k: OE stays under 30 % VDD (0.99 V) against any internal OE pull-up of 5.1k or more (oscillator OE pull-ups are typically ~100k); the TCA9539 that drives it has no pull-up and resets with EN. Bring-up scopes IO0 at EN rise."
+ },
+ "parts:36": {
+  "status": "resolved",
+  "how": "See digital:2 (R45 2.2k)."
+ },
+ "thermal:3": {
+  "status": "resolved",
+  "how": "The heatsink's real RthSA is a purchase-side fact; the board's safety doesn't rest on it: OTW (P11) and FAULT (P10) plus the ISENSE governor bring a hot amp back by turning down, and bring-up checks for no OTW at 1/8 power (C3)."
+ },
+ "thermal:4": {
+  "status": "resolved",
+  "how": "Covered by the same OTW/governor backstop (thermal:3); the governor limit (30 W in per chip) holds chip loss to ~3 W whatever the split."
+ },
+ "thermal:11": {
+  "status": "resolved",
+  "how": "Enclosure not yet designed; the Plus/Ultra enclosure task carries the heatsink and vent spec (core README, THERMAL-1); the OTW/governor backstop applies."
+ },
+ "thermal:34": {
+  "status": "resolved",
+  "how": "Spec in core README: 19 x 12 mm base, fins to the lid, <=20 C/W in still air, 0.2 mm >=3 W/mK pad; bought with the enclosure. Backstop as thermal:3."
+ },
+ "dfm:0": {
+  "status": "resolved",
+  "how": "Pins 1/3 are now 1.6 x 2.4 mm plated slots centred between the two readings of the drawing (0.28 mm to spare at the pin corners either way), legs 2.0 x 3.0 as drawn, on both boards."
+ },
+ "dfm:34": {
+  "status": "verified",
+  "how": "hwde dfm gate's cpl_verify against each part's LCSC/EasyEDA model passes on both boards after the swaps (2026-10-29): Lite J1 C165948, U6 C81010; core J1 C7095263, U8 C81010, U17 C131972, U18 C42421366, Y1 C7431354."
+ },
+ "dfm:16": {
+  "status": "open-ultra",
+  "how": "TOSLINK (Ultra only, not fitted on Plus): port direction and NC-row side still to confirm against Everlight's drawing before an Ultra order."
+ },
+ "parts:51": {
+  "status": "open-ultra",
+  "how": "TOSLINK pad 1 vs Everlight pin 1 (Ultra only): confirm before an Ultra order."
+ },
+ "parts:52": {
+  "status": "open-ultra",
+  "how": "The T8BK's post holes are now in the footprint; its 0.80 mm pins sit in 0.914 mm holes. Confirm the front offset (5.88 vs 6.14 mm) with the Ultra enclosure before an Ultra order."
+ },
+ "parts:64": {
+  "status": "open-ultra",
+  "how": "FFC contact side/cable type depends on the ultra-front board (Ultra only)."
  }
 }

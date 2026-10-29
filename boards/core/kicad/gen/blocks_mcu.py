@@ -63,9 +63,10 @@ C("C34", "100nF", "+3V3", ic="U17", pin="24")
 R("R36", "10k", "+3V3", "EXP_INT")
 for i, net in enumerate(["AMP_A_RST", "AMP_B_RST", "DJ_DIRECT", "PVDD_EN",
                          "DAC_EN", "PHY_RST"]):
-    # R45 (PHY_RST = Y2 OE) is 10k: the oscillator's own OE pull-up is
-    # undocumented, 10k holds OE under 30 % VDD against anything over ~25k
-    R(f"R{40 + i}", "10k" if net == "PHY_RST" else "100k", net, "GND",
+    # R45 (PHY_RST = Y2 OE) is 2.2k: the oscillator's own OE pull-up is
+    # undocumented; 2.2k holds OE under 30 % VDD (0.99 V) against any pull-up
+    # of 5.1k or more (review-2 DIGITAL-1, PARTS-4)
+    R(f"R{40 + i}", "2.2k" if net == "PHY_RST" else "100k", net, "GND",
       role="safe default: off")
 for i, net in enumerate(["AMP_FAULT", "AMP_OTW", "ENC_A", "ENC_B", "ENC_SW",
                          "BTN_1", "BTN_2", "LCD_CS", "IR_IN"]):

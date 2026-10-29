@@ -12,7 +12,7 @@ for i in range(0, len(a), 3):
         if t.GetNetname() != net or t in gone:
             continue
         hit = (t.GetPosition() - p).EuclideanNorm() < 20000 if t.GetClass() == "PCB_VIA" else \
-            min((t.GetStart() - p).EuclideanNorm(), (t.GetEnd() - p).EuclideanNorm()) < 20000
+            t.HitTest(p, 20000)
         if hit:
             gone.append(t)
 for t in gone:

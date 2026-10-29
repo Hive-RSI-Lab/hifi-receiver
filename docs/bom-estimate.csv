@@ -1,14 +1,14 @@
 block,part,lcsc,mpn,type,p10,p100,pins,mount,lite,plus,ultra,source
 platform,Wi-Fi/BT module (8 MB flash 8 MB PSRAM),C2973667,ESP32-WROVER-E-N8R8,extended,3.734,3.734,39,smt,0,1,1,LCSC live 2026-10-28
-platform,USB-C receptacle 16P 48 V 5 A,C5184243,USB4105-GF-A-120,extended,0.721,0.526,20,smt,0,1,1,LCSC live 2026-10-28
+platform,USB-C receptacle 16P 48 V 5 A through-hole (USB4105 0 at JLC),C7095263,USB4085-GF-A,extended,1.1742,0.8958,20,tht,0,1,1,"core as built, LCSC 2026-10-29 (review-2)"
 platform,USB PD sink 5-28 V (PD3.2 EPR 140 W),C46061833,CH224Q,extended,0.359,0.267,11,smt,0,1,1,LCSC live 2026-10-28
-platform,USB-UART for bring-up and flashing,C84681,CH340C,extended,0.455,0.334,16,smt,0,1,1,LCSC live 2026-10-28
+platform,USB-UART for bring-up and flashing (CH340C not buyable at JLC),C81010,CH340B,extended,1.1100,0.9057,16,smt,0,1,1,"core as built, LCSC 2026-10-29 (review-2)"
 platform,VBUS TVS 30 V standoff,C113998,SMBJ30A,extended,0.049,0.039,2,smt,0,1,1,LCSC live 2026-10-28
 platform,PVDD soft-start switch P-MOSFET 40 V 12 A,C5125949,AO4485,extended,0.182,0.142,8,smt,0,1,1,LCSC live 2026-10-28
 platform,Buck VBUS->5 V 40 V 3 A,C97054,SY8303AIC,extended,0.511,0.380,8,smt,0,1,1,LCSC live 2026-10-28
 platform,Buck 5 V->3.3 V 2 A,C479074,SY8089A1AAC,extended,0.086,0.069,5,smt,0,1,1,LCSC live 2026-10-28
 platform,Low-noise LDO 3.3 V for audio,C80670,LP5907MFX-3.3/NOPB,extended,0.165,0.127,5,smt,0,2,2,LCSC live 2026-10-28
-platform,IR receiver 38 kHz,C91447,IRM-H638T/TR2,extended,0.260,0.199,4,smt,0,1,1,LCSC live 2026-10-28
+platform,"IR receiver 38 kHz, front-facing through-hole",C42421366,IRM-3638T,extended,0.1859,0.1212,3,tht,0,1,1,"core as built, LCSC 2026-10-29 (review-2)"
 platform,Tactile switch,C318884,TS-1187A-B-A-B,basic,0.021,0.021,4,smt,0,2,3,LCSC live 2026-10-28
 platform,Dual RCA jack right angle (in; sub out),C7527522,XDJK-0271-1650,extended,0.258,0.202,6,tht,0,2,2,LCSC live 2026-10-28
 platform,4 mm banana socket (speaker out),C99865,GC4010-F,extended,0.164,0.151,1,tht,0,4,8,LCSC live 2026-10-28 (fit with a banana plug unchecked)
@@ -19,9 +19,11 @@ hifi-audio,100 MHz oscillator for the Sabre,C496694,O93225100MEDA4SI-13,extended
 hifi-audio,DAC for the sub outputs (2 Vrms line driver),C107671,PCM5102APWR,extended,1.294,0.940,20,smt,0,1,1,LCSC live 2026-10-28
 hifi-audio,ADC for the RCA line input,C2929446,ES7243E,extended,0.434,0.316,21,smt,0,1,1,LCSC live 2026-10-28
 hifi-audio,Dual op-amp (DAC output stage),C192421,OPA1678IDR,extended,0.619,0.468,8,smt,0,1,1,LCSC live 2026-10-28
-hifi-audio,Analog switch (DJ direct path),C11133,TS5A23157DGSR,extended,0.382,0.279,10,smt,0,1,1,LCSC live 2026-10-28
+hifi-audio,Analog switch (DJ direct path; ADC source RCA/speaker taps),C11133,TS5A23157DGSR,extended,0.382,0.279,10,smt,0,2,2,"core as built, LCSC 2026-10-29 (review-2)"
 hifi-audio,Class-D amp 2x BTL 30 V 88 W/4 ohm,C475500,TPA3221DDVR,extended,2.090,1.647,45,smt,0,1,2,LCSC live 2026-10-28
 hifi-audio,VBUS current sense amplifier,C48533472,INA180A1IDBVR(LX),extended,0.149,0.119,5,smt,0,1,1,LCSC live 2026-10-28
+hifi-audio,"I2C I/O expander, resets with the ESP32",C131972,TCA9539PWR,extended,1.0252,0.7959,24,smt,0,1,1,"core as built, LCSC 2026-10-29 (review-2)"
+hifi-audio,NPN level shift for the tap select,C2146,S8050,basic,0.0110,0.0110,3,smt,0,1,1,"core as built, LCSC 2026-10-29 (review-2)"
 amp-power,Output inductor 10 uH 8 A sat,C48391614,XR0850-100M,extended,0.192,0.151,2,smt,0,4,8,LCSC live 2026-10-28
 amp-power,Output filter cap 1 uF 50 V X7R 1206,C1848,CL31B105KBHNNNE,basic,0.062,0.050,2,smt,0,4,8,LCSC live 2026-10-28
 amp-power,PVDD bulk 1000 uF 35 V,C47344170,ERG35V1000M10X20,extended,0.191,0.150,2,tht,0,2,3,LCSC live 2026-10-28
@@ -33,10 +35,10 @@ controls,Rotary encoder with push,C361165,EC11E1834403,extended,1.474,1.395,7,th
 ultra,2.0 in 320x240 IPS LCD (ST7789 SPI),C5329582,HS20HS072RX,extended,3.049,2.411,0,hand,0,0,1,LCSC live 2026-10-28
 ultra,Optical (TOSLINK) receiver,C17223620,PLR237/T8BK,extended,1.399,1.248,3,tht,0,0,1,LCSC live 2026-10-28 (stock 240)
 ultra,FFC connector 20P 0.5 mm (core<->front board),C262667,AFC01-S20FCA-00,extended,0.100,0.081,22,smt,0,0,2,LCSC live 2026-10-28
-misc,Small passives (R/C 0402-0805 basic; per-tier count in qty columns),,(estimate),basic,0.004,0.003,2,smt,0,150,200,estimate: JLC basic R/C 0.001-0.01 each
+misc,Small passives (R/C 0402-0805 basic; per-tier count in qty columns) (+18 for the review-2 taps and bias),,(estimate),basic,0.004,0.003,2,smt,0,168,218,estimate: JLC basic R/C 0.001-0.01 each
 misc,Buck inductors + 10 uF/22 uF bulk MLCC + ferrites (lump),,(estimate),basic,0.40,0.30,20,smt,0,1,1,estimate
 misc,Status LEDs 0603,,(estimate),basic,0.010,0.010,2,smt,0,2,3,estimate
-offboard,Heatsink 30x30 mm + thermal pad for TPA3221 (pad on top),,(not on LCSC),offboard,0.90,0.60,0,hand,0,1,2,estimate AliExpress-class; fitted by hand
+offboard,"Heatsink 19x12 mm base, fins to the lid, <=20 C/W, + 0.2 mm 3 W/mK pad, per TPA3221 (lid-pressed)",,(not on LCSC),offboard,0.90,0.60,0,hand,0,1,2,estimate AliExpress-class; fitted by hand
 offboard,IR remote (NEC 21-key),,(not on LCSC),offboard,1.20,0.80,0,hand,0,1,1,estimate AliExpress-class
 offboard,FFC cable 20P 0.5 mm 100 mm,,(estimate),offboard,0.20,0.15,0,hand,0,0,1,estimate
 lite-board,USB-C 20 V/5 A  power + CH340B data,C165948,TYPE-C-31-M-12,extended,0.2468,0.1871,16,smt,1,0,0,"boards/lite-main parts.json, LCSC 2026-10-29 (review-2)"

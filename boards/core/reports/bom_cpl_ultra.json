@@ -268,7 +268,7 @@
   },
   {
    "Comment": "10k",
-   "Designator": "R8,R9,R20,R30,R31,R32,R33,R36,R45,R50,R51,R52,R53,R54,R55,R56,R57,R58,R67,R70,R121,R122,R131,R135,R137",
+   "Designator": "R8,R9,R20,R30,R31,R32,R33,R36,R50,R51,R52,R53,R54,R55,R56,R57,R58,R67,R70,R121,R122,R131,R135,R137",
    "Footprint": "R0402",
    "LCSC": "C25744"
   },
@@ -298,7 +298,7 @@
   },
   {
    "Comment": "2.2k",
-   "Designator": "R34,R35",
+   "Designator": "R34,R35,R45",
    "Footprint": "R0402",
    "LCSC": "C25879"
   },
@@ -1290,8 +1290,8 @@
   },
   {
    "Comment": "10k",
-   "Designator": "R8,R9,R20,R30,R31,R32,R33,R36,R45,R50,R51,R52,R53,R54,R55,R56,R57,R58,R67,R70,R121,R122,R131,R135,R137",
-   "Qty Per Board": "25",
+   "Designator": "R8,R9,R20,R30,R31,R32,R33,R36,R50,R51,R52,R53,R54,R55,R56,R57,R58,R67,R70,R121,R122,R131,R135,R137",
+   "Qty Per Board": "24",
    "Footprint": "R0402",
    "MPN": "10k",
    "LCSC": "C25744",
@@ -1340,8 +1340,8 @@
   },
   {
    "Comment": "2.2k",
-   "Designator": "R34,R35",
-   "Qty Per Board": "2",
+   "Designator": "R34,R35,R45",
+   "Qty Per Board": "3",
    "Footprint": "R0402",
    "MPN": "2.2k",
    "LCSC": "C25879",

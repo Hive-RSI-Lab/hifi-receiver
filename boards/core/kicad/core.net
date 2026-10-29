@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/work/boards/core/kicad/core.kicad_sch")
-		(date "2026-10-29T03:07:04")
+		(date "2026-10-29T03:20:46")
 		(tool "Eeschema 10.0.6")
 		(sheet
 			(number "1")
@@ -11653,11 +11653,11 @@
 		)
 		(comp
 			(ref "R45")
-			(value "10k")
+			(value "2.2k")
 			(footprint "aiee:R0402")
 			(fields
 				(field
-					(name "LCSC") "C25744")
+					(name "LCSC") "C25879")
 				(field
 					(name "Footprint") "aiee:R0402")
 				(field
@@ -11674,7 +11674,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C25744")
+				(value "C25879")
 			)
 			(property
 				(name "Sheetname")
