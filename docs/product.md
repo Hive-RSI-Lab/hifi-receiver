@@ -253,10 +253,10 @@ with certified services.
 | Tidal, Qobuz, Deezer, radio, local files, multi-room | all | Lyrion Music Server (free) on any always-on computer, plus AirPlay from the services' apps | $0 |
 | Chromecast, Tidal Connect, Qobuz Connect, Alexa, Roon Ready | cut | | Each needs its own licence and certification. |
 | HDMI eARC | cut | | HDMI adopter fees (~$5k/yr + royalty) and an HDMI receiver chip. Ultra's optical input covers the TV. |
-| App | all | **Web app (PWA)** served by the device at `http://hifi.local`, installable on the phone home screen: volume, source, EQ, sub crossover/level, power mode, updates, Wi-Fi setup. LMS control apps (Material Skin and others) also work. | $0. Native store apps cut: Apple developer programme $99/yr plus review, for nothing the PWA can't do. |
+| App | all | **Web app (PWA)** served by the device at `http://hifi-lite.local` (`hifi-plus`, `hifi-ultra`), installable on the phone home screen: volume, source, EQ, sub crossover/level, power mode, updates, Wi-Fi setup. LMS control apps (Material Skin and others) also work. | $0. Native store apps cut: Apple developer programme $99/yr plus review, for nothing the PWA can't do. |
 | Wi-Fi setup | all | BLE or SoftAP captive portal from the phone; Ethernet on Plus/Ultra just works | $0 |
 | Remote | all read IR; Plus/Ultra ship one | IRM-H638T receiver; the app has a "learn" mode, so any TV or universal remote works | $0 (NEC 21-key remote, ~$0.80, AliExpress) |
-| Buttons | all | Lite: vol−, vol+, play/source (hold = BT pairing). Plus: EC11 knob (push = play) + source + preset. Ultra: knob + 3 buttons on the front board | $0 |
+| Buttons | all | Lite: vol−, vol+, play/pause (hold = power; vol± hold = next/previous; no pairing button is needed: the Bluetooth sink is discoverable whenever no phone is connected, [firmware.md](firmware.md)). Plus: EC11 knob (push = play) + source + preset. Ultra: knob + 3 buttons on the front board | $0 |
 | Display | Ultra | 2.0" 320×240 ST7789 IPS (C5329582, $2.41): now playing, source, volume, input power | $0 |
 | Optical in | Ultra | PLR237 TOSLINK receiver into the Sabre's S/PDIF input (check the ES9018K2M input-mux registers in the schematic task) | $0 |
 | Headphone out | cut | The FLX4 has headphones for cueing, and a headphone amp is cost the brief didn't ask for. | |
