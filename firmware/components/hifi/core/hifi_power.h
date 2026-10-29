@@ -5,7 +5,7 @@
  *
  * Rules (docs/firmware.md, "Power"):
  *  - PVDD closes only when PG says the contract is good and VBUS has sat in
- *    [v_min, v_max] for settle_ms. On lite-main PG also gates PVDD in
+ *    [v_start, v_max] for settle_ms; once on, it opens below v_min. On lite-main PG also gates PVDD in
  *    hardware, so a 5 V port can't power the amp even if this code is wrong.
  *  - The amp leaves shutdown soft_start_ms after PVDD closes, and only when
  *    the user hasn't disabled it, it isn't faulted, and there is audio to
@@ -30,7 +30,8 @@ typedef enum {
 } hifi_pwr_state_t;
 
 typedef struct {
-	float v_min, v_max;        /* VBUS window for the amp, volts */
+	float v_start;             /* VBUS must reach this to start the amp, volts */
+	float v_min, v_max;        /* VBUS window while it runs (brownout, overvolt) */
 	uint32_t settle_ms;        /* VBUS good this long before PVDD closes */
 	uint32_t soft_start_ms;    /* PVDD ramp before the amp may run */
 	uint32_t recover_ms;       /* after under/over-voltage */

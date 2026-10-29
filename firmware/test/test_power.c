@@ -94,6 +94,21 @@ static void low_contract_keeps_amp_off(void) {
 	in.vbus_v = 15.0f;
 	o = run(800);
 	CHECK(p.state == HIFI_PWR_ON && o->amp_on);
+
+	/* a 15 V contract sagging under load stays on above the 13 V floor */
+	in.vbus_v = 13.8f;
+	o = run(5000);
+	CHECK(p.state == HIFI_PWR_ON && o->amp_on);
+	in.vbus_v = 12.9f;
+	o = run(10);
+	CHECK(p.state == HIFI_PWR_UNDERVOLT && !o->amp_on);
+	/* and it comes back only once VBUS is over the 14 V start floor again */
+	in.vbus_v = 13.8f;
+	o = run(3000);
+	CHECK(p.state == HIFI_PWR_UNDERVOLT && !o->pvdd_en);
+	in.vbus_v = 15.0f;
+	o = run(1100);
+	CHECK(p.state == HIFI_PWR_SOFT_START && o->pvdd_en);
 }
 
 static void pg_drop_turns_off(void) {

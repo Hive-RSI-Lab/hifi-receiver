@@ -56,15 +56,18 @@ designer on 2026-10-28.
 
 | State | PVDD | Amp | Leaves when |
 |---|---|---|---|
-| `wait_pd` | off | off | PG says the contract is good and VBUS has sat in 14–25 V for 200 ms → `soft_start` |
+| `wait_pd` | off | off | PG says the contract is good and VBUS has sat in 14–25 V (the start window) for 200 ms → `soft_start` |
 | `soft_start` | on | off | 400 ms later → `on` (lite-main's gate RC holds PVDD off for 80–160 ms and has it at 90 % 110–210 ms after PVDD_EN, at 15–20 V) |
-| `on` | on | on when enabled, not faulted and there is audio | PG drops → `wait_pd`; VBUS < 14 V → `undervolt`; > 25 V → `overvolt` |
-| `undervolt`, `overvolt` | off | off | VBUS back in range for 1 s → `soft_start` |
+| `on` | on | on when enabled, not faulted and there is audio | PG drops → `wait_pd`; VBUS < 13 V (the run floor) → `undervolt`; > 25 V → `overvolt` |
+| `undervolt`, `overvolt` | off | off | VBUS back in 14–25 V for 1 s → `soft_start` |
 
 - **9 V and 12 V contracts leave the amp off.** lite-main's PVDD switch
   gets VBUS × 0.31 of gate drive (R5 100k over R6 220k): 2.2–2.3 V at
   9 V, which an AO4485 at its 2.5 V maximum threshold doesn't turn on
-  at, and 3.7 V at 15 V (`docs/review-2/second-read.md`).
+  at, and 3.7 V at 15 V (`docs/review-2/second-read.md`). The amp starts
+  at 14 V or more and, once on, stays on down to 13 V: a 15 V contract
+  (14.25 V at −5 %) sagging under load and cable drop doesn't cycle it,
+  and a 12 V contract (12.6 V at most) is still kept out.
 - **A laptop port can't power the amp.** On a 5 V port PG never says the
   contract is good, and lite-main ANDs PG with PVDD_EN in hardware too.
 - **Order:** the amp goes into shutdown before PVDD opens and comes out
