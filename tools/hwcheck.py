@@ -3,19 +3,25 @@
 
     python3 tools/hwcheck.py test    the check: docs/product.md, the software's
                                      unit tests, then every board's hwde gates
-    python3 tools/hwcheck.py score   the first-built tier's unit cost at 100,
-                                     in USD, from its board(s)' BOM, printed
-                                     only when their gates pass (lower is better)
+    python3 tools/hwcheck.py score   the whole product, lower is better: each
+                                     tier's unit cost at 100 in USD from its
+                                     boards' BOMs, counted only when its boards
+                                     pass their gates and carry every function
+                                     tools/product.json names (else a flat
+                                     1000), plus 100 for each piece (firmware,
+                                     app, bench, enclosures, manual) not there
+                                     or not passing its tests
     python3 tools/hwcheck.py cost [BOARD ...]   the cost alone, no gates
 
-docs/checks.md says what each part checks and how the cost is worked out.
+docs/checks.md says what each part checks and how the score is worked out.
 
 Gates run through hive-hwde's bin/hwde, found as $HWDE_BIN, `hwde` on PATH,
 or bin/hwde in the installed module ($HIVE_MODULES, else /hive/modules). Each
 board runs in a scratch copy of its workspace, so the checkout stays as it is.
 With boards to check and no hwde, the command execs `sh -c hwde` so the
 shell's own "hwde: not found" and exit 127 say it couldn't run: that is no
-verdict on the commit, not a red.
+verdict on the commit, not a red. The same goes for make and cc when the
+firmware's host tests are there to run.
 """
 from __future__ import annotations
 
@@ -35,15 +41,17 @@ sys.path.insert(0, str(ROOT / "tools"))
 import bom_estimate as est  # noqa: E402  (one cost model for estimate and board)
 
 PRODUCT = ROOT / "docs" / "product.md"
+# What the score counts: each tier's boards and needed functions, and the
+# pieces beside them (docs/checks.md). An evaluator file, like this one.
+SPEC = json.loads((ROOT / "tools" / "product.json").read_text(encoding="utf-8"))
 BOARDS = ROOT / "boards"
 TIERS = ("lite", "plus", "ultra")
 GATES = ("erc", "drc_routed", "verify", "dfm")
+# Gate findings that are hwde failing to fetch, not the board failing.
+UNRUN = ("cpl_fetch_failed",)
 # Software whose stdlib unittest suite (<dir>/tests/test_*.py) the test runs.
-SOFTWARE = ("bench",)
-QTY = 100
-# The score when the first tier has no board yet: above any real unit cost,
-# so the first board that passes its gates reads as a gain (docs/checks.md).
-NO_BOARD = 1000.0
+SOFTWARE = ("tools", "bench", "app")
+QTY = SPEC["qty"]
 
 
 # ---- docs/product.md ------------------------------------------------------
@@ -104,8 +112,14 @@ def check_product() -> tuple[list[str], dict]:
                 if abs(got[0] - want) > 0.05 + 1e-9:
                     bad.append(f"docs/product.md: {tier}'s unit cost at 100 says ${got[0]:g}, "
                                f"but tools/bom_estimate.py --unit {tier} 100 gives ${want:.2f}")
-        if boards is not None and not re.findall(r"`([^`]+)`", boards[i]):
-            bad.append(f"docs/product.md: {tier} names no board (`name`) in the Boards row")
+        if boards is not None:
+            named = re.findall(r"`([^`]+)`", boards[i])
+            counted = [b["board"] for b in SPEC["tiers"][tier]["builds"]]
+            if not named:
+                bad.append(f"docs/product.md: {tier} names no board (`name`) in the Boards row")
+            elif sorted(set(named)) != sorted(set(counted)):
+                bad.append(f"docs/product.md: {tier}'s Boards row names {', '.join(named)}, but the "
+                           f"score counts {', '.join(counted)} (tools/product.json)")
     if order is not None:
         first = [t for t, c in zip(TIERS, order) if "first" in c.lower()]
         if len(first) != 1:
@@ -142,13 +156,14 @@ def hwde() -> str:
     return found
 
 
-def gate_board(ws: Path, name: str, bin_: str, logs: Path) -> list[str]:
-    """Each gate on one board's scratch workspace; the failures, explained."""
+def gate_board(ws: Path, name: str, bin_: str, logs: Path) -> list[tuple[str, int]]:
+    """Each gate on one board's scratch workspace; the failures, explained,
+    each with the gate's exit: 1 is a verdict, 2 or more couldn't run."""
     bad = []
     for g in GATES:
         inp = ws / "kicad" / f"{name}.{'kicad_sch' if g == 'erc' else 'kicad_pcb'}"
         if not inp.is_file():
-            bad.append(f"{name} {g}: no {inp.relative_to(ws)}")
+            bad.append((f"{name} {g}: no {inp.relative_to(ws)}", 1))
             print(f"  {g}: FAIL (no {inp.relative_to(ws)})", flush=True)
             continue
         out, log = logs / f"{name}-{g}.json", logs / f"{name}-{g}.log"
@@ -163,29 +178,35 @@ def gate_board(ws: Path, name: str, bin_: str, logs: Path) -> list[str]:
         why = ""
         try:
             r = json.loads(out.read_text())
+            failing = r.get("failing", [])
             why = "; ".join(f"{v.get('check') or v.get('kind', '?')}: {v.get('msg') or v.get('message', '')}"[:160]
-                            for v in r.get("failing", [])[:6])
-        except (OSError, ValueError):
+                            for v in failing[:6])
+            # A part model EasyEDA wouldn't serve (a rate limit, the network)
+            # says nothing of the board: the gate couldn't run.
+            if rc == 1 and failing and all(v.get("kind") in UNRUN for v in failing):
+                rc = 2
+        except (OSError, ValueError, AttributeError):
             pass
         if not why:
             why = " | ".join(log.read_text(errors="replace").strip().splitlines()[-6:])
-        bad.append(f"{name} {g}")
+        bad.append((f"{name} {g}" + (f" (couldn't run, exit {rc})" if rc > 1 else ""), rc))
         print(f"  {g}: FAIL (exit {rc}) {why}", flush=True)
     return bad
 
 
-def run_gates(dirs: list[Path]) -> list[str]:
+def run_gates(dirs: list[Path]) -> dict[Path, list[tuple[str, int]]]:
+    """Each board's gate failures (see gate_board), by its folder."""
     bin_ = hwde()
     scratch = Path(tempfile.mkdtemp(prefix="hwcheck-"))
     try:
         (scratch / "logs").mkdir()
-        bad = []
+        bad = {}
         for d in dirs:
             name = board_name(d)
             ws = scratch / "boards" / d.name
             shutil.copytree(d, ws, ignore=shutil.ignore_patterns("__pycache__"))
             print(f"{d.name}: gates {', '.join(GATES)}", flush=True)
-            bad += gate_board(ws, name, bin_, scratch / "logs")
+            bad[d] = gate_board(ws, name, bin_, scratch / "logs")
         return bad
     finally:
         shutil.rmtree(scratch, ignore_errors=True)
@@ -233,11 +254,14 @@ def pcb_facts(pcb: Path) -> tuple[dict[str, tuple[int, int]], int, float, float]
     return pads, layers, max(xs) - min(xs), max(ys) - min(ys)
 
 
-def board_cost(d: Path, qty: int = QTY) -> dict:
-    """One board's cost per unit at qty boards, from fab/BOM.csv priced from
-    parts/parts.json, with tools/bom_estimate.py's assembly and PCB model."""
+def board_cost(d: Path, qty: int = QTY, bom: str = "fab/BOM.csv",
+               parts: str = "parts/parts.json") -> dict:
+    """One board's cost per unit at qty boards, from its BOM (fab/BOM.csv, or
+    a population's) priced from its parts.json, with tools/bom_estimate.py's
+    assembly and PCB model. Its "found" are the BOM's lines as the function
+    check reads them: refs, pads, and the text each field holds."""
     name = board_name(d)
-    bom, parts = d / "fab" / "BOM.csv", d / "parts" / "parts.json"
+    bom, parts = d / bom, d / parts
     for f in (bom, parts):
         if not f.is_file():
             raise ValueError(f"{d.name}: no {f.relative_to(d)}")
@@ -247,7 +271,7 @@ def board_cost(d: Path, qty: int = QTY) -> dict:
         raise ValueError(f"{d.name}: {layers} copper layers; tools/bom_estimate.py prices "
                          f"{', '.join(map(str, est.PCB_BASE))}")
     part_cost = smt = tht = 0.0
-    extended, lines = set(), 0
+    extended, lines, found = set(), 0, []
     for r in csv.DictReader(bom.open(encoding="utf-8")):
         refs = [x.strip() for x in r["Designator"].split(",") if x.strip()]
         lcsc = (r.get("LCSC Part #") or r.get("LCSC") or "").strip()
@@ -265,11 +289,14 @@ def board_cost(d: Path, qty: int = QTY) -> dict:
             smt += pads[ref][0]
             tht += pads[ref][1]
         lines += 1
+        found.append({"refs": refs, "pads": sum(sum(pads[x]) for x in refs),
+                      "text": {"comment": r.get("Comment") or "", **{k: str(p.get(k) or "") for k in
+                                                                    ("mpn", "value", "description", "role")}}})
     asm = est.SETUP + est.STENCIL + len(extended) * est.FEEDER + qty * (smt * est.SMT_JOINT + tht * est.THT_JOINT)
     pcb = est.pcb(layers, w, h, qty) * est.PCB_CAL
     return {"board": d.name, "lines": lines, "extended": len(extended), "smt": smt, "tht": tht,
             "layers": layers, "w": w, "h": h, "parts": part_cost, "assembly": asm / qty,
-            "pcb": pcb / qty, "unit": part_cost + (asm + pcb) / qty}
+            "pcb": pcb / qty, "unit": part_cost + (asm + pcb) / qty, "found": found}
 
 
 def say_cost(c: dict) -> None:
@@ -281,21 +308,47 @@ def say_cost(c: dict) -> None:
 
 # ---- commands -----------------------------------------------------------------
 
+def need_tool(tool: str) -> None:
+    """Exec the shell's own not-found (exit 127) when a tool isn't here."""
+    if not shutil.which(tool):
+        sys.stdout.flush()
+        os.execvp("sh", ["sh", "-c", tool])
+
+
+def unittest_dir(tests: Path) -> bool:
+    """A stdlib unittest suite (tests/test_*.py), run from the repo root."""
+    r = subprocess.run([sys.executable, "-B", "-m", "unittest", "discover", "-s", str(tests), "-t", str(tests)],
+                       cwd=ROOT, capture_output=True, text=True)
+    last = (r.stderr.strip().splitlines() or ["?"])[-1]
+    if r.returncode:
+        print(r.stderr[-4000:])
+    print(f"{tests.relative_to(ROOT)}: {last}", flush=True)
+    return r.returncode == 0 and not last.startswith("NO TESTS")
+
+
+def firmware_tests() -> bool:
+    """firmware/test: the firmware's host unit tests (make and cc, no ESP-IDF),
+    built outside the checkout."""
+    tests = ROOT / "firmware" / "test"
+    need_tool("make")
+    need_tool(os.environ.get("CC", "cc"))
+    with tempfile.TemporaryDirectory() as tmp:
+        r = subprocess.run(["make", "-s", "-C", str(tests), f"BIN={tmp}"], capture_output=True, text=True)
+    print((r.stdout + r.stderr).strip()[-4000:])
+    print(f"firmware/test: {'pass' if r.returncode == 0 else f'FAIL (exit {r.returncode})'}", flush=True)
+    return r.returncode == 0
+
+
+def fit_passes(report: Path) -> bool:
+    """An enclosure's fit report (hive-mech's fit.md table): some checks, all pass."""
+    results = [c[1].strip().lower() for c in
+               (line.strip().strip("|").split("|") for line in report.read_text(encoding="utf-8").splitlines()
+                if line.startswith("|")) if len(c) > 1]
+    return "pass" in results and "fail" not in results
+
+
 def run_unittests() -> list[str]:
-    bad = []
-    for d in SOFTWARE:
-        tests = ROOT / d / "tests"
-        if not tests.is_dir():
-            continue
-        r = subprocess.run([sys.executable, "-B", "-m", "unittest", "discover", "-s", str(tests), "-t", str(tests)],
-                           cwd=ROOT, capture_output=True, text=True)
-        last = (r.stderr.strip().splitlines() or ["?"])[-1]
-        if r.returncode:
-            print(r.stderr[-4000:])
-            bad.append(f"{d}/tests: {last}")
-        else:
-            print(f"{d}/tests: {last}")
-    return bad
+    return [f"{d}/tests" for d in SOFTWARE if (ROOT / d / "tests").is_dir() and not unittest_dir(ROOT / d / "tests")]
 
 
 def cmd_test() -> int:
@@ -305,11 +358,13 @@ def cmd_test() -> int:
     if not bad:
         print("docs/product.md: every tier has its target price and BOM total; one tier is first")
     bad += run_unittests()
+    if (ROOT / "firmware" / "test" / "Makefile").is_file() and not firmware_tests():
+        bad.append("firmware/test")
     dirs = boards()
     if not dirs:
         print("boards/: no boards yet, no gates to run")
     else:
-        bad += run_gates(dirs)
+        bad += [f for fs in run_gates(dirs).values() for f, _ in fs]
     if bad:
         print(f"test: FAIL ({len(bad)}): " + "; ".join(bad[:8]))
         return 1
@@ -317,40 +372,88 @@ def cmd_test() -> int:
     return 0
 
 
-def cmd_score() -> int:
-    bad, info = check_product()
-    if bad or not info:
-        for b in bad or ["docs/product.md names no first tier"]:
-            print(f"FAIL {b}")
-        print("score: no number (docs/product.md)")
-        return 1
-    dirs = [BOARDS / b for b in info["boards"]]
-    have = [d for d in dirs if (d / "state.json").is_file()]
-    if not have:
-        print(f"{info['tier']} (built first): no board yet ({', '.join(info['boards'])} under boards/), "
-              f"so the score is the no-board value")
-        print(f"{NO_BOARD:.2f}")
-        return 0
-    if len(have) < len(dirs):
-        missing = [d.name for d in dirs if d not in have]
-        print(f"score: no number ({info['tier']} needs {', '.join(missing)} under boards/ as well)")
-        return 1
-    failed = run_gates(have)
-    if failed:
-        print(f"score: no number: gates fail ({'; '.join(failed)}); a board that breaks a gate never counts")
-        return 1
-    try:
-        costs = [board_cost(d) for d in have]
-    except (ValueError, KeyError, OSError) as e:
-        print(f"score: no number: {e}")
-        return 1
+# ---- score --------------------------------------------------------------------
+
+def lacks(need: dict, found: list[dict]) -> str | None:
+    """What a tier's boards lack of one needed function, or None: the BOM
+    lines whose text matches, counted by refs (or by pads, for contacts)."""
+    rx = re.compile(need["match"], re.I)
+    fields = need.get("in") or ["comment", "mpn", "value", "description"]
+    hits = [x for x in found if any(rx.search(x["text"][f]) for f in fields)]
+    got = sum(x["pads"] if "pads" in need else len(x["refs"]) for x in hits)
+    want = need.get("pads") or need.get("count", 1)
+    return None if got >= want else f"{need['what']} ({got} of {want} {'pads' if 'pads' in need else 'parts'})"
+
+
+def tier_cost(tier: dict, gates: dict[Path, list]) -> tuple[float | None, list[str]]:
+    """A tier's unit cost from its boards, or None and why it doesn't count."""
+    costs, why = [], []
+    for b in tier["builds"]:
+        d = BOARDS / b["board"]
+        if d not in gates:
+            why.append(f"no boards/{b['board']}")
+        elif gates[d]:
+            why.append(f"{b['board']} fails {', '.join(f for f, _ in gates[d])}")
+        else:
+            try:
+                costs.append(board_cost(d, bom=b.get("bom", "fab/BOM.csv"),
+                                        parts=b.get("parts", "parts/parts.json")))
+            except (ValueError, KeyError, OSError) as e:
+                why.append(str(e))
+    if why:
+        return None, why
     for c in costs:
         say_cost(c)
-    unit = sum(c["unit"] for c in costs)
-    if info.get("target"):
-        print(f"{info['tier']}: {unit:.2f} USD per unit at {QTY}, against a target retail of "
-              f"${info['target']:g} ({unit / info['target']:.0%} of it)")
-    print(f"{unit:.2f}")
+    found = [x for c in costs for x in c["found"]]
+    why = [f"lacks {m}" for m in (lacks(n, found) for n in tier["needs"]) if m]
+    return (None, why) if why else (sum(c["unit"] for c in costs), [])
+
+
+def piece_missing(piece: dict, ran: dict) -> str | None:
+    """Why a piece doesn't count yet, or None: a file it needs isn't there,
+    or its tests fail. Each test runs once per score."""
+    for g in piece["needs"]:
+        if not any(ROOT.glob(g)):
+            return f"no {g}"
+    test = piece.get("test")
+    if not test:
+        return None
+    if test not in ran:
+        kind, _, arg = test.partition(" ")
+        ran[test] = {"firmware": lambda: firmware_tests(),
+                     "unittest": lambda: unittest_dir(ROOT / arg),
+                     "fit": lambda: fit_passes(ROOT / arg)}[kind]()
+    return None if ran[test] else f"{test}: fails"
+
+
+def cmd_score() -> int:
+    tiers = SPEC["tiers"]
+    want = sorted({b["board"] for t in tiers.values() for b in t["builds"]})
+    have = [BOARDS / b for b in want if (BOARDS / b / "state.json").is_file()]
+    gates = run_gates(have) if have else {}
+    broken = [f for fs in gates.values() for f, rc in fs if rc > 1]
+    if broken:
+        print(f"score: no number: gates couldn't run ({'; '.join(broken)})")
+        return 1
+    total, lines = 0.0, []
+    for name, tier in tiers.items():
+        unit, why = tier_cost(tier, gates)
+        if unit is None:
+            unit = SPEC["tier_not_counted"]
+            lines.append(f"{name}: {unit:.2f} (not counted: {'; '.join(why)})")
+        else:
+            lines.append(f"{name}: {unit:.2f} USD per unit at {QTY}, every needed function on the board")
+        total += unit
+    ran = {}
+    for piece in SPEC["pieces"]:
+        why = piece_missing(piece, ran)
+        if why:
+            total += SPEC["piece_missing"]
+            lines.append(f"{piece['name']}: {SPEC['piece_missing']:.2f} (not there yet: {why})")
+        else:
+            lines.append(f"{piece['name']}: 0 (there, tests pass)")
+    print("\n".join(lines))
+    print(f"{total:.2f}")
     return 0
 
 
