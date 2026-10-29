@@ -91,6 +91,13 @@ WROVER-E's rev-3 chip meets.
   `hifi_ir_hook`, `hifi_button_hook`).
 - Still no boot.
 
+**Checked again (2026-10-29, task 261029-134314),** with #41's relay, OTA
+and capture merged onto main's volume, IR and now playing: both images
+build with ESP-IDF v4.4.8, `squeezelite.bin` 2.81 MB of its 3.06 MB slot
+(92%), `recovery.bin` 1.56 MB of 1.75 MB (89%); `hifi_volume_hook`,
+`hifi_ir_learn`, `hifi_remote_status` and `hifi_ota_status` all link. Still
+no boot.
+
 `export.sh` refuses to run when the tools the steps above skip (gdb,
 openocd, the S2/S3/RISC-V compilers) are missing. To build without
 installing them, put on `PATH` by hand:
