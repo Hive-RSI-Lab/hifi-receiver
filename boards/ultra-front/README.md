@@ -62,8 +62,18 @@ Pin N on the core board connects to pin N here.
   on pin 1 or pin 20 depends on the FFC type, same-side or opposite-side
   contacts. A wrong cable therefore never shorts a rail, but three signals
   would fight: the core's BL_PWM would meet GND, SCK would meet ENC_A and
-  MOSI would meet INT. **The cable must map pin N to pin N.** Fix its type
-  and length when the enclosure puts the two boards in place.
+  MOSI would meet INT. **The cable must map pin N to pin N.**
+- **The cable:** 20-pin, 0.5 mm, 30-50 mm, **type B** (opposite-side
+  contacts).
+  - **Why type B:** in the Ultra enclosure the cable leaves the core's J3
+    contacts-down, runs forward under this board and turns up into J1. Both
+    ends are the bottom-contact FPC-05F-20PH20 (C2856803), the same part on
+    both boards. A type-B cable then meets pin N to pin N without twisting.
+  - **Source:** the enclosure task's `enclosure/README.md`. The core
+    board's J3, as merged, carries this same pinout.
+- **LCD_CS (pin 8):** the core holds it low with a 10 k resistor (its R57)
+  rather than driving it. The LCD is the only device on that SPI bus, and
+  the ST7789 runs with CS held low; firmware uses cs = -1.
 - **Power drawn:** +3V3 about 30 mA, +5V about 70 mA, of which the
   backlight is about 50 mA.
 - **What the core gives up:** 4 SPI outputs (SCK, MOSI, CS, DC), one PWM
@@ -165,19 +175,31 @@ The 3D models aren't committed; pull them first (below).
 | Gate | Result |
 |---|---|
 | ERC (`erc`) | 0 errors, 0 warnings |
-| Placement (`place`) | pass, 2 waivers awaiting approval (below) |
+| Placement (`place`) | pass, no waivers |
 | Routed DRC (`drc_routed`) | 0 errors, 0 warnings, 0 unconnected |
-| Verify suite (`verify`, 14 checks) | pass, 2 waivers awaiting approval (below); 17 warnings: 9 short "needless jog" route-style findings, and 8 "no datasheet extraction" from check_ratings, because no datasheet JSON was made. The schematic reviewer checked every rail against each part's absolute maximum instead. |
+| Verify suite (`verify`, 15 checks incl. check_courtyard) | pass, no waivers; 17 warnings: 9 short "needless jog" route-style findings, and 8 "no datasheet extraction" from check_ratings, because no datasheet JSON was made. The schematic reviewer checked every rail against each part's absolute maximum instead. |
 | JLC DFM on the exported Gerbers (`dfm`) | 0 findings |
 
-**Waivers awaiting the person's approval:** the mating check (place and
-verify) fails J2 twice.
-- **Why it fails:** the check expects every FPC socket to face a board edge.
-  J2 faces inward, because its mate is the LCD tail lying on the board.
-- **Where:** `reports/place-waivers.json` and `reports/verify-waivers.json`.
-  Both are marked PENDING.
-- **Known gap:** the gate counts them as passed anyway. That gap is filed to
-  hive-hwde.
+**J2 faces inward on purpose.** Its mate is the LCD tail lying on the board,
+not a plug coming from off the board.
+- **How it's declared:** constraints.json declares this in
+  `placement.mates` (`onboard_flex`). The corridor is the tail's real outline,
+  the same two rectangles as the keepouts.
+- **What the checks do:** the place and verify checks hold J2 to that
+  corridor instead of the board edge, so the two mating waivers of the first
+  version are gone.
+
+**Last passed on hive-hwde aa1ec48** (2026-10-29). `hwde check-all` passed:
+erc, drc_routed, verify, fab and dfm. The gates were re-run in the
+workspace, and check_courtyard found 0. `tools/bom_stock.py ultra-front`:
+18 of 18 lines in stock for 100 boards.
+
+**Lead decisions** (lead:hifi-receiver-2, 2026-10-28 12:14; the person
+doesn't sign off stages):
+- The board is approved as built (H1/H2/H4).
+- Both J2 mating waivers were approved; they have since been replaced by
+  the `placement.mates` declaration.
+- The knob stays smooth, with no detents.
 
 **Reviews:** fresh-context reviewers read the schematic
 (`reports/review-schematic.md`: 0 errors, 6 warnings, all acted on) and the

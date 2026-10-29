@@ -20,16 +20,18 @@
   },
   "failing_count": 0,
   "failing": [],
+  "warnings_count": 0,
+  "warnings": [],
   "record_result": {
     "ok": true,
     "recorded": true,
     "workspace": ".",
     "gate": "erc",
     "status": "pass",
-    "attempts": 5,
+    "attempts": 6,
     "inputs": {
       "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
-      "pro": "json_canonical:93bbf5dd77b979e01fbb97cd7fa60ee73ea8dc69794aae5ddf20e5cbb78aff91"
+      "pro": "json_canonical:6ec3460c19d0afad44f5ee8f381b2106e8306a7472ecb16ba7cde0f00a6b960a"
     }
   }
 }

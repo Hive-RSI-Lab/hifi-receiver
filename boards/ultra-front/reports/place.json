@@ -4,7 +4,7 @@
   "phase": "P6",
   "tool": "place",
   "input": "kicad/ultra-front.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:b2eadfecc02bff48e4003ea6b9088aa712bf1629d8495d0e5715a60ec2c412db",
+  "input_digest": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -13,89 +13,14 @@
     "max_count": 0
   },
   "counts": {
-    "total": 2,
-    "by_severity": {
-      "error": 2
-    },
-    "by_source": {
-      "matinglib": 2
-    }
+    "total": 0,
+    "by_severity": {},
+    "by_source": {}
   },
   "failing_count": 0,
   "failing": [],
-  "waived_count": 2,
-  "waived": [
-    {
-      "check": "place",
-      "severity": "error",
-      "pos": [
-        -6.11,
-        47.0
-      ],
-      "layer": null,
-      "net": null,
-      "refs": [
-        "J2"
-      ],
-      "msg": "J2 (fpc_ffc) cannot be mated: its nearest edge is -x (0.8 mm) but its mouth faces +x, into 103.2 mm of board",
-      "source": "matinglib",
-      "items": [
-        {
-          "msg": "J2 (fpc_ffc) cannot be mated: its nearest edge is -x (0.8 mm) but its mouth faces +x, into 103.2 mm of board",
-          "pos": [
-            -6.11,
-            47.0
-          ]
-        }
-      ],
-      "kind": "mating_faces_inward",
-      "connector": "J2",
-      "mouth": "+x",
-      "nearest_edge": "-x",
-      "gap_mm": 103.16
-    },
-    {
-      "check": "place",
-      "severity": "error",
-      "pos": [
-        55.0669,
-        47.0
-      ],
-      "layer": null,
-      "net": null,
-      "refs": [
-        "C2",
-        "C3",
-        "J2",
-        "Q1",
-        "R5",
-        "SW2",
-        "SW4"
-      ],
-      "msg": "J2 (fpc_ffc): C2, C3, Q1, R5, SW2, SW4 sit in the plug's insertion zone in front of its mouth (8.0 mm plug + 2.0 mm grip)",
-      "source": "matinglib",
-      "items": [
-        {
-          "msg": "J2 (fpc_ffc): C2, C3, Q1, R5, SW2, SW4 sit in the plug's insertion zone in front of its mouth (8.0 mm plug + 2.0 mm grip)",
-          "pos": [
-            55.0669,
-            47.0
-          ]
-        }
-      ],
-      "kind": "mating_zone_blocked",
-      "connector": "J2",
-      "mouth": "+x",
-      "blocked_by": [
-        "C2",
-        "C3",
-        "Q1",
-        "R5",
-        "SW2",
-        "SW4"
-      ]
-    }
-  ],
+  "warnings_count": 0,
+  "warnings": [],
   "coverage": {
     "strict": false,
     "required": [
@@ -119,11 +44,10 @@
       "outline",
       "edges",
       "keepouts",
-      "decoupler_distance"
-    ],
-    "failed": [
+      "decoupler_distance",
       "mating"
     ],
+    "failed": [],
     "waived": [],
     "not_applicable": {},
     "skipped_error": {}
@@ -134,12 +58,12 @@
     "workspace": ".",
     "gate": "place",
     "status": "pass",
-    "attempts": 18,
+    "attempts": 19,
     "inputs": {
-      "pcb": "sexpr_no_uuid:b2eadfecc02bff48e4003ea6b9088aa712bf1629d8495d0e5715a60ec2c412db",
-      "constraints": "json_canonical:78e4e6d82e69f34bc638b3f6176c3059ea3f98236f174283ff234882ad063fb8",
+      "pcb": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
+      "constraints": "json_canonical:72b81c02f0a9526866137b79fb62cad988d99a4deff778af2a77f158ce7f4875",
       "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
-      "place_waivers": "json_canonical:02461801bb6c9faf5be5458a222482bc62f0c46f6992c78f6a2477b2e2a60b04"
+      "place_waivers": null
     }
   }
 }

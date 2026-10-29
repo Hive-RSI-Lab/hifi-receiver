@@ -60,3 +60,7 @@ property did (kicad/gen/zone_solid.py).
 ## 2026-10-28 [P7][routing] SES import can drop connections Freerouting reported done
 fr_completion 1.0 but completion 0.93: J1.11 GND and two +3V3 links were
 missing after import; they were routed by hand.
+
+## 2026-10-29 [P6][mating] resolved: placement.mates onboard_flex replaces the J2 waivers
+On hive-hwde f437494+ the tail corridor is declared once (same rectangles as
+the keepouts) and check_mating/place pass with no waiver.

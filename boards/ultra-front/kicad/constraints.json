@@ -125,6 +125,28 @@
     "ref": "J1",
     "edge": "bottom"
    }
+  ],
+  "mates": [
+   {
+    "ref": "J2",
+    "mate": "onboard_flex",
+    "corridor": [
+     [
+      -3.045,
+      42.8,
+      4.955,
+      51.3
+     ],
+     [
+      4.855,
+      35.6,
+      15.555,
+      56.7
+     ]
+    ],
+    "mate_refs": [],
+    "reason": "the HS20HS072RX LCD's 12-pin tail lies flat from the panel (x 25.45 mm from the board's left edge) into J2: 6.5 mm wide at J2, about 20.5 mm wide for its last 10 mm at the panel"
+   }
   ]
  },
  "blocks": [

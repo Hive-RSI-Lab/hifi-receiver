@@ -1,0 +1,3 @@
+- P1 research inline from vendor datasheets: TPA3118D2 (TI SLOS708G), CH224 family (WCH V2.0), ES8388 (Everest rev 5.0), TPS54302 (TI), IRM-H638T (Everlight), ESP32-LyraT v4 schematic for ES8388 decoupling.
+- LCSC's datasheet links return stubs through the proxy (snag 6); sources in parts/datasheets.md.
+- CH224K has 1 in stock -> CH224Q (later CH224A, same die, 1.0 mm pitch).

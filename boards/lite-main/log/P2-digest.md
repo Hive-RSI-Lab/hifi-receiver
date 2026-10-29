@@ -1,0 +1,3 @@
+- P2 architecture: architecture/blocks.md (11 blocks, ESP32 pin map, power tree), stackup.md (2L 1.6 mm 1 oz), sheets.md (one flat root sheet).
+- Key choices: ESP32-A1S pin map for squeezelite-esp32; TPA3118D2 26 dB BTL; TPS54302 5 V + SY8089 3.3 V + LP5907 analog; PVDD switch gated by firmware AND PD power-good.
+- H1 approved by delegate (the person: decide everything).

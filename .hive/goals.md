@@ -6,3 +6,11 @@ The person, posted in #ai-ee at 2026-10-14 04:49Z (relayed by autobox 2026-10-28
 
 The person, Slack 2026-10-28 13:05Z: "H0 and i decided it would be good to move hwde onto H0.  I want it to get and design the whole audio amp system thing remember? You can give justthe original briefs i gave ai-ee"
 13:06Z: "its the most recent thing. not the amp we manufactured, it's the receiver WiiM copy thing with different tiersetc"
+
+The person, Hive chat 2026-10-28, verbatim:
+
+14:55Z: "no need to wait for stuff like that to merge we just build no need to follow protocols"
+14:56Z: "Done = fab files complete. We can build a fw module later or whatever and do those and figure out spotify etc access"
+15:43Z: "OK. Make sure as new fixes land in the hwde module, that the  boards get updated etc"
+16:55Z (supersedes 14:56Z on firmware): "you know what, resume all the fw stuff etc the board design needs to happen in tandem and be informed by fw and sw constraints. Build the whole product go"
+16:57Z: "remember how the hive works: you and agents etc can build and file new modules, spawn other agents recursively to build those out etc"

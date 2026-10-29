@@ -1,19 +1,19 @@
 block,part,lcsc,mpn,type,p10,p100,pins,mount,lite,plus,ultra,source
-platform,Wi-Fi/BT module (8 MB flash 8 MB PSRAM),C2973667,ESP32-WROVER-E-N8R8,extended,3.734,3.734,39,smt,1,1,1,LCSC live 2026-10-28
-platform,USB-C receptacle 16P 48 V 5 A,C5184243,USB4105-GF-A-120,extended,0.721,0.526,20,smt,1,1,1,LCSC live 2026-10-28
-platform,USB PD sink 5-28 V (PD3.2 EPR 140 W),C46061833,CH224Q,extended,0.359,0.267,11,smt,1,1,1,LCSC live 2026-10-28
-platform,USB-UART for bring-up and flashing,C84681,CH340C,extended,0.455,0.334,16,smt,1,1,1,LCSC live 2026-10-28
-platform,VBUS TVS 30 V standoff,C113998,SMBJ30A,extended,0.049,0.039,2,smt,1,1,1,LCSC live 2026-10-28
-platform,PVDD soft-start switch P-MOSFET 40 V 12 A,C5125949,AO4485,extended,0.182,0.142,8,smt,1,1,1,LCSC live 2026-10-28
-platform,Buck VBUS->5 V 40 V 3 A,C97054,SY8303AIC,extended,0.511,0.380,8,smt,1,1,1,LCSC live 2026-10-28
-platform,Buck 5 V->3.3 V 2 A,C479074,SY8089A1AAC,extended,0.086,0.069,5,smt,1,1,1,LCSC live 2026-10-28
-platform,Low-noise LDO 3.3 V for audio,C80670,LP5907MFX-3.3/NOPB,extended,0.165,0.127,5,smt,1,2,2,LCSC live 2026-10-28
-platform,IR receiver 38 kHz,C91447,IRM-H638T/TR2,extended,0.260,0.199,4,smt,1,1,1,LCSC live 2026-10-28
-platform,Tactile switch,C318884,TS-1187A-B-A-B,basic,0.021,0.021,4,smt,3,2,3,LCSC live 2026-10-28
-platform,Dual RCA jack right angle (in; sub out),C7527522,XDJK-0271-1650,extended,0.258,0.202,6,tht,2,2,2,LCSC live 2026-10-28
-platform,4 mm banana socket (speaker out),C99865,GC4010-F,extended,0.164,0.151,1,tht,4,4,8,LCSC live 2026-10-28 (fit with a banana plug unchecked)
-lite-audio,Codec: DAC + ADC + analog bypass,C365736,ES8388,extended,0.937,0.714,29,smt,1,0,0,LCSC live 2026-10-28
-lite-audio,Class-D amp 2x BTL 26 V (as built and measured),C46497,TPA3118D2DAPR,extended,1.022,0.807,33,smt,1,0,0,LCSC live 2026-10-28
+platform,Wi-Fi/BT module (8 MB flash 8 MB PSRAM),C2973667,ESP32-WROVER-E-N8R8,extended,3.734,3.734,39,smt,0,1,1,LCSC live 2026-10-28
+platform,USB-C receptacle 16P 48 V 5 A,C5184243,USB4105-GF-A-120,extended,0.721,0.526,20,smt,0,1,1,LCSC live 2026-10-28
+platform,USB PD sink 5-28 V (PD3.2 EPR 140 W),C46061833,CH224Q,extended,0.359,0.267,11,smt,0,1,1,LCSC live 2026-10-28
+platform,USB-UART for bring-up and flashing,C84681,CH340C,extended,0.455,0.334,16,smt,0,1,1,LCSC live 2026-10-28
+platform,VBUS TVS 30 V standoff,C113998,SMBJ30A,extended,0.049,0.039,2,smt,0,1,1,LCSC live 2026-10-28
+platform,PVDD soft-start switch P-MOSFET 40 V 12 A,C5125949,AO4485,extended,0.182,0.142,8,smt,0,1,1,LCSC live 2026-10-28
+platform,Buck VBUS->5 V 40 V 3 A,C97054,SY8303AIC,extended,0.511,0.380,8,smt,0,1,1,LCSC live 2026-10-28
+platform,Buck 5 V->3.3 V 2 A,C479074,SY8089A1AAC,extended,0.086,0.069,5,smt,0,1,1,LCSC live 2026-10-28
+platform,Low-noise LDO 3.3 V for audio,C80670,LP5907MFX-3.3/NOPB,extended,0.165,0.127,5,smt,0,2,2,LCSC live 2026-10-28
+platform,IR receiver 38 kHz,C91447,IRM-H638T/TR2,extended,0.260,0.199,4,smt,0,1,1,LCSC live 2026-10-28
+platform,Tactile switch,C318884,TS-1187A-B-A-B,basic,0.021,0.021,4,smt,0,2,3,LCSC live 2026-10-28
+platform,Dual RCA jack right angle (in; sub out),C7527522,XDJK-0271-1650,extended,0.258,0.202,6,tht,0,2,2,LCSC live 2026-10-28
+platform,4 mm banana socket (speaker out),C99865,GC4010-F,extended,0.164,0.151,1,tht,0,4,8,LCSC live 2026-10-28 (fit with a banana plug unchecked)
+lite-audio,Codec: DAC + ADC + analog bypass,C365736,ES8388,extended,0.937,0.714,29,smt,0,0,0,LCSC live 2026-10-28
+lite-audio,Class-D amp 2x BTL 26 V (as built and measured),C46497,TPA3118D2DAPR,extended,1.022,0.807,33,smt,0,0,0,LCSC live 2026-10-28
 hifi-audio,Sabre DAC (mains),C2688377,ES9018K2M,extended,3.045,2.398,29,smt,0,1,1,LCSC live 2026-10-28
 hifi-audio,100 MHz oscillator for the Sabre,C496694,O93225100MEDA4SI-13,extended,0.514,0.388,4,smt,0,1,1,LCSC live 2026-10-28
 hifi-audio,DAC for the sub outputs (2 Vrms line driver),C107671,PCM5102APWR,extended,1.294,0.940,20,smt,0,1,1,LCSC live 2026-10-28
@@ -22,10 +22,10 @@ hifi-audio,Dual op-amp (DAC output stage),C192421,OPA1678IDR,extended,0.619,0.46
 hifi-audio,Analog switch (DJ direct path),C11133,TS5A23157DGSR,extended,0.382,0.279,10,smt,0,1,1,LCSC live 2026-10-28
 hifi-audio,Class-D amp 2x BTL 30 V 88 W/4 ohm,C475500,TPA3221DDVR,extended,2.090,1.647,45,smt,0,1,2,LCSC live 2026-10-28
 hifi-audio,VBUS current sense amplifier,C48533472,INA180A1IDBVR(LX),extended,0.149,0.119,5,smt,0,1,1,LCSC live 2026-10-28
-amp-power,Output inductor 10 uH 8 A sat,C48391614,XR0850-100M,extended,0.192,0.151,2,smt,4,4,8,LCSC live 2026-10-28
-amp-power,Output filter cap 1 uF 50 V X7R 1206,C1848,CL31B105KBHNNNE,basic,0.062,0.050,2,smt,4,4,8,LCSC live 2026-10-28
-amp-power,PVDD bulk 1000 uF 35 V,C47344170,ERG35V1000M10X20,extended,0.191,0.150,2,tht,1,2,3,LCSC live 2026-10-28
-amp-power,PVDD bulk 220 uF 35 V SMD,C2836441,RVT220UF35V67RV0024,extended,0.079,0.065,2,smt,1,2,4,LCSC live 2026-10-28
+amp-power,Output inductor 10 uH 8 A sat,C48391614,XR0850-100M,extended,0.192,0.151,2,smt,0,4,8,LCSC live 2026-10-28
+amp-power,Output filter cap 1 uF 50 V X7R 1206,C1848,CL31B105KBHNNNE,basic,0.062,0.050,2,smt,0,4,8,LCSC live 2026-10-28
+amp-power,PVDD bulk 1000 uF 35 V,C47344170,ERG35V1000M10X20,extended,0.191,0.150,2,tht,0,2,3,LCSC live 2026-10-28
+amp-power,PVDD bulk 220 uF 35 V SMD,C2836441,RVT220UF35V67RV0024,extended,0.079,0.065,2,smt,0,2,4,LCSC live 2026-10-28
 network,Ethernet PHY RMII,C45223,LAN8720A-CP-TR,extended,0.676,0.524,25,smt,0,1,1,LCSC live 2026-10-28
 network,25 MHz crystal for the PHY,C9006,X322525MOB4SI,basic,0.095,0.076,4,smt,0,1,1,LCSC live 2026-10-28
 network,RJ45 with magnetics,C12074,HR911105A,extended,1.456,1.020,12,tht,0,1,1,LCSC live 2026-10-28
@@ -37,9 +37,58 @@ ultra,FPC connector 12P 0.5 mm dual contact (LCD tail),C2856829,FPC-05FB-12PH20,
 ultra,I2C GPIO expander 16-bit (front panel),C22396388,TCA9535PWR(UMW),extended,0.495,0.420,24,smt,0,0,1,LCSC live 2026-10-28 (ultra-front BOM)
 ultra,RGB status LED common anode,C273610,TJ-S1615SW6TGLCCYRGB-A5,extended,0.099,0.080,4,smt,0,0,1,LCSC live 2026-10-28 (ultra-front BOM)
 ultra,Backlight switch N-MOSFET,C20917,AO3400A,basic,0.089,0.070,3,smt,0,0,1,LCSC live 2026-10-28 (ultra-front BOM)
-misc,Small passives (R/C 0402-0805 basic; per-tier count in qty columns),,(estimate),basic,0.004,0.003,2,smt,80,150,200,estimate: JLC basic R/C 0.001-0.01 each
-misc,Buck inductors + 10 uF/22 uF bulk MLCC + ferrites (lump),,(estimate),basic,0.40,0.30,20,smt,1,1,1,estimate
-misc,Status LEDs 0603,,(estimate),basic,0.010,0.010,2,smt,2,2,3,estimate
+misc,Small passives (R/C 0402-0805 basic; per-tier count in qty columns),,(estimate),basic,0.004,0.003,2,smt,0,150,200,estimate: JLC basic R/C 0.001-0.01 each
+misc,Buck inductors + 10 uF/22 uF bulk MLCC + ferrites (lump),,(estimate),basic,0.40,0.30,20,smt,0,1,1,estimate
+misc,Status LEDs 0603,,(estimate),basic,0.010,0.010,2,smt,0,2,3,estimate
 offboard,Heatsink 30x30 mm + thermal pad for TPA3221 (pad on top),,(not on LCSC),offboard,0.90,0.60,0,hand,0,1,2,estimate AliExpress-class; fitted by hand
 offboard,IR remote (NEC 21-key),,(not on LCSC),offboard,1.20,0.80,0,hand,0,1,1,estimate AliExpress-class
 offboard,FFC cable 20P 0.5 mm 100 mm,,(estimate),offboard,0.20,0.15,0,hand,0,0,1,estimate
+lite-board,USB-C 48 V/5 A  power + CH340C data,C5184243,USB4105-GF-A-120,extended,0.7206,0.5257,16,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,USB PD sink  asks for 20 V,C46061833,CH224Q,extended,0.3587,0.2670,11,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,CH224Q VHV,C15849,CL10A105KB8NNNC,basic,0.0146,0.0146,2,smt,11,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,CH224Q Rset: 20 V (table 5-1),C25808,0603WAF1203T5E,basic,0.0015,0.0015,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,link: CH224Q I2C onto the codec bus (depopulate if its pull-up exceeds,C21189,0603WAF0000T5E,basic,0.0022,0.0022,2,smt,2,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,PG pull-up,C25804,0603WAF1002T5E,basic,0.0018,0.0018,2,smt,16,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,VBUS TVS 20 V standoff,C364296,SMBJ20A,extended,0.0565,0.0467,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,PVDD high-side switch,C5125949,AO4485,extended,0.1820,0.1422,8,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,Q1 gate-source,C25803,0603WAF1003T5E,basic,0.0031,0.0031,2,smt,7,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,Q1 Miller cap series,C21190,0603WAF1001T5E,basic,0.0017,0.0017,2,smt,2,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,Q1 soft-start (gate-drain),C14663,CC0603KRX7R9BB104,basic,0.0102,0.0102,2,smt,18,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,Q1 gate divider: Vgs -13.6 V at 20 V,C25819,0603WAF4702T5E,basic,0.0019,0.0019,2,smt,3,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,PVDD switch driver (GPIO18 AND PG),C20526,MMBT3904(RANGE:100-300),basic,0.0116,0.0116,3,smt,3,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,PVDD bleeder (Q1 body diode back-feeds VBUS),C31850,0603WAF2202T5E,basic,0.0042,0.0042,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,VBUS -> 5 V buck,C311983,TPS54302DDCR,extended,0.2495,0.2025,6,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,reg_input,C13585,CL31A106KBHNNNE,basic,0.2380,0.1921,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,reg_input,C29823,1206B475K500NT,basic,0.0796,0.0629,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,buck inductor,C79272,SWPA6045S100MT,extended,0.0839,0.0688,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,5 V output,C45783,CL21A226MAQNNNE,basic,0.1918,0.1918,2,smt,3,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,FB bottom,C22797,0603WAF1302T5E,basic,0.0027,0.0027,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,feed-forward,C14858,CL10C101JB8NNNC,basic,0.0087,0.0087,2,smt,3,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,5 V -> 3.3 V buck,C479074,SY8089A1AAC,extended,0.0865,0.0690,5,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,reg_input,C19702,CL10A106KP8NNNC,basic,0.0212,0.0212,2,smt,8,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,buck inductor,C305171,SWPA4020S2R2NT,extended,0.0639,0.0515,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,FB top: 3.33 V,C22807,0603WAF1503T5E,basic,0.0017,0.0017,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,FB bottom,C4216,0603WAF3302T5E,basic,0.0021,0.0021,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,feed-forward,C1653,CL10C220JB8NNNC,basic,0.0088,0.0088,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,analog 3.3 V for the codec,C80670,LP5907MFX-3.3/NOPB,extended,0.1651,0.1273,5,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,Wi-Fi/BT module,C2973667,ESP32-WROVER-E-N8R8,extended,3.7339,3.7339,47,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,I2C pull-up,C4190,0603WAF2201T5E,basic,0.0018,0.0018,2,smt,2,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,USB-UART console + flashing,C84681,CH340C,extended,0.4553,0.3341,16,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,codec: DAC  ADC  analog bypass,C365736,ES8388,extended,0.9368,0.7141,29,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,,C19666,CL10A475KO8NNNC,basic,0.0169,0.0128,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,sub out build-out,C22775,0603WAF1000T5E,basic,0.0023,0.0023,2,smt,2,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,2 x BTL class-D  26 dB,C46497,TPA3118D2DAPR,extended,1.0220,0.8074,42,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,,C28323,CL21B105KBFNNNE,basic,0.0421,0.0344,2,smt,3,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,,C1588,CL10B102KB8NNNC,basic,0.0098,0.0098,2,smt,2,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,PVDD bulk  left side: polymer  3.8 A ripple,C46550472,MA35V470M10X13,extended,0.3554,0.2637,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,PVDD bulk  right side,C2836441,RVT220UF35V67RV0024,extended,0.0787,0.0649,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,gain 26 dB master (table 1),C4184,0603WAF2002T5E,basic,0.0021,0.0021,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,bootstrap,C21120,CL10B224KA8NNNC,basic,0.0093,0.0093,2,smt,4,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,output filter,C48391614,XR0850-100M,extended,0.1921,0.1509,2,smt,4,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,output filter,C1848,CL31B105KBHNNNE,basic,0.0621,0.0502,2,smt,4,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,line in L/R (FLX4),C7527522,XDJK-0271-1650,extended,0.2583,0.2023,3,tht,2,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,speaker terminal L+ L- R+ R-,C2915641,DB128V-5.08-4P-GN-S,extended,0.4213,0.3392,4,tht,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,button,C318884,TS-1187A-B-A-B,basic,0.0207,0.0207,4,smt,3,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,IR receiver 38 kHz,C91447,IRM-H638T/TR2,extended,0.2599,0.1989,4,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,status LED,C2286,KT-0603R,basic,0.0077,0.0077,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+offboard,4 mm binding post (speaker; wired to the board's screw terminal),,(not on LCSC),offboard,0.40,0.30,0,hand,4,0,0,estimate AliExpress-class; Lite only (GC4010-F has no PCB footprint)

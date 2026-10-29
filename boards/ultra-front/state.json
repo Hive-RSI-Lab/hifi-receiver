@@ -4,21 +4,21 @@
  "workspace_schema": 2,
  "workspace": "boards/ultra-front",
  "created": "2026-10-28T11:01:12",
- "updated": "2026-10-28T12:13:40",
+ "updated": "2026-10-29T07:07:00",
  "phase": "P9",
  "gates": {
   "erc": {
    "phase": "P4",
    "status": "pass",
-   "attempts": 5,
+   "attempts": 6,
    "last": {
-    "ts": "2026-10-28T11:24:45",
+    "ts": "2026-10-29T07:05:12",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
     "inputs": {
      "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
-     "pro": "json_canonical:93bbf5dd77b979e01fbb97cd7fa60ee73ea8dc69794aae5ddf20e5cbb78aff91"
+     "pro": "json_canonical:6ec3460c19d0afad44f5ee8f381b2106e8306a7472ecb16ba7cde0f00a6b960a"
     }
    },
    "history": [
@@ -71,23 +71,33 @@
       "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
       "pro": "json_canonical:93bbf5dd77b979e01fbb97cd7fa60ee73ea8dc69794aae5ddf20e5cbb78aff91"
      }
+    },
+    {
+     "ts": "2026-10-29T07:05:12",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
+      "pro": "json_canonical:6ec3460c19d0afad44f5ee8f381b2106e8306a7472ecb16ba7cde0f00a6b960a"
+     }
     }
    ]
   },
   "place": {
    "phase": "P6",
    "status": "pass",
-   "attempts": 18,
+   "attempts": 19,
    "last": {
-    "ts": "2026-10-28T12:03:36",
+    "ts": "2026-10-29T07:03:36",
     "status": "pass",
     "failing_count": 0,
-    "total": 2,
+    "total": 0,
     "inputs": {
-     "pcb": "sexpr_no_uuid:b2eadfecc02bff48e4003ea6b9088aa712bf1629d8495d0e5715a60ec2c412db",
-     "constraints": "json_canonical:78e4e6d82e69f34bc638b3f6176c3059ea3f98236f174283ff234882ad063fb8",
+     "pcb": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
+     "constraints": "json_canonical:72b81c02f0a9526866137b79fb62cad988d99a4deff778af2a77f158ce7f4875",
      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
-     "place_waivers": "json_canonical:02461801bb6c9faf5be5458a222482bc62f0c46f6992c78f6a2477b2e2a60b04"
+     "place_waivers": null
     }
    },
    "history": [
@@ -306,15 +316,27 @@
       "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
       "place_waivers": "json_canonical:02461801bb6c9faf5be5458a222482bc62f0c46f6992c78f6a2477b2e2a60b04"
      }
+    },
+    {
+     "ts": "2026-10-29T07:03:36",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
+      "constraints": "json_canonical:72b81c02f0a9526866137b79fb62cad988d99a4deff778af2a77f158ce7f4875",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "place_waivers": null
+     }
     }
    ]
   },
   "drc_routed": {
    "phase": "P7",
    "status": "pass",
-   "attempts": 7,
+   "attempts": 8,
    "last": {
-    "ts": "2026-10-28T12:12:27",
+    "ts": "2026-10-29T07:05:21",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
@@ -409,23 +431,35 @@
       "pro": "json_canonical:6ec3460c19d0afad44f5ee8f381b2106e8306a7472ecb16ba7cde0f00a6b960a",
       "dru": "text_eol:d18f79ca0214f0cdf238b7ed722efe8107bfba58ef12c2d95832240367064201"
      }
+    },
+    {
+     "ts": "2026-10-29T07:05:21",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
+      "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
+      "pro": "json_canonical:6ec3460c19d0afad44f5ee8f381b2106e8306a7472ecb16ba7cde0f00a6b960a",
+      "dru": "text_eol:d18f79ca0214f0cdf238b7ed722efe8107bfba58ef12c2d95832240367064201"
+     }
     }
    ]
   },
   "verify": {
    "phase": "P8",
    "status": "pass",
-   "attempts": 7,
+   "attempts": 8,
    "last": {
-    "ts": "2026-10-28T12:12:31",
+    "ts": "2026-10-29T07:05:27",
     "status": "pass",
     "failing_count": 0,
-    "total": 19,
+    "total": 17,
     "inputs": {
      "pcb": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
-     "constraints": "json_canonical:2359f1ef397426592b3d4c3beee0427cab22705eedd37a1e16da66a6ea99c488",
+     "constraints": "json_canonical:72b81c02f0a9526866137b79fb62cad988d99a4deff778af2a77f158ce7f4875",
      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
-     "waivers": "json_canonical:592c380b54ad95b43971d6ca5b89828d705d0b3c2b1a56a62bee1ebdf92ca835"
+     "waivers": null
     }
    },
    "history": [
@@ -512,15 +546,27 @@
       "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
       "waivers": "json_canonical:592c380b54ad95b43971d6ca5b89828d705d0b3c2b1a56a62bee1ebdf92ca835"
      }
+    },
+    {
+     "ts": "2026-10-29T07:05:27",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 17,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
+      "constraints": "json_canonical:72b81c02f0a9526866137b79fb62cad988d99a4deff778af2a77f158ce7f4875",
+      "decoupling": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
+      "waivers": null
+     }
     }
    ]
   },
   "dfm": {
    "phase": "P9",
    "status": "pass",
-   "attempts": 3,
+   "attempts": 4,
    "last": {
-    "ts": "2026-10-28T12:12:38",
+    "ts": "2026-10-29T07:05:59",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
@@ -563,6 +609,17 @@
       "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
       "parts": null
      }
+    },
+    {
+     "ts": "2026-10-29T07:05:59",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
+      "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
+      "parts": null
+     }
     }
    ]
   }
@@ -573,55 +630,55 @@
    "path": "kicad/ultra-front.kicad_sch",
    "kind": "sch",
    "sha256": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
-   "hashed": "2026-10-28T12:12:38"
+   "hashed": "2026-10-29T07:05:59"
   },
   "pro": {
    "path": "kicad/ultra-front.kicad_pro",
    "kind": "pro",
    "sha256": "json_canonical:6ec3460c19d0afad44f5ee8f381b2106e8306a7472ecb16ba7cde0f00a6b960a",
-   "hashed": "2026-10-28T12:12:27"
+   "hashed": "2026-10-29T07:05:21"
   },
   "pcb": {
    "path": "kicad/ultra-front.kicad_pcb",
    "kind": "pcb",
    "sha256": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
-   "hashed": "2026-10-28T12:12:38"
+   "hashed": "2026-10-29T07:05:59"
   },
   "constraints": {
    "path": "kicad/constraints.json",
    "kind": "constraints",
-   "sha256": "json_canonical:2359f1ef397426592b3d4c3beee0427cab22705eedd37a1e16da66a6ea99c488",
-   "hashed": "2026-10-28T12:12:31"
+   "sha256": "json_canonical:72b81c02f0a9526866137b79fb62cad988d99a4deff778af2a77f158ce7f4875",
+   "hashed": "2026-10-29T07:05:27"
   },
   "decoupling": {
    "path": "kicad/decoupling.json",
    "kind": "decoupling",
    "sha256": "json_canonical:17d5d30327c8d20afa9e3d1fafea926c0c0ab5a65c8c5801cd9f0fc95d2c1a1e",
-   "hashed": "2026-10-28T12:12:31"
+   "hashed": "2026-10-29T07:05:27"
   },
   "place_waivers": {
    "path": "reports/place-waivers.json",
    "kind": "place_waivers",
-   "sha256": "json_canonical:02461801bb6c9faf5be5458a222482bc62f0c46f6992c78f6a2477b2e2a60b04",
-   "hashed": "2026-10-28T12:03:36"
+   "sha256": null,
+   "hashed": "2026-10-29T07:03:36"
   },
   "dru": {
    "path": "kicad/ultra-front.kicad_dru",
    "kind": "dru",
    "sha256": "text_eol:d18f79ca0214f0cdf238b7ed722efe8107bfba58ef12c2d95832240367064201",
-   "hashed": "2026-10-28T12:12:27"
+   "hashed": "2026-10-29T07:05:21"
   },
   "waivers": {
    "path": "reports/verify-waivers.json",
    "kind": "waivers",
-   "sha256": "json_canonical:592c380b54ad95b43971d6ca5b89828d705d0b3c2b1a56a62bee1ebdf92ca835",
-   "hashed": "2026-10-28T12:12:31"
+   "sha256": null,
+   "hashed": "2026-10-29T07:05:27"
   },
   "parts": {
    "path": "kicad/parts.json",
    "kind": "parts",
    "sha256": null,
-   "hashed": "2026-10-28T12:12:38"
+   "hashed": "2026-10-29T07:05:59"
   }
  },
  "open_issues": [],
@@ -751,6 +808,12 @@
    "why": "Cosmetic / checked by hand by the schematic reviewer / adequate at <= 15 MHz (review-board-2 W3)",
    "phase": "P8",
    "ts": "2026-10-28T12:13:40"
+  },
+  {
+   "what": "J2 declared in placement.mates (onboard_flex, corridor = the tail keepouts); place/verify mating waivers removed",
+   "why": "hive-hwde f437494 added the declaration; the check now holds J2 to the tail corridor",
+   "phase": "P6",
+   "ts": "2026-10-29T07:07:00"
   }
  ],
  "edits": [],
@@ -1263,6 +1326,51 @@
    "event": "phase",
    "phase": "P9",
    "prev": "P8"
+  },
+  {
+   "ts": "2026-10-29T07:03:36",
+   "event": "gate",
+   "gate": "place",
+   "status": "pass",
+   "attempt": 19,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-29T07:05:12",
+   "event": "gate",
+   "gate": "erc",
+   "status": "pass",
+   "attempt": 6,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-29T07:05:21",
+   "event": "gate",
+   "gate": "drc_routed",
+   "status": "pass",
+   "attempt": 8,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-29T07:05:27",
+   "event": "gate",
+   "gate": "verify",
+   "status": "pass",
+   "attempt": 8,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-29T07:05:59",
+   "event": "gate",
+   "gate": "dfm",
+   "status": "pass",
+   "attempt": 4,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-29T07:07:00",
+   "event": "decision",
+   "what": "J2 declared in placement.mates (onboard_flex, corridor = the tail keepouts); place/verify mating waivers removed"
   }
  ]
 }

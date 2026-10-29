@@ -19,6 +19,8 @@
   },
   "failing_count": 0,
   "failing": [],
+  "warnings_count": 0,
+  "warnings": [],
   "coverage": {
     "strict": false,
     "required": [
@@ -71,7 +73,7 @@
     "workspace": ".",
     "gate": "dfm",
     "status": "pass",
-    "attempts": 3,
+    "attempts": 4,
     "inputs": {
       "pcb": "sexpr_no_uuid:9dc35130bd1201644f1dba4e1d6dba4d5d758a4ef90a725aa5368dd26825d2d0",
       "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
