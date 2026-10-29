@@ -11,7 +11,9 @@ Each LCSC part is looked up at JLC's assembly parts search and at LCSC's
 product page. JLC's stockCount is its whole stock; canPresaleNumber is that
 less what open orders have claimed, and goes negative when they've claimed
 more (USB4105-GF-A-120 C5184243 read 2230 and -372 on 10-29, and JLC's BOM
-review showed it as 0). That free count is what an order is placed from.
+review showed it as 0). That free count is what an order is placed from; a
+part JLC marks isBuyComponent=0 counts as 0 free whatever its stock (JLC
+then swaps in its componentAlternativesCode, which may be out).
 LCSC's stockNumber is what can be bought into a JLC parts inventory first
 (basic parts read 0 there: JLC stocks them itself). A line needs Qty x N
 parts for N boards. Its status is:
@@ -70,7 +72,11 @@ def jlc(code: str) -> dict:
     stock = int(hit.get("stockCount") or 0)
     claim = hit.get("canPresaleNumber")
     free = stock if claim is None else min(stock, int(claim))
+    if str(hit.get("isBuyComponent")) == "0":
+        free = 0  # JLC won't buy or place it (CH340C C84681: "no longer manufacture")
     return {"found": True, "stock": stock, "free": max(0, free),
+            "no_buy": hit.get("noBuyReason") if str(hit.get("isBuyComponent")) == "0" else None,
+            "substitute": hit.get("componentAlternativesCode") or None,
             "library": hit.get("componentLibraryType"),
             "model": hit.get("componentModelEn"),
             "package": hit.get("componentSpecificationEn")}
@@ -103,6 +109,8 @@ def alternates() -> dict[str, list[dict]]:
 
 
 def status(need: int, j: dict, l: dict) -> str:
+    if j.get("no_buy"):
+        return "short"
     if j["free"] >= need:
         return "ok"
     return "thin" if l["stock"] >= need else "short"
@@ -133,7 +141,7 @@ def main(argv: list[str]) -> int:
             st = status(need, j, l)
             line = {"board": name, "refs": r["Designator"], "comment": r["Comment"], "lcsc": code,
                     "need": need, "jlc_stock": j["stock"], "jlc_free": j["free"],
-                    "jlc_library": j.get("library"), "lcsc_stock": l["stock"], "status": st,
+                    "jlc_library": j.get("library"), "jlc_no_buy": j.get("no_buy"), "lcsc_stock": l["stock"], "status": st,
                     "alternates": [dict(x) for x in alts.get(code, [])
                                    if x["Boards"] == "*" or name in x["Boards"].split()]}
             for alt in line["alternates"]:
@@ -145,7 +153,8 @@ def main(argv: list[str]) -> int:
             if st != "ok":
                 bad += st == "short"
                 print(f"{st:5} {name:12} {r['Designator'][:28]:28} {code:10} {r['Comment'][:22]:22} "
-                      f"need {need:5}  JLC {j['stock']} (free {j['free']})  LCSC {l['stock']}")
+                      f"need {need:5}  JLC {j['stock']} (free {j['free']})  LCSC {l['stock']}"
+                      + (f"  not buyable: {j['no_buy']}, JLC swaps in {j['substitute']}" if j.get("no_buy") else ""))
                 for alt in line["alternates"]:
                     print(f"      alternate {alt['Alternate']} {alt['MPN']} ({alt['Fit']}), {alt['status']}: "
                           f"JLC free {alt['jlc_free']}, LCSC {alt['lcsc_stock']}. {alt['Note']}")

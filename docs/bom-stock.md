@@ -22,6 +22,8 @@ gate. Until then, this script is the check.
 - **LCSC** is what can be bought into a JLC parts inventory before ordering.
   Basic parts read 0 at LCSC because JLC stocks them itself, so 0 there is
   not a problem.
+- A part JLC marks not buyable (`isBuyComponent=0`) counts as short
+  whatever its stock. JLC would swap in its own pick at order time.
 - **ok** means JLC has enough free. **thin** means JLC is short but LCSC has
   enough: buy the part into the inventory first. **short** means neither
   has enough. Use an alternate from
@@ -35,8 +37,8 @@ boards it suits, and the script prints its live stock beside the short line.
 
 ## 2026-10-29 03:37Z, for 100 boards each
 
-192 lines on lite-main, core (Plus) and core/ultra: 189 ok, 0 thin, 3 short.
-The 3 short lines are the same part on every board.
+192 lines on lite-main, core (Plus) and core/ultra: 186 ok, 6 short: J1 and
+the CH340C on each of the three boards.
 
 **J1 USB4105-GF-A-120 (C5184243): short on every board.** JLC has 0 free
 and LCSC has 0. The same part with other shell stakes is out too:
@@ -66,10 +68,21 @@ USB4105-GF-A (C3020560) and USB4105-GF-A-060 (C3025063).
   240 W, 1350 free at JLC. It is through-hole, though, so J1's footprint
   would have to change. Do that if USB4105 stays out.
 
-**JLC's BOM matching on CH340C.** Both U8 on core and U6 on Lite name
-**C84681**, which has 108k free. On the 10-28 order, JLC's matcher picked
-C7464026 instead, a CH340C with 0 in stock and 14,400 claimed. Check that
-U8/U6 read C84681 in the BOM review before confirming.
+**U8 (core) / U6 (Lite) CH340C C84681: short on every board.** JLC has
+109k in stock but marks it not buyable (`isBuyComponent=0`, "no longer
+manufacture"), so it won't place it. It swaps in C7464026 instead, a CH340C
+with 100 in stock and 14,300 claimed. On the 10-28 order, that swap is why
+U8 came up as C7464026. Use **WCH CH340B, C81010** (4.8k free) as a
+drop-in. It is the same SOP-16 with a built-in clock. It differs from the C
+only on pins 7 (RST#, an input with a pull-up), 8 (NC) and 15 (TNOW, an
+output), and those three pads are unconnected on both boards (per their
+netlists). It uses the same 1A86:7523 driver, and DTR#/RTS# on 13/14 still
+drive the ESP32 auto-reset. CH340G (C14267, 42k free) has the same pinout
+but needs a 12 MHz crystal on 7/8, a board change.
+
+**ultra-front** isn't on main yet. Its BOM, from worker 261028-145644's
+checkout on 10-29, is 18 lines, all ok at 100 boards. The thinnest is SW4,
+the EC11E encoder (C361165), with 3204 free.
 
 **Watch:** parts that pass but have less than 10x what 100 boards need free:
 
