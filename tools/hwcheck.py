@@ -13,8 +13,9 @@
 
 docs/checks.md says what each part checks and how the cost is worked out.
 
-Gates run through hive-hwde's bin/hwde, found as $HWDE_BIN, `hwde` on PATH,
-or bin/hwde in the installed module ($HIVE_MODULES, else /hive/modules). Each
+Gates run through hive-hwde's bin/hwde, found as $HWDE_BIN,
+${HIVE_TOOLS:-/hive/tools}/hwde/bin/hwde, `hwde` on PATH, or bin/hwde in the
+installed module ($HIVE_MODULES, else /hive/modules). Each
 board runs in a scratch copy of its workspace, so the checkout stays as it is.
 With boards to check and no hwde, the command execs `sh -c hwde` so the
 shell's own "hwde: not found" and exit 127 say it couldn't run: that is no
@@ -133,16 +134,34 @@ def boards() -> list[Path]:
 
 
 def hwde() -> str:
-    """bin/hwde, or exec the shell's own not-found (exit 127)."""
-    found = os.environ.get("HWDE_BIN") or shutil.which("hwde")
-    if not found:
-        mods = Path(os.environ.get("HIVE_MODULES") or "/hive/modules")
-        found = next((str(p) for p in (mods / "hive-hwde" / "bin" / "hwde",
-                                       mods / "hwde" / "bin" / "hwde") if p.is_file()), None)
-    if not found:
-        sys.stdout.flush()
-        os.execvp("sh", ["sh", "-c", "hwde"])
-    return found
+    """bin/hwde, or exec the shell's own not-found (exit 127).
+
+    Looks, in order: $HWDE_BIN; ${HIVE_TOOLS:-/hive/tools}/hwde/bin/hwde (the
+    path a check sandbox has, per hive-hwde's README); `hwde` on PATH; then
+    bin/hwde in the installed module ($HIVE_MODULES, else /hive/modules).
+    """
+    tools = Path(os.environ.get("HIVE_TOOLS") or "/hive/tools")
+    mods = Path(os.environ.get("HIVE_MODULES") or "/hive/modules")
+    tried = []
+    env = os.environ.get("HWDE_BIN")
+    tried.append(f"$HWDE_BIN ({env or 'unset'})")
+    if env:
+        return env
+    for p in [tools / "hwde" / "bin" / "hwde"]:
+        tried.append(str(p))
+        if p.is_file() and os.access(p, os.X_OK):
+            return str(p)
+    tried.append("hwde on PATH")
+    on_path = shutil.which("hwde")
+    if on_path:
+        return on_path
+    for p in (mods / "hive-hwde" / "bin" / "hwde", mods / "hwde" / "bin" / "hwde"):
+        tried.append(str(p))
+        if p.is_file():
+            return str(p)
+    print("hwde not found; looked at: " + ", ".join(tried))
+    sys.stdout.flush()
+    os.execvp("sh", ["sh", "-c", "hwde"])
 
 
 def gate_board(ws: Path, name: str, bin_: str, logs: Path) -> list[str]:

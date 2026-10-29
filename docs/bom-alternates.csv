@@ -1,0 +1,7 @@
+LCSC,Boards,Alternate,MPN,Fit,Note
+C5184243,lite-main,C165948,TYPE-C-31-M-12,drop-in,"HRO 16P 5 A, rated 20 V: enough for Lite's 20 V contract only. Fits the USB4105 pads (same pad row, Ø0.65 pegs, shell slots) per the 10-28 order review. Lite's D1 SMBJ20A and CH224A at 20 V are unchanged."
+C5184243,core core/ultra,C7095263,USB4085-GF-A,new footprint,"GCT through-hole, rated 48 V / 5 A / 240 W in its own datasheet: the in-stock part for 28 V EPR. Not a drop-in: J1 needs USB4085's through-hole pads, a board change. Until then fit USB4105 by hand."
+C5184243,*,C3025063,USB4105-GF-A-060,drop-in,"Same USB4105 part and pads with a 0.60 mm shell stake (fine on 1.6 mm board). Out too on 10-29 (454 at JLC, all claimed); listed so a restock shows."
+C5184243,*,C3020560,USB4105-GF-A,drop-in,"Same USB4105 part and pads with a 0.95 mm shell stake. Out on 10-29; listed so a restock shows."
+C84681,*,C81010,CH340B,drop-in,"WCH CH340B, SOP-16, built-in clock like the C. Differs only on pins 7 (RST#, input with pull-up), 8 (NC) and 15 (TNOW, output), all unconnected on U8 (core) and U6 (lite-main). Same driver (1A86:7523), 3.3 V with V3 on VCC, DTR#/RTS# on 13/14 for the ESP32 auto-reset. Blank EEPROM runs as a plain CH340."
+C84681,*,C14267,CH340G,new footprint,"WCH CH340G, same SOP-16 pinout but needs a 12 MHz crystal and two caps on pins 7/8: a board change. In stock in quantity."
