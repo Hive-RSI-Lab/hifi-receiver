@@ -4,7 +4,7 @@
  "workspace_schema": 2,
  "workspace": "boards/ultra-front",
  "created": "2026-10-28T11:01:12",
- "updated": "2026-10-29T07:07:00",
+ "updated": "2026-10-29T07:10:48",
  "phase": "P9",
  "gates": {
   "erc": {
@@ -624,7 +624,23 @@
    ]
   }
  },
- "human": {},
+ "human": {
+  "1": {
+   "status": "approved",
+   "ts": "2026-10-29T07:10:44",
+   "note": "lead:hifi-receiver-2 2026-10-28 12:14 for the person (who does not sign off stages): approved as built; J2 waivers approved, since replaced by placement.mates; smooth knob"
+  },
+  "2": {
+   "status": "approved",
+   "ts": "2026-10-29T07:10:46",
+   "note": "lead:hifi-receiver-2 2026-10-28 12:14 for the person (who does not sign off stages): approved as built; J2 waivers approved, since replaced by placement.mates; smooth knob"
+  },
+  "4": {
+   "status": "approved",
+   "ts": "2026-10-29T07:10:48",
+   "note": "lead:hifi-receiver-2 2026-10-28 12:14 for the person (who does not sign off stages): approved as built; J2 waivers approved, since replaced by placement.mates; smooth knob"
+  }
+ },
  "artifacts": {
   "sch": {
    "path": "kicad/ultra-front.kicad_sch",
@@ -1371,6 +1387,24 @@
    "ts": "2026-10-29T07:07:00",
    "event": "decision",
    "what": "J2 declared in placement.mates (onboard_flex, corridor = the tail keepouts); place/verify mating waivers removed"
+  },
+  {
+   "ts": "2026-10-29T07:10:44",
+   "event": "human",
+   "checkpoint": "1",
+   "status": "approved"
+  },
+  {
+   "ts": "2026-10-29T07:10:46",
+   "event": "human",
+   "checkpoint": "2",
+   "status": "approved"
+  },
+  {
+   "ts": "2026-10-29T07:10:48",
+   "event": "human",
+   "checkpoint": "4",
+   "status": "approved"
   }
  ]
 }
