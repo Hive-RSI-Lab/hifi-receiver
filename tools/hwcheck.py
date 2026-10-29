@@ -6,7 +6,8 @@
                                      unit tests, the firmware's host tests, then
                                      the hwde gates of each board whose files
                                      changed since the merge base with main
-                                     (every board with --all or HWCHECK_ALL=1)
+                                     (every board on main itself, with --all
+                                     or HWCHECK_ALL=1)
     python3 tools/hwcheck.py score   the whole product, lower is better: each
                                      tier's unit cost at 100 in USD from its
                                      boards' BOMs, counted only when its boards
@@ -249,7 +250,9 @@ def git(*args: str) -> str | None:
 def changed_boards(dirs: list[Path]) -> tuple[list[Path], str]:
     """The boards whose files differ from the merge base with main (commits,
     uncommitted edits and new files alike), and why. Every board when git
-    can't say, when the gate runner changed, or with HWCHECK_ALL=1."""
+    can't say, when the gate runner changed, when nothing differs (main
+    itself, so a hive-hwde change that breaks a board shows there), or with
+    HWCHECK_ALL=1."""
     if os.environ.get("HWCHECK_ALL"):
         return dirs, "HWCHECK_ALL is set"
     bases = [os.environ["HWCHECK_BASE"]] if os.environ.get("HWCHECK_BASE") else ["origin/main", "main"]
@@ -262,6 +265,8 @@ def changed_boards(dirs: list[Path]) -> tuple[list[Path], str]:
     if tracked is None or untracked is None:
         return dirs, "git diff failed"
     changed = {f for f in (tracked + untracked).split("\0") if f}
+    if not changed:
+        return dirs, f"nothing differs from {ref}: main itself"
     if hit := sorted(changed & set(GATE_ALL)):
         return dirs, f"{', '.join(hit)} changed"
     top = ROOT.resolve()
