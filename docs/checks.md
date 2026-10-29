@@ -15,7 +15,7 @@ Run either one by hand from the repo root. `python3 tools/hwcheck.py cost
 
 ## The test
 
-It fails (exit 1) if either of these fails:
+It fails (exit 1) if any of these fails:
 
 1. **`docs/product.md`.** The tier table (its header row names Lite, Plus
    and Ultra) has to have:
@@ -25,7 +25,12 @@ It fails (exit 1) if either of these fails:
      rounds to the dime), so the page can't drift from `bom-estimate.csv`
    - a **Boards** row that names each tier's board(s) in backticks
    - a **Build order** row with exactly one tier marked `first`
-2. **Every board's hwde gates.** Every workspace under `boards/` (a folder
+2. **The software's unit tests.** For each folder in `hwcheck.py`'s
+   `SOFTWARE` (today `bench`), `python3 -m unittest discover -s
+   <dir>/tests`. These are stdlib only, need no board, and take about
+   10 s. The bench's run against its mock board ([bench.md](bench.md)).
+   Add the firmware's host tests or the app's here the same way.
+3. **Every board's hwde gates.** Every workspace under `boards/` (a folder
    with a `state.json`) runs all four of hwde's gates: `erc` on
    `kicad/<board>.kicad_sch`, then `drc_routed`, `verify` and `dfm` on
    `kicad/<board>.kicad_pcb`. `<board>` is the `board` field in `state.json`.
