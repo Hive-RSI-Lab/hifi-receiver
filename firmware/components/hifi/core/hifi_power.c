@@ -6,13 +6,20 @@
 
 void hifi_power_cfg_lite(hifi_power_cfg_t *cfg) {
 	*cfg = (hifi_power_cfg_t) {
-		/* TPA3118: 4.5-26 V; the 20 V contract may sit at 19-21 V. 9 V is the
-		 * floor product.md set; 25 V leaves a volt under the amp's limit. */
-		.v_min = 9.0f,
+		/* TPA3118: 4.5-26 V; the 20 V contract may sit at 19-21 V. The floor
+		 * is the PVDD switch's: its gate divider (R5 100k over R6 220k) gives
+		 * Q1 only VBUS x 0.31 of gate drive, 2.2-2.3 V at 9 V, which a max-Vth
+		 * AO4485 (2.5 V) doesn't turn on at, and 3.7 V at 15 V
+		 * (docs/review-2/second-read.md). 25 V leaves a volt under the amp's
+		 * limit. */
+		.v_min = 14.0f,
 		.v_max = 25.0f,
 		.settle_ms = 200,
-		/* lite-main's Miller soft start ramps PVDD in about 6 ms */
-		.soft_start_ms = 100,
+		/* lite-main's gate RC (R5||R6 with C19 4.7 uF) holds PVDD off for
+		 * 80-160 ms after PVDD_EN and reaches 90 % 110-210 ms after it at
+		 * 15-20 V (sims in docs/review-2/second-read.md): the amp waits about
+		 * twice that */
+		.soft_start_ms = 400,
 		.recover_ms = 1000,
 		.fault_blank_ms = 50,
 		.fault_retry_ms = 1000,
