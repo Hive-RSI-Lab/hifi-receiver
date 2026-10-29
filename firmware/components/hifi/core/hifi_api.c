@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "hifi_b64.h"
 #include "hifi_json.h"
 #include "hifi_vol.h"
 
@@ -425,6 +426,233 @@ static int r_selftest(const hifi_ops_t *ops, char *out, size_t cap) {
 	return 200;
 }
 
+/* ------------------------------------------------------------------ remote bring-up */
+
+static int r_ota_get(const hifi_ops_t *ops, char *out, size_t cap) {
+	if (!ops->ota || !ops->ota_status) return error(out, cap, 404, "no OTA in this build");
+	hifi_ota_status_t st = {0};
+	ops->ota_status(&st);
+	const hifi_ota_t *o = ops->ota;
+	hifi_info_t i = {0};
+	ops->info(&i);
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_str(&j, "slot", st.slot);
+	hj_str(&j, "fw", i.fw);
+	hj_str(&j, "state", st.state ? st.state : "unknown");
+	if (o->active || o->done) {
+		hj_obj(&j, "update");
+		hj_bool(&j, "active", o->active);
+		hj_int(&j, "size", (long long) o->size);
+		hj_int(&j, "written", (long long) o->written);
+		hj_str(&j, "version", o->version);
+		hj_str(&j, "slot", o->slot);
+		hj_obj_end(&j);
+	} else {
+		hj_null(&j, "update");
+	}
+	if (st.last_from[0] || st.last_reason[0]) {
+		hj_obj(&j, "last_rollback");
+		hj_str(&j, "from", st.last_from);
+		hj_str(&j, "reason", st.last_reason);
+		hj_obj_end(&j);
+	} else {
+		hj_null(&j, "last_rollback");
+	}
+	hj_obj_end(&j);
+	return 200;
+}
+
+static int ok_reply(char *out, size_t cap) {
+	snprintf(out, cap, "{\"ok\":true}");
+	return 200;
+}
+
+static int r_ota(const hifi_ops_t *ops, const char *what, const char *body, char *out, size_t cap) {
+	hifi_ota_t *o = ops->ota;
+	if (!o) return error(out, cap, 404, "no OTA in this build");
+	const char *err = "update failed";
+	int st;
+	hj_t j;
+	if (!strcmp(what, "begin")) {
+		double size;
+		char sha[72] = "", version[32] = "";
+		if (!hj_get_num(body, "size", &size) || size <= 0) return error(out, cap, 400, "size is required");
+		hj_get_str(body, "sha256", sha, sizeof(sha));
+		hj_get_str(body, "version", version, sizeof(version));
+		if ((st = hifi_ota_begin(o, (size_t) size, sha, version, &err)) != 200) return error(out, cap, st, err);
+		hj_init(&j, out, cap);
+		hj_obj(&j, NULL);
+		hj_bool(&j, "ok", true);
+		hj_str(&j, "slot", o->slot);
+		hj_int(&j, "chunk_max", HIFI_OTA_CHUNK_MAX);
+		hj_obj_end(&j);
+		return 200;
+	}
+	if (!strcmp(what, "chunk")) {
+		double off;
+		const char *data;
+		size_t dlen;
+		if (!hj_get_num(body, "off", &off) || off < 0) return error(out, cap, 400, "off is required");
+		if (!hj_get_str_span(body, "data", &data, &dlen)) return error(out, cap, 400, "data (base64) is required");
+		uint8_t *buf = malloc(HIFI_OTA_CHUNK_MAX);
+		if (!buf) return error(out, cap, 500, "out of memory");
+		long n = dlen <= hifi_b64_len(HIFI_OTA_CHUNK_MAX) ? hifi_b64_decode(data, dlen, buf, HIFI_OTA_CHUNK_MAX) : -1;
+		st = n < 0 ? (err = "data isn't base64 of at most 4096 bytes", 400)
+			   : hifi_ota_chunk(o, (size_t) off, buf, (size_t) n, &err);
+		free(buf);
+		hj_init(&j, out, cap);
+		hj_obj(&j, NULL);
+		if (st == 200) hj_bool(&j, "ok", true);
+		else hj_str(&j, "error", err);
+		hj_int(&j, "next", (long long) o->written); /* where the sender goes on from */
+		hj_obj_end(&j);
+		return st;
+	}
+	if (!strcmp(what, "finish")) {
+		bool reboot = true;
+		hj_get_bool(body, "reboot", &reboot);
+		if ((st = hifi_ota_finish(o, &err)) != 200) return error(out, cap, st, err);
+		if (reboot) ops->reboot(); /* after the reply has gone */
+		hj_init(&j, out, cap);
+		hj_obj(&j, NULL);
+		hj_bool(&j, "ok", true);
+		hj_bool(&j, "reboot", reboot);
+		hj_str(&j, "slot", o->slot);
+		hj_obj_end(&j);
+		return 200;
+	}
+	if (!strcmp(what, "abort")) {
+		hifi_ota_abort(o);
+		return ok_reply(out, cap);
+	}
+	return error(out, cap, 404, "no such path");
+}
+
+static int capture_frames(const char *body) {
+	double f;
+	if (!body || !hj_get_num(body, "frames", &f)) return HIFI_CAPTURE_FRAMES_DEFAULT;
+	return (int) f;
+}
+
+static int r_capture(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	if (!ops->capture) return error(out, cap, 404, "no capture in this build");
+	char src[16] = "loopback";
+	hj_get_str(body, "source", src, sizeof(src));
+	hifi_cap_src_t s;
+	if (!strcmp(src, "loopback")) s = HIFI_CAP_LOOPBACK;
+	else if (!strcmp(src, "line")) s = HIFI_CAP_LINE;
+	else return error(out, cap, 400, "source must be loopback or line");
+	int frames = capture_frames(body);
+	if (frames < 64 || frames > HIFI_CAPTURE_FRAMES_MAX) return error(out, cap, 400, "frames must be 64 to 16384");
+	size_t need = hifi_b64_len((size_t) frames * 4) + 1024;
+	if (cap < need) return error(out, cap, 500, "reply buffer too small for this capture");
+
+	int16_t *pcm = calloc((size_t) frames * 2, sizeof(int16_t));
+	if (!pcm) return error(out, cap, 500, "out of memory");
+	hifi_cap_info_t info = {.rate = 48000, .v_per_fs = {NAN, NAN}};
+	const char *err = "can't capture now";
+	int st = ops->capture(s, pcm, frames, &info, &err);
+	if (st) {
+		free(pcm);
+		return error(out, cap, st, err);
+	}
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_str(&j, "source", src);
+	hj_int(&j, "rate", info.rate);
+	hj_int(&j, "frames", frames);
+	hj_arr(&j, "channels");
+	for (int c = 0; c < 2; c++) hj_str(&j, NULL, info.ch[c]);
+	hj_arr_end(&j);
+	hj_arr(&j, "v_per_fs");
+	for (int c = 0; c < 2; c++) hj_num(&j, NULL, info.v_per_fs[c], 3);
+	hj_arr_end(&j);
+	hj_arr(&j, "stats");
+	for (int c = 0; c < 2; c++) {
+		hifi_cap_stats_t cs;
+		hifi_capture_stats(pcm, frames, c, &cs);
+		hj_obj(&j, NULL);
+		hj_num(&j, "rms_fs", cs.rms_fs, 6);
+		hj_num(&j, "peak_fs", cs.peak_fs, 6);
+		hj_num(&j, "dc_fs", cs.dc_fs, 6);
+		hj_int(&j, "clipped", cs.clipped);
+		hj_obj_end(&j);
+	}
+	hj_arr_end(&j);
+	/* the samples, as one base64 string, written straight into the reply */
+	hj_str(&j, "pcm", "");
+	if (!j.overflow && j.len >= 2) {
+		size_t at = j.len - 1; /* just after the opening quote */
+		size_t room = cap - at;
+		size_t n = hifi_b64_encode((const uint8_t *) pcm, (size_t) frames * 4, out + at, room);
+		if (n && at + n + 3 < cap) {
+			out[at + n] = '"';
+			j.len = at + n + 1;
+			out[j.len] = '\0';
+		} else {
+			j.overflow = true;
+		}
+	}
+	hj_obj_end(&j);
+	free(pcm);
+	if (j.overflow) return error(out, cap, 500, "reply buffer too small for this capture");
+	return 200;
+}
+
+static int r_wifi(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	if (!ops->set_wifi) return error(out, cap, 404, "no Wi-Fi setup in this build");
+	char ssid[33], pw[65] = "";
+	if (!hj_get_str(body, "ssid", ssid, sizeof(ssid)) || !ssid[0]) return error(out, cap, 400, "ssid is required");
+	hj_get_str(body, "password", pw, sizeof(pw));
+	if (ops->set_wifi(ssid, pw)) return error(out, cap, 500, "couldn't start joining");
+	return ok_reply(out, cap);
+}
+
+static int r_remote(const hifi_ops_t *ops, bool post, const char *body, char *out, size_t cap) {
+	if (!ops->remote_status) return error(out, cap, 404, "no relay in this build");
+	if (post) {
+		char url[96] = "", user[48] = "", pw[96] = "", prefix[24] = "hifi";
+		if (!ops->remote_set) return error(out, cap, 404, "no relay in this build");
+		hj_get_str(body, "url", url, sizeof(url));
+		if (url[0] && strncmp(url, "mqtts://", 8) && strncmp(url, "mqtt://", 7))
+			return error(out, cap, 400, "url must be mqtts://host:port (or mqtt:// on a LAN), or empty to turn it off");
+		hj_get_str(body, "user", user, sizeof(user));
+		hj_get_str(body, "password", pw, sizeof(pw));
+		hj_get_str(body, "prefix", prefix, sizeof(prefix));
+		if (!prefix[0] || strpbrk(prefix, "+#/ ")) return error(out, cap, 400, "prefix must be one topic level");
+		if (ops->remote_set(url, user, pw, prefix)) return error(out, cap, 500, "couldn't save the relay settings");
+	}
+	hifi_remote_status_t r = {0};
+	ops->remote_status(&r);
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_bool(&j, "configured", r.configured);
+	hj_bool(&j, "connected", r.connected);
+	hj_str(&j, "url", r.url[0] ? r.url : NULL);
+	hj_str(&j, "user", r.user[0] ? r.user : NULL);
+	hj_str(&j, "prefix", r.prefix);
+	hj_str(&j, "dev", r.dev);
+	hj_int(&j, "keys", r.keys);
+	hj_int(&j, "accepted", r.accepted);
+	hj_int(&j, "rejected", r.rejected);
+	hj_obj_end(&j);
+	return 200;
+}
+
+size_t hifi_api_reply_cap(const char *path, const char *body) {
+	if (path && strstr(path, PREFIX "capture") == path) {
+		int f = capture_frames(body);
+		if (f < 64) f = 64;
+		if (f > HIFI_CAPTURE_FRAMES_MAX) f = HIFI_CAPTURE_FRAMES_MAX;
+		return hifi_b64_len((size_t) f * 4) + 1024;
+	}
+	return 4096;
+}
+
 int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 		    const char *body, char *out, size_t cap) {
 	char route[32];
@@ -453,6 +681,11 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "ir/learn")) status = post ? r_ir(ops, body, out, cap, true) : -1;
 	else if (!strcmp(route, "ir/forget")) status = post ? r_ir(ops, body, out, cap, false) : -1;
 	else if (!strcmp(route, "selftest")) status = post ? r_selftest(ops, out, cap) : -1;
+	else if (!strcmp(route, "ota")) status = get ? r_ota_get(ops, out, cap) : -1;
+	else if (!strncmp(route, "ota/", 4)) status = post ? r_ota(ops, route + 4, body, out, cap) : -1;
+	else if (!strcmp(route, "capture")) status = post ? r_capture(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "wifi")) status = post ? r_wifi(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "remote")) status = r_remote(ops, post, body, out, cap);
 	else return error(out, cap, 404, "no such path");
 
 	if (status < 0) return error(out, cap, 405, "wrong method for this path");

@@ -273,6 +273,12 @@ the network so it can talk to the server"):
   PD contract (V/A), VBUS current, amp fault/clip/over-temperature, firmware
   version and the network. It can also play built-in test tones and sweeps,
   and run a self-test.
+- **Left at home, with no one there:** one command on the laptop
+  (`bench/provision.py`) sets up Wi-Fi; after that the board dials out to an
+  MQTT relay the Hive also reaches, takes signed commands, updates its own
+  firmware with rollback, and records its own speaker outputs through a
+  divider into the codec's spare ADC input (about $0.04 on Lite, $0.34 on
+  Plus, $0.70 on Ultra). The design: [remote.md](remote.md).
 
 ### Bill of materials and assembly cost
 

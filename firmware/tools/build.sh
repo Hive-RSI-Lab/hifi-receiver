@@ -23,3 +23,19 @@ cd "$DEST"
 idf.py reconfigure >/dev/null
 nice -n 19 ninja -C build -j "${JOBS:-4}"
 ls -l build/squeezelite.bin build/recovery.bin
+# squeezelite's build doesn't check the recovery image against its slot: do
+# it here for both, since an image that outgrows its slot can't be flashed
+python3 - partitions-hifi.csv build/recovery.bin build/squeezelite.bin <<'EOF'
+import os, sys
+parts = {}
+for line in open(sys.argv[1]):
+    f = [x.strip() for x in line.split("#")[0].split(",")]
+    if len(f) >= 5 and f[1] == "app":
+        parts[f[2]] = int(f[4], 0)
+bad = 0
+for img, slot in ((sys.argv[2], "factory"), (sys.argv[3], "ota_0")):
+    n, cap = os.path.getsize(img), parts[slot]
+    print(f"{os.path.basename(img)}: {n / 2**20:.2f} MB of {cap / 2**20:.2f} MB ({100 * n / cap:.0f}%)")
+    bad |= n > cap
+sys.exit(bad)
+EOF

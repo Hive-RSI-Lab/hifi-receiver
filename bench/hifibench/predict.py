@@ -10,8 +10,11 @@ from __future__ import annotations
 
 # board -> nominal PVDD, then load ohm -> watts per channel at 1% THD.
 TIERS = {
-    "lite-main": {"pvdd": 20.0, "rs": 0.3, "p1": {4: 43.0, 6: 30.0, 8: 23.0}, "amp": "TPA3118D2"},
-    "core": {"pvdd": 28.0, "rs": 0.51, "p1": {4: 77.0, 6: 55.0, 8: 43.0}, "amp": "TPA3221"},
+    "lite-main": {"pvdd": 20.0, "rs": 0.3, "p1": {4: 43.0, 6: 30.0, 8: 23.0}, "amp": "TPA3118D2",
+                  # the BTL output's peak volts for a 0 dBFS sine (docs/firmware.md, the governor)
+                  "fs_vpk": 17.98},
+    "core": {"pvdd": 28.0, "rs": 0.51, "p1": {4: 77.0, 6: 55.0, 8: 43.0}, "amp": "TPA3221",
+             "fs_vpk": None},  # not set until the core firmware fixes its gain
 }
 # A measurement under this share of the prediction is a fail.
 PASS_RATIO = 0.85

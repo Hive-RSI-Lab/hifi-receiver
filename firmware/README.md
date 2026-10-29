@@ -40,8 +40,15 @@ firmware/tools/build.sh            # builds into ~/fw-build/squeezelite-esp32
 It runs `fetch.sh` (clone upstream at the pinned commit with its submodules,
 apply `patches/`, copy `components/hifi` and the board's defaults in, and
 build the web app from `app/` if it is there), then `idf.py reconfigure` and
-`ninja -j4` at nice 19. The outputs are `build/recovery.bin` (the factory
-app), `build/squeezelite.bin` (the main app, OTA slot 0), the bootloader and
+`ninja -j4` at nice 19. The Hive's signing key and a built-in relay come
+from the environment, never from git (docs/remote.md):
+`HIFI_HIVE_PUBKEY=<hex>` (comma-separate two while rotating), and optionally
+`HIFI_RELAY_URL`, `HIFI_RELAY_USER`, `HIFI_RELAY_PASS`. Without
+`HIFI_HIVE_PUBKEY` the board takes no command from the relay.
+
+With the hive-fw module: `eval "$(fw env firmware)"` (it reads `fw.json`)
+and then `firmware/tools/build.sh`. The outputs are `build/recovery.bin` (the factory
+app), `build/squeezelite.bin` (the main app, for either OTA slot), the bootloader and
 the partition table.
 
 **Installing ESP-IDF v4.4.8 on a machine whose Python is new** (the Hive's is
@@ -61,7 +68,12 @@ uv venv --seed --python 3.10 ~/esp/tools/python_env/idf4.4_py3.10_env
 `build.sh` finds that install by itself. The Hive's `hive-fw` module is
 making a shared copy; when it lands, set `IDF_PATH` and `build.sh` uses it.
 
-**What has been checked (2026-10-28):** the full build, both images, on
+**Checked again with the relay, OTA and capture (2026-10-28, task
+261029-014757):** the full build with `fw` (ESP-IDF v4.4.8), our component,
+esp-mqtt and libsodium linked; `squeezelite.bin` 2.77 MB of its 3.06 MB slot,
+`recovery.bin` 1.52 MB of 1.75 MB (`build.sh` checks both).
+
+**What was checked before (2026-10-28):** the full build, both images, on
 this machine with ESP-IDF v4.4.8: `squeezelite.bin` 2.69 MB in its 4 MB
 slot, `recovery.bin` 1.38 MB in its 2 MB slot; the hooks link
 (`target_hifi`, `hifi_dsp_process`, `hifi_http_register`, `hifi_sink_start`

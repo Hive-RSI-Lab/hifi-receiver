@@ -160,3 +160,22 @@ It is a check of the bench's logic, not a prediction of the board.
 The mock can model `core` too, with `Sim("core", charger="140w")`. Ultra's
 four channels need a second capture pair or a second pass with the leads
 moved. This is not built yet; it belongs with plan item 23.
+
+## Hands-off: provisioning and the relay
+
+The board left at home is reached through an MQTT relay, not the LAN
+([remote.md](remote.md)):
+
+```sh
+python3 bench/provision.py --wifi 'home:password'      # on the laptop, board on its USB-C
+python3 bench/bench.py remote keygen ~/.config/hifi-receiver/hive-signing.key
+python3 bench/bench.py remote list                     # boards the broker knows
+python3 bench/bench.py remote --dev 240ac4123456 bringup
+python3 bench/bench.py mock --relay                    # a broker and a relay-connected mock, for trying it
+```
+
+`hifibench/mqtt.py` (client, through the HTTPS proxy with CONNECT),
+`broker.py` (a small broker for the tests and the mock), `ed25519.py`
+(signing, RFC 8032), `relay.py` (the transport, board listing, OTA push) and
+`remote.py` (the unattended bring-up) are plain Python with no packages.
+`tests/test_remote.py` runs all of it against the mock board.
