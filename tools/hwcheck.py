@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """The project's test and score.
 
-    python3 tools/hwcheck.py test    the check: docs/product.md, the software's
-                                     unit tests, then every board's hwde gates
+    python3 tools/hwcheck.py test [--all]
+                                     the check: docs/product.md, the software's
+                                     unit tests, then the hwde gates of each board
+                                     whose files changed since the merge base with
+                                     main (every board with --all or HWCHECK_ALL=1)
     python3 tools/hwcheck.py score   the first-built tier's unit cost at 100,
                                      in USD, from its board(s)' BOM, printed
                                      only when their gates pass (lower is better)
@@ -210,6 +213,39 @@ def run_gates(dirs: list[Path]) -> list[str]:
         shutil.rmtree(scratch, ignore_errors=True)
 
 
+# What always re-gates every board when it changes: the gate runner itself.
+GATE_ALL = ("tools/hwcheck.py",)
+
+
+def git(*args: str) -> str | None:
+    r = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True)
+    return r.stdout if r.returncode == 0 else None
+
+
+def changed_boards(dirs: list[Path]) -> tuple[list[Path], str]:
+    """The boards whose files differ from the merge base with main (commits,
+    uncommitted edits and new files alike), and why. Every board when git
+    can't say, when the gate runner changed, or with HWCHECK_ALL=1."""
+    if os.environ.get("HWCHECK_ALL"):
+        return dirs, "HWCHECK_ALL is set"
+    bases = [os.environ["HWCHECK_BASE"]] if os.environ.get("HWCHECK_BASE") else ["origin/main", "main"]
+    ref = next((b for b in bases if git("rev-parse", "-q", "--verify", b + "^{commit}")), None)
+    base = ref and git("merge-base", ref, "HEAD")
+    if not base:
+        return dirs, f"no merge base with {' or '.join(bases)}"
+    tracked = git("diff", "--name-only", "--no-renames", "-z", base.strip())
+    untracked = git("ls-files", "--others", "--exclude-standard", "-z")
+    if tracked is None or untracked is None:
+        return dirs, "git diff failed"
+    changed = {f for f in (tracked + untracked).split("\0") if f}
+    if hit := sorted(changed & set(GATE_ALL)):
+        return dirs, f"{', '.join(hit)} changed"
+    top = ROOT.resolve()
+    rels = {d: d.resolve().relative_to(top).as_posix() + "/" for d in dirs}
+    return ([d for d in dirs if any(f.startswith(rels[d]) for f in changed)],
+            f"changed since {ref} ({base.strip()[:9]})")
+
+
 def board_name(d: Path) -> str:
     try:
         return json.loads((d / "state.json").read_text()).get("board") or d.name
@@ -317,7 +353,7 @@ def run_unittests() -> list[str]:
     return bad
 
 
-def cmd_test() -> int:
+def cmd_test(all_boards: bool = False) -> int:
     bad, _ = check_product()
     for b in bad:
         print(f"FAIL {b}")
@@ -328,11 +364,17 @@ def cmd_test() -> int:
     if not dirs:
         print("boards/: no boards yet, no gates to run")
     else:
-        bad += run_gates(dirs)
+        todo, why = (dirs, "--all") if all_boards else changed_boards(dirs)
+        skip = [d.name for d in dirs if d not in todo]
+        print(f"boards/: gating {', '.join(d.name for d in todo) or 'none'} ({why})"
+              + (f"; {', '.join(skip)} unchanged, not re-gated" if skip else ""), flush=True)
+        if todo:
+            bad += run_gates(todo)
+        dirs = todo
     if bad:
         print(f"test: FAIL ({len(bad)}): " + "; ".join(bad[:8]))
         return 1
-    print(f"test: pass ({len(dirs)} board(s))")
+    print(f"test: pass ({len(dirs)} board(s) gated)")
     return 0
 
 
@@ -382,7 +424,7 @@ def cmd_cost(names: list[str]) -> int:
 
 def main(argv: list[str]) -> int:
     if argv[:1] == ["test"]:
-        return cmd_test()
+        return cmd_test("--all" in argv[1:])
     if argv[:1] == ["score"]:
         return cmd_score()
     if argv[:1] == ["cost"]:
