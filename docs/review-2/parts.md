@@ -16,6 +16,28 @@ the netlist leaves unconnected but the PCB puts on GND (PARTS finding below).
 
 Parts are listed in the order of how likely they are to kill a first spin. I wrote the file part by part.
 
+## Findings (details in the numbered sections; JSON in `parts.json`)
+
+| ID | Sev | Board | Refs | Finding | Fix |
+|---|---|---|---|---|---|
+| PARTS-4 | **blocker** | core | U17, Y2, R45, R43, R40, R41, R44 | The TCA9555 has internal ~100k I/O pull-ups (IIL up to -100 uA), so the 100k pull-downs only reach 1.65-2.48 V at boot. PHY_RST enables Y2, which puts 50 MHz on ESP32 IO0 (boot strap) when EN rises: random boot mode. PVDD_EN can half-turn-on the 2N7002 (1.1-2.0 V vs VGS(th) 1.0-2.5 V). Amp/DAC resets sit mid-rail. (sect. 6) | TCA9535PWR **C130204** (same pinout, footprint and address, no pull-ups); R45 -> 10k; DNP 0R from Y2 OE to GND. |
+| PARTS-7 | **blocker** (Ultra) | core | U19 | PLR237/**T8BK** is ordered for a **T10BK** footprint. The T8 needs 2 x 1.70 mm peg holes that aren't there, so it can't seat. The symbol numbering (1 VCC, 3 VOUT) is reversed from Everlight (1 Vout, 3 Vcc), and the physical pad mapping is unverified. (sect. 8) | Order the T10BK (C17427482), or add the peg holes. Renumber the symbol and check pad 1 against the vendor drawing. |
+| PARTS-6 | major (only if the swap is made) | core | J1 | The proposed USB4085-GF-A (C7095263) is a 16-pin through-hole part. It fits neither the SMD footprint nor the merged-pad symbol. (sect. 7) | New 16-pin symbol and footprint (pads ~0.70 mm), or keep USB4105 C5184243. |
+| PARTS-3 | minor | core | U10, Y1 | ES9018K2M uses internal DVDD at MCLK = 50.000 MHz, exactly at the "> 50 MHz needs external DVDD" limit (0 % margin before oscillator ppm). (sect. 5) | Y1 -> 49.152 MHz 3225 oscillator (e.g. C7431354; check its pinout). |
+| PARTS-5 | minor | lite-main | J1 | The proposed HRO TYPE-C-31-M-12 (C165948) is rated 20 V, the same as the 20 V PD contract (0 % margin). The footprint is compatible. (sect. 7) | Prefer keeping USB4105. |
+| PARTS-1 | minor | both | U2 (Lite TPS54302), U2 (core USBLC6) | The generic SOT-23-6 land has 2.30 mm row centres vs TI DDC's 2.7. Leads are still fully on the pads (0.19-0.39 mm toe). (sect. 2) | Optional: DDC0006A land. |
+| PARTS-2 | minor | core | U1 | CH224Q PG pad is on GND in the PCB but unconnected in the schematic: a parity break, electrically harmless. (sect. 3) | Re-sync the schematic and PCB. |
+| PARTS-8 | minor | core | D2 | BZT52C33 symbol pins are named 1/2, not K/A. Polarity is correct. (sect. 8) | Rename the pins. |
+
+**Everything else checked is correct**, each pin traced from the datasheet to the pad: all SOT-23 BJTs/FETs and both AO4485s; TPS54302, SY8089A1AAC,
+LP5907MFX-3.3, SY8303AIC; CH224A/CH224Q; TPA3118D2 (incl. bootstrap pairing) and TPA3221 (44 pins, bootstraps, DDV land); ES8388 (QFN-28 at 0.45 pitch),
+ES9018K2M, ES7243E, PCM5102A, LAN8720A; ESP32-WROVER-E (pins and land pattern); CH340C (and the CH340B swap, which drops in); USB4105 and the HRO swap
+footprint; USBLC6, INA186, OPA1678, TS5A23157, TCA9555 pinout, the 50 MHz oscillators, HR911105A, the IR receivers, the TVS/zener/LED polarity, the tact
+switches, the inductors, the polarized caps and the RCA jacks. The margins are in each section.
+
+**Stock**, only where I saw it on 2026-10-29 (task 261029-022243 checks stock in depth): PLR237/T8BK C17223620 **236**, ES9018K2M **706**, TPA3221DDVR
+**1107**, XR0850-100M **1686**, USB4105 **2416**, ESP32-WROVER-E-N8R8 **4306**, SY8303AIC 124966, CH224Q 10991, CH224A 9547.
+
 ## 1. SOT-23 transistors and the P-FET (both boards): all correct
 
 | Ref | Board | LCSC -> MPN (vendor) | Datasheet pins | Symbol pins -> net | Footprint |
@@ -361,3 +383,54 @@ Source: GCT drawing USB4085 rev B (28/02/23), sheets 1-2.
 | J2 | core | HR911105A, HanRun (C12074) | HanRun HR911105A REV A/2 p1 schematic: P1 TD+, P2 TD-, P3 RD+, P4 TX CT, P5 RX CT, P6 RD-, P7 NC, P8 CHS GND (via 1000 pF), 9/10 green LED, 11/12 yellow LED; p2 bottom view: odd row 7-5-3-1 on the mouth side, even row 8-6-4-2 behind it | 1 ETH_TXP, 2 ETH_TXN, 3 ETH_RXP, 4/5 +3V3E (centre taps, the supply-referenced arrangement the LAN8720A's current-mode driver uses), 6 ETH_RXN, 7 open, 8 GND, LEDs open (allowed). Footprint: odd row at y = -4.35 toward the LED/mouth side, even row 2.54 behind, 1.27 stagger, and pin 1 lands on the left in a top view with the mouth toward the viewer (the bottom view mirrored). Verified. |
 | SW1 | core (Plus) | EC11E1834403, Alps (C361165) | Alps EC11 catalogue (LCSC copy) "EC11E Vertical" drawing: terminal pitch **2.5 mm**, "5-ø1 holes" | footprint SW-TH_EC11E1820402 puts A/C/B at **2.54** pitch and D/E 5.08 apart, with 1.2 mm drills. Cumulative offset at the outer pins is 0.04 mm in a 1.2 mm hole (vs Alps' 1.0), so it inserts. **Note.** The footprint name refers to a different variant (1820402: no push switch; 1834403 has one); the switch pins D/E are present and wired (ENC_SW, GND). A/B order only sets the rotation sense in firmware. |
 
+## 10. Switches, magnetics, polarized capacitors, shunt, connectors
+
+- **Tactile switch TS-1187A-B-A-B (C318884; Lite SW1-3, core SW2/3).** XKB drawing TS-1187A-X-X-X rev A0: the schematic shows
+  **A-B joined and C-D joined**, with the switch between them; A/B are the top pads and C/D the bottom, 7.0 mm outer / 5.0 mm inner across, pad rows at 3.0/4.5.
+  Footprint: pad 1 = A (-3.0, -1.85), 2 = B (+3.0, -1.85), 3 = C, 4 = D (y = +1.85), each 1.0 x 0.75, so the pads span x 2.5-3.5 and y 1.475-2.225:
+  **exact**. The netlist ties A+B to the button net and C+D to GND, which is the switched pair. JLC's EasyEDA model (C318884) uses the same numbering. Verified.
+- **Inductors.** All are 2-terminal, non-polar parts; I checked each footprint against the vendor land (Sunlord SWPA catalogue p2 table: a = pad gap, b = pad length,
+  c = pad width).
+  | Ref | Part | Vendor land | Footprint | Verdict |
+  |---|---|---|---|---|
+  | Lite L1-L4 | XR0850-100M (C48391614, Xiangru) | gap 4.2, outer 8.5, width 3.8 (pads 2.15 long, centres +/-3.18); electrode 1.8 long from the body edge at 4.0 | 2.4 x 3.8 at +/-3.9 (gap 5.4, outer 10.2) | pads sit 0.6 mm further out than recommended and cover 1.3 of the 1.8 mm bottom electrode. Solderable. **Note.** |
+  | core L1-L8 | PSPMAA0805-100M-ANP (C2962885, PROD) | 0805 series: a 3.5, b 2.4, c 6.9 | 3.0 x 3.5 at +/-3.5 | covers the 2.2-4.0 mm electrode. Verified. (The footprint name "PCC-M0854M" is just a label.) |
+  | Lite L5 | SWPA6045S100MT (C79272) | gap 2.8, 1.7 x 5.7 | 2.474 x 5.02, gap 2.73 | Verified. |
+  | Lite L6 | SWPA4020S2R2NT (C305171) on "VLCF4020" footprint | gap 1.9, 1.1 x 3.7 | 1.8 x 4.0 at +/-1.6 (gap 1.4) | covers the 1.05-2.0 mm electrode. Verified. |
+  | core L9 | SWPA4030S4R7MT (C57269) | as above | 1.6 x 3.5 at +/-1.6 | Verified. |
+  | core L10 | SWPA4030S2R2MT (C36409) on "LQH44" footprint | as above | 1.5 x 4.0 at +/-1.8 | Verified. |
+  | core FB1-3 | BLM18PG121SN1D (C14709, Murata 0603) | 0603 | L0603 0.8 x 0.864 at +/-0.7 | Verified. |
+- **Polarized capacitors.** Lite C58 MA35V470M10X13 (C46550472, 10 x 13 mm polymer) and C59 RVT220UF35V67RV0024 (C2836441, 8 x 10.2): in both
+  SMD footprints the chamfered silk corners (which mark the base plate's + side) are at pad 1, and pad 1 = PVDD, pad 2 = GND. Correct. Core C5/C6 (and Ultra
+  C311) Rubycon 50PX470MEFC10X20 (C88733, radial 10 x 20, F = 5.0): the footprint has a "+" mark at pad 1 and a filled negative crescent at pad 2; pad 1 = PVDD.
+  Pitch is 5.08 vs 5.0 (0.08 mm in a 1.0 mm hole, against a 0.6 mm lead for this series). Correct.
+- **Core R1 shunt** RLP25FEGR010 (C393070, TA-I 2512, 10 mOhm). It's 2-terminal, so the INA186 senses through R18/R19 (10R each) from the VBUS_IN and VBUS
+  nets. Whether those sense traces leave R1's pads (Kelvin) or pick up somewhere along the pour is a routing question I didn't trace. At 10 mOhm, 1 mOhm
+  of shared copper is a 10 % gain error. Logged as a **known-unknown** for the power/layout reviewer.
+- **RCA XDJK-0271-1650** (C7527522; Lite J2/J3, core J4/J5). Lianxin drawing A-AV2-7A1: 3 x 1.6 mm holes on an 8 mm pitch, the GND sleeve hole forward and the two
+  signal holes behind it at *unequal* depths (about 3.8 and 3.1 mm behind GND, measured off the drawing at 32.5 px/mm). Footprint: pin 2 (GND) at +1.95,
+  pin 1 at -1.95 (3.9 behind) and pin 3 at -1.15 (3.1 behind). This matches the drawing and JLC's EasyEDA model, so the odd-looking asymmetry is
+  correct. The drawing doesn't say which signal pin feeds the upper jack. Lite labels pin 1 L and pin 3 R, so a swap would only reverse the channels:
+  **note**.
+- **Terminal blocks** DB128V-5.08-4P (C2915641) and KF301-5.0-2P (C474881): pin order only sets speaker polarity labelling, and the pitch matches the part
+  (5.08 and 5.0). **FFC J3** FPC-05F-20PH20 (C2856803, Ultra): 0.3 x 1.25 pads at 0.5 pitch, 20 + 2 tabs. The far-end board isn't in the repo, so the contact
+  side and the cable type (same-side vs reversed) are a known-unknown. Pins 1-4 and 17-20 (GND, 3V3, 5V, GND / 5V, 3V3, GND) are mirror-symmetric, so a
+  reversed cable won't short the rails, but the signal pins would land wrong.
+
+## Known unknowns and tools wanted
+
+All entries are in `parts.json` (`known_unknowns`, 65 rows, each marked verified/unverified/wrong with its source, dated 2026-10-28/29).
+The ones that could stop a board and are still open:
+- The CH224 VBUS pin tolerance: WCH's datasheet contradicts itself (3.8 V in sect. 7.1 vs 32 V in 8.1.1). The design follows WCH's reference schematic.
+- The Y2 OE internal pull-up value: whether a 10k pull-down holds OE below 30 % VDD. Bench-check.
+- The TPA3221 top-side PowerPAD needs a grounded heatsink, and no core BOM lists one (thermal review).
+- The PLR237 pad-1 physical position.
+- The FFC J3 contact side and cable type against the front board, which isn't in the repo.
+
+Firmware dependencies I found: ES7243E reg 0x02 bit 7 = 1 (MCLK from BCLK), and the ES7243E I2C address is 0x10 or 0x14 (AD2 shares the SDOUT pin).
+
+Tools wanted: a JLC CPL-orientation check against JLC's own part models, an automatic datasheet pin-table extract and diff (with OCR for image-only PDFs),
+and land-pattern JSON so `fp_verify.py` can run. Details are in `parts.json`.
+
+Scripts in `docs/review-2/sims/parts/`: `chain.py` (pin -> net -> pad dump), `nets.py` (net node lister), `fetch.sh` (datasheet fetcher,
+follows LCSC's JS redirect), `add.py` (JSON writer).

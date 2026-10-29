@@ -816,7 +816,124 @@
    "source": "Alps catalogue text extraction did not yield tab dims; check against drawing before order",
    "could_stop_board": false,
    "date": "2026-10-28"
+  },
+  {
+   "fact": "TS-1187A (C318884) A-B and C-D internally joined; footprint pads 1-4 = A-D at exact vendor positions",
+   "board": "both",
+   "refs": [
+    "SW1",
+    "SW2",
+    "SW3"
+   ],
+   "status": "verified",
+   "source": "XKB TS-1187A-X-X-X drawing rev A0 (LCSC copy)",
+   "could_stop_board": false,
+   "date": "2026-10-28"
+  },
+  {
+   "fact": "Inductor footprints cover the electrodes of XR0850, PSPMAA0805, SWPA6045S, SWPA4020S, SWPA4030S",
+   "board": "both",
+   "refs": [
+    "L1",
+    "L2",
+    "L3",
+    "L4",
+    "L5",
+    "L6",
+    "L7",
+    "L8",
+    "L9",
+    "L10"
+   ],
+   "status": "verified",
+   "source": "Xiangru XR0850 SFA 2024-06-21; PROD PSPMAA catalogue land table; Sunlord SWPA catalogue p2",
+   "could_stop_board": false,
+   "date": "2026-10-28"
+  },
+  {
+   "fact": "Polarized caps C58/C59 (Lite) and C5/C6/C311 (core) have + pad on PVDD",
+   "board": "both",
+   "refs": [
+    "C58",
+    "C59",
+    "C5",
+    "C6",
+    "C311"
+   ],
+   "status": "verified",
+   "source": "footprint silk (chamfer / + mark) vs netlist",
+   "could_stop_board": true,
+   "date": "2026-10-28"
+  },
+  {
+   "fact": "R1 10 mOhm shunt sense traces are Kelvin (R18/R19 tap at R1 pads)",
+   "board": "core",
+   "refs": [
+    "R1",
+    "R18",
+    "R19",
+    "U3"
+   ],
+   "status": "unverified",
+   "source": "not traced in core.kicad_pcb; power/layout review",
+   "could_stop_board": false,
+   "date": "2026-10-28"
+  },
+  {
+   "fact": "XDJK-0271-1650 RCA footprint hole pattern (asymmetric signal pins) matches vendor drawing",
+   "board": "both",
+   "refs": [
+    "J2",
+    "J3",
+    "J4",
+    "J5"
+   ],
+   "status": "verified",
+   "source": "Lianxin A-AV2-7A1 drawing (LCSC copy C7527522); EasyEDA C7527522",
+   "could_stop_board": true,
+   "date": "2026-10-28"
+  },
+  {
+   "fact": "Which RCA signal pin feeds the upper vs lower jack",
+   "board": "both",
+   "refs": [
+    "J2",
+    "J3",
+    "J4",
+    "J5"
+   ],
+   "status": "unverified",
+   "source": "Lianxin drawing does not label it",
+   "could_stop_board": false,
+   "date": "2026-10-28"
+  },
+  {
+   "fact": "FFC J3 contact side and cable type vs the (absent) front board",
+   "board": "core",
+   "refs": [
+    "J3"
+   ],
+   "status": "unverified",
+   "source": "far-end board not in repo",
+   "could_stop_board": true,
+   "date": "2026-10-28"
   }
  ],
- "tools_wanted": []
+ "tools_wanted": [
+  {
+   "tool": "jlc_cpl_orientation_check",
+   "checks": "CPL rotation of every polarized/multi-pin part vs JLC's own footprint model (EasyEDA) for that LCSC number, rendered as an overlay",
+   "why": "pin-to-pad is right in KiCad here, but JLC places from its own model; a 90/180 deg CPL error rotates a correct footprint. Not checked by any hwde script."
+  },
+  {
+   "tool": "datasheet_pin_table_extract",
+   "checks": "parse vendor pin tables (incl. image-only PDFs via OCR) into JSON and diff against symbol pin names/numbers automatically",
+   "why": "this review did ~40 parts by hand; the PLR237 and TCA9555 issues are of the kind a table diff + part-variant check would flag"
+  },
+  {
+   "tool": "fp_verify with land_pattern JSON per part",
+   "checks": "pad size/pitch/row spacing vs vendor land, EP gap",
+   "why": "fp_verify.py exists but needs a datasheet_extract land_pattern block that no part here has; most vendor land patterns are images"
+  }
+ ]
 }
