@@ -3,7 +3,10 @@
 
     python3 tools/hwcheck.py test [--all]
                                      the check: docs/product.md, the software's
-                                     unit tests, the firmware's host tests, then
+                                     unit tests, the firmware's host tests, the
+                                     firmware's QEMU smoke (hive-fw's fw build
+                                     and fw qemu: it boots and answers GET
+                                     /api/v1/info) when firmware/ changed, then
                                      the hwde gates of each board whose files
                                      changed since the merge base with main
                                      (every board with --all or HWCHECK_ALL=1)
@@ -27,6 +30,14 @@ With boards to check and no hwde, the command execs `sh -c hwde` so the
 shell's own "hwde: not found" and exit 127 say it couldn't run: that is no
 verdict on the commit, not a red. The same goes for make and cc when the
 firmware's host tests are there to run.
+
+What ran but couldn't be verified is neither a pass nor a fail: a gate that
+couldn't fetch part models (hwde's dfm `unverified`: EasyEDA's rate limit,
+the network) and a QEMU smoke with no fw, IDF or QEMU here. With nothing
+failing, the test then exits 127 too, naming what is unverified; any real
+failure still makes it exit 1. That 127 comes from the shell's own "not
+found" for a tool named for what is missing (easyeda-models, idf.py, fw),
+the only 127 the Hive reads as no verdict rather than a red.
 """
 from __future__ import annotations
 
@@ -56,6 +67,9 @@ TIERS = ("lite", "plus", "ultra")
 GATES = ("erc", "drc_routed", "verify", "dfm")
 # Gate findings that are hwde failing to fetch, not the board failing.
 UNRUN = ("cpl_fetch_failed",)
+# A gate's code for "ran, but couldn't verify" (gate_board): the score has no
+# number then, and the test exits as couldn't-run.
+UNVERIFIED = 127
 # Software whose stdlib unittest suite (<dir>/tests/test_*.py) the test runs.
 SOFTWARE = ("tools", "bench", "app")
 QTY = SPEC["qty"]
@@ -181,9 +195,33 @@ def hwde() -> str:
     os.execvp("sh", ["sh", "-c", "hwde"])
 
 
+def unverified(rc: int, r: dict, log: str) -> str | None:
+    """What a gate run left unverified, or None: the parts whose models hwde
+    couldn't fetch. hwde's dfm says so as exit 2 with an `unverified` block
+    (refs, reason), which the gate may hand on in its result or only in its
+    error text; an older hwde as exit 1 whose only findings are UNRUN."""
+    if rc == 1:
+        failing = r.get("failing") or []
+        if failing and all(v.get("kind") in UNRUN for v in failing):
+            refs = sorted({x for v in failing for x in v.get("refs") or []})
+            why = next((v.get("reason") for v in failing if v.get("reason")), "")
+            return f"{', '.join(refs) or 'parts'} unverified" + (f" ({why})" if why else "")
+        return None
+    if rc < 2:
+        return None
+    for b in (r.get("unverified"), (r.get("report") or {}).get("unverified")):
+        if isinstance(b, dict):
+            refs = b.get("refs") or []
+            return (f"{b.get('family') or 'some'} unverified: {', '.join(refs) or 'parts'}"
+                    + (f" ({b['reason']})" if b.get("reason") else ""))
+    m = re.search(r"(\w+ unverified, not failed: [^\n\"\\]*)", log)
+    return m.group(1)[:240] if m else None
+
+
 def gate_board(ws: Path, name: str, bin_: str, logs: Path) -> list[tuple[str, int]]:
     """Each gate on one board's scratch workspace; the failures, explained,
-    each with the gate's exit: 1 is a verdict, 2 or more couldn't run."""
+    each with the gate's exit: 1 is a verdict, 2 or more couldn't run, and
+    UNVERIFIED ran but couldn't verify (unverified())."""
     bad = []
     for g in GATES:
         inp = ws / "kicad" / f"{name}.{'kicad_sch' if g == 'erc' else 'kicad_pcb'}"
@@ -200,20 +238,24 @@ def gate_board(ws: Path, name: str, bin_: str, logs: Path) -> list[tuple[str, in
         if rc == 0:
             print(f"  {g}: pass", flush=True)
             continue
-        why = ""
+        why, r = "", {}
         try:
             r = json.loads(out.read_text())
             failing = r.get("failing", [])
             why = "; ".join(f"{v.get('check') or v.get('kind', '?')}: {v.get('msg') or v.get('message', '')}"[:160]
                             for v in failing[:6])
-            # A part model EasyEDA wouldn't serve (a rate limit, the network)
-            # says nothing of the board: the gate couldn't run.
-            if rc == 1 and failing and all(v.get("kind") in UNRUN for v in failing):
-                rc = 2
         except (OSError, ValueError, AttributeError):
-            pass
+            r = r if isinstance(r, dict) else {}
+        text = log.read_text(errors="replace")
+        # A part model EasyEDA wouldn't serve (a rate limit, the network)
+        # says nothing of the board: it is unverified, not failed.
+        unv = unverified(rc, r, text)
+        if unv:
+            bad.append((f"{name} {g}: {unv}", UNVERIFIED))
+            print(f"  {g}: UNVERIFIED (exit {rc}) {unv}", flush=True)
+            continue
         if not why:
-            why = " | ".join(log.read_text(errors="replace").strip().splitlines()[-6:])
+            why = " | ".join(text.strip().splitlines()[-6:])
         bad.append((f"{name} {g}" + (f" (couldn't run, exit {rc})" if rc > 1 else ""), rc))
         print(f"  {g}: FAIL (exit {rc}) {why}", flush=True)
     return bad
@@ -246,28 +288,36 @@ def git(*args: str) -> str | None:
     return r.stdout if r.returncode == 0 else None
 
 
-def changed_boards(dirs: list[Path]) -> tuple[list[Path], str]:
-    """The boards whose files differ from the merge base with main (commits,
-    uncommitted edits and new files alike), and why. Every board when git
-    can't say, when the gate runner changed, or with HWCHECK_ALL=1."""
-    if os.environ.get("HWCHECK_ALL"):
-        return dirs, "HWCHECK_ALL is set"
+def changed_files() -> tuple[set[str] | None, str]:
+    """The files that differ from the merge base with main (commits,
+    uncommitted edits and new files alike), and against what; None and why
+    when git can't say."""
     bases = [os.environ["HWCHECK_BASE"]] if os.environ.get("HWCHECK_BASE") else ["origin/main", "main"]
     ref = next((b for b in bases if git("rev-parse", "-q", "--verify", b + "^{commit}")), None)
     base = ref and git("merge-base", ref, "HEAD")
     if not base:
-        return dirs, f"no merge base with {' or '.join(bases)}"
+        return None, f"no merge base with {' or '.join(bases)}"
     tracked = git("diff", "--name-only", "--no-renames", "-z", base.strip())
     untracked = git("ls-files", "--others", "--exclude-standard", "-z")
     if tracked is None or untracked is None:
-        return dirs, "git diff failed"
-    changed = {f for f in (tracked + untracked).split("\0") if f}
+        return None, "git diff failed"
+    return {f for f in (tracked + untracked).split("\0") if f}, f"changed since {ref} ({base.strip()[:9]})"
+
+
+def changed_boards(dirs: list[Path]) -> tuple[list[Path], str]:
+    """The boards whose files differ from the merge base with main, and why.
+    Every board when git can't say, when the gate runner changed, or with
+    HWCHECK_ALL=1."""
+    if os.environ.get("HWCHECK_ALL"):
+        return dirs, "HWCHECK_ALL is set"
+    changed, since = changed_files()
+    if changed is None:
+        return dirs, since
     if hit := sorted(changed & set(GATE_ALL)):
         return dirs, f"{', '.join(hit)} changed"
     top = ROOT.resolve()
     rels = {d: d.resolve().relative_to(top).as_posix() + "/" for d in dirs}
-    return ([d for d in dirs if any(f.startswith(rels[d]) for f in changed)],
-            f"changed since {ref} ({base.strip()[:9]})")
+    return [d for d in dirs if any(f.startswith(rels[d]) for f in changed)], since
 
 
 def board_name(d: Path) -> str:
@@ -392,6 +442,61 @@ def firmware_tests() -> bool:
     return r.returncode == 0
 
 
+def fw_bin() -> str | None:
+    """hive-fw's bin/fw: $FW_BIN, `fw` on PATH, or the installed module's
+    ($HIVE_MODULES, else /hive/modules)."""
+    mods = Path(os.environ.get("HIVE_MODULES") or "/hive/modules")
+    for c in (os.environ.get("FW_BIN"), shutil.which("fw"), mods / "hive-fw" / "bin" / "fw", mods / "fw" / "bin" / "fw"):
+        if c and Path(c).is_file():
+            return str(c)
+    return None
+
+
+def cant_run(tool: str, why: list[str]) -> None:
+    """Exit 127 as the shell's own "<tool>: not found", after saying why: the
+    Hive reads only that as couldn't-run (core.MissingTool), never a red."""
+    print("couldn't run, unverified: " + "; ".join(why))
+    sys.stdout.flush()
+    os.execvp("sh", ["sh", "-c", tool])
+
+
+def firmware_smoke() -> tuple[bool, tuple[str, str] | None]:
+    """firmware/ built for QEMU and booted there by hive-fw (fw build --qemu,
+    fw qemu): the boot line, then firmware/fw.json's qemu.http probes over
+    QEMU's Ethernet (GET /api/v1/info first). (passed, None), or (False,
+    (the missing tool, why) it couldn't run): no fw, or no IDF or QEMU for it
+    (fw doctor)."""
+    fw = fw_bin()
+    if not fw:
+        return False, ("fw", "no hive-fw (looked at $FW_BIN, fw on PATH, $HIVE_MODULES/hive-fw/bin/fw)")
+    proj = str(ROOT / "firmware")
+
+    def run(*args: str, timeout: int) -> tuple[int, str]:
+        try:
+            r = subprocess.run([fw, *args], capture_output=True, text=True, timeout=timeout,
+                               stdin=subprocess.DEVNULL)
+        except subprocess.TimeoutExpired:
+            return -1, f"fw {args[0]}: no answer in {timeout} s"
+        return r.returncode, (r.stdout + r.stderr).strip()
+
+    rc, out = run("doctor", proj, timeout=120)
+    missing = [ln.strip() for ln in out.splitlines() if "MISSING" in ln]
+    if rc or missing:
+        tool = "qemu-system-xtensa" if missing and all(m.startswith("qemu") for m in missing) else "idf.py"
+        return False, (tool, "fw can't build or boot it here: " + ("; ".join(missing) or out[-300:]))
+    rc, out = run("build", proj, "--qemu", timeout=3600)
+    if rc:
+        print(out[-4000:])
+        print(f"firmware (QEMU): FAIL (fw build --qemu exit {rc})", flush=True)
+        return False, None
+    rc, out = run("qemu", proj, timeout=900)
+    print(out[-2000:])
+    if rc not in (0, 1):
+        return False, ("qemu-system-xtensa", f"fw qemu exit {rc}: {out.splitlines()[-1] if out else ''}"[:300])
+    print(f"firmware (QEMU): {'pass' if rc == 0 else 'FAIL'}", flush=True)
+    return rc == 0, None
+
+
 def run_unittests() -> list[str]:
     return [f"{d}/tests" for d in SOFTWARE if (ROOT / d / "tests").is_dir() and not unittest_dir(ROOT / d / "tests")]
 
@@ -405,6 +510,19 @@ def cmd_test(all_boards: bool = False) -> int:
     bad += run_unittests()
     if (ROOT / "firmware" / "test" / "Makefile").is_file() and not firmware_tests():
         bad.append("firmware/test")
+    unv = []
+    changed, _ = changed_files()
+    if (ROOT / "firmware" / "fw.json").is_file() and (
+            all_boards or os.environ.get("HWCHECK_ALL") or changed is None
+            or any(f.startswith("firmware/") for f in changed)):
+        ok, why = firmware_smoke()
+        if why:
+            print(f"firmware (QEMU): couldn't run: {why[1]}", flush=True)
+            unv.append((why[0], f"firmware QEMU smoke: {why[1]}"))
+        elif not ok:
+            bad.append("firmware (QEMU)")
+    else:
+        print("firmware (QEMU): firmware/ unchanged, not booted", flush=True)
     dirs = boards()
     if not dirs:
         print("boards/: no boards yet, no gates to run")
@@ -414,11 +532,17 @@ def cmd_test(all_boards: bool = False) -> int:
         print(f"boards/: gating {', '.join(d.name for d in todo) or 'none'} ({why})"
               + (f"; {', '.join(skip)} unchanged, not re-gated" if skip else ""), flush=True)
         if todo:
-            bad += [f for fs in run_gates(todo).values() for f, _ in fs]
+            fails = [x for fs in run_gates(todo).values() for x in fs]
+            bad += [f for f, rc in fails if rc != UNVERIFIED]
+            unv += [("easyeda-models", f) for f, rc in fails if rc == UNVERIFIED]
         dirs = todo
     if bad:
-        print(f"test: FAIL ({len(bad)}): " + "; ".join(bad[:8]))
+        print(f"test: FAIL ({len(bad)}): " + "; ".join(bad[:8])
+              + (f"; and unverified: {'; '.join(w for _, w in unv)}" if unv else ""))
         return 1
+    if unv:
+        # neither a pass nor a fail
+        cant_run(unv[0][0], [w for _, w in unv])
     print(f"test: pass ({len(dirs)} board(s) gated)")
     return 0
 

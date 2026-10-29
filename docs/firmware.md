@@ -215,6 +215,25 @@ one is a small hook in the patch, with the logic in `core/`.
   `hifi tone ...`, beside squeezelite's own commands.
 - **Names:** AirPlay, Bluetooth and the setup access point are `hifi-lite`
   until renamed (`POST /api/v1/name`).
+- **The box's address** (`/api/v1/state` `net.ip`, the self-test's
+  `network`, mDNS, the relay's status, the trial boot) is the active
+  interface's: the default route's, else any up interface but the setup
+  access point. Wi-Fi station or Ethernet alike (`hifi_net_ip()`), so
+  Plus/Ultra on a cable and QEMU's open_eth report one.
+
+### In QEMU (hive-fw's `fw qemu`)
+
+`fw qemu` boots the main app (`ota_0`) with Ethernet on QEMU's open_eth and
+drives the test API; `tools/hwcheck.py test` runs it (boot plus
+`GET /api/v1/info`) when `firmware/` changed. Two things it has to work
+round:
+
+- **`read_vbus()` and `read_pvdd()` hang:** `adc1_get_raw()` never returns
+  in QEMU (it has no SAR ADC). fw shims it (`"adc1"` in its qemu settings);
+  at 0 the power sequencer sits in `wait_pd` with the amp off, as on a
+  laptop port.
+- **The factory image (squeezelite's recovery app) skips Ethernet,** so a
+  boot of `factory` never gets an address: boot `ota_0`.
 
 ## Remote bring-up, updates and self-measurement
 

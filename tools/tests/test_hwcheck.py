@@ -52,29 +52,84 @@ class Needs(unittest.TestCase):
 
 
 class Test(unittest.TestCase):
-    """cmd_test counts each failing gate, not each gated board."""
+    """cmd_test counts each failing gate, not each gated board; what is
+    unverified is neither a pass nor a fail."""
 
-    def run_test(self, gates):
+    def run_test(self, gates, smoke=(True, None)):
         saved = {k: getattr(hwcheck, k) for k in ("check_product", "run_unittests", "firmware_tests",
-                                                    "boards", "run_gates")}
+                                                    "boards", "run_gates", "firmware_smoke", "cant_run")}
         dirs = list(gates)
         hwcheck.check_product = lambda: ([], {})
         hwcheck.run_unittests = lambda: []
         hwcheck.firmware_tests = lambda: True
         hwcheck.boards = lambda: dirs
         hwcheck.run_gates = lambda todo: {d: gates[d] for d in todo}
+        hwcheck.firmware_smoke = lambda: smoke
+        self.cant = None
+
+        def cant_run(tool, why):  # the real one execs the shell's not-found
+            self.cant = (tool, why)
+            raise SystemExit(127)
+        hwcheck.cant_run = cant_run
         try:
             with contextlib.redirect_stdout(io.StringIO()):
-                return hwcheck.cmd_test(all_boards=True)
+                try:
+                    return hwcheck.cmd_test(all_boards=True)
+                except SystemExit as e:
+                    return e.code
         finally:
             for k, v in saved.items():
                 setattr(hwcheck, k, v)
 
     def test_boards_that_pass_pass(self):
         self.assertEqual(self.run_test({Path("a"): [], Path("b"): []}), 0)
+        self.assertIsNone(self.cant)
 
     def test_a_failing_gate_fails(self):
         self.assertEqual(self.run_test({Path("a"): [], Path("b"): [("b dfm", 1)]}), 1)
+
+    def test_an_unverified_gate_cant_run(self):
+        u = ("b dfm: placement unverified: U1, U2 (HTTP 403)", hwcheck.UNVERIFIED)
+        self.assertEqual(self.run_test({Path("a"): [], Path("b"): [u]}), 127)
+        self.assertEqual(self.cant[0], "easyeda-models")
+        self.assertIn("U1, U2", self.cant[1][0])
+
+    def test_a_real_failure_beside_an_unverified_one_fails(self):
+        u = ("b dfm: placement unverified: U1", hwcheck.UNVERIFIED)
+        self.assertEqual(self.run_test({Path("a"): [("a drc_routed", 1)], Path("b"): [u]}), 1)
+        self.assertIsNone(self.cant)
+
+    def test_the_firmware_smoke(self):
+        self.assertEqual(self.run_test({Path("a"): []}, smoke=(False, None)), 1)
+        self.assertEqual(self.run_test({Path("a"): []}, smoke=(False, ("idf.py", "no IDF"))), 127)
+        self.assertEqual(self.cant[0], "idf.py")
+
+
+class Unverified(unittest.TestCase):
+    """unverified() tells a gate that couldn't fetch part models from one
+    that failed or crashed."""
+
+    def test_old_hwde_exit_1_with_only_fetch_failures(self):
+        r = {"failing": [{"kind": "cpl_fetch_failed", "refs": ["U2", "U1"], "reason": "HTTP 403"}]}
+        self.assertEqual(hwcheck.unverified(1, r, ""), "U1, U2 unverified (HTTP 403)")
+        r["failing"].append({"kind": "cpl_rotation", "refs": ["U3"]})
+        self.assertIsNone(hwcheck.unverified(1, r, ""))
+
+    def test_exit_2_with_the_block(self):
+        r = {"status": "error", "unverified": {"family": "placement", "refs": ["U5"], "reason": "rate limited"}}
+        self.assertEqual(hwcheck.unverified(2, r, ""), "placement unverified: U5 (rate limited)")
+        self.assertEqual(hwcheck.unverified(2, {"report": r}, ""), "placement unverified: U5 (rate limited)")
+
+    def test_exit_2_with_only_the_gate_s_error_text(self):
+        log = ('{"script": "gate", "status": "error", "error": "Traceback ...\\nRuntimeError: dfm report '
+               'status is error: placement unverified, not failed: could not fetch the LCSC model for 3 '
+               'part(s) (HTTP 403)\\n"}')
+        self.assertTrue(hwcheck.unverified(2, {}, log).startswith("placement unverified, not failed: could not"))
+
+    def test_a_crash_or_a_fail_is_not_unverified(self):
+        self.assertIsNone(hwcheck.unverified(2, {}, "Traceback: KeyError"))
+        self.assertIsNone(hwcheck.unverified(1, {"failing": [{"kind": "clearance"}]}, ""))
+        self.assertIsNone(hwcheck.unverified(0, {}, ""))
 
 
 class Spec(unittest.TestCase):
