@@ -162,7 +162,7 @@ class Enclosure(Base):
         self.assertTrue(any("STEP" in b for b in bad), bad)
 
     def test_an_open_mesh_fails(self):
-        f = self.OUT + "lite-base.stl"
+        f = self.OUT + "base.stl"
         tris = pieces.stl_triangles(self.t.root / f)
         self.t.put(f, stl(tris[1:]))
         self.assertIn(f"{f} isn't a closed mesh", self.t.check("Lite enclosure"))
@@ -187,6 +187,7 @@ class Enclosure(Base):
 class Manual(Base):
     dirs = ("docs/manual", "docs/product.md", "docs/app.md", "docs/bench.md", "docs/firmware.md",
             "docs/test-api.md", "enclosure/README.md", "boards/lite-main/README.md", "boards/core/README.md",
+            "boards/ultra-front/README.md",
             "firmware/board", "firmware/patches", "firmware/upstream.lock", "firmware/components",
             "app/web/app.js", "bench/README.md")
 
