@@ -1,0 +1,2157 @@
+{
+ "source": "lite-main.kicad_pcb",
+ "outline": {
+  "w": 100.0,
+  "h": 90.0,
+  "corner_radius": 2.0
+ },
+ "thickness": 1.6,
+ "holes": [
+  {
+   "ref": "H1",
+   "u": 3.55,
+   "v": 3.55,
+   "drill": 3.2
+  },
+  {
+   "ref": "H2",
+   "u": 96.45,
+   "v": 3.55,
+   "drill": 3.2
+  },
+  {
+   "ref": "H4",
+   "u": 3.55,
+   "v": 86.45,
+   "drill": 3.2
+  },
+  {
+   "ref": "H3",
+   "u": 96.45,
+   "v": 86.45,
+   "drill": 3.2
+  }
+ ],
+ "footprints": [
+  {
+   "ref": "R53",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 70.5,
+   "v": 56.5,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    69.77,
+    55.02,
+    71.23,
+    57.98
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R3",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 57.5,
+   "v": 19.4,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    56.02,
+    18.67,
+    58.98,
+    20.13
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R30",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 15.5,
+   "v": 22.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    14.02,
+    21.77,
+    16.98,
+    23.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C30",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 27.0,
+   "v": 40.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    25.52,
+    39.27,
+    28.48,
+    40.73
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "U6",
+   "footprint": "aiee:SOP-16_L10.0-W3.9-P1.27-LS6.0-BL",
+   "u": 46.0,
+   "v": 62.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    42.01,
+    57.02,
+    49.99,
+    66.98
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "J3",
+   "footprint": "aiee:CONN-TH_XDJK-0271-1650",
+   "u": 41.8,
+   "v": 15.2,
+   "rot": 180.0,
+   "side": "top",
+   "courtyard": [
+    29.5,
+    -0.0,
+    50.55,
+    19.5
+   ],
+   "tht_pads": [
+    36.55,
+    12.0,
+    47.05,
+    18.4
+   ]
+  },
+  {
+   "ref": "C6",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 53.0,
+   "v": 29.4,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    51.52,
+    28.67,
+    54.48,
+    30.13
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C20",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 10.5,
+   "v": 80.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    9.02,
+    79.77,
+    11.98,
+    81.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C57",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 71.3,
+   "v": 40.2,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    69.82,
+    39.47,
+    72.78,
+    40.93
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C17",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 41.0,
+   "v": 51.1,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    39.52,
+    50.37,
+    42.48,
+    51.83
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "U4",
+   "footprint": "aiee:SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BR",
+   "u": 37.5,
+   "v": 41.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    35.4,
+    39.5,
+    39.6,
+    42.5
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C52",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "u": 87.5,
+   "v": 44.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    85.8,
+    43.02,
+    89.2,
+    44.98
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C7",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "u": 58.5,
+   "v": 34.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    56.8,
+    33.52,
+    60.2,
+    35.48
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R15",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 60.5,
+   "v": 14.8,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    59.02,
+    14.07,
+    61.98,
+    15.53
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C66",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 80.4,
+   "v": 37.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    79.67,
+    35.52,
+    81.13,
+    38.48
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "H3",
+   "footprint": "MountingHole:MountingHole_3.2mm_M3_Pad_Via",
+   "u": 96.45,
+   "v": 86.45,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    93.0,
+    83.0,
+    99.9,
+    89.9
+   ],
+   "tht_pads": [
+    93.25,
+    83.25,
+    99.65,
+    89.65
+   ]
+  },
+  {
+   "ref": "Q2",
+   "footprint": "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+   "u": 40.0,
+   "v": 70.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    38.25,
+    68.48,
+    41.75,
+    71.52
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R34",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 21.5,
+   "v": 24.3,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    20.02,
+    23.57,
+    22.98,
+    25.03
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R18",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 63.2,
+   "v": 58.6,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    61.72,
+    57.87,
+    64.68,
+    59.33
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C37",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 30.0,
+   "v": 29.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    28.52,
+    28.77,
+    31.48,
+    30.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "SW1",
+   "footprint": "aiee:SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
+   "u": 58.0,
+   "v": 86.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    54.25,
+    83.95,
+    61.75,
+    89.05
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C23",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 46.5,
+   "v": 68.8,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    45.02,
+    68.07,
+    47.98,
+    69.53
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "Q4",
+   "footprint": "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+   "u": 64.0,
+   "v": 11.8,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    62.25,
+    10.28,
+    65.75,
+    13.32
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C44",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 21.5,
+   "v": 26.1,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    20.02,
+    25.37,
+    22.98,
+    26.83
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C14",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 48.5,
+   "v": 50.3,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    47.02,
+    49.57,
+    49.98,
+    51.03
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C18",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 66.4,
+   "v": 58.6,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    64.92,
+    57.87,
+    67.88,
+    59.33
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "SW3",
+   "footprint": "aiee:SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
+   "u": 80.0,
+   "v": 86.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    76.25,
+    83.95,
+    83.75,
+    89.05
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C32",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 34.0,
+   "v": 29.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    32.52,
+    28.77,
+    35.48,
+    30.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R37",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 38.5,
+   "v": 25.6,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    37.02,
+    24.87,
+    39.98,
+    26.33
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R52",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 72.5,
+   "v": 52.5,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    71.77,
+    51.02,
+    73.23,
+    53.98
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C13",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 52.5,
+   "v": 47.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    51.02,
+    46.27,
+    53.98,
+    47.73
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R16",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 64.2,
+   "v": 55.6,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    62.72,
+    54.87,
+    65.68,
+    56.33
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C50",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 78.2,
+   "v": 53.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    77.47,
+    51.52,
+    78.93,
+    54.48
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C36",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 36.5,
+   "v": 36.8,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    35.02,
+    36.07,
+    37.98,
+    37.53
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C71",
+   "footprint": "Capacitor_SMD:C_1206_3216Metric",
+   "u": 92.5,
+   "v": 18.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    90.2,
+    17.35,
+    94.8,
+    19.65
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R6",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 67.4,
+   "v": 14.6,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    66.67,
+    13.12,
+    68.13,
+    16.08
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R14",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 41.0,
+   "v": 49.3,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    39.52,
+    48.57,
+    42.48,
+    50.03
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R2",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 54.2,
+   "v": 19.4,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    52.72,
+    18.67,
+    55.68,
+    20.13
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R31",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 15.5,
+   "v": 24.3,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    14.02,
+    23.57,
+    16.98,
+    25.03
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "L6",
+   "footprint": "aiee:IND-SMD_L4.0-W4.0_VLCF4020",
+   "u": 56.5,
+   "v": 42.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    54.25,
+    39.25,
+    58.75,
+    44.75
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C1",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 51.8,
+   "v": 17.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    51.07,
+    15.52,
+    52.53,
+    18.48
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C34",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 34.0,
+   "v": 33.1,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    32.52,
+    32.37,
+    35.48,
+    33.83
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "J4",
+   "footprint": "aiee:CONN-TH_4P-P5.08_DIBO_DB128V-5.08",
+   "u": 82.8,
+   "v": 5.6,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    72.64,
+    0.6,
+    92.96,
+    10.8
+   ],
+   "tht_pads": [
+    74.03,
+    4.45,
+    91.57,
+    6.75
+   ]
+  },
+  {
+   "ref": "H1",
+   "footprint": "MountingHole:MountingHole_3.2mm_M3_Pad_Via",
+   "u": 3.55,
+   "v": 3.55,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    0.1,
+    0.1,
+    7.0,
+    7.0
+   ],
+   "tht_pads": [
+    0.35,
+    0.35,
+    6.75,
+    6.75
+   ]
+  },
+  {
+   "ref": "C65",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 77.6,
+   "v": 37.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    76.87,
+    35.52,
+    78.33,
+    38.48
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C31",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 27.0,
+   "v": 41.8,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    25.52,
+    41.07,
+    28.48,
+    42.53
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R62",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 80.0,
+   "v": 81.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    78.52,
+    80.77,
+    81.48,
+    82.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C5",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 56.4,
+   "v": 24.3,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    54.92,
+    23.57,
+    57.88,
+    25.03
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C61",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 75.5,
+   "v": 54.4,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    74.02,
+    53.67,
+    76.98,
+    55.13
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C68",
+   "footprint": "Capacitor_SMD:C_1206_3216Metric",
+   "u": 67.0,
+   "v": 18.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    64.7,
+    17.35,
+    69.3,
+    19.65
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "U2",
+   "footprint": "aiee:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL",
+   "u": 53.0,
+   "v": 26.5,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    51.06,
+    25.03,
+    54.94,
+    27.97
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C8",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "u": 58.5,
+   "v": 36.6,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    56.8,
+    35.62,
+    60.2,
+    37.58
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R65",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 92.0,
+   "v": 80.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    90.52,
+    79.27,
+    93.48,
+    80.73
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R9",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 48.8,
+   "v": 25.5,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    48.07,
+    24.02,
+    49.53,
+    26.98
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R39",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 44.0,
+   "v": 25.6,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    42.52,
+    24.87,
+    45.48,
+    26.33
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R51",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 82.2,
+   "v": 53.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    81.47,
+    51.52,
+    82.93,
+    54.48
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C45",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 21.5,
+   "v": 27.9,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    20.02,
+    27.17,
+    22.98,
+    28.63
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C53",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 87.5,
+   "v": 42.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    86.02,
+    41.27,
+    88.98,
+    42.73
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C47",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 38.5,
+   "v": 22.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    37.02,
+    21.27,
+    39.98,
+    22.73
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R5",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 67.4,
+   "v": 11.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    66.67,
+    9.52,
+    68.13,
+    12.48
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C42",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 15.5,
+   "v": 27.9,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    14.02,
+    27.17,
+    16.98,
+    28.63
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R33",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 21.5,
+   "v": 22.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    20.02,
+    21.77,
+    22.98,
+    23.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C63",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 85.5,
+   "v": 54.9,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    84.02,
+    54.17,
+    86.98,
+    55.63
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R10",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 48.8,
+   "v": 28.7,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    48.07,
+    27.22,
+    49.53,
+    30.18
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C4",
+   "footprint": "Capacitor_SMD:C_1206_3216Metric",
+   "u": 50.3,
+   "v": 22.6,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    48.0,
+    21.45,
+    52.6,
+    23.75
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "D2",
+   "footprint": "aiee:LED-SMD_L1.6-W0.8-R-RD",
+   "u": 48.0,
+   "v": 88.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    46.6,
+    87.35,
+    49.4,
+    88.65
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R17",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 60.0,
+   "v": 58.6,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    58.52,
+    57.87,
+    61.48,
+    59.33
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R60",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 58.0,
+   "v": 81.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    56.52,
+    80.77,
+    59.48,
+    82.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R4",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 51.8,
+   "v": 13.8,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    51.07,
+    12.32,
+    52.53,
+    15.28
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "U7",
+   "footprint": "aiee:QFN-28_L4.0-W4.0-P0.45-BL-EP",
+   "u": 30.0,
+   "v": 35.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    27.49,
+    32.49,
+    32.51,
+    37.51
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C62",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 85.5,
+   "v": 53.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    84.02,
+    52.27,
+    86.98,
+    53.73
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R11",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 52.0,
+   "v": 45.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    50.52,
+    44.27,
+    53.48,
+    45.73
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "L2",
+   "footprint": "aiee:IND-SMD_L8.0-W8.0_XR0850",
+   "u": 75.5,
+   "v": 27.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    71.5,
+    21.65,
+    79.5,
+    32.35
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C35",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 36.5,
+   "v": 35.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    35.02,
+    34.27,
+    37.98,
+    35.73
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "J2",
+   "footprint": "aiee:CONN-TH_XDJK-0271-1650",
+   "u": 19.6,
+   "v": 15.2,
+   "rot": 180.0,
+   "side": "top",
+   "courtyard": [
+    7.3,
+    -0.0,
+    28.35,
+    19.5
+   ],
+   "tht_pads": [
+    14.35,
+    12.0,
+    24.85,
+    18.4
+   ]
+  },
+  {
+   "ref": "R24",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 43.5,
+   "v": 70.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    42.77,
+    68.52,
+    44.23,
+    71.48
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C38",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 30.0,
+   "v": 31.3,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    28.52,
+    30.57,
+    31.48,
+    32.03
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C10",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 48.5,
+   "v": 41.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    47.77,
+    39.52,
+    49.23,
+    42.48
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R23",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 36.0,
+   "v": 52.8,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    34.52,
+    52.07,
+    37.48,
+    53.53
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C51",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "u": 87.5,
+   "v": 46.2,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    85.8,
+    45.22,
+    89.2,
+    47.18
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C11",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 48.5,
+   "v": 44.5,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    47.77,
+    43.02,
+    49.23,
+    45.98
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R21",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 24.5,
+   "v": 55.5,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    23.77,
+    54.02,
+    25.23,
+    56.98
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R7",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 64.5,
+   "v": 16.6,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    63.02,
+    15.87,
+    65.98,
+    17.33
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R64",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 48.0,
+   "v": 85.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    46.52,
+    84.77,
+    49.48,
+    86.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C56",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 71.3,
+   "v": 42.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    69.82,
+    41.27,
+    72.78,
+    42.73
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "L4",
+   "footprint": "aiee:IND-SMD_L8.0-W8.0_XR0850",
+   "u": 92.5,
+   "v": 27.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    88.5,
+    21.65,
+    96.5,
+    32.35
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R13",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 41.0,
+   "v": 47.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    39.52,
+    46.77,
+    42.48,
+    48.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C54",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 87.5,
+   "v": 40.2,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    86.02,
+    39.47,
+    88.98,
+    40.93
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "U1",
+   "footprint": "aiee:ESSOP-10_L4.9-W3.9-P1.0-LS6.0-TL-EP",
+   "u": 55.75,
+   "v": 13.6,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    53.2,
+    9.6,
+    58.3,
+    17.6
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "H4",
+   "footprint": "MountingHole:MountingHole_3.2mm_M3_Pad_Via",
+   "u": 3.55,
+   "v": 86.45,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    0.1,
+    83.0,
+    7.0,
+    89.9
+   ],
+   "tht_pads": [
+    0.35,
+    83.25,
+    6.75,
+    89.65
+   ]
+  },
+  {
+   "ref": "R25",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 43.5,
+   "v": 74.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    42.77,
+    72.52,
+    44.23,
+    75.48
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "L3",
+   "footprint": "aiee:IND-SMD_L8.0-W8.0_XR0850",
+   "u": 84.0,
+   "v": 27.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    80.0,
+    21.65,
+    88.0,
+    32.35
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "L5",
+   "footprint": "aiee:IND-SMD_L6.0-W6.0_SWPA6045S",
+   "u": 59.2,
+   "v": 29.2,
+   "rot": -90.0,
+   "side": "top",
+   "courtyard": [
+    56.2,
+    25.11,
+    62.2,
+    33.29
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R8",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 21.0,
+   "v": 55.5,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    20.27,
+    54.02,
+    21.73,
+    56.98
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C15",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 41.5,
+   "v": 40.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    40.02,
+    39.27,
+    42.98,
+    40.73
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "U5",
+   "footprint": "aiee:WIFI-SMD_ESP32-WROVER-IE8MB",
+   "u": 19.5,
+   "v": 68.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    0.64,
+    57.75,
+    32.04,
+    78.25
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C22",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 19.5,
+   "v": 80.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    18.02,
+    79.77,
+    20.98,
+    81.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C48",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 44.0,
+   "v": 22.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    42.52,
+    21.27,
+    45.48,
+    22.73
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R50",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 80.2,
+   "v": 53.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    79.47,
+    51.52,
+    80.93,
+    54.48
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C16",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 37.5,
+   "v": 44.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    36.02,
+    43.27,
+    38.98,
+    44.73
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C2",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 68.9,
+   "v": 12.5,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    68.17,
+    11.02,
+    69.63,
+    13.98
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C67",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 85.0,
+   "v": 37.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    84.27,
+    35.52,
+    85.73,
+    38.48
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C59",
+   "footprint": "aiee:CAP-SMD_BD8.0-L8.3-W8.3-LS9.3-FD",
+   "u": 94.5,
+   "v": 48.0,
+   "rot": -90.0,
+   "side": "top",
+   "courtyard": [
+    90.35,
+    41.73,
+    98.65,
+    54.27
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C3",
+   "footprint": "Capacitor_SMD:C_1206_3216Metric",
+   "u": 55.5,
+   "v": 22.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    53.2,
+    20.85,
+    57.8,
+    23.15
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C58",
+   "footprint": "aiee:CAP-SMD_BD10.0-L10.3-W10.3-FD-LS11.0",
+   "u": 64.2,
+   "v": 48.0,
+   "rot": -90.0,
+   "side": "top",
+   "courtyard": [
+    59.05,
+    41.3,
+    69.35,
+    54.7
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R12",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 48.5,
+   "v": 48.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    47.02,
+    47.77,
+    49.98,
+    49.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "J1",
+   "footprint": "aiee:USB-C-SMD_MC-311D",
+   "u": 58.5,
+   "v": 5.07,
+   "rot": 180.0,
+   "side": "top",
+   "courtyard": [
+    53.43,
+    -0.0,
+    63.57,
+    8.28
+   ],
+   "tht_pads": [
+    53.13,
+    1.79,
+    63.87,
+    7.92
+   ]
+  },
+  {
+   "ref": "R36",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 38.5,
+   "v": 23.8,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    37.02,
+    23.07,
+    39.98,
+    24.53
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "Q1",
+   "footprint": "aiee:SOP-8_L4.9-W3.9-P1.27-LS6.0-BL",
+   "u": 67.7,
+   "v": 6.0,
+   "rot": -90.0,
+   "side": "top",
+   "courtyard": [
+    63.84,
+    3.52,
+    71.56,
+    8.46
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C69",
+   "footprint": "Capacitor_SMD:C_1206_3216Metric",
+   "u": 75.5,
+   "v": 18.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    73.2,
+    17.35,
+    77.8,
+    19.65
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R38",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 44.0,
+   "v": 23.8,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    42.52,
+    23.07,
+    45.48,
+    24.53
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R1",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 51.8,
+   "v": 10.6,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    51.07,
+    9.12,
+    52.53,
+    12.08
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C80",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 89.0,
+   "v": 82.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    87.52,
+    81.27,
+    90.48,
+    82.73
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C60",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 75.5,
+   "v": 52.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    74.02,
+    51.77,
+    76.98,
+    53.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R54",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 72.5,
+   "v": 56.5,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    71.77,
+    55.02,
+    73.23,
+    57.98
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C39",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 26.5,
+   "v": 29.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    25.02,
+    28.77,
+    27.98,
+    30.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "U8",
+   "footprint": "aiee:HTSSOP-32_L11.0-W6.1-P0.65-LS8.1-BL-EP",
+   "u": 79.0,
+   "v": 45.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    73.5,
+    40.16,
+    84.5,
+    49.84
+   ],
+   "tht_pads": [
+    77.42,
+    43.42,
+    80.58,
+    46.58
+   ]
+  },
+  {
+   "ref": "C55",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "u": 71.3,
+   "v": 44.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    69.6,
+    43.02,
+    73.0,
+    44.98
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C21",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 13.5,
+   "v": 80.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    12.02,
+    79.77,
+    14.98,
+    81.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C64",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 73.0,
+   "v": 37.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    72.27,
+    35.52,
+    73.73,
+    38.48
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C40",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 26.5,
+   "v": 31.3,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    25.02,
+    30.57,
+    27.98,
+    32.03
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R63",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 85.5,
+   "v": 81.5,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    84.77,
+    80.02,
+    86.23,
+    82.98
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "U3",
+   "footprint": "aiee:TSOT-23-5_L2.9-W1.6-P0.95-LS2.8-BR",
+   "u": 52.0,
+   "v": 42.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    50.05,
+    40.5,
+    53.95,
+    43.5
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "L1",
+   "footprint": "aiee:IND-SMD_L8.0-W8.0_XR0850",
+   "u": 67.0,
+   "v": 27.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    63.0,
+    21.65,
+    71.0,
+    32.35
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "SW2",
+   "footprint": "aiee:SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
+   "u": 69.0,
+   "v": 86.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    65.25,
+    83.95,
+    72.75,
+    89.05
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C41",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 15.5,
+   "v": 26.1,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    14.02,
+    25.37,
+    16.98,
+    26.83
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C33",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 34.0,
+   "v": 31.3,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    32.52,
+    30.57,
+    35.48,
+    32.03
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R61",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 69.0,
+   "v": 81.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    67.52,
+    80.77,
+    70.48,
+    82.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "H2",
+   "footprint": "MountingHole:MountingHole_3.2mm_M3_Pad_Via",
+   "u": 96.45,
+   "v": 3.55,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    93.0,
+    0.1,
+    99.9,
+    7.0
+   ],
+   "tht_pads": [
+    93.25,
+    0.35,
+    99.65,
+    6.75
+   ]
+  },
+  {
+   "ref": "U9",
+   "footprint": "aiee:OPTO-TH_IRM-3638T",
+   "u": 89.0,
+   "v": 87.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    85.3,
+    85.5,
+    92.7,
+    89.5
+   ],
+   "tht_pads": [
+    85.56,
+    86.1,
+    92.44,
+    87.9
+   ]
+  },
+  {
+   "ref": "C70",
+   "footprint": "Capacitor_SMD:C_1206_3216Metric",
+   "u": 84.0,
+   "v": 18.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    81.7,
+    17.35,
+    86.3,
+    19.65
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R22",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 36.0,
+   "v": 51.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    34.52,
+    50.27,
+    37.48,
+    51.73
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C24",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 52.5,
+   "v": 62.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    51.02,
+    61.77,
+    53.98,
+    63.23
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "D1",
+   "footprint": "aiee:SMB_L4.6-W3.6-LS5.3-RD",
+   "u": 61.0,
+   "v": 20.0,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    59.2,
+    16.37,
+    62.8,
+    23.63
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C12",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "u": 56.5,
+   "v": 47.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    54.8,
+    46.02,
+    58.2,
+    47.98
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "Q3",
+   "footprint": "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+   "u": 40.0,
+   "v": 74.0,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    38.25,
+    72.48,
+    41.75,
+    75.52
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "C9",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "u": 47.0,
+   "v": 25.5,
+   "rot": 90.0,
+   "side": "top",
+   "courtyard": [
+    46.27,
+    24.02,
+    47.73,
+    26.98
+   ],
+   "tht_pads": null
+  },
+  {
+   "ref": "R20",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "u": 16.5,
+   "v": 80.5,
+   "rot": 0.0,
+   "side": "top",
+   "courtyard": [
+    15.02,
+    79.77,
+    17.98,
+    81.23
+   ],
+   "tht_pads": null
+  }
+ ]
+}

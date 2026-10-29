@@ -455,6 +455,11 @@ The brief asks for a 3D-printable enclosure made in Onshape.
 - **Fallback without Onshape:** the enclosure task can model it in
   CadQuery/OpenSCAD inside the Hive and export STL/STEP, so nothing waits on
   access.
+- **Lite: done in code.** It is a build123d model in
+  [`enclosure/`](../enclosure/README.md), 106 x 96 x 47 mm. It is fitted to
+  `lite-main`'s KiCad file and fit-checked against it, and exported as STEP
+  and STL. That is about 110 g of PETG, plus 4 M3 screws, 4 binding posts and
+  4 feet. Onshape can import its STEP files.
 
 ### Open items
 
