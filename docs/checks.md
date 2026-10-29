@@ -135,7 +135,11 @@ The output gives each tier's cost or why it doesn't count, and each piece's
 state. The number alone is on the last line.
 
 **If a gate couldn't run** (hwde exits 2 or more: a broken tool, not a
-verdict), the score prints no number and exits 1. If hwde, make or cc
+verdict), the score prints no number and exits 1. The same goes for a
+gate whose only findings are `cpl_fetch_failed`: hwde couldn't fetch the
+parts' EasyEDA models because of a rate limit or the network, which says
+nothing about the board. A board that commits its model cache
+(`parts/easyeda/`, as `lite-main` and `core` do) needs no fetch. If hwde, make or cc
 isn't there at all, it exits 127, as the test does. Neither one is a
 verdict on the commit. A gate that runs and fails (exit 1) is a verdict:
 that tier doesn't count.
