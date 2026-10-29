@@ -1,0 +1,16 @@
+Lite with R5 220k (proposal): firmware off, PD 5->20 V step at 30 V/ms, low-Vth FET
+.include models.inc
+.param vto_p=1.7
+.param cgs=3u r5=220k
+.include lite_pvdd_r5.inc
+Vsrc vsrc 0 PWL(0 5 100m 5 100.5m 20 1 20)
+V3 V3V3 0 3.3
+Vpg vpg 0 0
+Ven PVDD_EN 0 0
+Iload PVDD 0 0
+.ic v(PVDD)=0 v(PSW_G)=5 v(VBUS)=5 v(PSW_MILLER)=5
+.tran 10u 300m 0 10u uic
+.meas tran vsg_pk max par('v(VBUS)-v(PSW_G)') from=100m to=300m
+.meas tran pvdd_pk max v(PVDD) from=100m to=300m
+.meas tran isrc_pk max i(Lcab) from=100m to=300m
+.end
