@@ -40,7 +40,7 @@ as well as the parts.
 
 | Board | Signal | Today | Proposal | Cost |
 |---|---|---|---|---|
-| both | every rail (VBUS, PVDD, +5V, +3V3, +3V3A, core's +5VA and +3V3E) | no test point anywhere | a 1.0 mm round SMD test-point pad on each rail and GND, bottom side, on the bench fixture's grid (`docs/bench.md`) | none in the BOM: copper only |
+| both | every rail (VBUS, PVDD, +5V, +3V3, +3V3A, core's +5VA and +3V3E) | no test point anywhere | a 1.0 mm round SMD test-point pad on each rail and GND, bottom side, so `docs/bench.md` can name a probe point per rail | none in the BOM: copper only |
 | lite-main | +5V | no ADC path | move BTN_VOLDN from GPIO36 to GPIO15. A strap pin, but its pull-up and a button to GND only change the boot log when held at reset, and the existing 10k R60 is the pull-up. Then put a 100k/47k divider (+5V × 0.32 = 1.66 V) and 100 nF on GPIO36 | 3 passives, about $0.003 + 6 joints |
 | lite-main | +3V3, +3V3A | no ADC path | justified. A dead +3V3 is a dead ESP32: its brownout detector logs the reset reason, and the test point covers the bench. +3V3A feeds only the ES8388's analog side, so the speaker-tap loopback (taps on LIN2/RIN2) already fails when it is missing | none |
 | core | PD_PG | gates Q2 only | justified for this spin. A lost contract drops PVDD in hardware, and firmware sees it as the INA186 current (ISENSE) falling to the buck's draw and the amps' FAULT on the expander. The CH224Q's own I2C status (address 0x22, contract and voltage registers) can also report it, but which register bit means 'contract lost' isn't verified yet: a known unknown for the firmware task. Next spin: PG to a TCA9535 input on Ultra's front board, or a second expander | none now |
