@@ -42,10 +42,11 @@ It fails (exit 1) if any of these fails:
 When there are no boards yet, the test checks `docs/product.md` and passes.
 
 The gates run through hive-hwde's `bin/hwde`. The script looks for it in
-this order: `$HWDE_BIN`, `hwde` on `PATH`, then
+this order: `$HWDE_BIN`, `${HIVE_TOOLS:-/hive/tools}/hwde/bin/hwde` (the
+path a check sandbox has), `hwde` on `PATH`, then
 `$HIVE_MODULES/hive-hwde/bin/hwde` (with `/hive/modules` used when
 `HIVE_MODULES` is unset). If there are boards to check and `hwde` isn't
-found, the script runs `sh -c hwde`. The shell prints its own
+found, the script prints every place it looked, then runs `sh -c hwde`. The shell prints its own
 `hwde: not found` and exits 127. The Hive reads that as "couldn't run": a
 fault in the environment, not a verdict on the commit.
 
