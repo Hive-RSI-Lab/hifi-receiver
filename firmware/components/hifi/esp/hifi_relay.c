@@ -255,7 +255,6 @@ static void client_start(void) {
 	esp_mqtt_client_start(client);
 }
 
-
 /* ------------------------------------------------------------------ OTA writes */
 
 static esp_ota_handle_t ota_handle;
