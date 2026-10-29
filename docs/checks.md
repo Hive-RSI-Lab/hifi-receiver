@@ -54,6 +54,13 @@ It fails (exit 1) if any of these fails:
    scratch copy of the workspace, so the checkout isn't changed. A board
    merges only once it passes all four. A half-built board stays on its
    branch.
+   The gates never call a live outside service: they run with
+   `HWDE_EASYEDA_OFFLINE=1` and `HWDE_STOCK_OFFLINE=1`, so `dfm` checks
+   each CPL rotation against the board's committed EasyEDA cache
+   (`<board>/parts/easyeda/`) and skips LCSC stock lookups. A board must
+   commit that cache with every model its CPL needs; a part missing from
+   it fails `dfm` as `cpl_no_model`. Fill it with `bom_cpl` or `cpl_verify`
+   outside the check, and use `tools/bom_stock.py` for live stock.
 
 When there are no boards yet, the test checks `docs/product.md` and passes.
 

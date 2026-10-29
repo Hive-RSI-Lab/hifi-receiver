@@ -43,6 +43,10 @@ PRODUCT = ROOT / "docs" / "product.md"
 BOARDS = ROOT / "boards"
 TIERS = ("lite", "plus", "ultra")
 GATES = ("erc", "drc_routed", "verify", "dfm")
+# The gates never ask a live service: dfm reads each board's committed
+# EasyEDA cache (<board>/parts/easyeda) and skips LCSC stock lookups, so a
+# rate limit or outage can't turn a check red (docs/checks.md).
+OFFLINE = {"HWDE_EASYEDA_OFFLINE": "1", "HWDE_STOCK_OFFLINE": "1"}
 # Software whose stdlib unittest suite (<dir>/tests/test_*.py) the test runs.
 SOFTWARE = ("bench",)
 QTY = 100
@@ -179,7 +183,7 @@ def gate_board(ws: Path, name: str, bin_: str, logs: Path) -> list[str]:
             rc = subprocess.run([bin_, "gate", "--gate", g, str(inp.relative_to(ws)),
                                  "--workspace", ".", "--out", str(out)], cwd=ws,
                                 stdout=f, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
-                                env=dict(os.environ, HWDE_BOARDS_ROOT=str(ws.parent))).returncode
+                                env=dict(os.environ, HWDE_BOARDS_ROOT=str(ws.parent), **OFFLINE)).returncode
         if rc == 0:
             print(f"  {g}: pass", flush=True)
             continue
