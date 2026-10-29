@@ -70,7 +70,7 @@ static SemaphoreHandle_t lock;       /* power, contract and settings below */
 static hifi_power_t power;
 static hifi_gov_t gov;
 static hifi_contract_t contract;
-static float vbus_v;
+static float vbus_v, pvdd_v;
 static bool pg, fault, sink_ok;
 static uint8_t pd_status;
 static hifi_input_t input = HIFI_INPUT_STREAM;
@@ -189,11 +189,16 @@ static esp_err_t codec_apply(void) {
 
 /* ------------------------------------------------------------------ power task */
 
-static float read_vbus(void) {
+static float read_div(adc1_channel_t ch, float divider) {
 	uint32_t sum = 0;
-	for (int i = 0; i < 8; i++) sum += adc1_get_raw(ADC_VBUS);
-	return esp_adc_cal_raw_to_voltage(sum / 8, &adc_chars) * VBUS_DIVIDER / 1000.0f;
+	for (int i = 0; i < 8; i++) sum += adc1_get_raw(ch);
+	return esp_adc_cal_raw_to_voltage(sum / 8, &adc_chars) * divider / 1000.0f;
 }
+
+static float read_vbus(void) { return read_div(ADC_VBUS, VBUS_DIVIDER); }
+
+/* PVDD after the switch: the sequencer confirms the switch closed from it */
+static float read_pvdd(void) { return read_div(ADC_PVDD, PVDD_DIVIDER); }
 
 static void power_task(void *arg) {
 	TickType_t wake = xTaskGetTickCount();
@@ -201,7 +206,7 @@ static void power_task(void *arg) {
 	for (;;) {
 		vTaskDelayUntil(&wake, pdMS_TO_TICKS(10));
 		uint32_t now = now_ms();
-		float v = read_vbus();
+		float v = read_vbus(), pv = read_pvdd();
 		bool g = gpio_get_level(PIN_PD_PG) == 0;
 		bool f = gpio_get_level(PIN_AMP_FAULTZ) == 0;
 
@@ -227,6 +232,7 @@ static void power_task(void *arg) {
 
 		LOCK();
 		vbus_v = v;
+		pvdd_v = pv;
 		pg = g;
 		fault = f;
 		if (refreshed) {
@@ -238,7 +244,7 @@ static void power_task(void *arg) {
 			hifi_gov_set_supply(&gov, contract.v, pg ? contract.w : 2.5f);
 		}
 		hifi_power_in_t in = {
-			.now_ms = now, .vbus_v = v, .pg = g, .fault = f,
+			.now_ms = now, .vbus_v = v, .pvdd_v = pv, .pg = g, .fault = f,
 			.audio = audio_active || tone_active || input == HIFI_INPUT_DJ_DIRECT ||
 				 (int32_t) (selftest_hold_until - now) > 0,
 		};
@@ -253,8 +259,8 @@ static void power_task(void *arg) {
 		gpio_set_level(PIN_PVDD_EN, o->pvdd_en);
 		if (o->amp_on) gpio_set_level(PIN_AMP_SDZ, 1);
 		if (power.state != before)
-			ESP_LOGI(TAG, "power %s -> %s (VBUS %.2f V, PG %d)", hifi_power_state_name(before),
-				 hifi_power_state_name(power.state), v, g);
+			ESP_LOGI(TAG, "power %s -> %s (VBUS %.2f V, PVDD %.2f V, PG %d)", hifi_power_state_name(before),
+				 hifi_power_state_name(power.state), v, pv, g);
 		UNLOCK();
 		if (save_vol) {
 			char sv[8];
@@ -483,6 +489,7 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	LOCK();
 	s->pwr_state = power.state;
 	s->vbus_v = vbus_v;
+	s->pvdd_v = pvdd_v;
 	s->pg = pg;
 	s->contract = contract;
 	s->pvdd_on = power.out.pvdd_en;
@@ -504,7 +511,7 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	s->ir_have_last = ir.have_last;
 	s->ir_last_code = ir.last_code;
 	UNLOCK();
-	s->pvdd_v = s->vbus_i_a = s->amp_temp_c = NAN; /* no sensors on lite-main */
+	s->vbus_i_a = s->amp_temp_c = NAN; /* no current or temperature sense on lite-main */
 	s->gov_budget_w = gov.budget_w;
 	s->gov_in_w = hifi_gov_in_w(&gov);
 	s->gov_out_w = hifi_gov_out_w(&gov);
@@ -698,6 +705,9 @@ static void op_selftest(hifi_selftest_t *t) {
 	vTaskDelay(pdMS_TO_TICKS(200));
 	op_snapshot(s);
 	hifi_selftest_add(t, "pvdd_on", s->pvdd_on && s->pwr_state == HIFI_PWR_ON, "%s", hifi_power_state_name(s->pwr_state));
+	bool pu = s->pvdd_on && s->pvdd_v >= power.cfg.pvdd_min_frac * s->vbus_v;
+	hifi_selftest_add(t, "pvdd_sensed", pu, "PVDD %.2f V of VBUS %.2f V%s", s->pvdd_v, s->vbus_v,
+			  s->pvdd_on ? "" : " (switch not commanded on)");
 	if (s->amp_enabled)
 		hifi_selftest_add(t, "amp_no_fault", !s->amp_fault, s->amp_fault ? "FAULTZ low" : "FAULTZ high after 200 ms enabled");
 	else
@@ -942,6 +952,7 @@ static bool hifi_init(void) {
 
 	adc1_config_width(ADC_WIDTH_BIT_12);
 	adc1_config_channel_atten(ADC_VBUS, ADC_ATTEN_DB_12);
+	adc1_config_channel_atten(ADC_PVDD, ADC_ATTEN_DB_12);
 	esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 1100, &adc_chars);
 
 	hifi_power_cfg_t pc;

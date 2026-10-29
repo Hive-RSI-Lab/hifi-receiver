@@ -17,6 +17,8 @@
 #define PIN_AMP_FAULTZ 23 /* TPA3118 FAULTZ, open drain, low = fault */
 #define ADC_VBUS ADC1_CHANNEL_6 /* GPIO34, VBUS / 11 (100k over 10k) */
 #define VBUS_DIVIDER 11.0f
+#define ADC_PVDD ADC1_CHANNEL_3 /* GPIO39 (SENSOR_VN), PVDD_SENSE: PVDD / 11 (R17 100k over R18 10k) */
+#define PVDD_DIVIDER 11.0f
 
 #define I2C_PORT 0       /* shared with squeezelite's codec driver */
 #define I2C_SDA 33

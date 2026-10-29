@@ -55,7 +55,7 @@ Everything the bench logs, in one read. Poll it at up to 10 Hz.
 {"uptime_s": 812,
  "power": {"state": "on", "vbus_v": 20.12, "pg": true,
            "contract": {"protocol": "pd", "epr": false, "v": 20.0, "i_max_a": 3.25, "w": 65.0},
-           "pvdd_on": true, "pvdd_v": null, "vbus_i_a": null},
+           "pvdd_on": true, "pvdd_v": 19.95, "vbus_i_a": null},
  "amp": {"enabled": true, "fault": false, "faults": 0, "latched": false, "temp_c": null},
  "governor": {"budget_w": 58.5, "in_w": 7.9, "out_w": 4.4,
               "gain_db": 0.0, "limiting": false, "limit_events": 0},
@@ -76,13 +76,20 @@ Everything the bench logs, in one read. Poll it at up to 10 Hz.
     negotiating). The box runs, the amp stays unpowered.
   - `soft_start`: PVDD switch closing, amp held off.
   - `on`: PVDD up; the amp may be enabled.
-  - `undervolt` / `overvolt`: VBUS outside 9–25 V (Lite) while it was on;
-    everything off until VBUS is back in range for 1 s.
+  - `undervolt` / `overvolt`: VBUS outside 13–25 V (Lite) while it was on;
+    everything off until VBUS is back in 14–25 V for 1 s.
+  - `no_pvdd`: the PVDD switch was commanded on but PVDD didn't come up
+    to 85 % of VBUS within 1 s, or fell under it for 50 ms while on (Lite
+    reads PVDD on GPIO39). Everything off; it retries after 1 s, and three
+    failures inside a minute hold it off until `POST /api/v1/amp
+    {"reset": true}` or a re-plug.
 - **`contract`** comes from the PD sink (CH224's status and current
   registers) and the VBUS reading. `protocol` is `pd`, `qc3`, `qc2`, `bc` or
   `none`; `v` is VBUS rounded to the nearest fixed PD level; `i_max_a` is
   `null` unless the protocol is PD.
-- **`pvdd_v`, `vbus_i_a`, `temp_c`:** `null` on Lite (no sensor). Plus/Ultra
+- **`pvdd_v`:** PVDD after the switch, from GPIO39 (PVDD/11) on Lite;
+  `null` where the board has no PVDD sense.
+- **`vbus_i_a`, `temp_c`:** `null` on Lite (no sensor). Plus/Ultra
   read VBUS current from the INA180.
 - **`amp.fault`** is the amp's FAULTZ pin now; `faults` counts them since
   boot. Three faults inside a minute **latch** the amp off until
@@ -266,6 +273,7 @@ Nothing in it needs a speaker or a load.
   {"name": "vbus_matches",  "pass": true,  "value": "20.12 V"},
   {"name": "codec_i2c",     "pass": true,  "value": "0x10 acks"},
   {"name": "pvdd_on",       "pass": true,  "value": "on"},
+  {"name": "pvdd_sensed",   "pass": true,  "value": "PVDD 19.95 V of VBUS 20.12 V"},
   {"name": "amp_no_fault",  "pass": true,  "value": "FAULTZ high after 200 ms enabled"},
   {"name": "psram",         "pass": true,  "value": "8 MB"},
   {"name": "heap",          "pass": true,  "value": "81234 B free"},
