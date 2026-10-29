@@ -214,7 +214,7 @@ same interface as Lite's (`esp/hifi_bsp.h`); the pins are in
 | The shared I2C (SDA 13, SCL 14, port 1) | | squeezelite's system I2C (`i2c_config`); `hifi` talks to every part on it |
 | Ethernet: LAN8720 over RMII (clock in on GPIO0), MDC 23, MDIO 18 | | squeezelite (`eth_config`) and ESP-IDF's EMAC |
 | IR receiver (Ultra: the front board's, over the FFC) | 35 | squeezelite (`set_GPIO 35=ir:nec`), as on Lite |
-| PD contract: CH224Q at 0x22 | I2C | `hifi`: asks for 28 V when the charger offers EPR, else 20 V |
+| PD contract: CH224Q at 0x22 | I2C | `hifi`: once a PD contract is in, asks for 28 V when the charger offers EPR, else 20 V |
 | Input current: INA186, 0.25 V/A | 34 (ADC1 ch 6) | `hifi` |
 | I/O expander (TCA9555 at 0x20, or the review's TCA9539 at 0x74–0x77: the first that answers) | I2C, INT on 39 | `hifi` |
 | PVDD_EN, AMP_A_RST, AMP_B_RST, DAC_EN, PHY_RST, DJ_DIRECT, LED | expander P00–P07 | `hifi` |
@@ -229,7 +229,9 @@ same interface as Lite's (`esp/hifi_bsp.h`); the pins are in
 - **Power:** the same sequencer with core's numbers (`hifi_power_cfg_core`):
   start at 14 V, run 13–30 V (the TPA3221's range), 100 ms soft start
   (PVDD ramps in about 15 ms). The board has no VBUS divider, so VBUS is
-  the voltage the firmware asked for once the PD handshake is done.
+  taken from the contract: 28 V in EPR, 20 V in another PD contract, 5 V
+  without one. A charger whose highest voltage is under 20 V would read as
+  20 V here; bring-up should check what the CH224Q does then.
 - **Amps:** the order is Lite's (reset before PVDD opens, out of it after).
   Zone B (Ultra) runs off zone A's oscillator and only syncs if both leave
   reset in the same write, so turning zone B on or off puts both in reset
@@ -245,7 +247,9 @@ same interface as Lite's (`esp/hifi_bsp.h`); the pins are in
 - **LED:** on with a network, a slow blink without one (setup), a fast
   blink with the amps latched off by faults.
 - **Subs:** I2S1 runs as a slave on I2S0's clocks (the GPIO matrix routes
-  GPIO2/4 into it), so the sub DAC costs one pin. Each output block, after
+  GPIO2/4 into its TX clock inputs), so the sub DAC costs one pin. It
+  starts once the GPIO matrix shows squeezelite has put I2S0's bit clock on
+  GPIO2, because that setup turns the pins' inputs off. Each output block, after
   the equalizer and the governor, goes to it as the mono sum of the mains
   at the sub level (−40 to 0 dB), full range: the subs' own crossover does
   the rest, as on Lite. Nothing waits on it: if its DMA is full, the block
@@ -329,6 +333,7 @@ in the Plus firmware task.
   (`boards/ultra-front`) isn't on main yet.
 - **Plus/Ultra, unchecked until a board:** the ES9018K2M's 16-bit word
   length at 32 BCLK per frame; I2S1 as a slave on I2S0's pins (the
-  architecture's assumption: blocks.md); the CH224Q's answer to a voltage
+  architecture's assumption: blocks.md; QEMU has no I2S, so neither
+  squeezelite's I2S0 nor the sub's I2S1 starts there); the CH224Q's answer to a voltage
   request; the knob's direction (swap `enc_a`/`enc_b` in `board_core.c`
   if it turns the wrong way); the LAN8720 on the oscillator's clock.

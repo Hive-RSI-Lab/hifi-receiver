@@ -124,10 +124,21 @@ static void knob_volume(void) {
 
 static void pd_request(void) {
 	uint8_t code = 0xFF;
+	/* before the PD handshake: nothing asked, VBUS taken as 5 V */
+	CHECK_NEAR(hifi_ch224_request(0x00, &code), 0, 0);
+	CHECK_NEAR(hifi_ch224_request(0x02 | CH224_ST_EPR_OFFERED, &code), 0, 0); /* QC2 */
+	CHECK(code == 0xFF);
+	CHECK_NEAR(hifi_ch224_vbus(0x02), 5, 0);
+	/* PD, EPR offered: ask for 28 V; in EPR it is 28 V */
 	CHECK_NEAR(hifi_ch224_request(0x08 | CH224_ST_EPR_OFFERED, &code), 28, 0);
 	CHECK(code == 5);
+	CHECK_NEAR(hifi_ch224_vbus(0x08 | CH224_ST_EPR_OFFERED), 20, 0);
+	CHECK_NEAR(hifi_ch224_vbus(0x10 | CH224_ST_EPR_OFFERED), 28, 0);
+	CHECK_NEAR(hifi_ch224_request(0x10, &code), 28, 0);
+	/* PD without EPR: 20 V */
 	CHECK_NEAR(hifi_ch224_request(0x08, &code), 20, 0);
 	CHECK(code == 4);
+	CHECK_NEAR(hifi_ch224_vbus(0x08), 20, 0);
 }
 
 static void core_power_gov(void) {

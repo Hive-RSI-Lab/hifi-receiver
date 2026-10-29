@@ -25,6 +25,7 @@
 #include "freertos/semphr.h"
 #include "freertos/task.h"
 #include "soc/gpio_periph.h"
+#include "soc/gpio_reg.h"
 #include "soc/gpio_sig_map.h"
 #include "soc/io_mux_reg.h"
 
@@ -48,7 +49,6 @@ static TaskHandle_t ctrl_task;
 static esp_adc_cal_characteristics_t adc_chars;
 static uint32_t last_pd;
 static uint8_t vreq_sent = 0xFF;
-static float vreq_v = 5.0f;
 
 static volatile bool zone_b;        /* Ultra: zone B's amp on with zone A's */
 static bool amps_a, amps_b, resync;
@@ -139,7 +139,10 @@ void hifi_bsp_init(hifi_power_cfg_t *pc, hifi_gov_cfg_t *gc) {
 void hifi_bsp_power_in(uint32_t now, hifi_bsp_power_t *p) {
 	uint32_t sum = 0;
 	for (int i = 0; i < 8; i++) sum += adc1_get_raw(ADC_ISENSE);
-	p->vbus_i_a = esp_adc_cal_raw_to_voltage(sum / 8, &adc_chars) / 1000.0f / ISENSE_V_PER_A;
+	/* the ADC reads 0 up to about 0.1 V (0.4 A), where its calibration would
+	 * still give ~0.1 V: call that 0 A rather than a made-up current */
+	p->vbus_i_a = sum / 8 < ISENSE_RAW_FLOOR ? 0.0f
+		    : esp_adc_cal_raw_to_voltage(sum / 8, &adc_chars) / 1000.0f / ISENSE_V_PER_A;
 	p->fault = !(in_pins >> EXP_AMP_FAULT & 1);
 
 	p->pd_read = now - last_pd >= 500;
@@ -149,18 +152,17 @@ void hifi_bsp_power_in(uint32_t now, hifi_bsp_power_t *p) {
 		p->sink_ok = hifi_i2c_read(CH224_I2C_ADDR, CH224_REG_STATUS, &p->pd_status) == ESP_OK &&
 			     hifi_i2c_read(CH224_I2C_ADDR, CH224_REG_CURRENT, &p->pd_current) == ESP_OK;
 		if (!p->sink_ok) p->pd_current = 0;
-		/* ask for 28 V when the source offers EPR, else 20 V */
-		uint8_t code;
-		float v = hifi_ch224_request(p->pd_status, &code);
-		if (p->sink_ok && code != vreq_sent && hifi_i2c_write(CH224_I2C_ADDR, CH224_REG_VREQ, code) == ESP_OK) {
+		/* once a PD contract is in: 28 V when the source offers EPR, else 20 V */
+		uint8_t code = 0;
+		float v = p->sink_ok ? hifi_ch224_request(p->pd_status, &code) : 0;
+		if (v > 0 && code != vreq_sent && hifi_i2c_write(CH224_I2C_ADDR, CH224_REG_VREQ, code) == ESP_OK) {
 			ESP_LOGI(TAG, "asked the charger for %.0f V", v);
 			vreq_sent = code;
-			vreq_v = v;
 		}
 		/* a PD contract in place (the CH224Q's PG also gates PVDD in
 		 * hardware); between reads, p keeps the last */
 		p->pg = p->sink_ok && (p->pd_status & 0x18);
-		p->vbus_v = p->pg ? vreq_v : 5.0f;
+		p->vbus_v = p->sink_ok ? hifi_ch224_vbus(p->pd_status) : 5.0f;
 	}
 }
 
@@ -226,7 +228,7 @@ static void sub_start(void) {
 		.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
 		.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
 		.communication_format = I2S_COMM_FORMAT_STAND_I2S,
-		.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
+		.intr_alloc_flags = ESP_INTR_FLAG_LOWMED, /* level 1 slots may all be taken */
 		.dma_buf_count = 4,
 		.dma_buf_len = 512,
 		.tx_desc_auto_clear = true,
@@ -241,8 +243,10 @@ static void sub_start(void) {
 	i2s_set_pin(SUB_I2S_NUM, &pins);
 	PIN_INPUT_ENABLE(GPIO_PIN_MUX_REG[PIN_I2S_BCK]);
 	PIN_INPUT_ENABLE(GPIO_PIN_MUX_REG[PIN_I2S_LRCK]);
-	esp_rom_gpio_connect_in_signal(PIN_I2S_BCK, I2S1I_BCK_IN_IDX, false);
-	esp_rom_gpio_connect_in_signal(PIN_I2S_LRCK, I2S1I_WS_IN_IDX, false);
+	/* a TX slave takes its clocks on the TX side's inputs (IDF's i2s_set_pin
+	 * does the same: s_tx_bck_sig, s_tx_ws_sig) */
+	esp_rom_gpio_connect_in_signal(PIN_I2S_BCK, I2S1O_BCK_IN_IDX, false);
+	esp_rom_gpio_connect_in_signal(PIN_I2S_LRCK, I2S1O_WS_IN_IDX, false);
 	sub_ready = true;
 	ESP_LOGI(TAG, "sub DAC on I2S%d, data on GPIO%d", SUB_I2S_NUM, PIN_I2S_DOUT_SUB);
 }
@@ -330,9 +334,16 @@ static void controls(void *arg) {
 	}
 }
 
+/* squeezelite has put I2S0's bit clock on its pin (the GPIO matrix says) */
+static bool i2s0_on_pins(void) {
+	uint32_t sel = REG_READ(GPIO_FUNC0_OUT_SEL_CFG_REG + 4 * PIN_I2S_BCK) & GPIO_FUNC0_OUT_SEL_M;
+	return sel == I2S0O_BCK_OUT_IDX;
+}
+
 static void sub_task(void *arg) {
-	/* squeezelite sets up I2S0 once the network is up: start after it */
-	vTaskDelay(pdMS_TO_TICKS(8000));
+	/* after squeezelite sets up I2S0's pins, which turns their inputs off */
+	while (!i2s0_on_pins()) vTaskDelay(pdMS_TO_TICKS(500));
+	vTaskDelay(pdMS_TO_TICKS(500));
 	sub_start();
 	vTaskDelete(NULL);
 }
@@ -344,7 +355,7 @@ void hifi_bsp_start(void) {
 		gpio_config(&in);
 		gpio_isr_handler_add(PIN_EXP_INT, exp_isr, NULL); /* squeezelite installed the ISR service */
 	}
-	xTaskCreate(sub_task, "hifi_sub", 3072, NULL, ESP_TASK_PRIO_MIN + 1, NULL);
+	xTaskCreatePinnedToCore(sub_task, "hifi_sub", 3072, NULL, ESP_TASK_PRIO_MIN + 1, NULL, 1);
 }
 
 /* ------------------------------------------------------------------ info */

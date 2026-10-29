@@ -86,11 +86,13 @@ Everything the bench logs, in one read. Poll it at up to 10 Hz.
   `none`; `v` is VBUS rounded to the nearest fixed PD level; `i_max_a` is
   `null` unless the protocol is PD.
 - **`pvdd_v`, `vbus_i_a`, `temp_c`:** `null` on Lite (no sensor). Plus/Ultra
-  read the input current from the INA186 (`vbus_i_a`); `pvdd_v` and
-  `temp_c` stay `null` there too.
-- **`vbus_v` on Plus/Ultra** is the voltage the firmware asked the CH224Q
-  for (28 V when the charger offers EPR, else 20 V) once the contract is
-  in, and 5 V before: the core board has no VBUS divider to read. Their
+  read the input current from the INA186 (`vbus_i_a`; 0 below about
+  0.4 A, where the ESP32's ADC reads nothing); `pvdd_v` and `temp_c` stay
+  `null` there too.
+- **`vbus_v` on Plus/Ultra** is taken from the contract, not measured (the
+  core board has no VBUS divider): 28 V in an EPR contract, 20 V in
+  another PD one (once the handshake is in, the firmware asks the CH224Q
+  for 28 V if the charger offers EPR, else 20 V), 5 V otherwise. Their
   amps start at 14 V and run 13–30 V.
 - **`amp.fault`** is the amp's FAULTZ pin now; `faults` counts them since
   boot. Three faults inside a minute **latch** the amp off until

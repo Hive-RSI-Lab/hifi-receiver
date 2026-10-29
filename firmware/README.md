@@ -100,7 +100,13 @@ WROVER-E's rev-3 chip meets.
 **Plus and Ultra (2026-10-29, task 261029-205022):** with ESP-IDF v4.4.8
 from `fw setup`, Lite and Plus both build: Lite's `squeezelite.bin` 2.82
 MB of 3.06 MB, `recovery.bin` 1.57 MB of 1.75 MB; Plus's 2.82 MB and 1.58
-MB. Not booted on a core board (there is none yet).
+MB; Ultra's the same. In QEMU (hive-fw's `fw qemu`, Ethernet over
+open_eth, Wi-Fi off): Lite passes fw's own hifi-lite proof (boot and 6
+API calls); Plus boots to `hifi: hifi-plus on core` and answers 13 API
+calls as expected (`info`, `state` with `eth` true, `volume`, `zone` 404,
+`update/check` 404, `sub`, `input`, `selftest`). QEMU has no I2C parts and
+no I2S, so the expander, the Sabre and the sub DAC don't start there. Not
+booted on a core board (there is none yet).
 
 **Checked again (2026-10-29, task 261029-134314),** with #41's relay, OTA
 and capture merged onto main's volume, IR and now playing: both images

@@ -57,9 +57,14 @@ void hifi_contract_from(bool sink_ok, uint8_t status, uint8_t current_reg,
 
 /*
  * The core board's CH224Q has no VBUS divider on the ESP32 to read back, so
- * the firmware asks for the voltage itself and takes the contract to be
- * what it asked for once PG says it is good: 28 V when the source offers
- * EPR (status bit 5), else 20 V. Returns that voltage; *code is what goes
- * in CH224_REG_VREQ.
+ * the firmware asks for the voltage itself once a PD contract is in (its
+ * resistor already asks for 28 V; the firmware never asks before the PD
+ * handshake, so it doesn't renegotiate an attach): 28 V when the source
+ * offers EPR (status bit 5), else 20 V. Returns that voltage with *code for
+ * CH224_REG_VREQ, or 0 when there is nothing to ask yet.
  */
 float hifi_ch224_request(uint8_t status, uint8_t *code);
+
+/* VBUS as the core board takes it: 28 V in an EPR contract (bit 4), 20 V in
+ * another PD one (what it asked for), else 5 V. */
+float hifi_ch224_vbus(uint8_t status);

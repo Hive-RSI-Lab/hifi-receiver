@@ -39,6 +39,7 @@
 #define PIN_EXP_INT 39 /* the expander's INT, open drain, low = an input changed */
 #define ADC_ISENSE ADC1_CHANNEL_6 /* GPIO34: INA186A1, 25 V/V over 10 mOhm */
 #define ISENSE_V_PER_A 0.25f
+#define ISENSE_RAW_FLOOR 8 /* ADC counts: under this the ADC is in its dead zone */
 
 /* RMII and SMI: fixed by the ESP32's EMAC (and ETH_CONFIG in the patch);
  * here so the pin check reads them against the board too */
