@@ -45,6 +45,12 @@ It fails (exit 1) if any of these fails:
    `$HIVE_MODULES/hive-fw/bin/fw`), or no ESP-IDF v4.4.8 or QEMU for it
    (`fw doctor`), the smoke couldn't run: unverified (below). It needs
    ESP-IDF and takes minutes ([firmware/README.md](../firmware/README.md)).
+   **The firmware's pins against its board,** every run: for each tier
+   whose firmware exists (`firmware/board/<fw>`), the score's firmware
+   check (below), so a pin the firmware gives a job that isn't on the
+   board's ESP32 net for it (Lite's `ADC_PVDD` on GPIO39 is `PVDD_SENSE`)
+   fails the test, not only the score. A tier with no firmware yet is left
+   to the score.
 4. **The hwde gates of each board that changed.** A workspace under
    `boards/` (a folder with a `state.json`) is gated only when a file in it
    differs from the merge base with main (`origin/main`, else `main`, or

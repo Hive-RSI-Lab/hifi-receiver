@@ -1,7 +1,9 @@
 """The score's own logic: needed functions, the spec. No gates run (test_pieces.py has the pieces)."""
 import contextlib
 import io
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -57,11 +59,13 @@ class Test(unittest.TestCase):
 
     def run_test(self, gates, smoke=(True, None)):
         saved = {k: getattr(hwcheck, k) for k in ("check_product", "run_unittests", "firmware_tests",
-                                                    "boards", "run_gates", "firmware_smoke", "cant_run")}
+                                                    "boards", "run_gates", "firmware_smoke", "cant_run",
+                                                    "firmware_pins")}
         dirs = list(gates)
         hwcheck.check_product = lambda: ([], {})
         hwcheck.run_unittests = lambda: []
         hwcheck.firmware_tests = lambda: True
+        hwcheck.firmware_pins = lambda: []
         hwcheck.boards = lambda: dirs
         hwcheck.run_gates = lambda todo: {d: gates[d] for d in todo}
         hwcheck.firmware_smoke = lambda: smoke
@@ -103,6 +107,25 @@ class Test(unittest.TestCase):
         self.assertEqual(self.run_test({Path("a"): []}, smoke=(False, None)), 1)
         self.assertEqual(self.run_test({Path("a"): []}, smoke=(False, ("idf.py", "no IDF"))), 127)
         self.assertEqual(self.cant[0], "idf.py")
+
+
+class Pins(unittest.TestCase):
+    """The test checks the firmware's pins against its board."""
+
+    def test_lite_s_pins_land_on_lite_main(self):
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(hwcheck.firmware_pins(), [])
+
+    def test_a_moved_pin_fails(self):
+        piece = next(p for p in SPEC["pieces"] if p["name"] == "Lite firmware")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for d in ("firmware", "boards/lite-main/kicad"):
+                shutil.copytree(hwcheck.ROOT / d, root / d)
+            h = root / "firmware/components/hifi/esp/hifi_board.h"
+            h.write_text(h.read_text().replace("ADC_PVDD ADC1_CHANNEL_3", "ADC_PVDD ADC1_CHANNEL_0"))
+            bad = hwcheck.pieces.CHECKS["firmware"](root, piece)
+        self.assertTrue(any("ADC_PVDD: GPIO36" in b for b in bad), bad)
 
 
 class Unverified(unittest.TestCase):

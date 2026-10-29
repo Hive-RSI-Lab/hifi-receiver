@@ -6,7 +6,9 @@
                                      unit tests, the firmware's host tests, the
                                      firmware's QEMU smoke (hive-fw's fw build
                                      and fw qemu: it boots and answers GET
-                                     /api/v1/info) when firmware/ changed, then
+                                     /api/v1/info) when firmware/ changed, each
+                                     tier's firmware pins against its board's
+                                     ESP32 pads (tools/pieces.py), then
                                      the hwde gates of each board whose files
                                      changed since the merge base with main
                                      (every board with --all or HWCHECK_ALL=1)
@@ -497,6 +499,24 @@ def firmware_smoke() -> tuple[bool, tuple[str, str] | None]:
     return rc == 0, None
 
 
+def firmware_pins() -> list[str]:
+    """Each tier's firmware that exists (firmware/board/<fw>) against its
+    board: every pin it gives a job lands on its board's ESP32 on a net named
+    for that job, its partitions fit (the firmware piece's check). A tier
+    with no firmware yet is the score's to count, not a test failure."""
+    bad = []
+    for piece in SPEC["pieces"]:
+        if piece["check"] != "firmware" or not (ROOT / "firmware" / "board" / piece["fw"]).is_dir():
+            continue
+        got = pieces.CHECKS["firmware"](ROOT, piece)
+        for b in got:
+            print(f"FAIL {piece['name']}: {b}")
+        if not got:
+            print(f"{piece['name']}: its pins land on {piece['board']}'s ESP32, on nets named for them", flush=True)
+        bad += [f"{piece['name']}: {b}" for b in got]
+    return bad
+
+
 def run_unittests() -> list[str]:
     return [f"{d}/tests" for d in SOFTWARE if (ROOT / d / "tests").is_dir() and not unittest_dir(ROOT / d / "tests")]
 
@@ -510,6 +530,7 @@ def cmd_test(all_boards: bool = False) -> int:
     bad += run_unittests()
     if (ROOT / "firmware" / "test" / "Makefile").is_file() and not firmware_tests():
         bad.append("firmware/test")
+    bad += firmware_pins()
     unv = []
     changed, _ = changed_files()
     if (ROOT / "firmware" / "fw.json").is_file() and (
