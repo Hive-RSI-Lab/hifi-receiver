@@ -1,0 +1,2 @@
+- P5 board setup inline: board_init 2L JLC2313_1.6, outline 100 x 90 mm (fixed WxH; 80 mm left no room), 4 x M3 plated holes, r 2 mm; fab profile 2layer_1oz (floors 0.127/0.127, via 0.6/0.3).
+- rules_gen: power classes per net; kicad/gen/pro_clearance.py lowers Pwr_* clearance to 0.15 (snag 16).

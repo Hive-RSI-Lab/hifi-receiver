@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """The project's test and score.
 
-    python3 tools/hwcheck.py test    the check: docs/product.md, the
-                                     firmware's host tests, then every
-                                     board's hwde gates
+    python3 tools/hwcheck.py test    the check: docs/product.md, the software's
+                                     unit tests, the firmware's host tests,
+                                     then every board's hwde gates
     python3 tools/hwcheck.py score   the first-built tier's unit cost at 100,
                                      in USD, from its board(s)' BOM, printed
                                      only when their gates pass (lower is better)
@@ -39,6 +39,8 @@ PRODUCT = ROOT / "docs" / "product.md"
 BOARDS = ROOT / "boards"
 TIERS = ("lite", "plus", "ultra")
 GATES = ("erc", "drc_routed", "verify", "dfm")
+# Software whose stdlib unittest suite (<dir>/tests/test_*.py) the test runs.
+SOFTWARE = ("bench",)
 QTY = 100
 # The score when the first tier has no board yet: above any real unit cost,
 # so the first board that passes its gates reads as a gain (docs/checks.md).
@@ -280,6 +282,23 @@ def say_cost(c: dict) -> None:
 
 # ---- commands -----------------------------------------------------------------
 
+def run_unittests() -> list[str]:
+    bad = []
+    for d in SOFTWARE:
+        tests = ROOT / d / "tests"
+        if not tests.is_dir():
+            continue
+        r = subprocess.run([sys.executable, "-B", "-m", "unittest", "discover", "-s", str(tests), "-t", str(tests)],
+                           cwd=ROOT, capture_output=True, text=True)
+        last = (r.stderr.strip().splitlines() or ["?"])[-1]
+        if r.returncode:
+            print(r.stderr[-4000:])
+            bad.append(f"{d}/tests: {last}")
+        else:
+            print(f"{d}/tests: {last}")
+    return bad
+
+
 def check_firmware() -> list[str]:
     """firmware/test: the firmware core's host unit tests (plain cc, no ESP-IDF)."""
     tests = ROOT / "firmware" / "test"
@@ -302,6 +321,7 @@ def cmd_test() -> int:
         print(f"FAIL {b}")
     if not bad:
         print("docs/product.md: every tier has its target price and BOM total; one tier is first")
+    bad += run_unittests()
     bad += check_firmware()
     dirs = boards()
     if not dirs:

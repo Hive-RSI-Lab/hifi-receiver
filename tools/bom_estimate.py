@@ -20,7 +20,7 @@ SETUP, STENCIL, FEEDER, SMT_JOINT, THT_JOINT = 8.0, 8.0, 3.0, 0.0017, 0.0173
 PCB_CAL = 2.5
 # board(s) per tier: (name, layers, w_mm, h_mm)
 BOARDS = {
-    "lite": [("lite-main", 2, 100, 80)],
+    "lite": [("lite-main", 2, 100, 90)],
     "plus": [("core", 4, 120, 100)],
     "ultra": [("core", 4, 120, 100), ("ultra-front", 2, 100, 40)],
 }

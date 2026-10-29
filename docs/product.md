@@ -27,7 +27,7 @@ and say why.
 | Streaming | Spotify Connect, AirPlay 1, Bluetooth, Lyrion (LMS) | same | same |
 | Control | web app, 3 buttons, IR (bring your own remote) | web app, knob + 2 buttons, IR remote in box | web app, 2" colour screen, knob + 3 buttons, IR remote |
 | Boards | 1: `lite-main` (2-layer) | 1: `core` (4-layer) | 2: `core` fully populated + `ultra-front` |
-| Unit cost at 100, board + assembly + PCB | **$12.3** | **$25.0** | **$34.5** |
+| Unit cost at 100, board + assembly + PCB | **$14.4** incl. binding posts (board alone $13.1 per `tools/hwcheck.py score`; $12.3 estimated) | **$25.0** | **$34.5** |
 | Target retail (charger not included / with charger) | **$59 / $79** | **$129 / $159** | **$199 / $229** |
 | Build order | **first** | second | third |
 
@@ -103,7 +103,10 @@ On a charger without 28 V they fall back to 20 V and give 39 W per channel.
 On a 5 V-only port, a laptop for example, the board still boots with the
 amplifier held off, so it can be flashed and tested from that port.
 
-The PD sink is the WCH **CH224Q** (C46061833, $0.27): PD 3.2, EPR, 5–28 V,
+The PD sink is the WCH **CH224Q** (C46061833, $0.27) on Plus/Ultra; Lite uses the
+**CH224A** (C42459160, $0.43 at 1, 9.5k in stock), the same chip in a 1.0 mm-pitch
+ESSOP-10, because the CH224Q's 0.4 mm DFN could not be fanned out under the USB-C
+on 2 layers (`boards/lite-main-main/README.md`). Both: PD 3.2, EPR, 5–28 V,
 140 W. hwde has already built CH224-class boards, so the part is known.
 
 **Is 140 W enough?**
@@ -123,7 +126,7 @@ The PD sink is the WCH **CH224Q** (C46061833, $0.27): PD 3.2, EPR, 5–28 V,
 
 The rule that makes it safe: **a firmware power governor.**
 
-- **What it measures:** an INA180 shunt amp reads VBUS current (Plus/Ultra).
+- **What it measures:** an INA186 shunt amp reads VBUS current (Plus/Ultra). The INA180 was replaced on the core board because its 26 V common-mode limit is below the 28 V rail.
   Lite uses a level-based estimate instead.
 - **What it does:** a limiter in the DSP holds the 1-second average input
   power under 90% of the negotiated PDO (126 W at 28 V/5 A, 90 W at 20 V/5 A,
@@ -394,7 +397,8 @@ units the Hive builds for the person need none of it.
 
 ### Board split
 
-- **`lite-main`: Lite, one 2-layer board** of about 100 × 80 mm. Everything on
+- **`lite-main`: Lite, one 2-layer board** of 100 × 90 mm (built: `boards/lite-main-main/`;
+  80 mm left no room for the PVDD switch between USB-C and the amp). Everything on
   one board is the cheapest to make and assemble, and the ESP32-A1S-style
   circuit plus the TPA3118 are known to work on 2 layers.
 - **`core`: Plus and Ultra, one 4-layer board** of about 120 × 100 mm, the same
@@ -461,6 +465,22 @@ The brief asks for a 3D-printable enclosure made in Onshape.
   and STL. That is about 110 g of PETG, plus 4 M3 screws, 4 binding posts and
   4 feet. Onshape can import its STEP files.
 
+### Core board as built (2026-10-28)
+
+`boards/core` (see its README) changed these decisions on the way to a
+routed board:
+
+- **Current sense:** INA186, not INA180, which can't take 28 V common mode.
+- **DAC master clock:** 50 MHz, not 100 MHz. That is the ES9018K2M's limit
+  on its internal DVDD.
+- **Ethernet clock:** a gated 50 MHz oscillator. The ESP32 GPIO0 clock-out
+  is experimental in ESP-IDF.
+- **Speaker connections:** 2-way screw terminals on the board. The
+  enclosure's banana sockets or binding posts wire to them, which closes
+  open item 4.
+- **Front-board FFC:** ultra-front's pinout, with SPI, I2C and an interrupt
+  line. The front board carries its own expander.
+
 ### Open items
 
 1. **The speaker model:** for the impedance curve. 4 Ω is assumed.
@@ -470,15 +490,19 @@ The brief asks for a 3D-printable enclosure made in Onshape.
    - TPA3221: 1,107 in stock, enough for 10 units but worth buying ahead.
 3. **Checks for the schematic tasks:**
    - **CH224Q:** the I²C readout and how it behaves when a requested voltage
-     isn't on offer. The LCSC listing gives only "PD 3.2, 28 V, 140 W"; the
-     WCH datasheet could not be fetched from here.
+     isn't on offer. Partly settled: the WCH datasheet V2.0 (English copy at
+     done.land, see `boards/lite-main-main/parts/datasheets.md`) gives I²C address 0x22,
+     a status register (0x09), a voltage-request register (0x0A), the PDO
+     current (0x50) and the full SRCCAP (0x60-0x8F). The fallback when a
+     voltage isn't offered is still unstated; Lite's firmware reads 0x09/0x50
+     and VBUS before enabling PVDD.
    - **ES7243E:** confirm it runs without MCLK.
    - **ES9018K2M:** its S/PDIF input mux.
    - **TPA3251:** whether it is pin-compatible with the TPA3221.
-4. **Banana sockets:** whether a real 4 mm banana plug fits the GC4010-F
-   socket. It is listed as a 4 mm banana female, but it is an RC-style part.
-   If not, use panel-mount 5-way binding posts on the enclosure, wired to a
-   screw terminal.
+4. **Banana sockets:** settled for Lite. The GC4010-F is an RC bullet connector
+   with no PCB footprint, so `lite-main` has a 16 A 4-way 5.08 mm screw terminal
+   (DB128V, C2915641) and four 4 mm binding posts on the enclosure's rear panel are
+   wired to it (off-board line in `bom-estimate.csv`). Plus/Ultra can do the same.
 5. **Thermal:** the made TPA3118 board's temperature under load was never
    measured.
 6. **Questions with the person** (step-back 2026-10-28):

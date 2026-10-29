@@ -1,0 +1,257 @@
+{
+ "script": "lib_pull",
+ "status": "fail",
+ "lib_name": "aiee",
+ "parts_file": null,
+ "paced_s": 20.0,
+ "retried": 2,
+ "symbol_lib": "/work/boards/core/lib/aiee.kicad_sym",
+ "footprint_lib": "/work/boards/core/lib/aiee.pretty",
+ "results": [
+  {
+   "lcsc": "C479074",
+   "status": "pulled",
+   "symbol": "SY8089A1AAC",
+   "symbol_verified": true,
+   "footprint_verified": true,
+   "symbol_lib": "/work/boards/core/lib/aiee.kicad_sym",
+   "footprint_lib": "/work/boards/core/lib/aiee.pretty",
+   "footprints": [
+    {
+     "name": "TSOT-23-5_L2.9-W1.6-P0.95-LS2.8-BR",
+     "file": "/work/boards/core/lib/aiee.pretty/TSOT-23-5_L2.9-W1.6-P0.95-LS2.8-BR.kicad_mod",
+     "copper_pads": 5,
+     "courtyard": true,
+     "silk": true
+    }
+   ],
+   "warnings": []
+  },
+  {
+   "lcsc": "C2688377",
+   "status": "pulled",
+   "symbol": "ES9018K2M",
+   "symbol_verified": true,
+   "footprint_verified": true,
+   "symbol_lib": "/work/boards/core/lib/aiee.kicad_sym",
+   "footprint_lib": "/work/boards/core/lib/aiee.pretty",
+   "footprints": [
+    {
+     "name": "QFN-28_L5.0-W5.0-P0.50-BL-EP3.3",
+     "file": "/work/boards/core/lib/aiee.pretty/QFN-28_L5.0-W5.0-P0.50-BL-EP3.3.kicad_mod",
+     "copper_pads": 29,
+     "courtyard": true,
+     "silk": true
+    }
+   ],
+   "warnings": []
+  },
+  {
+   "lcsc": "C474881",
+   "status": "error",
+   "symbol_verified": false,
+   "footprint_verified": false,
+   "detail": "no symbol carrying (property \"LCSC Part\" \"C474881\") in aiee.kicad_sym | log: -- easyeda2kicad.py v1.0.1 --\n[ERROR] API request failed: HTTP Error 403: Forbidden\n[ERROR] Failed to fetch data from EasyEDA API for part C474881",
+   "retried": true
+  },
+  {
+   "lcsc": "C17427482",
+   "status": "pulled",
+   "symbol": "PLR237_T10BK",
+   "symbol_verified": true,
+   "footprint_verified": true,
+   "symbol_lib": "/work/boards/core/lib/aiee.kicad_sym",
+   "footprint_lib": "/work/boards/core/lib/aiee.pretty",
+   "footprints": [
+    {
+     "name": "OPTO-TH_PLR237-T10BK",
+     "file": "/work/boards/core/lib/aiee.pretty/OPTO-TH_PLR237-T10BK.kicad_mod",
+     "copper_pads": 5,
+     "courtyard": true,
+     "silk": true
+    }
+   ],
+   "warnings": [],
+   "retried": true
+  }
+ ],
+ "symbol_dedup": {
+  "removed": 0,
+  "names": []
+ },
+ "registered": {
+  "fp": "present",
+  "sym": "present"
+ },
+ "autofix": {
+  "footprints": 3,
+  "changed": 3,
+  "actions": 4,
+  "residue": 1,
+  "results": [
+   {
+    "footprint": "OPTO-TH_PLR237-T10BK",
+    "file": "/work/boards/core/lib/aiee.pretty/OPTO-TH_PLR237-T10BK.kicad_mod",
+    "changed": true,
+    "actions": [
+     {
+      "rule": "A",
+      "action": "promote_silk_width",
+      "kind": "fp_circle",
+      "from_mm": 0.06,
+      "to_mm": 0.15,
+      "gap_mm": 2.457
+     }
+    ],
+    "residue": 0,
+    "before": {
+     "worst_gap_mm": 1.435,
+     "unprintable_silk": 1,
+     "under_gap_silk": 0,
+     "plated_pegs": 0
+    },
+    "after": {
+     "worst_gap_mm": 1.435,
+     "unprintable_silk": 0,
+     "under_gap_silk": 0,
+     "plated_pegs": 0
+    }
+   },
+   {
+    "footprint": "QFN-28_L5.0-W5.0-P0.50-BL-EP3.3",
+    "file": "/work/boards/core/lib/aiee.pretty/QFN-28_L5.0-W5.0-P0.50-BL-EP3.3.kicad_mod",
+    "changed": true,
+    "actions": [
+     {
+      "rule": "A",
+      "action": "promote_silk_width",
+      "kind": "fp_circle",
+      "from_mm": 0.06,
+      "to_mm": 0.15,
+      "gap_mm": 0.755
+     }
+    ],
+    "residue": 0,
+    "before": {
+     "worst_gap_mm": 0.26,
+     "unprintable_silk": 1,
+     "under_gap_silk": 0,
+     "plated_pegs": 0
+    },
+    "after": {
+     "worst_gap_mm": 0.26,
+     "unprintable_silk": 0,
+     "under_gap_silk": 0,
+     "plated_pegs": 0
+    }
+   },
+   {
+    "footprint": "TSOT-23-5_L2.9-W1.6-P0.95-LS2.8-BR",
+    "file": "/work/boards/core/lib/aiee.pretty/TSOT-23-5_L2.9-W1.6-P0.95-LS2.8-BR.kicad_mod",
+    "changed": true,
+    "actions": [
+     {
+      "rule": "A",
+      "action": "delete_unprintable_silk",
+      "kind": "fp_circle",
+      "width_mm": 0.06,
+      "gap_mm": 0.14
+     },
+     {
+      "rule": "B",
+      "action": "residue_silk_gap",
+      "kind": "fp_line",
+      "width_mm": 0.25,
+      "gap_mm": 0.075,
+      "detail": "cannot reach the gap by narrowing to the 0.15 mm line-width floor"
+     }
+    ],
+    "residue": 1,
+    "before": {
+     "worst_gap_mm": 0.075,
+     "unprintable_silk": 1,
+     "under_gap_silk": 2,
+     "plated_pegs": 0
+    },
+    "after": {
+     "worst_gap_mm": 0.075,
+     "unprintable_silk": 0,
+     "under_gap_silk": 1,
+     "plated_pegs": 0
+    }
+   }
+  ]
+ },
+ "refdes_norm": {
+  "footprints": 41,
+  "changed": 3,
+  "unchanged": 38,
+  "skipped": 0,
+  "results": [
+   {
+    "footprint": "OPTO-TH_PLR237-T10BK",
+    "status": "changed",
+    "from": [
+     0.0,
+     -5.31
+    ],
+    "to": [
+     0.0,
+     -4.535
+    ],
+    "pad_top": -2.072,
+    "silk_top": -3.71,
+    "clear_of": -3.71,
+    "inked_half_h": 0.575
+   },
+   {
+    "footprint": "QFN-28_L5.0-W5.0-P0.50-BL-EP3.3",
+    "status": "changed",
+    "from": [
+     0.0,
+     -6.5
+    ],
+    "to": [
+     0.0,
+     -3.875
+    ],
+    "pad_top": -3.05,
+    "silk_top": -2.65,
+    "clear_of": -3.05,
+    "inked_half_h": 0.575
+   },
+   {
+    "footprint": "TSOT-23-5_L2.9-W1.6-P0.95-LS2.8-BR",
+    "status": "changed",
+    "from": [
+     0.0,
+     -4.951
+    ],
+    "to": [
+     0.0,
+     -2.435
+    ],
+    "pad_top": -1.25,
+    "silk_top": -1.61,
+    "clear_of": -1.61,
+    "inked_half_h": 0.575
+   }
+  ]
+ },
+ "model_paths": {
+  "rewritten": 3,
+  "footprints": {
+   "OPTO-TH_PLR237-T10BK.kicad_mod": [
+    "${KIPRJMOD}/../lib/aiee.3dshapes/OPTO-TH_PLR237-T10BK.wrl"
+   ],
+   "QFN-28_L5.0-W5.0-P0.50-BL-EP3.3.kicad_mod": [
+    "${KIPRJMOD}/../lib/aiee.3dshapes/QFN-28_L5.0-W5.0-H0.9-P0.50.wrl"
+   ],
+   "TSOT-23-5_L2.9-W1.6-P0.95-LS2.8-BR.kicad_mod": [
+    "${KIPRJMOD}/../lib/aiee.3dshapes/TSOT-23-5_L2.9-W1.6-H1.00-LS2.8-P0.95.wrl"
+   ]
+  }
+ },
+ "load_check": null,
+ "drc_check": null
+}

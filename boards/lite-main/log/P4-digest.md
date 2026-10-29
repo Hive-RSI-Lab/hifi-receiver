@@ -1,0 +1,3 @@
+- P4 schematic: kicad/gen/root.py -> one A0 root sheet, 130 parts, 25 decoupling associations; ERC gate PASS 0/0 (every pulled pin typed passive: snag 13); netlist_audit pass.
+- Fresh-context review (opus): 1 error (Q1 soft-start cap gate-source), 14 warnings -> reports/review-schematic-response.md (error fixed; 9 fixed/mitigated; 5 accepted with reasons).
+- H2 approved by delegate.

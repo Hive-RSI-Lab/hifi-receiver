@@ -25,13 +25,18 @@ It fails (exit 1) if any of these fails:
      rounds to the dime), so the page can't drift from `bom-estimate.csv`
    - a **Boards** row that names each tier's board(s) in backticks
    - a **Build order** row with exactly one tier marked `first`
-2. **The firmware's host tests.** `make -C firmware/test` (plain `cc` with
+2. **The software's unit tests.** For each folder in `hwcheck.py`'s
+   `SOFTWARE` (today `bench`), `python3 -m unittest discover -s
+   <dir>/tests`. These are stdlib only, need no board, and take about
+   10 s. The bench's run against its mock board ([bench.md](bench.md)).
+   Add the app's here the same way.
+3. **The firmware's host tests.** `make -C firmware/test` (plain `cc` with
    ASan/UBSan, no ESP-IDF): the power sequencer, governor, PD decode, test
    tones, JSON and every test-API call and console command, against a mock
    board. Built in a scratch folder. Skipped with a note where there is no
    `make` or `cc`. The full ESP-IDF build is not part of the check: it needs
    ESP-IDF v4.4.8 and takes minutes ([firmware/README.md](../firmware/README.md)).
-3. **Every board's hwde gates.** Every workspace under `boards/` (a folder
+4. **Every board's hwde gates.** Every workspace under `boards/` (a folder
    with a `state.json`) runs all four of hwde's gates: `erc` on
    `kicad/<board>.kicad_sch`, then `drc_routed`, `verify` and `dfm` on
    `kicad/<board>.kicad_pcb`. `<board>` is the `board` field in `state.json`.

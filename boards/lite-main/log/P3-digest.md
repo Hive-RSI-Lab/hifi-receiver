@@ -1,0 +1,3 @@
+- P3 parts: 48 distinct LCSC parts, 130 placements; 29 JLC Basic, 19 Extended. parts/parts.json from the generator's ref->LCSC lines with live LCSC data.
+- Library: 22 EasyEDA pulls (lib_pull, 3 batches; 1 part with no CAD data: GC4010-F -> screw terminal). Passives on KiCad stock footprints.
+- Footprint repairs: lib/fix_courtyards.py (20 of 21 courtyards short of pads), lib/fix_footprints.py (USB4105 pegs, TPA3118 EP vias), RCA pegs + courtyard by hand.
