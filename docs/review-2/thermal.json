@@ -1,0 +1,23 @@
+{
+  "domain": "thermal",
+  "findings": [
+    {"id": "THERMAL-1", "board": "core", "severity": "blocker", "refs": ["U15", "U16"], "nets": ["GND", "PVDD"],
+     "finding": "TPA3221DDVR is the pad-UP (top heat slug) DDV package; footprint has no EP and the board has no heatsink, no heatsink mounting provision and no keep-out. Without a heatsink Tj = 45 + 3.5 W x ~50 C/W = ~220 C at 1/8 power into 4 ohm (OTE 145-165 C, latched); even 8 ohm 1/8 power reaches ~120 C (OTW 115 C min). Max chip loss under OTW without heatsink ~1.4 W (~2 x 4 W into 4 ohm).",
+     "evidence": "SLASEE9C rev C: sec 5 'heat slug located on the top side', table 5-1 PowerPad 'placed on top side', DDV0044D note 5; 6.4 RthetaJA 44.8 C/W JEDEC 2s2p no heatsink; OTW/OTE 6.5; fig 6-9 system loss 4 ohm ~6.5 W @25 W out (30 V). core.kicad_pcb: U15 footprint 44 pads, no EP; only holes H1-H4.",
+     "fix": "Fit a heatsink per TPA3221: base 19x12 mm (free volume), fins >=25 mm tall to lid under lid vents, RthetaSA <=20 C/W natural convection; interface 0.2 mm >=3 W/mK pad or <=0.1 mm >=1.5 W/mK thermal adhesive with mechanical hold-down (NOT plain adhesive tape). Board: reserve 19x12 mm keep-out for parts >1.0 mm under the base; add two GND-plated 1.5 mm clip slots at dx = +/-9.5-10 mm on U15/U16 long axis (move C207/C209 ~2 mm out) so a wire clip clamps and grounds the heatsink. Plus firmware governor (THERMAL-2). Contingency: pad-down pin-compatible TPA3220DDW (C2879306, stock 0 on 2026-10-28) on an EP land with via array.",
+     "margin": "With spec heatsink: total ~16-18 C/W -> Tj 101-108 C at 1/8 P 4 ohm (7-14 K under OTW min; 117-126 C at upper loss estimate), 69-72 C at 1/8 P 8 ohm. With 19x12x25 on adhesive tape: 118 C centre / 139 C upper -> insufficient."},
+    {"id": "THERMAL-2", "board": "core", "severity": "major", "refs": ["U15", "U16", "U3", "R1", "U17"], "nets": ["ISENSE", "AMP_OTW", "AMP_FAULT"],
+     "finding": "Continuous full power cannot be held by any passive heatsink in the available volume: chip ~19-22 W (4 ohm, supply-limited to ~113-154 W out) -> OTE in ~9 s with a clamped 19x12x25 heatsink (immediately with adhesive tape); 8 ohm full power (~9 W) -> OTE in ~30 s. Needs a firmware power governor.",
+     "evidence": "SLASEE9C fig 6-9 (26 W loss at 150 W out, 4 ohm); heatsink ~6.7 J/K; J-HS drop 22 W x 3.2 C/W = 70 K.",
+     "fix": "Firmware: ISENSE 60 s average <= 30 W in (1.05 A at 28 V) per TPA3221 (Ultra total <= 55 W, 2.0 A), 5 s average <= 70 W (2.5 A); OTW_CLIP low steadily >200 ms -> -3 dB every 2 s; FAULT -> mute, 1 s, toggle RESET, max 3 retries/10 min. Contingency: NTC 10k B3435 0603 (LCSC C2889048) within 3 mm of U15 GND pins 18-20, 10k pull-up to +3V3A into a free ESP32 ADC1 pin; board >70 C -> -3 dB/10 s, >85 C mute.",
+     "margin": "Sustainable chip loss with spec heatsink ~4 W (Tj 110 C at 45 C air)."}
+  ],
+  "known_unknowns": [
+    {"fact": "TPA3221DDV (C475500) thermal slug is on the TOP of the package", "board": "core", "refs": ["U15", "U16"], "status": "verified", "source": "TI SLASEE9C rev C sec 5 p3, table 5-1, DDV0044D note 5 (front-page bullet 'pad on bottom' is contradicted)", "date": "2026-10-28", "could_stop_board": true},
+    {"fact": "TPA3221 RthetaJA 44.8 C/W (JEDEC 2s2p, no heatsink), RthetaJC(top) 1.1, psiJB 14.7, 5.5 C/W to 85 C heatsink", "board": "core", "refs": ["U15"], "status": "verified", "source": "TI SLASEE9C 6.4 p6", "date": "2026-10-28", "could_stop_board": true},
+    {"fact": "TPA3221 OTW 115/125/135 C, OTE 145/155/165 C, OTE latched (RESET toggle)", "board": "core", "refs": ["U15"], "status": "verified", "source": "TI SLASEE9C 6.5 p9, 8.4.5.5", "date": "2026-10-28", "could_stop_board": true},
+    {"fact": "Thermal resistance of a 19x12x25 mm finned heatsink in the (not yet designed) core enclosure ~20-25 C/W", "board": "core", "refs": ["U15", "U16"], "status": "unverified", "source": "estimate scaled from typical BGA heatsink data; needs bench measurement", "date": "2026-10-28", "could_stop_board": true},
+    {"fact": "TPA3221 chip loss split from fig 6-9 system loss (inductor share ~1.5 W at 20 W out)", "board": "core", "refs": ["U15", "L1", "L2", "L3", "L4"], "status": "unverified", "source": "SLASEE9C fig 6-9 read at 250 dpi; split is my estimate", "date": "2026-10-28", "could_stop_board": true}
+  ],
+  "tools_wanted": []
+}

@@ -1,0 +1,66 @@
+{
+ "domain": "dfm",
+ "findings": [
+  {
+   "id": "DFM-1",
+   "board": "core",
+   "severity": "blocker",
+   "refs": [
+    "J4",
+    "J5"
+   ],
+   "nets": [],
+   "finding": "Core's CONN-TH_XDJK-0271-1650 footprint has only the 3 pin holes and no holes for the jack's 2 locating posts. Lite's copy has NPTH 1.7x2.4 ovals at (+-7.65,+1.60). The courtyards differ too (core x+-8,y-3.45..21.8; Lite x-8.75..12.3,y-4.3..15.2).",
+   "evidence": "Board dump of J4/J5 vs lite J2/J3. Lian Xin drawing A-AV2-7A1 (LCSC C7527522): 3-dia1.6 pin holes plus 2-2X3 post holes; posts 4.5 mm below the base, pins 3.5 mm. With the posts standing on the board the pins can't reach through 1.6 mm.",
+   "fix": "Use Lite's footprint on core and enlarge the post holes to 2.0x3.0 NPTH slots per the drawing. Re-run courtyard/DRC.",
+   "margin": "Pins reach -2.9 mm short of the board top (3.5 - 4.5 - 1.6 board), i.e. no engagement"
+  },
+  {
+   "id": "DFM-2",
+   "board": "both",
+   "severity": "major",
+   "refs": [
+    "J2",
+    "J3",
+    "J4",
+    "J5"
+   ],
+   "nets": [],
+   "finding": "RCA post holes are 1.7x2.4, smaller than the drawing's 2.0x3.0. The footprint's signal pins sit on rows 0.8 mm apart (y -1.95/-1.15); the drawing shows both on one row 8 mm apart.",
+   "evidence": "Drawing A-AV2-7A1. Pin 1.0x0.3 brass (diagonal 1.04) in 1.6 hole = 0.28 mm radial slack against a possible 0.8 mm position error.",
+   "fix": "Check a real part against a 1:1 print, or buy 2 pcs of C7527522 first. Make the post holes 2.0x3.0. If the pins mismatch, make pins 1/3 plated 1.6x2.4 ovals along y.",
+   "margin": "Unverified: slack 0.28 mm vs a possible 0.8 mm error"
+  }
+ ],
+ "known_unknowns": [
+  {
+   "fact": "XDJK-0271-1650 pin hole positions match EasyEDA land pattern (pins 1/3 rows 0.8 mm apart)",
+   "board": "both",
+   "refs": [
+    "J2",
+    "J3",
+    "J4",
+    "J5"
+   ],
+   "status": "unverified",
+   "source": "Lian Xin A-AV2-7A1 (drawing ambiguous)",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "XDJK-0271-1650 needs 2 post holes 2.0x3.0",
+   "board": "both",
+   "refs": [
+    "J2",
+    "J3",
+    "J4",
+    "J5"
+   ],
+   "status": "verified",
+   "source": "Lian Xin A-AV2-7A1 '2-2X3'",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  }
+ ],
+ "tools_wanted": []
+}

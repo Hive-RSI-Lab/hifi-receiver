@@ -1,0 +1,83 @@
+{
+ "domain": "parts",
+ "findings": [],
+ "known_unknowns": [
+  {
+   "fact": "MMBT3904 C20526 (JSCJ) SOT-23 pinout B=1 E=2 C=3 matches symbol and footprint pad positions (not mirrored)",
+   "board": "lite-main",
+   "refs": [
+    "Q2",
+    "Q3",
+    "Q4"
+   ],
+   "status": "verified",
+   "source": "JSCJ MMBT3904 datasheet Rev 2.1 p1 (pin list), p3 (pad layout 0.6x0.8, 1.9 pitch, 2.02 rows)",
+   "could_stop_board": true,
+   "date": "2026-10-28"
+  },
+  {
+   "fact": "S8050 C2146 (JSCJ J3Y) SOT-23 pinout B=1 E=2 C=3 matches symbol and footprint",
+   "board": "core",
+   "refs": [
+    "Q3",
+    "Q4",
+    "Q5",
+    "Q6"
+   ],
+   "status": "verified",
+   "source": "JSCJ S8050 datasheet Rev 2.0 p1, p3",
+   "could_stop_board": true,
+   "date": "2026-10-28"
+  },
+  {
+   "fact": "2N7002 C8545 (JSCJ) SOT-23 pinout G=1 S=2 D=3 matches symbol and footprint",
+   "board": "core",
+   "refs": [
+    "Q2"
+   ],
+   "status": "verified",
+   "source": "JSCJ 2N7002 datasheet (J, Sep 2016) p1",
+   "could_stop_board": true,
+   "date": "2026-10-28"
+  },
+  {
+   "fact": "AO4485 C5125949 (UMW) SOP-8 S=1-3 G=4 D=5-8 matches symbol/footprint; pads CCW from top",
+   "board": "lite-main",
+   "refs": [
+    "Q1"
+   ],
+   "status": "verified",
+   "source": "UMW AO4485 datasheet sect. 3 Pinning information p1",
+   "could_stop_board": true,
+   "date": "2026-10-28"
+  },
+  {
+   "fact": "AO4485 C51499 (AOS) SOIC-8 S=1-3 G=4 D=5-8 matches symbol/footprint",
+   "board": "core",
+   "refs": [
+    "Q1"
+   ],
+   "status": "verified",
+   "source": "Alpha & Omega AO4485 datasheet p1 (SOIC-8 top view)",
+   "could_stop_board": true,
+   "date": "2026-10-28"
+  },
+  {
+   "fact": "LCSC numbers C20526/C2146/C8545/C5125949/C51499 are the intended parts in SOT-23 / SOIC-8",
+   "board": "both",
+   "refs": [
+    "Q1",
+    "Q2",
+    "Q3",
+    "Q4",
+    "Q5",
+    "Q6"
+   ],
+   "status": "verified",
+   "source": "JLC/LCSC live search via hwde parts_search.py, MPN+package fields",
+   "could_stop_board": true,
+   "date": "2026-10-28"
+  }
+ ],
+ "tools_wanted": []
+}
