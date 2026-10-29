@@ -72,6 +72,23 @@ module is looking at booting squeezelite in QEMU. QEMU needs
 `CONFIG_ESP32_REV_MIN_0`; the board's config keeps rev 1, which the
 WROVER-E's rev-3 chip meets.
 
+**Checked again (2026-10-29),** with volume, now playing and the remote:
+- Both images build: `squeezelite.bin` 2.74 MB, `recovery.bin` 1.42 MB.
+- The new hooks link as strong symbols in `squeezelite.elf`
+  (`hifi_volume_hook`, `hifi_output_gain`, `hifi_display_*`,
+  `hifi_ir_hook`, `hifi_button_hook`).
+- Still no boot.
+
+`export.sh` refuses to run when the tools the steps above skip (gdb,
+openocd, the S2/S3/RISC-V compilers) are missing. To build without
+installing them, put on `PATH` by hand:
+- the venv's `bin`;
+- `$IDF_PATH/tools`;
+- `xtensa-esp32-elf`, `esp32ulp-elf`, `cmake` and `ninja` from
+  `$IDF_TOOLS_PATH/tools/*/*/…/bin`.
+
+Then run `idf.py reconfigure` and `ninja -C build`.
+
 ## Flash it
 
 Over the board's USB-C (the CH340C console; DTR/RTS do the boot-mode dance):
