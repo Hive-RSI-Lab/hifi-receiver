@@ -4,7 +4,7 @@ Board: `lite-main.kicad_pcb` (100 x 90 mm), enclosure 106 x 96 x 46.8 mm, about 
 
 | Check | Result | Detail |
 |---|---|---|
-| every part clear of base and lid | pass | closest SW1 at 0.30 mm |
+| every part clear of base and lid | pass | closest SW3 at 0.30 mm |
 | board doesn't intersect base or lid | pass | 0.000 mm3 |
 | board edge to inner wall | pass | 0.60 mm |
 | board rests on the standoffs | pass | 5.9 mm3 contact layer |

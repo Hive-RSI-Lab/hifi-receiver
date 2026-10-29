@@ -459,6 +459,7 @@ The brief asks for a 3D-printable enclosure made in Onshape.
 - **Fallback without Onshape:** the enclosure task can model it in
   CadQuery/OpenSCAD inside the Hive and export STL/STEP, so nothing waits on
   access.
+- **Plus and Ultra: done in code** ([`enclosure/`](../enclosure/README.md#plus-and-ultra)), fitted to the routed `core` and, for Ultra, `ultra-front`: about 134 g and 147 g of PETG. Ultra needs a 20-pin 0.5 mm type-B FFC, 30-50 mm.
 - **Lite: done in code.** It is a build123d model in
   [`enclosure/`](../enclosure/README.md), 106 x 96 x 47 mm. It is fitted to
   `lite-main`'s KiCad file and fit-checked against it, and exported as STEP

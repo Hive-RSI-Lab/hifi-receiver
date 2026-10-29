@@ -1,0 +1,311 @@
+{
+ "ok": true,
+ "checks": [
+  {
+   "name": "board_clear",
+   "ok": true,
+   "overlap_mm3": 0
+  },
+  {
+   "name": "parts_apart",
+   "ok": true,
+   "clashes": []
+  },
+  {
+   "name": "parts_clear",
+   "ok": true,
+   "hits": []
+  },
+  {
+   "name": "port_J1",
+   "ok": true,
+   "edge": "W",
+   "kind": "usb-c",
+   "blocked_mm3": 0,
+   "recess_mm": 1.9,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_J2",
+   "ok": true,
+   "edge": "W",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 2.6,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_J4l",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_J4u",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_J5l",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_J5u",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_U19",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.7,
+   "max_recess_mm": 4.0
+  },
+  {
+   "name": "port_PA1",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 2.4,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_PA2",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 2.4,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_PA3",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 2.4,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_PA4",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 2.4,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_PB1",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 2.4,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_PB2",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 2.4,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_PB3",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 2.4,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_PB4",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 2.4,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_LCD",
+   "ok": true,
+   "edge": "S",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 22.9,
+   "max_recess_mm": 25.0
+  },
+  {
+   "name": "port_F_U2",
+   "ok": true,
+   "edge": "S",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 21.0,
+   "max_recess_mm": 25.0
+  },
+  {
+   "name": "hole_H3",
+   "ok": true,
+   "supported": 1.0
+  },
+  {
+   "name": "hole_H2",
+   "ok": true,
+   "supported": 1.0
+  },
+  {
+   "name": "hole_H1",
+   "ok": true,
+   "supported": 1.0
+  },
+  {
+   "name": "hole_H4",
+   "ok": true,
+   "supported": 1.0
+  },
+  {
+   "name": "bed_base",
+   "ok": true,
+   "size_mm": [
+    127.4,
+    118.6,
+    47.0
+   ],
+   "bed_mm": [
+    220.0,
+    220.0,
+    250.0
+   ]
+  },
+  {
+   "name": "bed_btn_FSW1",
+   "ok": true,
+   "size_mm": [
+    8.5,
+    8.5,
+    4.2
+   ],
+   "bed_mm": [
+    220.0,
+    220.0,
+    250.0
+   ]
+  },
+  {
+   "name": "bed_btn_FSW2",
+   "ok": true,
+   "size_mm": [
+    8.5,
+    8.5,
+    4.2
+   ],
+   "bed_mm": [
+    220.0,
+    220.0,
+    250.0
+   ]
+  },
+  {
+   "name": "bed_btn_FSW3",
+   "ok": true,
+   "size_mm": [
+    8.5,
+    8.5,
+    4.2
+   ],
+   "bed_mm": [
+    220.0,
+    220.0,
+    250.0
+   ]
+  },
+  {
+   "name": "bed_knob",
+   "ok": true,
+   "size_mm": [
+    22.0,
+    22.0,
+    15.0
+   ],
+   "bed_mm": [
+    220.0,
+    220.0,
+    250.0
+   ]
+  },
+  {
+   "name": "bed_lid",
+   "ok": true,
+   "size_mm": [
+    127.4,
+    114.4,
+    40.4
+   ],
+   "bed_mm": [
+    220.0,
+    220.0,
+    250.0
+   ]
+  }
+ ],
+ "top_access": [
+  {
+   "ref": "D3",
+   "open_above": true,
+   "under": []
+  }
+ ],
+ "material": {
+  "base": {
+   "volume_cm3": 73.8,
+   "solid_petg_g": 93.7
+  },
+  "btn_FSW1": {
+   "volume_cm3": 0.1,
+   "solid_petg_g": 0.2
+  },
+  "btn_FSW2": {
+   "volume_cm3": 0.1,
+   "solid_petg_g": 0.2
+  },
+  "btn_FSW3": {
+   "volume_cm3": 0.1,
+   "solid_petg_g": 0.2
+  },
+  "knob": {
+   "volume_cm3": 5.3,
+   "solid_petg_g": 6.8
+  },
+  "lid": {
+   "volume_cm3": 36.2,
+   "solid_petg_g": 45.9
+  }
+ },
+ "build_s": 3.9
+}
