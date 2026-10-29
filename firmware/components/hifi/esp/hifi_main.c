@@ -529,10 +529,7 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	char *h = config_alloc_get_str("host_name", NULL, HIFI_MODEL);
 	snprintf(s->hostname, sizeof(s->hostname), "%s", h ? h : HIFI_MODEL);
 	free(h);
-	esp_netif_ip_info_t ip = {0};
-	esp_netif_t *sta = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-	if (sta && esp_netif_get_ip_info(sta, &ip) == ESP_OK && ip.ip.addr)
-		snprintf(s->ip, sizeof(s->ip), IPSTR, IP2STR(&ip.ip));
+	hifi_net_ip(s->ip, sizeof(s->ip));
 	wifi_ap_record_t ap;
 	if (esp_wifi_sta_get_ap_info(&ap) == ESP_OK) {
 		snprintf(s->ssid, sizeof(s->ssid), "%s", (const char *) ap.ssid);
@@ -815,10 +812,23 @@ static int op_set_wifi(const char *ssid, const char *password) {
 	return 0;
 }
 
-static bool wifi_has_ip(void) {
+static bool netif_ip(esp_netif_t *n, esp_netif_ip_info_t *ip) {
+	const char *key = n ? esp_netif_get_ifkey(n) : NULL;
+	return n && !(key && !strcmp(key, "WIFI_AP_DEF")) && esp_netif_is_netif_up(n) &&
+	       esp_netif_get_ip_info(n, ip) == ESP_OK && ip->ip.addr;
+}
+
+bool hifi_net_ip(char *buf, size_t n) {
+	/* the default route's interface first, then any other that is up: on
+	 * Ethernet (Plus/Ultra, QEMU's open_eth) WIFI_STA_DEF has no address */
 	esp_netif_ip_info_t ip = {0};
-	esp_netif_t *sta = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-	return sta && esp_netif_get_ip_info(sta, &ip) == ESP_OK && ip.ip.addr;
+	bool ok = netif_ip(esp_netif_get_default_netif(), &ip);
+	for (esp_netif_t *i = esp_netif_next(NULL); !ok && i; i = esp_netif_next(i)) ok = netif_ip(i, &ip);
+	if (buf && n) {
+		if (ok) snprintf(buf, n, IPSTR, IP2STR(&ip.ip));
+		else buf[0] = 0;
+	}
+	return ok;
 }
 
 void hifi_main_trial_inputs(hifi_trial_t *t) {
@@ -828,7 +838,7 @@ void hifi_main_trial_inputs(hifi_trial_t *t) {
 	t->heap_ok = heap_caps_get_free_size(MALLOC_CAP_INTERNAL) > 20000;
 	wifi_config_t wc = {0};
 	t->wifi_configured = esp_wifi_get_config(WIFI_IF_STA, &wc) == ESP_OK && wc.sta.ssid[0];
-	t->wifi_ok = wifi_has_ip();
+	t->wifi_ok = hifi_net_ip(NULL, 0);
 }
 
 const hifi_ops_t hifi_ops = {
@@ -915,9 +925,7 @@ static void services_task(void *arg) {
 			console = esp_console_cmd_register(&c) == ESP_OK && esp_console_cmd_register(&a) == ESP_OK;
 		}
 		if (!mdns) {
-			esp_netif_ip_info_t ip = {0};
-			esp_netif_t *sta = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-			if (sta && esp_netif_get_ip_info(sta, &ip) == ESP_OK && ip.ip.addr) {
+			if (hifi_net_ip(NULL, 0)) {
 				mdns_txt_item_t txt[] = {
 					{"model", HIFI_MODEL}, {"board", HIFI_BOARD}, {"fw", HIFI_FW_VERSION}, {"api", "1"},
 				};

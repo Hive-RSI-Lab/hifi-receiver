@@ -5,12 +5,17 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 
 #include "hifi_api.h"
 #include "hifi_boot.h"
 
 /* hifi_main.c: what the trial boot needs from the board */
 void hifi_main_trial_inputs(hifi_trial_t *t);
+/* The address the box is reached at: the active network interface's (Wi-Fi
+ * station or Ethernet; never the setup access point's). False, and ip "",
+ * with none up. ip may be NULL. */
+bool hifi_net_ip(char *ip, size_t n);
 
 /* hifi_remote.c */
 extern hifi_ota_t hifi_ota_session;

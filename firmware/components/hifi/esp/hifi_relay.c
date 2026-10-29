@@ -121,9 +121,7 @@ static void publish_status(void) {
 	hifi_ota_status(&o);
 	char ip[16] = "";
 	int rssi = 0;
-	esp_netif_ip_info_t ipi = {0};
-	esp_netif_t *sta = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-	if (sta && esp_netif_get_ip_info(sta, &ipi) == ESP_OK && ipi.ip.addr) snprintf(ip, sizeof(ip), IPSTR, IP2STR(&ipi.ip));
+	hifi_net_ip(ip, sizeof(ip));
 	wifi_ap_record_t ap;
 	if (esp_wifi_sta_get_ap_info(&ap) == ESP_OK) rssi = ap.rssi;
 
@@ -257,11 +255,6 @@ static void client_start(void) {
 	esp_mqtt_client_start(client);
 }
 
-static bool wifi_up(void) {
-	esp_netif_ip_info_t ip = {0};
-	esp_netif_t *sta = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-	return sta && esp_netif_get_ip_info(sta, &ip) == ESP_OK && ip.ip.addr;
-}
 
 /* ------------------------------------------------------------------ OTA writes */
 
@@ -320,7 +313,7 @@ static void relay_task(void *arg) {
 	for (;;) {
 		vTaskDelay(pdMS_TO_TICKS(2000));
 		uint32_t now = esp_timer_get_time() / 1000000;
-		bool up = wifi_up();
+		bool up = hifi_net_ip(NULL, 0);
 
 		if (up && !sntp) {
 			sntp_setoperatingmode(SNTP_OPMODE_POLL);
