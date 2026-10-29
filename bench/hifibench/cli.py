@@ -350,6 +350,12 @@ def cmd_remote(a, b: Bench):
         print(f"public key: {pub.hex()}")
         print(f"for the firmware build: HIFI_HIVE_PUBKEY={pub.hex()}")
         return 0
+    if a.url and not a.mock:
+        # A board on the Hive's own LAN: the same calls straight over HTTP, no
+        # relay (docs/remote.md, "When the box shares the Hive's network").
+        if a.rcmd == "list":
+            sys.exit("remote list needs the relay; with --url there is one board")
+        return _remote_cmd(a, Device(Http(a.url, timeout=a.timeout)))
     link, cfg, rb = _remote_rig(a, b)
     try:
         if a.rcmd == "list":
@@ -357,36 +363,40 @@ def cmd_remote(a, b: Bench):
                 print(f"{d}  {'online ' if st.get('online') else 'offline'}  {st.get('board', '')} fw {st.get('fw', '?')} "
                       f"ip {st.get('ip', '?')} ota {(st.get('ota') or {}).get('state', '?')}")
             return 0
-        dev = Device(relay.Relay(link, _pick_dev(a, link), timeout=a.timeout))
-        if a.rcmd in ("info", "state"):
-            print(json.dumps(getattr(dev, a.rcmd)(), indent=1))
-            return 0
-        if a.rcmd == "selftest":
-            r = remote.selftest(dev, dev.state())
-            for i in r["items"]:
-                print(f"  {'ok ' if i['pass'] else ('exp' if i.get('expected') else 'BAD')} {i['name']}: {i.get('value')}")
-            print("self-test:", "pass" if r["pass"] else "FAIL")
-            return 0 if r["pass"] else 1
-        if a.rcmd == "ota":
-            image = Path(a.image).read_bytes()
-            r = relay.ota_push(dev.t, image, a.version or Path(a.image).stem, timeout=a.wait)
-            print("ota:", r["result"], json.dumps(r.get("event") or r.get("status") or {}))
-            return 0 if r["result"] == "valid" else 1
-        if a.rcmd == "bringup":
-            s = remote.bringup(dev, a.board, a.loud, a.max_dbfs)
-            s["mock"] = bool(a.mock)
-            if a.out:
-                out = Path(a.out)
-            else:
-                out = RESULTS / (("mock-" if a.mock else "") + f"remote-{dev.t.dev}-{time.strftime('%Y%m%d-%H%M%S')}")
-            print("wrote", remote.write(out, s))
-            for k, v in s["verdicts"].items():
-                print(f"  {k}: {v}")
-            return 1 if any(v.startswith("fail") for v in s["verdicts"].values()) else 0
+        return _remote_cmd(a, Device(relay.Relay(link, _pick_dev(a, link), timeout=a.timeout)))
     finally:
         link.close()
         if rb:
             rb.close()
+
+
+def _remote_cmd(a, dev: Device) -> int:
+    if a.rcmd in ("info", "state"):
+        print(json.dumps(getattr(dev, a.rcmd)(), indent=1))
+        return 0
+    if a.rcmd == "selftest":
+        r = remote.selftest(dev, dev.state())
+        for i in r["items"]:
+            print(f"  {'ok ' if i['pass'] else ('exp' if i.get('expected') else 'BAD')} {i['name']}: {i.get('value')}")
+        print("self-test:", "pass" if r["pass"] else "FAIL")
+        return 0 if r["pass"] else 1
+    if a.rcmd == "ota":
+        image = Path(a.image).read_bytes()
+        r = relay.ota_push(dev.t, image, a.version or Path(a.image).stem, timeout=a.wait)
+        print("ota:", r["result"], json.dumps(r.get("event") or r.get("status") or {}))
+        return 0 if r["result"] == "valid" else 1
+    if a.rcmd == "bringup":
+        s = remote.bringup(dev, a.board, a.loud, a.max_dbfs)
+        s["mock"] = bool(a.mock)
+        if a.out:
+            out = Path(a.out)
+        else:
+            who = getattr(dev.t, "dev", None) or s["info"].get("mac", "lan").replace(":", "").lower()
+            out = RESULTS / (("mock-" if a.mock else "") + f"remote-{who}-{time.strftime('%Y%m%d-%H%M%S')}")
+        print("wrote", remote.write(out, s))
+        for k, v in s["verdicts"].items():
+            print(f"  {k}: {v}")
+        return 1 if any(v.startswith("fail") for v in s["verdicts"].values()) else 0
     return 2
 
 

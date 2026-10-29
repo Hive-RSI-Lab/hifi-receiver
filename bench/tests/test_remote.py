@@ -275,14 +275,30 @@ class RemoteCli(unittest.TestCase):
         remote.time.sleep = lambda s: None
         try:
             with tempfile.TemporaryDirectory() as d, redirect_stdout(io.StringIO()):
-                code = cli.main(["--mock", "remote", "bringup", "--loud", "--max-dbfs", "-12"]
-                                if False else ["--mock", "--out", d, "remote", "bringup", "--loud", "--max-dbfs", "-12"])
+                code = cli.main(["--mock", "--out", d, "remote", "bringup", "--loud", "--max-dbfs", "-12"])
                 s = json.loads(Path(d, "session.json").read_text())
                 self.assertTrue(Path(d, "report.md").is_file())
         finally:
             remote.time.sleep = time.sleep
         self.assertEqual(code, 0)
         self.assertEqual(max(m["level_dbfs"] for m in s["levels"]), -12)
+
+    def test_lan_bringup_over_http(self):
+        """A box on the Hive's own network: the same run with --url, no relay."""
+        sim = mock.Sim("lite-main", charger="65w")
+        srv = mock.serve(sim)
+        remote.time.sleep = lambda s: None
+        try:
+            with tempfile.TemporaryDirectory() as d, redirect_stdout(io.StringIO()):
+                code = cli.main(["--url", f"http://127.0.0.1:{srv.server_port}", "--out", d, "remote", "bringup"])
+                s = json.loads(Path(d, "session.json").read_text())
+        finally:
+            remote.time.sleep = time.sleep
+            srv.shutdown()
+        self.assertEqual(code, 0)
+        self.assertIn("http://127.0.0.1", s["via"])
+        self.assertEqual(s["verdicts"]["both channels play"], "pass")
+        self.assertLessEqual(max(m["level_dbfs"] for m in s["levels"]), -30)
 
     def test_keygen(self):
         with tempfile.TemporaryDirectory() as d, redirect_stdout(io.StringIO()) as o:
