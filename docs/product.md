@@ -27,7 +27,7 @@ and say why.
 | Streaming | Spotify Connect, AirPlay 1, Bluetooth, Lyrion (LMS) | same | same |
 | Control | web app, 3 buttons, IR (bring your own remote) | web app, knob + 2 buttons, IR remote in box | web app, 2" colour screen, knob + 3 buttons, IR remote |
 | Boards | 1: `lite-main` (2-layer) | 1: `core` (4-layer) | 2: `core` fully populated + `ultra-front` |
-| Unit cost at 100, board + assembly + PCB | **$14.9** incl. binding posts (board alone $13.2 per `tools/hwcheck.py score`; first-spin review fixes, CH340B and loopback taps included) | **$27.5** (review-2: through-hole USB-C, CH340B, TCA9539, self-measurement) | **$37.0** |
+| Unit cost at 100, board + assembly + PCB | **$14.9** incl. binding posts (board alone $13.2 per `tools/hwcheck.py cost`; first-spin review fixes, CH340B and loopback taps included) | **$27.5** (review-2: through-hole USB-C, CH340B, TCA9539, self-measurement) | **$37.0** |
 | Target retail (charger not included / with charger) | **$59 / $79** | **$129 / $159** | **$199 / $229** |
 | Build order | **first** | second | third |
 
@@ -253,10 +253,10 @@ with certified services.
 | Tidal, Qobuz, Deezer, radio, local files, multi-room | all | Lyrion Music Server (free) on any always-on computer, plus AirPlay from the services' apps | $0 |
 | Chromecast, Tidal Connect, Qobuz Connect, Alexa, Roon Ready | cut | | Each needs its own licence and certification. |
 | HDMI eARC | cut | | HDMI adopter fees (~$5k/yr + royalty) and an HDMI receiver chip. Ultra's optical input covers the TV. |
-| App | all | **Web app (PWA)** served by the device at `http://hifi.local`, installable on the phone home screen: volume, source, EQ, sub crossover/level, power mode, updates, Wi-Fi setup. LMS control apps (Material Skin and others) also work. | $0. Native store apps cut: Apple developer programme $99/yr plus review, for nothing the PWA can't do. |
+| App | all | **Web app (PWA)** served by the device at `http://hifi-lite.local` (`hifi-plus`, `hifi-ultra`), installable on the phone home screen: volume, source, EQ, sub crossover/level, power mode, updates, Wi-Fi setup. LMS control apps (Material Skin and others) also work. | $0. Native store apps cut: Apple developer programme $99/yr plus review, for nothing the PWA can't do. |
 | Wi-Fi setup | all | BLE or SoftAP captive portal from the phone; Ethernet on Plus/Ultra just works | $0 |
 | Remote | all read IR; Plus/Ultra ship one | IRM-H638T receiver; the app has a "learn" mode, so any TV or universal remote works | $0 (NEC 21-key remote, ~$0.80, AliExpress) |
-| Buttons | all | Lite: vol−, vol+, play/source (hold = BT pairing). Plus: EC11 knob (push = play) + source + preset. Ultra: knob + 3 buttons on the front board | $0 |
+| Buttons | all | Lite: vol−, vol+, play/pause (hold = power; vol± hold = next/previous; no pairing button is needed: the Bluetooth sink is discoverable whenever no phone is connected, [firmware.md](firmware.md)). Plus: EC11 knob (push = play) + source + preset. Ultra: knob + 3 buttons on the front board | $0 |
 | Display | Ultra | 2.0" 320×240 ST7789 IPS (C5329582, $2.41): now playing, source, volume, input power | $0 |
 | Optical in | Ultra | PLR237 TOSLINK receiver into the Sabre's S/PDIF input (check the ES9018K2M input-mux registers in the schematic task) | $0 |
 | Headphone out | cut | The FLX4 has headphones for cueing, and a headphone amp is cost the brief didn't ask for. | |
@@ -459,6 +459,7 @@ The brief asks for a 3D-printable enclosure made in Onshape.
 - **Fallback without Onshape:** the enclosure task can model it in
   CadQuery/OpenSCAD inside the Hive and export STL/STEP, so nothing waits on
   access.
+- **Plus and Ultra: done in code** ([`enclosure/`](../enclosure/README.md#plus-and-ultra)), fitted to the routed `core` and, for Ultra, `ultra-front`: about 134 g and 147 g of PETG. Ultra needs a 20-pin 0.5 mm type-B FFC, 30-50 mm.
 - **Lite: done in code.** It is a build123d model in
   [`enclosure/`](../enclosure/README.md), 106 x 96 x 47 mm. It is fitted to
   `lite-main`'s KiCad file and fit-checked against it, and exported as STEP

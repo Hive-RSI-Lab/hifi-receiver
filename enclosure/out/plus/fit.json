@@ -1,0 +1,265 @@
+{
+ "ok": true,
+ "checks": [
+  {
+   "name": "board_clear",
+   "ok": true,
+   "overlap_mm3": 0
+  },
+  {
+   "name": "parts_apart",
+   "ok": true,
+   "clashes": []
+  },
+  {
+   "name": "parts_clear",
+   "ok": true,
+   "hits": []
+  },
+  {
+   "name": "port_J1",
+   "ok": true,
+   "edge": "W",
+   "kind": "usb-c",
+   "blocked_mm3": 0,
+   "recess_mm": 1.9,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_J2",
+   "ok": true,
+   "edge": "W",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 2.6,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_J4l",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_J4u",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_J5l",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_J5u",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_PA1",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 2.4,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_PA2",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 2.4,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_PA3",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 2.4,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_PA4",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 2.4,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_U18",
+   "ok": true,
+   "edge": "S",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 4.5,
+   "max_recess_mm": 5.0
+  },
+  {
+   "name": "hole_H3",
+   "ok": true,
+   "supported": 1.0
+  },
+  {
+   "name": "hole_H2",
+   "ok": true,
+   "supported": 1.0
+  },
+  {
+   "name": "hole_H1",
+   "ok": true,
+   "supported": 1.0
+  },
+  {
+   "name": "hole_H4",
+   "ok": true,
+   "supported": 1.0
+  },
+  {
+   "name": "bed_base",
+   "ok": true,
+   "size_mm": [
+    127.4,
+    106.0,
+    37.6
+   ],
+   "bed_mm": [
+    220.0,
+    220.0,
+    250.0
+   ]
+  },
+  {
+   "name": "bed_btn_SW2",
+   "ok": true,
+   "size_mm": [
+    6.2,
+    6.2,
+    30.4
+   ],
+   "bed_mm": [
+    220.0,
+    220.0,
+    250.0
+   ]
+  },
+  {
+   "name": "bed_btn_SW3",
+   "ok": true,
+   "size_mm": [
+    6.2,
+    6.2,
+    30.4
+   ],
+   "bed_mm": [
+    220.0,
+    220.0,
+    250.0
+   ]
+  },
+  {
+   "name": "bed_knob",
+   "ok": true,
+   "size_mm": [
+    25.0,
+    25.0,
+    33.2
+   ],
+   "bed_mm": [
+    220.0,
+    220.0,
+    250.0
+   ]
+  },
+  {
+   "name": "bed_lid",
+   "ok": true,
+   "size_mm": [
+    127.4,
+    106.0,
+    31.0
+   ],
+   "bed_mm": [
+    220.0,
+    220.0,
+    250.0
+   ]
+  }
+ ],
+ "top_access": [
+  {
+   "ref": "SW3",
+   "open_above": false,
+   "under": [
+    "btn_SW3"
+   ]
+  },
+  {
+   "ref": "SW2",
+   "open_above": false,
+   "under": [
+    "btn_SW2"
+   ]
+  },
+  {
+   "ref": "SW1",
+   "open_above": false,
+   "under": [
+    "knob"
+   ]
+  },
+  {
+   "ref": "D3",
+   "open_above": true,
+   "under": []
+  },
+  {
+   "ref": "U18",
+   "open_above": true,
+   "under": []
+  }
+ ],
+ "material": {
+  "base": {
+   "volume_cm3": 63.1,
+   "solid_petg_g": 80.1
+  },
+  "btn_SW2": {
+   "volume_cm3": 0.3,
+   "solid_petg_g": 0.4
+  },
+  "btn_SW3": {
+   "volume_cm3": 0.3,
+   "solid_petg_g": 0.4
+  },
+  "knob": {
+   "volume_cm3": 8.4,
+   "solid_petg_g": 10.7
+  },
+  "lid": {
+   "volume_cm3": 33.1,
+   "solid_petg_g": 42.0
+  }
+ },
+ "build_s": 0.8
+}
