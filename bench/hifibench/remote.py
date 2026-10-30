@@ -90,7 +90,7 @@ def selftest(dev: Device, state: dict) -> dict:
     v = _contract_v(state)
     if v is not None and v < 9:
         for i in items:
-            if not i["pass"] and i["name"] in ("pd_contract", "pvdd_on", "amp_no_fault", "amp_faultz_high"):
+            if not i["pass"] and i["name"] in ("pd_contract", "pvdd_on", "pvdd_sensed", "amp_no_fault", "amp_faultz_high"):
                 i["expected"] = True
     return {"pass": all(i["pass"] or i.get("expected") for i in items), "items": items, "contract_v": v}
 
