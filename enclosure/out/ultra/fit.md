@@ -1,6 +1,6 @@
-# Fit check: ultra
+# Fit: enclosure
 
-`mech build enclosure/ultra.py -o enclosure/out/ultra` against boards/core (see enclosure/README.md). 51/51 pass.
+50/50 checks pass.
 
 | check | result | measured |
 |---|---|---|
@@ -30,14 +30,14 @@
 | hole_H2 | pass | supported=1.0 |
 | hole_H1 | pass | supported=1.0 |
 | hole_H4 | pass | supported=1.0 |
-| bed_base | pass | size_mm=[127.4, 118.6, 47.0], bed_mm=[220.0, 220.0, 250.0] |
+| bed_base | pass | size_mm=[135.4, 118.6, 47.0], bed_mm=[220.0, 220.0, 250.0] |
 | bed_btn_FSW1 | pass | size_mm=[8.5, 8.5, 4.2], bed_mm=[220.0, 220.0, 250.0] |
 | bed_btn_FSW2 | pass | size_mm=[8.5, 8.5, 4.2], bed_mm=[220.0, 220.0, 250.0] |
 | bed_btn_FSW3 | pass | size_mm=[8.5, 8.5, 4.2], bed_mm=[220.0, 220.0, 250.0] |
 | bed_knob | pass | size_mm=[22.0, 22.0, 15.0], bed_mm=[220.0, 220.0, 250.0] |
-| bed_lid | pass | size_mm=[127.4, 114.4, 40.4], bed_mm=[220.0, 220.0, 250.0] |
+| bed_lid | pass | size_mm=[135.4, 114.4, 40.4], bed_mm=[220.0, 220.0, 250.0] |
 | overhang_base | pass | steep_mm2=0, faces=[], max_deg=45.0 |
-| bridge_base | pass | flat_faces=20, worst_bridge_mm=12.01, worst_ledge_mm=0.11, max_bridge_mm=15.0, max_ledge_mm=1.0, unsupported=[] |
+| bridge_base | pass | flat_faces=55, worst_bridge_mm=12.01, worst_ledge_mm=0.11, max_bridge_mm=15.0, max_ledge_mm=1.0, unsupported=[] |
 | wall_base | pass | min_wall_mm=0.8, thin=[] |
 | overhang_btn_FSW1 | pass | steep_mm2=0, faces=[], max_deg=45.0 |
 | bridge_btn_FSW1 | pass | flat_faces=0, worst_bridge_mm=0.0, worst_ledge_mm=0.0, max_bridge_mm=15.0, max_ledge_mm=1.0, unsupported=[] |
@@ -54,17 +54,16 @@
 | overhang_lid | pass | steep_mm2=0, faces=[], max_deg=45.0 |
 | bridge_lid | pass | flat_faces=0, worst_bridge_mm=0.0, worst_ledge_mm=0.0, max_bridge_mm=15.0, max_ledge_mm=1.0, unsupported=[] |
 | wall_lid | pass | min_wall_mm=0.8, thin=[] |
-| added_boxes_clear | pass | 49 boxes (posts, heatsinks, front board) vs the board's parts; clashes=[] |
 
-## What is over each top-access part
+## Reached from above
 
 - D3: open above
 
 ## Material
 
-- base: 73.4 cm3, 93.3 g PETG if solid
+- base: 73.5 cm3, 93.4 g PETG if solid
 - btn_FSW1: 0.1 cm3, 0.2 g PETG if solid
 - btn_FSW2: 0.1 cm3, 0.2 g PETG if solid
 - btn_FSW3: 0.1 cm3, 0.2 g PETG if solid
 - knob: 5.3 cm3, 6.8 g PETG if solid
-- lid: 36.6 cm3, 46.4 g PETG if solid
+- lid: 35.5 cm3, 45.0 g PETG if solid
