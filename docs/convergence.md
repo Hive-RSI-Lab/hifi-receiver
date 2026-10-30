@@ -13,12 +13,13 @@ read our own conclusions until they have formed their own view.
 | 1 | `docs/review-2/` | datasheets, margins, sims | 6 domains + a second read (10-29) |
 | 2 | `docs/review-3/` | vendor app notes and EVMs, other designs' field issues, new tests | 6 domains: power, amp, audio, digital, layout, system (10-30) |
 | 3 | `docs/review-4/` | Lite only: round 2's fixes tried to break, the least-looked-at corners | 2 cross-domain reviewers (10-30) |
+| 3b | `docs/review-4/ban.*` | Lite: what task 261030-140102's banana sockets changed after round 3 had read the board | 1 reviewer (10-30) |
 
 ## Findings per board, as filed (a finding on "both" counts once on each)
 
 | Board | Round 1 | Round 2 | Round 3 |
 |---|---|---|---|
-| lite-main | 0 blockers, 6 majors, 16 minors | 0 blockers, 4 majors, 17 minors | **0 blockers, 0 majors**, 11 minors |
+| lite-main | 0 blockers, 6 majors, 16 minors | 0 blockers, 4 majors, 17 minors | **0 blockers, 0 majors**, 11 minors; 3b on the banana change: 1 blocker (the box), 4 minors, all fixed or noted |
 | core (Plus/Ultra) | 6 blockers, 16 majors, 26 minors | 1 blocker, 14 majors, 20 minors | not yet (below) |
 | ultra-front | not reviewed | 0 blockers, 1 major (firmware), 1 minor | not yet |
 
@@ -39,6 +40,28 @@ Their minors and what became of them:
 | R4-ALS-4 | No TVS at the sub RCA: an 8 kV strike puts 31.5 V on the mute FETs' gates. | Open: a PESD5V0S2BT (C49338) at J3 at the next layout touch. The 1k build-out cuts the strike current. |
 | R4-PAD-8, R4-ALS-5 | No ESD part on USB D+/D- (core has one). | Open: a USBLC6-2SC6 at J1 at the next layout touch. |
 | R4-PAD-4 | 13-16 uF on VBUS at attach (USB-C allows 10 uF). | Bring-up: Apple and multi-port chargers. If one refuses, C4 goes unfitted. |
+
+After round 3, task 261030-140102 landed four board-mounted banana sockets
+on Lite (main d1543da). The mute was re-applied on that board, and round 3b
+reviewed what the sockets changed:
+
+- **R4-BAN-1, blocker, fixed.** The enclosure's rear-wall holes were sized
+  for a 6 mm square nose. That 6 mm came from a silk mark in the EasyEDA
+  footprint; Amass's drawing shows a ~9.5 mm round collar at 8.1 mm. The
+  holes are now 10.2 mm round with a teardrop roof (`enclosure/core_box.py`),
+  and mech's fit check passes 43/43.
+- **R4-BAN-3, fixed.** The GND pour is now 0.3 mm from the sockets' rings
+  (was 0.127 mm).
+- **R4-BAN-4, fixed.** The manual says single banana plugs only on Lite, at
+  most 11 mm across.
+- **R4-BAN-5, noted.** The order remark for the sockets' orientation is in
+  Lite's README.
+- **R4-BAN-2, open.** The TAP_R run lengthens C68/C69's GND return. It is
+  an EMI-only minor.
+
+The board side of the change checks out: footprints, pinout, polarity,
+current capacity and the output filter. The socket's contact depth with
+short plugs is a sample check before ordering.
 
 The trend on Lite was 6 majors, then 4, then 0. Rounds 1 and 2 kept finding
 real faults, each from a new lens: datasheet margins, then reference designs

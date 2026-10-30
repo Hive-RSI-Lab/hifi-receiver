@@ -4,7 +4,7 @@
  "workspace_schema": 2,
  "workspace": "boards/lite-main",
  "created": "2026-10-28T11:00:21",
- "updated": "2026-10-30T18:15:04",
+ "updated": "2026-10-30T18:36:11",
  "phase": "P9",
  "gates": {
   "erc": {
@@ -2678,14 +2678,14 @@
   "dfm": {
    "phase": "P9",
    "status": "pass",
-   "attempts": 8,
+   "attempts": 9,
    "last": {
-    "ts": "2026-10-30T18:15:04",
+    "ts": "2026-10-30T18:36:11",
     "status": "pass",
     "failing_count": 0,
     "total": 3,
     "inputs": {
-     "pcb": "sexpr_no_uuid:c6a7e4472af31417dc9447329834ddfe7b3c76cc15770d516c9cf9227731ca3f",
+     "pcb": "sexpr_no_uuid:a31a493cb1f80fc1cffe1c2b8a9d012de37bea0a70a73cee76192202a0806b34",
      "sch": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
      "parts": null
     }
@@ -2778,6 +2778,17 @@
       "sch": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
       "parts": null
      }
+    },
+    {
+     "ts": "2026-10-30T18:36:11",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 3,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:a31a493cb1f80fc1cffe1c2b8a9d012de37bea0a70a73cee76192202a0806b34",
+      "sch": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
+      "parts": null
+     }
     }
    ]
   }
@@ -2788,7 +2799,7 @@
    "path": "kicad/lite-main.kicad_sch",
    "kind": "sch",
    "sha256": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
-   "hashed": "2026-10-30T18:15:04"
+   "hashed": "2026-10-30T18:36:11"
   },
   "pro": {
    "path": "kicad/lite-main.kicad_pro",
@@ -2799,8 +2810,8 @@
   "pcb": {
    "path": "kicad/lite-main.kicad_pcb",
    "kind": "pcb",
-   "sha256": "sexpr_no_uuid:c6a7e4472af31417dc9447329834ddfe7b3c76cc15770d516c9cf9227731ca3f",
-   "hashed": "2026-10-30T18:15:04"
+   "sha256": "sexpr_no_uuid:a31a493cb1f80fc1cffe1c2b8a9d012de37bea0a70a73cee76192202a0806b34",
+   "hashed": "2026-10-30T18:36:11"
   },
   "constraints": {
    "path": "kicad/constraints.json",
@@ -2836,7 +2847,7 @@
    "path": "kicad/parts.json",
    "kind": "parts",
    "sha256": null,
-   "hashed": "2026-10-30T18:15:04"
+   "hashed": "2026-10-30T18:36:11"
   },
   "netlist": {
    "path": "kicad/lite-main.net",
@@ -5280,6 +5291,14 @@
    "gate": "dfm",
    "status": "pass",
    "attempt": 8,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-30T18:36:11",
+   "event": "gate",
+   "gate": "dfm",
+   "status": "pass",
+   "attempt": 9,
    "failing_count": 0
   }
  ]
