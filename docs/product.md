@@ -27,7 +27,7 @@ and say why.
 | Streaming | Spotify Connect, AirPlay 1, Bluetooth, Lyrion (LMS) | same | same |
 | Control | web app, 3 buttons, IR (bring your own remote) | web app, knob + 2 buttons, IR remote in box | web app, 2" colour screen, knob + 3 buttons, IR remote |
 | Boards | 1: `lite-main` (2-layer) | 1: `core` (4-layer) | 2: `core` fully populated + `ultra-front` |
-| Unit cost at 100, board + assembly + PCB | **$14.4** incl. binding posts (board alone $13.1 per `tools/hwcheck.py cost`; $12.3 estimated) | **$25.0** (`core` board alone $26.2 per `tools/hwcheck.py cost`) | **$35.4** estimated (ultra-front alone $3.74 per `tools/hwcheck.py cost ultra-front`, plus the $2.43 LCD) |
+| Unit cost at 100, board + assembly + PCB | **$14.9** incl. binding posts (board alone $13.2 per `tools/hwcheck.py cost`; first-spin review fixes, CH340B and loopback taps included) | **$27.5** (review-2: through-hole USB-C, CH340B, TCA9539, self-measurement) | **$37.9** (`tools/bom_estimate.py`, with the ultra-front parts; ultra-front alone $3.74 per `tools/hwcheck.py cost ultra-front`, plus the $2.43 LCD) |
 | Target retail (charger not included / with charger) | **$59 / $79** | **$129 / $159** | **$199 / $229** |
 | Build order | **first** | second | third |
 

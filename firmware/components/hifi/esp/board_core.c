@@ -144,6 +144,7 @@ void hifi_bsp_power_in(uint32_t now, hifi_bsp_power_t *p) {
 	p->vbus_i_a = sum / 8 < ISENSE_RAW_FLOOR ? 0.0f
 		    : esp_adc_cal_raw_to_voltage(sum / 8, &adc_chars) / 1000.0f / ISENSE_V_PER_A;
 	p->fault = !(in_pins >> EXP_AMP_FAULT & 1);
+	p->pvdd_v = NAN; /* no PVDD sense on core */
 
 	p->pd_read = now - last_pd >= 500;
 	if (p->pd_read) {

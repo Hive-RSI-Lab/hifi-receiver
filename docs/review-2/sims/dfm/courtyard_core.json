@@ -1,0 +1,22 @@
+{
+ "script": "check_courtyard",
+ "status": "pass",
+ "board": "core.kicad_pcb",
+ "counts": {
+  "total": 0,
+  "by_severity": {},
+  "by_source": {}
+ },
+ "violations": [],
+ "checked": [
+  {
+   "footprints": 282,
+   "with_courtyard": 282
+  }
+ ],
+ "report_schema": 1,
+ "checker_version": 1,
+ "generated_at": "2026-10-29T04:00:18+00:00",
+ "input": "/work/boards/core/kicad/core.kicad_pcb",
+ "input_digest": "sexpr_no_uuid:37b49d4e77c6bf41793e272f09ba94aad134b618d93774559c99ce88f4d1d008"
+}

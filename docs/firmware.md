@@ -45,6 +45,7 @@ GPIOs and squeezelite.
 | PVDD switch enable | 18 | `hifi` |
 | Amp SDZ, FAULTZ | 21, 23 | `hifi` |
 | VBUS ÷ 11 | 34 (ADC1 ch 6) | `hifi` |
+| PVDD ÷ 11 (PVDD_SENSE, after the switch) | 39 (ADC1 ch 3) | `hifi`: confirms the switch closed |
 | ES8388 input routing (DJ direct) and sub level | I2C | `hifi`, after squeezelite's codec init |
 
 The pin map is the Lite board's (`boards/lite/README.md`), agreed with its
@@ -57,9 +58,10 @@ designer on 2026-10-28.
 | State | PVDD | Amp | Leaves when |
 |---|---|---|---|
 | `wait_pd` | off | off | PG says the contract is good and VBUS has sat in 14–25 V (the start window) for 200 ms → `soft_start` |
-| `soft_start` | on | off | 400 ms later → `on` (lite-main's gate RC holds PVDD off for 80–160 ms and has it at 90 % 110–210 ms after PVDD_EN, at 15–20 V) |
-| `on` | on | on when enabled, not faulted and there is audio | PG drops → `wait_pd`; VBUS < 13 V (the run floor) → `undervolt`; > 25 V → `overvolt` |
+| `soft_start` | on | off | 400 ms later and PVDD read up (≥ 85 % of VBUS) → `on` (lite-main's gate RC holds PVDD off for 80–160 ms and has it at 90 % 110–210 ms after PVDD_EN, at 15–20 V); PVDD still down 1 s after PVDD_EN → `no_pvdd` |
+| `on` | on | on when enabled, not faulted and there is audio | PG drops → `wait_pd`; VBUS < 13 V (the run floor) → `undervolt`; > 25 V → `overvolt`; PVDD under 85 % of VBUS for 50 ms → `no_pvdd` |
 | `undervolt`, `overvolt` | off | off | VBUS back in 14–25 V for 1 s → `soft_start` |
+| `no_pvdd` | off | off | 1 s later with the supply good → `soft_start`; the third inside a minute holds it here until `POST /api/v1/amp {"reset": true}` or a re-plug |
 
 - **9 V and 12 V contracts leave the amp off.** lite-main's PVDD switch
   gets VBUS × 0.31 of gate drive (R5 100k over R6 220k): 2.2–2.3 V at
@@ -70,6 +72,12 @@ designer on 2026-10-28.
   and a 12 V contract (12.6 V at most) is still kept out.
 - **A laptop port can't power the amp.** On a 5 V port PG never says the
   contract is good, and lite-main ANDs PG with PVDD_EN in hardware too.
+- **PVDD is confirmed, not assumed.** Lite reads PVDD after the switch on
+  GPIO39 (R17 100k over R18 10k, ~1.8 V at 20 V). The amp leaves shutdown
+  only once the switch is seen closed, so a switch that never closes (Q1
+  open, its gate drive too weak) or that opens or sags while playing (Q1
+  half on, burning) shows as `no_pvdd` instead of a silent amp. A board
+  with no PVDD sense (core) passes NaN and runs on time alone.
 - **Order:** the amp goes into shutdown before PVDD opens and comes out
   after it closes.
 - **Faults:** FAULTZ low while the amp runs (after 50 ms of blanking) holds
@@ -266,6 +274,24 @@ same interface as Lite's (`esp/hifi_bsp.h`); the pins are in
   `hifi tone ...`, beside squeezelite's own commands.
 - **Names:** AirPlay, Bluetooth and the setup access point are `hifi-lite`
   until renamed (`POST /api/v1/name`).
+- **The box's address** (`/api/v1/state` `net.ip`, the self-test's
+  `network`, mDNS, the relay's status, the trial boot) is the active
+  interface's: the default route's, else any up interface but the setup
+  access point. Wi-Fi station or Ethernet alike (`hifi_net_ip()`), so
+  Plus/Ultra on a cable and QEMU's open_eth report one.
+
+### In QEMU (hive-fw's `fw qemu`)
+
+`fw qemu` boots the main app (`ota_0`) with Ethernet on QEMU's open_eth and
+drives the test API (hive-fw's `hifi-lite` target holds the QEMU settings).
+Two things it has to work round:
+
+- **`read_vbus()` and `read_pvdd()` hang:** `adc1_get_raw()` never returns
+  in QEMU (it has no SAR ADC). fw shims it (`"adc1"` in its qemu settings);
+  at 0 the power sequencer sits in `wait_pd` with the amp off, as on a
+  laptop port.
+- **The factory image (squeezelite's recovery app) skips Ethernet,** so a
+  boot of `factory` never gets an address: boot `ota_0`.
 
 ## Remote bring-up, updates and self-measurement
 
