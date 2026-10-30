@@ -497,7 +497,10 @@ def cmd_score() -> int:
             unit = SPEC["tier_not_counted"]
             lines.append(f"{name}: {unit:.2f} (not counted: {'; '.join(why)})")
         else:
-            lines.append(f"{name}: {unit:.2f} USD per unit at {QTY}, every needed function on the board")
+            over = max(0.0, unit - tier["budget"])
+            lines.append(f"{name}: {over:.2f} ({unit:.2f} USD per unit at {QTY} against its "
+                         f"{tier['budget']:.2f} budget, every needed function on the board)")
+            unit = over
         total += unit
     ran = {}
     for piece in SPEC["pieces"]:
