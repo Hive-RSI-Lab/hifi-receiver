@@ -1619,7 +1619,6 @@
     "C21",
     "C22",
     "C59",
-    "C64",
     "C201",
     "C301"
    ],
@@ -1628,7 +1627,6 @@
     "C21": "smt_placed",
     "C22": "smt_placed",
     "C59": "smt_placed",
-    "C64": "smt_placed",
     "C201": "smt_placed",
     "C301": "smt_placed"
    },
@@ -1972,6 +1970,50 @@
    ],
    "stock": 4296,
    "description": "-40℃~+85℃ -97dBm 108mA 2.4GHz 20.5dBm 350mA 3V~3.6V Bluetooth4.2 ESP32-DOWD-V3 On-board PCB Antenna UART、SDIO、SPI、I2C SMD,31.4x18mm WiFi Modules ROHS"
+  },
+  {
+   "refdes": [
+    "U21"
+   ],
+   "refdes_class": {
+    "U21": "smt_placed"
+   },
+   "lcsc": "C132016",
+   "mpn": "TLV803SDBZR",
+   "value": "TLV803S",
+   "package": "SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+   "block": "mcu",
+   "basic": false,
+   "role": "3V3 supervisor on EN, 2.93 V, open drain",
+   "price": 0.1929,
+   "price_breaks": [
+    {
+     "qty": 1,
+     "price": 0.1929
+    },
+    {
+     "qty": 50,
+     "price": 0.1551
+    },
+    {
+     "qty": 150,
+     "price": 0.1389
+    },
+    {
+     "qty": 500,
+     "price": 0.1185
+    },
+    {
+     "qty": 3000,
+     "price": 0.0971
+    },
+    {
+     "qty": 6000,
+     "price": 0.0917
+    }
+   ],
+   "stock": 46019,
+   "description": "-40℃~+125℃@(Tj) 1 1.1V~6V 2.93V 200ms 9uA Active Low No No Open Drain Voltage Monitor SOT-23 Supervisor and Reset ICs ROHS"
   },
   {
    "refdes": [
@@ -2820,6 +2862,50 @@
    ],
    "stock": 1146187,
    "description": "-55℃~+155℃ 470Ω 50V 62.5mW Thick Film Resistor ±1% ±100ppm/℃ 0402 Chip Resistor - Surface Mount ROHS"
+  },
+  {
+   "refdes": [
+    "C64"
+   ],
+   "refdes_class": {
+    "C64": "smt_placed"
+   },
+   "lcsc": "C15008",
+   "mpn": "100uF",
+   "value": "100uF",
+   "package": "C1206",
+   "block": "dac",
+   "basic": true,
+   "role": "",
+   "price": 0.1092,
+   "price_breaks": [
+    {
+     "qty": 1,
+     "price": 0.1092
+    },
+    {
+     "qty": 100,
+     "price": 0.0861
+    },
+    {
+     "qty": 300,
+     "price": 0.0743
+    },
+    {
+     "qty": 2000,
+     "price": 0.0645
+    },
+    {
+     "qty": 4000,
+     "price": 0.061
+    },
+    {
+     "qty": 10000,
+     "price": 0.0587
+    }
+   ],
+   "stock": 1783572,
+   "description": "100uF 6.3V X5R ±20% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
   },
   {
    "refdes": [
