@@ -131,5 +131,20 @@
   "above": 0.8,
   "below": 0.0,
   "note": "TJ-S1615 RGB LED, 1.6x1.5 x ~0.6"
+ },
+ "USB-C_SMD-TYPE-C-31-M-12_1": {
+  "above": 3.3,
+  "below": 0.9,
+  "note": "HRO TYPE-C-31-M-12 (C165948), Lite's J1: its EasyEDA model's shell 3.25 mm over the board, SMD legs 0.85 under its seat"
+ },
+ "CONN-TH_24.243.1_RED": {
+  "above": 13.0,
+  "below": 4.4,
+  "note": "Amass 24.243 4 mm banana socket (C7437321): datasheet 19 mm tall incl. 6 mm pins, body 13; bore axis 7.5 mm over the board top"
+ },
+ "CONN-TH_24.243.2": {
+  "above": 13.0,
+  "below": 4.4,
+  "note": "Amass 24.243 4 mm banana socket (C7437322): datasheet 19 mm tall incl. 6 mm pins, body 13; bore axis 7.5 mm over the board top"
  }
 }

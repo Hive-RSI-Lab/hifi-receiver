@@ -164,7 +164,7 @@ B_IO = Region(20, 640, 1140)
 
 # ---- B1 USB-C, TVS, CH224Q ------------------------------------------------
 # rails: driven by the connector / regulators; power symbols make them global
-rails(B_PWR, ["VBUS", "PVDD", "+5V", "+3V3", "+3V3A", "GND"])
+rails(B_PWR, ["VBUS", "PVDD", "+5V", "+3V3", "+3V3A", "IR_VCC", "GND"])
 
 # HRO TYPE-C-31-M-12 (C165948), 20 V / 5 A: the USB4105-GF-A-120 had 0 free at
 # JLC on 2026-10-29 (docs/bom-stock.md). Same pad positions as the USB4105
@@ -429,12 +429,14 @@ for i, (out, spk) in enumerate((("OUT_L_P", "SPK_L_P"), ("OUT_L_N", "SPK_L_N"),
 # jack (red, R); see parts/datasheets.md
 ic(B_IO, "J2", "C7527522", "RCA line in", {"1": "LINEIN_L", "2": "GND", "3": "LINEIN_R"}, role="line in L/R (FLX4)")
 ic(B_IO, "J3", "C7527522", "RCA sub out", {"1": "SUB_L", "2": "GND", "3": "SUB_R"}, role="sub out L/R")
-# speakers: one 4-way 5.08 mm screw terminal (16 A); the enclosure's 4 mm
-# binding posts wire to it (GC4010-F has no EasyEDA footprint and is a bullet
-# connector, not a banana socket - see README "Decisions")
-ic(B_IO, "J4", "C2915641", "DB128V-5.08-4P",
-   {"1": "SPK_L_P", "2": "SPK_L_N", "3": "SPK_R_P", "4": "SPK_R_N"},
-   role="speaker terminal L+ L- R+ R-")
+# speakers: four 4 mm banana sockets (Amass 24.243, right-angle PCB mount,
+# 24 A, JLC fits them), red + and black - per channel, their bores through
+# the rear wall: the person plugs banana plugs in and wires nothing. Both of
+# each socket's pins are its contact (pin 1 at the back, pin 2 by the nose).
+for ref, lcsc, colour, net in (("J4", "C7437321", "red", "SPK_L_P"), ("J5", "C7437322", "black", "SPK_L_N"),
+                               ("J6", "C7437321", "red", "SPK_R_P"), ("J7", "C7437322", "black", "SPK_R_N")):
+    ic(B_IO, ref, lcsc, f"24.243 {colour}", {"1": net, "2": net},
+       role=f"speaker banana socket {net[4]}{'+' if net.endswith('P') else '-'}")
 for i, net in enumerate(("BTN_VOLDN", "BTN_VOLUP", "BTN_PLAY")):
     # pads 1/2 and 3/4 are the switch's two internally joined pairs
     ic(B_IO, f"SW{1 + i}", "C318884", "TS-1187A",
@@ -456,7 +458,7 @@ if __name__ == "__main__":
     out = sheet.save(WS / "kicad")
     # decoupling.json carries FINAL netlist names: rails are global power
     # nets (bare), everything else on the root sheet is "/NAME".
-    POWER = {"VBUS", "PVDD", "+5V", "+3V3", "+3V3A", "GND"}
+    POWER = {"VBUS", "PVDD", "+5V", "+3V3", "+3V3A", "IR_VCC", "GND"}
     for d in DECOUP:
         for k in ("rail", "gnd"):
             if k in d and d[k] not in POWER:

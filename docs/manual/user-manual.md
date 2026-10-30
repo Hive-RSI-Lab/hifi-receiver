@@ -85,7 +85,8 @@ The hifi-receiver is a streaming amplifier: speakers in, music out.
 
 **Lite, seen from behind, left to right:**
 
-- **Speaker posts** along the top: **L+ L−** (left pair), then **R+ R−**.
+- **Speaker sockets**, four 4 mm banana sockets low down: **R− R+** (right
+  speaker), then **L− L+** (left speaker). Red is +, black is −.
 - **USB-C** power, low down.
 - **SUB OUT**, an RCA pair.
 - **LINE IN**, an RCA pair.
@@ -103,7 +104,7 @@ left. [TBD: Plus and Ultra rear panels: their enclosures aren't drawn yet]
 | **LINE IN** L/R | RCA, line level, up to 2 V | all |
 | **OPTICAL** | TOSLINK digital in, up to 24-bit/96 kHz | Ultra |
 | **SUB OUT** L/R (Lite), **SUB 1**, **SUB 2** (Plus, Ultra) | RCA, to powered subwoofers | all |
-| **L+ L− R+ R−** | speaker posts, 4 mm binding posts | all |
+| **L+ L− R+ R−** | speakers: 4 mm banana sockets (Lite), 4 mm binding posts (Plus, Ultra) | all |
 | **ZONE B L+ L− R+ R−** | second speaker pair | Ultra |
 
 ### Speakers
