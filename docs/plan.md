@@ -89,6 +89,12 @@ Items 21–24 do Ultra.
     - **Sub outputs:** checked as well.
 
     *Done:* a results page, with every item measured or marked as failing.
+
+    **Hands-off from 2026-10-28** ([remote.md](remote.md)): the board
+    measures its own outputs (loopback taps), so gain, clipping point,
+    THD+N, response and noise come from `bench.py remote bringup` with no
+    bench gear. Power into a load and the chip temperature still need the
+    dummy loads and a probe once.
 11. **Lite enclosure.** In Onshape if the person grants access (an API key
     pair is a credential, so it goes through them). Otherwise CadQuery or
     OpenSCAD in `enclosure/`, from the board's STEP export.

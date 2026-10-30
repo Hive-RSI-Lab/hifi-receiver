@@ -8,14 +8,14 @@
 #include "esp_heap_caps.h"
 #include "esp_log.h"
 
+#include "hifi_esp.h"
 #include "hifi_http.h"
 #include "webapp_files.h"
 
 static const char TAG[] = "hifi_http";
 static const hifi_ops_t *ops;
 
-#define BODY_MAX 2048
-#define REPLY_MAX 4096
+#define BODY_MAX 8192 /* an OTA chunk is about 5.6 KB */
 
 static const char *status_line(int st) {
 	switch (st) {
@@ -29,32 +29,37 @@ static const char *status_line(int st) {
 }
 
 static esp_err_t api_handler(httpd_req_t *req) {
-	char *body = NULL, *out = heap_caps_malloc(REPLY_MAX, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-	if (!out) out = malloc(REPLY_MAX);
-	if (!out) return httpd_resp_send_500(req);
-
 	int st;
 	if (req->content_len > BODY_MAX) {
-		snprintf(out, REPLY_MAX, "{\"error\":\"body over %d bytes\"}", BODY_MAX);
+		char err[48];
+		snprintf(err, sizeof(err), "{\"error\":\"body over %d bytes\"}", BODY_MAX);
+		httpd_resp_set_status(req, status_line(400));
+		httpd_resp_set_type(req, "application/json");
+		return httpd_resp_send(req, err, strlen(err));
+	}
+	char *body = calloc(1, req->content_len + 1);
+	size_t got = 0;
+	while (body && got < req->content_len) {
+		int r = httpd_req_recv(req, body + got, req->content_len - got);
+		if (r == HTTPD_SOCK_ERR_TIMEOUT) continue;
+		if (r <= 0) break;
+		got += r;
+	}
+	size_t cap = hifi_api_reply_cap(req->uri, body);
+	char *out = heap_caps_malloc(cap, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+	if (!out) out = malloc(cap);
+	if (!out) {
+		free(body);
+		return httpd_resp_send_500(req);
+	}
+	if (!body || got < req->content_len) {
+		/* never act on half a request */
+		snprintf(out, cap, "{\"error\":\"body cut off after %u of %u bytes\"}",
+			 (unsigned) got, (unsigned) req->content_len);
 		st = 400;
 	} else {
-		body = calloc(1, req->content_len + 1);
-		size_t got = 0;
-		while (body && got < req->content_len) {
-			int r = httpd_req_recv(req, body + got, req->content_len - got);
-			if (r == HTTPD_SOCK_ERR_TIMEOUT) continue;
-			if (r <= 0) break;
-			got += r;
-		}
-		if (!body || got < req->content_len) {
-			/* never act on half a request */
-			snprintf(out, REPLY_MAX, "{\"error\":\"body cut off after %u of %u bytes\"}",
-				 (unsigned) got, (unsigned) req->content_len);
-			st = 400;
-		} else {
-			const char *method = req->method == HTTP_POST ? "POST" : "GET";
-			st = hifi_api_handle(ops, method, req->uri, body, out, REPLY_MAX);
-		}
+		const char *method = req->method == HTTP_POST ? "POST" : "GET";
+		st = hifi_api_handle(ops, method, req->uri, body, out, cap);
 	}
 	httpd_resp_set_status(req, status_line(st));
 	httpd_resp_set_type(req, "application/json");
@@ -76,6 +81,9 @@ static esp_err_t file_handler(httpd_req_t *req) {
 
 void hifi_http_start(httpd_handle_t server, const hifi_ops_t *o) {
 	ops = o;
+	/* the app's firmware upload is a raw body, too big for api_handler: first */
+	httpd_uri_t up = {.uri = "/api/v1/update/upload", .method = HTTP_POST, .handler = hifi_net_upload_handler};
+	httpd_register_uri_handler(server, &up);
 	httpd_uri_t get = {.uri = "/api/v1/*", .method = HTTP_GET, .handler = api_handler};
 	httpd_uri_t post = {.uri = "/api/v1/*", .method = HTTP_POST, .handler = api_handler};
 	httpd_register_uri_handler(server, &get);

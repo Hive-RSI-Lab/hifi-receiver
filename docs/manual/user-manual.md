@@ -166,6 +166,9 @@ give it, the receiver takes the next best and tells you in the app.
 | 45 W USB-C PD | plays, lower volume ceiling | plays, lower volume ceiling |
 | phone charger, laptop USB port (5 V) | starts, amplifier off | starts, amplifier off |
 
+Lite needs at least 15 V from the charger to turn its amplifier on: a phone
+charger that only gives 9 V or 12 V starts it with the amplifier off.
+
 **Chargers that work:**
 
 - **140 W:** Apple 140 W USB-C, Anker 140 W, Ugreen 140 W.
