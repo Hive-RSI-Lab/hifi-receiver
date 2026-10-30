@@ -1,0 +1,16 @@
+core: VBUS 28 V settled, firmware sets PVDD_EN at 20 ms: inrush into 940 uF, FET SOA
+.include models.inc
+.include core_pvdd_fix.inc
+Vsrc vsrc 0 PWL(0 28 1 28)
+Ven PVDD_EN 0 PWL(0 0 20m 0 20.01m 3.3)
+.ic v(PVDD)=0 v(PVDD_G)=28 v(VBUS)=28 v(VBUS_IN)=28 v(VBUS_PD)=28
+.tran 20u 600m 0 20u uic
+.meas tran isrc_pk max i(Lcab) from=20m to=600m
+.meas tran ifet_pk max par('-i(Vfetm)') from=20m to=600m
+.meas tran pfet_pk max par('(v(VBUS)-v(PVDD))*(-i(Vfetm))') from=20m to=600m
+.meas tran efet integ par('(v(VBUS)-v(PVDD))*(-i(Vfetm))') from=20m to=600m
+.meas tran t10 when v(PVDD)=2.8 rise=1
+.meas tran t90 when v(PVDD)=25.2 rise=1
+.meas tran vsg_final find par('v(VBUS)-v(PVDD_G)') at=599m
+.meas tran vbus_min min v(VBUS) from=20m to=600m
+.end

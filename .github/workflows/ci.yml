@@ -1,0 +1,90 @@
+name: ci
+# The project's test (.hive/project.json's "test") on GitHub's standard hosted runner, so the
+# Hive runs none of it on its own machine (forge_tests in .hive/project.json). Standard runners
+# only, on the person's word (10-29 13:37): a public repo's are free with no minute cap.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  # A PR's superseded run is cancelled; every push to main gets a group of its own (keyed by
+  # its commit), so none is left pending behind another.
+  group: ci-${{ github.event_name }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+permissions:
+  contents: read
+env:
+  # The tools the Hive's own check uses (/hive/tools): KiCad 10.0.6 as an AppDir, and the
+  # hive-hwde version published there (hwde.version), from their public repositories.
+  KICAD_VERSION: 10.0.6
+  KICAD_APPIMAGE: https://github.com/pkgforge-dev/KiCad-AppImage/releases/download/10.0.6-2%402026-10-01_1790876568/KiCad-10.0.6-2-anylinux-x86_64.AppImage
+  HWDE_REPO: Hive-RSI-Lab/hive-hwde
+  HWDE_REF: aa1ec482abff9ce266601ec858e69f59e4e3010a
+jobs:
+  # The Hive reads this job's check as "test (ubuntu-latest)"; keep it unnamed.
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          # The test gates the boards changed since its merge base with origin/main.
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.HWDE_REPO }}
+          ref: ${{ env.HWDE_REF }}
+          path: .ci/hive-hwde
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+      - name: xvfb (KiCad's SWIG paths need a display)
+        run: sudo apt-get install -y xvfb
+      - uses: actions/cache@v4
+        id: kicad
+        with:
+          path: ${{ runner.temp }}/tools/kicad-${{ env.KICAD_VERSION }}
+          # v2: the first key cached an empty folder (220 B), so every run that gated a board
+          # found no kicad-cli (PR #96, 10-30).
+          key: kicad-v2-${{ env.KICAD_APPIMAGE }}
+      - name: KiCad ${{ env.KICAD_VERSION }} as an AppDir
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/tools" && cd "$RUNNER_TEMP/tools"
+          dir="kicad-$KICAD_VERSION"
+          # A restored cache counts only if it holds a KiCad that runs; else fetch it again.
+          if [ ! -x "$dir/AppRun" ]; then
+            rm -rf "$dir" squashfs-root AppDir
+            curl -fsSL -o kicad.AppImage "$KICAD_APPIMAGE"
+            chmod +x kicad.AppImage
+            ./kicad.AppImage --appimage-extract >/dev/null
+            # The AppImage's runtime extracts to squashfs-root or AppDir, by its version.
+            if [ -d squashfs-root ]; then mv squashfs-root "$dir"; else mv AppDir "$dir"; fi
+            rm kicad.AppImage
+          fi
+          ls -la "$dir" | head -20
+          du -sh "$dir"
+          test -x "$dir/AppRun"
+          xvfb-run -a "$dir/AppRun" kicad-cli version
+      - name: the test (python3 tools/hwcheck.py test)
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 tools/hwcheck.py test 2>&1 | tee "$RUNNER_TEMP/test.log"
+        env:
+          HIVE_TOOLS: ${{ runner.temp }}/tools
+          HWDE_BIN: ${{ github.workspace }}/.ci/hive-hwde/bin/hwde
+          HWDE_HOME: ${{ runner.temp }}/hwde
+      # Job logs need a login; annotations don't, so the Hive can read what failed.
+      - name: name the failing tests
+        if: failure()
+        shell: bash
+        run: |
+          [ -f "$RUNNER_TEMP/test.log" ] || exit 0
+          grep -n -e '^FAIL' -e '^ERROR:' -e ': FAIL' "$RUNNER_TEMP/test.log" | head -20 | while IFS=: read -r n _; do
+            echo "::error::$(sed -n "$n,$((n + 30))p" "$RUNNER_TEMP/test.log" | awk 'BEGIN { ORS = "%0A" } { gsub(/\r/, ""); gsub(/%/, "%25"); print substr($0, 1, 300) }')"
+          done

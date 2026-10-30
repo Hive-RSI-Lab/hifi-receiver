@@ -1,0 +1,18 @@
+Lite: VBUS 20 V settled, PG low, firmware sets PVDD_EN at 20 ms: inrush into 690 uF, FET SOA
+.include models.inc
+.include lite_pvdd_common.inc
+Vsrc vsrc 0 PWL(0 20 1 20)
+V3 V3V3 0 3.3
+Vpg vpg 0 3.3
+Ven PVDD_EN 0 PWL(0 0 20m 0 20.01m 3.3)
+.ic v(PVDD)=0 v(PSW_G)=20 v(VBUS)=20 v(PSW_MILLER)=20
+.tran 20u 200m 0 20u uic
+.meas tran isrc_pk max i(Lcab) from=20m to=200m
+.meas tran ifet_pk max par('-i(Vfetm)') from=20m to=200m
+.meas tran pfet_pk max par('(v(VBUS)-v(PVDD))*(-i(Vfetm))') from=20m to=200m
+.meas tran efet integ par('(v(VBUS)-v(PVDD))*(-i(Vfetm))') from=20m to=200m
+.meas tran t10 when v(PVDD)=2 rise=1
+.meas tran t90 when v(PVDD)=18 rise=1
+.meas tran vsg_final find par('v(VBUS)-v(PSW_G)') at=199m
+.meas tran ipg_final find i(Vpgm) at=199m
+.end
