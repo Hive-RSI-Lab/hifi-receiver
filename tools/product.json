@@ -3,8 +3,10 @@
  "qty": 100,
  "tier_not_counted": 1000,
  "piece_missing": 100,
+ "budget_about": "Each tier's BOM budget per unit at 100: docs/product.md's target retail without the charger over the usual 4x retail-to-BOM markup ($59, $129, $199 / 4). The score counts only a counted tier's cost above it.",
  "tiers": {
   "lite": {
+   "budget": 14.75,
    "builds": [{"board": "lite-main"}],
    "needs": [
     {"what": "USB-C power input", "match": "USB4105|TYPE-C|USB-C", "count": 1},
@@ -20,6 +22,7 @@
    ]
   },
   "plus": {
+   "budget": 32.25,
    "builds": [{"board": "core"}],
    "needs": [
     {"what": "USB-C power input", "match": "USB4105|TYPE-C|USB-C", "count": 1},
@@ -42,6 +45,7 @@
    ]
   },
   "ultra": {
+   "budget": 49.75,
    "builds": [{"board": "core", "bom": "fab/ultra/BOM.csv", "parts": "parts/parts-ultra.json"},
               {"board": "ultra-front"}],
    "needs": [

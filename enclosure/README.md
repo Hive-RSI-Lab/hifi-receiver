@@ -29,8 +29,11 @@ STEP moves it to Onshape later (see the end of this page).
   softens at about 55 °C.
 - **Settings:** 0.4 mm nozzle, 0.2 mm layers, 4 walls, 20–25 % infill.
 - **No supports.** The base prints on its floor, the lid on its top face and
-  each button on its cap. The holes in the walls either bridge (RCA, USB-C,
-  IR window) or are teardrops (binding posts).
+  each button on its cap. The holes in the walls are teardrops (RCA, binding
+  posts: the RCA ones cut flat 1 mm over the hole, a 3 mm bridge) or bridge
+  (USB-C, IR window). Each standoff has a 7.8 mm foot round its 6.2 mm
+  counterbore, so the ring left round it is two nozzle lines. The foot joins
+  the wall beside it.
 - **Bed:** both parts fit a 220 x 220 mm bed.
 
 ### What else it needs
@@ -77,8 +80,8 @@ STEP moves it to Onshape later (see the end of this page).
     and a stem down to 0.3 mm over its switch.
   - the status LED's light pipe, to the left of the buttons
   - vent slots over the amplifier. Keep them uncovered.
-- **Underside:** floor vents under the amplifier, a 40 x 22 mm label recess
-  and the four feet.
+- **Underside:** floor vents under the amplifier and the four feet. No label
+  recess: its roof would be a 22 mm bridge off the bed.
 
 There are no embossed labels yet: build123d's text needs a font this machine
 doesn't have set up. Until then, use a printed sticker.
@@ -154,7 +157,7 @@ fit report and renders (`iso.png`, `top.png`, `port-<edge>.png`).
     plugs fit. From the left, seen from the front: L pair, then R pair.
     They sit over the J6/J7 screw terminals, and each post wires to its
     terminal.
-  - SUB OUT (J4) and LINE IN (J5), round 12 mm holes per barrel.
+  - SUB OUT (J4) and LINE IN (J5), a 12 mm teardrop hole per barrel.
   - Ultra adds TOSLINK (U19) and a second row of posts for zone B
     (J10/J11) above zone A's.
 - **Left (W):** USB-C power (J1) and Ethernet (J2).
@@ -169,7 +172,8 @@ fit report and renders (`iso.png`, `top.png`, `port-<edge>.png`).
   - **Screen:** a window over the LCD, active area + 1 mm a side, opening
     at 45 degrees. The LCD's face is 2.7 mm behind the panel's outside.
   - **Buttons:** three plungers (SW1-3). Each has a cap through the wall
-    and a flange behind it, which the board holds captive.
+    and a flange behind it, which the board holds captive. Each prints
+    standing on the flange's flat back, cap up.
   - **Control column:** a raised column on the right with a pocket for the
     EC11 body and the IR receiver. It carries the knob (on the EC11's M7
     bushing), the IR window and the RGB LED's hole.
