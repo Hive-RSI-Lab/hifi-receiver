@@ -51,7 +51,7 @@ lite-board,CH224Q VHV,C15849,CL10A105KB8NNNC,basic,0.0146,0.0146,2,smt,13,0,0,"b
 lite-board,CH224Q Rset: 20 V (table 5-1),C25808,0603WAF1203T5E,basic,0.0015,0.0015,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
 lite-board,link: CH224Q I2C onto the codec bus (depopulate if its pull-up exceeds,C21189,0603WAF0000T5E,basic,0.0022,0.0022,2,smt,2,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
 lite-board,PG pull-up,C25804,0603WAF1002T5E,basic,0.0018,0.0018,2,smt,17,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
-lite-board,VBUS TVS 20 V standoff,C364296,SMBJ20A,extended,0.0565,0.0467,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,VBUS TVS 22 V standoff,C151920,SMBJ22A,extended,0.0686,0.0551,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-30"
 lite-board,PVDD high-side switch,C5125949,AO4485,extended,0.1820,0.1422,8,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
 lite-board,Q1 gate-source,C25803,0603WAF1003T5E,basic,0.0031,0.0031,2,smt,8,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
 lite-board,Q1 Miller cap series,C21190,0603WAF1001T5E,basic,0.0017,0.0017,2,smt,2,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
