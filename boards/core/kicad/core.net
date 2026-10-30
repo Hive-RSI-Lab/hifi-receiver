@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/work/boards/core/kicad/core.kicad_sch")
-		(date "2026-10-29T03:20:46")
+		(date "2026-10-30T03:40:56")
 		(tool "Eeschema 10.0.6")
 		(sheet
 			(number "1")
@@ -1195,6 +1195,62 @@
 			)
 		)
 		(comp
+			(ref "D5")
+			(value "BAS16L")
+			(footprint "aiee:SOD-882_L1.0-W0.6-RD")
+			(fields
+				(field
+					(name "LCSC") "C99382")
+				(field
+					(name "Footprint") "aiee:SOD-882_L1.0-W0.6-RD")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "BAS16L,315")
+				(description "")
+			)
+			(property
+				(name "LCSC")
+				(value "C99382")
+			)
+			(property
+				(name "Sheetname")
+				(value "power_in")
+			)
+			(property
+				(name "Sheetfile")
+				(value "power_in.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "Switching Diode")
+			)
+			(sheetpath
+				(names "/power_in/")
+				(tstamps "/e3483d22-0f7c-4250-ae9a-cf0125c663c4/")
+			)
+			(tstamps "969f5240-ff48-59fb-9f7b-55538987d9d0")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
 			(ref "J1")
 			(value "USB4085-GF-A")
 			(footprint "aiee:USC-C-SMD_USB4085-GF-A")
@@ -1432,13 +1488,13 @@
 		)
 		(comp
 			(ref "Q3")
-			(value "S8050")
-			(footprint "aiee:SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR")
+			(value "MMDT3904")
+			(footprint "aiee:SOT-363_L2.0-W1.3-P0.65-LS2.1-TL")
 			(fields
 				(field
-					(name "LCSC") "C2146")
+					(name "LCSC") "C83572")
 				(field
-					(name "Footprint") "aiee:SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR")
+					(name "Footprint") "aiee:SOT-363_L2.0-W1.3-P0.65-LS2.1-TL")
 				(field
 					(name "Datasheet")
 				)
@@ -1448,12 +1504,12 @@
 			)
 			(libsource
 				(lib "aiee")
-				(part "S8050_C2146")
-				(description "S8050 (200-350)")
+				(part "MMDT3904-7-F")
+				(description "MMDT3904-7-F")
 			)
 			(property
 				(name "LCSC")
-				(value "C2146")
+				(value "C83572")
 			)
 			(property
 				(name "Sheetname")
@@ -1477,13 +1533,22 @@
 					(name "A")
 					(pins
 						(pin
+							(num "6")
+						)
+						(pin
 							(num "1")
 						)
 						(pin
-							(num "3")
+							(num "5")
 						)
 						(pin
 							(num "2")
+						)
+						(pin
+							(num "4")
+						)
+						(pin
+							(num "3")
 						)
 					)
 				)
@@ -2255,6 +2320,66 @@
 				(tstamps "/e3483d22-0f7c-4250-ae9a-cf0125c663c4/")
 			)
 			(tstamps "6078705b-3a6b-5e86-aa00-62b0b9882f76")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "R404")
+			(value "100k")
+			(footprint "aiee:R0402")
+			(fields
+				(field
+					(name "LCSC") "C25741")
+				(field
+					(name "Footprint") "aiee:R0402")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "Device")
+				(part "R")
+				(description "Resistor")
+			)
+			(property
+				(name "LCSC")
+				(value "C25741")
+			)
+			(property
+				(name "Sheetname")
+				(value "power_in")
+			)
+			(property
+				(name "Sheetfile")
+				(value "power_in.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "R res resistor")
+			)
+			(property
+				(name "ki_fp_filters")
+				(value "R_*")
+			)
+			(sheetpath
+				(names "/power_in/")
+				(tstamps "/e3483d22-0f7c-4250-ae9a-cf0125c663c4/")
+			)
+			(tstamps "2cadcd6c-08ee-52fa-929d-92fd0913de41")
 			(units
 				(unit
 					(name "A")
@@ -15204,13 +15329,13 @@
 		)
 		(comp
 			(ref "U15")
-			(value "TPA3221")
-			(footprint "aiee:HTSSOP-44_L14.0-W6.1-P0.64-LS8.1-BL")
+			(value "TPA3220")
+			(footprint "aiee:HTSSOP-44-1EP_L14.0-W6.1-P0.64-LS8.1-EP7.3x4.43")
 			(fields
 				(field
-					(name "LCSC") "C475500")
+					(name "LCSC") "C2879306")
 				(field
-					(name "Footprint") "aiee:HTSSOP-44_L14.0-W6.1-P0.64-LS8.1-BL")
+					(name "Footprint") "aiee:HTSSOP-44-1EP_L14.0-W6.1-P0.64-LS8.1-EP7.3x4.43")
 				(field
 					(name "Datasheet")
 				)
@@ -15220,12 +15345,12 @@
 			)
 			(libsource
 				(lib "aiee")
-				(part "TPA3221DDVR")
+				(part "TPA3220DDWR")
 				(description "")
 			)
 			(property
 				(name "LCSC")
-				(value "C475500")
+				(value "C2879306")
 			)
 			(property
 				(name "Sheetname")
@@ -15313,6 +15438,9 @@
 						)
 						(pin
 							(num "22")
+						)
+						(pin
+							(num "45")
 						)
 						(pin
 							(num "44")
@@ -16657,9 +16785,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "cap capacitor")
 			)
@@ -16718,9 +16843,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -16783,9 +16905,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "cap capacitor")
 			)
@@ -16844,9 +16963,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -16909,9 +17025,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "cap capacitor")
 			)
@@ -16970,9 +17083,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -17035,9 +17145,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "cap capacitor")
 			)
@@ -17096,9 +17203,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -17161,9 +17265,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "cap capacitor")
 			)
@@ -17222,9 +17323,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -17287,9 +17385,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "cap capacitor")
 			)
@@ -17348,9 +17443,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -17413,9 +17505,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "cap capacitor")
 			)
@@ -17474,9 +17563,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -17539,9 +17625,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "cap capacitor")
 			)
@@ -17600,9 +17683,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -17665,9 +17745,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "cap capacitor")
 			)
@@ -17726,9 +17803,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -17791,9 +17865,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "cap capacitor")
 			)
@@ -17852,9 +17923,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -17917,9 +17985,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "cap capacitor")
 			)
@@ -17978,9 +18043,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -18043,9 +18105,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "cap capacitor")
 			)
@@ -18104,9 +18163,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -18169,9 +18225,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "cap capacitor")
 			)
@@ -18230,9 +18283,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -18301,9 +18351,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "Screw terminal")
 			)
@@ -18366,9 +18413,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "Screw terminal")
 			)
@@ -18423,9 +18467,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -18484,9 +18525,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "Power Inductors")
 			)
@@ -18541,9 +18579,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -18602,9 +18637,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "Power Inductors")
 			)
@@ -18659,9 +18691,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -18724,9 +18753,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "R res resistor")
 			)
@@ -18785,9 +18811,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -18850,9 +18873,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "R res resistor")
 			)
@@ -18911,9 +18931,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -18976,9 +18993,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "R res resistor")
 			)
@@ -19037,9 +19051,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -19102,9 +19113,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "R res resistor")
 			)
@@ -19165,9 +19173,6 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
-				(name "dnp")
-			)
-			(property
 				(name "ki_keywords")
 				(value "R res resistor")
 			)
@@ -19196,13 +19201,13 @@
 		)
 		(comp
 			(ref "U16")
-			(value "TPA3221")
-			(footprint "aiee:HTSSOP-44_L14.0-W6.1-P0.64-LS8.1-BL")
+			(value "TPA3220")
+			(footprint "aiee:HTSSOP-44-1EP_L14.0-W6.1-P0.64-LS8.1-EP7.3x4.43")
 			(fields
 				(field
-					(name "LCSC") "C475500")
+					(name "LCSC") "C2879306")
 				(field
-					(name "Footprint") "aiee:HTSSOP-44_L14.0-W6.1-P0.64-LS8.1-BL")
+					(name "Footprint") "aiee:HTSSOP-44-1EP_L14.0-W6.1-P0.64-LS8.1-EP7.3x4.43")
 				(field
 					(name "Datasheet")
 				)
@@ -19212,12 +19217,12 @@
 			)
 			(libsource
 				(lib "aiee")
-				(part "TPA3221DDVR")
+				(part "TPA3220DDWR")
 				(description "")
 			)
 			(property
 				(name "LCSC")
-				(value "C475500")
+				(value "C2879306")
 			)
 			(property
 				(name "Sheetname")
@@ -19226,9 +19231,6 @@
 			(property
 				(name "Sheetfile")
 				(value "amp_b.kicad_sch")
-			)
-			(property
-				(name "dnp")
 			)
 			(property
 				(name "ki_keywords")
@@ -19308,6 +19310,9 @@
 						)
 						(pin
 							(num "22")
+						)
+						(pin
+							(num "45")
 						)
 						(pin
 							(num "44")
@@ -19624,6 +19629,42 @@
 				(pin
 					(num "8")
 					(name "D")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "aiee")
+			(part "BAS16L,315")
+			(docs "https://lcsc.com/product-detail/Switching-Diode_NXP_BAS16L-315_BAS16L-315_C99382.html")
+			(fields
+				(field
+					(name "Reference") "D")
+				(field
+					(name "Value") "BAS16L,315")
+				(field
+					(name "Footprint") "aiee:SOD-882_L1.0-W0.6-RD")
+				(field
+					(name "Datasheet") "https://lcsc.com/product-detail/Switching-Diode_NXP_BAS16L-315_BAS16L-315_C99382.html")
+				(field
+					(name "Description")
+				)
+				(field
+					(name "Manufacturer") "Nexperia(安世)")
+				(field
+					(name "MPN") "BAS16L,315")
+				(field
+					(name "LCSC Part") "C99382")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "K")
+					(type "passive")
+				)
+				(pin
+					(num "2")
+					(name "A")
 					(type "passive")
 				)
 			)
@@ -21076,6 +21117,62 @@
 		)
 		(libpart
 			(lib "aiee")
+			(part "MMDT3904-7-F")
+			(description "MMDT3904-7-F")
+			(docs "https://lcsc.com/product-detail/Transistors-NPN-PNP_DIODES_MMDT3904-7-F_MMDT3904-7-F_C83572.html")
+			(fields
+				(field
+					(name "Reference") "Q")
+				(field
+					(name "Value") "MMDT3904-7-F")
+				(field
+					(name "Footprint") "aiee:SOT-363_L2.0-W1.3-P0.65-LS2.1-TL")
+				(field
+					(name "Datasheet") "https://lcsc.com/product-detail/Transistors-NPN-PNP_DIODES_MMDT3904-7-F_MMDT3904-7-F_C83572.html")
+				(field
+					(name "Description") "MMDT3904-7-F")
+				(field
+					(name "Manufacturer") "DIODES(美台)")
+				(field
+					(name "MPN") "MMDT3904-7-F")
+				(field
+					(name "LCSC Part") "C83572")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "E")
+					(type "passive")
+				)
+				(pin
+					(num "2")
+					(name "B")
+					(type "passive")
+				)
+				(pin
+					(num "3")
+					(name "C")
+					(type "passive")
+				)
+				(pin
+					(num "4")
+					(name "E")
+					(type "passive")
+				)
+				(pin
+					(num "5")
+					(name "B")
+					(type "passive")
+				)
+				(pin
+					(num "6")
+					(name "C")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "aiee")
 			(part "OPA1678IDR")
 			(docs "https://lcsc.com/product-detail/Others_Texas-Instruments_OPA1678IDR_Texas-Instruments-TI-OPA1678IDR_C192421.html")
 			(fields
@@ -21859,26 +21956,26 @@
 		)
 		(libpart
 			(lib "aiee")
-			(part "TPA3221DDVR")
-			(docs "https://lcsc.com/product-detail/Audio-Power-OpAmps_Texas-Instruments-Texas-Instruments-TPA3221DDVR_C475500.html")
+			(part "TPA3220DDWR")
+			(docs "https://www.ti.com/lit/ds/symlink/tpa3220.pdf")
 			(fields
 				(field
 					(name "Reference") "U")
 				(field
-					(name "Value") "TPA3221DDVR")
+					(name "Value") "TPA3220DDWR")
 				(field
-					(name "Footprint") "aiee:HTSSOP-44_L14.0-W6.1-P0.64-LS8.1-BL")
+					(name "Footprint") "aiee:HTSSOP-44-1EP_L14.0-W6.1-P0.64-LS8.1-EP7.3x4.43")
 				(field
-					(name "Datasheet") "https://lcsc.com/product-detail/Audio-Power-OpAmps_Texas-Instruments-Texas-Instruments-TPA3221DDVR_C475500.html")
+					(name "Datasheet") "https://www.ti.com/lit/ds/symlink/tpa3220.pdf")
 				(field
 					(name "Description")
 				)
 				(field
 					(name "Manufacturer") "TI(德州仪器)")
 				(field
-					(name "MPN") "TPA3221DDVR")
+					(name "MPN") "TPA3220DDWR")
 				(field
-					(name "LCSC Part") "C475500")
+					(name "LCSC Part") "C2879306")
 			)
 			(pins
 				(pin
@@ -22099,6 +22196,11 @@
 				(pin
 					(num "44")
 					(name "BST1_P")
+					(type "passive")
+				)
+				(pin
+					(num "45")
+					(name "GND")
 					(type "passive")
 				)
 			)
@@ -26529,8 +26631,8 @@
 			(class "Default")
 			(node
 				(ref "Q3")
-				(pin "1")
-				(pinfunction "B_1")
+				(pin "2")
+				(pinfunction "B_2")
 				(pintype "passive")
 			)
 			(node
@@ -26610,8 +26712,8 @@
 			)
 			(node
 				(ref "Q3")
-				(pin "3")
-				(pinfunction "C_3")
+				(pin "6")
+				(pinfunction "C_6")
 				(pintype "passive")
 			)
 			(node
@@ -26652,6 +26754,12 @@
 				(pintype "passive")
 			)
 			(node
+				(ref "Q3")
+				(pin "4")
+				(pinfunction "E_4")
+				(pintype "passive")
+			)
+			(node
 				(ref "R4")
 				(pin "2")
 				(pintype "passive")
@@ -26664,12 +26772,40 @@
 		)
 		(net
 			(code "173")
+			(name "/power_in/PVDD_OFFB")
+			(class "Default")
+			(node
+				(ref "D5")
+				(pin "1")
+				(pinfunction "K_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q3")
+				(pin "5")
+				(pinfunction "B_5")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "174")
 			(name "/power_in/PVDD_PD")
 			(class "Default")
+			(node
+				(ref "D5")
+				(pin "2")
+				(pinfunction "A_2")
+				(pintype "passive")
+			)
 			(node
 				(ref "Q2")
 				(pin "3")
 				(pinfunction "D_3")
+				(pintype "passive")
+			)
+			(node
+				(ref "R404")
+				(pin "2")
 				(pintype "passive")
 			)
 			(node
@@ -26679,7 +26815,7 @@
 			)
 		)
 		(net
-			(code "174")
+			(code "175")
 			(name "/power_in/VBUS_PD")
 			(class "Default")
 			(node
@@ -26706,7 +26842,7 @@
 			)
 		)
 		(net
-			(code "175")
+			(code "176")
 			(name "/rails/BUCK3_FB")
 			(class "Default")
 			(node
@@ -26727,7 +26863,7 @@
 			)
 		)
 		(net
-			(code "176")
+			(code "177")
 			(name "/rails/BUCK3_LX")
 			(class "Default")
 			(node
@@ -26744,7 +26880,7 @@
 			)
 		)
 		(net
-			(code "177")
+			(code "178")
 			(name "/rails/BUCK5_BS")
 			(class "Default")
 			(node
@@ -26760,7 +26896,7 @@
 			)
 		)
 		(net
-			(code "178")
+			(code "179")
 			(name "/rails/BUCK5_EN")
 			(class "Default")
 			(node
@@ -26781,7 +26917,7 @@
 			)
 		)
 		(net
-			(code "179")
+			(code "180")
 			(name "/rails/BUCK5_FB")
 			(class "Default")
 			(node
@@ -26802,7 +26938,7 @@
 			)
 		)
 		(net
-			(code "180")
+			(code "181")
 			(name "/rails/BUCK5_FS")
 			(class "Default")
 			(node
@@ -26818,7 +26954,7 @@
 			)
 		)
 		(net
-			(code "181")
+			(code "182")
 			(name "/rails/BUCK5_LX")
 			(class "Default")
 			(node
@@ -26840,7 +26976,7 @@
 			)
 		)
 		(net
-			(code "182")
+			(code "183")
 			(name "/ui/FFC_MOSI")
 			(class "Default")
 			(node
@@ -26856,7 +26992,7 @@
 			)
 		)
 		(net
-			(code "183")
+			(code "184")
 			(name "/ui/FFC_SCK")
 			(class "Default")
 			(node
@@ -26872,7 +27008,7 @@
 			)
 		)
 		(net
-			(code "184")
+			(code "185")
 			(name "/ui/IR_VCC")
 			(class "Default")
 			(node
@@ -26893,7 +27029,7 @@
 			)
 		)
 		(net
-			(code "185")
+			(code "186")
 			(name "/ui/LED_A")
 			(class "Default")
 			(node
@@ -26909,7 +27045,7 @@
 			)
 		)
 		(net
-			(code "186")
+			(code "187")
 			(name "GND")
 			(class "Default")
 			(node
@@ -27543,8 +27679,8 @@
 			)
 			(node
 				(ref "Q3")
-				(pin "2")
-				(pinfunction "E_2")
+				(pin "1")
+				(pinfunction "E_1")
 				(pintype "passive")
 			)
 			(node
@@ -27963,6 +28099,12 @@
 			)
 			(node
 				(ref "U15")
+				(pin "45")
+				(pinfunction "GND_45")
+				(pintype "passive")
+			)
+			(node
+				(ref "U15")
 				(pin "5")
 				(pinfunction "GND_5")
 				(pintype "passive")
@@ -28037,6 +28179,12 @@
 				(ref "U16")
 				(pin "42")
 				(pinfunction "GND_42")
+				(pintype "passive")
+			)
+			(node
+				(ref "U16")
+				(pin "45")
+				(pinfunction "GND_45")
 				(pintype "passive")
 			)
 			(node
@@ -28185,7 +28333,7 @@
 			)
 		)
 		(net
-			(code "187")
+			(code "188")
 			(name "PVDD")
 			(class "Default")
 			(node
@@ -28351,7 +28499,7 @@
 			)
 		)
 		(net
-			(code "188")
+			(code "189")
 			(name "VBUS")
 			(class "Default")
 			(node
@@ -28400,6 +28548,12 @@
 				(pintype "passive")
 			)
 			(node
+				(ref "Q3")
+				(pin "3")
+				(pinfunction "C_3")
+				(pintype "passive")
+			)
+			(node
 				(ref "R1")
 				(pin "2")
 				(pintype "passive")
@@ -28425,6 +28579,11 @@
 				(pintype "passive")
 			)
 			(node
+				(ref "R404")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
 				(ref "U4")
 				(pin "5")
 				(pinfunction "IN_5")
@@ -28432,7 +28591,7 @@
 			)
 		)
 		(net
-			(code "189")
+			(code "190")
 			(name "VBUS_IN")
 			(class "Default")
 			(node
@@ -28477,7 +28636,7 @@
 			)
 		)
 		(net
-			(code "190")
+			(code "191")
 			(name "unconnected-(J1-SBU1-PadA8)")
 			(class "Default")
 			(node
@@ -28488,7 +28647,7 @@
 			)
 		)
 		(net
-			(code "191")
+			(code "192")
 			(name "unconnected-(J1-SBU2-PadB8)")
 			(class "Default")
 			(node
@@ -28499,7 +28658,7 @@
 			)
 		)
 		(net
-			(code "192")
+			(code "193")
 			(name "unconnected-(J2-NC-Pad7)")
 			(class "Default")
 			(node
@@ -28510,7 +28669,7 @@
 			)
 		)
 		(net
-			(code "193")
+			(code "194")
 			(name "unconnected-(J2-Pad9)")
 			(class "Default")
 			(node
@@ -28521,7 +28680,7 @@
 			)
 		)
 		(net
-			(code "194")
+			(code "195")
 			(name "unconnected-(J2-Pad10)")
 			(class "Default")
 			(node
@@ -28532,7 +28691,7 @@
 			)
 		)
 		(net
-			(code "195")
+			(code "196")
 			(name "unconnected-(J2-Pad11)")
 			(class "Default")
 			(node
@@ -28543,7 +28702,7 @@
 			)
 		)
 		(net
-			(code "196")
+			(code "197")
 			(name "unconnected-(J2-Pad12)")
 			(class "Default")
 			(node
@@ -28554,7 +28713,7 @@
 			)
 		)
 		(net
-			(code "197")
+			(code "198")
 			(name "unconnected-(U1-DM-Pad5)")
 			(class "Default")
 			(node
@@ -28565,7 +28724,7 @@
 			)
 		)
 		(net
-			(code "198")
+			(code "199")
 			(name "unconnected-(U1-DP-Pad4)")
 			(class "Default")
 			(node
@@ -28576,7 +28735,7 @@
 			)
 		)
 		(net
-			(code "199")
+			(code "200")
 			(name "unconnected-(U6-N{slash}C-Pad4)")
 			(class "Default")
 			(node
@@ -28587,7 +28746,7 @@
 			)
 		)
 		(net
-			(code "200")
+			(code "201")
 			(name "unconnected-(U7-NC-Pad17)")
 			(class "Default")
 			(node
@@ -28598,7 +28757,7 @@
 			)
 		)
 		(net
-			(code "201")
+			(code "202")
 			(name "unconnected-(U7-NC-Pad18)")
 			(class "Default")
 			(node
@@ -28609,7 +28768,7 @@
 			)
 		)
 		(net
-			(code "202")
+			(code "203")
 			(name "unconnected-(U7-NC-Pad19)")
 			(class "Default")
 			(node
@@ -28620,7 +28779,7 @@
 			)
 		)
 		(net
-			(code "203")
+			(code "204")
 			(name "unconnected-(U7-NC-Pad20)")
 			(class "Default")
 			(node
@@ -28631,7 +28790,7 @@
 			)
 		)
 		(net
-			(code "204")
+			(code "205")
 			(name "unconnected-(U7-NC-Pad21)")
 			(class "Default")
 			(node
@@ -28642,7 +28801,7 @@
 			)
 		)
 		(net
-			(code "205")
+			(code "206")
 			(name "unconnected-(U7-NC-Pad22)")
 			(class "Default")
 			(node
@@ -28653,7 +28812,7 @@
 			)
 		)
 		(net
-			(code "206")
+			(code "207")
 			(name "unconnected-(U7-NC-Pad27)")
 			(class "Default")
 			(node
@@ -28664,7 +28823,7 @@
 			)
 		)
 		(net
-			(code "207")
+			(code "208")
 			(name "unconnected-(U7-NC-Pad28)")
 			(class "Default")
 			(node
@@ -28675,7 +28834,7 @@
 			)
 		)
 		(net
-			(code "208")
+			(code "209")
 			(name "unconnected-(U7-NC-Pad32)")
 			(class "Default")
 			(node
@@ -28686,7 +28845,7 @@
 			)
 		)
 		(net
-			(code "209")
+			(code "210")
 			(name "unconnected-(U8-NC.-Pad8)")
 			(class "Default")
 			(node
@@ -28697,7 +28856,7 @@
 			)
 		)
 		(net
-			(code "210")
+			(code "211")
 			(name "unconnected-(U8-TNOW-Pad15)")
 			(class "Default")
 			(node
@@ -28708,7 +28867,7 @@
 			)
 		)
 		(net
-			(code "211")
+			(code "212")
 			(name "unconnected-(U8-~{CTS}-Pad9)")
 			(class "Default")
 			(node
@@ -28719,7 +28878,7 @@
 			)
 		)
 		(net
-			(code "212")
+			(code "213")
 			(name "unconnected-(U8-~{DCD}-Pad12)")
 			(class "Default")
 			(node
@@ -28730,7 +28889,7 @@
 			)
 		)
 		(net
-			(code "213")
+			(code "214")
 			(name "unconnected-(U8-~{DSR}-Pad10)")
 			(class "Default")
 			(node
@@ -28741,7 +28900,7 @@
 			)
 		)
 		(net
-			(code "214")
+			(code "215")
 			(name "unconnected-(U8-~{RI}-Pad11)")
 			(class "Default")
 			(node
@@ -28752,7 +28911,7 @@
 			)
 		)
 		(net
-			(code "215")
+			(code "216")
 			(name "unconnected-(U8-~{RST}-Pad7)")
 			(class "Default")
 			(node
@@ -28763,7 +28922,7 @@
 			)
 		)
 		(net
-			(code "216")
+			(code "217")
 			(name "unconnected-(U9-LED1{slash}REGOFF-Pad3)")
 			(class "Default")
 			(node
@@ -28774,7 +28933,7 @@
 			)
 		)
 		(net
-			(code "217")
+			(code "218")
 			(name "unconnected-(U9-LED2{slash}nINTSEL-Pad2)")
 			(class "Default")
 			(node
@@ -28785,7 +28944,7 @@
 			)
 		)
 		(net
-			(code "218")
+			(code "219")
 			(name "unconnected-(U9-RXER{slash}PHYAD0-Pad10)")
 			(class "Default")
 			(node
@@ -28796,7 +28955,7 @@
 			)
 		)
 		(net
-			(code "219")
+			(code "220")
 			(name "unconnected-(U9-XTAL2-Pad4)")
 			(class "Default")
 			(node
@@ -28807,7 +28966,7 @@
 			)
 		)
 		(net
-			(code "220")
+			(code "221")
 			(name "unconnected-(U9-nINT{slash}REFCLKO-Pad14)")
 			(class "Default")
 			(node
@@ -28818,7 +28977,7 @@
 			)
 		)
 		(net
-			(code "221")
+			(code "222")
 			(name "unconnected-(U10-GPIO2-Pad23)")
 			(class "Default")
 			(node
@@ -28829,7 +28988,7 @@
 			)
 		)
 		(net
-			(code "222")
+			(code "223")
 			(name "unconnected-(U10-N.C.-Pad2)")
 			(class "Default")
 			(node
@@ -28840,7 +28999,7 @@
 			)
 		)
 		(net
-			(code "223")
+			(code "224")
 			(name "unconnected-(U10-N.C.-Pad19)")
 			(class "Default")
 			(node
@@ -28851,7 +29010,7 @@
 			)
 		)
 		(net
-			(code "224")
+			(code "225")
 			(name "unconnected-(U10-N.C.-Pad22)")
 			(class "Default")
 			(node
@@ -28862,7 +29021,7 @@
 			)
 		)
 		(net
-			(code "225")
+			(code "226")
 			(name "unconnected-(U10-XO-Pad6)")
 			(class "Default")
 			(node
@@ -28873,7 +29032,7 @@
 			)
 		)
 		(net
-			(code "226")
+			(code "227")
 			(name "unconnected-(U19-NC-Pad4)")
 			(class "Default")
 			(node
@@ -28884,7 +29043,7 @@
 			)
 		)
 		(net
-			(code "227")
+			(code "228")
 			(name "unconnected-(U19-NC-Pad5)")
 			(class "Default")
 			(node

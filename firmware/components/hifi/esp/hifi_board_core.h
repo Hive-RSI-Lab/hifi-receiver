@@ -17,9 +17,14 @@
 #ifdef CONFIG_HIFI_ULTRA
 #define HIFI_MODEL "hifi-ultra"
 #define HIFI_ZONES 2
+#define HIFI_SPLIT 0
 #else
 #define HIFI_MODEL "hifi-plus"
 #define HIFI_ZONES 1
+/* Plus fits zone B too and splits the pair: L plays on zone A (J6), R on
+ * zone B (J11), one channel per TPA3220, so each chip carries half the heat
+ * (docs/review-2/heatsink-options.md). Both amps run whenever the amp is on */
+#define HIFI_SPLIT 1
 #endif
 #define HIFI_BOARD "core"
 #define HIFI_FW_VERSION "0.1.0"

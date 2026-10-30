@@ -11,15 +11,15 @@ those controls instead.
 |---|---|---|
 | B1 USB-C in | J1 USB4105-GF-A-120 (48 V/5 A), D1 SMBJ30A, U1 CH224Q, U2 USBLC6-2SC6 | CH224Q asks for 28 V EPR with a single 210k on CFG1, and the ESP32 can read or change the contract over I2C (0x22/0x23). Its DP/DM are left unconnected, so D+/D- go only to the CH340C. |
 | B2 Input current | R1 10 mΩ 2512, U3 INA186A1 (40 V common mode, 25 V/V) | 1.25 V at 5 A into GPIO34 (ADC1), for the power governor. INA180 was swapped for this part: the INA180 stops at 26 V common mode, under 28 V. |
-| B3 PVDD switch | Q1 AO4485 P-FET, Q2 2N7002, Q3 S8050 + D2 BZT52C33, D4 BZT52C15, C bulk 2x 470 µF 50 V | PVDD stays off until firmware sets PVDD_EN, which keeps the PD inrush rule. A 1 µF gate-source cap (C8) holds Q1 off while VBUS steps at attach and at 5 V to 28 V, and D4 clamps Vgs at 15 V. The 100 nF gate-drain cap sets the turn-on ramp to about 2 V/ms, roughly 2 A into 940 µF. The 100k/100k gate divider gives Vgs = 14.7 V at 29.4 V. D2 and Q3 cut the enable for gross overvoltage, about 32-36 V. This is slow (R4·C8) and only a backstop: the TPA3221's absolute maximum is 37 V, and the CH224Q has its own OVP. |
+| B3 PVDD switch | Q1 AO4485 P-FET, Q2 2N7002, Q3 S8050 + D2 BZT52C33, D4 BZT52C15, C bulk 2x 470 µF 50 V | PVDD stays off until firmware sets PVDD_EN, which keeps the PD inrush rule. A 1 µF gate-source cap (C8) holds Q1 off while VBUS steps at attach and at 5 V to 28 V, and D4 clamps Vgs at 15 V. The 100 nF gate-drain cap sets the turn-on ramp to about 2 V/ms, roughly 2 A into 940 µF. The 100k/100k gate divider gives Vgs = 14.7 V at 29.4 V. D2 and Q3 cut the enable for gross overvoltage, about 32-36 V. This is slow (R4·C8) and only a backstop: the TPA3221's absolute maximum is 37 V, and the CH224Q has its own OVP. Fast turn-off (task 261029-075354, hwde sim_inrush hard_reset): R404 100k pulls PVDD_PD to VBUS when Q2 lets go; Q3's second NPN (MMDT3904, pins 3-4-5) follows it and drags Q1's gate to VBUS in ~2 ms; D5 BAS16L keeps that NPN's base-emitter off the ~14 V reverse bias while Q2 is on. Before it, R4·C8 took ~1 s and a hard-reset source met a still-on Q1 (14 A, Q1 426 C in the sim); now 0.7 A and 120 C. |
 | B4 Rails | U4 SY8303 (VBUS to 5.1 V, 1 MHz), U5 SY8089 (5 V to 3.3 V), U6 LP5907-3.3 (5 V to 3V3A), FB on +5VA | Rails: VBUS_IN, VBUS, PVDD, +5V, +5VA (analog: op-amp, switch), +3V3 (digital), +3V3A (DAC/ADC analog), +3V3E (PHY analog, via ferrite) |
 | B5 ESP32 | U7 ESP32-WROVER-E-N8R8, U8 CH340C, Q4/Q5 S8050 auto-reset | Serial and flashing go over the same USB-C. |
 | B6 Ethernet | U9 LAN8720A, J2 HR911105A, Y2 50 MHz oscillator | Y2 drives the 50 MHz RMII clock into the PHY's CLKIN (REF_CLK-in mode, nINTSEL=1) and into ESP32 GPIO0, which takes it as an input. This is the WT32-ETH01 scheme, and it avoids the experimental GPIO0 clock-out mode. Y2's OE is PHY_RST, held low at boot by a pull-down, so GPIO0 boots clean. nRST follows PHY_RST through 10k/100nF, so the PHY leaves reset about 1 ms after its clock starts. |
 | B7 Sabre DAC | U10 ES9018K2M, Y1 50 MHz oscillator, U11 OPA1678 | A 50 MHz MCLK, not 100 MHz: with the internal DVDD the datasheet allows 50 MHz at most, and 100 MHz would need an external 1.3 V DVDD. 50 MHz still covers 24/96 PCM and 96 kHz S/PDIF, which is the product's hi-res target. The OPA1678 runs differential to single-ended at gain 0.54 on +5VA, around a stiff 470R/470R VREF of about 2.4 V (the 2 x 4.3k DAC legs load it): about 1.15 Vrms at full scale. |
 | B8 Subs DAC | U12 PCM5102A | Its outputs are ground-centred at 2.1 Vrms, through 470 Ω to J4 (dual RCA: SUB1, SUB2). |
 | B9 Line in | J5 dual RCA, U13 ES7243E ADC, U14 TS5A23157 | The input is halved (4.7k/4.7k, low enough to drive the amp input), so the FLX4's 2 Vrms becomes 1 Vrms and matches the DAC path. The ADC takes it AC-coupled and gets its MCLK from BCLK (reg 0x02 bit 7), so no MCLK pin is needed. The switch picks between the DAC path (NO, selected when DJ_SEL is high, the default) and DJ direct (NC). Q6 inverts the 3.3 V expander output up to the switch's 5 V logic, which needs VIH 3.5 V. Both of its inputs sit at 2.5 V, so it switches without a pop. |
-| B10 Amp zone A | U15 TPA3221, L1-L4 10 µH (Isat 10 A), J6/J7 KF301 2-way screw terminals | AD mode, controller, 24 dB, single-ended inputs (IN_M AC-grounded), 600 kHz. VDD comes from +5V, with AVDD and GVDD each through 4.7 Ω + 1 µF, which bypasses the internal LDO (datasheet fig. 8-3). Each output has 10 µH + 1 µF, plus a 4.7 Ω + 1 nF snubber on the speaker side, as in TI fig. 9-1. On the switching node it would dissipate 0.47 W. The TPA3221 inverts, so OUTx_M goes to the + terminal and the speaker keeps absolute polarity. Speakers connect through screw terminals, not on-board 4 mm sockets. The GC4010-F socket the product page named has no EasyEDA model and was never confirmed to take a real banana plug. The enclosure's banana sockets or binding posts wire to these terminals (product.md open item 4). |
-| B11 Amp zone B **[Ultra]** | U16 TPA3221, L5-L8, J10/J11, C bulk 470 µF | It runs as a peripheral (FREQ_ADJ to AVDD, OSCM/OSCP from U15), switched in sync with zone A. Its input is the same switched signal as zone A, so zone B plays zone A's program and has its own enable (AMP_B_RST). |
+| B10 Amp zone A | U15 TPA3220 (pad-down TPA3221, same pins), L1-L4 10 µH (Isat 10 A), J6/J7 KF301 2-way screw terminals | AD mode, controller, 24 dB, single-ended inputs (IN_M AC-grounded), 600 kHz. VDD comes from +5V, with AVDD and GVDD each through 4.7 Ω + 1 µF, which bypasses the internal LDO (datasheet fig. 8-3). Each output has 10 µH + 1 µF, plus a 4.7 Ω + 1 nF snubber on the speaker side, as in TI fig. 9-1. On the switching node it would dissipate 0.47 W. The TPA3221 inverts, so OUTx_M goes to the + terminal and the speaker keeps absolute polarity. Speakers connect through screw terminals, not on-board 4 mm sockets. The GC4010-F socket the product page named has no EasyEDA model and was never confirmed to take a real banana plug. The enclosure's banana sockets or binding posts wire to these terminals (product.md open item 4). |
+| B11 Amp zone B (Ultra: a second pair; Plus: the R channel, L on zone A) | U16 TPA3220, L5-L8, J10/J11, C bulk 470 µF | It runs as a peripheral (FREQ_ADJ to AVDD, OSCM/OSCP from U15), switched in sync with zone A. Its input is the same switched signal as zone A, so zone B plays zone A's program and has its own enable (AMP_B_RST). |
 | B12 Control | U17 TCA9555 (0x20), SW1 EC11 knob **[Plus]**, SW2/SW3 buttons **[Plus]**, U18 IRM-H638T **[Plus]**, D3 red status LED | The ESP32 has no pins left (see below), so the slow controls go through the expander. |
 | B13 Optical **[Ultra]** | U19 PLR237 TOSLINK | Goes to the ES9018K2M GPIO1, which is S/PDIF input 4 (spdif_sel). The board has a 10k pull-down, so the pin is defined when the part isn't fitted. |
 | B14 Front-board FFC **[Ultra]** | J3 FPC-05F-20PH20 (20 pin 0.5 mm, bottom contact) | The pinout is below. |
@@ -99,8 +99,8 @@ Plus-only front-edge controls.
 USB-C VBUS_IN (5-28 V) feeds three branches:
 
 - **PVDD (switched):** through the TVS, the 10 mΩ shunt and the AO4485
-  switch to PVDD, for TPA3221 x2.
-- **+5V (5.1 V):** SY8303 to +5V, which feeds the TPA3221 VDD/AVDD/GVDD,
+  switch to PVDD, for TPA3220 x2.
+- **+5V (5.1 V):** SY8303 to +5V, which feeds the TPA3220 VDD/AVDD/GVDD,
   the CH340C VBUS clamp, the FFC and LP5907 3V3A. It also feeds +5VA through
   a ferrite (OPA1678, TS5A23157, the 2.5 V reference) and the SY8089 3V3
   (ESP32, LAN8720 via ferrite, CH340C, expander, logic).
@@ -124,8 +124,9 @@ task (the +5V tracks are 0.35 mm).
 - **Rear edge:** zone A bananas, sub RCA, line-in RCA, zone B bananas.
 - **Left edge:** USB-C, RJ45, TOSLINK.
 - **Front edge:** EC11 knob, IR, two buttons, status LED, FFC.
-- **Heatsinks:** each TPA3221 takes a bolted heatsink on its top slug,
-  with two M3 holes per amp.
+- **Heatsinks:** none. Each TPA3220 has its thermal pad underneath,
+  soldered to an EP land with 15 x 0.3 mm vias into the In1 GND plane and the
+  B.Cu GND pour (docs/review-2/heatsink-options.md).
 
 ## Firmware notes from the schematic review
 

@@ -11,7 +11,8 @@ docs/review-2/resolutions.json, and writes docs/known-unknowns.md.
     python3 tools/known_unknowns.py --check --tier plus   # an order of one tier:
                                                # facts marked open-ultra don't block it
 
-`--check` is the order-step gate: nothing unverified that could stop a board
+`--check` is the order-step gate, and the score charges 100 for each open
+fact it lists (docs/checks.md): nothing unverified that could stop a board
 working may be open when the person orders. A fact about an Ultra-only part
 can be marked open-ultra: it blocks an Ultra order but not a Lite or Plus one. A row is closed when it is
 verified (source and date) or resolved (fixed in the design, or

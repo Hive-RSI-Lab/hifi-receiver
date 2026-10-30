@@ -115,7 +115,7 @@ Capture: `arecord:hw:1,0` (Linux ALSA), `sounddevice[:NAME]`
   channel, with both channels driven.
 - **P at 1% / 10%** is interpolated where THD+N crosses, in log THD+N.
 - **Predicted** is product.md's table. **Model at held PVDD** is the same
-  fit, (PVDD·R/(R+Rs))²/2R with Rs 0.3 Ω (TPA3118D2) or 0.51 Ω (TPA3221), at
+  fit, (PVDD·R/(R+Rs))²/2R with Rs 0.3 Ω (TPA3118D2) or 0.51 Ω (TPA3220, from the TPA3221 datasheet), at
   the lowest PVDD the board reported. A sagging charger then reads as
   supply, not amp. The verdict passes at ≥ 85% of the predicted 1% power,
   governor off.
@@ -155,7 +155,7 @@ It is a check of the bench's logic, not a prediction of the board.
 
 ## Plus and Ultra
 
-`--board core` uses the TPA3221 predictions (77/55/43 W at 28 V).
+`--board core` uses the TPA3220 predictions (77/55/43 W at 28 V).
 `--chargers 100w,140w` gives the 20 V fallback and the 28 V EPR contract.
 The mock can model `core` too, with `Sim("core", charger="140w")`. Ultra's
 four channels need a second capture pair or a second pass with the leads

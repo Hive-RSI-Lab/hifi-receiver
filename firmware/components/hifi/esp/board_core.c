@@ -132,6 +132,13 @@ void hifi_bsp_init(hifi_power_cfg_t *pc, hifi_gov_cfg_t *gc) {
 
 	hifi_power_cfg_core(pc);
 	hifi_gov_cfg_core(gc);
+#if HIFI_SPLIT
+	/* one channel per chip: in the vented box at 30 C room each chip holds
+	 * ~2.0 W at Tj 110 C, which is 9.6 W of sustained output per channel
+	 * into 4 ohm (hwde check_thermal; 14.8 W into 6 ohm): 12 dB-crest music
+	 * at the 77 W clip level */
+	gc->thermal_out_w = 19.0f;
+#endif
 }
 
 /* ------------------------------------------------------------------ power */
@@ -168,7 +175,7 @@ void hifi_bsp_power_in(uint32_t now, hifi_bsp_power_t *p) {
 }
 
 void hifi_bsp_power_out(const hifi_power_out_t *o) {
-	bool a = o->amp_on, b = a && zone_b;
+	bool a = o->amp_on, b = a && (zone_b || HIFI_SPLIT);
 	/* zone B runs off zone A's clock and syncs only when both leave reset
 	 * together (blocks.md): a change of zone B puts both in reset for one
 	 * step first */
@@ -189,7 +196,8 @@ void hifi_bsp_power_out(const hifi_power_out_t *o) {
 	xSemaphoreGive(exp_lock);
 	amps_a = a;
 	amps_b = b;
-	hifi_main_gov_amps(1 + (a && b));
+	/* Plus's split pair is one stereo program across two chips */
+	hifi_main_gov_amps(HIFI_SPLIT ? 1 : 1 + (a && b));
 }
 
 void hifi_bsp_set_zone(bool on) {

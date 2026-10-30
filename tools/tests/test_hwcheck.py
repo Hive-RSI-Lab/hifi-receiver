@@ -149,6 +149,39 @@ class Unverified(unittest.TestCase):
         self.assertIsNone(hwcheck.unverified(0, {}, ""))
 
 
+class Facts(unittest.TestCase):
+    """Each open fact that could stop a board costs the score open_fact, so 0 is order-ready."""
+
+    def score(self, facts):
+        saved = {k: getattr(hwcheck, k) for k in ("run_gates", "tier_cost", "piece_missing", "open_facts")}
+        hwcheck.run_gates = lambda have: {d: [] for d in have}
+        hwcheck.tier_cost = lambda tier, gates: (tier["budget"], [])
+        hwcheck.piece_missing = lambda piece, ran: None
+        hwcheck.open_facts = lambda: facts
+        out = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(out):
+                self.assertEqual(hwcheck.cmd_score(), 0)
+        finally:
+            for k, v in saved.items():
+                setattr(hwcheck, k, v)
+        return float(out.getvalue().split()[-1]), out.getvalue()
+
+    def test_nothing_open_is_zero(self):
+        self.assertEqual(self.score([])[0], 0)
+
+    def test_each_open_fact_counts(self):
+        got, text = self.score(["thermal:0 [core]", "parts:2 [core]"])
+        self.assertEqual(got, 2 * SPEC["open_fact"])
+        self.assertIn("thermal:0 [core]", text)
+
+    def test_open_facts_are_known_unknowns_check(self):
+        rows = list(hwcheck.known_unknowns.rows())
+        want = [r for r in rows if hwcheck.known_unknowns.is_open(r[2], r[3])]
+        self.assertEqual(len(hwcheck.open_facts()), len(want))
+        self.assertGreater(SPEC["open_fact"], 0)
+
+
 class Spec(unittest.TestCase):
     def test_spec_is_whole(self):
         self.assertEqual(sorted(SPEC["tiers"]), sorted(hwcheck.TIERS))

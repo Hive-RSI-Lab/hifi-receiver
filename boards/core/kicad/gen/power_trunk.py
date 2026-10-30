@@ -9,7 +9,7 @@ vias must all land in one such piece. On this board that took:
   it is 3.5 mm. JLC offers 1 oz inner copper on 4-layer boards.
 - The GND stitch grid (about 4.3 mm pitch) cleared from the In2 power
   regions (STITCH_REGIONS, plus 1 mm): only pure stitches, GND vias no track
-  or pad touches, and not the twelve (KEEP) that are an F.Cu GND island's only
+  or pad touches, and not the ones (KEEP) that are an F.Cu GND island's only
   tie to ground. In1 stays solid GND; F.Cu/B.Cu keep the stitches outside.
 - In2 zone outlines (ZONES; refill after):
   - PVDD: the main plane and Q1's drain strip are one zone, and the strip
@@ -165,7 +165,8 @@ KEEP = {
     "a89dbfa1-5862-4f6d-a3ef-af21be945ccb", "c9dbeb05-07ae-45c7-9bf9-974c95b25094",
     "c9f454d7-c154-4c7c-a898-078b2decf61b", "4e0be45d-2385-462d-ba0c-d17b01e4a4c4",
     "c84c2dee-24f6-415c-b428-f7bde9d72df4", "f633a067-3886-4424-9935-e479ff8cd0ea",
-    "544908d5-17f3-4285-86e0-93397c935b07", "cb52ee66-db31-4a99-b611-593990106301"}
+    "544908d5-17f3-4285-86e0-93397c935b07", "cb52ee66-db31-4a99-b611-593990106301",
+    "27681f9e-af0e-46aa-8c04-f4e6bca69884"}
 EDITS = [{"op": "remove", "uuid": u} for u in (
     # the three VBUS vias in the strip below Q1 the F.Cu patch no longer has
     "1db623d1-9da4-4bfb-9a33-deddd41cb972", "bcebe21f-294f-4a42-aeca-98d8319028d7",
