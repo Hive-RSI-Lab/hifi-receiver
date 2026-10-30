@@ -48,17 +48,28 @@ jobs:
         id: kicad
         with:
           path: ${{ runner.temp }}/tools/kicad-${{ env.KICAD_VERSION }}
-          key: kicad-${{ env.KICAD_APPIMAGE }}
+          # v2: the first key cached an empty folder (220 B), so every run that gated a board
+          # found no kicad-cli (PR #96, 10-30).
+          key: kicad-v2-${{ env.KICAD_APPIMAGE }}
       - name: KiCad ${{ env.KICAD_VERSION }} as an AppDir
-        if: steps.kicad.outputs.cache-hit != 'true'
         shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/tools" && cd "$RUNNER_TEMP/tools"
-          curl -fsSL -o kicad.AppImage "$KICAD_APPIMAGE"
-          chmod +x kicad.AppImage
-          ./kicad.AppImage --appimage-extract >/dev/null
-          mv squashfs-root "kicad-$KICAD_VERSION"
-          rm kicad.AppImage
+          dir="kicad-$KICAD_VERSION"
+          # A restored cache counts only if it holds a KiCad that runs; else fetch it again.
+          if [ ! -x "$dir/AppRun" ]; then
+            rm -rf "$dir" squashfs-root AppDir
+            curl -fsSL -o kicad.AppImage "$KICAD_APPIMAGE"
+            chmod +x kicad.AppImage
+            ./kicad.AppImage --appimage-extract >/dev/null
+            # The AppImage's runtime extracts to squashfs-root or AppDir, by its version.
+            if [ -d squashfs-root ]; then mv squashfs-root "$dir"; else mv AppDir "$dir"; fi
+            rm kicad.AppImage
+          fi
+          ls -la "$dir" | head -20
+          du -sh "$dir"
+          test -x "$dir/AppRun"
+          xvfb-run -a "$dir/AppRun" kicad-cli version
       - name: the test (python3 tools/hwcheck.py test)
         shell: bash
         run: |
