@@ -583,6 +583,30 @@
    "source": "SLASEE9C table 4 (pin-compatible Y, pad bottom); LCSC C2879306 stock 0 on 2026-10-28",
    "date": "2026-10-29",
    "could_stop_board": false
+  },
+  {
+   "fact": "TPA3220 RthetaJA 23.5 C/W (JEDEC 2s2p, pad soldered), RthetaJC(bot) 1.1, RthetaJB 4.5, psiJB 4.5; OTW 115/125/135 C, OTE 145/155/165 C",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "verified",
+   "source": "TI SLASEN3B 7.4, 7.5",
+   "could_stop_board": true,
+   "date": "2026-10-29"
+  },
+  {
+   "fact": "On core (1 oz / 0.5 oz) the TPA3220's RthetaJA is about 26 C/W. In the vented Plus/Ultra box (air ~58 C at 30 C room, hwde check_thermal) each chip holds ~2.0 W at Tj 110 C: Plus (one channel per chip) 9.6 W/ch into 4 ohm and 14.8 W/ch into 6 ohm sustained, Ultra both zones 4.4 W/ch into 4 ohm; the C2 governor holds it (Plus 19 W, Ultra 9/17 W over 60 s)",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "unverified",
+   "source": "estimate: JEDEC 23.5 C/W +10 % for thinner copper and a shared board (docs/review-2/heatsink-options.md); bring-up C3 measures it; OTW/FAULT and the governor backstop it",
+   "could_stop_board": false,
+   "date": "2026-10-29"
   }
  ],
  "tools_wanted": [

@@ -616,6 +616,20 @@
    "source": "core.kicad_pcb stackup",
    "date": "2026-10-28",
    "could_stop_board": false
+  },
+  {
+   "fact": "PVDD switch Q1 turns off in ~2 ms when Q2 releases (Q3 unit 2 follower + D5 + R404), so a PD hard reset no longer sees PVDD's 940 uF through a still-on Q1: hard_reset source peak 0.7 A (was 14 A), Q1 Tj 120 C (was 426 C)",
+   "board": "core",
+   "refs": [
+    "Q1",
+    "Q3",
+    "D5",
+    "R404"
+   ],
+   "status": "verified",
+   "source": "hwde sim_inrush (branch 261029-050227, 311fc6d) on an electrically equal two-SOT-23 copy of the circuit: hwde's sim reads a dual transistor as unknown, so it can't model the SOT-363 itself",
+   "could_stop_board": true,
+   "date": "2026-10-29"
   }
  ],
  "tools_wanted": [

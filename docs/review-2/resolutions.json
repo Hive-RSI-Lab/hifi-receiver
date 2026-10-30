@@ -40,8 +40,8 @@
   "how": "TI SLASEE9C (rev. May 2025) section 5 and the pin table: the DDV PowerPAD is on the top side, 'connect to grounded heatsink'; RthJA 44.8 C/W without one (DFM-3, THERMAL-1). The 'pad on bottom' feature bullet contradicts the drawing and pin table. Handled by the lid-pressed heatsink (docs/review-2/dispositions.json THERMAL-1)."
  },
  "parts:23": {
-  "status": "unresolved",
-  "how": "Lead (00:39Z) rejects a hand-fitted heatsink: needs a JLC-fittable board-mount part or a pad-down amp. See docs/review-2/heatsink-options.md: none found that holds 18 C/W."
+  "status": "resolved",
+  "how": "Resolved (task 261029-075354, issue #47): U15/U16 are now the pin-identical pad-down TPA3220DDW (C2879306; TI SLASEN3B table 5 'TPA3221 ... Top ... Y'). Its EP is soldered to GND on a 7.3 x 4.43 mm land with 15 x 0.3 mm vias into In1/B.Cu, so nothing is fitted by hand. On-board RthJA is about 26 C/W (JEDEC 23.5), so 1/8 power into 8 ohm runs at Tj about 84 C. Into 4 ohm, the C2 governor holds the chip near 2.5 W (16 W in, 60 s). LCSC stock is 0, so it is bought into the JLC inventory from Mouser/DigiKey (fab/prebuy.csv). See docs/review-2/heatsink-options.md."
  },
  "audio:29": {
   "status": "resolved",
@@ -69,7 +69,7 @@
  },
  "thermal:3": {
   "status": "resolved",
-  "how": "The heatsink's real RthSA is a purchase-side fact; the board's safety doesn't rest on it: OTW (P11) and FAULT (P10) plus the ISENSE governor bring a hot amp back by turning down, and bring-up checks for no OTW at 1/8 power (C3)."
+  "how": "Moot: there is no heatsink since the TPA3220 swap (task 261029-075354). The board's ~26 C/W is the figure, and bring-up C3 measures it. OTW (P11), FAULT (P10) and the ISENSE governor (C2) still bound a hot amp."
  },
  "thermal:4": {
   "status": "resolved",
@@ -77,11 +77,11 @@
  },
  "thermal:11": {
   "status": "resolved",
-  "how": "Enclosure not yet designed; the Plus/Ultra enclosure task carries the heatsink and vent spec (core README, THERMAL-1); the OTW/governor backstop applies."
+  "how": "The Plus/Ultra enclosure is designed (enclosure/, vents over and under each amp). With the TPA3220 the board sheds the amps' heat into that air. 45 C box air is the design case, and bring-up C3 measures it. The OTW/governor backstop applies."
  },
  "thermal:34": {
-  "status": "unresolved",
-  "how": "Lead (00:39Z) rejects a hand-fitted heatsink: needs a JLC-fittable board-mount part or a pad-down amp. See docs/review-2/heatsink-options.md: none found that holds 18 C/W."
+  "status": "resolved",
+  "how": "Resolved (task 261029-075354, issue #47): U15/U16 are now the pin-identical pad-down TPA3220DDW (C2879306; TI SLASEN3B table 5 'TPA3221 ... Top ... Y'). Its EP is soldered to GND on a 7.3 x 4.43 mm land with 15 x 0.3 mm vias into In1/B.Cu, so nothing is fitted by hand. On-board RthJA is about 26 C/W (JEDEC 23.5), so 1/8 power into 8 ohm runs at Tj about 84 C. Into 4 ohm, the C2 governor holds the chip near 2.5 W (16 W in, 60 s). LCSC stock is 0, so it is bought into the JLC inventory from Mouser/DigiKey (fab/prebuy.csv). See docs/review-2/heatsink-options.md."
  },
  "dfm:0": {
   "status": "resolved",
@@ -106,6 +106,18 @@
  "parts:64": {
   "status": "resolved",
   "how": "boards/ultra-front (on main 2026-10-30) has the same FPC-05F-20PH20 (C2856803) as its J1, at rotation 0, pin N on the same signal as core J3 pin N (checked pad by pad in both .kicad_pcb). In the Ultra box J3 (core x 20) and J1 (front-board X 14 + 6) line up, and the cable leaves J3 forward, turns down, runs forward under the front board and up into J1: three bends about the same axis keep the conductor order and turn the contact face from J3's side to the side away from J1's contacts. With the same part at both ends that holds whichever side the part's contacts are on, so the cable is a 20-pin 0.5 mm type B (opposite-side contacts), pin N to pin N, as enclosure/README.md and boards/ultra-front/README.md say."
+ },
+ "dfm:2": {
+  "status": "verified",
+  "how": "True of the TPA3221, which the board no longer uses. U15/U16 are the TPA3220DDW, with the pad on the bottom (SLASEN3B pin table: 'PowerPad ... Placed on bottom side of device'). It is soldered to GND with no heatsink (task 261029-075354)."
+ },
+ "thermal:0": {
+  "status": "verified",
+  "how": "True of the TPA3221 (SLASEE9C sec 5). The board now carries the TPA3220DDW (C2879306), whose pad is on the bottom (SLASEN3B sec 6, pin table), so the top-slug problem is gone (task 261029-075354)."
+ },
+ "parts:22": {
+  "status": "verified",
+  "how": "The TPA3220DDW footprint keeps the same 44 pads (1.6 x 0.4 mm, rows 7.6 mm, 0.635 mm pitch). It adds pad 45, a 7.3 x 4.43 mm EP, which matches TI's DDW0044D land (SLASEN3B p42 example board layout), with 15 x 0.3 mm vias and 63 % paste in 4 windows (task 261029-075354)."
  },
  "power:10": {
   "status": "verified",

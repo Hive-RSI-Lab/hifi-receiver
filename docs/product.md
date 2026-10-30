@@ -17,8 +17,11 @@ and say why.
 |---|---|---|---|
 | Who it is for | the cheapest way to stream to a pair of speakers | the person's own system: Viennas driven hard, two subs, FLX4 | a WiiM-Ultra-like box with a screen and a second speaker zone |
 | Power in | USB-C PD 20 V (65–100 W charger) | USB-C PD 28 V EPR (140 W charger) | USB-C PD 28 V EPR (140 W charger) |
-| Amplifier | TPA3118D2, 2 ch | TPA3221, 2 ch | 2 × TPA3221: zone A + zone B, 4 ch |
+| Amplifier | TPA3118D2, 2 ch | 2 × TPA3220 (pad-down TPA3221), one channel each | 2 × TPA3220: zone A + zone B, 4 ch |
 | Power per channel, 4 Ω, 1% THD | **43 W** | **77 W** | **77 W** (the 140 W is shared across 4 ch) |
+| Sustained power per channel (the 60 s average the amps hold, sine or music; vented box, 30 °C room / 25 °C room) | – | **4 Ω: 9.6 / 10.6 W. 6 Ω: 14.8 / 16.4 W** | **4 Ω: 4.4 / 4.8 W. 6 Ω: 7.0 / 7.9 W** with both zones playing; about 4.7 W into 4 Ω with one zone |
+| What that means for music (peaks at the line above, average 12–15 dB under them) | – | 4 Ω: 12 dB-crest music at clipping (2 × 9.7 W average, 77 W peaks). 6 Ω: 9 dB crest at its 55 W clip | 4 Ω: 15 dB-crest music at clipping (4.9 W average) on all four speakers |
+| What the governor caps (60 s average speaker power, both channels; peaks untouched) | – | 19 W | 9 W one zone, 17 W both |
 | DAC | ES8388 codec (≈96 dB) | **ES9018K2M Sabre** mains + PCM5102A subs | same as Plus |
 | Sub outputs (RCA) | 2, full range (sub's own crossover) | 2, bass-managed (crossover, level, delay, phase) | same as Plus |
 | RCA line in (FLX4) | yes, with an analog zero-latency bypass | yes, ADC + analog "DJ direct" switch | yes + optical (TOSLINK) in |
@@ -27,7 +30,7 @@ and say why.
 | Streaming | Spotify Connect, AirPlay 1, Bluetooth, Lyrion (LMS) | same | same |
 | Control | web app, 3 buttons, IR (bring your own remote) | web app, knob + 2 buttons, IR remote in box | web app, 2" colour screen, knob + 3 buttons, IR remote |
 | Boards | 1: `lite-main` (2-layer) | 1: `core` (4-layer) | 2: `core` fully populated + `ultra-front` |
-| Unit cost at 100, board + assembly + PCB | **$14.9** incl. binding posts (board alone $13.2 per `tools/hwcheck.py cost`; first-spin review fixes, CH340B and loopback taps included) | **$27.5** (review-2: through-hole USB-C, CH340B, TCA9539, self-measurement) | **$37.9** (`tools/bom_estimate.py`, with the ultra-front parts; ultra-front alone $3.74 per `tools/hwcheck.py cost ultra-front`, plus the $2.43 LCD) |
+| Unit cost at 100, board + assembly + PCB | **$14.9** incl. binding posts (board alone $13.1 per `tools/hwcheck.py cost`) | **$34.3** (two TPA3220s, one channel each, no heatsink; `core` board alone $35.4 per `tools/hwcheck.py cost`) | **$40.9** |
 | Target retail (charger not included / with charger) | **$59 / $79** | **$129 / $159** | **$199 / $229** |
 | Build order | **first** | second | third |
 
@@ -83,11 +86,11 @@ budget. More watts would need a bigger supply, and USB-C cannot provide one
 **"So we can add more speakers too":**
 
 - **Subwoofers:** two powered subs on the RCA sub outputs, in every tier.
-- **A second pair:** Ultra has a speaker zone B, a second TPA3221 with its own
+- **A second pair:** Ultra has a speaker zone B, a second TPA3220 with its own
   terminals. It shares the same 140 W, so all four channels together hold
   about 28 W each continuous, and each one still peaks at 77 W.
 - **Not supported:** wiring two pairs in parallel on one output. That gives 2 Ω
-  per channel, which the TPA3221 drives in BTL only below 3 Ω.
+  per channel, which the TPA3220 drives in BTL only below 3 Ω.
 - **Other rooms:** more units join over the network. Squeezelite/LMS sync
   groups players.
 
@@ -138,8 +141,8 @@ The rule that makes it safe: **a firmware power governor.**
 
 - **Inrush:** the USB PD inrush limit means the PVDD bulk capacitors connect
   only after negotiation, through a soft-started P-MOSFET (AO4485, 40 V).
-- **28 V headroom is tight:** the TPA3221 is rated 7–30 V recommended and
-  32 V absolute. EPR 28 V may sit at 29.4 V (+5%). So the switch also opens
+- **28 V headroom is tight:** the TPA3220 is rated 7–32 V recommended (30 V
+  typical) and 37 V absolute. EPR 28 V may sit at 29.4 V (+5%). So the switch also opens
   above about 30.5 V, and a 30 V TVS (SMBJ30A) sits on the connector.
 - **Fallback amp:** the TPA3251 (36 V, $4.90, 96 in stock) is the fallback if
   bring-up shows overshoot. Check in the schematic task whether its pinout
@@ -162,21 +165,49 @@ The rule that makes it safe: **a firmware power governor.**
   peak. **Unchecked:** the made board's chip temperature under load was never
   measured (hwde README). The Lite bring-up must measure it at 1/8 power into
   4 Ω before calling Lite done.
-- **Plus/Ultra: TPA3221** (C475500, $1.65 at 100, 1,107 in stock), analog
-  input, 88 W into 4 Ω at 1%, 108 dB SNR. It is the cheapest TI part that
+- **Plus/Ultra: TPA3220** (C2879306; $3.74 at 100 from Mouser, because LCSC
+  has none). It is the TPA3221 (C475500, $1.65) with its thermal pad underneath:
+  the same pins, analog input, 89 W into 4 Ω at 1%, 108 dB SNR. The board
+  was first drawn with the TPA3221. This pair is the cheapest TI part that
   runs at 28 V: the TPA3116/3118 and the TAS58xx stop at 26 V. The
   alternatives cost more or have almost no stock:
   - TPA3251: 36 V, $4.90, 96 in stock
   - TPA3250: 36 V, pad underneath, $4.43, 23 in stock
   - TPA3244: 30 V, pad underneath, $4.89, 99 in stock
 
-  The TPA3221's heat slug is **on top**, so it takes a bolted aluminium
-  heatsink. hwde avoided that on the 3118 board; here the power demands it.
-  - **Music:** at 1/8 power it dissipates about 3 W.
-  - **Continuous sine:** at 2 × 56 W it dissipates about 12 W, which needs
-    about 4 °C/W, a 40 × 40 × 20 mm heatsink or the enclosure's metal plate.
+  The TPA3221's heat slug is **on top**, so it needs a heatsink fitted by
+  hand. No JLC process fits one, so the board takes the TPA3220
+  ([heatsink-options.md](review-2/heatsink-options.md), issue #47). Its pad
+  is soldered to the GND planes through 15 vias, and the board is the
+  heatsink: about 26 °C/W.
+  - **What loud music costs the chip.** Music peaks at the 77 W clip level
+    and averages 12–15 dB below it: 2 × 9.7 W at a 12 dB crest, 2 × 4.9 W at
+    15 dB. On one chip that is 3.5 W or 2.2 W. hwde's check_thermal puts the
+    Plus box as drawn at 65–80 °C inside, which gives Tj 117–175 °C: one
+    pad-down chip can't play loud 4 Ω music for long.
+  - **So Plus fits both TPA3220s**, zone A playing L and zone B playing R,
+    one channel per chip at 1.3–2.0 W each. That holds 15 dB-crest music at
+    clipping (Tj 96–104 °C) in the box as drawn. With ~1500 mm² of inlet,
+    riser and outlet it holds 12 dB-crest music, 2 × 9.7 W (Tj 100–110 °C).
+    It costs $5.40 per Plus board and no hand step.
+  - **Sustained power in the vented box** (hwde check_thermal: the chips at
+    Tj 110 °C, 5 K under the warning, ~2.0 W each, box air ~58 °C at 30 °C
+    room):
+    - **Plus, one channel per chip:** 9.6 W per channel into 4 Ω and 14.8 W
+      into 6 Ω, or 10.6 W and 16.4 W at 25 °C room. That is the 77 W-peak /
+      ~10 W-average loud listening the person asked for into 4 Ω, and more
+      into 6 Ω.
+    - **Ultra, two channels per chip, both zones:** 4.4 W per channel into
+      4 Ω and 7.0 W into 6 Ω, which is 15 dB-crest music at clipping on all
+      four speakers. Ultra has no third chip to split onto; four 4 Ω
+      speakers played hard is the case it can't sustain.
+    - **The governor caps** (firmware `hifi_gov`, 60 s average): Plus 19 W,
+      Ultra 9 W with one zone and 17 W with both. Peaks pass untouched, and
+      sine and music are capped alike by their average.
+  - **Continuous sine at full power:** a firmware limit, with or without a
+    heatsink (review-2 thermal.md 1.6).
   - **Protection:** the governor and the chip's own over-temperature warning
-    bound both cases.
+    bound every case.
 
 **Rejected: an I²S-input amp with built-in DSP (TAS5825M/TAS5827/MA12070).**
 It would drop the DAC, but they all stop at 26 V, and the person asked for a
@@ -287,12 +318,12 @@ Per unit, from [`bom-estimate.csv`](bom-estimate.csv)
 
 | | Lite ×10 | Lite ×100 | Plus ×10 | Plus ×100 | Ultra ×10 | Ultra ×100 |
 |---|---|---|---|---|---|---|
-| Parts on the board | $11.74 | $9.99 | $22.70 | $18.57 | $32.55 | $26.63 |
-| JLC assembly (setup, stencil, $3 per unique extended part, joints) | $7.68 | $1.65 | $11.17 | $2.71 | $15.17 | $3.65 |
+| Parts on the board | $13.05 | $11.41 | $33.72 | $27.63 | $39.91 | $32.82 |
+| JLC assembly (setup, stencil, $3 per unique extended part, joints) | $8.24 | $1.67 | $12.27 | $3.54 | $15.95 | $4.16 |
 | PCB (hwde price points × 2.5 calibration) | $0.50 | $0.62 | $2.97 | $2.31 | $3.47 | $2.93 |
-| Off-board (heatsink, remote, FFC cable) | – | – | $2.10 | $1.40 | $3.20 | $2.15 |
-| **Per unit** | **$19.92** | **$12.26** | **$38.95** | **$24.99** | **$54.39** | **$35.36** |
-| Unique extended parts / SMT joints / THT joints | 17 / 394 / 18 | | 26 / 646 / 39 | | 32 / 906 / 48 | |
+| Off-board (Lite: binding posts; Plus/Ultra: remote, FFC cable) | $1.60 | $1.20 | $1.20 | $0.80 | $1.40 | $0.95 |
+| **Per unit** | **$23.39** | **$14.90** | **$50.16** | **$34.28** | **$60.73** | **$40.86** |
+| Unique extended parts / SMT joints / THT joints | 19 / 452 / 10 | | 27 / 860 / 64 | | 33 / 955 / 71 | |
 
 **Basic vs extended:** nearly every IC is an **extended** part, $3 per unique
 part per order. That is why the per-unit cost falls so far from ×10 to ×100.
@@ -318,7 +349,7 @@ capacitors are basic.
 | ADC | ES7243E (C2929446) | $0.32 |
 | Op-amp | OPA1678IDR (C192421) | $0.47 |
 | Analog switch | TS5A23157 (C11133) | $0.28 |
-| Amp (Plus/Ultra) | TPA3221DDVR (C475500) | $1.65 |
+| Amp (Plus/Ultra) | TPA3220DDWR (C2879306, Mouser; LCSC has none) | $3.74 |
 | Current sense | INA180A1 (C48533472) | $0.12 |
 | Output inductor | XR0850-100M 10 µH 8 A (C48391614) | $0.15 |
 | Ethernet PHY | LAN8720A (C45223) | $0.52 |
@@ -413,7 +444,7 @@ units the Hive builds for the person need none of it.
     TPA3221 (zone A) with a second TPA3221 footprint (zone B), the optical
     footprint, an FFC connector to a front board, and the knob/IR footprints
     on its front edge.
-  - **Plus vs Ultra:** Plus leaves zone B, optical and the FFC unpopulated.
+  - **Plus vs Ultra:** Plus leaves optical and the FFC unpopulated. It fits zone B, playing R on it and L on zone A.
     Ultra leaves the knob/IR footprints unpopulated, because the front board
     carries them.
   - **Why 4 layers:** for Ethernet RMII, 5 A at 28 V and two class-D stages
@@ -470,8 +501,8 @@ The brief asks for a 3D-printable enclosure made in Onshape.
   - the board outlines and connector/heatsink positions, exported from KiCad
     (STEP), from each board task.
   - a printer or JLC's 3D-printing service. Ordering is the person's money.
-- **Material:** **PETG or ASA, not PLA,** because the TPA3221 heatsink can
-  reach 60–80 °C and PLA softens at about 55 °C.
+- **Material:** **PETG or ASA, not PLA,** because the board under the amps
+  can reach 70–90 °C, and PLA softens at about 55 °C.
 - **Plus/Ultra vents:** a chimney through the box, about 1500 mm² open at
   each stage: low wall and floor slots, a riser past the board's edges and
   a lid grille over the amps ([`enclosure/README.md`](../enclosure/README.md#what-is-where-board-frame-n--rear-s--front-w--left-seen-from-the-front)).
@@ -507,7 +538,8 @@ routed board:
 2. **Stock:**
    - ES9018K2M: 706 in stock.
    - PLR237: 240 in stock.
-   - TPA3221: 1,107 in stock, enough for 10 units but worth buying ahead.
+   - TPA3220: none at LCSC. Mouser has 6,566 and DigiKey 2,032 (2026-10-29), so buy it into the JLC
+     parts inventory before ordering (`boards/core/fab/prebuy.csv`).
 3. **Checks for the schematic tasks:**
    - **CH224Q:** the I²C readout and how it behaves when a requested voltage
      isn't on offer. Partly settled: the WCH datasheet V2.0 (English copy at
