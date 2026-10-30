@@ -1,0 +1,4 @@
+- P7 routing (final): edge rule-area keepout 0.5 mm (kicad/gen/edge_keepout.py), Default clearance 0.2 mm, route_auto with no pours: 100% (Freerouting rung 1), GND routed as a net. route_critical not run (needs KRT; no diff pairs, RF or high-current nets).
+- planes_gen B.Cu + F.Cu GND, F pour pads solid (kicad/gen/zone_solid.py); 3 connections the SES import dropped (J1.11 GND, 2 x +3V3) and 12 GND vias at cap/IC pads added by route/manual/ ops through route_edit.
+- plane_repair pass (both pours one electrical group); snap45 pass; route_cleanup broke 5 loops. drc_routed: PASS 0/0/0.
+- Earlier attempts (pour-first routing, hand fan-outs at J1) are in LEARNINGS.md.

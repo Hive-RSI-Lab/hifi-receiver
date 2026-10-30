@@ -19,8 +19,9 @@ and say why.
 | Power in | USB-C PD 20 V (65–100 W charger) | USB-C PD 28 V EPR (140 W charger) | USB-C PD 28 V EPR (140 W charger) |
 | Amplifier | TPA3118D2, 2 ch | 2 × TPA3220 (pad-down TPA3221), one channel each | 2 × TPA3220: zone A + zone B, 4 ch |
 | Power per channel, 4 Ω, 1% THD | **43 W** | **77 W** | **77 W** (the 140 W is shared across 4 ch) |
-| Loud music it holds, 4 Ω, 60 s average (peaks at the line above) | – | **2 × 4.9 W** (15 dB crest at clipping) in the box as drawn; **2 × 9.7 W** (12 dB crest) once the box has ~1500 mm² vents | 2 × 4 W with one zone, 2 × 3 W per zone with both, as drawn |
-| Continuous sine it holds, 4 Ω | – | 2 × 5 W (the governor's 10 W) | 2 × 4 W, or 2 × 3 W per zone (the governor's 8 W / 12 W) |
+| Sustained power per channel (the 60 s average the amps hold, sine or music; vented box, 30 °C room / 25 °C room) | – | **4 Ω: 9.6 / 10.6 W. 6 Ω: 14.8 / 16.4 W** | **4 Ω: 4.4 / 4.8 W. 6 Ω: 7.0 / 7.9 W** with both zones playing; about 4.7 W into 4 Ω with one zone |
+| What that means for music (peaks at the line above, average 12–15 dB under them) | – | 4 Ω: 12 dB-crest music at clipping (2 × 9.7 W average, 77 W peaks). 6 Ω: 9 dB crest at its 55 W clip | 4 Ω: 15 dB-crest music at clipping (4.9 W average) on all four speakers |
+| What the governor caps (60 s average speaker power, both channels; peaks untouched) | – | 19 W | 9 W one zone, 17 W both |
 | DAC | ES8388 codec (≈96 dB) | **ES9018K2M Sabre** mains + PCM5102A subs | same as Plus |
 | Sub outputs (RCA) | 2, full range (sub's own crossover) | 2, bass-managed (crossover, level, delay, phase) | same as Plus |
 | RCA line in (FLX4) | yes, with an analog zero-latency bypass | yes, ADC + analog "DJ direct" switch | yes + optical (TOSLINK) in |
@@ -29,7 +30,7 @@ and say why.
 | Streaming | Spotify Connect, AirPlay 1, Bluetooth, Lyrion (LMS) | same | same |
 | Control | web app, 3 buttons, IR (bring your own remote) | web app, knob + 2 buttons, IR remote in box | web app, 2" colour screen, knob + 3 buttons, IR remote |
 | Boards | 1: `lite-main` (2-layer) | 1: `core` (4-layer) | 2: `core` fully populated + `ultra-front` |
-| Unit cost at 100, board + assembly + PCB | **$14.9** incl. binding posts (board alone $13.1 per `tools/hwcheck.py cost`) | **$34.3** (two TPA3220s, one channel each, no heatsink; `core` board alone $35.4 per `tools/hwcheck.py cost`) | **$40.0** |
+| Unit cost at 100, board + assembly + PCB | **$14.9** incl. binding posts (board alone $13.1 per `tools/hwcheck.py cost`) | **$34.3** (two TPA3220s, one channel each, no heatsink; `core` board alone $35.4 per `tools/hwcheck.py cost`) | **$40.9** |
 | Target retail (charger not included / with charger) | **$59 / $79** | **$129 / $159** | **$199 / $229** |
 | Build order | **first** | second | third |
 
@@ -189,11 +190,20 @@ The rule that makes it safe: **a firmware power governor.**
     clipping (Tj 96–104 °C) in the box as drawn. With ~1500 mm² of inlet,
     riser and outlet it holds 12 dB-crest music, 2 × 9.7 W (Tj 100–110 °C).
     It costs $5.40 per Plus board and no hand step.
-  - **What the governor caps** (firmware `hifi_gov`, 60 s average of the
-    speaker power): Plus 10 W across both channels in the box as drawn
-    (19 W with the vents). Ultra 8 W with one zone, 12 W with both. Peaks
-    pass untouched. Into 8 Ω the chips run cooler, and the same caps leave
-    more margin.
+  - **Sustained power in the vented box** (hwde check_thermal: the chips at
+    Tj 110 °C, 5 K under the warning, ~2.0 W each, box air ~58 °C at 30 °C
+    room):
+    - **Plus, one channel per chip:** 9.6 W per channel into 4 Ω and 14.8 W
+      into 6 Ω, or 10.6 W and 16.4 W at 25 °C room. That is the 77 W-peak /
+      ~10 W-average loud listening the person asked for into 4 Ω, and more
+      into 6 Ω.
+    - **Ultra, two channels per chip, both zones:** 4.4 W per channel into
+      4 Ω and 7.0 W into 6 Ω, which is 15 dB-crest music at clipping on all
+      four speakers. Ultra has no third chip to split onto; four 4 Ω
+      speakers played hard is the case it can't sustain.
+    - **The governor caps** (firmware `hifi_gov`, 60 s average): Plus 19 W,
+      Ultra 9 W with one zone and 17 W with both. Peaks pass untouched, and
+      sine and music are capped alike by their average.
   - **Continuous sine at full power:** a firmware limit, with or without a
     heatsink (review-2 thermal.md 1.6).
   - **Protection:** the governor and the chip's own over-temperature warning
@@ -308,12 +318,12 @@ Per unit, from [`bom-estimate.csv`](bom-estimate.csv)
 
 | | Lite ×10 | Lite ×100 | Plus ×10 | Plus ×100 | Ultra ×10 | Ultra ×100 |
 |---|---|---|---|---|---|---|
-| Parts on the board | $13.04 | $11.40 | $33.72 | $27.63 | $39.05 | $32.09 |
-| JLC assembly (setup, stencil, $3 per unique extended part, joints) | $8.24 | $1.67 | $12.27 | $3.54 | $14.98 | $4.00 |
+| Parts on the board | $13.05 | $11.41 | $33.72 | $27.63 | $39.91 | $32.82 |
+| JLC assembly (setup, stencil, $3 per unique extended part, joints) | $8.24 | $1.67 | $12.27 | $3.54 | $15.95 | $4.16 |
 | PCB (hwde price points × 2.5 calibration) | $0.50 | $0.62 | $2.97 | $2.31 | $3.47 | $2.93 |
 | Off-board (Lite: binding posts; Plus/Ultra: remote, FFC cable) | $1.60 | $1.20 | $1.20 | $0.80 | $1.40 | $0.95 |
-| **Per unit** | **$23.38** | **$14.90** | **$50.16** | **$34.28** | **$58.90** | **$39.96** |
-| Unique extended parts / SMT joints / THT joints | 19 / 452 / 10 | | 27 / 860 / 64 | | 30 / 910 / 71 | |
+| **Per unit** | **$23.39** | **$14.90** | **$50.16** | **$34.28** | **$60.73** | **$40.86** |
+| Unique extended parts / SMT joints / THT joints | 19 / 452 / 10 | | 27 / 860 / 64 | | 33 / 955 / 71 | |
 
 **Basic vs extended:** nearly every IC is an **extended** part, $3 per unique
 part per order. That is why the per-unit cost falls so far from ×10 to ×100.
@@ -441,10 +451,21 @@ units the Hive builds for the person need none of it.
     beside a 127 dB DAC.
   - **Why one layout:** one layout, one bring-up and one firmware board file
     serve two tiers.
-- **`ultra-front`: Ultra only, a 2-layer board** of about 100 × 40 mm with the
-  LCD, knob, 3 buttons, IR and a status LED, on a 20-pin 0.5 mm FFC. Ultra's
+- **`ultra-front`: Ultra only, a 2-layer board** of 110 × 40 mm with the
+  LCD, knob, 3 buttons, IR and an RGB status LED, on a 20-pin 0.5 mm FFC. Ultra's
   front panel is what makes it feel finished, and keeping it off the core
   stops the core from depending on the enclosure.
+  - **Built:** [`boards/ultra-front/`](../boards/ultra-front/README.md), with
+    its FFC pinout and the reasons for each choice.
+  - **Fewer core GPIOs:** a TCA9535 I²C expander on the front board reads the
+    knob and buttons, and drives the LED and the LCD reset. So the core gives
+    it only SPI (4 pins), backlight PWM, an interrupt and the IR line, plus
+    the shared I²C. The knob's A/B lines are also brought out, for the core
+    to use if it has 2 pins spare.
+  - **The LCD is plugged in by hand:** JLC can't place it. The panel's
+    12-pin tail goes into a socket on the board at final assembly.
+  - **Why 110 mm, not 100:** the 51.8 mm panel, its 20.7 mm tail and the knob
+    column don't fit in 100 mm.
 
 ### Which tier is built first, and why
 
@@ -482,11 +503,13 @@ The brief asks for a 3D-printable enclosure made in Onshape.
   - a printer or JLC's 3D-printing service. Ordering is the person's money.
 - **Material:** **PETG or ASA, not PLA,** because the board under the amps
   can reach 70–90 °C, and PLA softens at about 55 °C.
-- **Plus/Ultra lid and floor:** vent slots over and under the amps.
+- **Plus/Ultra vents:** a chimney through the box, about 1500 mm² open at
+  each stage: low wall and floor slots, a riser past the board's edges and
+  a lid grille over the amps ([`enclosure/README.md`](../enclosure/README.md#what-is-where-board-frame-n--rear-s--front-w--left-seen-from-the-front)).
 - **Fallback without Onshape:** the enclosure task can model it in
   CadQuery/OpenSCAD inside the Hive and export STL/STEP, so nothing waits on
   access.
-- **Plus and Ultra: done in code** ([`enclosure/`](../enclosure/README.md#plus-and-ultra)), fitted to the routed `core` and, for Ultra, `ultra-front`: about 134 g and 147 g of PETG. Ultra needs a 20-pin 0.5 mm type-B FFC, 30-50 mm.
+- **Plus and Ultra: done in code** ([`enclosure/`](../enclosure/README.md#plus-and-ultra)), fitted to the routed `core` and, for Ultra, `ultra-front`: about 134 g and 146 g of PETG. Ultra needs a 20-pin 0.5 mm type-B FFC, 30-50 mm.
 - **Lite: done in code.** It is a build123d model in
   [`enclosure/`](../enclosure/README.md), 106 x 96 x 47 mm. It is fitted to
   `lite-main`'s KiCad file and fit-checked against it, and exported as STEP

@@ -247,11 +247,12 @@ same interface as Lite's (`esp/hifi_bsp.h`); the pins are in
   for one 10 ms step. The governor counts twice the amps while zone B
   plays.
 - **Amp heat** (`thermal_out_w`, `thermal_out2_w`): the TPA3220s have no
-  heatsink and cool into the board. Plus runs both (`HIFI_SPLIT`: L on zone
-  A, R on zone B, one channel per chip), and its governor holds the 60 s
-  average speaker power to 10 W. Ultra holds 8 W with one zone and 12 W with
-  both. Peaks still reach 77 W per channel. The OTW back-off and FAULT retry
-  in `docs/review-2/firmware-requirements.md` C2 sit behind it.
+  heatsink and cool into the board and the vented box. Plus runs both
+  (`HIFI_SPLIT`: L on zone A, R on zone B, one channel per chip), and its
+  governor holds the 60 s average speaker power to 19 W, 9.6 W per channel
+  into 4 ohm. Ultra holds 9 W with one zone and 17 W with both. Peaks
+  still reach 77 W per channel. The OTW back-off and FAULT retry in
+  `docs/review-2/firmware-requirements.md` C2 sit behind it.
 - **Knob and buttons** (`core/hifi_exp.c`, host-tested): the knob is the
   volume, 2 a click; while a source streams, each click goes to it as the
   buttons do on Lite. Knob push: play/pause (hold: power). Button 1: source

@@ -80,8 +80,8 @@ netlists). It uses the same 1A86:7523 driver, and DTR#/RTS# on 13/14 still
 drive the ESP32 auto-reset. CH340G (C14267, 42k free) has the same pinout
 but needs a 12 MHz crystal on 7/8, a board change.
 
-**ultra-front** isn't on main yet. Its BOM, from worker 261028-145644's
-checkout on 10-29, is 18 lines, all ok at 100 boards. The thinnest is SW4,
+**ultra-front**'s BOM (checked on worker 261028-145644's branch on 10-29,
+before it landed) is 18 lines, all ok at 100 boards. The thinnest is SW4,
 the EC11E encoder (C361165), with 3204 free.
 
 **Watch:** parts that pass but have less than 10x what 100 boards need free:

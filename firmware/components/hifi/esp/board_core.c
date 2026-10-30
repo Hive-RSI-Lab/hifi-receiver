@@ -133,10 +133,11 @@ void hifi_bsp_init(hifi_power_cfg_t *pc, hifi_gov_cfg_t *gc) {
 	hifi_power_cfg_core(pc);
 	hifi_gov_cfg_core(gc);
 #if HIFI_SPLIT
-	/* one channel per chip: ~1.3 W each at 2 x 4.9 W of music, which holds
-	 * Tj near 104 C in the Plus box as drawn at 30 C room (hwde
-	 * check_thermal); ~19 W once the box has ~1500 mm2 vents */
-	gc->thermal_out_w = 10.0f;
+	/* one channel per chip: in the vented box at 30 C room each chip holds
+	 * ~2.0 W at Tj 110 C, which is 9.6 W of sustained output per channel
+	 * into 4 ohm (hwde check_thermal; 14.8 W into 6 ohm): 12 dB-crest music
+	 * at the 77 W clip level */
+	gc->thermal_out_w = 19.0f;
 #endif
 }
 

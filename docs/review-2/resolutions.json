@@ -118,5 +118,17 @@
  "parts:22": {
   "status": "verified",
   "how": "The TPA3220DDW footprint keeps the same 44 pads (1.6 x 0.4 mm, rows 7.6 mm, 0.635 mm pitch). It adds pad 45, a 7.3 x 4.43 mm EP, which matches TI's DDW0044D land (SLASEN3B p42 example board layout), with 15 x 0.3 mm vias and 63 % paste in 4 windows (task 261029-075354)."
+ },
+ "power:10": {
+  "status": "verified",
+  "how": "Lite D1 is now SMBJ22A (BORN, LCSC C151920; 2026-10-30): BORN SMBJ series datasheet (datasheet.lcsc.com, productCode=C151920) electrical table row SMBJ22A: VRWM 22 V, VBR 24.4-26.9 V @ 1 mA, Vc 35.5 V @ 16.9 A, IR 1 uA @ VRWM. PD 20 V +5 % = 21 V sits 1 V under VRWM. Core D1 SMBJ30A unchanged (MDD table, VBR 33.3-36.8 V, Vc 48.4 V)."
+ },
+ "thermal:30": {
+  "status": "resolved",
+  "how": "Fixed in the design 2026-10-30: D1 SMBJ22A (VRWM 22 V), so the 21 V worst-case rail is below standoff and IR <= 1 uA at 25 C (BORN table); the SMBJ20A's above-VRWM leakage question no longer arises."
+ },
+ "parts:45": {
+  "status": "verified",
+  "how": "Lite D1 now SMBJ22A C151920: its EasyEDA model (parts/easyeda/C151920.json) has the same SMB_L4.6-W3.6-LS5.3-RD pads as C364296 with pin 1 = K, so the footprint, the cathode-bar silk and pad 1 on VBUS are unchanged. Core D1 SMBJ30A, D2/D4 BZT52C33/C15 as before (MDD SMBJ30A p1, BORN BZT52Cxx p1)."
  }
 }

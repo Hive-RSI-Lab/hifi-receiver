@@ -1,0 +1,3 @@
+- P9 DFM: fab_export + bom_cpl (build qty 10): fab/ultra-front_gerbers.zip, BOM.csv (18 lines, all LCSC), CPL.csv (36 placements), prebuy.csv (6 extended parts).
+- dfm gate on the exported Gerbers: PASS, 0 findings.
+- Not done here: P10 quote/order (the person's), the board-guide PDF (pdf-material-builder house style not in the Hive), report_gen design doc (same).

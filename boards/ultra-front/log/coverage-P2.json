@@ -1,0 +1,273 @@
+{
+ "script": "knowledge",
+ "status": "gaps",
+ "schema_version": 2,
+ "workspace": ".",
+ "board": "ultra-front",
+ "phase": "P2",
+ "maturity_floor": "approved",
+ "keys": {
+  "topologies": [
+   "led-indicator",
+   "load-switch"
+  ],
+  "packages": [
+   "0603",
+   "0805",
+   "Plugin",
+   "SMD,P=0.5mm,Surface Mount\uff0cRight Angle",
+   "SMD-4P,1.6x1.5mm",
+   "SMD-4P,5.1x5.1mm",
+   "SMD-4P,5x4mm",
+   "SOT-23",
+   "TSSOP-24"
+  ],
+  "interfaces": [],
+  "parts": [
+   "0603B103K500NT",
+   "0603WAF1000T5E",
+   "0603WAF1001T5E",
+   "0603WAF1002T5E",
+   "0603WAF1003T5E",
+   "0603WAF6800T5E",
+   "0603WAF750JT5E",
+   "AO3400A",
+   "C14663",
+   "C15850",
+   "C19666",
+   "C20917",
+   "C21190",
+   "C22396388",
+   "C22775",
+   "C23228",
+   "C25803",
+   "C25804",
+   "C273610",
+   "C2856803",
+   "C2856829",
+   "C318884",
+   "C361165",
+   "C4275",
+   "C57112",
+   "C91447",
+   "CC0603KRX7R9BB104",
+   "CL10A475KO8NNNC",
+   "CL21A106KAYNNNE",
+   "EC11E1834403",
+   "FPC-05F-20PH20",
+   "FPC-05FB-12PH20",
+   "IRM-H638T/TR2",
+   "TCA9535PWR(UMW)",
+   "TJ-S1615SW6TGLCCYRGB-A5",
+   "TS-1187A-B-A-B"
+  ],
+  "sources": {
+   "constraints": "architecture/constraints.json",
+   "parts": "parts/parts.json"
+  }
+ },
+ "sources": {
+  "constraints": "architecture/constraints.json",
+  "parts": "parts/parts.json"
+ },
+ "summary": {
+  "slots": 4,
+  "covered": 0,
+  "provisional": 0,
+  "gap": 4,
+  "research_blocked": 0,
+  "draft_unverified": 0
+ },
+ "slots": [
+  {
+   "id": "block:B8",
+   "kind": "block",
+   "topology": "led-indicator",
+   "label": "B8",
+   "operating_point": {
+    "vin_v": 5,
+    "iout_a": 0.009,
+    "pdiss_w": 0.03,
+    "board_layers": 2
+   },
+   "classes": [],
+   "gap_reasons": [
+    "no coverage checklist for block 'led-indicator' - the first research pass on a new topology/interface produces one (reference/knowledge/checklists/)"
+   ],
+   "checklist": null,
+   "verdict": "gap"
+  },
+  {
+   "id": "block:B3",
+   "kind": "block",
+   "topology": "load-switch",
+   "label": "B3",
+   "operating_point": {
+    "vin_v": 5,
+    "iout_a": 0.07,
+    "pdiss_w": 0.15,
+    "board_layers": 2
+   },
+   "classes": [],
+   "gap_reasons": [
+    "no coverage checklist for block 'load-switch' - the first research pass on a new topology/interface produces one (reference/knowledge/checklists/)"
+   ],
+   "checklist": null,
+   "verdict": "gap"
+  },
+  {
+   "id": "part:C22396388",
+   "kind": "part",
+   "lcsc": "C22396388",
+   "mpn": "TCA9535PWR(UMW)",
+   "package": "TSSOP-24",
+   "block": "B4 expander",
+   "ref_prefix_hint": "U",
+   "operating_point": {},
+   "extraction": {
+    "file": null,
+    "layout_notes": 0,
+    "layout_chars": 0,
+    "error": null
+   },
+   "classes": [
+    {
+     "class": "datasheet-layout",
+     "min_level": "part",
+     "verdict": "gap",
+     "records": []
+    }
+   ],
+   "gap_reasons": [
+    "no P3 datasheet extraction on disk"
+   ],
+   "datasheet_layout": "missing",
+   "verdict": "gap"
+  },
+  {
+   "id": "part:C91447",
+   "kind": "part",
+   "lcsc": "C91447",
+   "mpn": "IRM-H638T/TR2",
+   "package": "SMD-4P,5x4mm",
+   "block": "B7 IR",
+   "ref_prefix_hint": "U",
+   "operating_point": {},
+   "extraction": {
+    "file": null,
+    "layout_notes": 0,
+    "layout_chars": 0,
+    "error": null
+   },
+   "classes": [
+    {
+     "class": "datasheet-layout",
+     "min_level": "part",
+     "verdict": "gap",
+     "records": []
+    }
+   ],
+   "gap_reasons": [
+    "no P3 datasheet extraction on disk"
+   ],
+   "datasheet_layout": "missing",
+   "verdict": "gap"
+  }
+ ],
+ "gaps": [
+  {
+   "slot": "block:B8",
+   "kind": "block",
+   "topology": "led-indicator",
+   "operating_point": {
+    "vin_v": 5,
+    "iout_a": 0.009,
+    "pdiss_w": 0.03,
+    "board_layers": 2
+   },
+   "missing": [
+    {
+     "class": "coverage-checklist",
+     "min_level": null
+    }
+   ],
+   "reasons": [
+    "no coverage checklist for block 'led-indicator' - the first research pass on a new topology/interface produces one (reference/knowledge/checklists/)"
+   ],
+   "related_records": [],
+   "principle_parents": [],
+   "task": "research block 'led-indicator': produce its coverage checklist, then populate it"
+  },
+  {
+   "slot": "block:B3",
+   "kind": "block",
+   "topology": "load-switch",
+   "operating_point": {
+    "vin_v": 5,
+    "iout_a": 0.07,
+    "pdiss_w": 0.15,
+    "board_layers": 2
+   },
+   "missing": [
+    {
+     "class": "coverage-checklist",
+     "min_level": null
+    }
+   ],
+   "reasons": [
+    "no coverage checklist for block 'load-switch' - the first research pass on a new topology/interface produces one (reference/knowledge/checklists/)"
+   ],
+   "related_records": [],
+   "principle_parents": [],
+   "task": "research block 'load-switch': produce its coverage checklist, then populate it"
+  },
+  {
+   "slot": "part:C22396388",
+   "kind": "part",
+   "mpn": "TCA9535PWR(UMW)",
+   "lcsc": "C22396388",
+   "package": "TSSOP-24",
+   "block": "B4 expander",
+   "operating_point": {},
+   "missing": [
+    {
+     "class": "datasheet-layout",
+     "min_level": "part"
+    }
+   ],
+   "reasons": [
+    "no P3 datasheet extraction on disk"
+   ],
+   "related_records": [],
+   "principle_parents": [],
+   "task": "research part TCA9535PWR(UMW): vendor layout section / app note -> part-level record(s) or a fuller datasheet-extractor pass"
+  },
+  {
+   "slot": "part:C91447",
+   "kind": "part",
+   "mpn": "IRM-H638T/TR2",
+   "lcsc": "C91447",
+   "package": "SMD-4P,5x4mm",
+   "block": "B7 IR",
+   "operating_point": {},
+   "missing": [
+    {
+     "class": "datasheet-layout",
+     "min_level": "part"
+    }
+   ],
+   "reasons": [
+    "no P3 datasheet extraction on disk"
+   ],
+   "related_records": [],
+   "principle_parents": [],
+   "task": "research part IRM-H638T/TR2: vendor layout section / app note -> part-level record(s) or a fuller datasheet-extractor pass"
+  }
+ ],
+ "warnings": [],
+ "workspace_records": [],
+ "workspace_checklists": [],
+ "draft_unverified": [],
+ "mapping_applied": null,
+ "mapping_request": null
+}

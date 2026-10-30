@@ -21,3 +21,9 @@ The person, Hive chat 2026-10-29 (10-28 evening, their time), verbatim, on their
 02:04Z: "Like essentially the flow on my end has to ideally be plug it in to power, connect some diagnostic USB or something to a laptop, or just have it connect to the internet, run some script on my laptop that configures wifi etc, and then i just leave it plugged in at home and the hive talks to it, brings it up, revs the FW, tests things, etc, all on its own. Like yea at some point i will proob need to use a scope etc, but whatever can be done for minimal increased cost and complexity to have the board monitor irself and its waveforms is best"
 02:05Z: "Like my involvement is literally: i give the spec, you design a product that will def work with appropriate contingencies, etc, as needed, then i order it, it arrives, i plug it in, do the minimal possible on my end, and leave it and then you ping me when it's ready for use"
 02:06Z: "This should be the flow for all board designs"
+
+The person, Hive chat 2026-10-29 (thread 261029-172840, after asking "what is done and what still needs to get done" and hearing Lite would likely be ready to order first), verbatim:
+
+17:41Z: "Donesnt matter they all need to be done and working"
+17:45Z: "Vienna acoustics Mozart or something but it needs to work with speakers in general i think these are 6OHM."
+17:45Z: "Not sure which ill order and when but well see"

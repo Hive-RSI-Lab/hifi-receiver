@@ -33,14 +33,15 @@ void hifi_gov_cfg_core(hifi_gov_cfg_t *cfg) {
 	/* the ESP32, PHY, DAC, ADC and an amp idling at 28 V: an estimate for
 	 * bring-up to replace (the INA186 reads it directly) */
 	cfg->p_idle_w = 4.0f;
-	/* the TPA3220 cools into the board (no heatsink): about 26 C/W. In the
-	 * Plus box as drawn the air reaches ~60 C at 30 C room, so the chip
-	 * holds ~1.9 W (Tj 110 C, 5 K under OTW): about 8 W out of both
-	 * channels into 4 ohm, 13 W at the USB-C input. Ultra's two amps heat
-	 * the same box: ~1.5 W each, 12 W out in all
-	 * (docs/review-2/heatsink-options.md). Peaks pass; the minute doesn't */
-	cfg->thermal_out_w = 8.0f;
-	cfg->thermal_out2_w = 12.0f;
+	/* the TPA3220 cools into the board (no heatsink, ~26 C/W). In the
+	 * vented Plus/Ultra box (enclosure/core_box.py vent_plan, ~1500 mm2 a
+	 * stage) at 30 C room, hwde check_thermal holds Tj at 110 C with ~2.0 W
+	 * per chip: Ultra's two channels per chip then sustain 4.4 W each into
+	 * 4 ohm, so one zone 9 W and both zones 17 W (docs/review-2/
+	 * heatsink-options.md). Plus splits its pair across both chips and
+	 * raises this in board_core.c. Peaks pass; the minute doesn't */
+	cfg->thermal_out_w = 9.0f;
+	cfg->thermal_out2_w = 17.0f;
 	cfg->thermal_tau_s = 60.0f;
 }
 

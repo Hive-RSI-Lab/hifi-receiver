@@ -113,12 +113,29 @@ hwde check_thermal (branch 261029-050245), enclosure model on, board as drawn:
 - **A different amp:** TPA3250/3244 are pad-down too, at the same thermal story and $4.4-4.9 with 23-99 in stock.
 - **A floor spreader**, for the box-air reason above.
 
+### Sustained power in the box as built (vents on main, PR #102)
+
+hwde check_thermal (installed 4827325) with core's `enclosure` block set to the built box:
+- **Plus:** 132.4 x 112.4 x 39.8 mm, inlet 1730, riser 1565, outlet 1598 mm2, stack 32 mm.
+- **Ultra:** 135.4 x 114.4 x 49.2 mm, 1516 / 1578 / 1736 mm2, stack 39 mm.
+- **Model inputs:** TPA3220 at 26 C/W, chip loss from TI's curve, output-filter and rest-of-board heat in the box. Each figure is the 60 s average power per channel that keeps both chips at Tj 110 C:
+
+| Tier | Load | 30 C room | 25 C room | Chip loss | Box air |
+|---|---|---|---|---|---|
+| Plus (one channel per chip) | 4 ohm | **9.6 W/ch** | 10.6 W/ch | 2.0 W | 58-59 C |
+| Plus | 6 ohm | **14.8 W/ch** | 16.4 W/ch | 2.0 W | 58 C |
+| Ultra, both zones (two channels per chip) | 4 ohm | **4.4 W/ch** | 4.8 W/ch | 2.0 W | 58 C |
+| Ultra, both zones | 6 ohm | **7.0 W/ch** | 7.9 W/ch | 2.0 W | 58 C |
+
+- **Plus:** the sustained figure is the average, sine or music alike, and peaks reach the clip level (77 W into 4 ohm, 55 W into 6 ohm). Plus meets the 77 W-peak / 10-20 W-average target into 4 ohm at its lower end: 12 dB-crest music at clipping. Into 6 ohm it is past the target.
+- **Ultra:** with both zones it meets the target only at a 15 dB crest. Four speakers share two chips, and there is no third chip to split onto.
+
 **Governor (firmware-requirements C2, `hifi_gov`, 60 s average of speaker power):**
-- **Plus:** 10 W across both channels in the box as drawn, which holds Tj near 104 C at 30 C room. It is 19 W with the vents.
-- **Ultra:** 8 W with one zone, 12 W with both, two channels per chip.
-- **Peaks** are untouched: the 1 s supply budget and 77 W per channel.
+- **Plus:** 19 W (HIFI_SPLIT).
+- **Ultra:** 9 W with one zone, 17 W with both.
+- **Peaks:** untouched (the 1 s supply budget).
 - **Behind it:** the OTW back-off and the FAULT retry.
-- **Bring-up C3** measures the board and box and sets these from the measurement.
+- **Bring-up C3** measures the board and box, and sets these from the measurement.
 
 **Levers not taken:**
 - **2 oz outer copper**, which TI recommends: it is about 10-15 % better, but core's fine-pitch routing was drawn to 1 oz rules.

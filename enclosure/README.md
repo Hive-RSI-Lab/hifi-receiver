@@ -141,10 +141,10 @@ They are built by `plus.py` and `ultra.py`, which call `core_box.py`.
 
 | | Plus | Ultra |
 |---|---|---|
-| Outside, without knob | 127.4 x 106.0 x 39.8 mm | 127.4 x 114.4 x 49.2 mm, plus a 4.2 mm control column on the front |
+| Outside, without knob | 132.4 x 112.4 x 39.8 mm | 135.4 x 114.4 x 49.2 mm, plus a 4.2 mm control column on the front |
 | Printed parts | base, lid, knob, 2 buttons | base, lid, knob, 3 buttons |
-| PETG if solid | about 134 g | about 147 g |
-| Fit check | `out/plus/fit.md`, 24/24 | `out/ultra/fit.md`, 51/51, printing without support included |
+| PETG if solid | about 134 g | about 146 g |
+| Fit check | `out/plus/fit.md`, 40/40 | `out/ultra/fit.md`, 50/50, printing without support included |
 
 Each `out/<tier>/` folder holds the STLs (already in print orientation),
 `enclosure.step` (the assembly with the board as a slab, for Onshape), the
@@ -153,17 +153,28 @@ fit report and renders (`iso.png`, `top.png`, `port-<edge>.png`).
 ### What is where (board frame: N = rear, S = front, W = left seen from the front)
 
 - **Rear (N):**
-  - zone A binding posts, at 19 mm pitch within each pair so dual banana
-    plugs fit. From the left, seen from the front: L pair, then R pair.
-    They sit over the J6/J7 screw terminals, and each post wires to its
-    terminal.
+  - the speaker binding posts, at 19 mm pitch within each pair so dual
+    banana plugs fit. From the left, seen from the front: L pair, then R
+    pair. Inside, each post wires to a screw terminal on the board:
+
+    | Posts | Plus | Ultra (lower row) | Ultra (upper row) |
+    |---|---|---|---|
+    | L pair (x 11.2, 30.2) | zone A, **J6** | zone A, J6/J7 | zone B, J10/J11 |
+    | R pair (x 41.4, 60.4) | zone B, **J11** | zone A, J6/J7 | zone B, J10/J11 |
+
+    Plus fits both amps, one per channel (task 261029-075354, PR #68): L on
+    zone A's J6, R on zone B's J11, which sits right under the R pair, so
+    its wires are the shortest. On a board that still has zone B unfitted
+    (main's `boards/core/parts/parts.json` before PR #68 lands), the R pair
+    wires to J7 instead.
   - SUB OUT (J4) and LINE IN (J5), a 12 mm teardrop hole per barrel.
   - Ultra adds TOSLINK (U19) and a second row of posts for zone B
     (J10/J11) above zone A's.
 - **Left (W):** USB-C power (J1) and Ethernet (J2).
 - **Top, Plus:** the volume knob, with a long printed stem down to the core's
   vertical EC11 (SW1). Also two buttons (SW2, SW3), a light pipe over the
-  status LED (D3) and a 9 mm IR hole over U18. Vents sit over the amplifier.
+  status LED (D3) and a 9 mm IR hole over U18. The lid grille sits over the
+  amplifiers (see Heat).
 - **Front, Plus:** an IR window in front of U18.
 - **Front, Ultra:** the `ultra-front` board stands behind the front wall,
   face forward. Its J1 sits 4.1 mm in front of the core's J3, and its
@@ -185,12 +196,43 @@ fit report and renders (`iso.png`, `top.png`, `port-<edge>.png`).
   - **Mounting:** the front board screws to four bosses on the wall with
     M2.5 x 6 thread-forming screws from behind. Fit it **before** the core.
   - **Core LED:** Ultra keeps the top light pipe for the core's D3.
-- **Heat:** core's amps are now the pad-down TPA3220, which cools into the
-  board, so no heatsink is fitted (docs/review-2/heatsink-options.md). The
-  19 x 12 mm room over each amp is still kept clear, up to 1 mm under the lid
-  (`HS_U15`, `HS_U16` in the fit check). Vent slots sit over it in the lid
-  and under it in the floor. They matter more now, because the board sheds
-  the amps' heat into the box air.
+- **Heat: the box is a chimney** (`core_box.vent_plan`, task
+  261030-074523). Air comes in low, rises past the board's edges and leaves
+  through the lid, about 1500 mm² open at each stage, as
+  docs/review-2/thermal.md 6.2 asks. The board fills the box, so without a
+  riser past it the old floor and lid slots breathed through only the
+  0.6-2 mm edge gaps (~95 mm² in series).
+
+  | open area, mm² | Plus | Ultra |
+  |---|---|---|
+  | inlet: low wall slots (2 mm wide, from 0.5 mm over the floor) | 61 slots x 10.5 mm on S, E, W: 1281 | 35 x 15 mm on E, W: 1050 |
+  | inlet: floor slots in the riser strips, clear of the feet | 45: 449 | 46: 466 |
+  | riser: board edge to wall, less what stands in it | S 7 mm + E 7 mm: 1565 | behind the front board 4.8 mm + E 10 mm: 1578 |
+  | outlet: lid grille (17 slots 2 x 42 mm over both amps) + slots over the E strip | 1598 | 1736 |
+  | stack, inlet middle to lid top | 32 mm | 39 mm |
+
+  - **What it buys (hwde check_thermal's box model, ±30 %):** Plus's air at
+    5 W inside in a 30 C room drops from ~64 C to ~49 C, so PETG's Tg
+    margin goes from 16 K to 31 K. At 10 W it is ~62 C (was ~95 C).
+    Ultra's is ~60 C at 10 W and ~69 C at 14 W (its 1/8-power heat). The
+    amps' governor can rise to match (heatsink-options.md, PR #68). The
+    numbers go in core's constraints `enclosure` block with PR #68, which
+    adds it: Plus box_mm [132.4, 112.4, 39.8], inlet 1730, riser 1565,
+    outlet 1598, stack 32.
+  - **Room it costs:** the 7 mm riser strips make Plus 5 mm wider and 6.4
+    mm deeper, and Ultra 8 mm wider. Plus's IR window (U18) is now 9.9 mm
+    in from the front face (the fit check allows it 11; it is seen, not
+    plugged, and the front-facing receiver is an open point below).
+  - **Feet:** a foot whose recess would leave a web under 1 mm to a
+    screw's counterbore moves 1-3 mm along its diagonal (`feet()`).
+  - **Printing:** every vent is a 2 mm slot. The wall slots' tops are 2 mm
+    bridges, and the floor and lid slots are holes in the first layers.
+  - **Heatsink room:** each fitted TPA3221's top slug still has 19 x 12 mm,
+    up to 1 mm under the lid (`HS_U15`, `HS_U16` in the fit check), under
+    the grille. The floor slots under each amp stay. With PR #68's
+    pad-down TPA3220 nothing goes there.
+  - **Keep it clear:** the inlets are on the sides and front, near the
+    bottom, so the box wants its feet on a hard surface, not on a cloth.
 - **Screws, feet:** 4 x M3 x 12 screws go up from underneath, through the
   base and the board's holes, into the lid's pillars (as on Lite), plus 4
   rubber feet of 11 mm or less.
@@ -217,7 +259,7 @@ contacts)**:
 - **Dropped:** parts the tier doesn't fit (from `boards/core/parts/parts*.json`).
 - **RCA jacks:** J4/J5 are cut to their body inside the rear wall. Their
   barrels are checked as ports through the round holes.
-- **Added as boxes:** the binding-post nuts and lugs, the room kept over the amps, and
+- **Added as boxes:** the binding-post nuts and lugs, the heatsinks, and
   for Ultra the front board, its parts and the LCD.
 - **Plus SW1:** counts as the EC11's body and bushing. Its shaft runs up
   the knob's bore.
@@ -235,15 +277,15 @@ LCSC (470 µF 10x20, KF301), the boards' own `lib/aiee.3dshapes` models
 ```sh
 M=$HIVE_MODULES/hive-mech/bin/mech           # builds its venv in ~/.cache/mech on first use
 $M board boards/core/kicad/core.kicad_pcb --heights enclosure/heights.json -o enclosure/core.board.json
-$M board <ultra-front checkout>/boards/ultra-front/kicad/ultra-front.kicad_pcb \
+$M board boards/ultra-front/kicad/ultra-front.kicad_pcb \
    --heights enclosure/heights.json -o enclosure/ultra-front.board.json
 $M build enclosure/plus.py  -o enclosure/out/plus     # exit 1 on a fit failure
 $M build enclosure/ultra.py -o enclosure/out/ultra
 python3 enclosure/fit_md.py plus ultra
 ```
 
-`ultra-front.board.json` is read from the ultra-front task's branch
-(70a0533, PR #10). It isn't on main yet. Re-read it when that board lands.
+`ultra-front.board.json` was read from the ultra-front task's branch (PR #10)
+and re-read on its merge with main: the board as landed gives the same file.
 
 ### Open points (Plus/Ultra)
 
@@ -254,8 +296,11 @@ python3 enclosure/fit_md.py plus ultra
   (task 261029-020622) is taking it, and the box is re-cut when it lands.
 - **RCA pegs:** core's RCA footprint lacks the jack's two locating-peg
   holes, which Lite's has. Also in that review.
-- **Heatsink:** none any more. The TPA3220 swap (task 261029-075354) took
-  the hand-fitted heatsink out of the box.
+- **Heatsink fixing:** the board has no heatsink holes, though
+  `architecture/blocks.md` plans them. Until it has them, the heatsink is
+  stuck on with tape. 19 x 12 mm is the room there is before the output
+  inductors. That is enough for music (about 3 W) but not for long
+  full-power sine tests.
 - **Unchecked dimensions:**
   - the LCD's active-area offset in its module (datasheet p.10). The
     window is centred with 1 mm a side to spare.

@@ -5,7 +5,7 @@ says why it differs.
 
 | Block | Parts | What it does |
 |---|---|---|
-| B1 USB-C + PD | J1 USB4105-GF-A-120, U1 CH224A (ESSOP-10; the CH224Q DFN could not be fanned out), D1 SMBJ20A at Q1's source | 48 V/5 A receptacle; CH224A asks for 20 V (Rset 120k on CFG1, datasheet table 5-1); TVS on VBUS. CC1/CC2 to the CH224A, crossed (it treats them alike). CH224A I2C (0x22) on the codec's bus so firmware reads the contract. |
+| B1 USB-C + PD | J1 USB4105-GF-A-120, U1 CH224A (ESSOP-10; the CH224Q DFN could not be fanned out), D1 SMBJ22A at Q1's source | 48 V/5 A receptacle; CH224A asks for 20 V (Rset 120k on CFG1, datasheet table 5-1); TVS on VBUS. CC1/CC2 to the CH224A, crossed (it treats them alike). CH224A I2C (0x22) on the codec's bus so firmware reads the contract. |
 | B2 PVDD switch | Q1 AO4485 (P-MOSFET 40 V) | Connects VBUS to PVDD only when GPIO18 is high AND CH224A PG is low (Q4's emitter is PG), with a Miller-cap soft start (C2 100 nF gate-drain via R15 1k, ~6 ms), so the 690 uF of amp bulk never loads VBUS during PD negotiation and a 5 V-only port never powers the amp. |
 | B3 5 V buck | U2 TPS54302 | VBUS (5-21 V) -> 5 V, 3 A part, about 0.6 A used. TI design-example values (10 uH, 2 x 22 uF, 100k/13k (Basic), 100 pF). |
 | B4 3.3 V buck | U3 SY8089A1AAC | 5 V -> +3V3 digital (ESP32, CH340C, codec DVDD/PVDD). |
