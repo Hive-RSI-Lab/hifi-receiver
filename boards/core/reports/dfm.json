@@ -4,7 +4,7 @@
   "phase": "P9",
   "tool": "dfm",
   "input": "kicad/core.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:bd8e6b3043c1b7a6ae6c5089e6be7bea70688dc56850572b30552596a26d718a",
+  "input_digest": "sexpr_no_uuid:893c05fc50aaa4c9c60cae241fefc9b5bb9525385d15e5fedfaeef725f584eb4",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -13,19 +13,65 @@
     "max_count": 0
   },
   "counts": {
-    "total": 0,
-    "by_severity": {},
-    "by_source": {}
+    "total": 2,
+    "by_severity": {
+      "warning": 2
+    },
+    "by_source": {
+      "check.dfm": 2
+    }
   },
   "failing_count": 0,
   "failing": [],
-  "warnings_count": 0,
-  "warnings": [],
+  "warnings_count": 2,
+  "warnings": [
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": null,
+      "layer": null,
+      "net": null,
+      "refs": [
+        "J4"
+      ],
+      "msg": "J4: the LCSC model's pad centre sits 0.793 mm from the board's at the CPL position",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "J4: the LCSC model's pad centre sits 0.793 mm from the board's at the CPL position",
+          "pos": null
+        }
+      ],
+      "kind": "cpl_offset",
+      "offset_mm": 0.793
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": null,
+      "layer": null,
+      "net": null,
+      "refs": [
+        "J5"
+      ],
+      "msg": "J5: the LCSC model's pad centre sits 0.793 mm from the board's at the CPL position",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "J5: the LCSC model's pad centre sits 0.793 mm from the board's at the CPL position",
+          "pos": null
+        }
+      ],
+      "kind": "cpl_offset",
+      "offset_mm": 0.793
+    }
+  ],
   "coverage": {
     "strict": false,
     "required": [
       "copper",
       "copper_to_edge",
+      "zone_fill",
       "drill",
       "hole_to_edge",
       "silk",
@@ -39,6 +85,7 @@
     "ran": [
       "copper",
       "copper_to_edge",
+      "zone_fill",
       "drill",
       "hole_to_edge",
       "silk",
@@ -51,6 +98,7 @@
     "passed": [
       "copper",
       "copper_to_edge",
+      "zone_fill",
       "drill",
       "hole_to_edge",
       "silk",
@@ -70,12 +118,12 @@
   "record_result": {
     "ok": true,
     "recorded": true,
-    "workspace": ".",
+    "workspace": "/work/boards/core",
     "gate": "dfm",
     "status": "pass",
-    "attempts": 4,
+    "attempts": 7,
     "inputs": {
-      "pcb": "sexpr_no_uuid:bd8e6b3043c1b7a6ae6c5089e6be7bea70688dc56850572b30552596a26d718a",
+      "pcb": "sexpr_no_uuid:893c05fc50aaa4c9c60cae241fefc9b5bb9525385d15e5fedfaeef725f584eb4",
       "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
       "parts": null
     }

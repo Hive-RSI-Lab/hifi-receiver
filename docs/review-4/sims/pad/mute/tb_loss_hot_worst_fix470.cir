@@ -1,0 +1,41 @@
+* Lite sub mute, power loss: worst part (Vth 2.5 V, Rds 7 ohm max at 5 V x1.4 hot), codec holds to +5V 2.0 V
+* 70 C, VTO 2.5 V, KP 0.04 (Rds at Vgs 4.5 V ~ 12.5 ohm per FET).
+* +5V falls 5.18 V -> 0 in 20 ms from t = 2 s; LOUT2/ROUT2 (VMID 1.65 V) collapse in 2 ms once
+* +5V < 2.0 V. C90 charges from +5V through Q11 from t = 0.
+.param VTO=2.5 KP=0.04 TOLHI=1.0 BFQ=416.4
+.include models.inc
+* the mute as built (boards/lite-main/kicad/gen/root.py, lite-main.net): p5 = +5V, lout/rout = ES8388 LOUT2/ROUT2
+* R80/R81 carry a tolerance factor TOLHI (>1 raises the trip: R80 high, R81 low); the bench sets TOLHI, BFQ, VTO, KP
+QD p5 p5 res Q3904
+C90 res 0 22u
+R80 p5 det {120k*TOLHI}
+R81 det 0 {22k/TOLHI}
+QDET mute det 0 Q3904
+R82 res mute 47k
+X13 subl mute ms N7002 vto={VTO} kp={KP}
+X15 subr mute ms N7002 vto={VTO} kp={KP}
+X14 0 mute ms N7002 vto={VTO} kp={KP}
+C47 lout acl 10u
+R36 acl subl 470
+R37 subl 0 47k
+RSUBL subl 0 10k
+C48 rout acr 10u
+R38 acr subr 470
+R39 subr 0 47k
+RSUBR subr 0 10k
+* FIX: R36/R38 build-out 100R -> 470R (also R3-SYSTEM-7's ESD fix)
+
+.include lpf.inc
+.options TEMP=70 TNOM=25
+.param TF5={20m} TC={2+20m*(1-2.0/5.18)}
+V5 p5 0 PWL(0 0 0.01 5.18 2 5.18 {2+TF5} 0)
+Vl lout 0 PWL(0 0 1.0 1.65 {TC} 1.65 {TC+2m} 0)
+Vr rout 0 PWL(0 0 1.0 1.65 {TC} 1.65 {TC+2m} 0)
+.tran 20u 3 0 20u
+.measure tran sub_min MIN v(subl) FROM=1.99 TO=3
+.measure tran lp_min MIN v(l2) FROM=1.99 TO=3
+.measure tran band_pk MAX v(h2) FROM=1.99 TO=3
+.measure tran band_min MIN v(h2) FROM=1.99 TO=3
+.measure tran mute_at_collapse FIND v(mute) AT={TC}
+.measure tran mute_late FIND v(mute) AT=2.9
+.end

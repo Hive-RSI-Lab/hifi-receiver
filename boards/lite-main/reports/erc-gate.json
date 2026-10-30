@@ -4,7 +4,7 @@
   "phase": "P4",
   "tool": "erc",
   "input": "kicad/lite-main.kicad_sch",
-  "input_digest": "sexpr_no_uuid:c71ef75501c52f58bd0870cc61131c8ac8b691f21243facb1eee816f0baa4614",
+  "input_digest": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -23,11 +23,12 @@
   "warnings_count": 0,
   "warnings": [],
   "pin_types": {
-    "symbols": 14,
-    "pins": 181,
-    "passive": 155,
+    "symbols": 15,
+    "pins": 184,
+    "passive": 158,
     "typed": 26,
     "untyped": [
+      "aiee:2N7002",
       "aiee:AO4485_C5125949",
       "aiee:MMBT3904-C20526",
       "aiee:TS-1187A-B-A-B",
@@ -41,9 +42,9 @@
     "workspace": ".",
     "gate": "erc",
     "status": "pass",
-    "attempts": 16,
+    "attempts": 17,
     "inputs": {
-      "sch": "sexpr_no_uuid:c71ef75501c52f58bd0870cc61131c8ac8b691f21243facb1eee816f0baa4614",
+      "sch": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
       "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d"
     }
   }

@@ -1,0 +1,14 @@
+* Lite sub-out mute: USB-C pulled at 2 s. +5V falls 5 -> 0 in 20 ms; VMID (1.65 V)
+* holds until +5V < 3.4 V (LP5907 dropout) then collapses in 2 ms. VTO min 1.0 V.
+.param VTO=1.0
+.include models.inc
+.include circuit.inc
+V5 p5 0 PWL(0 0 0.01 5 2 5 2.02 0)
+* VMID follows +5V's crossing of 3.4 V at 2.0064 s
+Vl lout 0 PWL(0 0 1.0 1.65 2.0064 1.65 2.0084 0)
+Vr rout 0 PWL(0 0 1.0 1.65 2.0064 1.65 2.0084 0)
+.tran 20u 3 0 20u
+.measure tran sub_min MIN v(subl) FROM=1.99 TO=3
+.measure tran mute_at_loss FIND v(mute) AT=2.01
+.measure tran mute_late FIND v(mute) AT=2.9
+.end

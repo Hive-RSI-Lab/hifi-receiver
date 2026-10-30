@@ -1,0 +1,21 @@
+* Lite sub mute, power loss: reference: mute FETs never turn on (the as-built round-2 board)
+* 25 C, VTO 100 V, KP 0.27 (Rds at Vgs 4.5 V ~ -0.0 ohm per FET).
+* +5V falls 5.18 V -> 0 in 20 ms from t = 2 s; LOUT2/ROUT2 (VMID 1.65 V) collapse in 2 ms once
+* +5V < 3.4 V. C90 charges from +5V through Q11 from t = 0.
+.param VTO=100 KP=0.27 TOLHI=1.0 BFQ=416.4
+.include models.inc
+.include circuit.inc
+.include lpf.inc
+.options TEMP=25 TNOM=25
+.param TF5={20m} TC={2+20m*(1-3.4/5.18)}
+V5 p5 0 PWL(0 0 0.01 5.18 2 5.18 {2+TF5} 0)
+Vl lout 0 PWL(0 0 1.0 1.65 {TC} 1.65 {TC+2m} 0)
+Vr rout 0 PWL(0 0 1.0 1.65 {TC} 1.65 {TC+2m} 0)
+.tran 20u 3 0 20u
+.measure tran sub_min MIN v(subl) FROM=1.99 TO=3
+.measure tran lp_min MIN v(l2) FROM=1.99 TO=3
+.measure tran band_pk MAX v(h2) FROM=1.99 TO=3
+.measure tran band_min MIN v(h2) FROM=1.99 TO=3
+.measure tran mute_at_collapse FIND v(mute) AT={TC}
+.measure tran mute_late FIND v(mute) AT=2.9
+.end

@@ -1,0 +1,218 @@
+{
+ "script": "check_thermal",
+ "status": "violations",
+ "board": "core.kicad_pcb",
+ "counts": {
+  "total": 4,
+  "by_severity": {
+   "warning": 4
+  },
+  "by_source": {
+   "check_thermal": 4
+  }
+ },
+ "violations": [
+  {
+   "check": "check_thermal",
+   "severity": "warning",
+   "pos": [
+    46.087,
+    161.697
+   ],
+   "layer": "F.Cu",
+   "net": "GND",
+   "refs": [
+    "U15"
+   ],
+   "msg": "U15 (2.00 W) needs a thermal-via array to GND (copper alone tops out ~51 C/W); found 20 via(s), want >= 36",
+   "source": "check_thermal",
+   "items": [
+    {
+     "msg": "U15 (2.00 W) needs a thermal-via array to GND (copper alone tops out ~51 C/W); found 20 via(s), want >= 36",
+     "pos": [
+      46.087,
+      161.697
+     ]
+    }
+   ],
+   "kind": "thermal_vias",
+   "vias": 20,
+   "required": 36,
+   "power_w": 2.0
+  },
+  {
+   "check": "check_thermal",
+   "severity": "warning",
+   "pos": [
+    78.987,
+    161.697
+   ],
+   "layer": "F.Cu",
+   "net": "GND",
+   "refs": [
+    "U16"
+   ],
+   "msg": "U16 (2.00 W) needs a thermal-via array to GND (copper alone tops out ~51 C/W); found 21 via(s), want >= 36",
+   "source": "check_thermal",
+   "items": [
+    {
+     "msg": "U16 (2.00 W) needs a thermal-via array to GND (copper alone tops out ~51 C/W); found 21 via(s), want >= 36",
+     "pos": [
+      78.987,
+      161.697
+     ]
+    }
+   ],
+   "kind": "thermal_vias",
+   "vias": 21,
+   "required": 36,
+   "power_w": 2.0
+  },
+  {
+   "check": "check_thermal",
+   "severity": "warning",
+   "pos": [
+    62.687,
+    140.497
+   ],
+   "layer": null,
+   "net": null,
+   "refs": [
+    "C5"
+   ],
+   "msg": "C5 at full power carries 1.25 A rms, 174% of its rating: only a power limit keeps that short; add low-ESR ceramic bulk at the switching node or pick a low-impedance series",
+   "source": "check_thermal",
+   "items": [
+    {
+     "msg": "C5 at full power carries 1.25 A rms, 174% of its rating: only a power limit keeps that short; add low-ESR ceramic bulk at the switching node or pick a low-impedance series",
+     "pos": [
+      62.687,
+      140.497
+     ]
+    }
+   ],
+   "kind": "thermal_ripple",
+   "ripple_share": 1.7361
+  },
+  {
+   "check": "check_thermal",
+   "severity": "warning",
+   "pos": [
+    62.687,
+    151.497
+   ],
+   "layer": null,
+   "net": null,
+   "refs": [
+    "C6"
+   ],
+   "msg": "C6 at full power carries 1.25 A rms, 174% of its rating: only a power limit keeps that short; add low-ESR ceramic bulk at the switching node or pick a low-impedance series",
+   "source": "check_thermal",
+   "items": [
+    {
+     "msg": "C6 at full power carries 1.25 A rms, 174% of its rating: only a power limit keeps that short; add low-ESR ceramic bulk at the switching node or pick a low-impedance series",
+     "pos": [
+      62.687,
+      151.497
+     ]
+    }
+   ],
+   "kind": "thermal_ripple",
+   "ripple_share": 1.7361
+  }
+ ],
+ "checked": [
+  {
+   "ref": "U4",
+   "net": "GND",
+   "power_w": 0.4,
+   "power_limit_w": 0.7827,
+   "area_mm2": 645.0,
+   "theta_ja": 51.1055,
+   "rise_c": 20.4422,
+   "dt_allowed_c": 40.0,
+   "vias_near_part": 0,
+   "multilayer": true,
+   "air_c": 55.5027,
+   "tj_c": 75.9449
+  },
+  {
+   "ref": "U15",
+   "net": "GND",
+   "power_w": 2.0,
+   "power_limit_w": 2.319,
+   "area_mm2": 645.0,
+   "theta_ja": 23.5,
+   "rise_c": 47.0,
+   "dt_allowed_c": 54.49726834468777,
+   "vias_near_part": 20,
+   "multilayer": true,
+   "theta_model_cw": 51.1055,
+   "theta_datasheet_cw": 23.5,
+   "rise_max_c": 235.0,
+   "governor": "firmware hifi_gov 60 s average of speaker power: Plus 19 W (HIFI_SPLIT, one channel per chip: 9.6 W/ch into 4 ohm, 14.8 W/ch into 6 ohm), Ultra 9 W one zone / 17 W both (4.4 W/ch into 4 ohm), at 30 C room in the vented box (firmware-requirements C2). power_w is that governed chip loss, ~2.0 W; power_max_w one channel's share of the supply-limited sine",
+   "air_c": 55.5027,
+   "tj_c": 102.5027
+  },
+  {
+   "ref": "U16",
+   "net": "GND",
+   "power_w": 2.0,
+   "power_limit_w": 2.319,
+   "area_mm2": 645.0,
+   "theta_ja": 23.5,
+   "rise_c": 47.0,
+   "dt_allowed_c": 54.49726834468777,
+   "vias_near_part": 21,
+   "multilayer": true,
+   "theta_model_cw": 51.1055,
+   "theta_datasheet_cw": 23.5,
+   "rise_max_c": 235.0,
+   "governor": "firmware hifi_gov 60 s average of speaker power: Plus 19 W (HIFI_SPLIT, one channel per chip: 9.6 W/ch into 4 ohm, 14.8 W/ch into 6 ohm), Ultra 9 W one zone / 17 W both (4.4 W/ch into 4 ohm), at 30 C room in the vented box (firmware-requirements C2). power_w is that governed chip loss, ~2.0 W; power_max_w one channel's share of the supply-limited sine",
+   "air_c": 55.5027,
+   "tj_c": 102.5027
+  }
+ ],
+ "enclosure": {
+  "box_mm": [
+   132.4,
+   112.4,
+   39.8
+  ],
+  "heat_w": 7.4,
+  "g_walls_w_k": 0.134,
+  "g_vents_w_k": 0.1562,
+  "vent_path_mm2": 939.052,
+  "room_c": 30.0,
+  "air_rise_c": 25.5027,
+  "air_c": 55.5027,
+  "material": "PETG",
+  "tg_c": 80.0,
+  "tg_margin_c": 24.4973
+ },
+ "ripple": [
+  {
+   "ref": "C5",
+   "irms_a": 0.43,
+   "rated_irms_a": 0.72,
+   "ripple_share": 0.5972,
+   "ripple_share_max": 1.7361,
+   "cap_c": 57.2861,
+   "life_h": 54621.2204
+  },
+  {
+   "ref": "C6",
+   "irms_a": 0.43,
+   "rated_irms_a": 0.72,
+   "ripple_share": 0.5972,
+   "ripple_share_max": 1.7361,
+   "cap_c": 57.2861,
+   "life_h": 54621.2204
+  }
+ ],
+ "report_schema": 1,
+ "checker_version": 1,
+ "generated_at": "2026-10-30T20:25:27+00:00",
+ "input": "core.kicad_pcb",
+ "input_digest": "sexpr_no_uuid:f23742b35eb94c71e1af98e864f4e7ef3ff0e3aee1c638b258e67cb2d0b3a176"
+}

@@ -1,0 +1,77 @@
+board 118.00 x 90.00 mm, rear edge y 60.323
+PASS J4 pads on /SPK_L_P
+PASS J4 C7437321
+PASS J4 pin pitch 15.70 (Amass 15.7)
+PASS J4 drill 2.00 for a 1.2 mm pin (pad 3.0, ring 0.50)
+     J4 at x 100.27: nose tip 2.65 mm past the rear edge, body face +0.15, pad 1 (contact) y 78.17
+PASS J5 pads on /SPK_L_N
+PASS J5 C7437322
+PASS J5 pin pitch 15.70 (Amass 15.7)
+PASS J5 drill 2.00 for a 1.2 mm pin (pad 3.0, ring 0.50)
+     J5 at x 111.27: nose tip 2.65 mm past the rear edge, body face +0.15, pad 1 (contact) y 78.17
+PASS J4-J5 pitch 11.00 mm, body gap 0.90 mm
+PASS J6 pads on /SPK_R_P
+PASS J6 C7437321
+PASS J6 pin pitch 15.70 (Amass 15.7)
+PASS J6 drill 2.00 for a 1.2 mm pin (pad 3.0, ring 0.50)
+     J6 at x 122.27: nose tip 2.65 mm past the rear edge, body face +0.15, pad 1 (contact) y 78.17
+PASS J5-J6 pitch 11.00 mm, body gap 0.90 mm
+PASS J7 pads on /SPK_R_N
+PASS J7 C7437322
+PASS J7 pin pitch 15.70 (Amass 15.7)
+PASS J7 drill 2.00 for a 1.2 mm pin (pad 3.0, ring 0.50)
+     J7 at x 133.26: nose tip 2.65 mm past the rear edge, body face +0.15, pad 1 (contact) y 78.17
+PASS J6-J7 pitch 11.00 mm, body gap 0.90 mm
+     min gap from each speaker net (output area, y < 100):
+       /SPK_L_P: GND 0.12 (F), /TAP_L 0.61 (F), /SPK_L_N 0.63 (F), /PSW_G 1.02 (F)
+FAIL /SPK_L_P to GND on F.Cu: 0.122 mm >= 0.2
+PASS /SPK_L_P to /TAP_L on F.Cu: 0.613 mm >= 0.2
+PASS /SPK_L_P to /SPK_L_N on F.Cu: 0.625 mm >= 0.2
+PASS /SPK_L_P to /PSW_G on F.Cu: 1.019 mm >= 0.2
+       /SPK_L_N: PVDD 0.13 (B), GND 0.13 (F), /SPK_R_P 0.47 (F), /SPK_L_P 0.63 (F)
+FAIL /SPK_L_N to PVDD on B.Cu: 0.127 mm >= 0.2
+FAIL /SPK_L_N to GND on F.Cu: 0.127 mm >= 0.2
+PASS /SPK_L_N to /SPK_R_P on F.Cu: 0.475 mm >= 0.2
+PASS /SPK_L_N to /SPK_L_P on F.Cu: 0.625 mm >= 0.2
+       /SPK_R_P: GND 0.13 (F), /TAP_R 0.37 (F), /SPK_L_N 0.47 (F), /SPK_R_N 0.63 (F)
+FAIL /SPK_R_P to GND on F.Cu: 0.127 mm >= 0.2
+PASS /SPK_R_P to /TAP_R on F.Cu: 0.366 mm >= 0.2
+PASS /SPK_R_P to /SPK_L_N on F.Cu: 0.475 mm >= 0.2
+PASS /SPK_R_P to /SPK_R_N on F.Cu: 0.625 mm >= 0.2
+       /SPK_R_N: GND 0.13 (B), PVDD 0.13 (B), /SPK_R_P 0.63 (F), /SPK_L_N 4.09 (F)
+FAIL /SPK_R_N to GND on B.Cu: 0.127 mm >= 0.2
+FAIL /SPK_R_N to PVDD on B.Cu: 0.127 mm >= 0.2
+PASS /SPK_R_N to /SPK_R_P on F.Cu: 0.625 mm >= 0.2
+PASS /SPK_R_N to /SPK_L_N on F.Cu: 4.093 mm >= 0.2
+PASS /SPK_L_P: 8 segments, width 1.25-1.25 mm (IPC-2152 1 oz, 3.5 A, +30 C: 1.21)
+PASS /SPK_L_N: 18 segments, width 1.25-1.25 mm (IPC-2152 1 oz, 3.5 A, +30 C: 1.21)
+PASS /SPK_R_P: 8 segments, width 1.25-1.25 mm (IPC-2152 1 oz, 3.5 A, +30 C: 1.21)
+PASS /SPK_R_N: 18 segments, width 1.25-1.25 mm (IPC-2152 1 oz, 3.5 A, +30 C: 1.21)
+PASS /SPK_L_N: 7 vias, drill 0.40 (layer change F->B)
+PASS /SPK_R_N: 7 vias, drill 0.40 (layer change F->B)
+FAIL J4 pad 1 (/SPK_L_P) to GND on F.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+FAIL J4 pad 1 (/SPK_L_P) to GND on B.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+FAIL J4 pad 2 (/SPK_L_P) to GND on F.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+FAIL J4 pad 2 (/SPK_L_P) to GND on B.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+FAIL J5 pad 1 (/SPK_L_N) to GND on F.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+FAIL J5 pad 1 (/SPK_L_N) to GND on B.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+FAIL J5 pad 2 (/SPK_L_N) to GND on F.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+FAIL J5 pad 2 (/SPK_L_N) to GND on B.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+FAIL J6 pad 1 (/SPK_R_P) to GND on F.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+FAIL J6 pad 1 (/SPK_R_P) to GND on B.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+FAIL J6 pad 2 (/SPK_R_P) to GND on F.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+FAIL J6 pad 2 (/SPK_R_P) to GND on B.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+FAIL J7 pad 1 (/SPK_R_N) to GND on F.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+FAIL J7 pad 1 (/SPK_R_N) to GND on B.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+FAIL J7 pad 2 (/SPK_R_N) to GND on F.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+FAIL J7 pad 2 (/SPK_R_N) to GND on B.Cu: 0.13 mm (exposed THT ring; >= 0.25 for wave/selective solder)
+     L1 pad2 -> C68 pad1 3.12 mm c-c; C68 GND pad -> nearest GND via 9.01 mm; to a socket body 4.06 mm
+FAIL C68 GND pad has a GND via within 3 mm (9.01)
+     L2 pad2 -> C69 pad1 3.12 mm c-c; C69 GND pad -> nearest GND via 8.29 mm; to a socket body 1.20 mm
+FAIL C69 GND pad has a GND via within 3 mm (8.29)
+     L3 pad2 -> C70 pad1 3.12 mm c-c; C70 GND pad -> nearest GND via 3.70 mm; to a socket body 1.20 mm
+FAIL C70 GND pad has a GND via within 3 mm (3.70)
+     L4 pad2 -> C71 pad1 3.12 mm c-c; C71 GND pad -> nearest GND via 4.20 mm; to a socket body 1.20 mm
+FAIL C71 GND pad has a GND via within 3 mm (4.20)
+
+26 fail(s)

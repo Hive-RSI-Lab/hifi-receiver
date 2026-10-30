@@ -371,10 +371,13 @@ for side, n in (("L", 0), ("R", 1)):
     r(B_AUD, f"R{67 + 2 * n}", "10k", f"TAP_{side}", "GND", role="speaker tap divider bottom")
     c(B_AUD, f"C{81 + 2 * n}", "470pF", f"TAP_{side}", role="speaker tap carrier filter")
     c(B_AUD, f"C{82 + 2 * n}", "1uF", f"TAP_{side}", f"TAP_{side}_C", role="speaker tap coupling")
-# sub outs: 10 uF coupling, 100R build-out, 47k bleeder
+# sub outs: 10 uF coupling, 1k build-out, 47k bleeder. The build-out was 100R;
+# 1k lets the power-fail mute (below) hold the thump at the hot corner and
+# limits a strike on the RCA tip (review-4 R4-PAD-1, R3-SYSTEM-7); into a
+# 10k sub input it costs 0.8 dB
 for side, n in (("L", 0), ("R", 1)):
     c(B_AUD, f"C{47 + n}", "10uF", f"SUB_{side}_RAW", f"SUB_{side}_AC", role="sub out coupling")
-    r(B_AUD, f"R{36 + 2 * n}", "100R", f"SUB_{side}_AC", f"SUB_{side}", role="sub out build-out")
+    r(B_AUD, f"R{36 + 2 * n}", "1k", f"SUB_{side}_AC", f"SUB_{side}", role="sub out build-out")
     r(B_AUD, f"R{37 + 2 * n}", "47k", f"SUB_{side}", "GND", role="sub out bleeder")
 
 # ---- B9 TPA3118D2 (SLOS708G pin table, table 1, figure 34 values) ----------
@@ -453,6 +456,33 @@ r(B_IO, "R63", "10k", "+3V3", "IR_IN", role="IR pull-up")
 r(B_IO, "R64", "1k", "LED_DRV", "LED_A", role="LED current 1.3 mA")
 ic(B_IO, "D2", "C2286", "red", {"1": "LED_A", "2": "GND"}, expect={"1": "A", "2": "K"},
    role="status LED")
+
+# ---- sub-out power-fail mute (review-3 R3-AUDIO-2) ---------------------------
+# The ES8388's LOUT2/ROUT2 sit at VMID 1.65 V behind C47/C48; when the USB-C is
+# pulled, +3V3A and VMID collapse in ~2 ms and the -1.65 V step reaches a
+# mains-powered sub as a full-scale thump (docs/review-3/sims/audio/
+# tb_lite_sub_thump_*). Q12 senses +5V (120k/22k: off below ~4.1 V; the 5 V-only
+# port's 4.6 V and the buck's 5.0 V keep it on); once it lets go, R82 lifts
+# SUB_MUTE to the reservoir C90 (charged through Q11 as a diode, which nothing
+# else draws on) and the back-to-back 2N7002s (Q13/Q15 to Q14) short SUB_L/SUB_R to GND,
+# for seconds, while C47/C48 discharge through R36/R38. Off, SUB_MUTE sits at
+# Q12's saturation (<0.1 V); the body diodes of Q13/Q15 and Q14 face each other, so the
+# signal's swing (+-1.4 V) passes no body diode.
+ic(B_IO, "Q11", "C20526", "MMBT3904", {"1": "+5V", "3": "+5V", "2": "MUTE_RES"},
+   expect={"1": "B", "2": "E", "3": "C"}, role="diode (B-C to E): +5V into the mute reservoir")
+c(B_IO, "C90", "22uF/25V", "MUTE_RES", role="mute reservoir: holds SUB_MUTE up for seconds")
+r(B_IO, "R80", "120k", "+5V", "MUTE_DET", role="+5V sense divider top (off below ~4.1 V)")
+r(B_IO, "R81", "22k", "MUTE_DET", "GND", role="+5V sense divider bottom")
+ic(B_IO, "Q12", "C20526", "MMBT3904", {"1": "MUTE_DET", "2": "GND", "3": "SUB_MUTE"},
+   expect={"1": "B", "2": "E", "3": "C"}, role="+5V good: holds SUB_MUTE low")
+r(B_IO, "R82", "47k", "MUTE_RES", "SUB_MUTE", role="mute pull-up from the reservoir")
+for side, q in (("L", "Q13"), ("R", "Q15")):
+    ic(B_IO, q, "C8545", "2N7002", {"3": f"SUB_{side}", "1": "SUB_MUTE", "2": "MUTE_S"},
+       expect={"1": "G", "2": "S", "3": "D"}, role=f"sub {side} mute, signal side")
+# one ground-side FET serves both: with all three off, no body diode faces
+# into MUTE_S from either SUB line or GND, so the channels stay apart
+ic(B_IO, "Q14", "C8545", "2N7002", {"3": "GND", "1": "SUB_MUTE", "2": "MUTE_S"},
+   expect={"1": "G", "2": "S", "3": "D"}, role="sub mute, ground side (both channels)")
 
 if __name__ == "__main__":
     out = sheet.save(WS / "kicad")

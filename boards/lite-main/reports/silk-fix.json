@@ -2,7 +2,7 @@
  "script": "place_edit",
  "status": "pass",
  "board": "kicad/lite-main.kicad_pcb",
- "applied": 30,
+ "applied": 43,
  "verified": true,
  "results": [
   {
@@ -176,6 +176,105 @@
   },
   {
    "ref": "J7",
+   "field": "reference",
+   "layer": "F.SilkS",
+   "hidden": true,
+   "size": 1.0,
+   "thickness": 0.15
+  },
+  {
+   "ref": "Q11",
+   "layer": "F.SilkS",
+   "removed": 5,
+   "only_offboard": false,
+   "region": null
+  },
+  {
+   "ref": "Q12",
+   "layer": "F.SilkS",
+   "removed": 5,
+   "only_offboard": false,
+   "region": null
+  },
+  {
+   "ref": "Q13",
+   "layer": "F.SilkS",
+   "removed": 5,
+   "only_offboard": false,
+   "region": null
+  },
+  {
+   "ref": "Q14",
+   "layer": "F.SilkS",
+   "removed": 5,
+   "only_offboard": false,
+   "region": null
+  },
+  {
+   "ref": "Q15",
+   "layer": "F.SilkS",
+   "removed": 5,
+   "only_offboard": false,
+   "region": null
+  },
+  {
+   "ref": "Q13",
+   "field": "reference",
+   "layer": "F.SilkS",
+   "hidden": true,
+   "size": 1.0,
+   "thickness": 0.15
+  },
+  {
+   "ref": "Q15",
+   "field": "reference",
+   "layer": "F.SilkS",
+   "hidden": true,
+   "size": 1.0,
+   "thickness": 0.15
+  },
+  {
+   "ref": "R82",
+   "field": "reference",
+   "layer": "F.SilkS",
+   "hidden": true,
+   "size": 1.0,
+   "thickness": 0.15
+  },
+  {
+   "ref": "R39",
+   "field": "reference",
+   "layer": "F.SilkS",
+   "hidden": true,
+   "size": 1.0,
+   "thickness": 0.15
+  },
+  {
+   "ref": "C9",
+   "field": "reference",
+   "layer": "F.SilkS",
+   "hidden": true,
+   "size": 1.0,
+   "thickness": 0.15
+  },
+  {
+   "ref": "C33",
+   "field": "reference",
+   "layer": "F.SilkS",
+   "hidden": true,
+   "size": 1.0,
+   "thickness": 0.15
+  },
+  {
+   "ref": "R38",
+   "field": "reference",
+   "layer": "F.SilkS",
+   "hidden": true,
+   "size": 1.0,
+   "thickness": 0.15
+  },
+  {
+   "ref": "C32",
    "field": "reference",
    "layer": "F.SilkS",
    "hidden": true,

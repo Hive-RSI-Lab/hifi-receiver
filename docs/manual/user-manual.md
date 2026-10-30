@@ -118,9 +118,14 @@ left. [TBD: Plus and Ultra rear panels: their enclosures aren't drawn yet]
 - **Not ground:** both speaker terminals carry the signal, so neither is
   ground. Don't connect a speaker **−** to anything else, such as a
   subwoofer's ground.
-- **Terminals:** 4 mm binding posts, red and black. They take single
-  banana plugs, dual banana plugs (the pairs are 19 mm apart), spades, or
-  bare wire under the nut.
+- **Terminals (Plus, Ultra):** 4 mm binding posts, red and black. They
+  take single banana plugs, dual banana plugs (the pairs are 19 mm apart),
+  spades, or bare wire under the nut.
+- **Terminals (Lite):** four 4 mm banana sockets, red and black, 11 mm
+  apart. They take **single banana plugs only**, no wider than 11 mm across
+  the body, so neighbouring plugs can't touch. Dual plugs, spades and bare
+  wire don't fit; put a pair of banana plugs on each speaker cable (they
+  come with most speaker cable, or cost a few dollars).
 
 ### Subwoofers
 

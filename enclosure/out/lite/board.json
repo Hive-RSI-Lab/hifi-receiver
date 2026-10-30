@@ -1,5 +1,5 @@
 {
- "source": "../boards/lite-main/kicad/lite-main.kicad_pcb",
+ "source": "boards/lite-main/kicad/lite-main.kicad_pcb",
  "thickness": 1.6,
  "outline": [
   [
@@ -396,6 +396,29 @@
    "under": 0.0
   },
   {
+   "ref": "Q11",
+   "value": "MMBT3904",
+   "footprint": "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+   "side": "top",
+   "x": 46.035,
+   "y": 58.223,
+   "rot": 0.0,
+   "bbox": [
+    44.285,
+    56.703,
+    47.785,
+    59.743
+   ],
+   "z": [
+    1.6,
+    2.8
+   ],
+   "height_from": "table",
+   "tht": false,
+   "model": null,
+   "under": 0.0
+  },
+  {
    "ref": "R1",
    "value": "120k",
    "footprint": "Resistor_SMD:R_0603_1608Metric",
@@ -626,6 +649,29 @@
    "under": 0.0
   },
   {
+   "ref": "Q15",
+   "value": "2N7002",
+   "footprint": "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+   "side": "top",
+   "x": 44.585,
+   "y": 61.323,
+   "rot": 0.0,
+   "bbox": [
+    42.835,
+    59.803,
+    46.335,
+    62.843
+   ],
+   "z": [
+    1.6,
+    2.8
+   ],
+   "height_from": "table",
+   "tht": false,
+   "model": null,
+   "under": 0.0
+  },
+  {
    "ref": "C47",
    "value": "10uF",
    "footprint": "Capacitor_SMD:C_0603_1608Metric",
@@ -669,6 +715,29 @@
    "height_from": "model",
    "tht": false,
    "model": "C_0603_1608Metric.step",
+   "under": 0.0
+  },
+  {
+   "ref": "Q12",
+   "value": "MMBT3904",
+   "footprint": "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+   "side": "top",
+   "x": 42.485,
+   "y": 58.223,
+   "rot": 0.0,
+   "bbox": [
+    40.735,
+    56.703,
+    44.235,
+    59.743
+   ],
+   "z": [
+    1.6,
+    2.8
+   ],
+   "height_from": "table",
+   "tht": false,
+   "model": null,
    "under": 0.0
   },
   {
@@ -1431,6 +1500,29 @@
    "under": 0.0
   },
   {
+   "ref": "C90",
+   "value": "22uF",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "side": "top",
+   "x": 49.735,
+   "y": 57.323,
+   "rot": 0.0,
+   "bbox": [
+    48.035,
+    56.343,
+    51.435,
+    58.303
+   ],
+   "z": [
+    1.6,
+    2.85
+   ],
+   "height_from": "model",
+   "tht": false,
+   "model": "C_0805_2012Metric.step",
+   "under": 0.0
+  },
+  {
    "ref": "R37",
    "value": "47k",
    "footprint": "Resistor_SMD:R_0603_1608Metric",
@@ -2075,6 +2167,29 @@
    "under": 0.0
   },
   {
+   "ref": "R81",
+   "value": "22k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "side": "top",
+   "x": 33.535,
+   "y": 62.423,
+   "rot": 0.0,
+   "bbox": [
+    32.055,
+    61.693,
+    35.015,
+    63.153
+   ],
+   "z": [
+    1.6,
+    2.05
+   ],
+   "height_from": "model",
+   "tht": false,
+   "model": "R_0603_1608Metric.step",
+   "under": 0.0
+  },
+  {
    "ref": "U5",
    "value": "ESP32-WROVER-E-N8R8",
    "footprint": "aiee:WIFI-SMD_ESP32-WROVER-IE8MB",
@@ -2118,6 +2233,29 @@
    "height_from": "model",
    "tht": false,
    "model": "C_0603_1608Metric.step",
+   "under": 0.0
+  },
+  {
+   "ref": "R80",
+   "value": "120k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "side": "top",
+   "x": 50.635,
+   "y": 59.073,
+   "rot": 180.0,
+   "bbox": [
+    49.155,
+    58.343,
+    52.115,
+    59.803
+   ],
+   "z": [
+    1.6,
+    2.05
+   ],
+   "height_from": "model",
+   "tht": false,
+   "model": "R_0603_1608Metric.step",
    "under": 0.0
   },
   {
@@ -2302,6 +2440,29 @@
    "height_from": "model",
    "tht": false,
    "model": "R_0603_1608Metric.step",
+   "under": 0.0
+  },
+  {
+   "ref": "Q13",
+   "value": "2N7002",
+   "footprint": "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+   "side": "top",
+   "x": 41.035,
+   "y": 61.323,
+   "rot": 0.0,
+   "bbox": [
+    39.285,
+    59.803,
+    42.785,
+    62.843
+   ],
+   "z": [
+    1.6,
+    2.8
+   ],
+   "height_from": "table",
+   "tht": false,
+   "model": null,
    "under": 0.0
   },
   {
@@ -2720,7 +2881,7 @@
   },
   {
    "ref": "R36",
-   "value": "100R",
+   "value": "1k",
    "footprint": "Resistor_SMD:R_0603_1608Metric",
    "side": "top",
    "x": 38.5,
@@ -2831,6 +2992,29 @@
    "height_from": "model",
    "tht": false,
    "model": "C_0603_1608Metric.step",
+   "under": 0.0
+  },
+  {
+   "ref": "Q14",
+   "value": "2N7002",
+   "footprint": "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+   "side": "top",
+   "x": 38.935,
+   "y": 58.223,
+   "rot": 0.0,
+   "bbox": [
+    37.185,
+    56.703,
+    40.685,
+    59.743
+   ],
+   "z": [
+    1.6,
+    2.8
+   ],
+   "height_from": "table",
+   "tht": false,
+   "model": null,
    "under": 0.0
   },
   {
@@ -3271,6 +3455,29 @@
    "under": 0.0
   },
   {
+   "ref": "R82",
+   "value": "47k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "side": "top",
+   "x": 36.535,
+   "y": 62.423,
+   "rot": 0.0,
+   "bbox": [
+    35.055,
+    61.693,
+    38.015,
+    63.153
+   ],
+   "z": [
+    1.6,
+    2.05
+   ],
+   "height_from": "model",
+   "tht": false,
+   "model": "R_0603_1608Metric.step",
+   "under": 0.0
+  },
+  {
    "ref": "L3",
    "value": "10uH 8A",
    "footprint": "aiee:IND-SMD_L8.0-W8.0_XR0850",
@@ -3433,7 +3640,7 @@
   },
   {
    "ref": "R38",
-   "value": "100R",
+   "value": "1k",
    "footprint": "Resistor_SMD:R_0603_1608Metric",
    "side": "top",
    "x": 44.0,
@@ -3691,10 +3898,10 @@
    "ref": "J4",
    "edge": "N",
    "face": [
-    74.1,
-    80.1,
-    6.1,
-    12.1
+    73.70588745030457,
+    80.49411254969542,
+    6.305887450304572,
+    13.094112549695428
    ],
    "plane": 90.0,
    "overhang": 0.0,
@@ -3705,10 +3912,10 @@
    "ref": "J5",
    "edge": "N",
    "face": [
-    85.1,
-    91.1,
-    6.1,
-    12.1
+    84.70588745030457,
+    91.49411254969542,
+    6.305887450304572,
+    13.094112549695428
    ],
    "plane": 90.0,
    "overhang": 0.0,
@@ -3719,10 +3926,10 @@
    "ref": "J6",
    "edge": "N",
    "face": [
-    96.1,
-    102.1,
-    6.1,
-    12.1
+    95.70588745030457,
+    102.49411254969542,
+    6.305887450304572,
+    13.094112549695428
    ],
    "plane": 90.0,
    "overhang": 0.0,
@@ -3733,10 +3940,10 @@
    "ref": "J7",
    "edge": "N",
    "face": [
-    107.1,
-    113.1,
-    6.1,
-    12.1
+    106.70588745030457,
+    113.49411254969542,
+    6.305887450304572,
+    13.094112549695428
    ],
    "plane": 90.0,
    "overhang": 0.0,

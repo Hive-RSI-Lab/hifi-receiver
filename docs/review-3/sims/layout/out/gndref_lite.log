@@ -1,0 +1,19 @@
+/AMP_L_INN               len    7.2 mm  over GND 100.0 %  longest gap  0.0 mm at None  ok
+/AMP_L_INP               len    3.9 mm  over GND 100.0 %  longest gap  0.0 mm at None  ok
+/AMP_R_INN               len   12.3 mm  over GND 100.0 %  longest gap  0.0 mm at None  ok
+/AMP_R_INP               len    8.7 mm  over GND 100.0 %  longest gap  0.0 mm at None  ok
+/LINEIN_L                len   23.8 mm  over GND  86.0 %  longest gap  1.8 mm at (45.3, 76.3, 'F.Cu')  FAIL
+/LINEIN_R                len   14.2 mm  over GND  79.9 %  longest gap  1.3 mm at (38.6, 77.8, 'F.Cu')  FAIL
+/SUB_L                   len   11.8 mm  over GND  48.9 %  longest gap  3.6 mm at (64.6, 81.7, 'F.Cu')  FAIL
+/SUB_R                   len   21.1 mm  over GND  52.0 %  longest gap  4.6 mm at (67.8, 84.0, 'F.Cu')  FAIL
+/I2S_BCLK                len   45.6 mm  over GND  40.8 %  longest gap 12.3 mm at (52.6, 117.5, 'B.Cu')  FAIL
+/I2S_DIN                 len   50.0 mm  over GND  59.5 %  longest gap  5.5 mm at (39.9, 118.2, 'B.Cu')  FAIL
+/I2S_DOUT                len   47.8 mm  over GND  48.1 %  longest gap 11.8 mm at (53.2, 106.2, 'B.Cu')  FAIL
+/I2S_LRCK                len   48.9 mm  over GND  51.3 %  longest gap 10.8 mm at (54.0, 117.5, 'B.Cu')  FAIL
+/I2S_MCLK                len   54.5 mm  over GND  70.0 %  longest gap 10.1 mm at (55.6, 123.5, 'B.Cu')  FAIL
+/BUCK5_FB                len   11.4 mm  over GND  72.9 %  longest gap  1.2 mm at (69.4, 85.5, 'F.Cu')  FAIL
+/BUCK3_FB                len   12.8 mm  over GND  85.7 %  longest gap  0.8 mm at (74.3, 106.0, 'F.Cu')  FAIL
+/USB_DP                  len   73.9 mm  over GND  59.1 %  longest gap  6.5 mm at (81.9, 97.8, 'B.Cu')  FAIL
+/USB_DM                  len   73.0 mm  over GND  64.9 %  longest gap  7.3 mm at (71.9, 87.0, 'B.Cu')  FAIL
+GND coverage F.Cu: 68 % of the 100 x 90 mm bbox
+GND coverage B.Cu: 82 % of the 100 x 90 mm bbox

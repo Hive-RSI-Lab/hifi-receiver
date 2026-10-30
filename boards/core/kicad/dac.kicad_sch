@@ -5644,7 +5644,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10uF"
+		(property "Value" "100uF"
 			(at 238.252 99.06 0.0000)
 			(effects
 				(font
@@ -5653,7 +5653,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "aiee:C0603"
+		(property "Footprint" "aiee:C1206"
 			(at 235.9152 93.98 0.0000)
 			(effects
 				(font
@@ -5662,7 +5662,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C19702"
+		(property "LCSC" "C15008"
 			(at 237.49 102.8699 0)
 			(effects
 				(font

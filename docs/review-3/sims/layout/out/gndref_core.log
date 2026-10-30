@@ -1,0 +1,27 @@
+/I2S_BCK                 len  104.6 mm  over GND  17.4 %  longest gap 84.3 mm at (136.6, 154.0, 'B.Cu')  FAIL   [ref under: +3V3:79, GND:18, None:7; in-segment plane changes 15]
+/I2S_LRCK                len  113.7 mm  over GND  20.2 %  longest gap 89.1 mm at (115.7, 148.9, 'B.Cu')  FAIL   [ref under: +3V3:83, GND:23, None:7; in-segment plane changes 13]
+/I2S_DOUT_MAIN           len  111.2 mm  over GND   4.6 %  longest gap 105.6 mm at (135.9, 133.0, 'B.Cu')  FAIL   [ref under: +3V3:104, GND:5, None:2; in-segment plane changes 3]
+/I2S_DOUT_SUB            len   58.5 mm  over GND  11.0 %  longest gap 51.1 mm at (112.9, 173.8, 'B.Cu')  FAIL   [ref under: +3V3:50, GND:6, None:2; in-segment plane changes 5]
+/RMII_TX_EN              len  126.0 mm  over GND  64.2 %  longest gap 43.0 mm at (85.9, 198.1, 'B.Cu')  FAIL   [ref under: GND:81, +3V3:41, None:4; in-segment plane changes 8]
+/RMII_TXD0               len   95.7 mm  over GND  41.7 %  longest gap 53.7 mm at (110.3, 215.8, 'B.Cu')  FAIL   [ref under: +3V3:52, GND:40, None:4; in-segment plane changes 8]
+/RMII_TXD1               len   98.6 mm  over GND  46.7 %  longest gap 51.2 mm at (145.1, 210.1, 'B.Cu')  FAIL   [ref under: +3V3:50, GND:46, None:3; in-segment plane changes 2]
+/RMII_RXD0               len   83.9 mm  over GND  64.6 %  longest gap 27.7 mm at (70.6, 203.8, 'B.Cu')  FAIL   [ref under: GND:54, +3V3:26, None:4; in-segment plane changes 8]
+/RMII_RXD1               len   84.8 mm  over GND  76.3 %  longest gap 18.2 mm at (114.8, 195.8, 'B.Cu')  FAIL   [ref under: GND:65, +3V3:15, None:5; in-segment plane changes 8]
+/AMP_OSCM                len   56.9 mm  over GND  37.2 %  longest gap 33.1 mm at (50.0, 162.8, 'In2.Cu')  FAIL   [ref under: PVDD:26, GND:21, None:10; in-segment plane changes 10]
+/AMP_OSCP                len   48.5 mm  over GND  14.3 %  longest gap 39.2 mm at (77.7, 169.4, 'In2.Cu')  FAIL   [ref under: VBUS:14, PVDD:13, None:9, GND:7, +3V3:5; in-segment plane changes 11]
+/amp_a/A_IN1P            len   45.2 mm  over GND   1.7 %  longest gap 44.5 mm at (76.5, 162.8, 'In2.Cu')  FAIL   [ref under: PVDD:31, None:13, GND:1; in-segment plane changes 6]
+/amp_a/A_IN2P            len   55.8 mm  over GND  54.6 %  longest gap 22.4 mm at (84.0, 168.6, 'In2.Cu')  FAIL   [ref under: GND:30, PVDD:16, None:9, +3V3:1; in-segment plane changes 9]
+/amp_b/B_IN1P            len   24.6 mm  over GND  21.9 %  longest gap 18.9 mm at (75.7, 162.5, 'B.Cu')  FAIL   [ref under: PVDD:17, GND:5, None:2; in-segment plane changes 4]
+/amp_b/B_IN2M            len   39.1 mm  over GND  25.8 %  longest gap 27.1 mm at (95.8, 175.4, 'B.Cu')  FAIL   [ref under: +3V3:15, GND:10, PVDD:7, None:7; in-segment plane changes 13]
+/AMP_IN_L                len   36.7 mm  over GND  61.1 %  longest gap 12.7 mm at (84.3, 169.4, 'In2.Cu')  FAIL   [ref under: GND:22, None:9, PVDD:5; in-segment plane changes 6]
+/MAIN_R                  len   26.1 mm  over GND  34.7 %  longest gap 16.0 mm at (107.6, 160.9, 'B.Cu')  FAIL   [ref under: +3V3:13, GND:9, None:4; in-segment plane changes 8]
+/dac/DACL_N              len   26.2 mm  over GND  22.1 %  longest gap 19.3 mm at (121.1, 152.6, 'B.Cu')  FAIL   [ref under: +3V3:17, GND:6, None:3; in-segment plane changes 8]
+/linein/LIN_L            len   29.7 mm  over GND   3.1 %  longest gap 28.2 mm at (129.5, 137.1, 'B.Cu')  FAIL   [ref under: +3V3:25, None:3, GND:1; in-segment plane changes 9]
+/linein/LIN_R            len   21.4 mm  over GND   3.4 %  longest gap 20.7 mm at (113.9, 153.3, 'B.Cu')  FAIL   [ref under: +3V3:18, None:2, GND:1; in-segment plane changes 2]
+/linein/ADC_SRC_L        len   32.6 mm  over GND  24.8 %  longest gap 22.8 mm at (115.6, 155.0, 'In2.Cu')  FAIL   [ref under: +3V3:19, GND:8, None:6; in-segment plane changes 6]
+/OPT_SPDIF               len   30.4 mm  over GND  45.0 %  longest gap 15.1 mm at (125.7, 140.8, 'B.Cu')  FAIL   [ref under: GND:14, +3V3:13, None:4; in-segment plane changes 4]
+/ui/FFC_SCK              len   57.8 mm  over GND  58.5 %  longest gap 20.9 mm at (75.5, 211.5, 'B.Cu')  FAIL   [ref under: GND:34, +3V3:19, None:5; in-segment plane changes 10]
+GND coverage F.Cu: 62 % of the 120 x 100 mm bbox
+GND coverage In1.Cu: 93 % of the 120 x 100 mm bbox
+GND coverage In2.Cu: 0 % of the 120 x 100 mm bbox
+GND coverage B.Cu: 82 % of the 120 x 100 mm bbox

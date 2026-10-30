@@ -1,0 +1,8 @@
+[
+ {
+  "measure": "vbus_650",
+  "severity": "warning",
+  "msg": "USB PD tSafe0V/vSafe0V: VBUS back-fed from PVDD bulk via Q1 body diode",
+  "max": 0.8
+ }
+]

@@ -1,15 +1,14 @@
 {
  "script": "netlist_audit",
- "status": "violations",
+ "status": "pass",
  "board": "lite-main.net",
  "counts": {
-  "total": 2,
+  "total": 1,
   "by_severity": {
-   "warning": 1,
-   "error": 1
+   "warning": 1
   },
   "by_source": {
-   "audit.netlist": 2
+   "audit.netlist": 1
   }
  },
  "violations": [
@@ -31,36 +30,16 @@
     }
    ],
    "kind": "power_undeclared"
-  },
-  {
-   "check": "netlist_audit",
-   "severity": "error",
-   "pos": null,
-   "layer": null,
-   "net": "/IR_VCC",
-   "refs": [
-    "C80",
-    "U9"
-   ],
-   "msg": "association C80->U9.3: rail net '/IR_VCC' not in netlist",
-   "source": "audit.netlist",
-   "items": [
-    {
-     "msg": "association C80->U9.3: rail net '/IR_VCC' not in netlist",
-     "pos": null
-    }
-   ],
-   "kind": "metadata_mismatch"
   }
  ],
  "mode": "audit",
- "nets": 118,
- "components": 148,
+ "nets": 122,
+ "components": 157,
  "unconnected_pins": 29,
  "constraint_nets_checked": 16,
- "constraint_refs_checked": 2,
- "pins_expected": 456,
- "pins_connected": 456,
+ "constraint_refs_checked": 7,
+ "pins_expected": 479,
+ "pins_connected": 479,
  "decoupling_associations": 25,
  "power": [
   {
@@ -82,18 +61,19 @@
   },
   {
    "net": "GND",
-   "nodes": 109,
+   "nodes": 113,
    "power_in": 16,
    "power_out": 0
   },
   {
    "net": "+5V",
-   "nodes": 13,
+   "nodes": 16,
    "power_in": 0,
    "power_out": 0,
    "passive_fed_via": [
     "C9",
     "L5",
+    "R80",
     "R9"
    ]
   },
@@ -207,9 +187,10 @@
    ]
   }
  ],
+ "common_mode_inputs_checked": 0,
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-30T20:08:57+00:00",
+ "generated_at": "2026-10-30T22:12:47+00:00",
  "input": "kicad/lite-main.net",
- "input_digest": "netlist_canonical:142e7222f27535814b028e78b63a759273d8ba3db7ba3f40aba35cfb0851a200"
+ "input_digest": "netlist_canonical:2d32b505092ceb318604cdb403362b6a2e1c14bcf855da05e5ae856a6da26033"
 }

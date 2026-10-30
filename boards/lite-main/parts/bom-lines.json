@@ -553,8 +553,8 @@
  },
  {
   "ref": "R36",
-  "lcsc": "C22775",
-  "value": "100R",
+  "lcsc": "C21190",
+  "value": "1k",
   "role": "sub out build-out"
  },
  {
@@ -571,8 +571,8 @@
  },
  {
   "ref": "R38",
-  "lcsc": "C22775",
-  "value": "100R",
+  "lcsc": "C21190",
+  "value": "1k",
   "role": "sub out build-out"
  },
  {
@@ -886,5 +886,59 @@
   "lcsc": "C2286",
   "value": "red",
   "role": "status LED"
+ },
+ {
+  "ref": "Q11",
+  "lcsc": "C20526",
+  "value": "MMBT3904",
+  "role": "diode (B-C to E): +5V into the mute reservoir"
+ },
+ {
+  "ref": "C90",
+  "lcsc": "C45783",
+  "value": "22uF/25V",
+  "role": "mute reservoir: holds SUB_MUTE up for seconds"
+ },
+ {
+  "ref": "R80",
+  "lcsc": "C25808",
+  "value": "120k",
+  "role": "+5V sense divider top (off below ~4.1 V)"
+ },
+ {
+  "ref": "R81",
+  "lcsc": "C31850",
+  "value": "22k",
+  "role": "+5V sense divider bottom"
+ },
+ {
+  "ref": "Q12",
+  "lcsc": "C20526",
+  "value": "MMBT3904",
+  "role": "+5V good: holds SUB_MUTE low"
+ },
+ {
+  "ref": "R82",
+  "lcsc": "C25819",
+  "value": "47k",
+  "role": "mute pull-up from the reservoir"
+ },
+ {
+  "ref": "Q13",
+  "lcsc": "C8545",
+  "value": "2N7002",
+  "role": "sub L mute, signal side"
+ },
+ {
+  "ref": "Q15",
+  "lcsc": "C8545",
+  "value": "2N7002",
+  "role": "sub R mute, signal side"
+ },
+ {
+  "ref": "Q14",
+  "lcsc": "C8545",
+  "value": "2N7002",
+  "role": "sub mute, ground side (both channels)"
  }
 ]

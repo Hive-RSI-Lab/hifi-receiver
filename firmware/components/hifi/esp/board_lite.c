@@ -72,11 +72,13 @@ void hifi_bsp_power_out(const hifi_power_out_t *o) {
 
 /* ------------------------------------------------------------------ codec */
 
-/* LOUT2/ROUT2 volume code, 1.5 dB a step, 30 = 0 dB. At most 26 (-6 dB):
- * the sub mute's 2N7002s (Q13-Q15) are off with their gates near 0 V, so
- * the sub line's negative swing has to stay above -Vth(min) 1.0 V; -6 dB is
- * 0.71 V peak at 0 dBFS (docs/review-3/sims/fix/lite_mute/tb_play_cap) */
-#define SUB_CODE_MAX 26
+/* LOUT2/ROUT2 volume code, 1.5 dB a step, 30 = 0 dB. At most 24 (-9 dB):
+ * the sub mute's 2N7002s (Q13-Q15) are off with their gates near 0 V, and a
+ * part at Vth(min) 1.0 V leaks on the line's negative peaks once warm (0.1-
+ * 0.4 % THD at -6 dB, 50-70 C; 0.014 % at -9 dB: docs/review-4/als.md
+ * R4-ALS-1, sims/als/mute_corners.py). Squeezelite's codec init
+ * (patches/0001, DAC_CONTROLSET) starts them at 24 too (R4-ALS-2) */
+#define SUB_CODE_MAX 24
 
 static int sub_code(float db) {
 	int code = (int) lrintf(30 + db / 1.5f);

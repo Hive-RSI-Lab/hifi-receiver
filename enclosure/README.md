@@ -46,7 +46,7 @@ STEP moves it to Onshape later (see the end of this page).
 ### Assembly
 
 1. Drop the board onto the four standoffs, with its connectors to the rear
-   wall: tilt it nose-first so the four banana sockets' square noses go into
+   wall: tilt it nose-first so the four banana sockets' round collars go into
    their square holes, then lay it down. The RCA and USB-C sockets line up
    with their holes. There is no wiring: the speaker sockets are on the board.
 2. Drop the three buttons into their holes in the lid from underneath, cap
@@ -101,7 +101,7 @@ z = 0 the board's bottom face. The dimensions behind it:
 | RCA holes | 12.0 | a plug's outer shell, over the 8.3 mm barrel |
 | USB-C opening | 13.4 x 7.6 | mech's USB-C plug (12.4 x 6.6) + 0.5 a side |
 | IR window | 9 x 8 | round the lens, 5 mm over the board |
-| Banana-socket holes | 6.8 square | the sockets' 6 mm square nose (it reaches 2.65 mm past the board edge, 2 mm into the wall) + 0.4 a side |
+| Banana-socket holes | 10.2 round, teardrop roof | the sockets' 9.5 mm round collar (Amass drawing; it reaches 2.65 mm past the board edge, into the wall) + 0.3 a side |
 
 Before mech's check sees the board, `lite.py` cuts the RCA jacks to their
 body inside the rear wall with a port per barrel, cuts the banana sockets

@@ -1,0 +1,17 @@
+{
+ "script": "check_return_path",
+ "status": "pass",
+ "board": "lite-main.kicad_pcb",
+ "counts": {
+  "total": 0,
+  "by_severity": {},
+  "by_source": {}
+ },
+ "violations": [],
+ "checked": [],
+ "report_schema": 1,
+ "checker_version": 1,
+ "generated_at": "2026-10-30T20:25:00+00:00",
+ "input": "lite-main.kicad_pcb",
+ "input_digest": "sexpr_no_uuid:5419edc852a8e932dd3ed2f0db6dbace1740e92fc2934672027706135a87b8d2"
+}

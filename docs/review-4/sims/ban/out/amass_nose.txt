@@ -1,0 +1,7 @@
+scale 6.677 pt/mm; body height 13.00 mm (drawing: 19 - 6 = 13)
+nose (collar) 9.49 mm tall, 2.51 mm long, bottom 3.35 mm over the board, bore axis 8.11 mm over the board
+enclosure: {'BANANA_NOSE': 6.0, 'BANANA_AXIS': 7.5, 'BANANA_HOLE': 6.8}
+FAIL nose 9.49 mm > hole 6.8 mm
+FAIL nose spans 3.37-12.85 mm over the board, hole 4.10-10.90
+FAIL bore axis 8.11 mm vs BANANA_AXIS 7.5
+3 fail(s)

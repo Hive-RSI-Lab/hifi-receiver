@@ -1,0 +1,18 @@
+* Lite sub mute at power-up: C90 empty, +5V 0 -> 5.18 V in 10 ms. The ES8388 is started by squeezelite
+* (DAC_CONTROLSET init: reg0 = 0x05 VMIDSEL 50k, reg4 = 0x3C outputs on) ~1.5 s later; LOUT2 follows VMID up,
+* tau 0.25 s (25k x C39 10 uF). Does the mute cover it?
+.param VTO=1.6 KP=0.27 TOLHI=1.0 BFQ=416.4
+.include models.inc
+.include circuit.inc
+.include lpf.inc
+V5 p5 0 PWL(0 0 10m 5.18)
+Bl lout 0 V = {time < 1.5 ? 0 : 1.65*(1-exp(-(time-1.5)/0.25))}
+Vr rout 0 0
+.tran 100u 4 0 100u
+.measure tran mute_max_early MAX v(mute) FROM=0 TO=10m
+.measure tran mute_at_init FIND v(mute) AT=1.5
+.measure tran sub_pk MAX v(subl) FROM=1.5 TO=4
+.measure tran lp_pk MAX v(l2) FROM=1.5 TO=4
+.measure tran band_pk MAX v(h2) FROM=1.5 TO=4
+.measure tran band_min MIN v(h2) FROM=1.5 TO=4
+.end

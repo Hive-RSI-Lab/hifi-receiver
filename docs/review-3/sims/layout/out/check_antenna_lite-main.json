@@ -1,0 +1,76 @@
+{
+ "script": "check_antenna",
+ "status": "violations",
+ "board": "lite-main.kicad_pcb",
+ "counts": {
+  "total": 1,
+  "by_severity": {
+   "warning": 1
+  },
+  "by_source": {
+   "check_antenna": 1
+  }
+ },
+ "violations": [
+  {
+   "check": "check_antenna",
+   "severity": "warning",
+   "pos": [
+    26.495,
+    128.323
+   ],
+   "layer": null,
+   "net": null,
+   "refs": [
+    "U5"
+   ],
+   "msg": "U5: copper starts 2.2 mm beside the antenna (Espressif asks for 15 mm clear along the edge, or the board cut away there): widen the keepout or notch the board",
+   "source": "check_antenna",
+   "items": [
+    {
+     "msg": "U5: copper starts 2.2 mm beside the antenna (Espressif asks for 15 mm clear along the edge, or the board cut away there): widen the keepout or notch the board",
+     "pos": [
+      26.495,
+      128.323
+     ]
+    }
+   ],
+   "kind": "antenna_side_clearance",
+   "cleared_mm": [
+    2.25,
+    2.25
+   ]
+  }
+ ],
+ "checked": [
+  {
+   "modules": [
+    {
+     "ref": "U5",
+     "value": "ESP32-WROVER-E-N8R8",
+     "footprint": "aiee:WIFI-SMD_ESP32-WROVER-IE8MB",
+     "antenna": "pcb",
+     "depth_mm": 5.98,
+     "antenna_bbox": [
+      23.505,
+      118.073,
+      29.485,
+      138.573
+     ],
+     "over_board_mm2": 122.59,
+     "end_inside_mm": 0.64,
+     "side_cleared_mm": [
+      2.25,
+      2.25
+     ],
+     "source": "Espressif ESP32 Hardware Design Guidelines \u00a71.4.8 (antenna placement, Fig. 23-25); ESP32-WROVER-E datasheet v2.4 \u00a710 keep-out zone"
+    }
+   ]
+  }
+ ],
+ "report_schema": 1,
+ "checker_version": 1,
+ "generated_at": "2026-10-30T20:25:07+00:00",
+ "input": "lite-main.kicad_pcb",
+ "input_digest": "sexpr_no_uuid:5419edc852a8e932dd3ed2f0db6dbace1740e92fc2934672027706135a87b8d2"
+}

@@ -1,0 +1,32 @@
+[
+ {
+  "measure": "ifet_pk",
+  "severity": "error",
+  "msg": "inrush",
+  "max": 2.0
+ },
+ {
+  "measure": "pfet_pk",
+  "severity": "error",
+  "msg": "FET peak <= 10 W: hwde soa_check Tj < 110 C at 50 C ambient (14.7 W -> 135 C)",
+  "max": 10
+ },
+ {
+  "measure": "efet",
+  "severity": "error",
+  "msg": "FET energy",
+  "max": 0.6
+ },
+ {
+  "measure": "t90",
+  "severity": "error",
+  "msg": "PVDD at 90 % (t from 0; PVDD_EN at 20 ms) before firmware soft_start_ms = 100 ms releases the amps",
+  "max": 0.12
+ },
+ {
+  "measure": "vsg_end",
+  "severity": "error",
+  "msg": "gate drive",
+  "min": 4.5
+ }
+]

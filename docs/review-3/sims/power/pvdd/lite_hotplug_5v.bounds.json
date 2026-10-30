@@ -1,0 +1,20 @@
+[
+ {
+  "measure": "vbus_pk",
+  "severity": "error",
+  "msg": "overshoot well under every VBUS part's abs max (28-30 V)",
+  "max": 14
+ },
+ {
+  "measure": "vsg_max",
+  "severity": "error",
+  "msg": "Q1 held off through the ring",
+  "max": 1.2
+ },
+ {
+  "measure": "pvdd_max",
+  "severity": "error",
+  "msg": "PVDD stays off",
+  "max": 1.0
+ }
+]

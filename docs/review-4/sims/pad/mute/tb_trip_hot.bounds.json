@@ -1,0 +1,5 @@
+[{"measure":"mute_at_5v0","max":0.3,"severity":"error","msg":"mute must be off at the buck's low corner (2N7002 Vth min 1.0 V)"},
+ {"measure":"mute_at_5v18","max":0.3,"severity":"error","msg":"mute off at nominal +5V"},
+ {"measure":"v5_at_1v0","max":5.0,"severity":"error","msg":"mute must not begin above 5.0 V"},
+ {"measure":"v5_at_3v5","min":2.2,"severity":"error","msg":"mute fully on before LOUT2 collapses (ES8388 AVDD min 1.7 V: +5V ~2.0 V)"},
+ {"measure":"mute_at_4v2","max":0.5,"severity":"warning","msg":"5 V-only port: sub out muted"}]

@@ -1,0 +1,32 @@
+[
+ {
+  "measure": "ifet_pk",
+  "severity": "error",
+  "msg": "inrush under 2 A (3 A contract)",
+  "max": 2.0
+ },
+ {
+  "measure": "pfet_pk",
+  "severity": "error",
+  "msg": "FET peak power under the 100 ms SOA line (~20 W)",
+  "max": 20
+ },
+ {
+  "measure": "efet",
+  "severity": "error",
+  "msg": "FET energy",
+  "max": 0.4
+ },
+ {
+  "measure": "t90",
+  "severity": "error",
+  "msg": "PVDD at 90 % within the firmware's 1 s pvdd_timeout",
+  "max": 1.0
+ },
+ {
+  "measure": "vsg_end",
+  "severity": "warning",
+  "msg": "final gate drive (RDS(on) only specified >=4.5 V)",
+  "min": 3.5
+ }
+]
