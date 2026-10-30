@@ -94,7 +94,8 @@ pin-to-pad) read this board from its KiCad files and the vendor datasheets:
 |---|---|---|
 | DIGITAL-1/2, PARTS-4 (blocker): the TCA9555's pull-ups left PHY_RST (the 50 MHz oscillator into GPIO0, a boot strap), PVDD_EN and the amp/DAC resets mid-rail at power-up, and its outputs held through ESP32 resets | TCA9555, R45 100k | TCA9539 (no pull-ups; RESET = ESP_EN), R45 10k |
 | POWER-1 (blocker): the 5 A path ran through 0.25 mm tracks and 1-3 vias | SMD USB4105, few vias | through-hole USB4085 (power pins solid into the In2 VBUS_IN plane), copper patches with 8 vias at R1's input, 10 from R1's output to Q1's source, 8 at Q1's drain; 3-4 per TPA3221 PVDD pin group |
-| THERMAL-1/DFM-3 (blocker): TPA3221 is pad-up with no heatsink | none | U15/U16 swapped to the pin-identical pad-down TPA3220. Its EP is soldered to GND with 15 x 0.3 mm vias into In1/B.Cu, so nothing is fitted by hand. A firmware power governor holds the chip at about 2.5 W continuous (≤ 16 W in, 60 s average). See `docs/review-2/heatsink-options.md` and `firmware-requirements.md` C2/C3 |
+| sim_inrush hard_reset (hwde 261029-050227): Q1's ~1.1 s gate RC outlasted tSrcRecover, so a hard-reset source charged PVDD's 940 uF through a still-on Q1 (14 A, Q1 426 C) | Q2 released, R4 alone pulls the gate | R404 + D5 + Q3's second NPN pull Q1's gate to VBUS in ~2 ms when Q2 lets go (PG lost, PVDD_EN low, OV trip), in hardware: 0.7 A, Q1 120 C in the sim |
+| THERMAL-1/DFM-3 (blocker): TPA3221 is pad-up with no heatsink | none | U15/U16 swapped to the pin-identical pad-down TPA3220. Its EP is soldered to GND with 15 x 0.3 mm vias into In1/B.Cu, so nothing is fitted by hand. The firmware governor holds the 60 s average to 8 W out, about 1.9 W in the chip and 13 W in (Plus box as drawn). See `docs/review-2/heatsink-options.md` and `firmware-requirements.md` C2/C3 |
 | DFM-1 (blocker): RCA J4/J5 had no holes for the jack's snap-in legs | none | Lite's footprint: 2.0 x 3.0 leg holes, signal pins as slots that fit either reading of the drawing |
 | PARTS-7/DFM-12 (blocker, Ultra): TOSLINK T8BK on a T10BK footprint | no post holes | the T8BK's two 1.70 mm post holes added |
 | DIGITAL-19 (major): copper under the Wi-Fi antenna on all 4 layers | GND/+3V3 pours, two tracks | `ANT_KEEPOUT` rule area x 148.9-154.64, y 189.6-213.5 on every layer; I2S_DIN and RMII_TXD1 rerouted |
@@ -230,7 +231,7 @@ Every fact this board relies on, and whether it's verified, is in
 `python3 tools/known_unknowns.py --check` before ordering. The ones that are
 this board's to settle:
 
-- **Amp cooling (TPA3220, no heatsink):** the board's GND planes are the heatsink, at about 26 C/W (23.5 on TI's JEDEC board). That holds 1/8 power into 8 ohm (Tj ≈ 84 C in a 45 C box). Into 4 ohm, the firmware governor caps the 60 s average at about 2.5 W of chip loss, about 2 x 4.5 W out. Bring-up measures the real figure (step 6) and sets the governor from it.
+- **Amp cooling (TPA3220, no heatsink):** the board's GND planes are the heatsink, at about 26 C/W (23.5 on TI's JEDEC board). That holds 1/8 power into 8 ohm (Tj ≈ 84 C in a 45 C box). Into 4 ohm, the firmware governor caps the 60 s average at 8 W out (about 1.9 W in the chip, 13 W in), because the Plus box as drawn runs its air at about 60 C. Bring-up measures the real figure (step 6) and sets the governor from it.
 - **TPA3220 stock:** LCSC has none. Buy it into the JLC parts inventory (Mouser/DigiKey through JLC global sourcing) before the order (`fab/prebuy.csv`).
 - **5 V buck bootstrap loop:** C12 sits below L9, so its BS and LX links
   are long routed tracks. Watch U4's switch node for ringing at bring-up.

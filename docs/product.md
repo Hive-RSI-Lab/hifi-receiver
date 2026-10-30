@@ -180,9 +180,10 @@ The rule that makes it safe: **a firmware power governor.**
   - **Music:** at 1/8 power, 8 Ω, it dissipates 1.5 W, for Tj ≈ 84 °C in a
     45 °C box. Pass.
   - **4 Ω, driven hard:** 1/8 power into 4 Ω is 3.5 W, which is over what the
-    board sheds. The firmware governor holds the 60 s average at about 2.5 W
-    per chip, ≤ 16 W at the USB-C input. That is about 2 × 4.5 W continuous
-    into 4 Ω, with 77 W peaks.
+    board sheds. The firmware governor holds the 60 s average to 8 W out
+    (about 1.9 W in the chip, 13 W at the USB-C input), because the Plus box
+    as drawn runs its air at about 60 °C. Peaks reach 77 W. Bigger box vents
+    would raise this to about 11 W.
   - **Continuous sine at full power:** a firmware limit, with or without a
     heatsink (review-2 thermal.md 1.6).
   - **Protection:** the governor and the chip's own over-temperature warning

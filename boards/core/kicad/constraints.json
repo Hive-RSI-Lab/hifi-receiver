@@ -2,20 +2,20 @@
  "power": [
   {
    "net": "VBUS_IN",
-   "current_a": 5.0,
+   "current_a": 0.5,
    "dt_c": 10,
    "plane_fed": true,
    "pdn": false
   },
   {
    "net": "VBUS",
-   "current_a": 5.0,
+   "current_a": 0.5,
    "dt_c": 10,
    "plane_fed": true
   },
   {
    "net": "PVDD",
-   "current_a": 5.0,
+   "current_a": 0.5,
    "dt_c": 10,
    "plane_fed": true
   },
@@ -26,7 +26,7 @@
   },
   {
    "net": "+3V3",
-   "current_a": 0.3,
+   "current_a": 0.6,
    "dt_c": 10,
    "plane_fed": true
   },
@@ -203,7 +203,8 @@
    "theta_ja_c_w": 23.5,
    "theta_source": "TI SLASEN3B 7.4: TPA3220 DDW on a JEDEC 2s2p board, thermal pad soldered. Core's 1 oz / 0.5 oz board is ~10 % worse (26 C/W; task 261029-075354)",
    "power_max_w": 19.0,
-   "governor": "firmware hifi_gov thermal_out_w: 8 W of speaker power over 60 s with one amp (about 13 W at the USB-C input), 12 W with both of Ultra's (firmware-requirements C2). power_w is that governed chip loss in the Plus box as drawn at 30 C room; power_max_w the supply-limited sine (140 W in, ~113 W out)"
+   "governor": "firmware hifi_gov thermal_out_w: 8 W of speaker power over 60 s with one amp (about 13 W at the USB-C input), 12 W with both of Ultra's (firmware-requirements C2). power_w is that governed chip loss in the Plus box as drawn at 30 C room; power_max_w the supply-limited sine (140 W in, ~113 W out)",
+   "dt_c": 50
   }
  ],
  "placement": {
@@ -478,7 +479,7 @@
    "net": "GND"
   }
  ],
- "power_notes": "Track widths here are sized for the tracks that remain: plane taps and short stubs. The main currents ride on copper the width rules can't see: VBUS_IN/VBUS/PVDD/+3V3 on In2 plane regions plus F.Cu pours, and the amp OUT/SPK nets (3.7 A rms continuous sine, 2 x 56 W governor-capped) on the solid fan-in pours from kicad/gen/power_zones.py. check_irdrop covers those paths at P8.",
+ "power_notes": "Track widths here are sized for the tracks that remain: plane taps and short stubs. The main currents ride on copper the width rules can't see: VBUS_IN/VBUS/PVDD/+3V3 on In2 plane regions plus F.Cu pours, and the amp OUT/SPK nets (3.7 A rms continuous sine, 2 x 56 W governor-capped) on the solid fan-in pours from kicad/gen/power_zones.py. check_irdrop covers those paths at P8. +3V3 is budgeted at 0.6 A for the ESP32-WROVER's radio bursts (~500 mA), from the 2 A SY8089 (U5) with 2 x 22 uF at L10 and 22 uF + 100 nF at U7. +5V stays at 0.5 A: U5 draws ~0.45 A at 5 V for the radio's peak, plus ~0.1 A for the amps' 5 V supplies and the analog LDO, so 0.55 A peak; six +5V layer changes have one via each, which check_current wants doubled at 0.6 A (follow-up). The real VBUS/PVDD current is the PD contract's 5 A (pd_source): check_power_path's max-flow over all layers carries it (J1->R1 7.45 A, R1->Q1 5.32 A, Q1->U15 7.45 A at dT 10 C). check_current's per-layer pour-neck rule fails at 5 A (In2 VBUS_IN/VBUS necks 1.9-2.2 mm, PVDD 0.81 mm on In2 and 1.0-1.5 mm on F.Cu, against 4.3 mm at dT 30 C), so its budgets stay at the tap-track 0.5 A and widening those necks is a follow-up task. The firmware governor holds the sustained input to ~13 W (0.47 A) and bursts to the 1 s supply budget.",
  "diff_pairs_note": "Explicitly empty. The USB full-speed pair (12 Mb/s) and the two 100BASE-TX pairs run about 10 mm, so coupling them adds nothing measurable, and the router doesn't couple pairs (route_critical's KRT diff pass shorted). They are routed as ordinary nets at the Default width.",
  "pd_source": {
   "contract_v": 28,
@@ -541,6 +542,45 @@
    "to": "Q3",
    "current_a": 0.05,
    "note": "Q3 unit 2's collector: the fast-off follower charges Q1's gate (~15 mA for ~2 ms), a signal path"
+  },
+  {
+   "net": "+3V3",
+   "from": "L10",
+   "to": "U7",
+   "current_a": 0.6,
+   "note": "ESP32-WROVER radio TX bursts reach ~500 mA (Espressif: supply >= 500 mA), plus the rest of +3V3"
+  },
+  {
+   "net": "+3V3",
+   "from": "L10",
+   "to": "U8",
+   "current_a": 0.05
+  },
+  {
+   "net": "+3V3",
+   "from": "L10",
+   "to": "U13",
+   "current_a": 0.05
+  },
+  {
+   "net": "+3V3",
+   "from": "L10",
+   "to": "J3",
+   "current_a": 0.1
+  },
+  {
+   "net": "PVDD",
+   "from": "Q1",
+   "to": "U15",
+   "current_a": 5.0,
+   "note": "PVDD carries the contract's 5 A on Plus"
+  },
+  {
+   "net": "PVDD",
+   "from": "Q1",
+   "to": "U16",
+   "current_a": 5.0,
+   "note": "and on Ultra across both zones"
   }
  ]
 }

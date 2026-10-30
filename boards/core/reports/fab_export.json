@@ -29,70 +29,70 @@
  "files": [
   {
    "name": "core-B_Cu.gbl",
-   "sha256": "7784bf280b8b40ba7e86a7cacba0eb28ec48c5c4895d9e057989fbb8ee356bca",
-   "bytes": 1041371
+   "sha256": "760a3959af5e99563b22bb412e05174424db7c32d439095dd9820f9dca68dc4d",
+   "bytes": 1047691
   },
   {
    "name": "core-B_Mask.gbs",
-   "sha256": "6711517dd34cad597f6d94eaa7ef9668e2cb765831c2c78962471794f3a92517",
+   "sha256": "037af32e02356ad5258bff2afeb2ea93e3de2e26338680c535898271c8ce2c11",
    "bytes": 3087
   },
   {
    "name": "core-B_Paste.gbp",
-   "sha256": "8529ee1734352e3c323539e307c3fb52b03ae842d5068103916271440d5dea01",
+   "sha256": "64678452afa805721566876a85aacb27032bf2d430a4336ccdafc9e9da0ba7a1",
    "bytes": 449
   },
   {
    "name": "core-B_Silkscreen.gbo",
-   "sha256": "98557a9c8e04d9cce671319bee1da716f07f4569ce03f9ab0baf70492368064b",
+   "sha256": "579e67747ffa17c321a40fb1506f7bcc7f942d7e834aa9634671c58ce8f1c904",
    "bytes": 450
   },
   {
    "name": "core-Edge_Cuts.gm1",
-   "sha256": "ec2a8e6da4da81fe8a6835fb1296f086576524b328dfed329188304bb2fac210",
+   "sha256": "73b0145b534a69f44893e5a38406803a94d7820d43cc89e69cd1474c11c05188",
    "bytes": 991
   },
   {
    "name": "core-F_Cu.gtl",
-   "sha256": "f38f59b42b2859a20667fbdfa3a3ec69bbdcf30c38400c9bde8414df27560830",
-   "bytes": 1468368
+   "sha256": "93e9dc36e92aa23710b6d1502686bf598fc9b0e7acf81adcadafd779ba1a22ae",
+   "bytes": 1478967
   },
   {
    "name": "core-F_Mask.gts",
-   "sha256": "04d68ed56dea3d8f47f9b88b3d39b91efb87256f96f86292a0052712fade498f",
-   "bytes": 34292
+   "sha256": "212210bb15f89d667fec718513c43ba11bd993520cc43ef49b997d7127661c77",
+   "bytes": 34569
   },
   {
    "name": "core-F_Paste.gtp",
-   "sha256": "8ca3475085a00ba4437d9ef3a1b460347f8d9c1ba43ff5b1c4a15ea369cad37e",
-   "bytes": 31794
+   "sha256": "2c73ca45e098ae9881f71e4f111ed8fe769d6de5398ff56206f2af38ba1feceb",
+   "bytes": 32071
   },
   {
    "name": "core-F_Silkscreen.gto",
-   "sha256": "5d805af8f812a2a05058e7c7d7509645e1edf6187d359bb9e4bce48ba6bd0b96",
-   "bytes": 565753
+   "sha256": "bd379035c36f211fbd3f589c0dbd7d522f69fb23c13b79bda1ac31a2b999eedf",
+   "bytes": 564939
   },
   {
    "name": "core-In1_Cu.g1",
-   "sha256": "64a267c33f984584fcf30eb60395a4a0fe4bca5cabc1a05c0012df3972bbc183",
-   "bytes": 595812
+   "sha256": "04828798a86a228884c4032bc362f3332e2bc052da7698fa0fd60e5a200edfc3",
+   "bytes": 601167
   },
   {
    "name": "core-In2_Cu.g2",
-   "sha256": "ea08f2b86705bee4def23fab994e4deb39c018c1d12b993841f98de8e06ddbca",
-   "bytes": 1071755
+   "sha256": "cb2e4f5e7915bad92085255116922b97a9ccab2e27daf55f914470acbccf9fc2",
+   "bytes": 1076684
   },
   {
    "name": "core-job.gbrjob",
-   "sha256": "a59ca1143312af7f876f0097b3e4d13f17676f56840b21e44fc79ecd4069ed9b",
+   "sha256": "b71e60520472e2c696a4317a001cb8935e05e4685c250506662528cb15ac19b8",
    "bytes": 3659
   },
   {
    "name": "core.drl",
-   "sha256": "2833c0126bd19a945d0fc1d2554b008b2319eced328ad97faecd123a3a3ea964",
-   "bytes": 20685
+   "sha256": "68f0631a17105ccb7e9f6ae2a0fa6d3f3b66890bd473e5600e202fc87f0f3a31",
+   "bytes": 20774
   }
  ],
  "gerber_zip": "fab/core_gerbers.zip",
- "gerber_zip_sha256": "9acaa4bc796d0a3ded1415dbbdc893c27c653aab1be17b5e9d9b3b4c013d99d6"
+ "gerber_zip_sha256": "75fe71dde7ac7d10058ccedaea243f45ee6026f9ab03e043111dc604b589579b"
 }

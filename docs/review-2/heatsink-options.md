@@ -42,19 +42,40 @@ The first check here said that the pad-down relatives stop at 26 V. That was wro
   - 15 thermal vias, 0.3 mm drill on 0.6 mm pads, sit at 1.5 x 1.3 mm pitch into In1's solid GND plane and the B.Cu GND pour.
 - **Copper:** the footprint was swapped in place with pcbnew, so pads 1-44 kept their tracks. The tracks and vias that clashed with the EP or its vias were ripped: 15 signal nets, plus 7 GND stitching vias that the EP vias replace. They were re-routed with hwde's `route_finish`, which also moved AMP_IN_L and B_CMUTE, and their stubs were cleaned up. DRC is clean (0 violations, 0 unconnected, schematic parity 0).
 
-**Thermal on this board:**
-- **Thermal resistance:** JEDEC's 23.5 C/W assumes 2 oz outer and 1 oz inner copper with the part alone. Core is 1 oz / 0.5 oz, sits in a box and shares its board with the other amp and the buck. I use **26 C/W (23.5-30)**. That is the same +0-25 % thermal.md applied to the TPA3221's no-heatsink figure.
-- **1/8 power, 8 ohm (1.5 W):** Tj = 45 + 1.5 x 26 = **84 C**. That is 31 K under OTW min. Pass.
-- **1/8 power, 4 ohm (3.5 W):** Tj = 45 + 3.5 x 26 = **136 C** (116-180). OTW asserts. **The pad-down part alone does not hold this case**, just as the stick-on heatsink didn't (118-139 C, thermal.md 1.4). Only the clamped, lid-vented heatsink did on paper (101-108 C), and that one is fitted by hand.
-- **Highest continuous chip loss under OTW min - 5 K, at 45 C box air:** (110 - 45) / 26 = **2.5 W**. That is about 2 x 4.5 W continuous average into 4 ohm, or about 2 x 10 W into 8 ohm.
-  - Music peaks are not limited: 77 W per channel stays available for seconds. The limit is on the 60 s average.
-  - At 35 C box air the ceiling is 2.9 W.
+**Thermal on this board** (the 4-layer EP land with 15 vias into In1 GND and B.Cu):
+- **Thermal resistance:** TI's JEDEC 2s2p figure is 23.5 C/W (SLASEN3B 7.4), on 2 oz outer and 1 oz inner copper with the part alone. Core is 1 oz / 0.5 oz and shares its board with the buck and, on Ultra, zone B. I use **26 C/W**. hwde's check_thermal (branch 261029-050245) takes the datasheet's 23.5 as-is.
+- **Chip loss** comes from TI's system-loss curve (SLASEE9C fig 6-9, read in thermal.md 1.2, 4 ohm, AD mode) less the output filter. Tj = box air + loss x 26 C/W:
 
-**Governor (thermal.md 1.6, THERMAL-2), new limits for the pad-down part:**
-- **Long term (60 s average):** ≤ **16 W in** at the USB-C input, about 0.57 A at 28 V. Before, with the heatsink, it was 30 W. The 16 W is about 9 W out, 3.3 W amp loss and about 2 W for the rest of the board.
-- **Ultra:** two chips share the box. The per-chip limit stays, so the total is ≤ 28 W in.
-- **Unchanged:** the short-term limit (5 s, ≤ 70 W in), the OTW back-off (-3 dB every 2 s) and the FAULT/RESET retry.
-- **Board time constant:** much longer than the heatsink's 130 s, because the heat sits in the board's copper and FR4. The 60 s window stays safe.
+| Case | Out (2 ch, 4 ohm) | Chip loss | Tj, 25 C box | Tj, 40 C box |
+|---|---|---|---|---|
+| Idle | 0 | 0.45 W | 37 C | 52 C |
+| Loud home listening | 2 x 1 W | 0.8 W | 46 C | 61 C |
+| Music at 1/8 power | 2 x 9.6 W | 3.5 W | **116 C** | **131 C** |
+| TI's "2 x 60 W continuous" (with its EVM's copper) | 2 x 60 W | ~10 W | 284 C | 299 C |
+| Supply-limited sine, 140 W in | ~113 W | ~19 W | 520 C | 535 C |
+
+  - Into 8 ohm, 1/8 power is 1.5 W: 64-79 C. Pass.
+  - **The 2 x 60 W figure isn't available here.** About 10 W of chip loss needs roughly 10 C/W junction-to-air, which core's copper doesn't give without a heatsink. Neither does the supply-limited sine.
+  - **Music at 1/8 power into 4 ohm holds only with the governor's help.** Peaks are untouched: 77 W per channel for seconds, because the board's copper and FR4 take minutes to heat.
+- **Highest continuous chip loss** (Tj 110 C, 5 K under OTW min) against box air:
+
+| Box air | Chip loss | Out, 2 ch, 4 ohm | USB-C input, 60 s average |
+|---|---|---|---|
+| 25 C | 3.3 W | 2 x 8.8 W | 24 W |
+| 40 C | 2.7 W | 2 x 6.7 W | 19.5 W |
+| 45 C | 2.5 W | 2 x 6.1 W | 18 W |
+| **60 C** (the Plus box as drawn, 30 C room) | **1.9 W** | **2 x 4.2 W** | **13 W** |
+
+- **The box decides it.** check_thermal's enclosure model puts the Plus box's air at about 60-63 C at 30 C room with about 5 W inside. That box is 127 x 106 x 40 mm PETG, and only about 95 mm² of vent path is effective: the slots over and under U15 in series with the board's edge gaps. That is also 17 K under PETG's Tg, a warning.
+  - Ultra, with both amps, reaches about 70 C: within 10 K of Tg.
+  - If inlet, riser and outlet were each about 1500 mm², the Plus air would drop to about 45-49 C and the chip limit would rise to 2.4-2.8 W. That needs much bigger slots plus a clear riser past the board. It is a job for the enclosure task, and I've told its worker.
+
+**Governor (firmware-requirements C2, now in `hifi_gov`):**
+- **Plus:** the 60 s average speaker power is held to **8 W** of both channels (`thermal_out_w`). That is the chip's 1.9 W in the box as drawn, at 30 C room: about **13 W at the USB-C input** (0.47 A at 28 V).
+- **Ultra:** **12 W** in total with both amps (`thermal_out2_w`), about 1.5 W per chip, about 20 W in.
+- **Once the box gets the bigger vents:** these can rise to 11 W and 18 W.
+- **Unchanged:** the 1 s supply budget (90 % of the contract), the OTW back-off (-3 dB every 2 s) and the FAULT/RESET retry.
+- **Bring-up C3** measures the real board and box, and sets these limits from the measurement.
 
 **Levers not taken:**
 - **2 oz outer copper**, which TI recommends: it is about 10-15 % better, but core's fine-pitch routing was drawn to 1 oz rules.

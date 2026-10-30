@@ -597,7 +597,7 @@
    "date": "2026-10-29"
   },
   {
-   "fact": "On core (1 oz / 0.5 oz, in the Plus box) the TPA3220's RthetaJA is about 26 C/W, so the chip holds about 2.7 W at 40 C box air (Tj 110 C); 1/8 power into 4 ohm (3.5 W) needs the C2 governor (18 W in, 60 s)",
+   "fact": "On core (1 oz / 0.5 oz) the TPA3220's RthetaJA is about 26 C/W; in the Plus box as drawn (air ~60 C at 30 C room, hwde check_thermal) the chip holds ~1.9 W at Tj 110 C, so 1/8 power into 4 ohm (3.5 W) needs the C2 governor (8 W out, ~13 W in, 60 s)",
    "board": "core",
    "refs": [
     "U15",
