@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/work/boards/lite-main/kicad/lite-main.kicad_sch")
-		(date "2026-10-30T17:00:55")
+		(date "2026-10-30T18:06:13")
 		(tool "Eeschema 10.0.6")
 		(sheet
 			(number "1")
@@ -7240,11 +7240,11 @@
 		)
 		(comp
 			(ref "R36")
-			(value "100R")
+			(value "1k")
 			(footprint "Resistor_SMD:R_0603_1608Metric")
 			(fields
 				(field
-					(name "LCSC") "C22775")
+					(name "LCSC") "C21190")
 				(field
 					(name "Footprint") "Resistor_SMD:R_0603_1608Metric")
 				(field
@@ -7261,7 +7261,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C22775")
+				(value "C21190")
 			)
 			(property
 				(name "Sheetname")
@@ -7360,11 +7360,11 @@
 		)
 		(comp
 			(ref "R38")
-			(value "100R")
+			(value "1k")
 			(footprint "Resistor_SMD:R_0603_1608Metric")
 			(fields
 				(field
-					(name "LCSC") "C22775")
+					(name "LCSC") "C21190")
 				(field
 					(name "Footprint") "Resistor_SMD:R_0603_1608Metric")
 				(field
@@ -7381,7 +7381,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C22775")
+				(value "C21190")
 			)
 			(property
 				(name "Sheetname")

@@ -4,20 +4,20 @@
  "workspace_schema": 2,
  "workspace": "boards/lite-main",
  "created": "2026-10-28T11:00:21",
- "updated": "2026-10-30T17:24:27",
+ "updated": "2026-10-30T18:11:16",
  "phase": "P9",
  "gates": {
   "erc": {
    "phase": "P4",
    "status": "pass",
-   "attempts": 16,
+   "attempts": 17,
    "last": {
-    "ts": "2026-10-30T17:00:30",
+    "ts": "2026-10-30T18:06:09",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
     "inputs": {
-     "sch": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
+     "sch": "sexpr_no_uuid:861afeb9fa579626bfa399ea607f6d3f134ae72a61f89c84b88ff0539dfeacf5",
      "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d"
     }
    },
@@ -179,6 +179,16 @@
      "total": 0,
      "inputs": {
       "sch": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
+      "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d"
+     }
+    },
+    {
+     "ts": "2026-10-30T18:06:09",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "sch": "sexpr_no_uuid:861afeb9fa579626bfa399ea607f6d3f134ae72a61f89c84b88ff0539dfeacf5",
       "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d"
      }
     }
@@ -2524,15 +2534,15 @@
   "dfm": {
    "phase": "P9",
    "status": "pass",
-   "attempts": 7,
+   "attempts": 8,
    "last": {
-    "ts": "2026-10-30T17:24:27",
+    "ts": "2026-10-30T18:11:16",
     "status": "pass",
     "failing_count": 0,
     "total": 3,
     "inputs": {
-     "pcb": "sexpr_no_uuid:016efa738b909474061cab5591cf868659f29207d4c2d5d002e3e78ff25bda13",
-     "sch": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
+     "pcb": "sexpr_no_uuid:f716534965d00aa0447d52fe40d4f7e3cbef03650db4492740414892db84aa41",
+     "sch": "sexpr_no_uuid:861afeb9fa579626bfa399ea607f6d3f134ae72a61f89c84b88ff0539dfeacf5",
      "parts": null
     }
    },
@@ -2613,6 +2623,17 @@
       "sch": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
       "parts": null
      }
+    },
+    {
+     "ts": "2026-10-30T18:11:16",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 3,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:f716534965d00aa0447d52fe40d4f7e3cbef03650db4492740414892db84aa41",
+      "sch": "sexpr_no_uuid:861afeb9fa579626bfa399ea607f6d3f134ae72a61f89c84b88ff0539dfeacf5",
+      "parts": null
+     }
     }
    ]
   }
@@ -2622,20 +2643,20 @@
   "sch": {
    "path": "kicad/lite-main.kicad_sch",
    "kind": "sch",
-   "sha256": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
-   "hashed": "2026-10-30T17:24:27"
+   "sha256": "sexpr_no_uuid:861afeb9fa579626bfa399ea607f6d3f134ae72a61f89c84b88ff0539dfeacf5",
+   "hashed": "2026-10-30T18:11:16"
   },
   "pro": {
    "path": "kicad/lite-main.kicad_pro",
    "kind": "pro",
    "sha256": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d",
-   "hashed": "2026-10-30T17:17:07"
+   "hashed": "2026-10-30T18:06:09"
   },
   "pcb": {
    "path": "kicad/lite-main.kicad_pcb",
    "kind": "pcb",
-   "sha256": "sexpr_no_uuid:016efa738b909474061cab5591cf868659f29207d4c2d5d002e3e78ff25bda13",
-   "hashed": "2026-10-30T17:24:27"
+   "sha256": "sexpr_no_uuid:f716534965d00aa0447d52fe40d4f7e3cbef03650db4492740414892db84aa41",
+   "hashed": "2026-10-30T18:11:16"
   },
   "constraints": {
    "path": "kicad/constraints.json",
@@ -2671,7 +2692,7 @@
    "path": "kicad/parts.json",
    "kind": "parts",
    "sha256": null,
-   "hashed": "2026-10-30T17:24:27"
+   "hashed": "2026-10-30T18:11:16"
   }
  },
  "open_issues": [],
@@ -4750,6 +4771,22 @@
    "gate": "dfm",
    "status": "pass",
    "attempt": 7,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-30T18:06:09",
+   "event": "gate",
+   "gate": "erc",
+   "status": "pass",
+   "attempt": 17,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-30T18:11:16",
+   "event": "gate",
+   "gate": "dfm",
+   "status": "pass",
+   "attempt": 8,
    "failing_count": 0
   }
  ]

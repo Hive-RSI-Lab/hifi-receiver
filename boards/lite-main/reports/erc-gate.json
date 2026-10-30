@@ -4,7 +4,7 @@
   "phase": "P4",
   "tool": "erc",
   "input": "kicad/lite-main.kicad_sch",
-  "input_digest": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
+  "input_digest": "sexpr_no_uuid:861afeb9fa579626bfa399ea607f6d3f134ae72a61f89c84b88ff0539dfeacf5",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -55,9 +55,9 @@
     "workspace": ".",
     "gate": "erc",
     "status": "pass",
-    "attempts": 16,
+    "attempts": 17,
     "inputs": {
-      "sch": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
+      "sch": "sexpr_no_uuid:861afeb9fa579626bfa399ea607f6d3f134ae72a61f89c84b88ff0539dfeacf5",
       "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d"
     }
   }

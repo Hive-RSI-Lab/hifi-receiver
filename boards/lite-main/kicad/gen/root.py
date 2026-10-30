@@ -371,10 +371,13 @@ for side, n in (("L", 0), ("R", 1)):
     r(B_AUD, f"R{67 + 2 * n}", "10k", f"TAP_{side}", "GND", role="speaker tap divider bottom")
     c(B_AUD, f"C{81 + 2 * n}", "470pF", f"TAP_{side}", role="speaker tap carrier filter")
     c(B_AUD, f"C{82 + 2 * n}", "1uF", f"TAP_{side}", f"TAP_{side}_C", role="speaker tap coupling")
-# sub outs: 10 uF coupling, 100R build-out, 47k bleeder
+# sub outs: 10 uF coupling, 1k build-out, 47k bleeder. The build-out was 100R;
+# 1k lets the power-fail mute (below) hold the thump at the hot corner and
+# limits a strike on the RCA tip (review-4 R4-PAD-1, R3-SYSTEM-7); into a
+# 10k sub input it costs 0.8 dB
 for side, n in (("L", 0), ("R", 1)):
     c(B_AUD, f"C{47 + n}", "10uF", f"SUB_{side}_RAW", f"SUB_{side}_AC", role="sub out coupling")
-    r(B_AUD, f"R{36 + 2 * n}", "100R", f"SUB_{side}_AC", f"SUB_{side}", role="sub out build-out")
+    r(B_AUD, f"R{36 + 2 * n}", "1k", f"SUB_{side}_AC", f"SUB_{side}", role="sub out build-out")
     r(B_AUD, f"R{37 + 2 * n}", "47k", f"SUB_{side}", "GND", role="sub out bleeder")
 
 # ---- B9 TPA3118D2 (SLOS708G pin table, table 1, figure 34 values) ----------

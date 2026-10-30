@@ -728,6 +728,8 @@
    "lcsc": "C21190",
    "refdes": [
     "R15",
+    "R36",
+    "R38",
     "R64"
    ],
    "value": "1k",
@@ -795,7 +797,7 @@
      "value": "±100ppm/℃"
     }
    ],
-   "role": "Q1 Miller cap series; LED current 1.3 mA",
+   "role": "Q1 Miller cap series; sub out build-out; LED current 1.3 mA",
    "ref_prefix_hint": "R"
   },
   {
@@ -2700,81 +2702,6 @@
    "ref_prefix_hint": "C"
   },
   {
-   "lcsc": "C22775",
-   "refdes": [
-    "R36",
-    "R38",
-    "R65"
-   ],
-   "value": "100R",
-   "mpn": "0603WAF1000T5E",
-   "brand": "UNI-ROYAL(Uniroyal Elec)",
-   "package": "0603",
-   "basic": true,
-   "stock": 10118512,
-   "price": 0.0023,
-   "price_breaks": [
-    {
-     "qty": 1,
-     "price": 0.0023
-    },
-    {
-     "qty": 1000,
-     "price": 0.0019
-    },
-    {
-     "qty": 5000,
-     "price": 0.0016
-    },
-    {
-     "qty": 10000,
-     "price": 0.0013
-    },
-    {
-     "qty": 50000,
-     "price": 0.0012
-    },
-    {
-     "qty": 50200,
-     "price": 0.0012
-    }
-   ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf",
-   "description": "-55℃~+155℃ 100mW 100Ω 75V Thick Film Resistor ±1% ±100ppm/℃ 0603 Chip Resistor - Surface Mount ROHS",
-   "attributes": [
-    {
-     "name": "Resistance",
-     "value": "100Ω"
-    },
-    {
-     "name": "Operating Temperature",
-     "value": "-55℃~+155℃"
-    },
-    {
-     "name": "Power(Watts)",
-     "value": "100mW"
-    },
-    {
-     "name": "Type",
-     "value": "Thick Film Resistor"
-    },
-    {
-     "name": "Voltage-Supply(Max)",
-     "value": "75V"
-    },
-    {
-     "name": "Tolerance",
-     "value": "±1%"
-    },
-    {
-     "name": "Temperature Coefficient",
-     "value": "±100ppm/℃"
-    }
-   ],
-   "role": "sub out build-out; IR supply filter",
-   "ref_prefix_hint": "R"
-  },
-  {
    "lcsc": "C25819",
    "refdes": [
     "R37",
@@ -3892,6 +3819,79 @@
    "attributes": [],
    "role": "IR receiver 38 kHz, front-facing",
    "ref_prefix_hint": "U"
+  },
+  {
+   "lcsc": "C22775",
+   "refdes": [
+    "R65"
+   ],
+   "value": "100R",
+   "mpn": "0603WAF1000T5E",
+   "brand": "UNI-ROYAL(Uniroyal Elec)",
+   "package": "0603",
+   "basic": true,
+   "stock": 10118512,
+   "price": 0.0023,
+   "price_breaks": [
+    {
+     "qty": 1,
+     "price": 0.0023
+    },
+    {
+     "qty": 1000,
+     "price": 0.0019
+    },
+    {
+     "qty": 5000,
+     "price": 0.0016
+    },
+    {
+     "qty": 10000,
+     "price": 0.0013
+    },
+    {
+     "qty": 50000,
+     "price": 0.0012
+    },
+    {
+     "qty": 50200,
+     "price": 0.0012
+    }
+   ],
+   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf",
+   "description": "-55℃~+155℃ 100mW 100Ω 75V Thick Film Resistor ±1% ±100ppm/℃ 0603 Chip Resistor - Surface Mount ROHS",
+   "attributes": [
+    {
+     "name": "Resistance",
+     "value": "100Ω"
+    },
+    {
+     "name": "Operating Temperature",
+     "value": "-55℃~+155℃"
+    },
+    {
+     "name": "Power(Watts)",
+     "value": "100mW"
+    },
+    {
+     "name": "Type",
+     "value": "Thick Film Resistor"
+    },
+    {
+     "name": "Voltage-Supply(Max)",
+     "value": "75V"
+    },
+    {
+     "name": "Tolerance",
+     "value": "±1%"
+    },
+    {
+     "name": "Temperature Coefficient",
+     "value": "±100ppm/℃"
+    }
+   ],
+   "role": "IR supply filter",
+   "ref_prefix_hint": "R"
   },
   {
    "lcsc": "C2286",

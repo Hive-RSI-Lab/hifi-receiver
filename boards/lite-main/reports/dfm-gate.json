@@ -4,7 +4,7 @@
   "phase": "P9",
   "tool": "dfm",
   "input": "kicad/lite-main.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:016efa738b909474061cab5591cf868659f29207d4c2d5d002e3e78ff25bda13",
+  "input_digest": "sexpr_no_uuid:f716534965d00aa0447d52fe40d4f7e3cbef03650db4492740414892db84aa41",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -147,10 +147,10 @@
     "workspace": ".",
     "gate": "dfm",
     "status": "pass",
-    "attempts": 7,
+    "attempts": 8,
     "inputs": {
-      "pcb": "sexpr_no_uuid:016efa738b909474061cab5591cf868659f29207d4c2d5d002e3e78ff25bda13",
-      "sch": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
+      "pcb": "sexpr_no_uuid:f716534965d00aa0447d52fe40d4f7e3cbef03650db4492740414892db84aa41",
+      "sch": "sexpr_no_uuid:861afeb9fa579626bfa399ea607f6d3f134ae72a61f89c84b88ff0539dfeacf5",
       "parts": null
     }
   }
