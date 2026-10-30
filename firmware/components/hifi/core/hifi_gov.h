@@ -44,10 +44,12 @@ typedef struct {
 	float target;
 	bool limiting;
 	uint32_t events;
+	int amps;          /* stereo amps playing the program: Ultra's zone B makes 2 */
 } hifi_gov_t;
 
 /* lite-main: ES8388 (~0.9 Vrms full scale, -3 dB cap) into a 26 dB TPA3118 */
 void hifi_gov_cfg_lite(hifi_gov_cfg_t *cfg);
+void hifi_gov_cfg_core(hifi_gov_cfg_t *cfg);
 void hifi_gov_init(hifi_gov_t *g, const hifi_gov_cfg_t *cfg);
 /* contract_w: what the source offers; the budget is budget_frac of it */
 void hifi_gov_set_supply(hifi_gov_t *g, float vsupply, float contract_w);

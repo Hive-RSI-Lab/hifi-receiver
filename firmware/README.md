@@ -12,9 +12,10 @@ each part does, is in [`docs/firmware.md`](../docs/firmware.md); the API is
 |---|---|
 | `upstream.lock` | the squeezelite-esp32 commit we build on, and the ESP-IDF it needs (v4.4.8) |
 | `patches/` | our changes to upstream: one patch, a few dozen lines of hooks (below) |
-| `components/hifi/core/` | the logic, in plain C: PD contract, power sequencer, governor, tones, test API, console parser |
-| `components/hifi/esp/` | the board code on ESP-IDF: pins, I2C, ADC, tasks, HTTP, mDNS, console |
-| `board/lite-main/sdkconfig.defaults` | the build configuration for the Lite board |
+| `components/hifi/core/` | the logic, in plain C: PD contract, power sequencer, governor, tones, test API, console parser, the knob and buttons, the update manifest |
+| `components/hifi/esp/` | the board code on ESP-IDF: tasks, HTTP, mDNS, console, Wi-Fi scan and updates; `board_lite.c` or `board_core.c` (`hifi_bsp.h`) for each board's pins and parts |
+| `board/lite-main/` | the build configuration for Lite (`HIFI_LITE`) |
+| `board/core/`, `board/ultra/` | Plus (`HIFI_PLUS`) and Ultra (`HIFI_ULTRA`), both on the core board |
 | `test/` | host unit tests for `core/` |
 | `tools/fetch.sh`, `tools/build.sh` | get upstream, patch it, build |
 
@@ -35,7 +36,12 @@ You need ESP-IDF **v4.4.8** (squeezelite-esp32's CI uses the same). Then:
 
 ```sh
 firmware/tools/build.sh            # builds into ~/fw-build/squeezelite-esp32
+HIFI_BOARD=core firmware/tools/build.sh ~/fw-build/plus     # Plus
+HIFI_BOARD=ultra firmware/tools/build.sh ~/fw-build/ultra   # Ultra
 ```
+
+`HIFI_BOARD` names the folder under `board/` (default `lite-main`); give
+each board its own build folder, since a build keeps its `sdkconfig`.
 
 It runs `fetch.sh` (clone upstream at the pinned commit with its submodules,
 apply `patches/`, copy `components/hifi` and the board's defaults in, and
@@ -91,6 +97,17 @@ WROVER-E's rev-3 chip meets.
   `hifi_ir_hook`, `hifi_button_hook`).
 - Still no boot.
 
+**Plus and Ultra (2026-10-29, task 261029-205022):** with ESP-IDF v4.4.8
+from `fw setup`, Lite and Plus both build: Lite's `squeezelite.bin` 2.82
+MB of 3.06 MB, `recovery.bin` 1.57 MB of 1.75 MB; Plus's 2.82 MB and 1.58
+MB; Ultra's the same. In QEMU (hive-fw's `fw qemu`, Ethernet over
+open_eth, Wi-Fi off): Lite passes fw's own hifi-lite proof (boot and 6
+API calls); Plus boots to `hifi: hifi-plus on core` and answers 13 API
+calls as expected (`info`, `state` with `eth` true, `volume`, `zone` 404,
+`update/check` 404, `sub`, `input`, `selftest`). QEMU has no I2C parts and
+no I2S, so the expander, the Sabre and the sub DAC don't start there. Not
+booted on a core board (there is none yet).
+
 **Checked again (2026-10-29, task 261029-134314),** with #41's relay, OTA
 and capture merged onto main's volume, IR and now playing: both images
 build with ESP-IDF v4.4.8, `squeezelite.bin` 2.81 MB of its 3.06 MB slot
@@ -128,7 +145,9 @@ endpoints").
   lite-main's codec (`dac_config` with MCLK on GPIO0), the ES8388 register
   set (upstream's, with the speaker output capped at −3 dB), the three
   buttons, IR on GPIO14, the LED on GPIO22 and the `hifi-lite` target and
-  hostname.
+  hostname. `HIFI_PLUS` and `HIFI_ULTRA` carry the core board's I2S
+  (`model=I2S`, no codec I2C), its system I2C on GPIO13/14, the LAN8720
+  (`eth_config`), IR on GPIO35 and the `hifi-plus`/`hifi-ultra` names.
 - **`components/targets`:** registers `target_hifi`, so our component starts
   at boot.
 - **`components/squeezelite/equalizer.c`:** calls `hifi_dsp_process` (the

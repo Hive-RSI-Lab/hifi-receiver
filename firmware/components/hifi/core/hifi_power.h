@@ -76,6 +76,7 @@ typedef struct {
 
 /* lite-main: 9-25 V window around the 20 V contract */
 void hifi_power_cfg_lite(hifi_power_cfg_t *cfg);
+void hifi_power_cfg_core(hifi_power_cfg_t *cfg);
 void hifi_power_init(hifi_power_t *p, const hifi_power_cfg_t *cfg, uint32_t now_ms);
 const hifi_power_out_t *hifi_power_step(hifi_power_t *p, const hifi_power_in_t *in);
 void hifi_power_amp_enable(hifi_power_t *p, bool enable);
