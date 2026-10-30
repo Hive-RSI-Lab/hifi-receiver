@@ -49,10 +49,19 @@ jobs:
         with:
           path: ${{ runner.temp }}/tools/kicad-${{ env.KICAD_VERSION }}
           key: kicad-${{ env.KICAD_APPIMAGE }}
+      # Extracted whenever the AppDir isn't usable, cache hit or not: a PR's run restored a
+      # cache entry with no runnable AppRun and every gate that needs kicad-cli failed with
+      # "kicad-cli not found" (PR #68, run 41017450940), while main's cache-miss run passed.
       - name: KiCad ${{ env.KICAD_VERSION }} as an AppDir
-        if: steps.kicad.outputs.cache-hit != 'true'
         shell: bash
         run: |
+          app="$RUNNER_TEMP/tools/kicad-$KICAD_VERSION"
+          if [ -x "$app/AppRun" ] && "$app/AppRun" kicad-cli version >/dev/null 2>&1; then
+            echo "KiCad from the cache: $("$app/AppRun" kicad-cli version)"
+            exit 0
+          fi
+          echo "no usable KiCad AppDir (cache-hit=${{ steps.kicad.outputs.cache-hit }}): extracting"
+          rm -rf "$app"
           mkdir -p "$RUNNER_TEMP/tools" && cd "$RUNNER_TEMP/tools"
           curl -fsSL -o kicad.AppImage "$KICAD_APPIMAGE"
           chmod +x kicad.AppImage
