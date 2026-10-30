@@ -23,7 +23,25 @@
   {
    "net": "+5V",
    "current_a": 0.8,
-   "dt_c": 10
+   "dt_c": 10,
+   "overrides": [
+    {
+     "near": [
+      69.9,
+      87.25
+     ],
+     "radius_mm": 0.5,
+     "current_a": 0.02
+    },
+    {
+     "near": [
+      69.9,
+      92.05
+     ],
+     "radius_mm": 0.5,
+     "current_a": 0.02
+    }
+   ]
   },
   {
    "net": "+3V3",

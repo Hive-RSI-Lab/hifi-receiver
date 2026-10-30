@@ -204,8 +204,11 @@ one is a small hook in the patch, with the logic in `core/`.
   These register values are from the ES8388 datasheet and are **not yet
   checked on a board**.
 - **Subs:** LOUT2/ROUT2 carry the same stereo signal as the speakers, full
-  range (the subs use their own crossover on Lite). Their level is 0 to
-  −45 dB in 1.5 dB steps, up to +4.5 dB; off powers the pair down.
+  range (the subs use their own crossover on Lite). Their level is −9 dB
+  down to −45 dB in 1.5 dB steps (about 0.35 Vrms at full scale), set from
+  squeezelite's codec init on; off powers the pair down. The −9 dB ceiling
+  keeps the line's negative swing inside what the power-fail mute's
+  2N7002s pass cleanly (docs/review-4/als.md R4-ALS-1).
 
 ## Plus and Ultra: the core board
 

@@ -108,7 +108,8 @@ Its `docs/app.md` and `app/web/app.js`.
 - The app's texts call the setup network `HiFi-…`; the firmware names it
   `hifi-lite…`. The manual follows the firmware.
 - The app's sub **Level** slider runs −30 to +6 dB; the Lite firmware's sub
-  level stops at +4.5 dB. The manual gives no range for Level.
+  level stops at −9 dB (0.35 Vrms, enough for a sub's line input with its
+  own gain knob). The manual gives no range for Level.
 - No balance control in either, so the manual dropped it.
 
 ## From the bench (`bench/`, `docs/bench.md`)
