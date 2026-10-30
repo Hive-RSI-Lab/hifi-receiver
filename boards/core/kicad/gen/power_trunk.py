@@ -9,7 +9,7 @@ vias must all land in one such piece. On this board that took:
   it is 3.5 mm. JLC offers 1 oz inner copper on 4-layer boards.
 - The GND stitch grid (about 4.3 mm pitch) cleared from the In2 power
   regions (STITCH_REGIONS, plus 1 mm): only pure stitches, GND vias no track
-  or pad touches, and not the ten (KEEP) that are an F.Cu GND island's only
+  or pad touches, and not the twelve (KEEP) that are an F.Cu GND island's only
   tie to ground. In1 stays solid GND; F.Cu/B.Cu keep the stitches outside.
 - In2 zone outlines (ZONES; refill after):
   - PVDD: the main plane and Q1's drain strip are one zone, and the strip
@@ -31,7 +31,14 @@ vias must all land in one such piece. On this board that took:
   - each PVDD finger between an amp's output pins (F.Cu, grown 2.8 mm away
     from the pins, see power_zones.py) gets three more plane vias, five in
     all: a finger feeds one bridge, 2.5 A (constraints.json);
-  - +5V's trunk layer changes get a second via each.
+  - review-2's F.Cu patches (POWER-1): R1's input patch grows 1 mm toward J1;
+    the patch from R1's output to Q1's source becomes two zones, one per
+    pad, and the strip below Q1 that necked to 1.15 mm goes with its three
+    vias (overrides for the patches at R1's output and Q1's drain:
+    constraints.json);
+  - R18's VBUS_IN tap via moves off the plane (an In2 rule area, RULE_AREA)
+    and B.Cu ties it to J1's B4 VBUS pin;
+  - C15's GND via goes: it split VBUS's only way into the corner above C11.
 
 Writes anneal/power_trunk.ops.json (the stitch removals) and
 anneal/power_trunk_edits.ops.json (the edits), both for route_edit, and
@@ -45,13 +52,18 @@ edits the board's zones and stackup in place. From the board workspace:
 a zone whose fill the outline edit cleared).
 """
 import json
+import os
 import re
 import sys
+import uuid
 from pathlib import Path
 
 B = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(Path(__import__("os").environ.get(
-    "HWDE_SKILL", "/hive/tools/hwde/.claude/skills/hwde")) / "scripts"))
+# hwde's scripts: $HWDE_SKILL/scripts (hwde env), else the published copy
+for _d in (os.environ.get("HWDE_SKILL", ""), "/hive/tools/hwde", "/hive/tools/hwde/.claude/skills/hwde"):
+    if _d and (Path(_d) / "scripts" / "lib" / "geom.py").exists():
+        sys.path.insert(0, str(Path(_d) / "scripts"))
+        break
 from lib import geom  # noqa: E402
 from shapely.geometry import Point, box  # noqa: E402
 
@@ -76,6 +88,18 @@ ZONES = [
     # the pins (free GND pour there), room for five plane vias each
     ("F.Cu", "PVDD", R(x1, 153.697, x2, 156.897), R(x1, 150.897, x2, 156.897))
     for x1, x2 in ((42.587, 44.337), (47.587, 49.187), (75.487, 77.237), (80.487, 82.087))
+] + [
+    # review-2's F.Cu patch at R1's input pad: 1 mm wider, into the free
+    # space beside J1's pins, so its eight vias sit in 3.5 mm of copper
+    ("F.Cu", "VBUS_IN", R(42.9, 178.6, 46.2, 185.2), R(41.9, 178.6, 46.2, 185.2)),
+    # review-2's F.Cu patch from R1's output to Q1's source, without the strip
+    # below Q1 that necked to 1.15 mm (its three vias go, EDITS); the R1 side
+    # and Q1's source keep their via arrays into the In2 VBUS plane
+    ("F.Cu", "VBUS",
+     [(50.0, 174.0), (58.0, 174.0), (58.0, 181.2), (52.5, 181.2), (52.5, 183.6), (50.0, 183.6)],
+     # two zones, each judged alone: Q1's source pins and R1's output pad
+     [[(53.7, 174.0), (58.0, 174.0), (58.0, 178.2), (53.7, 178.2)],
+      [(49.0, 176.6), (53.3, 176.6), (53.3, 181.2), (52.5, 181.2), (52.5, 183.6), (49.0, 183.6)]]),
 ]
 # outlines an earlier version of this script wrote, so a re-run reshapes them
 PREV = {"VBUS_IN": [[(34.587, 168.697), (47.387, 168.697), (47.387, 172.697), (48.487, 172.697),
@@ -92,6 +116,42 @@ PREV = {"VBUS_IN": [[(34.587, 168.697), (47.387, 168.697), (47.387, 172.697), (4
                  [(47.887, 172.197), (66.587, 172.197), (66.587, 168.697), (71.587, 168.697),
                   (71.587, 183.597), (47.887, 183.597)]]}
 INNER_CU = 0.035
+# In2 keeps its VBUS_IN pour off R18's tap via, which B.Cu ties to J1's B4
+# VBUS pin instead (EDITS): through the plane the tap sat in a piece that also
+# reached J1's pins, and check_current's leaf rule (a tap is excused only when
+# its side of the neck feeds bounded parts) could not excuse R18's microamps
+RULE_AREA_UUID = "6f1e0a52-9d3c-4c4e-b0d1-6b9a1c2d3e4f"
+RULE_AREA = f"""	(zone
+		(layer "In2.Cu")
+		(uuid "{RULE_AREA_UUID}")
+		(hatch edge 0.5)
+		(connect_pads
+			(clearance 0)
+		)
+		(min_thickness 0.25)
+		(keepout
+			(tracks allowed)
+			(vias allowed)
+			(pads allowed)
+			(copperpour not_allowed)
+			(footprints allowed)
+		)
+		(placement
+			(enabled no)
+			(sheetname "")
+		)
+		(fill
+			(thermal_gap 0.5)
+			(thermal_bridge_width 0.5)
+			(island_removal_mode 0)
+		)
+		(polygon
+			(pts
+				(xy 39.3 186.8) (xy 40.7 186.8) (xy 40.7 188.2) (xy 39.3 188.2)
+			)
+		)
+	)
+"""
 # where the GND stitch grid was cleared: the In2 power regions as they were
 # when this ran (constraints.json's planes, before this change reshaped them)
 STITCH_REGIONS = [(34.587, 120.697, 97.587, 168.197), (52.087, 168.197, 62.087, 171.697),
@@ -104,8 +164,19 @@ KEEP = {
     "fbb2cc3b-f725-40fc-81d8-89ec8347666b", "4f3ac910-5876-41e5-9cb4-29d7f81656fc",
     "a89dbfa1-5862-4f6d-a3ef-af21be945ccb", "c9dbeb05-07ae-45c7-9bf9-974c95b25094",
     "c9f454d7-c154-4c7c-a898-078b2decf61b", "4e0be45d-2385-462d-ba0c-d17b01e4a4c4",
-    "c84c2dee-24f6-415c-b428-f7bde9d72df4", "f633a067-3886-4424-9935-e479ff8cd0ea"}
+    "c84c2dee-24f6-415c-b428-f7bde9d72df4", "f633a067-3886-4424-9935-e479ff8cd0ea",
+    "544908d5-17f3-4285-86e0-93397c935b07", "cb52ee66-db31-4a99-b611-593990106301"}
 EDITS = [{"op": "remove", "uuid": u} for u in (
+    # the three VBUS vias in the strip below Q1 the F.Cu patch no longer has
+    "1db623d1-9da4-4bfb-9a33-deddd41cb972", "bcebe21f-294f-4a42-aeca-98d8319028d7",
+    "290a62ee-e1e7-44e7-b6b9-75f1e0913f1c",
+    # R18's VBUS_IN tap via, re-laid 0.83 mm down-left, into the In2 plane's
+    # wide piece beside J1
+    "befa47c6-6f41-43bb-949f-80a4faf9ed93",
+    # C15's GND via and stub: it split the VBUS plane's only way to the corner
+    # above C10/C11, and every spot by C15.2 does the same; C15.2 stays on the
+    # F.Cu GND pour, U5's GND via 3.5 mm away
+    "095b8c8b-7c75-40bc-b0f9-958b9253f107", "ac9eba4d-2182-4f91-a3c2-6e0e9c4fe1fa",
     # PVDD via (52.36, 163.0) and the In2/B.Cu stubs that only led to it
     "97296ff5-30fa-4247-bc18-5c2566dd6a90", "21433b07-0320-4935-8a13-134b6cd90fd7",
     "2f65c1ed-0b3d-4bb6-87b8-69568005d07e", "7cabf0b5-4264-485f-b86d-25d553659b35",
@@ -123,27 +194,21 @@ EDITS = [{"op": "remove", "uuid": u} for u in (
     {"op": "add_track", "start": [59.6891, 168.0176], "end": [59.6891, 167.6374], "width": 0.25,
      "layer": "B.Cu", "net": "VBUS"},
     {"op": "add_via", "at": [66.95, 174.0], "size": 0.6, "drill": 0.3, "net": "GND"},
+    {"op": "add_via", "at": [40.0, 187.501], "size": 0.6, "drill": 0.3, "net": "VBUS_IN"},
+    {"op": "add_track", "start": [40.588, 186.913], "end": [40.0, 187.501], "width": 0.3,
+     "layer": "F.Cu", "net": "VBUS_IN"},
+] + [
+    {"op": "add_track", "start": a, "end": b, "width": 0.3, "layer": "B.Cu", "net": "VBUS_IN"}
+    for a, b in (([39.34, 180.83], [38.6, 180.83]), ([38.6, 180.83], [37.85, 181.58]),
+                 ([37.85, 181.58], [37.85, 186.0]), ([37.85, 186.0], [39.351, 187.501]),
+                 ([39.351, 187.501], [40.0, 187.501]))
+] + [
     {"op": "add_track", "start": [66.95, 174.0], "end": [67.7, 174.0], "width": 0.4,
      "layer": "F.Cu", "net": "GND"},
 ] + [
     # three more plane vias in each PVDD finger (power_zones.py VIAS_PVDD)
     {"op": "add_via", "at": [x, y], "size": 0.6, "drill": 0.3, "net": "PVDD"}
     for x in (43.437, 48.387, 76.337, 81.287) for y in (151.597, 152.397, 153.197)
-] + [
-    # +5V's trunk layer changes get a second via: U4's feed going under the
-    # VBUS plane (53.89, 177.65), and the hop toward U2 and J3 (49.14, 188.01)
-    {"op": "add_via", "at": [53.3931, 176.9522], "size": 0.6, "drill": 0.3, "net": "+5V"},
-    {"op": "add_track", "start": [53.3931, 176.9522], "end": [53.3931, 177.6522],
-     "width": 0.355, "layer": "F.Cu", "net": "+5V"},
-    {"op": "add_track", "start": [53.3931, 176.9522], "end": [53.3931, 177.1522],
-     "width": 0.355, "layer": "B.Cu", "net": "+5V"},
-    {"op": "add_track", "start": [53.3931, 177.1522], "end": [53.8931, 177.6522],
-     "width": 0.355, "layer": "B.Cu", "net": "+5V"},
-    {"op": "add_via", "at": [48.637, 187.307], "size": 0.6, "drill": 0.3, "net": "+5V"},
-] + [
-    {"op": "add_track", "start": a, "end": b, "width": 0.355, "layer": layer, "net": "+5V"}
-    for layer in ("F.Cu", "B.Cu")
-    for a, b in (([48.637, 187.307], [48.637, 187.507]), ([48.637, 187.507], [49.137, 188.007]))
 ]
 
 
@@ -167,13 +232,22 @@ def edit_board(text: str) -> str:
                 continue
             if new is None:
                 return ""
-            if have == new:
+            polys = new if isinstance(new[0], list) else [new]
+            if have in polys:
                 return b
-            b = b[:poly.start(1)] + _pts(new) + b[poly.end(1):]
-            # the old fill no longer matches its outline: drop it for the refill
-            return re.sub(r"\n\t\t\(filled_polygon\n.*?\n\t\t\)", "", b, flags=re.S)
+            out = []
+            for k, pts in enumerate(polys):
+                c = b[:poly.start(1)] + _pts(pts) + b[poly.end(1):]
+                if k:  # a second zone from the same one: its own uuid
+                    c = re.sub(r'\(uuid "([^"]+)"\)', lambda m: '(uuid "%s")' % uuid.uuid5(
+                        uuid.NAMESPACE_URL, m.group(1) + str(k)), c, count=1)
+                # the old fill no longer matches its outline: drop it for the refill
+                out.append(re.sub(r"\n\t\t\(filled_polygon\n.*?\n\t\t\)", "", c, flags=re.S))
+            return "".join(out)
         return b
     text = re.sub(r"\n\t\(zone\n.*?\n\t\)", zone, text, flags=re.S)
+    if RULE_AREA_UUID not in text:
+        text = text[:text.rstrip().rfind(")")] + RULE_AREA + ")\n"
     return re.sub(r'(\(layer "In[12]\.Cu"\n\t+\(type "copper"\)\n\t+\(thickness )[\d.]+',
                   lambda m: m.group(1) + f"{INNER_CU:g}", text)
 

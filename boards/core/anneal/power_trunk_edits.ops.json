@@ -3,6 +3,30 @@
  "ops": [
   {
    "op": "remove",
+   "uuid": "1db623d1-9da4-4bfb-9a33-deddd41cb972"
+  },
+  {
+   "op": "remove",
+   "uuid": "bcebe21f-294f-4a42-aeca-98d8319028d7"
+  },
+  {
+   "op": "remove",
+   "uuid": "290a62ee-e1e7-44e7-b6b9-75f1e0913f1c"
+  },
+  {
+   "op": "remove",
+   "uuid": "befa47c6-6f41-43bb-949f-80a4faf9ed93"
+  },
+  {
+   "op": "remove",
+   "uuid": "095b8c8b-7c75-40bc-b0f9-958b9253f107"
+  },
+  {
+   "op": "remove",
+   "uuid": "ac9eba4d-2182-4f91-a3c2-6e0e9c4fe1fa"
+  },
+  {
+   "op": "remove",
    "uuid": "97296ff5-30fa-4247-bc18-5c2566dd6a90"
   },
   {
@@ -108,6 +132,100 @@
    "size": 0.6,
    "drill": 0.3,
    "net": "GND"
+  },
+  {
+   "op": "add_via",
+   "at": [
+    40.0,
+    187.501
+   ],
+   "size": 0.6,
+   "drill": 0.3,
+   "net": "VBUS_IN"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    40.588,
+    186.913
+   ],
+   "end": [
+    40.0,
+    187.501
+   ],
+   "width": 0.3,
+   "layer": "F.Cu",
+   "net": "VBUS_IN"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    39.34,
+    180.83
+   ],
+   "end": [
+    38.6,
+    180.83
+   ],
+   "width": 0.3,
+   "layer": "B.Cu",
+   "net": "VBUS_IN"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    38.6,
+    180.83
+   ],
+   "end": [
+    37.85,
+    181.58
+   ],
+   "width": 0.3,
+   "layer": "B.Cu",
+   "net": "VBUS_IN"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    37.85,
+    181.58
+   ],
+   "end": [
+    37.85,
+    186.0
+   ],
+   "width": 0.3,
+   "layer": "B.Cu",
+   "net": "VBUS_IN"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    37.85,
+    186.0
+   ],
+   "end": [
+    39.351,
+    187.501
+   ],
+   "width": 0.3,
+   "layer": "B.Cu",
+   "net": "VBUS_IN"
+  },
+  {
+   "op": "add_track",
+   "start": [
+    39.351,
+    187.501
+   ],
+   "end": [
+    40.0,
+    187.501
+   ],
+   "width": 0.3,
+   "layer": "B.Cu",
+   "net": "VBUS_IN"
   },
   {
    "op": "add_track",
@@ -242,124 +360,6 @@
    "size": 0.6,
    "drill": 0.3,
    "net": "PVDD"
-  },
-  {
-   "op": "add_via",
-   "at": [
-    53.3931,
-    176.9522
-   ],
-   "size": 0.6,
-   "drill": 0.3,
-   "net": "+5V"
-  },
-  {
-   "op": "add_track",
-   "start": [
-    53.3931,
-    176.9522
-   ],
-   "end": [
-    53.3931,
-    177.6522
-   ],
-   "width": 0.355,
-   "layer": "F.Cu",
-   "net": "+5V"
-  },
-  {
-   "op": "add_track",
-   "start": [
-    53.3931,
-    176.9522
-   ],
-   "end": [
-    53.3931,
-    177.1522
-   ],
-   "width": 0.355,
-   "layer": "B.Cu",
-   "net": "+5V"
-  },
-  {
-   "op": "add_track",
-   "start": [
-    53.3931,
-    177.1522
-   ],
-   "end": [
-    53.8931,
-    177.6522
-   ],
-   "width": 0.355,
-   "layer": "B.Cu",
-   "net": "+5V"
-  },
-  {
-   "op": "add_via",
-   "at": [
-    48.637,
-    187.307
-   ],
-   "size": 0.6,
-   "drill": 0.3,
-   "net": "+5V"
-  },
-  {
-   "op": "add_track",
-   "start": [
-    48.637,
-    187.307
-   ],
-   "end": [
-    48.637,
-    187.507
-   ],
-   "width": 0.355,
-   "layer": "F.Cu",
-   "net": "+5V"
-  },
-  {
-   "op": "add_track",
-   "start": [
-    48.637,
-    187.507
-   ],
-   "end": [
-    49.137,
-    188.007
-   ],
-   "width": 0.355,
-   "layer": "F.Cu",
-   "net": "+5V"
-  },
-  {
-   "op": "add_track",
-   "start": [
-    48.637,
-    187.307
-   ],
-   "end": [
-    48.637,
-    187.507
-   ],
-   "width": 0.355,
-   "layer": "B.Cu",
-   "net": "+5V"
-  },
-  {
-   "op": "add_track",
-   "start": [
-    48.637,
-    187.507
-   ],
-   "end": [
-    49.137,
-    188.007
-   ],
-   "width": 0.355,
-   "layer": "B.Cu",
-   "net": "+5V"
   }
  ]
 }

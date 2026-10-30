@@ -3,26 +3,29 @@
  "qty": 100,
  "tier_not_counted": 1000,
  "piece_missing": 100,
+ "budget_about": "Each tier's BOM budget per unit at 100: docs/product.md's target retail without the charger over the usual 4x retail-to-BOM markup ($59, $129, $199 / 4). The score counts only a counted tier's cost above it.",
  "tiers": {
   "lite": {
+   "budget": 14.75,
    "builds": [{"board": "lite-main"}],
    "needs": [
-    {"what": "USB-C power input", "match": "USB4105|TYPE-C|USB-C", "count": 1},
+    {"what": "USB-C power input", "match": "USB4105|USB4085|TYPE-C|USB-C", "count": 1},
     {"what": "USB PD sink", "match": "CH224|HUSB238|IP2721|STUSB4500|AP33772", "count": 1},
     {"what": "stereo class-D amplifier", "match": "TPA31(16|18|30)|TPA32(21|51|55)|TAS5\\d{3}|MA12070", "count": 1},
     {"what": "codec: DAC, and an ADC for the line in", "match": "ES838[89]|WM89(60|78)|TLV320AIC|AC101", "count": 1},
     {"what": "Wi-Fi + Bluetooth Classic module with PSRAM", "match": "ESP32-WROVER|ESP32-PICO-(V3-02|MINI-02)", "count": 1},
     {"what": "USB serial for bring-up from a laptop", "match": "CH34[03]|CP210\\d|FT23\\d", "count": 1},
-    {"what": "RCA jacks: line in and sub out", "match": "RCA", "count": 2},
+    {"what": "RCA jacks: line in and sub out", "match": "RCA|XDJK", "count": 2},
     {"what": "speaker terminals, L and R (4 contacts)", "match": "DB128|KF301|BINDING|BANANA|SCREW TERMINAL|TERMINAL BLOCK", "pads": 4},
     {"what": "IR receiver", "match": "IRM-|TSOP|VS1838|INFRARED", "count": 1},
     {"what": "3 front buttons", "match": "BUTTON|TACT|TS-1187", "count": 3}
    ]
   },
   "plus": {
+   "budget": 32.25,
    "builds": [{"board": "core"}],
    "needs": [
-    {"what": "USB-C power input", "match": "USB4105|TYPE-C|USB-C", "count": 1},
+    {"what": "USB-C power input", "match": "USB4105|USB4085|TYPE-C|USB-C", "count": 1},
     {"what": "USB PD sink with 28 V EPR", "match": "CH224|AP33772", "count": 1},
     {"what": "input current sense for the power governor", "match": "INA1[89]\\d|INA2\\d\\d", "count": 1},
     {"what": "class-D amplifier, 77 W per channel class", "match": "TPA32(21|51|55)", "count": 1},
@@ -34,7 +37,7 @@
     {"what": "RJ45 jack", "match": "RJ45|HR911", "count": 1},
     {"what": "Wi-Fi + Bluetooth Classic module with PSRAM", "match": "ESP32-WROVER|ESP32-PICO-(V3-02|MINI-02)", "count": 1},
     {"what": "USB serial for bring-up from a laptop", "match": "CH34[03]|CP210\\d|FT23\\d", "count": 1},
-    {"what": "RCA jacks: line in and sub out", "match": "RCA", "count": 2},
+    {"what": "RCA jacks: line in and sub out", "match": "RCA|XDJK", "count": 2},
     {"what": "speaker terminals, L and R (4 contacts)", "match": "DB128|KF301|BINDING|BANANA|SCREW TERMINAL|TERMINAL BLOCK", "pads": 4},
     {"what": "IR receiver", "match": "IRM-|TSOP|VS1838|INFRARED", "count": 1},
     {"what": "volume knob", "match": "EC1[12]|ROTARY ENCODER", "count": 1},
@@ -42,10 +45,11 @@
    ]
   },
   "ultra": {
+   "budget": 49.75,
    "builds": [{"board": "core", "bom": "fab/ultra/BOM.csv", "parts": "parts/parts-ultra.json"},
               {"board": "ultra-front"}],
    "needs": [
-    {"what": "USB-C power input", "match": "USB4105|TYPE-C|USB-C", "count": 1},
+    {"what": "USB-C power input", "match": "USB4105|USB4085|TYPE-C|USB-C", "count": 1},
     {"what": "USB PD sink with 28 V EPR", "match": "CH224|AP33772", "count": 1},
     {"what": "input current sense for the power governor", "match": "INA1[89]\\d|INA2\\d\\d", "count": 1},
     {"what": "class-D amplifiers for zones A and B", "match": "TPA32(21|51|55)", "count": 2},
@@ -58,7 +62,7 @@
     {"what": "RJ45 jack", "match": "RJ45|HR911", "count": 1},
     {"what": "Wi-Fi + Bluetooth Classic module with PSRAM", "match": "ESP32-WROVER|ESP32-PICO-(V3-02|MINI-02)", "count": 1},
     {"what": "USB serial for bring-up from a laptop", "match": "CH34[03]|CP210\\d|FT23\\d", "count": 1},
-    {"what": "RCA jacks: line in and sub out", "match": "RCA", "count": 2},
+    {"what": "RCA jacks: line in and sub out", "match": "RCA|XDJK", "count": 2},
     {"what": "speaker terminals, zones A and B (8 contacts)", "match": "DB128|KF301|BINDING|BANANA|SCREW TERMINAL|TERMINAL BLOCK", "pads": 8},
     {"what": "FFC link between core and the front board", "match": "FFC|FPC", "count": 2},
     {"what": "colour screen connector", "match": "LCD|ST7789|TFT|DISPLAY", "count": 1, "in": ["role"]},

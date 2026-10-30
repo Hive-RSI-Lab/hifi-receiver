@@ -7,7 +7,7 @@
    "priority": 5,
    "region": [
     38.187,
-    151.697,
+    152.197,
     42.037,
     156.697
    ]
@@ -146,7 +146,7 @@
   },
   {
    "layer": "F.Cu",
-   "net": "/amp_a/A_SPK_R+",
+   "net": "/A_SPK_R+",
    "connect": "solid",
    "priority": 5,
    "region": [
@@ -158,19 +158,19 @@
   },
   {
    "layer": "F.Cu",
-   "net": "/amp_a/A_SPK_R+",
+   "net": "/A_SPK_R+",
    "connect": "solid",
    "priority": 5,
    "region": [
     62.787,
     124.897,
-    65.887,
+    65.387,
     134.097
    ]
   },
   {
    "layer": "F.Cu",
-   "net": "/amp_a/A_SPK_L+",
+   "net": "/A_SPK_L+",
    "connect": "solid",
    "priority": 5,
    "region": [
@@ -182,7 +182,7 @@
   },
   {
    "layer": "B.Cu",
-   "net": "/amp_a/A_SPK_L+",
+   "net": "/A_SPK_L+",
    "connect": "solid",
    "priority": 5,
    "region": [
@@ -194,7 +194,7 @@
   },
   {
    "layer": "B.Cu",
-   "net": "/amp_a/A_SPK_L+",
+   "net": "/A_SPK_L+",
    "connect": "solid",
    "priority": 5,
    "region": [
@@ -206,7 +206,7 @@
   },
   {
    "layer": "B.Cu",
-   "net": "/amp_a/A_SPK_L+",
+   "net": "/A_SPK_L+",
    "connect": "solid",
    "priority": 5,
    "region": [
@@ -218,7 +218,7 @@
   },
   {
    "layer": "B.Cu",
-   "net": "/amp_a/A_SPK_L+",
+   "net": "/A_SPK_L+",
    "connect": "solid",
    "priority": 5,
    "region": [
@@ -331,7 +331,7 @@
    "priority": 5,
    "region": [
     71.087,
-    151.697,
+    152.197,
     74.937,
     156.697
    ]
@@ -488,7 +488,7 @@
    "region": [
     95.687,
     124.897,
-    98.787,
+    98.287,
     134.097
    ]
   },

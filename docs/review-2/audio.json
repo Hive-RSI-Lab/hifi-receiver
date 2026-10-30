@@ -1,0 +1,828 @@
+{
+ "domain": "audio",
+ "findings": [
+  {
+   "id": "AUDIO-1",
+   "board": "core",
+   "severity": "major",
+   "refs": [
+    "U11",
+    "R72",
+    "R73",
+    "R74",
+    "R75",
+    "R80",
+    "R81",
+    "R82",
+    "R83",
+    "R90",
+    "R91"
+   ],
+   "nets": [
+    "/dac/OPL_P",
+    "/dac/OPL_N",
+    "/dac/MAIN_L",
+    "/dac/MAIN_R",
+    "/VREF",
+    "+5VA"
+   ],
+   "finding": "OPA1678 on single 5.1 V: at 0 dBFS the + input peaks at 3.05 V vs common-mode limit V+-2 = 3.10 V; output swings 0.92..4.18 V vs 0.8..4.3 V. Distortion near full scale; margin negative below 5.03 V supply.",
+   "evidence": "V+ = (1.65*1.5k + 2.55*2.806k)/4.306k = 2.236 V DC + 1.525*1.5/4.306 = 0.815 Vpk -> 3.05 V; SBOS855E 6.7 VCM (V-)+0.5..(V+)-2, VO (V-)+0.8..(V+)-0.8; ES9018K2M v3.7 p.31 3.05 Vpp/leg, 806 ohm",
+   "fix": "R73, R75, R81, R83 1.5k -> 1.3k 0402 1% (gain 0.463): CM peak 2.75 V (0.35 V margin), output +/-1.41 V (0.34 V margin), 0 dBFS = 1.00 Vrms -> 63 W/4 ohm, 1.0 dB below clip.",
+   "margin": "input CM 48 mV (1.6 %), output 0.12 V each side"
+  },
+  {
+   "id": "AUDIO-2",
+   "board": "core",
+   "severity": "major",
+   "refs": [
+    "U14",
+    "C100",
+    "C101",
+    "C110",
+    "C111"
+   ],
+   "nets": [
+    "/linein/LDIV_L",
+    "/linein/LDIV_R",
+    "/linein/LSW_L",
+    "/linein/LSW_R"
+   ],
+   "finding": "Proposed loopback switch (second TS5A23157) on the RCA side would switch LDIV, which is ground-referenced (0 V DC, +/-0.92 Vpk with FLX4 2.1 Vrms): below the switch's 0..V+ signal range; body diodes conduct, distorting the ADC and DJ-direct paths.",
+   "evidence": "SCDS165F 6.5 analog range 0..V+, abs min -0.5 V; LDIV = 2.1*1.414*0.311 = 0.92 Vpk",
+   "fix": "Switch biased nodes: NC = LSW_x (2.55 V via R102/R112), NO = tap -> 1 uF -> node with 100k to VREF, COM -> C101/C111 -> AINxP. Range 2.55+/-0.92 V and 2.55+/-0.80 V inside 0..5.1 V.",
+   "margin": "proposed as drawn: -0.92 V vs 0 V min (negative); fixed: >= 1.63 V"
+  },
+  {
+   "id": "AUDIO-3",
+   "board": "core",
+   "severity": "major",
+   "refs": [
+    "U14"
+   ],
+   "nets": [
+    "DJ_SEL"
+   ],
+   "finding": "Proposed loopback switch select from a 3.3 V ESP32 GPIO or ES9018K2M GPIO2 cannot reach TS5A23157 VIH = 0.7*V+ = 3.57 V at 5.1 V; ES9018 GPIO is tri-stated during RESETB low (select floats).",
+   "evidence": "SCDS165F 6.5 VIH V+*0.7; ES9018K2M v3.7 p.9 standby tri-states GPIO",
+   "fix": "Add an S8050 (C2146) inverter as Q6: 10k base, 10k pull-up to +5VA, 100k base pull-down so default = RCA.",
+   "margin": "3.3 V vs 3.57 V needed: -0.27 V"
+  },
+  {
+   "id": "AUDIO-4",
+   "board": "lite-main",
+   "severity": "major",
+   "refs": [
+    "U8",
+    "R54",
+    "R52",
+    "U5"
+   ],
+   "nets": [
+    "/AMP_SDZ",
+    "/AMP_SDZ_IO"
+   ],
+   "finding": "SDZ driven from GPIO21 (3.3 V) through R54 100k. SLOS708G allows IIH up to 50 uA; above 13 uA SDZ falls below VIH 2.0 V and the amp never leaves shutdown.",
+   "evidence": "SLOS708G 6.3: VIH 2 V, IIH 50 uA max; 3.3 V - 50 uA*100k = -1.7 V (worst case), needs I <= 13 uA",
+   "fix": "R54 100k -> 22k (C31850): 2.2 V at 50 uA; ESD-diode injection with PVDD off <= 150 uA. Bench: measure SDZ voltage with GPIO high.",
+   "margin": "worst-case -1.7 V below VIH; typical likely positive (unverified)"
+  },
+  {
+   "id": "AUDIO-5",
+   "board": "core",
+   "severity": "minor",
+   "refs": [
+    "C101",
+    "C102",
+    "C111",
+    "C112",
+    "U13"
+   ],
+   "nets": [
+    "/linein/ADC_LP",
+    "/linein/ADC_RP"
+   ],
+   "finding": "ES7243E coupling 1 uF into 8 kohm: -3 dB at 19.9 Hz (~25 Hz with X5R bias) on the line-in -> ADC -> DSP -> subs path.",
+   "evidence": "ES7243E rev 5.0 input impedance 8 kohm (0 dB PGA); fc = 1/(2*pi*8k*1u)",
+   "fix": "C101/C102/C111/C112 -> 4.7 uF 0603 X5R 16 V (C19666): 4.2 Hz.",
+   "margin": "-3 dB at 20 Hz"
+  },
+  {
+   "id": "AUDIO-6",
+   "board": "lite-main",
+   "severity": "minor",
+   "refs": [
+    "U7",
+    "U8",
+    "R50",
+    "R51"
+   ],
+   "nets": [
+    "/AMP_IN_L",
+    "/AMP_IN_R"
+   ],
+   "finding": "ES8388 full-scale 1 Vrms at 0 dB volume vs TPA3118 26 dB input clip 0.623 Vrms (20 V, 4 ohm): 0 dBFS overdrives by 4.1 dB; FLX4 via analog bypass at 0 dB overdrives by 2.1 dB.",
+   "evidence": "ES8388 rev 5.0 FS out AVDD/3.3; power.py; SLOS708G eq. 2",
+   "fix": "Firmware cap LOUT1/ROUT1 vol at -4.5 dB and LI2LOVOL at -3 dB, or 20 dB gain (R50 5.6k, R51 DNP).",
+   "margin": "-4.1 dB headroom at 0 dB volume"
+  },
+  {
+   "id": "AUDIO-7",
+   "board": "lite-main",
+   "severity": "minor",
+   "refs": [
+    "R30",
+    "R31",
+    "R33",
+    "R34",
+    "C41",
+    "C44"
+   ],
+   "nets": [
+    "/LINEIN_L",
+    "/LINEIN_R"
+   ],
+   "finding": "Line-in headroom with FLX4 (2.1 Vrms rated, <=1 kohm source): 0.79-0.84 Vrms at LIN1 vs 1.0 Vrms FS; ES8388 PGA cannot attenuate.",
+   "evidence": "ratio (10k||20k)/(1k+10k+6.67k) = 0.377; Pioneer DDJ-FLX4 spec MASTER 2.1 Vrms/10 kohm",
+   "fix": "R30, R33 10k -> 15k 0603 1 % (JLC basic; LCSC number not yet picked): 0.62 Vrms, -4.2 dBFS.",
+   "margin": "1.5-2.0 dB"
+  },
+  {
+   "id": "AUDIO-8",
+   "board": "core",
+   "severity": "minor",
+   "refs": [
+    "U15",
+    "U16",
+    "U14",
+    "U12"
+   ],
+   "nets": [
+    "AMP_IN_L",
+    "AMP_IN_R"
+   ],
+   "finding": "TPA3221 inverts; DAC path pre-inverted in U11 but DJ-direct path is not, so in DJ mode mains are inverted vs the PCM5102A sub (fed via ADC): cancellation at crossover.",
+   "evidence": "SLASEE9C 9.2.1.2 'The device inverts the audio signal'; 6.5 'Inverting voltage gain'",
+   "fix": "Firmware: invert sub/ADC polarity while DJ_DIRECT=1.",
+   "margin": "polarity 180 deg in DJ mode"
+  },
+  {
+   "id": "AUDIO-9",
+   "board": "core",
+   "severity": "minor",
+   "refs": [
+    "U14",
+    "U15",
+    "U16",
+    "U17"
+   ],
+   "nets": [
+    "/linein/DJ_SEL",
+    "/AMP_A_RST",
+    "/AMP_B_RST"
+   ],
+   "finding": "DJ_DIRECT toggle pop: MAIN DC = VREF + up to ~50 mV (806 ohm +/-11 % and 1 % resistor mismatch) vs LSW = VREF; x15.85 = ~0.8 V step at the speaker.",
+   "evidence": "ES9018K2M v3.7 p.31 note 1 (806 ohm +/-11 %); (2.55-1.65)*0.535*~0.1",
+   "fix": "Firmware: RESET both amps low (20 ms ramp), switch, release both in one TCA9555 port-0 write (also needed for controller/peripheral sync, SLASEE9C 8.3.2).",
+   "margin": "n/a"
+  },
+  {
+   "id": "AUDIO-10",
+   "board": "core",
+   "severity": "minor",
+   "refs": [
+    "Y1",
+    "U10"
+   ],
+   "nets": [
+    "/dac/DAC_MCLK"
+   ],
+   "finding": "ES9018K2M MCLK 50 MHz equals the maximum with internal DVDD; oscillator tolerance can exceed it.",
+   "evidence": "ES9018K2M v3.7 p.9 DVDD supply, p.31 note 2",
+   "fix": "49.152 MHz 3225 oscillator (ASRC mode; 192 kHz needs >36.9 MHz).",
+   "margin": "0 %"
+  },
+  {
+   "id": "AUDIO-11",
+   "board": "core",
+   "severity": "minor",
+   "refs": [
+    "R214",
+    "R215",
+    "U15"
+   ],
+   "nets": [
+    "/amp_a/A_FREQ"
+   ],
+   "finding": "FREQ_ADJ 2x100k 1 % = 50k +/-1 %; ROC 49.5-50.5k: no margin before TCR.",
+   "evidence": "SLASEE9C 6.3 R(FREQ_ADJ)",
+   "fix": "Accept, or single 49.9k 0.5 %.",
+   "margin": "0 %"
+  },
+  {
+   "id": "AUDIO-12",
+   "board": "both",
+   "severity": "note",
+   "refs": [
+    "L1",
+    "L2",
+    "L3",
+    "L4",
+    "L5",
+    "L6",
+    "L7",
+    "L8",
+    "C68",
+    "C69",
+    "C70",
+    "C71"
+   ],
+   "nets": [
+    "SPK_*"
+   ],
+   "finding": "Open-load LC resonance +38..+40 dB at 50-73 kHz; core 4.7 ohm + 1 nF snubber gives no damping at f0.",
+   "evidence": "sims/audio lc_*_open: hpk 38.2-40.3 dB, f0 50.3-72.6 kHz",
+   "fix": "Optional DNP Zobel footprint per leg; check 'speakers off' loopback captures for ringing.",
+   "margin": "n/a"
+  },
+  {
+   "id": "AUDIO-13",
+   "board": "both",
+   "severity": "note",
+   "refs": [
+    "U7",
+    "U13"
+   ],
+   "nets": [
+    "SPK_L_P",
+    "A_SPK_L+"
+   ],
+   "finding": "Loopback tap scale: loaded ratio Lite 0.0625 (not 1/11), core 0.0276 (not 1/16); one leg includes PVDD ripple/2 and common-mode products.",
+   "evidence": "ES8388 Zin 20 kohm, ES7243E Zin 8 kohm",
+   "fix": "Firmware scales by loaded ratio, one-time calibration; single-leg THD is an upper bound.",
+   "margin": "Lite -7.6 dBFS, core -11 dBFS at full power"
+  },
+  {
+   "id": "AUDIO-14",
+   "board": "core",
+   "severity": "note",
+   "refs": [
+    "R100",
+    "R101",
+    "R110",
+    "R111"
+   ],
+   "nets": [
+    "/linein/LDIV_L"
+   ],
+   "finding": "DJ-direct max with FLX4 at rated 2.1 Vrms: 0.65 Vrms at amp = ~27 W/4 ohm (4.7 dB below clip); FLX4 load 7.0-7.3 kohm vs 10 kohm rated.",
+   "evidence": "divider 4.7k/(4.7k||8k||19.4k)",
+   "fix": "Accept (ADC shares node); document.",
+   "margin": "4.7 dB below clip"
+  },
+  {
+   "id": "AUDIO-15",
+   "board": "lite-main",
+   "severity": "note",
+   "refs": [
+    "U3",
+    "C60",
+    "C62"
+   ],
+   "nets": [
+    "/AMP_IN_L",
+    "/AMP_IN_R",
+    "/BUCK3_LX"
+   ],
+   "finding": "AMP_IN_R crosses BUCK3_LX on the other layer (0.21 mm offset), AMP_IN_L 1.25 mm from it; driven from low-Z ES8388 LOUT so low risk.",
+   "evidence": "pcbq.py distance query on lite-main.kicad_pcb",
+   "fix": "Route clear if re-routing.",
+   "margin": "n/a"
+  },
+  {
+   "id": "AUDIO-16",
+   "board": "both",
+   "severity": "note",
+   "refs": [
+    "U8",
+    "U15",
+    "U16"
+   ],
+   "nets": [
+    "PVDD"
+   ],
+   "finding": "Continuous full power 2x79 W (core 4 ohm 28 V) needs ~176 W in vs 140 W PD; TPA3221 RthJA 44.8 C/W without heatsink.",
+   "evidence": "power.py; SLASEE9C 6.4",
+   "fix": "Power/thermal reviewers; firmware governor must limit.",
+   "margin": "n/a"
+  },
+  {
+   "id": "AUDIO-17",
+   "board": "lite-main",
+   "severity": "note",
+   "refs": [
+    "U7",
+    "U8"
+   ],
+   "nets": [
+    "/CODEC_VMID",
+    "/AMP_SDZ"
+   ],
+   "finding": "Pop sequencing: +3V3A collapses before PVDD on unplug; amp must wait for VMID (10 uF, tau 0.5 s at 50k).",
+   "evidence": "ES8388 rev 5.0 VMIDSEL; 690 uF PVDD bulk",
+   "fix": "Firmware: SDZ low on VBUS_SENSE drop; SDZ high >= 2.5 s after VMID enable.",
+   "margin": "n/a"
+  }
+ ],
+ "known_unknowns": [
+  {
+   "fact": "TPA3118D2 DAP pin map (MODSEL1 SDZ2 FAULTZ3 RINP4 RINN5 PLIMIT6 GVDD7 GAIN8 ... BSPR30 OUTPR29) matches netlist",
+   "board": "lite-main",
+   "refs": [
+    "U8"
+   ],
+   "status": "verified",
+   "source": "TI SLOS708G pin functions p.3-4",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3118D2 gain 26 dB master = 20k to GND, 100k to GVDD; Zi 30 kohm +/-20 %",
+   "board": "lite-main",
+   "refs": [
+    "U8",
+    "R50",
+    "R51"
+   ],
+   "status": "verified",
+   "source": "SLOS708G table 1 p.14, 7.3.2",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3118D2 MODSEL low = BD, AM2..0=000 = 400 kHz, MUTE low = enabled, PLIMIT=GVDD no limit",
+   "board": "lite-main",
+   "refs": [
+    "U8"
+   ],
+   "status": "verified",
+   "source": "SLOS708G pin table, 6.6, 7.3.4",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3118D2 SDZ input current at 3.3 V drive (only 50 uA max given)",
+   "board": "lite-main",
+   "refs": [
+    "U8",
+    "R54"
+   ],
+   "status": "unverified",
+   "source": "SLOS708G 6.3 IIH max 50 uA; typical not published",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3118D2 is non-inverting INP->OUTP (absolute polarity at J4)",
+   "board": "lite-main",
+   "refs": [
+    "U8",
+    "J4"
+   ],
+   "status": "unverified",
+   "source": "SLOS708G does not state polarity",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "TPA3118D2 OCP 7.5 A typ; min filter L under short 1 uH",
+   "board": "lite-main",
+   "refs": [
+    "U8",
+    "L1",
+    "L2",
+    "L3",
+    "L4"
+   ],
+   "status": "verified",
+   "source": "SLOS708G 6.3, 6.6",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "XR0850-100M: 10 uH, 30 mohm, Isat 8 A, Irated 6.5 A; Isat definition (% drop) unknown",
+   "board": "lite-main",
+   "refs": [
+    "L1",
+    "L2",
+    "L3",
+    "L4"
+   ],
+   "status": "unverified",
+   "source": "LCSC C48391614 listing; maker datasheet not read",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "CL31B105KBHNNNE 1 uF 50 V X7R 1206 capacitance at 10 V DC (assumed -15 %)",
+   "board": "lite-main",
+   "refs": [
+    "C68",
+    "C69",
+    "C70",
+    "C71"
+   ],
+   "status": "unverified",
+   "source": "LCSC C1848 listing; DC-bias curve not read",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "ES8388 QFN-28 pin map (LOUT1 12, ROUT1 11, LOUT2 15, ROUT2 14, LIN1 24, RIN1 23, LIN2 22, RIN2 21, VMID 20, ADCVREF 19, VREF 10, CE 26) matches netlist",
+   "board": "lite-main",
+   "refs": [
+    "U7"
+   ],
+   "status": "verified",
+   "source": "Everest ES8388 rev 5.0 p.5-6",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "ES8388 I2C address 0x10 with CE=GND",
+   "board": "lite-main",
+   "refs": [
+    "U7"
+   ],
+   "status": "verified",
+   "source": "ES8388 rev 5.0 sec. 5.2 (001000x)",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "ES8388 ADC full scale AVDD/3.3 Vrms, input impedance 20 kohm; DAC out full scale AVDD/3.3 Vrms",
+   "board": "lite-main",
+   "refs": [
+    "U7"
+   ],
+   "status": "verified",
+   "source": "ES8388 rev 5.0 analog tables",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "ES8388 ADC input select (Reg10 LINSEL) independent of output-mix select (Reg38 LMIXSEL)",
+   "board": "lite-main",
+   "refs": [
+    "U7"
+   ],
+   "status": "verified",
+   "source": "ES8388 rev 5.0 6.2.2, 6.3.16",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "ES8388 input pin abs-max and internal bias voltage of LIN2/RIN2",
+   "board": "lite-main",
+   "refs": [
+    "U7"
+   ],
+   "status": "unverified",
+   "source": "not in rev 5.0 text",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "Pioneer DDJ-FLX4 MASTER out 2.1 Vrms rated into 10 kohm, output impedance <=1 kohm; true max level above rated unknown",
+   "board": "both",
+   "refs": [
+    "J2",
+    "J5"
+   ],
+   "status": "verified",
+   "source": "Pioneer DJ launch spec / B&H listing (web, 2026-10-29)",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "TPA3221 DDV pin map (VDD1 GAIN2 OTW3 FAULT4 IN1P8 IN1M9 RESET10 HEAD11 OSCM12 OSCP13 FREQ14 IN2P15 IN2M16 CMUTE17 AVDD21 GVDD22 BST/OUT/PVDD) matches symbol names",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "verified",
+   "source": "TI SLASEE9C fig 5-1, table 5-1",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3221 gain/controller table: 20k/100k controller 24 dB, 75k/47k peripheral 24 dB; RIN 24 kohm",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "verified",
+   "source": "SLASEE9C table 8-1, 6.5",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3221 controller needs 47k pull-up OSCM to AVDD and 47k pull-down OSCP; peripheral FREQ_ADJ to AVDD; same-polarity OSC = peripheral 1",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16",
+    "R216",
+    "R217",
+    "R315"
+   ],
+   "status": "verified",
+   "source": "SLASEE9C 8.3.2, 8.3.4, 6.3",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3221 inverts input to output",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16",
+    "U11"
+   ],
+   "status": "verified",
+   "source": "SLASEE9C 9.2.1.2, 6.5",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "TPA3221 LDO-bypass VDD/AVDD/GVDD 4.5-5.5 V; IGVDD 16 mA",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "verified",
+   "source": "SLASEE9C 6.3, 6.5",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3221 OC limit 10 A typ (no min/max); min L at IOC 5 uH",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "verified",
+   "source": "SLASEE9C 6.5, 6.3",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3221 thermal pad location for DDV (datasheet text says both top and bottom)",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "unverified",
+   "source": "SLASEE9C features vs pin table disagree",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3221 single-ended gain equals differential gain (IN_M AC-grounded)",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "unverified",
+   "source": "SLASEE9C table 8-1 input-level columns are inconsistent",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "PSPMAA0805-100M-ANP: 10 uH, 30 mohm, Isat 10 A, Irated 6 A; Isat definition unknown",
+   "board": "core",
+   "refs": [
+    "L1",
+    "L2",
+    "L3",
+    "L4",
+    "L5",
+    "L6",
+    "L7",
+    "L8"
+   ],
+   "status": "unverified",
+   "source": "LCSC C2962885 listing",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "CL21B105KBFNNNE 1 uF 50 V X7R 0805 at 14 V DC (assumed -40 %)",
+   "board": "core",
+   "refs": [],
+   "status": "unverified",
+   "source": "LCSC C28323 listing; DC-bias curve not read",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "ES9018K2M package QFN-28 5x5 0.5 mm, EP 3.25; PCB footprint matches",
+   "board": "core",
+   "refs": [
+    "U10"
+   ],
+   "status": "verified",
+   "source": "ESS ES9018K2M ds v3.7 p.36-37; core.kicad_pcb U10 pads",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "ES9018K2M pin map (DACR 9, DACRB 10, DACL 13, DACLB 14, AVCC 15/16, VCCA 17, DVCC 18, DVDD 21, DATA2/1/CLK 25/26/27, RESETB 28) matches netlist",
+   "board": "core",
+   "refs": [
+    "U10"
+   ],
+   "status": "verified",
+   "source": "ES9018K2M v3.7 p.4",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "ES9018K2M I2C 0x48 (ADDR=0)",
+   "board": "core",
+   "refs": [
+    "U10"
+   ],
+   "status": "verified",
+   "source": "ES9018K2M v3.7 p.27",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "ES9018K2M max MCLK 50 MHz with internal DVDD",
+   "board": "core",
+   "refs": [
+    "U10",
+    "Y1"
+   ],
+   "status": "verified",
+   "source": "ES9018K2M v3.7 p.9, p.31 note 2",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "ES9018K2M voltage-mode output: 3.05 Vpp/leg, 1.65 V offset, 806 ohm +/-11 %",
+   "board": "core",
+   "refs": [
+    "U10",
+    "U11"
+   ],
+   "status": "verified",
+   "source": "ES9018K2M v3.7 p.31",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "ES9018K2M register setup (I2S 32-bit, ASRC, soft_start, volume) works with ESP32 I2S at 50 MHz MCLK",
+   "board": "core",
+   "refs": [
+    "U10"
+   ],
+   "status": "unverified",
+   "source": "firmware not reviewed",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "OPA1678 single-supply 4.5-36 V, VCM (V-)+0.5..(V+)-2, VO within 0.8 V of rails",
+   "board": "core",
+   "refs": [
+    "U11"
+   ],
+   "status": "verified",
+   "source": "TI SBOS855E 6.3, 6.7",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "PCM5102A pins FLT/DEMP/FMT low, SCK=GND 3-wire PLL, XSMT mute, caps 2.2 uF",
+   "board": "core",
+   "refs": [
+    "U12"
+   ],
+   "status": "verified",
+   "source": "TI SLAS859C pin table, fig 33",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "PCM5102A DIN on ESP32 IO12 (MTDI strap) is not pulled high at boot",
+   "board": "core",
+   "refs": [
+    "U12"
+   ],
+   "status": "unverified",
+   "source": "PCM5102A input structure; MCU review",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "ES7243E pin map and I2C address 0x10 (0010 AD2 AD1 AD0)",
+   "board": "core",
+   "refs": [
+    "U13"
+   ],
+   "status": "verified",
+   "source": "Everest ES7243E rev 5.0 pin table, I2C section",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "ES7243E can run with MCLK pin grounded, clock from SCLK (MCLK_SEL)",
+   "board": "core",
+   "refs": [
+    "U13"
+   ],
+   "status": "unverified",
+   "source": "ES7243E rev 5.0 reg 0x01 bit 7; firmware not verified",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "ES7243E full scale 1 Vrms, input 8 kohm at 0 dB PGA (per pin vs differential unclear)",
+   "board": "core",
+   "refs": [
+    "U13"
+   ],
+   "status": "unverified",
+   "source": "ES7243E rev 5.0 analog table",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "TS5A23157 pin map, function table (IN H = NO), VIH 0.7*V+, range 0..V+",
+   "board": "core",
+   "refs": [
+    "U14"
+   ],
+   "status": "verified",
+   "source": "TI SCDS165F pin functions, 6.5, table 1",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "S8050 Q6 SOT-23 pin order B/E/C matches symbol",
+   "board": "core",
+   "refs": [
+    "Q6"
+   ],
+   "status": "unverified",
+   "source": "not checked against LCSC C2146 drawing",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "CH224 PD fallback to 20 V when 28 V EPR is unavailable (sets amp headroom)",
+   "board": "core",
+   "refs": [
+    "U1"
+   ],
+   "status": "unverified",
+   "source": "power reviewer",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "Loopback taps not yet in the schematics (reviewed from remote.md design text)",
+   "board": "both",
+   "refs": [],
+   "status": "unverified",
+   "source": "remote.md 'The board measures its own output'",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  }
+ ],
+ "tools_wanted": [
+  {
+   "tool": "return-path current-density solver on real copper",
+   "checks": "PVDD/speaker return between C58/C59, U8 and J1 on 2-layer Lite vs the U7/line-in area",
+   "why": "placement suggests no overlap; the 2-layer ground continuity was not simulated"
+  },
+  {
+   "tool": "class-D behavioural PWM model (TPA3118/TPA3221) in ngspice",
+   "checks": "carrier residue at the loopback taps, clipping pulse injection at fs/4, open-load ringing",
+   "why": "hand estimates were used for tap carrier levels"
+  },
+  {
+   "tool": "MLCC DC-bias curve database",
+   "checks": "effective C of output-filter caps at PVDD/2",
+   "why": "-15 %/-40 % derating was assumed"
+  }
+ ]
+}

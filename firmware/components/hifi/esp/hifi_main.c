@@ -68,7 +68,7 @@ static SemaphoreHandle_t lock;       /* power, contract and settings below */
 static hifi_power_t power;
 static hifi_gov_t gov;
 static hifi_contract_t contract;
-static float vbus_v, vbus_i_a = NAN;
+static float vbus_v, pvdd_v = NAN, vbus_i_a = NAN;
 static bool pg, fault, sink_ok;
 static uint8_t pd_status;
 static hifi_input_t input = HIFI_INPUT_STREAM;
@@ -165,6 +165,7 @@ static void power_task(void *arg) {
 		LOCK();
 		vbus_v = bp.vbus_v;
 		vbus_i_a = bp.vbus_i_a;
+		pvdd_v = bp.pvdd_v;
 		pg = bp.pg;
 		fault = bp.fault;
 		if (bp.pd_read) {
@@ -175,7 +176,7 @@ static void power_task(void *arg) {
 			hifi_gov_set_supply(&gov, contract.v, pg ? contract.w : 2.5f);
 		}
 		hifi_power_in_t in = {
-			.now_ms = now, .vbus_v = bp.vbus_v, .pg = bp.pg, .fault = bp.fault,
+			.now_ms = now, .vbus_v = bp.vbus_v, .pvdd_v = bp.pvdd_v, .pg = bp.pg, .fault = bp.fault,
 			.audio = audio_active || tone_active || input == HIFI_INPUT_DJ_DIRECT ||
 				 (int32_t) (selftest_hold_until - now) > 0,
 		};
@@ -186,8 +187,8 @@ static void power_task(void *arg) {
 		hifi_pwr_state_t before = power.state;
 		hifi_power_out_t o = *hifi_power_step(&power, &in);
 		if (power.state != before)
-			ESP_LOGI(TAG, "power %s -> %s (VBUS %.2f V, PG %d)", hifi_power_state_name(before),
-				 hifi_power_state_name(power.state), bp.vbus_v, bp.pg);
+			ESP_LOGI(TAG, "power %s -> %s (VBUS %.2f V, PVDD %.2f V, PG %d)", hifi_power_state_name(before),
+				 hifi_power_state_name(power.state), bp.vbus_v, bp.pvdd_v, bp.pg);
 		UNLOCK();
 		hifi_bsp_power_out(&o);
 		if (save_vol) {
@@ -443,6 +444,7 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	s->sub_on = sub_on;
 	s->sub_db = hifi_bsp_sub_db(sub_db);
 	s->vbus_i_a = vbus_i_a;
+	s->pvdd_v = pvdd_v;
 	s->volume = vol.volume;
 	s->mute = vol.mute;
 	s->max_volume = vol.max_volume;
@@ -471,10 +473,7 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	char *h = config_alloc_get_str("host_name", NULL, HIFI_MODEL);
 	snprintf(s->hostname, sizeof(s->hostname), "%s", h ? h : HIFI_MODEL);
 	free(h);
-	esp_netif_ip_info_t ip = {0};
-	esp_netif_t *sta = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-	if (sta && esp_netif_get_ip_info(sta, &ip) == ESP_OK && ip.ip.addr)
-		snprintf(s->ip, sizeof(s->ip), IPSTR, IP2STR(&ip.ip));
+	hifi_net_ip(s->ip, sizeof(s->ip));
 	wifi_ap_record_t ap;
 	if (esp_wifi_sta_get_ap_info(&ap) == ESP_OK) {
 		snprintf(s->ssid, sizeof(s->ssid), "%s", (const char *) ap.ssid);
@@ -645,6 +644,11 @@ static void op_selftest(hifi_selftest_t *t) {
 	vTaskDelay(pdMS_TO_TICKS(200));
 	op_snapshot(s);
 	hifi_selftest_add(t, "pvdd_on", s->pvdd_on && s->pwr_state == HIFI_PWR_ON, "%s", hifi_power_state_name(s->pwr_state));
+	if (!isnan(s->pvdd_v)) { /* boards that sense PVDD after the switch (Lite) */
+		bool pu = s->pvdd_on && s->pvdd_v >= power.cfg.pvdd_min_frac * s->vbus_v;
+		hifi_selftest_add(t, "pvdd_sensed", pu, "PVDD %.2f V of VBUS %.2f V%s", s->pvdd_v, s->vbus_v,
+				  s->pvdd_on ? "" : " (switch not commanded on)");
+	}
 	if (s->amp_enabled)
 		hifi_selftest_add(t, "amp_no_fault", !s->amp_fault, s->amp_fault ? "FAULTZ low" : "FAULTZ high after 200 ms enabled");
 	else
@@ -754,10 +758,23 @@ static int op_set_wifi(const char *ssid, const char *password) {
 	return 0;
 }
 
-static bool wifi_has_ip(void) {
+static bool netif_ip(esp_netif_t *n, esp_netif_ip_info_t *ip) {
+	const char *key = n ? esp_netif_get_ifkey(n) : NULL;
+	return n && !(key && !strcmp(key, "WIFI_AP_DEF")) && esp_netif_is_netif_up(n) &&
+	       esp_netif_get_ip_info(n, ip) == ESP_OK && ip->ip.addr;
+}
+
+bool hifi_net_ip(char *buf, size_t n) {
+	/* the default route's interface first, then any other that is up: on
+	 * Ethernet (Plus/Ultra, QEMU's open_eth) WIFI_STA_DEF has no address */
 	esp_netif_ip_info_t ip = {0};
-	esp_netif_t *sta = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-	return sta && esp_netif_get_ip_info(sta, &ip) == ESP_OK && ip.ip.addr;
+	bool ok = netif_ip(esp_netif_get_default_netif(), &ip);
+	for (esp_netif_t *i = esp_netif_next(NULL); !ok && i; i = esp_netif_next(i)) ok = netif_ip(i, &ip);
+	if (buf && n) {
+		if (ok) snprintf(buf, n, IPSTR, IP2STR(&ip.ip));
+		else buf[0] = 0;
+	}
+	return ok;
 }
 
 void hifi_main_trial_inputs(hifi_trial_t *t) {
@@ -766,7 +783,7 @@ void hifi_main_trial_inputs(hifi_trial_t *t) {
 	t->heap_ok = heap_caps_get_free_size(MALLOC_CAP_INTERNAL) > 20000;
 	wifi_config_t wc = {0};
 	t->wifi_configured = esp_wifi_get_config(WIFI_IF_STA, &wc) == ESP_OK && wc.sta.ssid[0];
-	t->wifi_ok = wifi_has_ip();
+	t->wifi_ok = hifi_net_ip(NULL, 0);
 }
 
 const hifi_ops_t hifi_ops = {
@@ -861,9 +878,7 @@ static void services_task(void *arg) {
 			console = esp_console_cmd_register(&c) == ESP_OK && esp_console_cmd_register(&a) == ESP_OK;
 		}
 		if (!mdns) {
-			esp_netif_ip_info_t ip = {0};
-			esp_netif_t *sta = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-			if (sta && esp_netif_get_ip_info(sta, &ip) == ESP_OK && ip.ip.addr) {
+			if (hifi_net_ip(NULL, 0)) {
 				mdns_txt_item_t txt[] = {
 					{"model", HIFI_MODEL}, {"board", HIFI_BOARD}, {"fw", HIFI_FW_VERSION}, {"api", "1"},
 				};

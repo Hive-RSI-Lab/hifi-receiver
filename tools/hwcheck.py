@@ -3,7 +3,9 @@
 
     python3 tools/hwcheck.py test [--all]
                                      the check: docs/product.md, the software's
-                                     unit tests, the firmware's host tests, then
+                                     unit tests, the firmware's host tests, each
+                                     tier's firmware pins against its board's
+                                     ESP32 pads (tools/pieces.py), then
                                      the hwde gates of each board whose files
                                      changed since the merge base with main
                                      (every board on main itself, with --all
@@ -28,6 +30,14 @@ With boards to check and no hwde, the command execs `sh -c hwde` so the
 shell's own "hwde: not found" and exit 127 say it couldn't run: that is no
 verdict on the commit, not a red. The same goes for make and cc when the
 firmware's host tests are there to run.
+
+What ran but couldn't be verified is neither a pass nor a fail: a gate that
+couldn't fetch part models (hwde's dfm `unverified`: EasyEDA's rate limit,
+the network). With nothing
+failing, the test then exits 127 too, naming what is unverified; any real
+failure still makes it exit 1. That 127 comes from the shell's own "not
+found" for a tool named for what is missing (easyeda-models),
+the only 127 the Hive reads as no verdict rather than a red.
 """
 from __future__ import annotations
 
@@ -61,6 +71,9 @@ GATES = ("erc", "drc_routed", "verify", "dfm")
 OFFLINE = {"HWDE_EASYEDA_OFFLINE": "1", "HWDE_STOCK_OFFLINE": "1"}
 # Gate findings that are hwde failing to fetch, not the board failing.
 UNRUN = ("cpl_fetch_failed",)
+# A gate's code for "ran, but couldn't verify" (gate_board): the score has no
+# number then, and the test exits as couldn't-run.
+UNVERIFIED = 127
 # Software whose stdlib unittest suite (<dir>/tests/test_*.py) the test runs.
 SOFTWARE = ("tools", "bench", "app")
 QTY = SPEC["qty"]
@@ -186,9 +199,33 @@ def hwde() -> str:
     os.execvp("sh", ["sh", "-c", "hwde"])
 
 
+def unverified(rc: int, r: dict, log: str) -> str | None:
+    """What a gate run left unverified, or None: the parts whose models hwde
+    couldn't fetch. hwde's dfm says so as exit 2 with an `unverified` block
+    (refs, reason), which the gate may hand on in its result or only in its
+    error text; an older hwde as exit 1 whose only findings are UNRUN."""
+    if rc == 1:
+        failing = r.get("failing") or []
+        if failing and all(v.get("kind") in UNRUN for v in failing):
+            refs = sorted({x for v in failing for x in v.get("refs") or []})
+            why = next((v.get("reason") for v in failing if v.get("reason")), "")
+            return f"{', '.join(refs) or 'parts'} unverified" + (f" ({why})" if why else "")
+        return None
+    if rc < 2:
+        return None
+    for b in (r.get("unverified"), (r.get("report") or {}).get("unverified")):
+        if isinstance(b, dict):
+            refs = b.get("refs") or []
+            return (f"{b.get('family') or 'some'} unverified: {', '.join(refs) or 'parts'}"
+                    + (f" ({b['reason']})" if b.get("reason") else ""))
+    m = re.search(r"(\w+ unverified, not failed: [^\n\"\\]*)", log)
+    return m.group(1)[:240] if m else None
+
+
 def gate_board(ws: Path, name: str, bin_: str, logs: Path) -> list[tuple[str, int]]:
     """Each gate on one board's scratch workspace; the failures, explained,
-    each with the gate's exit: 1 is a verdict, 2 or more couldn't run."""
+    each with the gate's exit: 1 is a verdict, 2 or more couldn't run, and
+    UNVERIFIED ran but couldn't verify (unverified())."""
     bad = []
     for g in GATES:
         inp = ws / "kicad" / f"{name}.{'kicad_sch' if g == 'erc' else 'kicad_pcb'}"
@@ -205,20 +242,24 @@ def gate_board(ws: Path, name: str, bin_: str, logs: Path) -> list[tuple[str, in
         if rc == 0:
             print(f"  {g}: pass", flush=True)
             continue
-        why = ""
+        why, r = "", {}
         try:
             r = json.loads(out.read_text())
             failing = r.get("failing", [])
             why = "; ".join(f"{v.get('check') or v.get('kind', '?')}: {v.get('msg') or v.get('message', '')}"[:160]
                             for v in failing[:6])
-            # A part model EasyEDA wouldn't serve (a rate limit, the network)
-            # says nothing of the board: the gate couldn't run.
-            if rc == 1 and failing and all(v.get("kind") in UNRUN for v in failing):
-                rc = 2
         except (OSError, ValueError, AttributeError):
-            pass
+            r = r if isinstance(r, dict) else {}
+        text = log.read_text(errors="replace")
+        # A part model EasyEDA wouldn't serve (a rate limit, the network)
+        # says nothing of the board: it is unverified, not failed.
+        unv = unverified(rc, r, text)
+        if unv:
+            bad.append((f"{name} {g}: {unv}", UNVERIFIED))
+            print(f"  {g}: UNVERIFIED (exit {rc}) {unv}", flush=True)
+            continue
         if not why:
-            why = " | ".join(log.read_text(errors="replace").strip().splitlines()[-6:])
+            why = " | ".join(text.strip().splitlines()[-6:])
         bad.append((f"{name} {g}" + (f" (couldn't run, exit {rc})" if rc > 1 else ""), rc))
         print(f"  {g}: FAIL (exit {rc}) {why}", flush=True)
     return bad
@@ -401,6 +442,32 @@ def firmware_tests() -> bool:
     return r.returncode == 0
 
 
+def cant_run(tool: str, why: list[str]) -> None:
+    """Exit 127 as the shell's own "<tool>: not found", after saying why: the
+    Hive reads only that as couldn't-run (core.MissingTool), never a red."""
+    print("couldn't run, unverified: " + "; ".join(why))
+    sys.stdout.flush()
+    os.execvp("sh", ["sh", "-c", tool])
+
+
+def firmware_pins() -> list[str]:
+    """Each tier's firmware that exists (firmware/board/<fw>) against its
+    board: every pin it gives a job lands on its board's ESP32 on a net named
+    for that job, its partitions fit (the firmware piece's check). A tier
+    with no firmware yet is the score's to count, not a test failure."""
+    bad = []
+    for piece in SPEC["pieces"]:
+        if piece["check"] != "firmware" or not (ROOT / "firmware" / "board" / piece["fw"]).is_dir():
+            continue
+        got = pieces.CHECKS["firmware"](ROOT, piece)
+        for b in got:
+            print(f"FAIL {piece['name']}: {b}")
+        if not got:
+            print(f"{piece['name']}: its pins land on {piece['board']}'s ESP32, on nets named for them", flush=True)
+        bad += [f"{piece['name']}: {b}" for b in got]
+    return bad
+
+
 def run_unittests() -> list[str]:
     return [f"{d}/tests" for d in SOFTWARE if (ROOT / d / "tests").is_dir() and not unittest_dir(ROOT / d / "tests")]
 
@@ -414,6 +481,8 @@ def cmd_test(all_boards: bool = False) -> int:
     bad += run_unittests()
     if (ROOT / "firmware" / "test" / "Makefile").is_file() and not firmware_tests():
         bad.append("firmware/test")
+    bad += firmware_pins()
+    unv = []
     dirs = boards()
     if not dirs:
         print("boards/: no boards yet, no gates to run")
@@ -423,11 +492,17 @@ def cmd_test(all_boards: bool = False) -> int:
         print(f"boards/: gating {', '.join(d.name for d in todo) or 'none'} ({why})"
               + (f"; {', '.join(skip)} unchanged, not re-gated" if skip else ""), flush=True)
         if todo:
-            bad += [f for fs in run_gates(todo).values() for f, _ in fs]
+            fails = [x for fs in run_gates(todo).values() for x in fs]
+            bad += [f for f, rc in fails if rc != UNVERIFIED]
+            unv += [("easyeda-models", f) for f, rc in fails if rc == UNVERIFIED]
         dirs = todo
     if bad:
-        print(f"test: FAIL ({len(bad)}): " + "; ".join(bad[:8]))
+        print(f"test: FAIL ({len(bad)}): " + "; ".join(bad[:8])
+              + (f"; and unverified: {'; '.join(w for _, w in unv)}" if unv else ""))
         return 1
+    if unv:
+        # neither a pass nor a fail
+        cant_run(unv[0][0], [w for _, w in unv])
     print(f"test: pass ({len(dirs)} board(s) gated)")
     return 0
 
@@ -501,7 +576,10 @@ def cmd_score() -> int:
             unit = SPEC["tier_not_counted"]
             lines.append(f"{name}: {unit:.2f} (not counted: {'; '.join(why)})")
         else:
-            lines.append(f"{name}: {unit:.2f} USD per unit at {QTY}, every needed function on the board")
+            over = max(0.0, unit - tier["budget"])
+            lines.append(f"{name}: {over:.2f} ({unit:.2f} USD per unit at {QTY} against its "
+                         f"{tier['budget']:.2f} budget, every needed function on the board)")
+            unit = over
         total += unit
     ran = {}
     for piece in SPEC["pieces"]:

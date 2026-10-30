@@ -1,0 +1,19 @@
+Lite: attach at 5 V, then PD 5 -> 20 V at 0.5 V/ms, firmware OFF (PVDD_EN low)
+.include models.inc
+.include lite_pvdd_common.inc
+.param sr=0.5
+.param tstep=150m
+.param tr={15/sr*1m}
+Vsrc vsrc 0 PWL(0 0 1m 0 1.5m 5 {tstep} 5 {tstep+tr} 20 1 20)
+V3 V3V3 0 PWL(0 0 3m 0 4m 3.3)
+* PG asserts 5 ms after the new voltage settles
+Vpg vpg 0 PWL(0 0 {tstep+tr+5m} 0 {tstep+tr+5.1m} 3.3)
+Ven PVDD_EN 0 0
+.tran 20u 400m 0 20u uic
+.meas tran pvdd_at_attach_max max v(PVDD) from=1m to=149m
+.meas tran pvdd_after_step_max max v(PVDD) from=150m to=400m
+.meas tran isrc_attach_pk max i(Lcab) from=1m to=149m
+.meas tran isrc_step_pk max i(Lcab) from=150m to=400m
+.meas tran vsg_step_max max par('v(VBUS)-v(PSW_G)') from=150m to=400m
+.meas tran pfet_pk max par('(v(VBUS)-v(PVDD))*(-i(Vfetm))') from=150m to=400m
+.end
