@@ -115,8 +115,9 @@ both.
 **Not covered:** DJ direct is analog (line in → codec mixer → amp), so the
 governor can't see it. The codec's −3 dB cap and the line in's −6 dB
 attenuator limit it; a DJ deck at full level into 4 Ω could still trip a
-65 W charger. Plus/Ultra measure VBUS current with an INA180 and will
-govern every path.
+65 W charger. Plus/Ultra read the input current from an INA186 (shown in
+`/state`, not yet fed back into the governor); their DJ direct bypasses
+the DAC too, so the governor can't act on it there either.
 
 ### Numbers to calibrate at bring-up
 
@@ -198,6 +199,64 @@ one is a small hook in the patch, with the logic in `core/`.
   range (the subs use their own crossover on Lite). Their level is 0 to
   −45 dB in 1.5 dB steps, up to +4.5 dB; off powers the pair down.
 
+## Plus and Ultra: the core board
+
+Plus and Ultra share the core board (`boards/core`) and one firmware,
+built twice: `firmware/board/core` selects the Kconfig board `HIFI_PLUS`,
+`firmware/board/ultra` `HIFI_ULTRA` (`HIFI_BOARD=core` or `ultra` for
+`firmware/tools/build.sh`). The board code is `esp/board_core.c` behind the
+same interface as Lite's (`esp/hifi_bsp.h`); the pins are in
+`esp/hifi_board_core.h`, from `boards/core/architecture/blocks.md`.
+
+| Function | Pins | Owner |
+|---|---|---|
+| I2S0 to the ES9018K2M (BCLK 2, LRCK 4, DATA 5) and from the ES7243E (DIN 36) | | squeezelite (`dac_config` `model=I2S`, no I2C of its own) |
+| The shared I2C (SDA 13, SCL 14, port 1) | | squeezelite's system I2C (`i2c_config`); `hifi` talks to every part on it |
+| Ethernet: LAN8720 over RMII (clock in on GPIO0), MDC 23, MDIO 18 | | squeezelite (`eth_config`) and ESP-IDF's EMAC |
+| IR receiver (Ultra: the front board's, over the FFC) | 35 | squeezelite (`set_GPIO 35=ir:nec`), as on Lite |
+| PD contract: CH224Q at 0x22 | I2C | `hifi`: once a PD contract is in, asks for 28 V when the charger offers EPR, else 20 V |
+| Input current: INA186, 0.25 V/A | 34 (ADC1 ch 6) | `hifi` |
+| I/O expander (TCA9555 at 0x20, or the review's TCA9539 at 0x74–0x77: the first that answers) | I2C, INT on 39 | `hifi` |
+| PVDD_EN, AMP_A_RST, AMP_B_RST, DAC_EN, PHY_RST, DJ_DIRECT, LED | expander P00–P07 | `hifi` |
+| AMP_FAULT, AMP_OTW, knob A/B, knob push, two buttons | expander P10–P16 | `hifi` |
+| Sub DAC (PCM5102A): I2S1 as a slave on GPIO2/4, data on 12 | 12 | `hifi` |
+
+- **Boot:** the expander's outputs come up with the DAC out of reset and
+  the Ethernet clock on (the network starts after our component), PVDD
+  and both amps off. Then the ES9018K2M gets a 16-bit I2S word (register 1
+  bits 7:6), since squeezelite's 16-bit build clocks 16-bit words and the
+  Sabre resets expecting 32.
+- **Power:** the same sequencer with core's numbers (`hifi_power_cfg_core`):
+  start at 14 V, run 13–30 V (the TPA3221's range), 100 ms soft start
+  (PVDD ramps in about 15 ms). The board has no VBUS divider, so VBUS is
+  taken from the contract: 28 V in EPR, 20 V in another PD contract, 5 V
+  without one. A charger whose highest voltage is under 20 V would read as
+  20 V here; bring-up should check what the CH224Q does then.
+- **Amps:** the order is Lite's (reset before PVDD opens, out of it after).
+  Zone B (Ultra) runs off zone A's oscillator and only syncs if both leave
+  reset in the same write, so turning zone B on or off puts both in reset
+  for one 10 ms step. The governor counts twice the amps while zone B
+  plays.
+- **Knob and buttons** (`core/hifi_exp.c`, host-tested): the knob is the
+  volume, 2 a click; while a source streams, each click goes to it as the
+  buttons do on Lite. Knob push: play/pause (hold: power). Button 1: source
+  (hold: mute). Button 2: next (hold: previous). The product page's
+  "preset" button needs presets, which don't exist yet. Ultra reads the
+  knob on the core's expander through the FFC; its front-board buttons
+  and screen are not built yet (below).
+- **LED:** on with a network, a slow blink without one (setup), a fast
+  blink with the amps latched off by faults.
+- **Subs:** I2S1 runs as a slave on I2S0's clocks (the GPIO matrix routes
+  GPIO2/4 into its TX clock inputs), so the sub DAC costs one pin. It
+  starts once the GPIO matrix shows squeezelite has put I2S0's bit clock on
+  GPIO2, because that setup turns the pins' inputs off. Each output block, after
+  the equalizer and the governor, goes to it as the mono sum of the mains
+  at the sub level (−40 to 0 dB), full range: the subs' own crossover does
+  the rest, as on Lite. Nothing waits on it: if its DMA is full, the block
+  is dropped.
+- **DJ direct** is the TS5A23157 in front of the amps: the line in goes to
+  them directly, with no volume, governor or sub.
+
 ## Network, app and console
 
 - **Web app** at `/` (from `app/`), squeezelite's own page at `/squeezelite/`.
@@ -266,5 +325,15 @@ in the Plus firmware task.
 - **Unchecked until a board:** volume, now playing and the remote. That
   means the ES8388 LOUT1/ROUT1 volume and mute in DJ direct, which phones
   send AVRCP metadata, and NEC decoding of real remotes on GPIO14.
-- **Not built yet:** LMS's track text (see above), and the Plus/Ultra board
-  code (Sabre, sub DAC, Ethernet, INA180, display).
+- **Not built yet:** LMS's track text (see above). On Plus/Ultra: line-in
+  capture from the ES7243E and the loopback taps (`capture` answers 404:
+  the ADC's registers aren't set up), a crossover and per-sub delay for
+  the subs, Ultra's optical input (the ES9018K2M's S/PDIF select), and
+  Ultra's front board (its TCA9535 buttons, the LCD), whose pin map
+  (`boards/ultra-front`) isn't on main yet.
+- **Plus/Ultra, unchecked until a board:** the ES9018K2M's 16-bit word
+  length at 32 BCLK per frame; I2S1 as a slave on I2S0's pins (the
+  architecture's assumption: blocks.md; QEMU has no I2S, so neither
+  squeezelite's I2S0 nor the sub's I2S1 starts there); the CH224Q's answer to a voltage
+  request; the knob's direction (swap `enc_a`/`enc_b` in `board_core.c`
+  if it turns the wrong way); the LAN8720 on the oscillator's clock.

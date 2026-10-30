@@ -1,5 +1,6 @@
 """Each piece's check passes on the committed piece and fails on a stub of it
 in the same place: the score can't be lowered by an empty file."""
+import re
 import shutil
 import struct
 import sys
@@ -91,10 +92,24 @@ class Firmware(Base):
         bad = self.t.check("Lite firmware")
         self.assertTrue(any("GPIO12" in b for b in bad), bad)
 
+    def test_plus_passes_and_checks_its_pins(self):
+        self.assertEqual(self.t.check("Plus firmware"), [])
+        pins, _ = pieces.pin_map(self.t.root, "core", "core", "HIFI_PLUS")
+        self.assertGreaterEqual(len(pins), 15)  # I2S, IR, I2C, the expander's INT, ISENSE, RMII, the sub DAC
+
+    def _patch(self, edit):
+        for p in (self.t.root / "firmware" / "patches").glob("*.patch"):
+            self.t.put(p.relative_to(self.t.root), edit(p.read_text()))
+
     def test_the_lite_config_copied_for_plus_fails(self):
-        for f in ("sdkconfig.defaults", "partitions.csv"):
-            self.t.put(f"firmware/board/core/{f}",
-                       self.t.text(self.FW + f).replace("CONFIG_HIFI_LITE=y", "CONFIG_HIFI_PLUS=y"))
+        lite = re.search(r'default "(model=ES8388[^"]*)" if HIFI_LITE', self.t.text(
+            next(p.relative_to(self.t.root) for p in (self.t.root / "firmware/patches").glob("*.patch")))).group(1)
+        self._patch(lambda t: re.sub(r'default "model=I2S[^"]*" if HIFI_PLUS', f'default "{lite}" if HIFI_PLUS', t))
+        bad = self.t.check("Plus firmware")
+        self.assertTrue(any("on boards/core, not a /" in b for b in bad), bad)
+
+    def test_a_board_no_patch_adds_fails(self):
+        self._patch(lambda t: "\n".join(l for l in t.split("\n") if "HIFI_PLUS" not in l))
         bad = self.t.check("Plus firmware")
         self.assertIn("no firmware/patches adds the Kconfig board HIFI_PLUS", bad)
 
@@ -162,7 +177,7 @@ class Enclosure(Base):
         self.assertTrue(any("STEP" in b for b in bad), bad)
 
     def test_an_open_mesh_fails(self):
-        f = self.OUT + "lite-base.stl"
+        f = self.OUT + "base.stl"
         tris = pieces.stl_triangles(self.t.root / f)
         self.t.put(f, stl(tris[1:]))
         self.assertIn(f"{f} isn't a closed mesh", self.t.check("Lite enclosure"))

@@ -268,6 +268,22 @@ static void test_ota_core(void) {
 	CHECK(hifi_ota_chunk(&ota, 0, img, 4096, &err) == 400);
 	CHECK(!ota.active);
 	img[0] = HIFI_OTA_APP_MAGIC;
+
+	/* the app's upload: no hash to match, the board's commit checks the image */
+	CHECK(hifi_ota_begin_local(&ota, sizeof(flash) + 1, NULL, &err) == 400);
+	CHECK(hifi_ota_begin_local(&ota, sizeof(img), NULL, &err) == 200);
+	img[5000] ^= 1;
+	for (size_t off = 0; off < sizeof(img); off += 4096) {
+		size_t n = sizeof(img) - off < 4096 ? sizeof(img) - off : 4096;
+		CHECK(hifi_ota_chunk(&ota, off, img + off, n, &err) == 200);
+	}
+	CHECK(hifi_ota_finish(&ota, &err) == 200);
+	CHECK(committed);
+	img[5000] ^= 1;
+	/* and a hashed begin after it checks again */
+	CHECK(hifi_ota_begin(&ota, sizeof(img), sha, "0.2.0", &err) == 200);
+	CHECK(ota.check_sha);
+	hifi_ota_abort(&ota);
 }
 
 static char out[200000];

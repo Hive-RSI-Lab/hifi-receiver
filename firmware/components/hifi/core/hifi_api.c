@@ -119,6 +119,12 @@ void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) {
 	hj_bool(&j, "mute", s->mute);
 	hj_int(&j, "max_volume", s->max_volume);
 	write_playing(&j, &s->playing);
+	if (s->zones > 1) {
+		hj_obj(&j, "zone_b");
+		hj_bool(&j, "on", s->zone_b_on);
+		hj_null(&j, "volume"); /* it plays at the main volume */
+		hj_obj_end(&j);
+	}
 	hj_obj_end(&j);
 
 	hj_obj(&j, "net");
@@ -128,6 +134,7 @@ void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) {
 	hj_str(&j, "ip", s->ip[0] ? s->ip : NULL);
 	if (s->rssi) hj_int(&j, "rssi", s->rssi);
 	else hj_null(&j, "rssi");
+	if (s->eth_present) hj_bool(&j, "eth", s->eth_up);
 	hj_obj_end(&j);
 
 	hj_obj(&j, "sys");
@@ -149,6 +156,14 @@ void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) {
 		hj_null(&j, "last_code");
 	}
 	hj_obj_end(&j);
+
+	if (s->update.state != HIFI_UPD_IDLE) {
+		hj_obj(&j, "update");
+		hj_str(&j, "state", hifi_update_state_name(s->update.state));
+		hj_int(&j, "progress", s->update.progress);
+		hj_str(&j, "error", s->update.error[0] ? s->update.error : NULL);
+		hj_obj_end(&j);
+	}
 
 	hj_obj_end(&j);
 }
@@ -643,6 +658,79 @@ static int r_remote(const hifi_ops_t *ops, bool post, const char *body, char *ou
 	return 200;
 }
 
+static int r_wifi_scan(const hifi_ops_t *ops, char *out, size_t cap) {
+	if (!ops->wifi_scan) return error(out, cap, 404, "no Wi-Fi scan in this build");
+	hifi_wifi_ap_t aps[HIFI_WIFI_SCAN_MAX];
+	int n = ops->wifi_scan(aps, HIFI_WIFI_SCAN_MAX);
+	if (n < 0) return error(out, cap, 409, "the radio is busy: scan again in a few seconds");
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_arr(&j, "networks");
+	for (int i = 0; i < n && i < HIFI_WIFI_SCAN_MAX; i++) {
+		if (!aps[i].ssid[0]) continue; /* hidden networks: join them by name */
+		hj_obj(&j, NULL);
+		hj_str(&j, "ssid", aps[i].ssid);
+		hj_int(&j, "rssi", aps[i].rssi);
+		hj_bool(&j, "secure", aps[i].secure);
+		hj_obj_end(&j);
+	}
+	hj_arr_end(&j);
+	hj_obj_end(&j);
+	return j.overflow ? error(out, cap, 500, "reply buffer too small") : 200;
+}
+
+static int r_wifi_forget(const hifi_ops_t *ops, char *out, size_t cap) {
+	if (!ops->wifi_forget) return error(out, cap, 404, "no Wi-Fi setup in this build");
+	if (ops->wifi_forget()) return error(out, cap, 500, "couldn't forget the network");
+	return ok_reply(out, cap);
+}
+
+static int r_zone(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	if (!ops->set_zone) return error(out, cap, 404, "this model has one zone");
+	char zone[8] = "";
+	bool on;
+	double v;
+	if (!hj_get_str(body, "zone", zone, sizeof(zone)) || strcmp(zone, "b")) return error(out, cap, 400, "zone must be \"b\"");
+	if (hj_get_num(body, "volume", &v))
+		return error(out, cap, 400, "zone B has no level of its own: it plays at the main volume");
+	if (!hj_get_bool(body, "on", &on)) return error(out, cap, 400, "on (true or false) is required");
+	ops->set_zone(on);
+	return ok_reply(out, cap);
+}
+
+static int r_update_check(const hifi_ops_t *ops, char *out, size_t cap) {
+	if (!ops->update_check) return error(out, cap, 404, "no update server in this build");
+	hifi_update_offer_t o;
+	hifi_info_t i = {0};
+	const char *err = "no update server";
+	int st = ops->update_check(&o, &err);
+	if (st) return error(out, cap, st, err);
+	ops->info(&i);
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_str(&j, "current", i.fw);
+	hj_str(&j, "latest", o.latest);
+	hj_str(&j, "url", o.url);
+	hj_str(&j, "sha256", o.sha256[0] ? o.sha256 : NULL);
+	hj_str(&j, "notes", o.notes[0] ? o.notes : NULL);
+	hj_obj_end(&j);
+	return 200;
+}
+
+static int r_update(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	if (!ops->update_start) return error(out, cap, 404, "no updates from a URL in this build");
+	char url[192] = "", sha[72] = "";
+	if (!hj_get_str(body, "url", url, sizeof(url)) || (strncmp(url, "http://", 7) && strncmp(url, "https://", 8)))
+		return error(out, cap, 400, "url (http:// or https://) is required");
+	hj_get_str(body, "sha256", sha, sizeof(sha));
+	const char *err = "couldn't start the update";
+	int st = ops->update_start(url, sha[0] ? sha : NULL, &err);
+	if (st) return error(out, cap, st, err);
+	return ok_reply(out, cap);
+}
+
 size_t hifi_api_reply_cap(const char *path, const char *body) {
 	if (path && strstr(path, PREFIX "capture") == path) {
 		int f = capture_frames(body);
@@ -685,6 +773,11 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strncmp(route, "ota/", 4)) status = post ? r_ota(ops, route + 4, body, out, cap) : -1;
 	else if (!strcmp(route, "capture")) status = post ? r_capture(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "wifi")) status = post ? r_wifi(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "wifi/scan")) status = get ? r_wifi_scan(ops, out, cap) : -1;
+	else if (!strcmp(route, "wifi/forget")) status = post ? r_wifi_forget(ops, out, cap) : -1;
+	else if (!strcmp(route, "zone")) status = post ? r_zone(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "update/check")) status = get ? r_update_check(ops, out, cap) : -1;
+	else if (!strcmp(route, "update")) status = post ? r_update(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "remote")) status = r_remote(ops, post, body, out, cap);
 	else return error(out, cap, 404, "no such path");
 
