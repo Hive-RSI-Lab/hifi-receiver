@@ -1,17 +1,14 @@
 {
  "facts": {
   "C1/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
-   "refs": [
-    "C1"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C15849",
+   "status": "verified",
    "subject": "C1",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C1/rating": {
    "by": null,
@@ -27,17 +24,14 @@
    "value": ""
   },
   "C10/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
-   "refs": [
-    "C10"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C19702",
+   "status": "verified",
    "subject": "C10",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C10/rating": {
    "by": null,
@@ -53,17 +47,14 @@
    "value": ""
   },
   "C11/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C11"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C11",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C11/rating": {
    "by": null,
@@ -79,17 +70,14 @@
    "value": ""
   },
   "C12/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C45783",
-   "refs": [
-    "C12"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C45783",
+   "status": "verified",
    "subject": "C12",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C12/rating": {
    "by": null,
@@ -105,17 +93,14 @@
    "value": ""
   },
   "C13/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
-   "refs": [
-    "C13"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C19702",
+   "status": "verified",
    "subject": "C13",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C13/rating": {
    "by": null,
@@ -132,7 +117,7 @@
   },
   "C13585/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "lifecycle",
    "lcsc": "C13585",
    "refs": [
@@ -145,7 +130,7 @@
   },
   "C13585/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "part_match",
    "lcsc": "C13585",
    "refs": [
@@ -158,7 +143,7 @@
   },
   "C13585/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "stock",
    "lcsc": "C13585",
    "refs": [
@@ -167,20 +152,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C13585",
-   "value": "JLC can sell 2316222, build needs 5 (JLC lists 3131082, LCSC 0)"
+   "value": "JLC can sell 2315472, build needs 5 (JLC lists 3130320, LCSC 0)"
   },
   "C14/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C1653",
-   "refs": [
-    "C14"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C1653",
+   "status": "verified",
    "subject": "C14",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C14/rating": {
    "by": null,
@@ -197,7 +179,7 @@
   },
   "C14663/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "lifecycle",
    "lcsc": "C14663",
    "refs": [
@@ -227,7 +209,7 @@
   },
   "C14663/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "part_match",
    "lcsc": "C14663",
    "refs": [
@@ -257,7 +239,7 @@
   },
   "C14663/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "stock",
    "lcsc": "C14663",
    "refs": [
@@ -283,11 +265,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C14663",
-   "value": "JLC can sell 26389973, build needs 90 (JLC lists 37548512, LCSC 4000)"
+   "value": "JLC can sell 26298433, build needs 90 (JLC lists 37447446, LCSC 1100)"
   },
   "C14858/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:13+00:00",
    "kind": "lifecycle",
    "lcsc": "C14858",
    "refs": [
@@ -301,7 +283,7 @@
   },
   "C14858/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:13+00:00",
    "kind": "part_match",
    "lcsc": "C14858",
    "refs": [
@@ -315,7 +297,7 @@
   },
   "C14858/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:13+00:00",
    "kind": "stock",
    "lcsc": "C14858",
    "refs": [
@@ -325,20 +307,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C14858",
-   "value": "JLC can sell 3609989, build needs 10 (JLC lists 4485674, LCSC 1150000)"
+   "value": "JLC can sell 3616077, build needs 10 (JLC lists 4491762, LCSC 1145700)"
   },
   "C15/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
-   "refs": [
-    "C15"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C15849",
+   "status": "verified",
    "subject": "C15",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C15/rating": {
    "by": null,
@@ -353,9 +332,48 @@
    "subject": "C15",
    "value": ""
   },
+  "C151920/lifecycle": {
+   "by": "stock_check",
+   "checked_at": "2026-10-30T09:42:16+00:00",
+   "kind": "lifecycle",
+   "lcsc": "C151920",
+   "refs": [
+    "D1"
+   ],
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
+   "subject": "C151920",
+   "value": "JLC sells it"
+  },
+  "C151920/part_match": {
+   "by": "stock_check",
+   "checked_at": "2026-10-30T09:42:16+00:00",
+   "kind": "part_match",
+   "lcsc": "C151920",
+   "refs": [
+    "D1"
+   ],
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
+   "subject": "C151920",
+   "value": "BOM value SMBJ22A in JLC model SMBJ22A"
+  },
+  "C151920/stock": {
+   "by": "stock_check",
+   "checked_at": "2026-10-30T09:42:16+00:00",
+   "kind": "stock",
+   "lcsc": "C151920",
+   "refs": [
+    "D1"
+   ],
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
+   "subject": "C151920",
+   "value": "JLC can sell 7958, build needs 5 (JLC lists 8290, LCSC 8290)"
+  },
   "C15849/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "lifecycle",
    "lcsc": "C15849",
    "refs": [
@@ -380,7 +398,7 @@
   },
   "C15849/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "part_match",
    "lcsc": "C15849",
    "refs": [
@@ -405,7 +423,7 @@
   },
   "C15849/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "stock",
    "lcsc": "C15849",
    "refs": [
@@ -426,11 +444,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C15849",
-   "value": "JLC can sell 9126709, build needs 65 (JLC lists 12372000, LCSC 103400)"
+   "value": "JLC can sell 9130420, build needs 65 (JLC lists 12373839, LCSC 71000)"
   },
   "C1588/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "lifecycle",
    "lcsc": "C1588",
    "refs": [
@@ -444,7 +462,7 @@
   },
   "C1588/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "part_match",
    "lcsc": "C1588",
    "refs": [
@@ -458,7 +476,7 @@
   },
   "C1588/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "stock",
    "lcsc": "C1588",
    "refs": [
@@ -468,20 +486,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C1588",
-   "value": "JLC can sell 4784742, build needs 10 (JLC lists 6054227, LCSC 1261900)"
+   "value": "JLC can sell 4754354, build needs 10 (JLC lists 6023823, LCSC 1252800)"
   },
   "C16/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
-   "refs": [
-    "C16"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C15849",
+   "status": "verified",
    "subject": "C16",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C16/rating": {
    "by": null,
@@ -498,7 +513,7 @@
   },
   "C1620/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "lifecycle",
    "lcsc": "C1620",
    "refs": [
@@ -512,7 +527,7 @@
   },
   "C1620/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "part_match",
    "lcsc": "C1620",
    "refs": [
@@ -526,7 +541,7 @@
   },
   "C1620/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "stock",
    "lcsc": "C1620",
    "refs": [
@@ -536,11 +551,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C1620",
-   "value": "JLC can sell 621591, build needs 10 (JLC lists 776534, LCSC 179700)"
+   "value": "JLC can sell 618910, build needs 10 (JLC lists 773833, LCSC 175700)"
   },
   "C1622/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:13+00:00",
    "kind": "lifecycle",
    "lcsc": "C1622",
    "refs": [
@@ -553,7 +568,7 @@
   },
   "C1622/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:13+00:00",
    "kind": "part_match",
    "lcsc": "C1622",
    "refs": [
@@ -566,7 +581,7 @@
   },
   "C1622/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:13+00:00",
    "kind": "stock",
    "lcsc": "C1622",
    "refs": [
@@ -575,11 +590,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C1622",
-   "value": "JLC can sell 610233, build needs 5 (JLC lists 940988, LCSC 33300)"
+   "value": "JLC can sell 584253, build needs 5 (JLC lists 915028, LCSC 33300)"
   },
   "C1653/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:13+00:00",
    "kind": "lifecycle",
    "lcsc": "C1653",
    "refs": [
@@ -592,7 +607,7 @@
   },
   "C1653/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:13+00:00",
    "kind": "part_match",
    "lcsc": "C1653",
    "refs": [
@@ -605,7 +620,7 @@
   },
   "C1653/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:13+00:00",
    "kind": "stock",
    "lcsc": "C1653",
    "refs": [
@@ -614,11 +629,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C1653",
-   "value": "JLC can sell 2366865, build needs 5 (JLC lists 2854968, LCSC 1050250)"
+   "value": "JLC can sell 2355166, build needs 5 (JLC lists 2843269, LCSC 1040350)"
   },
   "C165948/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:16+00:00",
    "kind": "lifecycle",
    "lcsc": "C165948",
    "refs": [
@@ -631,7 +646,7 @@
   },
   "C165948/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:16+00:00",
    "kind": "part_match",
    "lcsc": "C165948",
    "refs": [
@@ -644,7 +659,7 @@
   },
   "C165948/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:16+00:00",
    "kind": "stock",
    "lcsc": "C165948",
    "refs": [
@@ -653,11 +668,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C165948",
-   "value": "JLC can sell 272946, build needs 5 (JLC lists 285432, LCSC 273245)"
+   "value": "JLC can sell 272634, build needs 5 (JLC lists 284975, LCSC 273190)"
   },
   "C1671/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "lifecycle",
    "lcsc": "C1671",
    "refs": [
@@ -670,7 +685,7 @@
   },
   "C1671/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "part_match",
    "lcsc": "C1671",
    "refs": [
@@ -683,7 +698,7 @@
   },
   "C1671/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "stock",
    "lcsc": "C1671",
    "refs": [
@@ -692,20 +707,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C1671",
-   "value": "JLC can sell 663695, build needs 5 (JLC lists 816342, LCSC 241900)"
+   "value": "JLC can sell 660465, build needs 5 (JLC lists 813092, LCSC 241400)"
   },
   "C17/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C17"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C17",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C17/rating": {
    "by": null,
@@ -721,17 +733,14 @@
    "value": ""
   },
   "C18/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C18"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C18",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C18/rating": {
    "by": null,
@@ -748,7 +757,7 @@
   },
   "C1848/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "lifecycle",
    "lcsc": "C1848",
    "refs": [
@@ -764,7 +773,7 @@
   },
   "C1848/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "part_match",
    "lcsc": "C1848",
    "refs": [
@@ -780,7 +789,7 @@
   },
   "C1848/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "stock",
    "lcsc": "C1848",
    "refs": [
@@ -792,20 +801,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C1848",
-   "value": "JLC can sell 612214, build needs 20 (JLC lists 773835, LCSC 134670)"
+   "value": "JLC can sell 611583, build needs 20 (JLC lists 773204, LCSC 134530)"
   },
   "C19/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C19666",
-   "refs": [
-    "C19"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C19666",
+   "status": "verified",
    "subject": "C19",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C19/rating": {
    "by": null,
@@ -822,7 +828,7 @@
   },
   "C19666/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:13+00:00",
    "kind": "lifecycle",
    "lcsc": "C19666",
    "refs": [
@@ -837,7 +843,7 @@
   },
   "C19666/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:13+00:00",
    "kind": "part_match",
    "lcsc": "C19666",
    "refs": [
@@ -852,7 +858,7 @@
   },
   "C19666/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:13+00:00",
    "kind": "stock",
    "lcsc": "C19666",
    "refs": [
@@ -863,11 +869,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C19666",
-   "value": "JLC can sell 3473436, build needs 15 (JLC lists 4252745, LCSC 1511590)"
+   "value": "JLC can sell 3467515, build needs 15 (JLC lists 4246866, LCSC 1507360)"
   },
   "C19702/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:13+00:00",
    "kind": "lifecycle",
    "lcsc": "C19702",
    "refs": [
@@ -887,7 +893,7 @@
   },
   "C19702/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:13+00:00",
    "kind": "part_match",
    "lcsc": "C19702",
    "refs": [
@@ -907,7 +913,7 @@
   },
   "C19702/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:13+00:00",
    "kind": "stock",
    "lcsc": "C19702",
    "refs": [
@@ -923,20 +929,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C19702",
-   "value": "JLC can sell 9507555, build needs 40 (JLC lists 11932743, LCSC 2994520)"
+   "value": "JLC can sell 9452479, build needs 40 (JLC lists 11876757, LCSC 2951200)"
   },
   "C2/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C2"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C2",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C2/rating": {
    "by": null,
@@ -952,17 +955,14 @@
    "value": ""
   },
   "C20/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
-   "refs": [
-    "C20"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C19702",
+   "status": "verified",
    "subject": "C20",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C20/rating": {
    "by": null,
@@ -979,7 +979,7 @@
   },
   "C20526/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:19+00:00",
    "kind": "lifecycle",
    "lcsc": "C20526",
    "refs": [
@@ -994,7 +994,7 @@
   },
   "C20526/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:19+00:00",
    "kind": "part_match",
    "lcsc": "C20526",
    "refs": [
@@ -1009,7 +1009,7 @@
   },
   "C20526/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:19+00:00",
    "kind": "stock",
    "lcsc": "C20526",
    "refs": [
@@ -1020,20 +1020,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C20526",
-   "value": "JLC can sell 2283808, build needs 15 (JLC lists 2406050, LCSC 1973600)"
+   "value": "JLC can sell 2280037, build needs 15 (JLC lists 2402294, LCSC 1972600)"
   },
   "C21/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C21"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C21",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C21/rating": {
    "by": null,
@@ -1050,7 +1047,7 @@
   },
   "C21120/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "lifecycle",
    "lcsc": "C21120",
    "refs": [
@@ -1066,7 +1063,7 @@
   },
   "C21120/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "part_match",
    "lcsc": "C21120",
    "refs": [
@@ -1082,7 +1079,7 @@
   },
   "C21120/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "stock",
    "lcsc": "C21120",
    "refs": [
@@ -1094,11 +1091,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C21120",
-   "value": "JLC can sell 851626, build needs 20 (JLC lists 1014159, LCSC 394650)"
+   "value": "JLC can sell 850288, build needs 20 (JLC lists 1012821, LCSC 394550)"
   },
   "C21189/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:20+00:00",
    "kind": "lifecycle",
    "lcsc": "C21189",
    "refs": [
@@ -1112,7 +1109,7 @@
   },
   "C21189/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:20+00:00",
    "kind": "part_match",
    "lcsc": "C21189",
    "refs": [
@@ -1126,7 +1123,7 @@
   },
   "C21189/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:20+00:00",
    "kind": "stock",
    "lcsc": "C21189",
    "refs": [
@@ -1136,11 +1133,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C21189",
-   "value": "JLC can sell 18501364, build needs 10 (JLC lists 20920011, LCSC 11822300)"
+   "value": "JLC can sell 18473798, build needs 10 (JLC lists 20891145, LCSC 11814400)"
   },
   "C21190/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:22+00:00",
    "kind": "lifecycle",
    "lcsc": "C21190",
    "refs": [
@@ -1154,7 +1151,7 @@
   },
   "C21190/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:22+00:00",
    "kind": "part_match",
    "lcsc": "C21190",
    "refs": [
@@ -1168,7 +1165,7 @@
   },
   "C21190/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:22+00:00",
    "kind": "stock",
    "lcsc": "C21190",
    "refs": [
@@ -1178,20 +1175,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C21190",
-   "value": "JLC can sell 24936675, build needs 10 (JLC lists 31607929, LCSC 6315000)"
+   "value": "JLC can sell 24855453, build needs 10 (JLC lists 31519092, LCSC 6268500)"
   },
   "C22/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
-   "refs": [
-    "C22"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C15849",
+   "status": "verified",
    "subject": "C22",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C22/rating": {
    "by": null,
@@ -1208,7 +1202,7 @@
   },
   "C22775/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:23+00:00",
    "kind": "lifecycle",
    "lcsc": "C22775",
    "refs": [
@@ -1223,7 +1217,7 @@
   },
   "C22775/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:23+00:00",
    "kind": "part_match",
    "lcsc": "C22775",
    "refs": [
@@ -1238,7 +1232,7 @@
   },
   "C22775/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:23+00:00",
    "kind": "stock",
    "lcsc": "C22775",
    "refs": [
@@ -1249,11 +1243,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C22775",
-   "value": "JLC can sell 7439527, build needs 15 (JLC lists 9648646, LCSC 1194600)"
+   "value": "JLC can sell 7367194, build needs 15 (JLC lists 9568163, LCSC 1142900)"
   },
   "C22797/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:21+00:00",
    "kind": "lifecycle",
    "lcsc": "C22797",
    "refs": [
@@ -1266,7 +1260,7 @@
   },
   "C22797/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:21+00:00",
    "kind": "part_match",
    "lcsc": "C22797",
    "refs": [
@@ -1279,7 +1273,7 @@
   },
   "C22797/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:21+00:00",
    "kind": "stock",
    "lcsc": "C22797",
    "refs": [
@@ -1288,11 +1282,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C22797",
-   "value": "JLC can sell 378031, build needs 5 (JLC lists 442782, LCSC 201600)"
+   "value": "JLC can sell 376451, build needs 5 (JLC lists 441182, LCSC 201400)"
   },
   "C22807/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:21+00:00",
    "kind": "lifecycle",
    "lcsc": "C22807",
    "refs": [
@@ -1305,7 +1299,7 @@
   },
   "C22807/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:21+00:00",
    "kind": "part_match",
    "lcsc": "C22807",
    "refs": [
@@ -1318,7 +1312,7 @@
   },
   "C22807/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:21+00:00",
    "kind": "stock",
    "lcsc": "C22807",
    "refs": [
@@ -1327,11 +1321,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C22807",
-   "value": "JLC can sell 722136, build needs 5 (JLC lists 863103, LCSC 330100)"
+   "value": "JLC can sell 714156, build needs 5 (JLC lists 855123, LCSC 329800)"
   },
   "C22809/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:23+00:00",
    "kind": "lifecycle",
    "lcsc": "C22809",
    "refs": [
@@ -1345,7 +1339,7 @@
   },
   "C22809/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:23+00:00",
    "kind": "part_match",
    "lcsc": "C22809",
    "refs": [
@@ -1359,7 +1353,7 @@
   },
   "C22809/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:23+00:00",
    "kind": "stock",
    "lcsc": "C22809",
    "refs": [
@@ -1369,11 +1363,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C22809",
-   "value": "JLC can sell 3195379, build needs 10 (JLC lists 3606002, LCSC 2044100)"
+   "value": "JLC can sell 3191639, build needs 10 (JLC lists 3600962, LCSC 2043200)"
   },
   "C2286/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:16+00:00",
    "kind": "lifecycle",
    "lcsc": "C2286",
    "refs": [
@@ -1386,7 +1380,7 @@
   },
   "C2286/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:16+00:00",
    "kind": "part_match",
    "lcsc": "C2286",
    "refs": [
@@ -1399,7 +1393,7 @@
   },
   "C2286/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:16+00:00",
    "kind": "stock",
    "lcsc": "C2286",
    "refs": [
@@ -1408,11 +1402,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C2286",
-   "value": "JLC can sell 6634304, build needs 5 (JLC lists 7320274, LCSC 4770000)"
+   "value": "JLC can sell 6615556, build needs 5 (JLC lists 7301536, LCSC 4768800)"
   },
   "C22961/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:21+00:00",
    "kind": "lifecycle",
    "lcsc": "C22961",
    "refs": [
@@ -1425,7 +1419,7 @@
   },
   "C22961/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:21+00:00",
    "kind": "part_match",
    "lcsc": "C22961",
    "refs": [
@@ -1438,7 +1432,7 @@
   },
   "C22961/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:21+00:00",
    "kind": "stock",
    "lcsc": "C22961",
    "refs": [
@@ -1447,20 +1441,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C22961",
-   "value": "JLC can sell 1059688, build needs 5 (JLC lists 1146391, LCSC 815900)"
+   "value": "JLC can sell 1053558, build needs 5 (JLC lists 1140266, LCSC 810600)"
   },
   "C23/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C23"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C23",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C23/rating": {
    "by": null,
@@ -1476,17 +1467,14 @@
    "value": ""
   },
   "C24/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C24"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C24",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C24/rating": {
    "by": null,
@@ -1502,17 +1490,14 @@
    "value": ""
   },
   "C25/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C45783",
-   "refs": [
-    "C25"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C45783",
+   "status": "verified",
    "subject": "C25",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C25/rating": {
    "by": null,
@@ -1529,7 +1514,7 @@
   },
   "C25803/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:21+00:00",
    "kind": "lifecycle",
    "lcsc": "C25803",
    "refs": [
@@ -1550,7 +1535,7 @@
   },
   "C25803/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:21+00:00",
    "kind": "part_match",
    "lcsc": "C25803",
    "refs": [
@@ -1571,7 +1556,7 @@
   },
   "C25803/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:21+00:00",
    "kind": "stock",
    "lcsc": "C25803",
    "refs": [
@@ -1588,11 +1573,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C25803",
-   "value": "JLC can sell 15481909, build needs 45 (JLC lists 17826908, LCSC 8947900)"
+   "value": "JLC can sell 15393244, build needs 45 (JLC lists 17736448, LCSC 8897700)"
   },
   "C25804/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:20+00:00",
    "kind": "lifecycle",
    "lcsc": "C25804",
    "refs": [
@@ -1622,7 +1607,7 @@
   },
   "C25804/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:20+00:00",
    "kind": "part_match",
    "lcsc": "C25804",
    "refs": [
@@ -1652,7 +1637,7 @@
   },
   "C25804/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:20+00:00",
    "kind": "stock",
    "lcsc": "C25804",
    "refs": [
@@ -1678,11 +1663,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C25804",
-   "value": "JLC can sell 30310373, build needs 90 (JLC lists 40579573, LCSC 1519100)"
+   "value": "JLC can sell 30107678, build needs 90 (JLC lists 40376812, LCSC 1446600)"
   },
   "C25808/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:20+00:00",
    "kind": "lifecycle",
    "lcsc": "C25808",
    "refs": [
@@ -1695,7 +1680,7 @@
   },
   "C25808/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:20+00:00",
    "kind": "part_match",
    "lcsc": "C25808",
    "refs": [
@@ -1708,7 +1693,7 @@
   },
   "C25808/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:20+00:00",
    "kind": "stock",
    "lcsc": "C25808",
    "refs": [
@@ -1717,11 +1702,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C25808",
-   "value": "JLC can sell 708172, build needs 5 (JLC lists 812088, LCSC 411700)"
+   "value": "JLC can sell 701402, build needs 5 (JLC lists 805318, LCSC 405600)"
   },
   "C25819/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:23+00:00",
    "kind": "lifecycle",
    "lcsc": "C25819",
    "refs": [
@@ -1735,7 +1720,7 @@
   },
   "C25819/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:23+00:00",
    "kind": "part_match",
    "lcsc": "C25819",
    "refs": [
@@ -1749,7 +1734,7 @@
   },
   "C25819/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:23+00:00",
    "kind": "stock",
    "lcsc": "C25819",
    "refs": [
@@ -1759,20 +1744,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C25819",
-   "value": "JLC can sell 2443500, build needs 10 (JLC lists 3137489, LCSC 447500)"
+   "value": "JLC can sell 2438433, build needs 10 (JLC lists 3132422, LCSC 441600)"
   },
   "C26/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C1622",
-   "refs": [
-    "C26"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C1622",
+   "status": "verified",
    "subject": "C26",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C26/rating": {
    "by": null,
@@ -1789,7 +1771,7 @@
   },
   "C28323/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:14+00:00",
    "kind": "lifecycle",
    "lcsc": "C28323",
    "refs": [
@@ -1804,7 +1786,7 @@
   },
   "C28323/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:14+00:00",
    "kind": "part_match",
    "lcsc": "C28323",
    "refs": [
@@ -1819,7 +1801,7 @@
   },
   "C28323/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:09+00:00",
+   "checked_at": "2026-10-30T09:42:14+00:00",
    "kind": "stock",
    "lcsc": "C28323",
    "refs": [
@@ -1830,11 +1812,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C28323",
-   "value": "JLC can sell 1375909, build needs 15 (JLC lists 2321794, LCSC 0)"
+   "value": "JLC can sell 1369027, build needs 15 (JLC lists 2312142, LCSC 0)"
   },
   "C2836441/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "lifecycle",
    "lcsc": "C2836441",
    "refs": [
@@ -1847,7 +1829,7 @@
   },
   "C2836441/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "part_match",
    "lcsc": "C2836441",
    "refs": [
@@ -1860,7 +1842,7 @@
   },
   "C2836441/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "stock",
    "lcsc": "C2836441",
    "refs": [
@@ -1869,11 +1851,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C2836441",
-   "value": "JLC can sell 101104, build needs 5 (JLC lists 112997, LCSC 90230)"
+   "value": "JLC can sell 101094, build needs 5 (JLC lists 112987, LCSC 90230)"
   },
   "C2915641/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:17+00:00",
    "kind": "lifecycle",
    "lcsc": "C2915641",
    "refs": [
@@ -1886,7 +1868,7 @@
   },
   "C2915641/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:17+00:00",
    "kind": "part_match",
    "lcsc": "C2915641",
    "refs": [
@@ -1899,7 +1881,7 @@
   },
   "C2915641/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:17+00:00",
    "kind": "stock",
    "lcsc": "C2915641",
    "refs": [
@@ -1908,11 +1890,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C2915641",
-   "value": "JLC can sell 96185, build needs 5 (JLC lists 97473, LCSC 95470)"
+   "value": "JLC can sell 96187, build needs 5 (JLC lists 97475, LCSC 95470)"
   },
   "C2973667/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:14+00:00",
+   "checked_at": "2026-10-30T09:42:25+00:00",
    "kind": "lifecycle",
    "lcsc": "C2973667",
    "refs": [
@@ -1925,7 +1907,7 @@
   },
   "C2973667/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:14+00:00",
+   "checked_at": "2026-10-30T09:42:25+00:00",
    "kind": "part_match",
    "lcsc": "C2973667",
    "refs": [
@@ -1938,7 +1920,7 @@
   },
   "C2973667/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:14+00:00",
+   "checked_at": "2026-10-30T09:42:25+00:00",
    "kind": "stock",
    "lcsc": "C2973667",
    "refs": [
@@ -1951,7 +1933,7 @@
   },
   "C29823/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "lifecycle",
    "lcsc": "C29823",
    "refs": [
@@ -1964,7 +1946,7 @@
   },
   "C29823/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "part_match",
    "lcsc": "C29823",
    "refs": [
@@ -1977,7 +1959,7 @@
   },
   "C29823/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "stock",
    "lcsc": "C29823",
    "refs": [
@@ -1986,20 +1968,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C29823",
-   "value": "JLC can sell 659697, build needs 5 (JLC lists 807667, LCSC 239880)"
+   "value": "JLC can sell 658107, build needs 5 (JLC lists 806077, LCSC 240020)"
   },
   "C3/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C13585",
-   "refs": [
-    "C3"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C13585",
+   "status": "verified",
    "subject": "C3",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C3/rating": {
    "by": null,
@@ -2015,17 +1994,14 @@
    "value": ""
   },
   "C30/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C30"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C30",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C30/rating": {
    "by": null,
@@ -2042,7 +2018,7 @@
   },
   "C305171/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:19+00:00",
    "kind": "lifecycle",
    "lcsc": "C305171",
    "refs": [
@@ -2055,7 +2031,7 @@
   },
   "C305171/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:19+00:00",
    "kind": "part_match",
    "lcsc": "C305171",
    "refs": [
@@ -2068,7 +2044,7 @@
   },
   "C305171/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:19+00:00",
    "kind": "stock",
    "lcsc": "C305171",
    "refs": [
@@ -2077,20 +2053,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C305171",
-   "value": "JLC can sell 4352, build needs 5 (JLC lists 4390, LCSC None)"
+   "value": "JLC can sell 4362, build needs 5 (JLC lists 4400, LCSC None)"
   },
   "C31/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C31"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C31",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C31/rating": {
    "by": null,
@@ -2107,7 +2080,7 @@
   },
   "C311983/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:24+00:00",
    "kind": "lifecycle",
    "lcsc": "C311983",
    "refs": [
@@ -2120,7 +2093,7 @@
   },
   "C311983/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:24+00:00",
    "kind": "part_match",
    "lcsc": "C311983",
    "refs": [
@@ -2133,7 +2106,7 @@
   },
   "C311983/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:24+00:00",
    "kind": "stock",
    "lcsc": "C311983",
    "refs": [
@@ -2142,11 +2115,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C311983",
-   "value": "JLC can sell 54933, build needs 5 (JLC lists 61014, LCSC 57600)"
+   "value": "JLC can sell 55499, build needs 5 (JLC lists 61575, LCSC 57495)"
   },
   "C31850/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:22+00:00",
    "kind": "lifecycle",
    "lcsc": "C31850",
    "refs": [
@@ -2159,7 +2132,7 @@
   },
   "C31850/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:22+00:00",
    "kind": "part_match",
    "lcsc": "C31850",
    "refs": [
@@ -2172,7 +2145,7 @@
   },
   "C31850/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:22+00:00",
    "kind": "stock",
    "lcsc": "C31850",
    "refs": [
@@ -2181,11 +2154,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C31850",
-   "value": "JLC can sell 2621375, build needs 5 (JLC lists 2931141, LCSC 1780700)"
+   "value": "JLC can sell 2619291, build needs 5 (JLC lists 2929037, LCSC 1780300)"
   },
   "C318884/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:24+00:00",
    "kind": "lifecycle",
    "lcsc": "C318884",
    "refs": [
@@ -2200,7 +2173,7 @@
   },
   "C318884/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:24+00:00",
    "kind": "part_match",
    "lcsc": "C318884",
    "refs": [
@@ -2215,7 +2188,7 @@
   },
   "C318884/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:24+00:00",
    "kind": "stock",
    "lcsc": "C318884",
    "refs": [
@@ -2226,20 +2199,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C318884",
-   "value": "JLC can sell 1046056, build needs 15 (JLC lists 1118947, LCSC 849120)"
+   "value": "JLC can sell 1039312, build needs 15 (JLC lists 1112203, LCSC 848980)"
   },
   "C32/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C19666",
-   "refs": [
-    "C32"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C19666",
+   "status": "verified",
    "subject": "C32",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C32/rating": {
    "by": null,
@@ -2255,17 +2225,14 @@
    "value": ""
   },
   "C33/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C33"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C33",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C33/rating": {
    "by": null,
@@ -2281,17 +2248,14 @@
    "value": ""
   },
   "C34/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C34"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C34",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C34/rating": {
    "by": null,
@@ -2307,17 +2271,14 @@
    "value": ""
   },
   "C35/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
-   "refs": [
-    "C35"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C19702",
+   "status": "verified",
    "subject": "C35",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C35/rating": {
    "by": null,
@@ -2333,17 +2294,14 @@
    "value": ""
   },
   "C36/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C36"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C36",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C36/rating": {
    "by": null,
@@ -2358,48 +2316,9 @@
    "subject": "C36",
    "value": ""
   },
-  "C364296/lifecycle": {
-   "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
-   "kind": "lifecycle",
-   "lcsc": "C364296",
-   "refs": [
-    "D1"
-   ],
-   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
-   "status": "verified",
-   "subject": "C364296",
-   "value": "JLC sells it"
-  },
-  "C364296/part_match": {
-   "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
-   "kind": "part_match",
-   "lcsc": "C364296",
-   "refs": [
-    "D1"
-   ],
-   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
-   "status": "verified",
-   "subject": "C364296",
-   "value": "BOM value SMBJ20A in JLC model SMBJ20A"
-  },
-  "C364296/stock": {
-   "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
-   "kind": "stock",
-   "lcsc": "C364296",
-   "refs": [
-    "D1"
-   ],
-   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
-   "status": "verified",
-   "subject": "C364296",
-   "value": "JLC can sell 184392, build needs 5 (JLC lists 184529, LCSC 184520)"
-  },
   "C365736/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:14+00:00",
+   "checked_at": "2026-10-30T09:42:26+00:00",
    "kind": "lifecycle",
    "lcsc": "C365736",
    "refs": [
@@ -2412,7 +2331,7 @@
   },
   "C365736/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:14+00:00",
+   "checked_at": "2026-10-30T09:42:26+00:00",
    "kind": "part_match",
    "lcsc": "C365736",
    "refs": [
@@ -2425,7 +2344,7 @@
   },
   "C365736/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:14+00:00",
+   "checked_at": "2026-10-30T09:42:26+00:00",
    "kind": "stock",
    "lcsc": "C365736",
    "refs": [
@@ -2434,20 +2353,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C365736",
-   "value": "JLC can sell 38474, build needs 5 (JLC lists 38960, LCSC 38960)"
+   "value": "JLC can sell 38466, build needs 5 (JLC lists 38952, LCSC 38952)"
   },
   "C37/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
-   "refs": [
-    "C37"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C19702",
+   "status": "verified",
    "subject": "C37",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C37/rating": {
    "by": null,
@@ -2463,17 +2379,14 @@
    "value": ""
   },
   "C38/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C38"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C38",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C38/rating": {
    "by": null,
@@ -2489,17 +2402,14 @@
    "value": ""
   },
   "C39/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
-   "refs": [
-    "C39"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C19702",
+   "status": "verified",
    "subject": "C39",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C39/rating": {
    "by": null,
@@ -2515,17 +2425,14 @@
    "value": ""
   },
   "C4/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C29823",
-   "refs": [
-    "C4"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C29823",
+   "status": "verified",
    "subject": "C4",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C4/rating": {
    "by": null,
@@ -2541,17 +2448,14 @@
    "value": ""
   },
   "C40/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C40"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C40",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C40/rating": {
    "by": null,
@@ -2567,17 +2471,14 @@
    "value": ""
   },
   "C41/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
-   "refs": [
-    "C41"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C15849",
+   "status": "verified",
    "subject": "C41",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C41/rating": {
    "by": null,
@@ -2594,7 +2495,7 @@
   },
   "C4184/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:23+00:00",
    "kind": "lifecycle",
    "lcsc": "C4184",
    "refs": [
@@ -2607,7 +2508,7 @@
   },
   "C4184/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:23+00:00",
    "kind": "part_match",
    "lcsc": "C4184",
    "refs": [
@@ -2620,7 +2521,7 @@
   },
   "C4184/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:23+00:00",
    "kind": "stock",
    "lcsc": "C4184",
    "refs": [
@@ -2629,11 +2530,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C4184",
-   "value": "JLC can sell 5309580, build needs 5 (JLC lists 6299103, LCSC 2492400)"
+   "value": "JLC can sell 5309148, build needs 5 (JLC lists 6298671, LCSC 2477700)"
   },
   "C4190/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:22+00:00",
    "kind": "lifecycle",
    "lcsc": "C4190",
    "refs": [
@@ -2647,7 +2548,7 @@
   },
   "C4190/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:22+00:00",
    "kind": "part_match",
    "lcsc": "C4190",
    "refs": [
@@ -2661,7 +2562,7 @@
   },
   "C4190/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:22+00:00",
    "kind": "stock",
    "lcsc": "C4190",
    "refs": [
@@ -2671,20 +2572,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C4190",
-   "value": "JLC can sell 4824377, build needs 10 (JLC lists 5537231, LCSC 2955200)"
+   "value": "JLC can sell 4816433, build needs 10 (JLC lists 5529377, LCSC 2953900)"
   },
   "C42/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14858",
-   "refs": [
-    "C42"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14858",
+   "status": "verified",
    "subject": "C42",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C42/rating": {
    "by": null,
@@ -2701,7 +2599,7 @@
   },
   "C4216/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:22+00:00",
    "kind": "lifecycle",
    "lcsc": "C4216",
    "refs": [
@@ -2714,7 +2612,7 @@
   },
   "C4216/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:22+00:00",
    "kind": "part_match",
    "lcsc": "C4216",
    "refs": [
@@ -2727,7 +2625,7 @@
   },
   "C4216/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:12+00:00",
+   "checked_at": "2026-10-30T09:42:22+00:00",
    "kind": "stock",
    "lcsc": "C4216",
    "refs": [
@@ -2736,11 +2634,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C4216",
-   "value": "JLC can sell 3024742, build needs 5 (JLC lists 3237444, LCSC 2446200)"
+   "value": "JLC can sell 3021363, build needs 5 (JLC lists 3234045, LCSC 2444400)"
   },
   "C42421366/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:14+00:00",
+   "checked_at": "2026-10-30T09:42:27+00:00",
    "kind": "lifecycle",
    "lcsc": "C42421366",
    "refs": [
@@ -2753,7 +2651,7 @@
   },
   "C42421366/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:14+00:00",
+   "checked_at": "2026-10-30T09:42:27+00:00",
    "kind": "part_match",
    "lcsc": "C42421366",
    "refs": [
@@ -2766,7 +2664,7 @@
   },
   "C42421366/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:14+00:00",
+   "checked_at": "2026-10-30T09:42:27+00:00",
    "kind": "stock",
    "lcsc": "C42421366",
    "refs": [
@@ -2775,11 +2673,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C42421366",
-   "value": "JLC can sell 100718, build needs 5 (JLC lists 101017, LCSC 101015)"
+   "value": "JLC can sell 100713, build needs 5 (JLC lists 101012, LCSC 101010)"
   },
   "C42459160/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:24+00:00",
    "kind": "lifecycle",
    "lcsc": "C42459160",
    "refs": [
@@ -2792,7 +2690,7 @@
   },
   "C42459160/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:24+00:00",
    "kind": "part_match",
    "lcsc": "C42459160",
    "refs": [
@@ -2805,7 +2703,7 @@
   },
   "C42459160/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:24+00:00",
    "kind": "stock",
    "lcsc": "C42459160",
    "refs": [
@@ -2814,20 +2712,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C42459160",
-   "value": "JLC can sell 9178, build needs 5 (JLC lists 9394, LCSC 9394)"
+   "value": "JLC can sell 9163, build needs 5 (JLC lists 9379, LCSC 9379)"
   },
   "C44/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
-   "refs": [
-    "C44"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C15849",
+   "status": "verified",
    "subject": "C44",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C44/rating": {
    "by": null,
@@ -2843,17 +2738,14 @@
    "value": ""
   },
   "C45/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14858",
-   "refs": [
-    "C45"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14858",
+   "status": "verified",
    "subject": "C45",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C45/rating": {
    "by": null,
@@ -2870,7 +2762,7 @@
   },
   "C45783/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "lifecycle",
    "lcsc": "C45783",
    "refs": [
@@ -2886,7 +2778,7 @@
   },
   "C45783/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "part_match",
    "lcsc": "C45783",
    "refs": [
@@ -2902,7 +2794,7 @@
   },
   "C45783/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:08+00:00",
+   "checked_at": "2026-10-30T09:42:11+00:00",
    "kind": "stock",
    "lcsc": "C45783",
    "refs": [
@@ -2914,11 +2806,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C45783",
-   "value": "JLC can sell 2835166, build needs 20 (JLC lists 3779186, LCSC 263180)"
+   "value": "JLC can sell 2564824, build needs 20 (JLC lists 3508859, LCSC 140)"
   },
   "C46497/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:14+00:00",
+   "checked_at": "2026-10-30T09:42:27+00:00",
    "kind": "lifecycle",
    "lcsc": "C46497",
    "refs": [
@@ -2931,7 +2823,7 @@
   },
   "C46497/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:14+00:00",
+   "checked_at": "2026-10-30T09:42:27+00:00",
    "kind": "part_match",
    "lcsc": "C46497",
    "refs": [
@@ -2944,7 +2836,7 @@
   },
   "C46497/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:14+00:00",
+   "checked_at": "2026-10-30T09:42:27+00:00",
    "kind": "stock",
    "lcsc": "C46497",
    "refs": [
@@ -2953,11 +2845,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C46497",
-   "value": "JLC can sell 32988, build needs 5 (JLC lists 33486, LCSC 32525)"
+   "value": "JLC can sell 32983, build needs 5 (JLC lists 33481, LCSC 32525)"
   },
   "C46550472/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "lifecycle",
    "lcsc": "C46550472",
    "refs": [
@@ -2970,7 +2862,7 @@
   },
   "C46550472/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "part_match",
    "lcsc": "C46550472",
    "refs": [
@@ -2983,7 +2875,7 @@
   },
   "C46550472/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:10+00:00",
+   "checked_at": "2026-10-30T09:42:15+00:00",
    "kind": "stock",
    "lcsc": "C46550472",
    "refs": [
@@ -2995,17 +2887,14 @@
    "value": "JLC can sell 72488, build needs 5 (JLC lists 72699, LCSC 72699)"
   },
   "C47/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
-   "refs": [
-    "C47"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C19702",
+   "status": "verified",
    "subject": "C47",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C47/rating": {
    "by": null,
@@ -3022,7 +2911,7 @@
   },
   "C479074/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:24+00:00",
    "kind": "lifecycle",
    "lcsc": "C479074",
    "refs": [
@@ -3035,7 +2924,7 @@
   },
   "C479074/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:24+00:00",
    "kind": "part_match",
    "lcsc": "C479074",
    "refs": [
@@ -3048,7 +2937,7 @@
   },
   "C479074/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:24+00:00",
    "kind": "stock",
    "lcsc": "C479074",
    "refs": [
@@ -3057,20 +2946,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C479074",
-   "value": "JLC can sell 67588, build needs 5 (JLC lists 70100, LCSC 68905)"
+   "value": "JLC can sell 64635, build needs 5 (JLC lists 67147, LCSC 67040)"
   },
   "C48/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
-   "refs": [
-    "C48"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C19702",
+   "status": "verified",
    "subject": "C48",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C48/rating": {
    "by": null,
@@ -3087,7 +2973,7 @@
   },
   "C48391614/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:17+00:00",
    "kind": "lifecycle",
    "lcsc": "C48391614",
    "refs": [
@@ -3103,7 +2989,7 @@
   },
   "C48391614/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:17+00:00",
    "kind": "part_match",
    "lcsc": "C48391614",
    "refs": [
@@ -3119,7 +3005,7 @@
   },
   "C48391614/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:17+00:00",
    "kind": "stock",
    "lcsc": "C48391614",
    "refs": [
@@ -3134,17 +3020,14 @@
    "value": "JLC can sell 1587, build needs 20 (JLC lists 1676, LCSC 1675)"
   },
   "C5/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C5"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C5",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C5/rating": {
    "by": null,
@@ -3160,17 +3043,14 @@
    "value": ""
   },
   "C50/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
-   "refs": [
-    "C50"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C15849",
+   "status": "verified",
    "subject": "C50",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C50/rating": {
    "by": null,
@@ -3186,17 +3066,14 @@
    "value": ""
   },
   "C51/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C28323",
-   "refs": [
-    "C51"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C28323",
+   "status": "verified",
    "subject": "C51",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C51/rating": {
    "by": null,
@@ -3213,7 +3090,7 @@
   },
   "C5125949/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:19+00:00",
    "kind": "lifecycle",
    "lcsc": "C5125949",
    "refs": [
@@ -3226,7 +3103,7 @@
   },
   "C5125949/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:19+00:00",
    "kind": "part_match",
    "lcsc": "C5125949",
    "refs": [
@@ -3239,7 +3116,7 @@
   },
   "C5125949/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:19+00:00",
    "kind": "stock",
    "lcsc": "C5125949",
    "refs": [
@@ -3251,17 +3128,14 @@
    "value": "JLC can sell 11603, build needs 5 (JLC lists 11795, LCSC 11795)"
   },
   "C52/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C28323",
-   "refs": [
-    "C52"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C28323",
+   "status": "verified",
    "subject": "C52",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C52/rating": {
    "by": null,
@@ -3277,17 +3151,14 @@
    "value": ""
   },
   "C53/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C53"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C53",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C53/rating": {
    "by": null,
@@ -3303,17 +3174,14 @@
    "value": ""
   },
   "C54/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C1588",
-   "refs": [
-    "C54"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C1588",
+   "status": "verified",
    "subject": "C54",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C54/rating": {
    "by": null,
@@ -3329,17 +3197,14 @@
    "value": ""
   },
   "C55/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C28323",
-   "refs": [
-    "C55"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C28323",
+   "status": "verified",
    "subject": "C55",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C55/rating": {
    "by": null,
@@ -3355,17 +3220,14 @@
    "value": ""
   },
   "C56/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C56"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C56",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C56/rating": {
    "by": null,
@@ -3381,17 +3243,14 @@
    "value": ""
   },
   "C57/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C1588",
-   "refs": [
-    "C57"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C1588",
+   "status": "verified",
    "subject": "C57",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C57/rating": {
    "by": null,
@@ -3407,17 +3266,14 @@
    "value": ""
   },
   "C58/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C46550472",
-   "refs": [
-    "C58"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C46550472",
+   "status": "verified",
    "subject": "C58",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number (no K/A or +/- names on both sides)"
   },
   "C58/rating": {
    "by": null,
@@ -3433,17 +3289,14 @@
    "value": ""
   },
   "C59/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C2836441",
-   "refs": [
-    "C59"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C2836441",
+   "status": "verified",
    "subject": "C59",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number (no K/A or +/- names on both sides)"
   },
   "C59/rating": {
    "by": null,
@@ -3459,17 +3312,14 @@
    "value": ""
   },
   "C6/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
-   "refs": [
-    "C6"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C14663",
+   "status": "verified",
    "subject": "C6",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C6/rating": {
    "by": null,
@@ -3485,17 +3335,14 @@
    "value": ""
   },
   "C60/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
-   "refs": [
-    "C60"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C15849",
+   "status": "verified",
    "subject": "C60",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C60/rating": {
    "by": null,
@@ -3511,17 +3358,14 @@
    "value": ""
   },
   "C61/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
-   "refs": [
-    "C61"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C15849",
+   "status": "verified",
    "subject": "C61",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C61/rating": {
    "by": null,
@@ -3537,17 +3381,14 @@
    "value": ""
   },
   "C62/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
-   "refs": [
-    "C62"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C15849",
+   "status": "verified",
    "subject": "C62",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C62/rating": {
    "by": null,
@@ -3563,17 +3404,14 @@
    "value": ""
   },
   "C63/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
-   "refs": [
-    "C63"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C15849",
+   "status": "verified",
    "subject": "C63",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C63/rating": {
    "by": null,
@@ -3589,17 +3427,14 @@
    "value": ""
   },
   "C64/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C21120",
-   "refs": [
-    "C64"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C21120",
+   "status": "verified",
    "subject": "C64",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C64/rating": {
    "by": null,
@@ -3615,17 +3450,14 @@
    "value": ""
   },
   "C65/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C21120",
-   "refs": [
-    "C65"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C21120",
+   "status": "verified",
    "subject": "C65",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C65/rating": {
    "by": null,
@@ -3641,17 +3473,14 @@
    "value": ""
   },
   "C66/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C21120",
-   "refs": [
-    "C66"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C21120",
+   "status": "verified",
    "subject": "C66",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C66/rating": {
    "by": null,
@@ -3667,17 +3496,14 @@
    "value": ""
   },
   "C67/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C21120",
-   "refs": [
-    "C67"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C21120",
+   "status": "verified",
    "subject": "C67",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C67/rating": {
    "by": null,
@@ -3693,17 +3519,14 @@
    "value": ""
   },
   "C68/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C1848",
-   "refs": [
-    "C68"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C1848",
+   "status": "verified",
    "subject": "C68",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C68/rating": {
    "by": null,
@@ -3719,17 +3542,14 @@
    "value": ""
   },
   "C69/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C1848",
-   "refs": [
-    "C69"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C1848",
+   "status": "verified",
    "subject": "C69",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C69/rating": {
    "by": null,
@@ -3745,17 +3565,14 @@
    "value": ""
   },
   "C7/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C45783",
-   "refs": [
-    "C7"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C45783",
+   "status": "verified",
    "subject": "C7",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C7/rating": {
    "by": null,
@@ -3771,17 +3588,14 @@
    "value": ""
   },
   "C70/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C1848",
-   "refs": [
-    "C70"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C1848",
+   "status": "verified",
    "subject": "C70",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C70/rating": {
    "by": null,
@@ -3797,17 +3611,14 @@
    "value": ""
   },
   "C71/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C1848",
-   "refs": [
-    "C71"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C1848",
+   "status": "verified",
    "subject": "C71",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C71/rating": {
    "by": null,
@@ -3824,7 +3635,7 @@
   },
   "C7527522/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:17+00:00",
    "kind": "lifecycle",
    "lcsc": "C7527522",
    "refs": [
@@ -3838,7 +3649,7 @@
   },
   "C7527522/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:17+00:00",
    "kind": "part_match",
    "lcsc": "C7527522",
    "refs": [
@@ -3852,7 +3663,7 @@
   },
   "C7527522/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:17+00:00",
    "kind": "stock",
    "lcsc": "C7527522",
    "refs": [
@@ -3866,7 +3677,7 @@
   },
   "C79272/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:18+00:00",
    "kind": "lifecycle",
    "lcsc": "C79272",
    "refs": [
@@ -3879,7 +3690,7 @@
   },
   "C79272/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:18+00:00",
    "kind": "part_match",
    "lcsc": "C79272",
    "refs": [
@@ -3892,7 +3703,7 @@
   },
   "C79272/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:11+00:00",
+   "checked_at": "2026-10-30T09:42:18+00:00",
    "kind": "stock",
    "lcsc": "C79272",
    "refs": [
@@ -3901,20 +3712,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C79272",
-   "value": "JLC can sell 5126, build needs 5 (JLC lists 5751, LCSC None)"
+   "value": "JLC can sell 5116, build needs 5 (JLC lists 5741, LCSC None)"
   },
   "C8/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C45783",
-   "refs": [
-    "C8"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C45783",
+   "status": "verified",
    "subject": "C8",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C8/rating": {
    "by": null,
@@ -3930,17 +3738,14 @@
    "value": ""
   },
   "C80/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C19666",
-   "refs": [
-    "C80"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C19666",
+   "status": "verified",
    "subject": "C80",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C80/rating": {
    "by": null,
@@ -3957,7 +3762,7 @@
   },
   "C80670/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:25+00:00",
    "kind": "lifecycle",
    "lcsc": "C80670",
    "refs": [
@@ -3970,7 +3775,7 @@
   },
   "C80670/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:25+00:00",
    "kind": "part_match",
    "lcsc": "C80670",
    "refs": [
@@ -3983,7 +3788,7 @@
   },
   "C80670/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:13+00:00",
+   "checked_at": "2026-10-30T09:42:25+00:00",
    "kind": "stock",
    "lcsc": "C80670",
    "refs": [
@@ -3992,20 +3797,17 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C80670",
-   "value": "JLC can sell 31303, build needs 5 (JLC lists 32994, LCSC 30000)"
+   "value": "JLC can sell 31238, build needs 5 (JLC lists 32929, LCSC 29985)"
   },
   "C81/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C1620",
-   "refs": [
-    "C81"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C1620",
+   "status": "verified",
    "subject": "C81",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C81/rating": {
    "by": null,
@@ -4022,7 +3824,7 @@
   },
   "C81010/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:14+00:00",
+   "checked_at": "2026-10-30T09:42:25+00:00",
    "kind": "lifecycle",
    "lcsc": "C81010",
    "refs": [
@@ -4035,7 +3837,7 @@
   },
   "C81010/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:14+00:00",
+   "checked_at": "2026-10-30T09:42:25+00:00",
    "kind": "part_match",
    "lcsc": "C81010",
    "refs": [
@@ -4048,7 +3850,7 @@
   },
   "C81010/stock": {
    "by": "stock_check",
-   "checked_at": "2026-10-30T08:12:14+00:00",
+   "checked_at": "2026-10-30T09:42:25+00:00",
    "kind": "stock",
    "lcsc": "C81010",
    "refs": [
@@ -4060,17 +3862,14 @@
    "value": "JLC can sell 4745, build needs 5 (JLC lists 5010, LCSC 4560)"
   },
   "C82/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
-   "refs": [
-    "C82"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C15849",
+   "status": "verified",
    "subject": "C82",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C82/rating": {
    "by": null,
@@ -4086,17 +3885,14 @@
    "value": ""
   },
   "C83/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C1620",
-   "refs": [
-    "C83"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C1620",
+   "status": "verified",
    "subject": "C83",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C83/rating": {
    "by": null,
@@ -4112,17 +3908,14 @@
    "value": ""
   },
   "C84/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
-   "refs": [
-    "C84"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C15849",
+   "status": "verified",
    "subject": "C84",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C84/rating": {
    "by": null,
@@ -4138,17 +3931,14 @@
    "value": ""
   },
   "C9/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C1671",
-   "refs": [
-    "C9"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C1671",
+   "status": "verified",
    "subject": "C9",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "C9/rating": {
    "by": null,
@@ -4164,43 +3954,37 @@
    "value": ""
   },
   "D1/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
-   "lcsc": "C364296",
-   "refs": [
-    "D1"
-   ],
-   "source": "",
-   "status": "unknown",
+   "lcsc": "C151920",
+   "source": "EasyEDA/LCSC footprint model of C151920",
+   "status": "verified",
    "subject": "D1",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pin role (K/A, +/-)"
   },
   "D1/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "hand",
+   "checked_at": "2026-10-30T09:44:32+00:00",
    "kind": "rating",
-   "lcsc": "C364296",
+   "lcsc": "C151920",
    "refs": [
     "D1"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "BORN SMBJ series datasheet, electrical table row SMBJ22A (datasheet.lcsc.com, productCode=C151920)",
+   "status": "verified",
    "subject": "D1",
-   "value": ""
+   "value": "VRWM 22 V >= PD 20 V +5 % (21 V); VBR 24.4-26.9 V @ 1 mA; Vc 35.5 V @ 16.9 A; IR 1 uA @ VRWM; 600 W 10/1000 us"
   },
   "D2/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C2286",
-   "refs": [
-    "D2"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C2286",
+   "status": "verified",
    "subject": "D2",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pin role (K/A, +/-)"
   },
   "D2/rating": {
    "by": null,
@@ -4216,17 +4000,14 @@
    "value": ""
   },
   "J1/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C165948",
-   "refs": [
-    "J1"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C165948",
+   "status": "verified",
    "subject": "J1",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "J1/pinout": {
    "by": null,
@@ -4255,17 +4036,14 @@
    "value": ""
   },
   "J2/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C7527522",
-   "refs": [
-    "J2"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C7527522",
+   "status": "verified",
    "subject": "J2",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "J2/pinout": {
    "by": null,
@@ -4294,17 +4072,14 @@
    "value": ""
   },
   "J3/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C7527522",
-   "refs": [
-    "J3"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C7527522",
+   "status": "verified",
    "subject": "J3",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "J3/pinout": {
    "by": null,
@@ -4333,17 +4108,14 @@
    "value": ""
   },
   "J4/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C2915641",
-   "refs": [
-    "J4"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C2915641",
+   "status": "verified",
    "subject": "J4",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "J4/pinout": {
    "by": null,
@@ -4372,17 +4144,14 @@
    "value": ""
   },
   "L1/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C48391614",
-   "refs": [
-    "L1"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C48391614",
+   "status": "verified",
    "subject": "L1",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "L1/rating": {
    "by": null,
@@ -4398,17 +4167,14 @@
    "value": ""
   },
   "L2/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C48391614",
-   "refs": [
-    "L2"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C48391614",
+   "status": "verified",
    "subject": "L2",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "L2/rating": {
    "by": null,
@@ -4424,17 +4190,14 @@
    "value": ""
   },
   "L3/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C48391614",
-   "refs": [
-    "L3"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C48391614",
+   "status": "verified",
    "subject": "L3",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "L3/rating": {
    "by": null,
@@ -4450,17 +4213,14 @@
    "value": ""
   },
   "L4/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C48391614",
-   "refs": [
-    "L4"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C48391614",
+   "status": "verified",
    "subject": "L4",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "L4/rating": {
    "by": null,
@@ -4476,17 +4236,14 @@
    "value": ""
   },
   "L5/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C79272",
-   "refs": [
-    "L5"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C79272",
+   "status": "verified",
    "subject": "L5",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "L5/rating": {
    "by": null,
@@ -4502,17 +4259,14 @@
    "value": ""
   },
   "L6/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C305171",
-   "refs": [
-    "L6"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C305171",
+   "status": "verified",
    "subject": "L6",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "L6/rating": {
    "by": null,
@@ -4528,17 +4282,14 @@
    "value": ""
   },
   "Q1/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C5125949",
-   "refs": [
-    "Q1"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C5125949",
+   "status": "verified",
    "subject": "Q1",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "Q1/pinout": {
    "by": null,
@@ -4567,17 +4318,14 @@
    "value": ""
   },
   "Q2/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C20526",
-   "refs": [
-    "Q2"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C20526",
+   "status": "verified",
    "subject": "Q2",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "Q2/pinout": {
    "by": null,
@@ -4606,17 +4354,14 @@
    "value": ""
   },
   "Q3/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C20526",
-   "refs": [
-    "Q3"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C20526",
+   "status": "verified",
    "subject": "Q3",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "Q3/pinout": {
    "by": null,
@@ -4645,17 +4390,14 @@
    "value": ""
   },
   "Q4/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C20526",
-   "refs": [
-    "Q4"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C20526",
+   "status": "verified",
    "subject": "Q4",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "Q4/pinout": {
    "by": null,
@@ -4684,17 +4426,14 @@
    "value": ""
   },
   "R1/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25808",
-   "refs": [
-    "R1"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25808",
+   "status": "verified",
    "subject": "R1",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R1/rating": {
    "by": null,
@@ -4710,17 +4449,14 @@
    "value": ""
   },
   "R10/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C22797",
-   "refs": [
-    "R10"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C22797",
+   "status": "verified",
    "subject": "R10",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R10/rating": {
    "by": null,
@@ -4736,17 +4472,14 @@
    "value": ""
   },
   "R11/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C22807",
-   "refs": [
-    "R11"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C22807",
+   "status": "verified",
    "subject": "R11",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R11/rating": {
    "by": null,
@@ -4762,17 +4495,14 @@
    "value": ""
   },
   "R12/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C4216",
-   "refs": [
-    "R12"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C4216",
+   "status": "verified",
    "subject": "R12",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R12/rating": {
    "by": null,
@@ -4788,17 +4518,14 @@
    "value": ""
   },
   "R13/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
-   "refs": [
-    "R13"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25803",
+   "status": "verified",
    "subject": "R13",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R13/rating": {
    "by": null,
@@ -4814,17 +4541,14 @@
    "value": ""
   },
   "R14/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R14"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R14",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R14/rating": {
    "by": null,
@@ -4840,17 +4564,14 @@
    "value": ""
   },
   "R15/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C21190",
-   "refs": [
-    "R15"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C21190",
+   "status": "verified",
    "subject": "R15",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R15/rating": {
    "by": null,
@@ -4866,17 +4587,14 @@
    "value": ""
   },
   "R16/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C31850",
-   "refs": [
-    "R16"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C31850",
+   "status": "verified",
    "subject": "R16",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R16/rating": {
    "by": null,
@@ -4892,17 +4610,14 @@
    "value": ""
   },
   "R17/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
-   "refs": [
-    "R17"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25803",
+   "status": "verified",
    "subject": "R17",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R17/rating": {
    "by": null,
@@ -4918,17 +4633,14 @@
    "value": ""
   },
   "R18/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R18"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R18",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R18/rating": {
    "by": null,
@@ -4944,17 +4656,14 @@
    "value": ""
   },
   "R2/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C21189",
-   "refs": [
-    "R2"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C21189",
+   "status": "verified",
    "subject": "R2",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R2/rating": {
    "by": null,
@@ -4970,17 +4679,14 @@
    "value": ""
   },
   "R20/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R20"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R20",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R20/rating": {
    "by": null,
@@ -4996,17 +4702,14 @@
    "value": ""
   },
   "R21/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R21"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R21",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R21/rating": {
    "by": null,
@@ -5022,17 +4725,14 @@
    "value": ""
   },
   "R22/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C4190",
-   "refs": [
-    "R22"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C4190",
+   "status": "verified",
    "subject": "R22",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R22/rating": {
    "by": null,
@@ -5048,17 +4748,14 @@
    "value": ""
   },
   "R23/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C4190",
-   "refs": [
-    "R23"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C4190",
+   "status": "verified",
    "subject": "R23",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R23/rating": {
    "by": null,
@@ -5074,17 +4771,14 @@
    "value": ""
   },
   "R24/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R24"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R24",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R24/rating": {
    "by": null,
@@ -5100,17 +4794,14 @@
    "value": ""
   },
   "R25/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R25"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R25",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R25/rating": {
    "by": null,
@@ -5126,17 +4817,14 @@
    "value": ""
   },
   "R3/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C21189",
-   "refs": [
-    "R3"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C21189",
+   "status": "verified",
    "subject": "R3",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R3/rating": {
    "by": null,
@@ -5152,17 +4840,14 @@
    "value": ""
   },
   "R30/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C22809",
-   "refs": [
-    "R30"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C22809",
+   "status": "verified",
    "subject": "R30",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R30/rating": {
    "by": null,
@@ -5178,17 +4863,14 @@
    "value": ""
   },
   "R31/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R31"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R31",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R31/rating": {
    "by": null,
@@ -5204,17 +4886,14 @@
    "value": ""
   },
   "R33/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C22809",
-   "refs": [
-    "R33"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C22809",
+   "status": "verified",
    "subject": "R33",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R33/rating": {
    "by": null,
@@ -5230,17 +4909,14 @@
    "value": ""
   },
   "R34/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R34"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R34",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R34/rating": {
    "by": null,
@@ -5256,17 +4932,14 @@
    "value": ""
   },
   "R36/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C22775",
-   "refs": [
-    "R36"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C22775",
+   "status": "verified",
    "subject": "R36",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R36/rating": {
    "by": null,
@@ -5282,17 +4955,14 @@
    "value": ""
   },
   "R37/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25819",
-   "refs": [
-    "R37"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25819",
+   "status": "verified",
    "subject": "R37",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R37/rating": {
    "by": null,
@@ -5308,17 +4978,14 @@
    "value": ""
   },
   "R38/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C22775",
-   "refs": [
-    "R38"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C22775",
+   "status": "verified",
    "subject": "R38",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R38/rating": {
    "by": null,
@@ -5334,17 +5001,14 @@
    "value": ""
   },
   "R39/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25819",
-   "refs": [
-    "R39"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25819",
+   "status": "verified",
    "subject": "R39",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R39/rating": {
    "by": null,
@@ -5360,17 +5024,14 @@
    "value": ""
   },
   "R4/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R4"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R4",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R4/rating": {
    "by": null,
@@ -5386,17 +5047,14 @@
    "value": ""
   },
   "R5/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
-   "refs": [
-    "R5"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25803",
+   "status": "verified",
    "subject": "R5",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R5/rating": {
    "by": null,
@@ -5412,17 +5070,14 @@
    "value": ""
   },
   "R50/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C4184",
-   "refs": [
-    "R50"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C4184",
+   "status": "verified",
    "subject": "R50",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R50/rating": {
    "by": null,
@@ -5438,17 +5093,14 @@
    "value": ""
   },
   "R51/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
-   "refs": [
-    "R51"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25803",
+   "status": "verified",
    "subject": "R51",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R51/rating": {
    "by": null,
@@ -5464,17 +5116,14 @@
    "value": ""
   },
   "R52/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
-   "refs": [
-    "R52"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25803",
+   "status": "verified",
    "subject": "R52",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R52/rating": {
    "by": null,
@@ -5490,17 +5139,14 @@
    "value": ""
   },
   "R53/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R53"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R53",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R53/rating": {
    "by": null,
@@ -5516,17 +5162,14 @@
    "value": ""
   },
   "R54/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R54"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R54",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R54/rating": {
    "by": null,
@@ -5542,17 +5185,14 @@
    "value": ""
   },
   "R6/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C22961",
-   "refs": [
-    "R6"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C22961",
+   "status": "verified",
    "subject": "R6",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R6/rating": {
    "by": null,
@@ -5568,17 +5208,14 @@
    "value": ""
   },
   "R60/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R60"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R60",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R60/rating": {
    "by": null,
@@ -5594,17 +5231,14 @@
    "value": ""
   },
   "R61/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R61"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R61",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R61/rating": {
    "by": null,
@@ -5620,17 +5254,14 @@
    "value": ""
   },
   "R62/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R62"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R62",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R62/rating": {
    "by": null,
@@ -5646,17 +5277,14 @@
    "value": ""
   },
   "R63/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R63"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R63",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R63/rating": {
    "by": null,
@@ -5672,17 +5300,14 @@
    "value": ""
   },
   "R64/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C21190",
-   "refs": [
-    "R64"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C21190",
+   "status": "verified",
    "subject": "R64",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R64/rating": {
    "by": null,
@@ -5698,17 +5323,14 @@
    "value": ""
   },
   "R65/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C22775",
-   "refs": [
-    "R65"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C22775",
+   "status": "verified",
    "subject": "R65",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R65/rating": {
    "by": null,
@@ -5724,17 +5346,14 @@
    "value": ""
   },
   "R66/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
-   "refs": [
-    "R66"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25803",
+   "status": "verified",
    "subject": "R66",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R66/rating": {
    "by": null,
@@ -5750,17 +5369,14 @@
    "value": ""
   },
   "R67/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R67"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R67",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R67/rating": {
    "by": null,
@@ -5776,17 +5392,14 @@
    "value": ""
   },
   "R68/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
-   "refs": [
-    "R68"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25803",
+   "status": "verified",
    "subject": "R68",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R68/rating": {
    "by": null,
@@ -5802,17 +5415,14 @@
    "value": ""
   },
   "R69/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R69"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R69",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R69/rating": {
    "by": null,
@@ -5828,17 +5438,14 @@
    "value": ""
   },
   "R7/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
-   "refs": [
-    "R7"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25804",
+   "status": "verified",
    "subject": "R7",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R7/rating": {
    "by": null,
@@ -5854,17 +5461,14 @@
    "value": ""
   },
   "R8/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
-   "refs": [
-    "R8"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25803",
+   "status": "verified",
    "subject": "R8",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R8/rating": {
    "by": null,
@@ -5880,17 +5484,14 @@
    "value": ""
   },
   "R9/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
-   "refs": [
-    "R9"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C25803",
+   "status": "verified",
    "subject": "R9",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "R9/rating": {
    "by": null,
@@ -5906,17 +5507,14 @@
    "value": ""
   },
   "SW1/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C318884",
-   "refs": [
-    "SW1"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C318884",
+   "status": "verified",
    "subject": "SW1",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "SW1/pinout": {
    "by": null,
@@ -5945,17 +5543,14 @@
    "value": ""
   },
   "SW2/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C318884",
-   "refs": [
-    "SW2"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C318884",
+   "status": "verified",
    "subject": "SW2",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "SW2/pinout": {
    "by": null,
@@ -5984,17 +5579,14 @@
    "value": ""
   },
   "SW3/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C318884",
-   "refs": [
-    "SW3"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C318884",
+   "status": "verified",
    "subject": "SW3",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "SW3/pinout": {
    "by": null,
@@ -6023,17 +5615,14 @@
    "value": ""
   },
   "U1/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C42459160",
-   "refs": [
-    "U1"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C42459160",
+   "status": "verified",
    "subject": "U1",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "U1/pinout": {
    "by": null,
@@ -6062,17 +5651,14 @@
    "value": ""
   },
   "U2/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C311983",
-   "refs": [
-    "U2"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C311983",
+   "status": "verified",
    "subject": "U2",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "U2/pinout": {
    "by": null,
@@ -6101,17 +5687,14 @@
    "value": ""
   },
   "U3/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C479074",
-   "refs": [
-    "U3"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C479074",
+   "status": "verified",
    "subject": "U3",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "U3/pinout": {
    "by": null,
@@ -6140,17 +5723,14 @@
    "value": ""
   },
   "U4/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C80670",
-   "refs": [
-    "U4"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C80670",
+   "status": "verified",
    "subject": "U4",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "U4/pinout": {
    "by": null,
@@ -6179,17 +5759,14 @@
    "value": ""
   },
   "U5/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C2973667",
-   "refs": [
-    "U5"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C2973667",
+   "status": "verified",
    "subject": "U5",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "U5/pinout": {
    "by": null,
@@ -6218,17 +5795,14 @@
    "value": ""
   },
   "U6/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C81010",
-   "refs": [
-    "U6"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C81010",
+   "status": "verified",
    "subject": "U6",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "U6/pinout": {
    "by": null,
@@ -6257,17 +5831,14 @@
    "value": ""
   },
   "U7/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C365736",
-   "refs": [
-    "U7"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C365736",
+   "status": "verified",
    "subject": "U7",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "U7/pinout": {
    "by": null,
@@ -6296,17 +5867,14 @@
    "value": ""
   },
   "U8/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C46497",
-   "refs": [
-    "U8"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C46497",
+   "status": "verified",
    "subject": "U8",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "U8/pinout": {
    "by": null,
@@ -6335,17 +5903,14 @@
    "value": ""
   },
   "U9/footprint": {
-   "by": null,
-   "checked_at": null,
+   "by": "cpl_verify",
+   "checked_at": "2026-10-30T09:43:23+00:00",
    "kind": "footprint",
    "lcsc": "C42421366",
-   "refs": [
-    "U9"
-   ],
-   "source": "",
-   "status": "unknown",
+   "source": "EasyEDA/LCSC footprint model of C42421366",
+   "status": "verified",
    "subject": "U9",
-   "value": ""
+   "value": "board pads land on the LCSC model's by pad number"
   },
   "U9/pinout": {
    "by": null,
@@ -6375,5 +5940,5 @@
   }
  },
  "schema": 1,
- "updated": "2026-10-30T08:12:16+00:00"
+ "updated": "2026-10-30T09:44:32+00:00"
 }

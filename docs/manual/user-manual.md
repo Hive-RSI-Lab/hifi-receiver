@@ -51,6 +51,10 @@ The hifi-receiver is a streaming amplifier: speakers in, music out.
   Plus and Ultra heatsink gets hot after long, loud playback, so don't
   touch it then.
   - **Don't cover the vents** with cloth, books or another device.
+  - **Plus and Ultra breathe through the box:** air comes in through the
+    slots low on the sides and front and underneath, and leaves through
+    the grille in the lid. Stand it on its feet on a hard surface, not on
+    a rug or cloth, and keep the lid grille open.
 - **Loudness:** at full power the Plus and Ultra can reach over 105 dB at
   1 m. That level can damage hearing and speakers. Start low.
 - **Use indoors and dry, 0–35 °C.**

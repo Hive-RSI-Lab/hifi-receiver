@@ -107,6 +107,18 @@
   "status": "verified",
   "how": "core J3 and ultra-front J1 are the same part, FPC-05F-20PH20 (C2856803), both at rotation 0 with the mouth on local +y; core.net J3 and ultra-front.net J1 carry the same net on every pin 1-20 (names differ only: FFC_SCK/LCD_SCK, EXP_INT/FRONT_INT_N, IR_IN/IR_OUT, LCD_BL/LCD_BL_PWM). In the Ultra box (enclosure/core_box.py FB_X/FB_BACK/FB_ZB) J1 sits straight in front of J3 at core x 20, mouth down, so the cable runs in one plane and pin N meets pin N. Following the contact face through the cable's three bends (forward off J3, down, forward under the front board, up into J1) turns it from facing J3's board to facing away from J1's board, so the far end needs its contacts on the other side: a type-B (opposite-side) 20-pin 0.5 mm cable, 30-50 mm, as enclosure/README.md says. This holds whether the socket is top- or bottom-contact (the unreadable LCSC PDF), since both ends are the same part."
  },
+ "power:10": {
+  "status": "verified",
+  "how": "Lite D1 is now SMBJ22A (BORN, LCSC C151920; 2026-10-30): BORN SMBJ series datasheet (datasheet.lcsc.com, productCode=C151920) electrical table row SMBJ22A: VRWM 22 V, VBR 24.4-26.9 V @ 1 mA, Vc 35.5 V @ 16.9 A, IR 1 uA @ VRWM. PD 20 V +5 % = 21 V sits 1 V under VRWM. Core D1 SMBJ30A unchanged (MDD table, VBR 33.3-36.8 V, Vc 48.4 V)."
+ },
+ "thermal:30": {
+  "status": "resolved",
+  "how": "Fixed in the design 2026-10-30: D1 SMBJ22A (VRWM 22 V), so the 21 V worst-case rail is below standoff and IR <= 1 uA at 25 C (BORN table); the SMBJ20A's above-VRWM leakage question no longer arises."
+ },
+ "parts:45": {
+  "status": "verified",
+  "how": "Lite D1 now SMBJ22A C151920: its EasyEDA model (parts/easyeda/C151920.json) has the same SMB_L4.6-W3.6-LS5.3-RD pads as C364296 with pin 1 = K, so the footprint, the cathode-bar silk and pad 1 on VBUS are unchanged. Core D1 SMBJ30A, D2/D4 BZT52C33/C15 as before (MDD SMBJ30A p1, BORN BZT52Cxx p1)."
+ },
  "dfm:7": {
   "status": "verified",
   "how": "GCT USB4085 drawing rev B (28/02/23) sheet 2 'Recommended PCB Layout, as viewed from component side', fetched from gct.co 2026-10-30: pins at 0.85 pitch, A1..A12 x -2.975..+2.975 and B12..B1 the same; B row 1.35 behind A; front shell slots (2.40/2.10 x 0.90/0.60) 0.98 behind A and 0.37 ahead of B, 8.65 apart; rear slots (1.70/1.40 x 0.90/0.60) 3.38 behind the front slots; rear slot centres 1.74 inside the PCB edge. The board's J1 (USC-C-SMD_USB4085-GF-A) matches to 0.005 mm: A -2.18, B -0.83, front slots -1.20, rear +2.18, x +-4.33, rear slots drilled at x 36.327 = edge 34.587 + 1.74. A1 on the left with the mouth toward the viewer, as GCT. Pin nets match GCT's signal table (A1/A12/B1/B12/shell GND, A4/A9/B4/B9 VBUS_IN, A5 CC1, B5 CC2, A6/B6 D+, A7/B7 D-, A8/B8 open). Pads are 0.70 on 0.40 drills against GCT's 0.65 (DFM-6's choice for annulus; 0.15 mm between pads); order remark asks for hand/selective solder and bridge inspection."
