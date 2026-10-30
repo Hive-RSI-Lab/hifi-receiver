@@ -33,10 +33,11 @@ typedef struct {
 	float tau_s;       /* power averaging */
 	float attack_s, release_s;
 	float min_gain;    /* never attenuate more than this (linear) */
-	/* thermal limit: speaker power per stereo amp, both channels, averaged
+	/* thermal limit: speaker power of one stereo amp, both channels, averaged
 	 * over thermal_tau_s; 0 = none. For an amp the board cools without a
 	 * heatsink, whose continuous power is below what the supply allows */
 	float thermal_out_w;
+	float thermal_out2_w; /* the same with two amps playing (total) */
 	float thermal_tau_s;
 } hifi_gov_cfg_t;
 
