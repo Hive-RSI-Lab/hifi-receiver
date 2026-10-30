@@ -6,6 +6,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "esp_err.h"
@@ -24,6 +25,10 @@ void hifi_main_action(int action); /* a hifi_ir_action_t, from a button */
 void hifi_main_knob(int detents);
 bool hifi_main_amp_latched(void);
 void hifi_main_gov_amps(int n);    /* stereo amps playing: 2 with Ultra's zone B */
+/* The address the box is reached at: the active network interface's (Wi-Fi
+ * station or Ethernet; never the setup access point's). False, and ip "",
+ * with none up. ip may be NULL. */
+bool hifi_net_ip(char *ip, size_t n);
 
 /* hifi_net.c */
 int hifi_net_wifi_scan(hifi_wifi_ap_t *aps, int max);
