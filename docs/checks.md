@@ -119,14 +119,20 @@ evaluator file, like `hwcheck.py`.
    - **the tier's boards carry every function `product.json` lists for
      it.** These are what `product.md` promises for the tier: the USB-C PD
      input, the amplifier(s), the DAC(s), the line-in path, Wi-Fi/BT,
-     Ethernet on Plus and Ultra, the RCA jacks, the speaker contacts, the IR
+     Ethernet on Plus and Ultra, the RCA jacks, the speaker outputs, the IR
      receiver, the knob and buttons, the screen connector on Ultra, and so
      on. Each function is a regular expression over the BOM line's comment
-     and its part's MPN, value and LCSC description (or its `role`, where
-     `in` says so). The matching lines' parts are counted (or their pads,
+     and its part's MPN, value and LCSC description (or only the fields
+     `in` names). The matching lines' parts are counted (or their pads,
      for speaker contacts) against the number needed. A regular expression
      names every part that does the job, so a cheaper part that still does
      the job still counts.
+   - **the speaker outputs are board-mounted 4 mm binding posts or banana
+     jacks**, as the brief asks ("banana plugs for L and R"): 4 contacts on
+     Lite and Plus, 8 on Ultra's two zones. Only the part's MPN and LCSC
+     description are read (`in`), so a screw terminal (KF301, DB128) doesn't
+     count whatever its BOM comment says, nor do posts in the enclosure
+     wired to one, which would leave a hand step for the person.
 
    A tier that falls short of any of these costs a flat **1000**
    (`tier_not_counted`), and the score says why. 1000 is far above any
