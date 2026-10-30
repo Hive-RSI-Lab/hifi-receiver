@@ -40,7 +40,9 @@ The fab package is in `fab/`:
 Board facts:
 
 - **Size:** 4 layers, 120 x 100 mm, 1.6 mm.
-- **Stackup:** JLC04161H-1080B, 1 oz outer.
+- **Stackup:** JLC04161H-1080B, 1 oz outer and 1 oz inner. Order it with
+  inner copper 1 oz, not JLC's 0.5 oz default: the In2 VBUS/PVDD planes carry
+  the full 5 A on their own (`power_trunk.py`).
 - **Vias:** 0.7/0.3 mm, plus a few 0.45/0.2 mm GND taps.
 - **Mounting:** 4 x M3 plated holes.
 - **Holes:** JLC's 0.5 mm hole-to-hole spacing is held everywhere.
@@ -200,14 +202,21 @@ routed `kicad/core.kicad_pcb` is the source of truth for copper.
 - **`bst_links.py`:** routes the bootstrap caps to their amp pins.
 - **`fix_j1.py`:** moves USB-C J1 in from the edge and shortens its pads
   next to the pegs.
+- **`power_trunk.py`:** after routing, lets the In2 VBUS_IN, VBUS and PVDD
+  planes carry the real 5 A on their own. It clears the GND stitch grid out
+  of them, reshapes their zones, moves three vias that walled them in, and
+  gives each PVDD finger five plane vias and +5V's trunk layer changes two.
+  Its docstring has the run order.
 - **`silk_clean.py`:** hides reference texts and deletes footprint silk that
   ran over pads or the edge. The assembly drawing keeps every reference.
 
-**Current ratings:** the width rules for the plane-fed rails (VBUS_IN, VBUS,
-PVDD, +3V3) and the amp OUT/SPK nets are sized for the tracks that remain,
-which are taps and bootstrap links. The main currents ride on the In2 plane
-regions and the solid F.Cu/B.Cu pours, which the width rules don't see
-(`constraints.json` `power_notes`).
+**Current ratings:** `constraints.json` budgets the real currents: VBUS_IN,
+VBUS and PVDD at 5 A (the 28 V, 5 A PD contract), +5V at 0.65 A. hwde's
+check_current passes them with each layer's pour judged on its own. The width
+rules for the plane-fed rails (VBUS_IN, VBUS, PVDD, +3V3) and the amp OUT/SPK
+nets are sized for the tracks that remain, which are taps and bootstrap
+links. The main currents ride on the In2 planes and the solid F.Cu/B.Cu
+pours, which the width rules don't see (`constraints.json` `power_notes`).
 
 ## Testing a built board
 
