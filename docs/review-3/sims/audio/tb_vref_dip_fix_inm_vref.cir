@@ -1,0 +1,43 @@
+* tb_vref_dip_fix_inm_vref: 10 mV 1 ms dip on +5V -> left speaker
+Vrail p5 0 PWL(0 5.1 50m 5.1 50.01m 5.09 51m 5.09 51.01m 5.1 1 5.1)
+* FB1 120R@100MHz ferrite ~ 0.05 ohm DC, C21 10 uF
+RFB p5 a5 0.05
+C21 a5 0 10u
+R90 a5 vref 470
+R91 vref 0 470
+C64 vref 0 10u
+* left channel: DAC legs (P = DACL, N = DACLB), 806R internal
+VDLP dlp 0 DC 1.65 AC 0
+VDLN dln 0 DC 1.65 AC 0
+RlP dlp dlp2 806
+RlN dln dln2 806
+R72 dln2 opl_p 2k
+R73 opl_p vref 1.3k
+C142 opl_p vref 1n
+R74 dlp2 opl_n 2k
+R75 opl_n main_l 1.3k
+C143 opl_n main_l 1n
+Eop_l main_l 0 opl_p opl_n 1e6
+* right channel, driven for crosstalk
+VDRP drp 0 DC 1.65  AC 0.5
+VDRN drn 0 DC 1.65 AC 0.5 180
+RrP drp drp2 806
+RrN drn drn2 806
+R80 drn2 opr_p 2k
+R81 opr_p vref 1.3k
+C150 opr_p vref 1n
+R82 drp2 opr_n 2k
+R83 opr_n main_r 1.3k
+C151 opr_n main_r 1n
+Eop_r main_r 0 opr_p opr_n 1e6
+* TPA3220 zone A, 24 dB, Rin 24k per pin, single-ended: IN_M 10 uF to GND
+Cin1 main_l inp 10u
+Rinp inp 0 24k
+Cin2 inm vref 10u
+Rinm inm 0 24k
+Espk spk 0 inp inm 15.85
+.tran 20u 0.4 0 20u
+.measure tran spk_pk MAX v(spk) FROM=0.045 TO=0.4
+.measure tran spk_min MIN v(spk) FROM=0.045 TO=0.4
+.measure tran spk_pp PARAM='(spk_pk-spk_min)*1000'
+.end

@@ -1,0 +1,673 @@
+{
+ "script": "cpl_verify",
+ "board": "ultra-front.kicad_pcb",
+ "ledger": "/work/boards/ultra-front/ledger.json",
+ "status": "violations",
+ "n_checked": 36,
+ "n_failed": 11,
+ "failed": [
+  "C6",
+  "C7",
+  "D1",
+  "J2",
+  "Q1",
+  "R13",
+  "R15",
+  "R16",
+  "R17",
+  "R18",
+  "U1"
+ ],
+ "offset_warnings": [],
+ "fetch_failed": [
+  "C6",
+  "C7",
+  "D1",
+  "J2",
+  "Q1",
+  "R13",
+  "R15",
+  "R16",
+  "R17",
+  "R18",
+  "U1"
+ ],
+ "rate_limited": "HTTP 403 from EasyEDA (rate limited)",
+ "cache_dir": "/tmp/ds3/layout/easyeda",
+ "parts": [
+  {
+   "ref": "C1",
+   "footprint": "aiee:C0603",
+   "lcsc": "C14663",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C2",
+   "footprint": "aiee:C0805",
+   "lcsc": "C15850",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C3",
+   "footprint": "aiee:C0805",
+   "lcsc": "C15850",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C4",
+   "footprint": "aiee:C0603",
+   "lcsc": "C14663",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C5",
+   "footprint": "aiee:C0603",
+   "lcsc": "C19666",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C6",
+   "footprint": "aiee:C0603",
+   "lcsc": null,
+   "model_package": null,
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "verdict": "fetch_failed",
+   "why": "could not fetch the LCSC model for C57112 (HTTP 403 from EasyEDA (rate limited)); cache dir /tmp/ds3/layout/easyeda - this is not a pin-1 result",
+   "fetch_error": "HTTP 403 from EasyEDA (rate limited)"
+  },
+  {
+   "ref": "C7",
+   "footprint": "aiee:C0603",
+   "lcsc": null,
+   "model_package": null,
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "verdict": "fetch_failed",
+   "why": "could not fetch the LCSC model for C57112 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /tmp/ds3/layout/easyeda - this is not a pin-1 result",
+   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+  },
+  {
+   "ref": "D1",
+   "footprint": "aiee:LED-SMD_4P-L1.6-W1.5-TR",
+   "lcsc": null,
+   "model_package": null,
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "verdict": "fetch_failed",
+   "why": "could not fetch the LCSC model for C273610 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /tmp/ds3/layout/easyeda - this is not a pin-1 result",
+   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+  },
+  {
+   "ref": "J1",
+   "footprint": "aiee:FPC-SMD_20P-P0.50_XUNPU_FPC-05F-20PH20",
+   "lcsc": "C2856803",
+   "model_package": "FPC-SMD_20P-P0.50_XUNPU_FPC-05F-20PH20",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.25,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.002
+  },
+  {
+   "ref": "J2",
+   "footprint": "aiee:FPC-SMD_12P-P0.50_XUNPU_FPC-05FB-12PH20",
+   "lcsc": null,
+   "model_package": null,
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "verdict": "fetch_failed",
+   "why": "could not fetch the LCSC model for C2856829 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /tmp/ds3/layout/easyeda - this is not a pin-1 result",
+   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+  },
+  {
+   "ref": "Q1",
+   "footprint": "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+   "lcsc": null,
+   "model_package": null,
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "verdict": "fetch_failed",
+   "why": "could not fetch the LCSC model for C20917 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /tmp/ds3/layout/easyeda - this is not a pin-1 result",
+   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+  },
+  {
+   "ref": "R1",
+   "footprint": "aiee:R0603",
+   "lcsc": "C25804",
+   "model_package": "R0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R2",
+   "footprint": "aiee:R0603",
+   "lcsc": "C25804",
+   "model_package": "R0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R3",
+   "footprint": "aiee:R0603",
+   "lcsc": "C25804",
+   "model_package": "R0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R4",
+   "footprint": "aiee:R0603",
+   "lcsc": "C25804",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R5",
+   "footprint": "aiee:R0603",
+   "lcsc": "C25804",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R6",
+   "footprint": "aiee:R0603",
+   "lcsc": "C25804",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R7",
+   "footprint": "aiee:R0603",
+   "lcsc": "C25804",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R8",
+   "footprint": "aiee:R0603",
+   "lcsc": "C25804",
+   "model_package": "R0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R9",
+   "footprint": "aiee:R0603",
+   "lcsc": "C25804",
+   "model_package": "R0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R10",
+   "footprint": "aiee:R0603",
+   "lcsc": "C22775",
+   "model_package": "R0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R11",
+   "footprint": "aiee:R0603",
+   "lcsc": "C25803",
+   "model_package": "R0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R12",
+   "footprint": "aiee:R0603",
+   "lcsc": "C22775",
+   "model_package": "R0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R13",
+   "footprint": "aiee:R0603",
+   "lcsc": null,
+   "model_package": null,
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "verdict": "fetch_failed",
+   "why": "could not fetch the LCSC model for C22787 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /tmp/ds3/layout/easyeda - this is not a pin-1 result",
+   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+  },
+  {
+   "ref": "R14",
+   "footprint": "aiee:R0603",
+   "lcsc": "C21190",
+   "model_package": "R0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R15",
+   "footprint": "aiee:R0603",
+   "lcsc": null,
+   "model_package": null,
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "verdict": "fetch_failed",
+   "why": "could not fetch the LCSC model for C23228 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /tmp/ds3/layout/easyeda - this is not a pin-1 result",
+   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+  },
+  {
+   "ref": "R16",
+   "footprint": "aiee:R0603",
+   "lcsc": null,
+   "model_package": null,
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "verdict": "fetch_failed",
+   "why": "could not fetch the LCSC model for C23228 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /tmp/ds3/layout/easyeda - this is not a pin-1 result",
+   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+  },
+  {
+   "ref": "R17",
+   "footprint": "aiee:R0603",
+   "lcsc": null,
+   "model_package": null,
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "verdict": "fetch_failed",
+   "why": "could not fetch the LCSC model for C22787 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /tmp/ds3/layout/easyeda - this is not a pin-1 result",
+   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+  },
+  {
+   "ref": "R18",
+   "footprint": "aiee:R0603",
+   "lcsc": null,
+   "model_package": null,
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "verdict": "fetch_failed",
+   "why": "could not fetch the LCSC model for C22787 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /tmp/ds3/layout/easyeda - this is not a pin-1 result",
+   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+  },
+  {
+   "ref": "R19",
+   "footprint": "aiee:R0603",
+   "lcsc": "C25804",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "SW1",
+   "footprint": "aiee:SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
+   "lcsc": "C318884",
+   "model_package": "SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": true,
+   "tol_mm": 1.85,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "SW2",
+   "footprint": "aiee:SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
+   "lcsc": "C318884",
+   "model_package": "SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": true,
+   "tol_mm": 1.85,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "SW3",
+   "footprint": "aiee:SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
+   "lcsc": "C318884",
+   "model_package": "SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": true,
+   "tol_mm": 1.85,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "SW4",
+   "footprint": "aiee:SW-TH_EC11E1820402",
+   "lcsc": "C361165",
+   "model_package": "SW-TH_EC11E1820402",
+   "board_rot": 180.0,
+   "cpl_rot": 180.0,
+   "polar": true,
+   "tol_mm": 1.27,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U1",
+   "footprint": "aiee:TSSOP-24_L7.8-W4.4-P0.65-LS6.4-BL",
+   "lcsc": null,
+   "model_package": null,
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "verdict": "fetch_failed",
+   "why": "could not fetch the LCSC model for C22396388 (not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run); cache dir /tmp/ds3/layout/easyeda - this is not a pin-1 result",
+   "fetch_error": "not fetched: HTTP 403 from EasyEDA (rate limited) earlier in this run"
+  },
+  {
+   "ref": "U2",
+   "footprint": "aiee:SENSOR-SMD_IRM-H638T-TR2-TL",
+   "lcsc": "C91447",
+   "model_package": "SENSOR-SMD_IRM-H638T-TR2-TL",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 1.27,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  }
+ ]
+}

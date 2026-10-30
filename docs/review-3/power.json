@@ -1,0 +1,19 @@
+{
+ "domain": "POWER",
+ "status": "in progress",
+ "findings": [
+  {"id": "R3-POWER-1", "board": "lite-main", "severity": "note", "repeat_of": "new",
+   "refs": ["U2"], "nets": ["unconnected-(U2-EN-Pad5)", "VBUS"],
+   "finding": "TPS54302 EN (pad 5) is left floating. This is correct: the internal pull-up (0.7 uA) enables the part and the internal VIN UVLO (3.8-4.4 V rising, 3.3-3.9 V falling) lets it start and run in 100 % duty dropout on a 5 V-only port (+5V about 4.6-4.7 V), so the ESP32 still runs. A UVLO divider like the EVM's (510k/105k, 6.74 V start) would leave a 5 V port fully dark; tying EN to VBUS would exceed EN abs max 7 V.",
+   "evidence": "TI SLVSDG6C rev C table 4-1 ('Float the EN pin to enable'), sec 5.1 (EN abs max 7 V), 5.5 (VIN UVLO, EN thresholds 1.23-1.28/1.1-1.16 V, Ip 0.7 uA), 6.3.5, 6.3.10 (100 % duty); netlist: pad 5 alone on its net; docs/review-3/sims/power/lite_u2_en.py (PASS: no copper on pad 5; FB and BOOT pads 0.95 mm)",
+   "reference_design": "TPS54302EVM-716 (SLVUAP9B sec 1.3.3, BOM): R4 510k / R5 105k UVLO divider, JP1 open = enabled; datasheet pin table allows floating",
+   "fix": "None needed. Optional contingency: DNP 0603 EN-GND footprint for a 1-10 nF filter cap (start delay 1.8-18 ms).",
+   "margin": "5 V port: 4.75 V min source minus about 0.05 V cable drop, against 4.4 V max UVLO rising: 0.3 V. 21 V max PD against 28 V recommended / 30 V abs: 7 V."}
+ ],
+ "round1_fixes_checked": [],
+ "field_issues": [],
+ "tests_built": [
+  {"path": "docs/review-3/sims/power/lite_u2_en.py", "checks": "Lite U2 EN pad carries no net and no copper; lists the neighbouring pads and tracks", "result": "pass"}
+ ],
+ "known_unknowns": []
+}

@@ -1,0 +1,27 @@
+* tb_vref_dip_dj_fix_c100u: DJ-direct, 10 mV 1 ms dip on +5V -> speaker
+Vrail p5 0 PWL(0 5.1 50m 5.1 50.01m 5.09 51m 5.09 51.01m 5.1 1 5.1)
+RFB p5 a5 0.05
+C21 a5 0 10u
+R90 a5 vref 470
+R91 vref 0 470
+C64 vref 0 100u
+* the DAC legs still load VREF (2 x 4.1k to 1.65 V)
+VD d 0 1.65
+Rleg1 vref d 4.106k
+Rleg2 vref d 4.106k
+Vflx flx 0 0
+Rsrc flx lin 100
+R100 lin ldiv 4.7k
+R101 ldiv 0 4.7k
+C100 ldiv lsw 4.7u
+R102 lsw vref 100k
+Cin1 lsw inp 10u
+Rinp inp 0 24k
+Cin2 inm 0 10u
+Rinm inm 0 24k
+Espk spk 0 inp inm 15.85
+.tran 20u 0.4 0 20u
+.measure tran spk_pk MAX v(spk) FROM=0.045 TO=0.4
+.measure tran spk_min MIN v(spk) FROM=0.045 TO=0.4
+.measure tran spk_pp PARAM='(spk_pk-spk_min)*1000'
+.end

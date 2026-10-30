@@ -1,0 +1,6082 @@
+{
+ "script": "cpl_verify",
+ "board": "core.kicad_pcb",
+ "ledger": "/work/boards/core/ledger.json",
+ "status": "violations",
+ "n_checked": 293,
+ "n_failed": 1,
+ "failed": [
+  "U19"
+ ],
+ "offset_warnings": [],
+ "fetch_failed": [
+  "U19"
+ ],
+ "rate_limited": "HTTP 403 from EasyEDA (rate limited)",
+ "cache_dir": "/tmp/ds3/layout/easyeda",
+ "parts": [
+  {
+   "ref": "C1",
+   "footprint": "aiee:C0805",
+   "lcsc": "C28323",
+   "model_package": "C0805",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C2",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C3",
+   "footprint": "aiee:C0402",
+   "lcsc": "C15195",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C4",
+   "footprint": "aiee:C0603",
+   "lcsc": "C14663",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C5",
+   "footprint": "aiee:CAP-TH_BD10.0-P5.00-D1.0-FD",
+   "lcsc": "C88733",
+   "model_package": "CAP-TH_BD10.0-P5.00-D1.0-FD",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": true,
+   "tol_mm": 2.54,
+   "basis": "pad number (no K/A or +/- names on both sides)",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C6",
+   "footprint": "aiee:CAP-TH_BD10.0-P5.00-D1.0-FD",
+   "lcsc": "C88733",
+   "model_package": "CAP-TH_BD10.0-P5.00-D1.0-FD",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": true,
+   "tol_mm": 2.54,
+   "basis": "pad number (no K/A or +/- names on both sides)",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C7",
+   "footprint": "aiee:C1206",
+   "lcsc": "C13585",
+   "model_package": "C1206",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.59,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C8",
+   "footprint": "aiee:C0805",
+   "lcsc": "C377773",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C9",
+   "footprint": "aiee:C0402",
+   "lcsc": "C307331",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C10",
+   "footprint": "aiee:C1206",
+   "lcsc": "C13585",
+   "model_package": "C1206",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 1.59,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C11",
+   "footprint": "aiee:C0603",
+   "lcsc": "C14663",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C12",
+   "footprint": "aiee:C0402",
+   "lcsc": "C15195",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C13",
+   "footprint": "aiee:C0805",
+   "lcsc": "C45783",
+   "model_package": "C0805",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C14",
+   "footprint": "aiee:C0805",
+   "lcsc": "C45783",
+   "model_package": "C0805",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C15",
+   "footprint": "aiee:C0603",
+   "lcsc": "C19702",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C16",
+   "footprint": "aiee:C0805",
+   "lcsc": "C45783",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C17",
+   "footprint": "aiee:C0805",
+   "lcsc": "C45783",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C18",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C19",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C21",
+   "footprint": "aiee:C0603",
+   "lcsc": "C19702",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C22",
+   "footprint": "aiee:C0603",
+   "lcsc": "C19702",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C30",
+   "footprint": "aiee:C0805",
+   "lcsc": "C45783",
+   "model_package": "C0805",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C31",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C32",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C33",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C34",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C37",
+   "footprint": "aiee:C0402",
+   "lcsc": "C15195",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C38",
+   "footprint": "aiee:C0402",
+   "lcsc": "C15195",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C39",
+   "footprint": "aiee:C0402",
+   "lcsc": "C15195",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C40",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C41",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C42",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C43",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C44",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C45",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C46",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C47",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C50",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C51",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C52",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C53",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C54",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C55",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C56",
+   "footprint": "aiee:C0603",
+   "lcsc": "C19666",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C57",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C58",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C59",
+   "footprint": "aiee:C0603",
+   "lcsc": "C19702",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C64",
+   "footprint": "aiee:C0603",
+   "lcsc": "C19702",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C65",
+   "footprint": "aiee:C0603",
+   "lcsc": "C23630",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C66",
+   "footprint": "aiee:C0603",
+   "lcsc": "C23630",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C67",
+   "footprint": "aiee:C0603",
+   "lcsc": "C23630",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C68",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C69",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C70",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C71",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1523",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C72",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1523",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C100",
+   "footprint": "aiee:C0805",
+   "lcsc": "C1779",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C101",
+   "footprint": "aiee:C0603",
+   "lcsc": "C19666",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C102",
+   "footprint": "aiee:C0603",
+   "lcsc": "C19666",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C110",
+   "footprint": "aiee:C0805",
+   "lcsc": "C1779",
+   "model_package": "C0805",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C111",
+   "footprint": "aiee:C0603",
+   "lcsc": "C19666",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C112",
+   "footprint": "aiee:C0603",
+   "lcsc": "C19666",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C120",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C121",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C122",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C123",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C124",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C125",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C126",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C130",
+   "footprint": "aiee:C0603",
+   "lcsc": "C1620",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C131",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C132",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C136",
+   "footprint": "aiee:C0603",
+   "lcsc": "C1620",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C137",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C142",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1523",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C143",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1523",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C150",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1523",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C151",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1523",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C201",
+   "footprint": "aiee:C0603",
+   "lcsc": "C19702",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C202",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C204",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C206",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C207",
+   "footprint": "aiee:C0805",
+   "lcsc": "C28323",
+   "model_package": "C0805",
+   "board_rot": 270.0,
+   "cpl_rot": 270.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    270.0,
+    90.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C208",
+   "footprint": "aiee:C0603",
+   "lcsc": "C14663",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C209",
+   "footprint": "aiee:C0805",
+   "lcsc": "C28323",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C210",
+   "footprint": "aiee:C0603",
+   "lcsc": "C14663",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C211",
+   "footprint": "aiee:C0603",
+   "lcsc": "C21117",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C218",
+   "footprint": "aiee:C0805",
+   "lcsc": "C15850",
+   "model_package": "C0805",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C219",
+   "footprint": "aiee:C0805",
+   "lcsc": "C15850",
+   "model_package": "C0805",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C220",
+   "footprint": "aiee:C0805",
+   "lcsc": "C15850",
+   "model_package": "C0805",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C221",
+   "footprint": "aiee:C0805",
+   "lcsc": "C15850",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C222",
+   "footprint": "aiee:C0603",
+   "lcsc": "C21117",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C223",
+   "footprint": "aiee:C0603",
+   "lcsc": "C21117",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C224",
+   "footprint": "aiee:C0603",
+   "lcsc": "C21117",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C225",
+   "footprint": "aiee:C0603",
+   "lcsc": "C21117",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C226",
+   "footprint": "aiee:C0805",
+   "lcsc": "C28323",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C228",
+   "footprint": "aiee:C0603",
+   "lcsc": "C1588",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C229",
+   "footprint": "aiee:C0805",
+   "lcsc": "C28323",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C231",
+   "footprint": "aiee:C0603",
+   "lcsc": "C1588",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C232",
+   "footprint": "aiee:C0805",
+   "lcsc": "C28323",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C234",
+   "footprint": "aiee:C0603",
+   "lcsc": "C1588",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C235",
+   "footprint": "aiee:C0805",
+   "lcsc": "C28323",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C237",
+   "footprint": "aiee:C0603",
+   "lcsc": "C1588",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C301",
+   "footprint": "aiee:C0603",
+   "lcsc": "C19702",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C302",
+   "footprint": "aiee:C0402",
+   "lcsc": "C1525",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C304",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C306",
+   "footprint": "aiee:C0402",
+   "lcsc": "C52923",
+   "model_package": "C0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C307",
+   "footprint": "aiee:C0805",
+   "lcsc": "C28323",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C308",
+   "footprint": "aiee:C0603",
+   "lcsc": "C14663",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C309",
+   "footprint": "aiee:C0805",
+   "lcsc": "C28323",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C310",
+   "footprint": "aiee:C0603",
+   "lcsc": "C14663",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C311",
+   "footprint": "aiee:CAP-TH_BD10.0-P5.00-D1.0-FD",
+   "lcsc": "C88733",
+   "model_package": "CAP-TH_BD10.0-P5.00-D1.0-FD",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": true,
+   "tol_mm": 2.54,
+   "basis": "pad number (no K/A or +/- names on both sides)",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C312",
+   "footprint": "aiee:C0603",
+   "lcsc": "C21117",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C316",
+   "footprint": "aiee:C0805",
+   "lcsc": "C15850",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C317",
+   "footprint": "aiee:C0805",
+   "lcsc": "C15850",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C318",
+   "footprint": "aiee:C0805",
+   "lcsc": "C15850",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C319",
+   "footprint": "aiee:C0805",
+   "lcsc": "C15850",
+   "model_package": "C0805",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C320",
+   "footprint": "aiee:C0603",
+   "lcsc": "C21117",
+   "model_package": "C0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C321",
+   "footprint": "aiee:C0603",
+   "lcsc": "C21117",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C322",
+   "footprint": "aiee:C0603",
+   "lcsc": "C21117",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C323",
+   "footprint": "aiee:C0603",
+   "lcsc": "C21117",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C324",
+   "footprint": "aiee:C0805",
+   "lcsc": "C28323",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C326",
+   "footprint": "aiee:C0603",
+   "lcsc": "C1588",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C327",
+   "footprint": "aiee:C0805",
+   "lcsc": "C28323",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C329",
+   "footprint": "aiee:C0603",
+   "lcsc": "C1588",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C330",
+   "footprint": "aiee:C0805",
+   "lcsc": "C28323",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C332",
+   "footprint": "aiee:C0603",
+   "lcsc": "C1588",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C333",
+   "footprint": "aiee:C0805",
+   "lcsc": "C28323",
+   "model_package": "C0805",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 1.0,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "C335",
+   "footprint": "aiee:C0603",
+   "lcsc": "C1588",
+   "model_package": "C0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "D1",
+   "footprint": "aiee:SMB_L4.6-W3.6-LS5.3-RD",
+   "lcsc": "C113998",
+   "model_package": "SMB_L4.6-W3.6-LS5.3-RD",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": true,
+   "tol_mm": 2.36,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    90.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "D2",
+   "footprint": "aiee:SOD-123_L2.7-W1.6-LS3.7-RD",
+   "lcsc": "C266574",
+   "model_package": "SOD-123_L2.7-W1.6-LS3.7-RD",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": true,
+   "tol_mm": 1.64,
+   "basis": "pad number (no K/A or +/- names on both sides)",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "D3",
+   "footprint": "aiee:LED-SMD_L1.6-W0.8-R-RD",
+   "lcsc": "C2286",
+   "model_package": "LED-SMD_L1.6-W0.8-R-RD",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": true,
+   "tol_mm": 0.75,
+   "basis": "pin role (K/A, +/-)",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "D4",
+   "footprint": "aiee:SOD-123_L2.7-W1.6-LS3.7-RD",
+   "lcsc": "C173427",
+   "model_package": "SOD-123_L2.7-W1.6-LS3.7-RD",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": true,
+   "tol_mm": 1.64,
+   "basis": "pin role (K/A, +/-)",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "D5",
+   "footprint": "aiee:SOD-882_L1.0-W0.6-RD",
+   "lcsc": "C99382",
+   "model_package": "SOD-882_L1.0-W0.6-RD",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": true,
+   "tol_mm": 0.35,
+   "basis": "pin role (K/A, +/-)",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    90.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "FB1",
+   "footprint": "aiee:L0603",
+   "lcsc": "C14709",
+   "model_package": "L0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "FB2",
+   "footprint": "aiee:L0603",
+   "lcsc": "C14709",
+   "model_package": "L0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "FB3",
+   "footprint": "aiee:L0603",
+   "lcsc": "C14709",
+   "model_package": "L0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.7,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "J1",
+   "footprint": "aiee:USC-C-SMD_USB4085-GF-A",
+   "lcsc": "C7095263",
+   "model_package": "USC-C-SMD_USB4085-GF-A",
+   "board_rot": 270.0,
+   "cpl_rot": 270.0,
+   "polar": false,
+   "tol_mm": 0.42,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "J2",
+   "footprint": "aiee:RJ45-TH_HR911105A",
+   "lcsc": "C12074",
+   "model_package": "RJ45-TH_HR911105A",
+   "board_rot": 270.0,
+   "cpl_rot": 270.0,
+   "polar": false,
+   "tol_mm": 1.27,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    270.0
+   ],
+   "offset_mm": 0.426
+  },
+  {
+   "ref": "J3",
+   "footprint": "aiee:FPC-SMD_20P-P0.50_XUNPU_FPC-05F-20PH20",
+   "lcsc": "C2856803",
+   "model_package": "FPC-SMD_20P-P0.50_XUNPU_FPC-05F-20PH20",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.25,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.002
+  },
+  {
+   "ref": "J4",
+   "footprint": "aiee:CONN-TH_XDJK-0271-1650",
+   "lcsc": "C7527522",
+   "model_package": "CONN-TH_XDJK-0271-1650",
+   "board_rot": 180.0,
+   "cpl_rot": 180.0,
+   "polar": false,
+   "tol_mm": 2.53,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "J5",
+   "footprint": "aiee:CONN-TH_XDJK-0271-1650",
+   "lcsc": "C7527522",
+   "model_package": "CONN-TH_XDJK-0271-1650",
+   "board_rot": 180.0,
+   "cpl_rot": 180.0,
+   "polar": false,
+   "tol_mm": 2.53,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "J6",
+   "footprint": "aiee:CONN-TH_P5.00_KF301-5.0-2P",
+   "lcsc": "C474881",
+   "model_package": "CONN-TH_P5.00_KF301-5.0-2P",
+   "board_rot": 180.0,
+   "cpl_rot": 180.0,
+   "polar": false,
+   "tol_mm": 2.5,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    180.0,
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "J7",
+   "footprint": "aiee:CONN-TH_P5.00_KF301-5.0-2P",
+   "lcsc": "C474881",
+   "model_package": "CONN-TH_P5.00_KF301-5.0-2P",
+   "board_rot": 180.0,
+   "cpl_rot": 180.0,
+   "polar": false,
+   "tol_mm": 2.5,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    180.0,
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "J10",
+   "footprint": "aiee:CONN-TH_P5.00_KF301-5.0-2P",
+   "lcsc": "C474881",
+   "model_package": "CONN-TH_P5.00_KF301-5.0-2P",
+   "board_rot": 180.0,
+   "cpl_rot": 180.0,
+   "polar": false,
+   "tol_mm": 2.5,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    180.0,
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "J11",
+   "footprint": "aiee:CONN-TH_P5.00_KF301-5.0-2P",
+   "lcsc": "C474881",
+   "model_package": "CONN-TH_P5.00_KF301-5.0-2P",
+   "board_rot": 180.0,
+   "cpl_rot": 180.0,
+   "polar": false,
+   "tol_mm": 2.5,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    180.0,
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "L1",
+   "footprint": "aiee:IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "lcsc": "C2962885",
+   "model_package": "IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 3.5,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "L2",
+   "footprint": "aiee:IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "lcsc": "C2962885",
+   "model_package": "IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 3.5,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "L3",
+   "footprint": "aiee:IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "lcsc": "C2962885",
+   "model_package": "IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 3.5,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "L4",
+   "footprint": "aiee:IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "lcsc": "C2962885",
+   "model_package": "IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 3.5,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "L5",
+   "footprint": "aiee:IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "lcsc": "C2962885",
+   "model_package": "IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 3.5,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "L6",
+   "footprint": "aiee:IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "lcsc": "C2962885",
+   "model_package": "IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 3.5,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "L7",
+   "footprint": "aiee:IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "lcsc": "C2962885",
+   "model_package": "IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 3.5,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "L8",
+   "footprint": "aiee:IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "lcsc": "C2962885",
+   "model_package": "IND-SMD_L8.5-W8.0_PCC-M0854M",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 3.5,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "L9",
+   "footprint": "aiee:IND-SMD_L4.0-W4.0",
+   "lcsc": "C57269",
+   "model_package": "IND-SMD_L4.0-W4.0",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 1.6,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "L10",
+   "footprint": "aiee:IND-SMD_L4.0-W4.0_LQH44PN2R2MP0L",
+   "lcsc": "C36409",
+   "model_package": "IND-SMD_L4.0-W4.0_LQH44PN2R2MP0L",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 1.8,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "Q1",
+   "footprint": "aiee:SOIC-8_L5.0-W4.0-P1.27-LS6.0-BL",
+   "lcsc": "C51499",
+   "model_package": "SOIC-8_L5.0-W4.0-P1.27-LS6.0-BL",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.63,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "Q2",
+   "footprint": "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+   "lcsc": "C8545",
+   "model_package": "SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.95,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "Q3",
+   "footprint": "aiee:SOT-363_L2.0-W1.3-P0.65-LS2.1-TL",
+   "lcsc": "C83572",
+   "model_package": "SOT-363_L2.0-W1.3-P0.65-LS2.1-TL",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.325,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "Q4",
+   "footprint": "aiee:SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR",
+   "lcsc": "C2146",
+   "model_package": "SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.95,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    90.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "Q5",
+   "footprint": "aiee:SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR",
+   "lcsc": "C2146",
+   "model_package": "SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.95,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "Q6",
+   "footprint": "aiee:SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR",
+   "lcsc": "C2146",
+   "model_package": "SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.95,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "Q7",
+   "footprint": "aiee:SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR",
+   "lcsc": "C2146",
+   "model_package": "SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.95,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R1",
+   "footprint": "aiee:R2512",
+   "lcsc": "C393070",
+   "model_package": "R2512",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 3.07,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R2",
+   "footprint": "aiee:R0402",
+   "lcsc": "C2998176",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R3",
+   "footprint": "aiee:R0402",
+   "lcsc": "C11702",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R4",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25790",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R5",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25790",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R6",
+   "footprint": "aiee:R0402",
+   "lcsc": "C11702",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R7",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R8",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R9",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R10",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R11",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R12",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R13",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25756",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R14",
+   "footprint": "aiee:R0402",
+   "lcsc": "C4109",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R15",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R16",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25768",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R17",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25077",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R18",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25077",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R19",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25077",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R20",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R30",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R31",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R32",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R33",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R34",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25879",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R35",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25879",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R36",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R40",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R41",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R42",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R43",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R44",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R45",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25879",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R50",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R51",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R52",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R53",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R54",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R55",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R56",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R57",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R58",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R60",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25105",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R61",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25752",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R62",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25867",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R63",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25120",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R64",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25120",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R65",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25120",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R66",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25120",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R67",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R70",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R71",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25105",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R72",
+   "footprint": "aiee:R0402",
+   "lcsc": "C4109",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R73",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25866",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R74",
+   "footprint": "aiee:R0402",
+   "lcsc": "C4109",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R75",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25866",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R80",
+   "footprint": "aiee:R0402",
+   "lcsc": "C4109",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R81",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25866",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R82",
+   "footprint": "aiee:R0402",
+   "lcsc": "C4109",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R83",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25866",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R90",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25117",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R91",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25117",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R92",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25117",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R93",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25117",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R100",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25900",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R101",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25900",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R102",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R110",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25900",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R111",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25900",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R112",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R120",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R121",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R122",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R130",
+   "footprint": "aiee:R0603",
+   "lcsc": "C22807",
+   "model_package": "R0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R131",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R132",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R133",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25792",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R134",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R135",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R136",
+   "footprint": "aiee:R0603",
+   "lcsc": "C22807",
+   "model_package": "R0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R137",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25744",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R138",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R149",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R150",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R203",
+   "footprint": "aiee:R0603",
+   "lcsc": "C23164",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R205",
+   "footprint": "aiee:R0603",
+   "lcsc": "C23164",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R212",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25765",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R213",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R214",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R215",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R216",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25792",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R217",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25792",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R227",
+   "footprint": "aiee:R0603",
+   "lcsc": "C23164",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R230",
+   "footprint": "aiee:R0603",
+   "lcsc": "C23164",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R233",
+   "footprint": "aiee:R0603",
+   "lcsc": "C23164",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R236",
+   "footprint": "aiee:R0603",
+   "lcsc": "C23164",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R303",
+   "footprint": "aiee:R0603",
+   "lcsc": "C23164",
+   "model_package": "R0603",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R305",
+   "footprint": "aiee:R0603",
+   "lcsc": "C23164",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R313",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25798",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R314",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25792",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R315",
+   "footprint": "aiee:R0402",
+   "lcsc": "C17168",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R325",
+   "footprint": "aiee:R0603",
+   "lcsc": "C23164",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R328",
+   "footprint": "aiee:R0603",
+   "lcsc": "C23164",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R331",
+   "footprint": "aiee:R0603",
+   "lcsc": "C23164",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R334",
+   "footprint": "aiee:R0603",
+   "lcsc": "C23164",
+   "model_package": "R0603",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.75,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R401",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25117",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R402",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25105",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R403",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25105",
+   "model_package": "R0402",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    90.0,
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "R404",
+   "footprint": "aiee:R0402",
+   "lcsc": "C25741",
+   "model_package": "R0402",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.43,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0,
+    180.0
+   ],
+   "expected_rot": [
+    0.0,
+    180.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U1",
+   "footprint": "aiee:DFN-10_L2.0-W2.0-P0.40-BL-EP",
+   "lcsc": "C46061833",
+   "model_package": "DFN-10_L2.0-W2.0-P0.40-BL-EP",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.2,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U2",
+   "footprint": "aiee:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL",
+   "lcsc": "C2687116",
+   "model_package": "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.475,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U3",
+   "footprint": "aiee:SC-70-6_L2.2-W1.3-P0.65-LS2.1-BR",
+   "lcsc": "C2058311",
+   "model_package": "SC-70-6_L2.2-W1.3-P0.65-LS2.1-BR",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.325,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U4",
+   "footprint": "aiee:TSOT-23-8_L2.9-W1.6-P0.65-LS2.8-BR",
+   "lcsc": "C97054",
+   "model_package": "TSOT-23-8_L2.9-W1.6-P0.65-LS2.8-BR",
+   "board_rot": 180.0,
+   "cpl_rot": 180.0,
+   "polar": false,
+   "tol_mm": 0.325,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    180.0
+   ],
+   "offset_mm": 0.002
+  },
+  {
+   "ref": "U5",
+   "footprint": "aiee:TSOT-23-5_L2.9-W1.6-P0.95-LS2.8-BR",
+   "lcsc": "C479074",
+   "model_package": "TSOT-23-5_L2.9-W1.6-P0.95-LS2.8-BR",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.475,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U6",
+   "footprint": "aiee:SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BR",
+   "lcsc": "C80670",
+   "model_package": "SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BR",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.475,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U7",
+   "footprint": "aiee:WIFI-SMD_ESP32-WROVER-IE8MB",
+   "lcsc": "C2973667",
+   "model_package": "WIFI-SMD_ESP32-WROVER-IE8MB",
+   "board_rot": 270.0,
+   "cpl_rot": 270.0,
+   "polar": false,
+   "tol_mm": 0.635,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    270.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U8",
+   "footprint": "aiee:SOP-16_L10.0-W3.9-P1.27-LS6.0-BL",
+   "lcsc": "C81010",
+   "model_package": "SOIC-16_L9.9-W3.9-P1.27-LS6.0-BL",
+   "board_rot": 90.0,
+   "cpl_rot": 90.0,
+   "polar": false,
+   "tol_mm": 0.63,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    90.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U9",
+   "footprint": "aiee:QFN-24_L4.0-W4.0-P0.50-BL-EP2.6",
+   "lcsc": "C45223",
+   "model_package": "QFN-24_L4.0-W4.0-P0.50-BL-EP2.6",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.25,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U10",
+   "footprint": "aiee:QFN-28_L5.0-W5.0-P0.50-BL-EP3.3",
+   "lcsc": "C2688377",
+   "model_package": "QFN-28_L5.0-W5.0-P0.50-BL-EP3.3",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.25,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U11",
+   "footprint": "aiee:SOIC-8_L5.0-W4.0-P1.27-LS6.0-BL",
+   "lcsc": "C192421",
+   "model_package": "SOIC-8_L5.0-W4.0-P1.27-LS6.0-BL",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.63,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U12",
+   "footprint": "aiee:TSSOP-20_L6.5-W4.4-P0.65-LS6.4-BL",
+   "lcsc": "C107671",
+   "model_package": "TSSOP-20_L6.5-W4.4-P0.65-LS6.4-BL",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.325,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.001
+  },
+  {
+   "ref": "U13",
+   "footprint": "aiee:QFN-20_L3.0-W3.0-P0.40-BL-EP1.7",
+   "lcsc": "C2929446",
+   "model_package": "QFN-20_L3.0-W3.0-P0.40-BL-EP1.7",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.2,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U14",
+   "footprint": "aiee:MSOP-10_L3.0-W3.0-P0.50-LS5.0-BL",
+   "lcsc": "C11133",
+   "model_package": "MSOP-10_L3.0-W3.0-P0.50-LS5.0-BL",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.25,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U15",
+   "footprint": "aiee:HTSSOP-44-1EP_L14.0-W6.1-P0.64-LS8.1-EP7.3x4.43",
+   "lcsc": "C2879306",
+   "model_package": "HTSSOP-44_L14.0-W6.1-P0.64-LS8.1-BL-EP",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.315,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U16",
+   "footprint": "aiee:HTSSOP-44-1EP_L14.0-W6.1-P0.64-LS8.1-EP7.3x4.43",
+   "lcsc": "C2879306",
+   "model_package": "HTSSOP-44_L14.0-W6.1-P0.64-LS8.1-BL-EP",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.315,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "U17",
+   "footprint": "aiee:TSSOP-24_L7.8-W4.4-P0.65-LS6.4-BL",
+   "lcsc": "C131972",
+   "model_package": "TSSOP-24_L7.8-W4.4-P0.65-LS6.4-BL",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.32,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.003
+  },
+  {
+   "ref": "U19",
+   "footprint": "aiee:OPTO-TH_PLR237-T10BK",
+   "lcsc": null,
+   "model_package": null,
+   "board_rot": 180.0,
+   "cpl_rot": 180.0,
+   "verdict": "fetch_failed",
+   "why": "could not fetch the LCSC model for C17223620 (HTTP 403 from EasyEDA (rate limited)); cache dir /tmp/ds3/layout/easyeda - this is not a pin-1 result",
+   "fetch_error": "HTTP 403 from EasyEDA (rate limited)"
+  },
+  {
+   "ref": "U20",
+   "footprint": "aiee:MSOP-10_L3.0-W3.0-P0.50-LS5.0-BL",
+   "lcsc": "C11133",
+   "model_package": "MSOP-10_L3.0-W3.0-P0.50-LS5.0-BL",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.25,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "Y1",
+   "footprint": "aiee:OSC-SMD_4P-L3.2-W2.5-BL",
+   "lcsc": "C7431354",
+   "model_package": "OSC-SMD_4P-L3.2-W2.5-BL",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.88,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  },
+  {
+   "ref": "Y2",
+   "footprint": "aiee:OSC-SMD_4P-L3.2-W2.5-BL",
+   "lcsc": "C717684",
+   "model_package": "OSC-SMD_4P-L3.2-W2.5-BL",
+   "board_rot": 0.0,
+   "cpl_rot": 0.0,
+   "polar": false,
+   "tol_mm": 0.88,
+   "basis": "pad number",
+   "verdict": "ok",
+   "corrections": [
+    0.0
+   ],
+   "expected_rot": [
+    0.0
+   ],
+   "offset_mm": 0.0
+  }
+ ]
+}

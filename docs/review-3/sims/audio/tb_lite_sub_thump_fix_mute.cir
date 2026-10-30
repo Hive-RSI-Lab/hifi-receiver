@@ -1,0 +1,17 @@
+* tb_lite_sub_thump_fix_mute: ES8388 LOUT2 (VMID 1.65 V DC) collapses on power loss
+* +3V3A falls ~3.3 V/ms (codec ~20 mA on ~6 uF of LDO-out caps); LOUT2 follows to 0 in ~2 ms
+* C47 10 uF, R36 100R, R37 47k (boards/lite-main/kicad/gen/root.py); sub input 10k
+Vout lout 0 PWL(0 1.65 0.5 1.65 0.502 0 2 0)
+C47 lout ac 10u IC=1.65
+R36 ac sub 100
+R37 sub 0 47k
+Rsub sub 0 10k
+* fix: MMBT3904 shunt (inverted mode) on SUB_L, on 1 ms before LOUT2 collapses (power-fail detect on +5V or VBUS)
+Smute sub 0 ctl 0 swm
+Vctl ctl 0 PWL(0 0 0.499 0 0.4991 1)
+.model swm sw(vt=0.5 ron=5 roff=1e9)
+.ic v(ac)=0 v(sub)=0
+.tran 50u 1.5 0 50u uic
+.measure tran sub_min MIN v(sub) FROM=0.45 TO=1.5
+.measure tran sub_abs PARAM='-sub_min'
+.end
