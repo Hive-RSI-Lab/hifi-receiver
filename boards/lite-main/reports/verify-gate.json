@@ -4,7 +4,7 @@
   "phase": "P8",
   "tool": "verify",
   "input": "kicad/lite-main.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:1e52fa6db57895dc45bd3638912caa67c3839903ccb0f552f024b203fbcfa61c",
+  "input_digest": "sexpr_no_uuid:5f21f4f00d14900b304e844ff0cdcd00e338f26d0eb19e2a0a9637fc25b1ad59",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -13,16 +13,19 @@
     "max_count": 0
   },
   "counts": {
-    "total": 45,
+    "total": 48,
     "by_severity": {
-      "warning": 44,
+      "warning": 47,
       "error": 1
     },
     "by_source": {
       "check_decoupling": 1,
       "check_thermal": 1,
       "check_route_style": 25,
-      "check_ratings": 18
+      "check_ratings": 18,
+      "check_antenna": 1,
+      "check_power_path": 1,
+      "check_straps": 1
     },
     "by_check": {
       "check_return_path": 0,
@@ -36,15 +39,18 @@
       "check_mating": 0,
       "check_pdn": 0,
       "check_ratings": 18,
+      "check_antenna": 1,
       "check_bom_sync": 0,
       "check_courtyard": 0,
       "check_mate_pins": 0,
-      "check_model_paths": 0
+      "check_model_paths": 0,
+      "check_power_path": 1,
+      "check_straps": 1
     }
   },
   "failing_count": 0,
   "failing": [],
-  "warnings_count": 44,
+  "warnings_count": 47,
   "warnings": [
     {
       "check": "check_decoupling",
@@ -98,7 +104,7 @@
             70.7931,
             125.9896
           ],
-          "uuid": "3340323d-3edf-47a4-8588-fec66990f7ce"
+          "uuid": "c77c5edb-5b7a-4442-aa49-88eef7ab49b8"
         }
       ],
       "kind": "route_style",
@@ -1965,127 +1971,136 @@
       "layer": null,
       "net": null,
       "refs": [
-        "D1",
         "D2",
         "L1",
         "L2",
         "L3",
         "L4",
         "L5",
-        "L6",
-        "R1",
-        "R10",
-        "R11",
-        "R12",
-        "R13",
-        "R14",
-        "R15",
-        "R16",
-        "R17",
-        "R18",
-        "R2",
-        "R20",
-        "R21",
-        "R22",
-        "R23",
-        "R24",
-        "R25",
-        "R3",
-        "R30",
-        "R31",
-        "R33",
-        "R34",
-        "R36",
-        "R37",
-        "R38",
-        "R39",
-        "R4",
-        "R5",
-        "R50",
-        "R51",
-        "R52",
-        "R53",
-        "R54",
-        "R6",
-        "R60",
-        "R61",
-        "R62",
-        "R63",
-        "R64",
-        "R65",
-        "R66",
-        "R67",
-        "R68",
-        "R69",
-        "R7",
-        "R8",
-        "R9"
+        "L6"
       ],
-      "msg": "55 two-terminal part(s) have no extraction and no voltage-rated attribute in parts.json: D1, D2, L1, L2, L3, L4, L5, L6, R1, R10, R11, R12, R13, R14, R15, R16, R17, R18, R2, R20, R21, R22, R23, R24, R25, R3, R30, R31, R33, R34, R36, R37, R38, R39, R4, R5, R50, R51, R52, R53, R54, R6, R60, R61, R62, R63, R64, R65, R66, R67, R68, R69, R7, R8, R9",
+      "msg": "7 two-terminal part(s) have no extraction and no voltage-rated attribute in parts.json: D2, L1, L2, L3, L4, L5, L6",
       "source": "check_ratings",
       "items": [
         {
-          "msg": "55 two-terminal part(s) have no extraction and no voltage-rated attribute in parts.json: D1, D2, L1, L2, L3, L4, L5, L6, R1, R10, R11, R12, R13, R14, R15, R16, R17, R18, R2, R20, R21, R22, R23, R24, R25, R3, R30, R31, R33, R34, R36, R37, R38, R39, R4, R5, R50, R51, R52, R53, R54, R6, R60, R61, R62, R63, R64, R65, R66, R67, R68, R69, R7, R8, R9",
+          "msg": "7 two-terminal part(s) have no extraction and no voltage-rated attribute in parts.json: D2, L1, L2, L3, L4, L5, L6",
           "pos": null
         }
       ],
       "kind": "rating_unrated",
       "pins": [
-        "D1",
         "D2",
         "L1",
         "L2",
         "L3",
         "L4",
         "L5",
-        "L6",
-        "R1",
-        "R10",
-        "R11",
-        "R12",
-        "R13",
-        "R14",
-        "R15",
-        "R16",
-        "R17",
-        "R18",
-        "R2",
-        "R20",
-        "R21",
-        "R22",
-        "R23",
-        "R24",
-        "R25",
-        "R3",
-        "R30",
-        "R31",
-        "R33",
-        "R34",
-        "R36",
-        "R37",
-        "R38",
-        "R39",
-        "R4",
-        "R5",
-        "R50",
-        "R51",
-        "R52",
-        "R53",
-        "R54",
-        "R6",
-        "R60",
-        "R61",
-        "R62",
-        "R63",
-        "R64",
-        "R65",
-        "R66",
-        "R67",
-        "R68",
-        "R69",
-        "R7",
-        "R8",
-        "R9"
+        "L6"
+      ]
+    },
+    {
+      "check": "check_antenna",
+      "severity": "warning",
+      "pos": [
+        26.495,
+        128.323
+      ],
+      "layer": null,
+      "net": null,
+      "refs": [
+        "U5"
+      ],
+      "msg": "U5: copper starts 2.2 mm beside the antenna (Espressif asks for 15 mm clear along the edge, or the board cut away there): widen the keepout or notch the board",
+      "source": "check_antenna",
+      "items": [
+        {
+          "msg": "U5: copper starts 2.2 mm beside the antenna (Espressif asks for 15 mm clear along the edge, or the board cut away there): widen the keepout or notch the board",
+          "pos": [
+            26.495,
+            128.323
+          ]
+        }
+      ],
+      "kind": "antenna_side_clearance",
+      "cleared_mm": [
+        2.25,
+        2.25
+      ]
+    },
+    {
+      "check": "check_power_path",
+      "severity": "warning",
+      "pos": [
+        83.765,
+        68.523
+      ],
+      "layer": null,
+      "net": "VBUS",
+      "refs": [
+        "J1",
+        "Q1"
+      ],
+      "msg": "VBUS J1 -> Q1 carries 2.17 A at dT 10 C against 3 A (USB PD input (U1 CH224A is a PD sink: 3 A assumed)); bottleneck: 0.6 mm on F.Cu at [83.765, 68.523]; 0.5 mm on F.Cu at [78.965, 68.523]",
+      "source": "check_power_path",
+      "items": [
+        {
+          "msg": "VBUS J1 -> Q1 carries 2.17 A at dT 10 C against 3 A (USB PD input (U1 CH224A is a PD sink: 3 A assumed)); bottleneck: 0.6 mm on F.Cu at [83.765, 68.523]; 0.5 mm on F.Cu at [78.965, 68.523]",
+          "pos": [
+            83.765,
+            68.523
+          ]
+        }
+      ],
+      "kind": "path_capacity",
+      "amps": 2.1666666666666665,
+      "current_a": 3.0,
+      "neck_tracks": [
+        {
+          "layer": "F.Cu",
+          "width_mm": 0.6,
+          "at": [
+            83.765,
+            68.523
+          ]
+        },
+        {
+          "layer": "F.Cu",
+          "width_mm": 0.5,
+          "at": [
+            78.965,
+            68.523
+          ]
+        }
+      ],
+      "neck_vias": []
+    },
+    {
+      "check": "check_straps",
+      "severity": "warning",
+      "pos": [
+        47.445,
+        119.323
+      ],
+      "layer": null,
+      "net": "/I2S_MCLK",
+      "refs": [
+        "U5"
+      ],
+      "msg": "U5 IO0 (pin 25, /I2S_MCLK) also reaches U7.1 (MCLK) ES8388, whose reset state hwde doesn't know: confirm each is an input or hi-Z until the strap latches (or add the part to reset_states.yaml)",
+      "source": "check_straps",
+      "items": [
+        {
+          "msg": "U5 IO0 (pin 25, /I2S_MCLK) also reaches U7.1 (MCLK) ES8388, whose reset state hwde doesn't know: confirm each is an input or hi-Z until the strap latches (or add the part to reset_states.yaml)",
+          "pos": [
+            47.445,
+            119.323
+          ]
+        }
+      ],
+      "kind": "strap_unknown",
+      "strap": "IO0",
+      "unknown": [
+        "U7.1 (MCLK) ES8388"
       ]
     }
   ],
@@ -2136,10 +2151,13 @@
       "check_mating",
       "check_pdn",
       "check_ratings",
+      "check_antenna",
       "check_bom_sync",
       "check_courtyard",
       "check_mate_pins",
-      "check_model_paths"
+      "check_model_paths",
+      "check_power_path",
+      "check_straps"
     ],
     "ran": [
       "check_return_path",
@@ -2153,10 +2171,13 @@
       "check_mating",
       "check_pdn",
       "check_ratings",
+      "check_antenna",
       "check_bom_sync",
       "check_courtyard",
       "check_mate_pins",
-      "check_model_paths"
+      "check_model_paths",
+      "check_power_path",
+      "check_straps"
     ],
     "passed": [
       "check_return_path",
@@ -2169,10 +2190,13 @@
       "check_mating",
       "check_pdn",
       "check_ratings",
+      "check_antenna",
       "check_bom_sync",
       "check_courtyard",
       "check_mate_pins",
-      "check_model_paths"
+      "check_model_paths",
+      "check_power_path",
+      "check_straps"
     ],
     "failed": [],
     "waived": [
@@ -2187,10 +2211,10 @@
     "workspace": ".",
     "gate": "verify",
     "status": "pass",
-    "attempts": 7,
+    "attempts": 8,
     "inputs": {
-      "pcb": "sexpr_no_uuid:1e52fa6db57895dc45bd3638912caa67c3839903ccb0f552f024b203fbcfa61c",
-      "constraints": "json_canonical:bddbb1b84a07eaf0b52456568888c02226ad1317a93e8020e9b9e780b98c7ab5",
+      "pcb": "sexpr_no_uuid:5f21f4f00d14900b304e844ff0cdcd00e338f26d0eb19e2a0a9637fc25b1ad59",
+      "constraints": "json_canonical:cacfa391a2117361ee110695717a72c34805822141ee48d0833edb8052bb5b0d",
       "decoupling": "json_canonical:83d4aa9fc41ad6fde56012fff8a8e86b567621103cd7a118d91157b10ede6600",
       "waivers": "json_canonical:fd04b3c398f91596a08605fd91c32f9be2d338bcc3860a37e636c7fd5a133f39"
     }

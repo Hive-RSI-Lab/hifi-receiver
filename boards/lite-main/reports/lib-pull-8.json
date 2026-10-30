@@ -1,0 +1,117 @@
+{
+ "script": "lib_pull",
+ "status": "pass",
+ "deferred": [],
+ "resume": null,
+ "lib_name": "aiee",
+ "parts_file": null,
+ "paced_s": 0.0,
+ "retried": 0,
+ "symbol_lib": "/work/boards/lite-main/lib/aiee.kicad_sym",
+ "footprint_lib": "/work/boards/lite-main/lib/aiee.pretty",
+ "results": [
+  {
+   "lcsc": "C113993",
+   "status": "pulled",
+   "symbol": "SMBJ22A_C113993",
+   "symbol_verified": true,
+   "footprint_verified": true,
+   "symbol_lib": "/work/boards/lite-main/lib/aiee.kicad_sym",
+   "footprint_lib": "/work/boards/lite-main/lib/aiee.pretty",
+   "footprints": [
+    {
+     "name": "SMB_L4.6-W3.6-LS5.3-RD",
+     "file": "/work/boards/lite-main/lib/aiee.pretty/SMB_L4.6-W3.6-LS5.3-RD.kicad_mod",
+     "copper_pads": 2,
+     "courtyard": true,
+     "silk": true,
+     "models_restored": [
+      "SMB_L4.6-W3.6-LS5.3-RD.wrl"
+     ]
+    }
+   ],
+   "warnings": []
+  }
+ ],
+ "symbol_dedup": {
+  "removed": 0,
+  "names": []
+ },
+ "registered": {
+  "fp": "present",
+  "sym": "present"
+ },
+ "autofix": {
+  "footprints": 1,
+  "changed": 0,
+  "actions": 2,
+  "residue": 2,
+  "flags": [],
+  "results": [
+   {
+    "footprint": "SMB_L4.6-W3.6-LS5.3-RD",
+    "file": "/work/boards/lite-main/lib/aiee.pretty/SMB_L4.6-W3.6-LS5.3-RD.kicad_mod",
+    "changed": false,
+    "actions": [
+     {
+      "rule": "B",
+      "action": "residue_silk_gap",
+      "kind": "fp_line",
+      "width_mm": 0.15,
+      "gap_mm": 0.129,
+      "detail": "cannot reach the gap by narrowing to the 0.15 mm line-width floor"
+     },
+     {
+      "rule": "B",
+      "action": "residue_silk_gap",
+      "kind": "fp_line",
+      "width_mm": 0.15,
+      "gap_mm": 0.129,
+      "detail": "cannot reach the gap by narrowing to the 0.15 mm line-width floor"
+     }
+    ],
+    "residue": 2,
+    "flags": [],
+    "before": {
+     "worst_gap_mm": 0.129,
+     "unprintable_silk": 0,
+     "under_gap_silk": 2,
+     "plated_pegs": 0
+    },
+    "after": {
+     "worst_gap_mm": 0.129,
+     "unprintable_silk": 0,
+     "under_gap_silk": 2,
+     "plated_pegs": 0
+    }
+   }
+  ]
+ },
+ "refdes_norm": {
+  "footprints": 27,
+  "changed": 0,
+  "unchanged": 27,
+  "skipped": 0,
+  "results": []
+ },
+ "pin_types": {
+  "changed": 2,
+  "symbols": [
+   "SMBJ22A_C113993"
+  ],
+  "extracts_matched": [],
+  "power_in": []
+ },
+ "model_paths": {
+  "rewritten": 0,
+  "footprints": {}
+ },
+ "models_restored": {
+  "restored": [
+   "SMB_L4.6-W3.6-LS5.3-RD.wrl"
+  ],
+  "still_missing": []
+ },
+ "load_check": null,
+ "drc_check": null
+}

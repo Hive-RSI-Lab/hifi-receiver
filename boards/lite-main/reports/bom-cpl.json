@@ -28,7 +28,7 @@
  "stock": {
   "status": "pass",
   "boards": 5,
-  "checked_at": "2026-10-30T08:12:16+00:00",
+  "checked_at": "2026-10-30T09:51:58+00:00",
   "counts": {
    "ok": 53
   },
@@ -38,15 +38,15 @@
     "need": 65,
     "mpn": "CL10A105KB8NNNC",
     "value": "1uF",
-    "checked_at": "2026-10-30T08:12:08+00:00",
+    "checked_at": "2026-10-30T09:51:50+00:00",
     "notes": [],
     "jlc": {
      "code": "C15849",
      "model": "CL10A105KB8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 12372000,
-     "can_sell": 9126709,
+     "stock": 12360101,
+     "can_sell": 9116984,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -58,15 +58,15 @@
      "code": "C15849",
      "model": "CL10A105KB8NNNC",
      "brand": "Samsung Electro-Mechanics",
-     "stock": 103400
+     "stock": 71000
     },
     "match": {
      "ok": true,
      "why": "BOM MPN CL10A105KB8NNNC vs JLC model CL10A105KB8NNNC"
     },
-    "available": 9126709,
+    "available": 9116984,
     "status": "ok",
-    "why": "9126709 available at JLC, need 65; BOM MPN CL10A105KB8NNNC vs JLC model CL10A105KB8NNNC",
+    "why": "9116984 available at JLC, need 65; BOM MPN CL10A105KB8NNNC vs JLC model CL10A105KB8NNNC",
     "refs": [
      "C1",
      "C15",
@@ -89,15 +89,15 @@
     "need": 90,
     "mpn": "CC0603KRX7R9BB104",
     "value": "100nF",
-    "checked_at": "2026-10-30T08:12:08+00:00",
+    "checked_at": "2026-10-30T09:51:51+00:00",
     "notes": [],
     "jlc": {
      "code": "C14663",
      "model": "CC0603KRX7R9BB104",
      "brand": "YAGEO",
      "library": "basic",
-     "stock": 37548512,
-     "can_sell": 26389973,
+     "stock": 37437656,
+     "can_sell": 26281191,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -109,15 +109,15 @@
      "code": "C14663",
      "model": "CC0603KRX7R9BB104",
      "brand": "YAGEO",
-     "stock": 4000
+     "stock": 950
     },
     "match": {
      "ok": true,
      "why": "BOM MPN CC0603KRX7R9BB104 vs JLC model CC0603KRX7R9BB104"
     },
-    "available": 26389973,
+    "available": 26281191,
     "status": "ok",
-    "why": "26389973 available at JLC, need 90; BOM MPN CC0603KRX7R9BB104 vs JLC model CC0603KRX7R9BB104",
+    "why": "26281191 available at JLC, need 90; BOM MPN CC0603KRX7R9BB104 vs JLC model CC0603KRX7R9BB104",
     "refs": [
      "C2",
      "C5",
@@ -145,17 +145,17 @@
     "need": 5,
     "mpn": "CL31A106KBHNNNE",
     "value": "10uF",
-    "checked_at": "2026-10-30T08:12:08+00:00",
+    "checked_at": "2026-10-30T09:51:51+00:00",
     "notes": [
-     "LCSC shows 0 in stock; JLC's own stock covers the build (2316222)"
+     "LCSC shows 0 in stock; JLC's own stock covers the build (2315249)"
     ],
     "jlc": {
      "code": "C13585",
      "model": "CL31A106KBHNNNE",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 3131082,
-     "can_sell": 2316222,
+     "stock": 3129853,
+     "can_sell": 2315249,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -173,9 +173,9 @@
      "ok": true,
      "why": "BOM MPN CL31A106KBHNNNE vs JLC model CL31A106KBHNNNE"
     },
-    "available": 2316222,
+    "available": 2315249,
     "status": "ok",
-    "why": "2316222 available at JLC, need 5; BOM MPN CL31A106KBHNNNE vs JLC model CL31A106KBHNNNE",
+    "why": "2315249 available at JLC, need 5; BOM MPN CL31A106KBHNNNE vs JLC model CL31A106KBHNNNE",
     "refs": [
      "C3"
     ],
@@ -186,15 +186,15 @@
     "need": 5,
     "mpn": "1206B475K500NT",
     "value": "4.7uF",
-    "checked_at": "2026-10-30T08:12:08+00:00",
+    "checked_at": "2026-10-30T09:51:51+00:00",
     "notes": [],
     "jlc": {
      "code": "C29823",
      "model": "1206B475K500NT",
      "brand": "FH (Guangdong Fenghua Advanced Tech)",
      "library": "basic",
-     "stock": 807667,
-     "can_sell": 659697,
+     "stock": 806087,
+     "can_sell": 658117,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -206,15 +206,15 @@
      "code": "C29823",
      "model": "1206B475K500NT",
      "brand": "FH",
-     "stock": 239880
+     "stock": 240020
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 1206B475K500NT vs JLC model 1206B475K500NT"
     },
-    "available": 659697,
+    "available": 658117,
     "status": "ok",
-    "why": "659697 available at JLC, need 5; BOM MPN 1206B475K500NT vs JLC model 1206B475K500NT",
+    "why": "658117 available at JLC, need 5; BOM MPN 1206B475K500NT vs JLC model 1206B475K500NT",
     "refs": [
      "C4"
     ],
@@ -225,15 +225,15 @@
     "need": 20,
     "mpn": "CL21A226MAQNNNE",
     "value": "22uF",
-    "checked_at": "2026-10-30T08:12:08+00:00",
+    "checked_at": "2026-10-30T09:51:51+00:00",
     "notes": [],
     "jlc": {
      "code": "C45783",
      "model": "CL21A226MAQNNNE",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 3779186,
-     "can_sell": 2835166,
+     "stock": 3501655,
+     "can_sell": 2557999,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -245,15 +245,15 @@
      "code": "C45783",
      "model": "CL21A226MAQNNNE",
      "brand": "Samsung Electro-Mechanics",
-     "stock": 263180
+     "stock": 140
     },
     "match": {
      "ok": true,
      "why": "BOM MPN CL21A226MAQNNNE vs JLC model CL21A226MAQNNNE"
     },
-    "available": 2835166,
+    "available": 2557999,
     "status": "ok",
-    "why": "2835166 available at JLC, need 20; BOM MPN CL21A226MAQNNNE vs JLC model CL21A226MAQNNNE",
+    "why": "2557999 available at JLC, need 20; BOM MPN CL21A226MAQNNNE vs JLC model CL21A226MAQNNNE",
     "refs": [
      "C7",
      "C8",
@@ -267,15 +267,15 @@
     "need": 5,
     "mpn": "CL10C470JB8NNNC",
     "value": "47pF",
-    "checked_at": "2026-10-30T08:12:08+00:00",
+    "checked_at": "2026-10-30T09:51:51+00:00",
     "notes": [],
     "jlc": {
      "code": "C1671",
      "model": "CL10C470JB8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 816342,
-     "can_sell": 663695,
+     "stock": 813052,
+     "can_sell": 660425,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -287,15 +287,15 @@
      "code": "C1671",
      "model": "CL10C470JB8NNNC",
      "brand": "Samsung Electro-Mechanics",
-     "stock": 241900
+     "stock": 241400
     },
     "match": {
      "ok": true,
      "why": "BOM MPN CL10C470JB8NNNC vs JLC model CL10C470JB8NNNC"
     },
-    "available": 663695,
+    "available": 660425,
     "status": "ok",
-    "why": "663695 available at JLC, need 5; BOM MPN CL10C470JB8NNNC vs JLC model CL10C470JB8NNNC",
+    "why": "660425 available at JLC, need 5; BOM MPN CL10C470JB8NNNC vs JLC model CL10C470JB8NNNC",
     "refs": [
      "C9"
     ],
@@ -306,15 +306,15 @@
     "need": 40,
     "mpn": "CL10A106KP8NNNC",
     "value": "10uF",
-    "checked_at": "2026-10-30T08:12:09+00:00",
+    "checked_at": "2026-10-30T09:51:51+00:00",
     "notes": [],
     "jlc": {
      "code": "C19702",
      "model": "CL10A106KP8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 11932743,
-     "can_sell": 9507555,
+     "stock": 11868684,
+     "can_sell": 9444426,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -326,15 +326,15 @@
      "code": "C19702",
      "model": "CL10A106KP8NNNC",
      "brand": "Samsung Electro-Mechanics",
-     "stock": 2994520
+     "stock": 2951180
     },
     "match": {
      "ok": true,
      "why": "BOM MPN CL10A106KP8NNNC vs JLC model CL10A106KP8NNNC"
     },
-    "available": 9507555,
+    "available": 9444426,
     "status": "ok",
-    "why": "9507555 available at JLC, need 40; BOM MPN CL10A106KP8NNNC vs JLC model CL10A106KP8NNNC",
+    "why": "9444426 available at JLC, need 40; BOM MPN CL10A106KP8NNNC vs JLC model CL10A106KP8NNNC",
     "refs": [
      "C10",
      "C13",
@@ -352,15 +352,15 @@
     "need": 5,
     "mpn": "CL10C220JB8NNNC",
     "value": "22pF",
-    "checked_at": "2026-10-30T08:12:09+00:00",
+    "checked_at": "2026-10-30T09:51:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C1653",
      "model": "CL10C220JB8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 2854968,
-     "can_sell": 2366865,
+     "stock": 2842801,
+     "can_sell": 2354720,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -372,15 +372,15 @@
      "code": "C1653",
      "model": "CL10C220JB8NNNC",
      "brand": "Samsung Electro-Mechanics",
-     "stock": 1050250
+     "stock": 1040300
     },
     "match": {
      "ok": true,
      "why": "BOM MPN CL10C220JB8NNNC vs JLC model CL10C220JB8NNNC"
     },
-    "available": 2366865,
+    "available": 2354720,
     "status": "ok",
-    "why": "2366865 available at JLC, need 5; BOM MPN CL10C220JB8NNNC vs JLC model CL10C220JB8NNNC",
+    "why": "2354720 available at JLC, need 5; BOM MPN CL10C220JB8NNNC vs JLC model CL10C220JB8NNNC",
     "refs": [
      "C14"
     ],
@@ -391,15 +391,15 @@
     "need": 15,
     "mpn": "CL10A475KO8NNNC",
     "value": "4.7uF",
-    "checked_at": "2026-10-30T08:12:09+00:00",
+    "checked_at": "2026-10-30T09:51:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C19666",
      "model": "CL10A475KO8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 4252745,
-     "can_sell": 3473436,
+     "stock": 4246273,
+     "can_sell": 3466922,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -411,15 +411,15 @@
      "code": "C19666",
      "model": "CL10A475KO8NNNC",
      "brand": "Samsung Electro-Mechanics",
-     "stock": 1511590
+     "stock": 1507360
     },
     "match": {
      "ok": true,
      "why": "BOM MPN CL10A475KO8NNNC vs JLC model CL10A475KO8NNNC"
     },
-    "available": 3473436,
+    "available": 3466922,
     "status": "ok",
-    "why": "3473436 available at JLC, need 15; BOM MPN CL10A475KO8NNNC vs JLC model CL10A475KO8NNNC",
+    "why": "3466922 available at JLC, need 15; BOM MPN CL10A475KO8NNNC vs JLC model CL10A475KO8NNNC",
     "refs": [
      "C19",
      "C32",
@@ -432,15 +432,15 @@
     "need": 5,
     "mpn": "CL10B473KB8NNNC",
     "value": "47nF",
-    "checked_at": "2026-10-30T08:12:09+00:00",
+    "checked_at": "2026-10-30T09:51:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C1622",
      "model": "CL10B473KB8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 940988,
-     "can_sell": 610233,
+     "stock": 915053,
+     "can_sell": 584278,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -458,9 +458,9 @@
      "ok": true,
      "why": "BOM MPN CL10B473KB8NNNC vs JLC model CL10B473KB8NNNC"
     },
-    "available": 610233,
+    "available": 584278,
     "status": "ok",
-    "why": "610233 available at JLC, need 5; BOM MPN CL10B473KB8NNNC vs JLC model CL10B473KB8NNNC",
+    "why": "584278 available at JLC, need 5; BOM MPN CL10B473KB8NNNC vs JLC model CL10B473KB8NNNC",
     "refs": [
      "C26"
     ],
@@ -471,15 +471,15 @@
     "need": 10,
     "mpn": "CL10C101JB8NNNC",
     "value": "100pF",
-    "checked_at": "2026-10-30T08:12:09+00:00",
+    "checked_at": "2026-10-30T09:51:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C14858",
      "model": "CL10C101JB8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 4485674,
-     "can_sell": 3609989,
+     "stock": 4481104,
+     "can_sell": 3605447,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -491,15 +491,15 @@
      "code": "C14858",
      "model": "CL10C101JB8NNNC",
      "brand": "Samsung Electro-Mechanics",
-     "stock": 1150000
+     "stock": 1145700
     },
     "match": {
      "ok": true,
      "why": "BOM MPN CL10C101JB8NNNC vs JLC model CL10C101JB8NNNC"
     },
-    "available": 3609989,
+    "available": 3605447,
     "status": "ok",
-    "why": "3609989 available at JLC, need 10; BOM MPN CL10C101JB8NNNC vs JLC model CL10C101JB8NNNC",
+    "why": "3605447 available at JLC, need 10; BOM MPN CL10C101JB8NNNC vs JLC model CL10C101JB8NNNC",
     "refs": [
      "C42",
      "C45"
@@ -511,17 +511,17 @@
     "need": 15,
     "mpn": "CL21B105KBFNNNE",
     "value": "1uF",
-    "checked_at": "2026-10-30T08:12:09+00:00",
+    "checked_at": "2026-10-30T09:51:52+00:00",
     "notes": [
-     "LCSC shows 0 in stock; JLC's own stock covers the build (1375909)"
+     "LCSC shows 0 in stock; JLC's own stock covers the build (1366462)"
     ],
     "jlc": {
      "code": "C28323",
      "model": "CL21B105KBFNNNE",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 2321794,
-     "can_sell": 1375909,
+     "stock": 2312367,
+     "can_sell": 1366462,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -539,9 +539,9 @@
      "ok": true,
      "why": "BOM MPN CL21B105KBFNNNE vs JLC model CL21B105KBFNNNE"
     },
-    "available": 1375909,
+    "available": 1366462,
     "status": "ok",
-    "why": "1375909 available at JLC, need 15; BOM MPN CL21B105KBFNNNE vs JLC model CL21B105KBFNNNE",
+    "why": "1366462 available at JLC, need 15; BOM MPN CL21B105KBFNNNE vs JLC model CL21B105KBFNNNE",
     "refs": [
      "C51",
      "C52",
@@ -554,15 +554,15 @@
     "need": 10,
     "mpn": "CL10B102KB8NNNC",
     "value": "1nF",
-    "checked_at": "2026-10-30T08:12:10+00:00",
+    "checked_at": "2026-10-30T09:51:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C1588",
      "model": "CL10B102KB8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 6054227,
-     "can_sell": 4784742,
+     "stock": 6021967,
+     "can_sell": 4752498,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -574,15 +574,15 @@
      "code": "C1588",
      "model": "CL10B102KB8NNNC",
      "brand": "Samsung Electro-Mechanics",
-     "stock": 1261900
+     "stock": 1252750
     },
     "match": {
      "ok": true,
      "why": "BOM MPN CL10B102KB8NNNC vs JLC model CL10B102KB8NNNC"
     },
-    "available": 4784742,
+    "available": 4752498,
     "status": "ok",
-    "why": "4784742 available at JLC, need 10; BOM MPN CL10B102KB8NNNC vs JLC model CL10B102KB8NNNC",
+    "why": "4752498 available at JLC, need 10; BOM MPN CL10B102KB8NNNC vs JLC model CL10B102KB8NNNC",
     "refs": [
      "C54",
      "C57"
@@ -594,7 +594,7 @@
     "need": 5,
     "mpn": "MA35V470M10X13",
     "value": "470uF 35V polymer",
-    "checked_at": "2026-10-30T08:12:10+00:00",
+    "checked_at": "2026-10-30T09:51:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C46550472",
@@ -633,15 +633,15 @@
     "need": 5,
     "mpn": "RVT220UF35V67RV0024",
     "value": "220uF 35V",
-    "checked_at": "2026-10-30T08:12:10+00:00",
+    "checked_at": "2026-10-30T09:51:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C2836441",
      "model": "RVT220UF35V67RV0024",
      "brand": "KNSCHA",
      "library": "extended",
-     "stock": 112997,
-     "can_sell": 101104,
+     "stock": 112971,
+     "can_sell": 101078,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -659,9 +659,9 @@
      "ok": true,
      "why": "BOM MPN RVT220UF35V67RV0024 vs JLC model RVT220UF35V67RV0024"
     },
-    "available": 101104,
+    "available": 101078,
     "status": "ok",
-    "why": "101104 available at JLC, need 5; BOM MPN RVT220UF35V67RV0024 vs JLC model RVT220UF35V67RV0024",
+    "why": "101078 available at JLC, need 5; BOM MPN RVT220UF35V67RV0024 vs JLC model RVT220UF35V67RV0024",
     "refs": [
      "C59"
     ],
@@ -672,15 +672,15 @@
     "need": 20,
     "mpn": "CL10B224KA8NNNC",
     "value": "220nF",
-    "checked_at": "2026-10-30T08:12:10+00:00",
+    "checked_at": "2026-10-30T09:51:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C21120",
      "model": "CL10B224KA8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 1014159,
-     "can_sell": 851626,
+     "stock": 1011867,
+     "can_sell": 849334,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -692,15 +692,15 @@
      "code": "C21120",
      "model": "CL10B224KA8NNNC",
      "brand": "Samsung Electro-Mechanics",
-     "stock": 394650
+     "stock": 394550
     },
     "match": {
      "ok": true,
      "why": "BOM MPN CL10B224KA8NNNC vs JLC model CL10B224KA8NNNC"
     },
-    "available": 851626,
+    "available": 849334,
     "status": "ok",
-    "why": "851626 available at JLC, need 20; BOM MPN CL10B224KA8NNNC vs JLC model CL10B224KA8NNNC",
+    "why": "849334 available at JLC, need 20; BOM MPN CL10B224KA8NNNC vs JLC model CL10B224KA8NNNC",
     "refs": [
      "C64",
      "C65",
@@ -714,15 +714,15 @@
     "need": 20,
     "mpn": "CL31B105KBHNNNE",
     "value": "1uF",
-    "checked_at": "2026-10-30T08:12:10+00:00",
+    "checked_at": "2026-10-30T09:51:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C1848",
      "model": "CL31B105KBHNNNE",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 773835,
-     "can_sell": 612214,
+     "stock": 773180,
+     "can_sell": 611559,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -734,15 +734,15 @@
      "code": "C1848",
      "model": "CL31B105KBHNNNE",
      "brand": "Samsung Electro-Mechanics",
-     "stock": 134670
+     "stock": 134530
     },
     "match": {
      "ok": true,
      "why": "BOM MPN CL31B105KBHNNNE vs JLC model CL31B105KBHNNNE"
     },
-    "available": 612214,
+    "available": 611559,
     "status": "ok",
-    "why": "612214 available at JLC, need 20; BOM MPN CL31B105KBHNNNE vs JLC model CL31B105KBHNNNE",
+    "why": "611559 available at JLC, need 20; BOM MPN CL31B105KBHNNNE vs JLC model CL31B105KBHNNNE",
     "refs": [
      "C68",
      "C69",
@@ -756,15 +756,15 @@
     "need": 10,
     "mpn": "0603B471K500NT",
     "value": "470pF",
-    "checked_at": "2026-10-30T08:12:10+00:00",
+    "checked_at": "2026-10-30T09:51:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C1620",
      "model": "0603B471K500NT",
      "brand": "FH (Guangdong Fenghua Advanced Tech)",
      "library": "basic",
-     "stock": 776534,
-     "can_sell": 621591,
+     "stock": 769748,
+     "can_sell": 614845,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -776,15 +776,15 @@
      "code": "C1620",
      "model": "0603B471K500NT",
      "brand": "FH",
-     "stock": 179700
+     "stock": 175700
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603B471K500NT vs JLC model 0603B471K500NT"
     },
-    "available": 621591,
+    "available": 614845,
     "status": "ok",
-    "why": "621591 available at JLC, need 10; BOM MPN 0603B471K500NT vs JLC model 0603B471K500NT",
+    "why": "614845 available at JLC, need 10; BOM MPN 0603B471K500NT vs JLC model 0603B471K500NT",
     "refs": [
      "C81",
      "C83"
@@ -792,60 +792,60 @@
     "comment": "470pF"
    },
    {
-    "lcsc": "C364296",
+    "lcsc": "C113993",
     "need": 5,
-    "mpn": "SMBJ20A",
-    "value": "SMBJ20A",
-    "checked_at": "2026-10-30T08:12:11+00:00",
+    "mpn": "SMBJ22A",
+    "value": "SMBJ22A",
+    "checked_at": "2026-10-30T09:51:53+00:00",
     "notes": [
-     "JLC also lists C10213, C116961, C151257, C151922, C1973051, C2759869, C2760886, C2803672, C2925508, C3001979, C3009992, C3012512, C320236, C353377, C397713, C698994, C726828, C964890 as SMBJ20A: its BOM review may match by MPN, so check it shows C364296"
+     "JLC also lists C10214, C151920, C224015, C284010, C294874, C2989896, C3012514, C3019970, C353375, C362087, C3720133, C484347, C501381, C5119554, C5161380, C713670, C726829, C908800 as SMBJ22A: its BOM review may match by MPN, so check it shows C113993"
     ],
     "jlc": {
-     "code": "C364296",
-     "model": "SMBJ20A",
+     "code": "C113993",
+     "model": "SMBJ22A",
      "brand": "MDD(Microdiode Semiconductor)",
      "library": "extended",
-     "stock": 184529,
-     "can_sell": 184392,
+     "stock": 605,
+     "can_sell": 575,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
      "min_purchase": 1,
-     "description": "-65\u2103~+150\u2103 18.6A 1uA 20V 24.5V 32.4V 600W TVS Unidirectional DO-214AA(SMB) ESD and Surge Protection (TVS/ESD) ROHS",
+     "description": "-65\u2103~+150\u2103 16.9A@10/1000us 1uA 22V 26.9V 35.5V 600W@10/1000us TVS Unidirectional DO-214AA(SMB) ESD and Surge Protection (TVS/ESD) ROHS",
      "package": "DO-214AA(SMB)"
     },
     "lcsc_record": {
-     "code": "C364296",
-     "model": "SMBJ20A",
+     "code": "C113993",
+     "model": "SMBJ22A",
      "brand": "MDD(Microdiode Semiconductor)",
-     "stock": 184520
+     "stock": 600
     },
     "match": {
      "ok": true,
-     "why": "BOM value SMBJ20A in JLC model SMBJ20A"
+     "why": "BOM value SMBJ22A in JLC model SMBJ22A"
     },
-    "available": 184392,
+    "available": 575,
     "status": "ok",
-    "why": "184392 available at JLC, need 5; BOM value SMBJ20A in JLC model SMBJ20A",
+    "why": "575 available at JLC, need 5; BOM value SMBJ22A in JLC model SMBJ22A",
     "refs": [
      "D1"
     ],
-    "comment": "SMBJ20A"
+    "comment": "SMBJ22A"
    },
    {
     "lcsc": "C2286",
     "need": 5,
     "mpn": "KT-0603R",
     "value": "red",
-    "checked_at": "2026-10-30T08:12:11+00:00",
+    "checked_at": "2026-10-30T09:51:53+00:00",
     "notes": [],
     "jlc": {
      "code": "C2286",
      "model": "KT-0603R",
      "brand": "Hubei KENTO Elec",
      "library": "basic",
-     "stock": 7320274,
-     "can_sell": 6634304,
+     "stock": 7301573,
+     "can_sell": 6615593,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -857,15 +857,15 @@
      "code": "C2286",
      "model": "KT-0603R",
      "brand": "Hubei KENTO Elec",
-     "stock": 4770000
+     "stock": 4768800
     },
     "match": {
      "ok": true,
      "why": "BOM MPN KT-0603R vs JLC model KT-0603R"
     },
-    "available": 6634304,
+    "available": 6615593,
     "status": "ok",
-    "why": "6634304 available at JLC, need 5; BOM MPN KT-0603R vs JLC model KT-0603R",
+    "why": "6615593 available at JLC, need 5; BOM MPN KT-0603R vs JLC model KT-0603R",
     "refs": [
      "D2"
     ],
@@ -876,7 +876,7 @@
     "need": 5,
     "mpn": "TYPE-C-31-M-12",
     "value": "TYPE-C-31-M-12",
-    "checked_at": "2026-10-30T08:12:11+00:00",
+    "checked_at": "2026-10-30T09:51:53+00:00",
     "notes": [
      "JLC also lists C9900091786 as TYPE-C-31-M-12: its BOM review may match by MPN, so check it shows C165948"
     ],
@@ -885,8 +885,8 @@
      "model": "TYPE-C-31-M-12",
      "brand": "Korean Hroparts Elec",
      "library": "extended",
-     "stock": 285432,
-     "can_sell": 272946,
+     "stock": 284956,
+     "can_sell": 272426,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -898,15 +898,15 @@
      "code": "C165948",
      "model": "TYPE-C-31-M-12",
      "brand": "Korean Hroparts Elec",
-     "stock": 273245
+     "stock": 273190
     },
     "match": {
      "ok": true,
      "why": "BOM value TYPE-C-31-M-12 is JLC model TYPE-C-31-M-12"
     },
-    "available": 272946,
+    "available": 272426,
     "status": "ok",
-    "why": "272946 available at JLC, need 5; BOM value TYPE-C-31-M-12 is JLC model TYPE-C-31-M-12",
+    "why": "272426 available at JLC, need 5; BOM value TYPE-C-31-M-12 is JLC model TYPE-C-31-M-12",
     "refs": [
      "J1"
     ],
@@ -917,7 +917,7 @@
     "need": 10,
     "mpn": "XDJK-0271-1650",
     "value": "RCA line in",
-    "checked_at": "2026-10-30T08:12:11+00:00",
+    "checked_at": "2026-10-30T09:51:53+00:00",
     "notes": [],
     "jlc": {
      "code": "C7527522",
@@ -957,15 +957,15 @@
     "need": 5,
     "mpn": "DB128V-5.08-4P-GN-S",
     "value": "DB128V-5.08-4P",
-    "checked_at": "2026-10-30T08:12:11+00:00",
+    "checked_at": "2026-10-30T09:51:53+00:00",
     "notes": [],
     "jlc": {
      "code": "C2915641",
      "model": "DB128V-5.08-4P-GN-S",
      "brand": "DORABO",
      "library": "extended",
-     "stock": 97473,
-     "can_sell": 96185,
+     "stock": 97475,
+     "can_sell": 96187,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -983,9 +983,9 @@
      "ok": true,
      "why": "BOM MPN DB128V-5.08-4P-GN-S vs JLC model DB128V-5.08-4P-GN-S"
     },
-    "available": 96185,
+    "available": 96187,
     "status": "ok",
-    "why": "96185 available at JLC, need 5; BOM MPN DB128V-5.08-4P-GN-S vs JLC model DB128V-5.08-4P-GN-S",
+    "why": "96187 available at JLC, need 5; BOM MPN DB128V-5.08-4P-GN-S vs JLC model DB128V-5.08-4P-GN-S",
     "refs": [
      "J4"
     ],
@@ -996,7 +996,7 @@
     "need": 20,
     "mpn": "XR0850-100M",
     "value": "10uH 8A",
-    "checked_at": "2026-10-30T08:12:11+00:00",
+    "checked_at": "2026-10-30T09:51:53+00:00",
     "notes": [],
     "jlc": {
      "code": "C48391614",
@@ -1038,15 +1038,15 @@
     "need": 5,
     "mpn": "SWPA6045S100MT",
     "value": "10uH",
-    "checked_at": "2026-10-30T08:12:11+00:00",
+    "checked_at": "2026-10-30T09:51:53+00:00",
     "notes": [],
     "jlc": {
      "code": "C79272",
      "model": "SWPA6045S100MT",
      "brand": "Sunlord",
      "library": "extended",
-     "stock": 5751,
-     "can_sell": 5126,
+     "stock": 5741,
+     "can_sell": 5116,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1059,9 +1059,9 @@
      "ok": true,
      "why": "BOM MPN SWPA6045S100MT vs JLC model SWPA6045S100MT"
     },
-    "available": 5126,
+    "available": 5116,
     "status": "ok",
-    "why": "5126 available at JLC, need 5; BOM MPN SWPA6045S100MT vs JLC model SWPA6045S100MT",
+    "why": "5116 available at JLC, need 5; BOM MPN SWPA6045S100MT vs JLC model SWPA6045S100MT",
     "refs": [
      "L5"
     ],
@@ -1072,15 +1072,15 @@
     "need": 5,
     "mpn": "SWPA4020S2R2NT",
     "value": "2.2uH",
-    "checked_at": "2026-10-30T08:12:11+00:00",
+    "checked_at": "2026-10-30T09:51:54+00:00",
     "notes": [],
     "jlc": {
      "code": "C305171",
      "model": "SWPA4020S2R2NT",
      "brand": "Sunlord",
      "library": "extended",
-     "stock": 4390,
-     "can_sell": 4352,
+     "stock": 4400,
+     "can_sell": 4362,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1093,9 +1093,9 @@
      "ok": true,
      "why": "BOM MPN SWPA4020S2R2NT vs JLC model SWPA4020S2R2NT"
     },
-    "available": 4352,
+    "available": 4362,
     "status": "ok",
-    "why": "4352 available at JLC, need 5; BOM MPN SWPA4020S2R2NT vs JLC model SWPA4020S2R2NT",
+    "why": "4362 available at JLC, need 5; BOM MPN SWPA4020S2R2NT vs JLC model SWPA4020S2R2NT",
     "refs": [
      "L6"
     ],
@@ -1106,7 +1106,7 @@
     "need": 5,
     "mpn": "AO4485",
     "value": "AO4485",
-    "checked_at": "2026-10-30T08:12:11+00:00",
+    "checked_at": "2026-10-30T09:51:54+00:00",
     "notes": [
      "JLC also lists C48580949, C51499, C5183843, C5197352, C5261057, C5334068, C55488499 as AO4485: its BOM review may match by MPN, so check it shows C5125949"
     ],
@@ -1147,15 +1147,15 @@
     "need": 15,
     "mpn": "MMBT3904(RANGE:100-300)",
     "value": "MMBT3904",
-    "checked_at": "2026-10-30T08:12:12+00:00",
+    "checked_at": "2026-10-30T09:51:54+00:00",
     "notes": [],
     "jlc": {
      "code": "C20526",
      "model": "MMBT3904(RANGE:100-300)",
      "brand": "Jiangsu Changjing Electronics Technology Co., Ltd.",
      "library": "basic",
-     "stock": 2406050,
-     "can_sell": 2283808,
+     "stock": 2401535,
+     "can_sell": 2279278,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1167,15 +1167,15 @@
      "code": "C20526",
      "model": "MMBT3904(RANGE:100-300)",
      "brand": "JSCJ",
-     "stock": 1973600
+     "stock": 1972300
     },
     "match": {
      "ok": true,
      "why": "BOM MPN MMBT3904(RANGE:100-300) vs JLC model MMBT3904(RANGE:100-300)"
     },
-    "available": 2283808,
+    "available": 2279278,
     "status": "ok",
-    "why": "2283808 available at JLC, need 15; BOM MPN MMBT3904(RANGE:100-300) vs JLC model MMBT3904(RANGE:100-300)",
+    "why": "2279278 available at JLC, need 15; BOM MPN MMBT3904(RANGE:100-300) vs JLC model MMBT3904(RANGE:100-300)",
     "refs": [
      "Q2",
      "Q3",
@@ -1188,15 +1188,15 @@
     "need": 5,
     "mpn": "0603WAF1203T5E",
     "value": "120k",
-    "checked_at": "2026-10-30T08:12:12+00:00",
+    "checked_at": "2026-10-30T09:51:54+00:00",
     "notes": [],
     "jlc": {
      "code": "C25808",
      "model": "0603WAF1203T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 812088,
-     "can_sell": 708172,
+     "stock": 805303,
+     "can_sell": 701387,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1208,15 +1208,15 @@
      "code": "C25808",
      "model": "0603WAF1203T5E",
      "brand": "UNI-ROYAL",
-     "stock": 411700
+     "stock": 405600
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603WAF1203T5E vs JLC model 0603WAF1203T5E"
     },
-    "available": 708172,
+    "available": 701387,
     "status": "ok",
-    "why": "708172 available at JLC, need 5; BOM MPN 0603WAF1203T5E vs JLC model 0603WAF1203T5E",
+    "why": "701387 available at JLC, need 5; BOM MPN 0603WAF1203T5E vs JLC model 0603WAF1203T5E",
     "refs": [
      "R1"
     ],
@@ -1227,15 +1227,15 @@
     "need": 10,
     "mpn": "0603WAF0000T5E",
     "value": "0R",
-    "checked_at": "2026-10-30T08:12:12+00:00",
+    "checked_at": "2026-10-30T09:51:54+00:00",
     "notes": [],
     "jlc": {
      "code": "C21189",
      "model": "0603WAF0000T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 20920011,
-     "can_sell": 18501364,
+     "stock": 20876274,
+     "can_sell": 18457757,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1247,15 +1247,15 @@
      "code": "C21189",
      "model": "0603WAF0000T5E",
      "brand": "UNI-ROYAL",
-     "stock": 11822300
+     "stock": 11814800
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603WAF0000T5E vs JLC model 0603WAF0000T5E"
     },
-    "available": 18501364,
+    "available": 18457757,
     "status": "ok",
-    "why": "18501364 available at JLC, need 10; BOM MPN 0603WAF0000T5E vs JLC model 0603WAF0000T5E",
+    "why": "18457757 available at JLC, need 10; BOM MPN 0603WAF0000T5E vs JLC model 0603WAF0000T5E",
     "refs": [
      "R2",
      "R3"
@@ -1267,15 +1267,15 @@
     "need": 90,
     "mpn": "0603WAF1002T5E",
     "value": "10k",
-    "checked_at": "2026-10-30T08:12:12+00:00",
+    "checked_at": "2026-10-30T09:51:55+00:00",
     "notes": [],
     "jlc": {
      "code": "C25804",
      "model": "0603WAF1002T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 40579573,
-     "can_sell": 30310373,
+     "stock": 40358505,
+     "can_sell": 30090239,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1287,15 +1287,15 @@
      "code": "C25804",
      "model": "0603WAF1002T5E",
      "brand": "UNI-ROYAL",
-     "stock": 1519100
+     "stock": 1446600
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603WAF1002T5E vs JLC model 0603WAF1002T5E"
     },
-    "available": 30310373,
+    "available": 30090239,
     "status": "ok",
-    "why": "30310373 available at JLC, need 90; BOM MPN 0603WAF1002T5E vs JLC model 0603WAF1002T5E",
+    "why": "30090239 available at JLC, need 90; BOM MPN 0603WAF1002T5E vs JLC model 0603WAF1002T5E",
     "refs": [
      "R4",
      "R7",
@@ -1323,15 +1323,15 @@
     "need": 45,
     "mpn": "0603WAF1003T5E",
     "value": "100k",
-    "checked_at": "2026-10-30T08:12:12+00:00",
+    "checked_at": "2026-10-30T09:51:55+00:00",
     "notes": [],
     "jlc": {
      "code": "C25803",
      "model": "0603WAF1003T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 17826908,
-     "can_sell": 15481909,
+     "stock": 17734137,
+     "can_sell": 15391080,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1343,15 +1343,15 @@
      "code": "C25803",
      "model": "0603WAF1003T5E",
      "brand": "UNI-ROYAL",
-     "stock": 8947900
+     "stock": 8897700
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603WAF1003T5E vs JLC model 0603WAF1003T5E"
     },
-    "available": 15481909,
+    "available": 15391080,
     "status": "ok",
-    "why": "15481909 available at JLC, need 45; BOM MPN 0603WAF1003T5E vs JLC model 0603WAF1003T5E",
+    "why": "15391080 available at JLC, need 45; BOM MPN 0603WAF1003T5E vs JLC model 0603WAF1003T5E",
     "refs": [
      "R5",
      "R8",
@@ -1370,15 +1370,15 @@
     "need": 5,
     "mpn": "0603WAF2203T5E",
     "value": "220k",
-    "checked_at": "2026-10-30T08:12:12+00:00",
+    "checked_at": "2026-10-30T09:51:55+00:00",
     "notes": [],
     "jlc": {
      "code": "C22961",
      "model": "0603WAF2203T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 1146391,
-     "can_sell": 1059688,
+     "stock": 1140221,
+     "can_sell": 1053518,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1390,15 +1390,15 @@
      "code": "C22961",
      "model": "0603WAF2203T5E",
      "brand": "UNI-ROYAL",
-     "stock": 815900
+     "stock": 810500
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603WAF2203T5E vs JLC model 0603WAF2203T5E"
     },
-    "available": 1059688,
+    "available": 1053518,
     "status": "ok",
-    "why": "1059688 available at JLC, need 5; BOM MPN 0603WAF2203T5E vs JLC model 0603WAF2203T5E",
+    "why": "1053518 available at JLC, need 5; BOM MPN 0603WAF2203T5E vs JLC model 0603WAF2203T5E",
     "refs": [
      "R6"
     ],
@@ -1409,15 +1409,15 @@
     "need": 5,
     "mpn": "0603WAF1302T5E",
     "value": "13k",
-    "checked_at": "2026-10-30T08:12:12+00:00",
+    "checked_at": "2026-10-30T09:51:55+00:00",
     "notes": [],
     "jlc": {
      "code": "C22797",
      "model": "0603WAF1302T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 442782,
-     "can_sell": 378031,
+     "stock": 441047,
+     "can_sell": 376316,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1429,15 +1429,15 @@
      "code": "C22797",
      "model": "0603WAF1302T5E",
      "brand": "UNI-ROYAL",
-     "stock": 201600
+     "stock": 201300
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603WAF1302T5E vs JLC model 0603WAF1302T5E"
     },
-    "available": 378031,
+    "available": 376316,
     "status": "ok",
-    "why": "378031 available at JLC, need 5; BOM MPN 0603WAF1302T5E vs JLC model 0603WAF1302T5E",
+    "why": "376316 available at JLC, need 5; BOM MPN 0603WAF1302T5E vs JLC model 0603WAF1302T5E",
     "refs": [
      "R10"
     ],
@@ -1448,15 +1448,15 @@
     "need": 5,
     "mpn": "0603WAF1503T5E",
     "value": "150k",
-    "checked_at": "2026-10-30T08:12:12+00:00",
+    "checked_at": "2026-10-30T09:51:55+00:00",
     "notes": [],
     "jlc": {
      "code": "C22807",
      "model": "0603WAF1503T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 863103,
-     "can_sell": 722136,
+     "stock": 855108,
+     "can_sell": 714141,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1468,15 +1468,15 @@
      "code": "C22807",
      "model": "0603WAF1503T5E",
      "brand": "UNI-ROYAL",
-     "stock": 330100
+     "stock": 329800
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603WAF1503T5E vs JLC model 0603WAF1503T5E"
     },
-    "available": 722136,
+    "available": 714141,
     "status": "ok",
-    "why": "722136 available at JLC, need 5; BOM MPN 0603WAF1503T5E vs JLC model 0603WAF1503T5E",
+    "why": "714141 available at JLC, need 5; BOM MPN 0603WAF1503T5E vs JLC model 0603WAF1503T5E",
     "refs": [
      "R11"
     ],
@@ -1487,15 +1487,15 @@
     "need": 5,
     "mpn": "0603WAF3302T5E",
     "value": "33k",
-    "checked_at": "2026-10-30T08:12:12+00:00",
+    "checked_at": "2026-10-30T09:51:55+00:00",
     "notes": [],
     "jlc": {
      "code": "C4216",
      "model": "0603WAF3302T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 3237444,
-     "can_sell": 3024742,
+     "stock": 3233387,
+     "can_sell": 3021215,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1507,15 +1507,15 @@
      "code": "C4216",
      "model": "0603WAF3302T5E",
      "brand": "UNI-ROYAL",
-     "stock": 2446200
+     "stock": 2444400
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603WAF3302T5E vs JLC model 0603WAF3302T5E"
     },
-    "available": 3024742,
+    "available": 3021215,
     "status": "ok",
-    "why": "3024742 available at JLC, need 5; BOM MPN 0603WAF3302T5E vs JLC model 0603WAF3302T5E",
+    "why": "3021215 available at JLC, need 5; BOM MPN 0603WAF3302T5E vs JLC model 0603WAF3302T5E",
     "refs": [
      "R12"
     ],
@@ -1526,15 +1526,15 @@
     "need": 10,
     "mpn": "0603WAF1001T5E",
     "value": "1k",
-    "checked_at": "2026-10-30T08:12:12+00:00",
+    "checked_at": "2026-10-30T09:51:55+00:00",
     "notes": [],
     "jlc": {
      "code": "C21190",
      "model": "0603WAF1001T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 31607929,
-     "can_sell": 24936675,
+     "stock": 31514082,
+     "can_sell": 24842963,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1546,15 +1546,15 @@
      "code": "C21190",
      "model": "0603WAF1001T5E",
      "brand": "UNI-ROYAL",
-     "stock": 6315000
+     "stock": 6268300
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603WAF1001T5E vs JLC model 0603WAF1001T5E"
     },
-    "available": 24936675,
+    "available": 24842963,
     "status": "ok",
-    "why": "24936675 available at JLC, need 10; BOM MPN 0603WAF1001T5E vs JLC model 0603WAF1001T5E",
+    "why": "24842963 available at JLC, need 10; BOM MPN 0603WAF1001T5E vs JLC model 0603WAF1001T5E",
     "refs": [
      "R15",
      "R64"
@@ -1566,15 +1566,15 @@
     "need": 5,
     "mpn": "0603WAF2202T5E",
     "value": "22k",
-    "checked_at": "2026-10-30T08:12:13+00:00",
+    "checked_at": "2026-10-30T09:51:55+00:00",
     "notes": [],
     "jlc": {
      "code": "C31850",
      "model": "0603WAF2202T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 2931141,
-     "can_sell": 2621375,
+     "stock": 2928477,
+     "can_sell": 2618731,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1586,15 +1586,15 @@
      "code": "C31850",
      "model": "0603WAF2202T5E",
      "brand": "UNI-ROYAL",
-     "stock": 1780700
+     "stock": 1780300
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603WAF2202T5E vs JLC model 0603WAF2202T5E"
     },
-    "available": 2621375,
+    "available": 2618731,
     "status": "ok",
-    "why": "2621375 available at JLC, need 5; BOM MPN 0603WAF2202T5E vs JLC model 0603WAF2202T5E",
+    "why": "2618731 available at JLC, need 5; BOM MPN 0603WAF2202T5E vs JLC model 0603WAF2202T5E",
     "refs": [
      "R16"
     ],
@@ -1605,15 +1605,15 @@
     "need": 10,
     "mpn": "0603WAF2201T5E",
     "value": "2.2k",
-    "checked_at": "2026-10-30T08:12:13+00:00",
+    "checked_at": "2026-10-30T09:51:55+00:00",
     "notes": [],
     "jlc": {
      "code": "C4190",
      "model": "0603WAF2201T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 5537231,
-     "can_sell": 4824377,
+     "stock": 5528459,
+     "can_sell": 4815535,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1625,15 +1625,15 @@
      "code": "C4190",
      "model": "0603WAF2201T5E",
      "brand": "UNI-ROYAL",
-     "stock": 2955200
+     "stock": 2953700
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603WAF2201T5E vs JLC model 0603WAF2201T5E"
     },
-    "available": 4824377,
+    "available": 4815535,
     "status": "ok",
-    "why": "4824377 available at JLC, need 10; BOM MPN 0603WAF2201T5E vs JLC model 0603WAF2201T5E",
+    "why": "4815535 available at JLC, need 10; BOM MPN 0603WAF2201T5E vs JLC model 0603WAF2201T5E",
     "refs": [
      "R22",
      "R23"
@@ -1645,15 +1645,15 @@
     "need": 10,
     "mpn": "0603WAF1502T5E",
     "value": "15k",
-    "checked_at": "2026-10-30T08:12:13+00:00",
+    "checked_at": "2026-10-30T09:51:55+00:00",
     "notes": [],
     "jlc": {
      "code": "C22809",
      "model": "0603WAF1502T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 3606002,
-     "can_sell": 3195379,
+     "stock": 3600102,
+     "can_sell": 3189749,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1665,15 +1665,15 @@
      "code": "C22809",
      "model": "0603WAF1502T5E",
      "brand": "UNI-ROYAL",
-     "stock": 2044100
+     "stock": 2043000
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603WAF1502T5E vs JLC model 0603WAF1502T5E"
     },
-    "available": 3195379,
+    "available": 3189749,
     "status": "ok",
-    "why": "3195379 available at JLC, need 10; BOM MPN 0603WAF1502T5E vs JLC model 0603WAF1502T5E",
+    "why": "3189749 available at JLC, need 10; BOM MPN 0603WAF1502T5E vs JLC model 0603WAF1502T5E",
     "refs": [
      "R30",
      "R33"
@@ -1685,15 +1685,15 @@
     "need": 15,
     "mpn": "0603WAF1000T5E",
     "value": "100R",
-    "checked_at": "2026-10-30T08:12:13+00:00",
+    "checked_at": "2026-10-30T09:51:55+00:00",
     "notes": [],
     "jlc": {
      "code": "C22775",
      "model": "0603WAF1000T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 9648646,
-     "can_sell": 7439527,
+     "stock": 9559916,
+     "can_sell": 7350665,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1705,15 +1705,15 @@
      "code": "C22775",
      "model": "0603WAF1000T5E",
      "brand": "UNI-ROYAL",
-     "stock": 1194600
+     "stock": 1142800
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603WAF1000T5E vs JLC model 0603WAF1000T5E"
     },
-    "available": 7439527,
+    "available": 7350665,
     "status": "ok",
-    "why": "7439527 available at JLC, need 15; BOM MPN 0603WAF1000T5E vs JLC model 0603WAF1000T5E",
+    "why": "7350665 available at JLC, need 15; BOM MPN 0603WAF1000T5E vs JLC model 0603WAF1000T5E",
     "refs": [
      "R36",
      "R38",
@@ -1726,15 +1726,15 @@
     "need": 10,
     "mpn": "0603WAF4702T5E",
     "value": "47k",
-    "checked_at": "2026-10-30T08:12:13+00:00",
+    "checked_at": "2026-10-30T09:51:55+00:00",
     "notes": [],
     "jlc": {
      "code": "C25819",
      "model": "0603WAF4702T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 3137489,
-     "can_sell": 2443500,
+     "stock": 3131394,
+     "can_sell": 2437427,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1746,15 +1746,15 @@
      "code": "C25819",
      "model": "0603WAF4702T5E",
      "brand": "UNI-ROYAL",
-     "stock": 447500
+     "stock": 441500
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603WAF4702T5E vs JLC model 0603WAF4702T5E"
     },
-    "available": 2443500,
+    "available": 2437427,
     "status": "ok",
-    "why": "2443500 available at JLC, need 10; BOM MPN 0603WAF4702T5E vs JLC model 0603WAF4702T5E",
+    "why": "2437427 available at JLC, need 10; BOM MPN 0603WAF4702T5E vs JLC model 0603WAF4702T5E",
     "refs": [
      "R37",
      "R39"
@@ -1766,15 +1766,15 @@
     "need": 5,
     "mpn": "0603WAF2002T5E",
     "value": "20k",
-    "checked_at": "2026-10-30T08:12:13+00:00",
+    "checked_at": "2026-10-30T09:51:56+00:00",
     "notes": [],
     "jlc": {
      "code": "C4184",
      "model": "0603WAF2002T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 6299103,
-     "can_sell": 5309580,
+     "stock": 6298479,
+     "can_sell": 5308976,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1786,15 +1786,15 @@
      "code": "C4184",
      "model": "0603WAF2002T5E",
      "brand": "UNI-ROYAL",
-     "stock": 2492400
+     "stock": 2477600
     },
     "match": {
      "ok": true,
      "why": "BOM MPN 0603WAF2002T5E vs JLC model 0603WAF2002T5E"
     },
-    "available": 5309580,
+    "available": 5308976,
     "status": "ok",
-    "why": "5309580 available at JLC, need 5; BOM MPN 0603WAF2002T5E vs JLC model 0603WAF2002T5E",
+    "why": "5308976 available at JLC, need 5; BOM MPN 0603WAF2002T5E vs JLC model 0603WAF2002T5E",
     "refs": [
      "R50"
     ],
@@ -1805,15 +1805,15 @@
     "need": 15,
     "mpn": "TS-1187A-B-A-B",
     "value": "TS-1187A",
-    "checked_at": "2026-10-30T08:12:13+00:00",
+    "checked_at": "2026-10-30T09:51:56+00:00",
     "notes": [],
     "jlc": {
      "code": "C318884",
      "model": "TS-1187A-B-A-B",
      "brand": "XKB Connection",
      "library": "basic",
-     "stock": 1118947,
-     "can_sell": 1046056,
+     "stock": 1111592,
+     "can_sell": 1038741,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1825,15 +1825,15 @@
      "code": "C318884",
      "model": "TS-1187A-B-A-B",
      "brand": "XKB Connection",
-     "stock": 849120
+     "stock": 848960
     },
     "match": {
      "ok": true,
      "why": "BOM MPN TS-1187A-B-A-B vs JLC model TS-1187A-B-A-B"
     },
-    "available": 1046056,
+    "available": 1038741,
     "status": "ok",
-    "why": "1046056 available at JLC, need 15; BOM MPN TS-1187A-B-A-B vs JLC model TS-1187A-B-A-B",
+    "why": "1038741 available at JLC, need 15; BOM MPN TS-1187A-B-A-B vs JLC model TS-1187A-B-A-B",
     "refs": [
      "SW1",
      "SW2",
@@ -1846,15 +1846,15 @@
     "need": 5,
     "mpn": "CH224A",
     "value": "CH224A",
-    "checked_at": "2026-10-30T08:12:13+00:00",
+    "checked_at": "2026-10-30T09:51:56+00:00",
     "notes": [],
     "jlc": {
      "code": "C42459160",
      "model": "CH224A",
      "brand": "WCH(Jiangsu Qin Heng)",
      "library": "extended",
-     "stock": 9394,
-     "can_sell": 9178,
+     "stock": 9379,
+     "can_sell": 9163,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1866,15 +1866,15 @@
      "code": "C42459160",
      "model": "CH224A",
      "brand": "WCH",
-     "stock": 9394
+     "stock": 9359
     },
     "match": {
      "ok": true,
      "why": "BOM value CH224A in JLC model CH224A"
     },
-    "available": 9178,
+    "available": 9163,
     "status": "ok",
-    "why": "9178 available at JLC, need 5; BOM value CH224A in JLC model CH224A",
+    "why": "9163 available at JLC, need 5; BOM value CH224A in JLC model CH224A",
     "refs": [
      "U1"
     ],
@@ -1885,7 +1885,7 @@
     "need": 5,
     "mpn": "TPS54302DDCR",
     "value": "TPS54302",
-    "checked_at": "2026-10-30T08:12:13+00:00",
+    "checked_at": "2026-10-30T09:51:56+00:00",
     "notes": [
      "JLC also lists C316459 as TPS54302DDCR: its BOM review may match by MPN, so check it shows C311983"
     ],
@@ -1894,8 +1894,8 @@
      "model": "TPS54302DDCR",
      "brand": "Texas Instruments",
      "library": "extended",
-     "stock": 61014,
-     "can_sell": 54933,
+     "stock": 61600,
+     "can_sell": 55524,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1907,15 +1907,15 @@
      "code": "C311983",
      "model": "TPS54302DDCR",
      "brand": "TI",
-     "stock": 57600
+     "stock": 57485
     },
     "match": {
      "ok": true,
      "why": "BOM MPN TPS54302DDCR vs JLC model TPS54302DDCR"
     },
-    "available": 54933,
+    "available": 55524,
     "status": "ok",
-    "why": "54933 available at JLC, need 5; BOM MPN TPS54302DDCR vs JLC model TPS54302DDCR",
+    "why": "55524 available at JLC, need 5; BOM MPN TPS54302DDCR vs JLC model TPS54302DDCR",
     "refs": [
      "U2"
     ],
@@ -1926,15 +1926,15 @@
     "need": 5,
     "mpn": "SY8089A1AAC",
     "value": "SY8089A1AAC",
-    "checked_at": "2026-10-30T08:12:13+00:00",
+    "checked_at": "2026-10-30T09:51:56+00:00",
     "notes": [],
     "jlc": {
      "code": "C479074",
      "model": "SY8089A1AAC",
      "brand": "Silergy Corp",
      "library": "extended",
-     "stock": 70100,
-     "can_sell": 67588,
+     "stock": 67128,
+     "can_sell": 64616,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1946,15 +1946,15 @@
      "code": "C479074",
      "model": "SY8089A1AAC",
      "brand": "Silergy",
-     "stock": 68905
+     "stock": 67040
     },
     "match": {
      "ok": true,
      "why": "BOM value SY8089A1AAC in JLC model SY8089A1AAC"
     },
-    "available": 67588,
+    "available": 64616,
     "status": "ok",
-    "why": "67588 available at JLC, need 5; BOM value SY8089A1AAC in JLC model SY8089A1AAC",
+    "why": "64616 available at JLC, need 5; BOM value SY8089A1AAC in JLC model SY8089A1AAC",
     "refs": [
      "U3"
     ],
@@ -1965,15 +1965,15 @@
     "need": 5,
     "mpn": "LP5907MFX-3.3/NOPB",
     "value": "LP5907-3.3",
-    "checked_at": "2026-10-30T08:12:13+00:00",
+    "checked_at": "2026-10-30T09:51:56+00:00",
     "notes": [],
     "jlc": {
      "code": "C80670",
      "model": "LP5907MFX-3.3/NOPB",
      "brand": "Texas Instruments",
      "library": "extended",
-     "stock": 32994,
-     "can_sell": 31303,
+     "stock": 32922,
+     "can_sell": 31231,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1985,15 +1985,15 @@
      "code": "C80670",
      "model": "LP5907MFX-3.3/NOPB",
      "brand": "TI",
-     "stock": 30000
+     "stock": 29985
     },
     "match": {
      "ok": true,
      "why": "BOM MPN LP5907MFX-3.3/NOPB vs JLC model LP5907MFX-3.3/NOPB"
     },
-    "available": 31303,
+    "available": 31231,
     "status": "ok",
-    "why": "31303 available at JLC, need 5; BOM MPN LP5907MFX-3.3/NOPB vs JLC model LP5907MFX-3.3/NOPB",
+    "why": "31231 available at JLC, need 5; BOM MPN LP5907MFX-3.3/NOPB vs JLC model LP5907MFX-3.3/NOPB",
     "refs": [
      "U4"
     ],
@@ -2004,7 +2004,7 @@
     "need": 5,
     "mpn": "ESP32-WROVER-E-N8R8",
     "value": "ESP32-WROVER-E-N8R8",
-    "checked_at": "2026-10-30T08:12:14+00:00",
+    "checked_at": "2026-10-30T09:51:56+00:00",
     "notes": [
      "JLC also lists C701348 as ESP32-WROVER-E-N8R8: its BOM review may match by MPN, so check it shows C2973667"
     ],
@@ -2045,7 +2045,7 @@
     "need": 5,
     "mpn": "CH340B",
     "value": "CH340B",
-    "checked_at": "2026-10-30T08:12:14+00:00",
+    "checked_at": "2026-10-30T09:51:56+00:00",
     "notes": [],
     "jlc": {
      "code": "C81010",
@@ -2084,15 +2084,15 @@
     "need": 5,
     "mpn": "ES8388",
     "value": "ES8388",
-    "checked_at": "2026-10-30T08:12:14+00:00",
+    "checked_at": "2026-10-30T09:51:57+00:00",
     "notes": [],
     "jlc": {
      "code": "C365736",
      "model": "ES8388",
      "brand": "Everest-semi(Everest Semiconductor)",
      "library": "extended",
-     "stock": 38960,
-     "can_sell": 38474,
+     "stock": 38952,
+     "can_sell": 38466,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -2104,15 +2104,15 @@
      "code": "C365736",
      "model": "ES8388",
      "brand": "Everest-semi(Everest Semiconductor)",
-     "stock": 38960
+     "stock": 38932
     },
     "match": {
      "ok": true,
      "why": "BOM value ES8388 in JLC model ES8388"
     },
-    "available": 38474,
+    "available": 38466,
     "status": "ok",
-    "why": "38474 available at JLC, need 5; BOM value ES8388 in JLC model ES8388",
+    "why": "38466 available at JLC, need 5; BOM value ES8388 in JLC model ES8388",
     "refs": [
      "U7"
     ],
@@ -2123,15 +2123,15 @@
     "need": 5,
     "mpn": "TPA3118D2DAPR",
     "value": "TPA3118D2",
-    "checked_at": "2026-10-30T08:12:14+00:00",
+    "checked_at": "2026-10-30T09:51:57+00:00",
     "notes": [],
     "jlc": {
      "code": "C46497",
      "model": "TPA3118D2DAPR",
      "brand": "Texas Instruments",
      "library": "extended",
-     "stock": 33486,
-     "can_sell": 32988,
+     "stock": 33481,
+     "can_sell": 32983,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -2149,9 +2149,9 @@
      "ok": true,
      "why": "BOM MPN TPA3118D2DAPR vs JLC model TPA3118D2DAPR"
     },
-    "available": 32988,
+    "available": 32983,
     "status": "ok",
-    "why": "32988 available at JLC, need 5; BOM MPN TPA3118D2DAPR vs JLC model TPA3118D2DAPR",
+    "why": "32983 available at JLC, need 5; BOM MPN TPA3118D2DAPR vs JLC model TPA3118D2DAPR",
     "refs": [
      "U8"
     ],
@@ -2162,7 +2162,7 @@
     "need": 5,
     "mpn": "IRM-3638T",
     "value": "IRM-3638T",
-    "checked_at": "2026-10-30T08:12:14+00:00",
+    "checked_at": "2026-10-30T09:51:57+00:00",
     "notes": [
      "JLC also lists C16216 as IRM-3638T: its BOM review may match by MPN, so check it shows C42421366"
     ],
@@ -2171,8 +2171,8 @@
      "model": "IRM-3638T",
      "brand": "Everlight Elec",
      "library": "extended",
-     "stock": 101017,
-     "can_sell": 100718,
+     "stock": 101012,
+     "can_sell": 100713,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -2184,15 +2184,15 @@
      "code": "C42421366",
      "model": "IRM-3638T",
      "brand": "EVERLIGHT",
-     "stock": 101015
+     "stock": 101010
     },
     "match": {
      "ok": true,
      "why": "BOM value IRM-3638T in JLC model IRM-3638T"
     },
-    "available": 100718,
+    "available": 100713,
     "status": "ok",
-    "why": "100718 available at JLC, need 5; BOM value IRM-3638T in JLC model IRM-3638T",
+    "why": "100713 available at JLC, need 5; BOM value IRM-3638T in JLC model IRM-3638T",
     "refs": [
      "U9"
     ],
@@ -2312,10 +2312,10 @@
    "LCSC": "C1620"
   },
   {
-   "Comment": "SMBJ20A",
+   "Comment": "SMBJ22A",
    "Designator": "D1",
    "Footprint": "SMB_L4.6-W3.6-LS5.3-RD",
-   "LCSC": "C364296"
+   "LCSC": "C113993"
   },
   {
    "Comment": "red",
@@ -2544,9 +2544,9 @@
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
-   "LCSC": "C364296",
-   "MPN": "SMBJ20A",
-   "Comment": "SMBJ20A",
+   "LCSC": "C113993",
+   "MPN": "SMBJ22A",
+   "Comment": "SMBJ22A",
    "Designator": "D1",
    "Qty Per Board": "1",
    "Boards": "5",
@@ -2896,12 +2896,12 @@
    "Instructions": ""
   },
   {
-   "Comment": "SMBJ20A",
+   "Comment": "SMBJ22A",
    "Designator": "D1",
    "Qty Per Board": "1",
    "Footprint": "SMB_L4.6-W3.6-LS5.3-RD",
-   "MPN": "SMBJ20A",
-   "LCSC": "C364296",
+   "MPN": "SMBJ22A",
+   "LCSC": "C113993",
    "Assembly Class": "smt_placed",
    "Instructions": ""
   },

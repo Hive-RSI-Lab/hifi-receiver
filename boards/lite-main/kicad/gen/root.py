@@ -191,10 +191,11 @@ r(B_PWR, "R1", "120k", "PD_CFG1", "GND", role="CH224Q Rset: 20 V (table 5-1)")
 r(B_PWR, "R2", "0R", "PD_SCL", "I2C_SCL", role="link: CH224Q I2C onto the codec bus (depopulate if its pull-up exceeds 3.6 V)")
 r(B_PWR, "R3", "0R", "PD_SDA", "I2C_SDA", role="link: CH224Q I2C onto the codec bus")
 r(B_PWR, "R4", "10k", "PD_PG", "+3V3", role="PG pull-up")
-# SMBJ20A: breakdown 22.2-24.5 V sits above PD 20 V +5 %, clamps nearer the
-# 30 V abs-max of TPS54302/TPA3118 than a 24 V part (review 2026-10-28)
-ic(B_PWR, "D1", "C364296", "SMBJ20A", {"1": "VBUS", "2": "GND"},  # pin 1 = cathode bar
-   role="VBUS TVS 20 V standoff")
+# SMBJ22A: standoff 22 V covers PD 20 V +5 % (21 V); the SMBJ20A's 20 V did
+# not (hwde check_ratings, 2026-10-30). Breakdown 24.4-26.9 V, clamp 35.5 V:
+# one step up, still below a 24 V part's (review 2026-10-28, POWER-9)
+ic(B_PWR, "D1", "C113993", "SMBJ22A", {"1": "VBUS", "2": "GND"},  # pin 1 = cathode bar
+   role="VBUS TVS 22 V standoff")
 
 # ---- B2 PVDD switch ---------------------------------------------------------
 ic(B_PWR, "Q1", "C5125949", "AO4485",

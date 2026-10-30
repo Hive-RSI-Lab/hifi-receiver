@@ -32,7 +32,7 @@ a board is neither verified nor resolved; run it before ordering.
 | power:7 | both | U1 | CH224 needs no external Rd on CC | verified | WCH CH224 V2.0 fig 6.1.1 reference schematic (no Rd) | 2026-10-28 | yes |
 | power:8 | core | Q1 | AO4485 VDS -40 V, VGS +-20 V, Vth -1.7/-1.9/-2.5 V, Ciss 2500 pF, SOA fig 9/10 | verified | AOS AO4485 Rev1.1 Mar 2024 p1-4 | 2026-10-28 | yes |
 | power:9 | lite-main | Q1 | UMW AO4485 clone (C5125949) matches AOS ratings/SOA | resolved | With R6 220k + C19 2.2 uF the turn-on peak is 5.8 W for a ~28 ms ramp (sim tb_lite_fw_on_20v_FIX), against the AOS AO4485 single-pulse SOA of about 25 W at 5 ms and 20 W at 10 ms that the power review read (POWER-2/4): >3x margin, so a clone with up to a third less SOA still passes. Steady state 5 A x 15 mohm = 0.38 W. | 2026-10-28 | yes |
-| power:10 | both | D1 | SMBJ20A VBR 22.2-24.5 V, Vc 32.4 V; SMBJ30A VBR 33.3-36.8 V, Vc 48.4 V (MDD) | verified | MDD SMBJ series datasheet table (LCSC C364296/C113998) | 2026-10-28 | no |
+| power:10 | both | D1 | SMBJ20A VBR 22.2-24.5 V, Vc 32.4 V; SMBJ30A VBR 33.3-36.8 V, Vc 48.4 V (MDD) | verified | Lite's D1 is now SMBJ22A (MDD C113993, task 261030-093037): VRWM 22 V, VBR 24.4-26.9 V, Vc 35.5 V @ 16.9 A, 600 W (LCSC listing for C113993). The SMBJ20A's 20 V standoff sat under the 21 V a 20 V PD contract may reach. Core's SMBJ30A (C113998): VBR 33.3-36.8 V, Vc 48.4 V (MDD). | 2026-10-28 | no |
 | power:11 | lite-main | U2 | TPS54302 VIN abs 30 V rec 28 V, VFB 0.596 V, tmin_on 110 ns, EN float = on, UVLO 4.1 V | verified | TI SLVSDG6C sec 5.1/5.5/5.6 | 2026-10-28 | yes |
 | power:12 | lite-main | U2 | TPS54302 pinout GND1 SW2 VIN3 FB4 EN5 BOOT6 | verified | TI SLVSDG6C pin table; netlist matches | 2026-10-28 | yes |
 | power:13 | core | U4 | SY8303 IN/EN abs 40 V, VREF 0.6 V, FS 105/R kHz, min on 80 ns, EN must not float; pinout FB1 FS2 GND3,4 IN5 LX6 BS7 EN8 | verified | Silergy AN_SY8303 Rev0.9A p2-3; netlist matches | 2026-10-28 | yes |
@@ -164,7 +164,7 @@ a board is neither verified nor resolved; run it before ordering.
 | thermal:27 | lite-main | C59 | C59 RVT 220 uF 35 V 195 mA@120 Hz, 2000 h@105 C, ESR not specified | verified | KNSCHA RVT spec (LCSC C2836441) | 2026-10-29 | no |
 | thermal:28 | core | C5, C6, C311 | C5/C6 Rubycon 50PX470MEFC10X20: 600 mA@120 Hz, x1.20 at >=10 kHz, tan d 0.10, 2000 h@105 C | verified | Rubycon PX DS (LCSC C88733) | 2026-10-29 | no |
 | thermal:29 | both | C58, C5, C6 | PVDD ripple current estimate (~Iout,rms x 0.5 per BTL channel) and its split between ceramics and bulk | unverified | approximation; SPICE of the amp's PVDD current not run | 2026-10-29 | no |
-| thermal:30 | lite-main | D1 | SMBJ20A leakage at 21 V and 60 C | unverified | datasheet gives IR only at VRWM 25 C | 2026-10-29 | no |
+| thermal:30 | lite-main | D1 | SMBJ20A leakage at 21 V and 60 C | resolved | D1 is now SMBJ22A (standoff 22 V): VBUS at 21 V (PD +5 %) is below VRWM, so leakage stays at the rated IR (1 uA at VRWM), ~21 uW. | 2026-10-29 | no |
 | thermal:31 | both | U5, U7 | ESP32-WROVER-E-N8R8 -40..85 C ambient | verified | LCSC C2973667 record (Espressif) | 2026-10-29 | no |
 | thermal:32 | both | U6, U8 | CH340C operating -20..70 C | verified | WCH CH340 DS operating temperature table (LCSC C84681) | 2026-10-29 | no |
 | thermal:33 | lite-main |  | PETG Tg ~80 C, PLA softening 55-60 C | unverified | general material data, not a filament datasheet | 2026-10-29 | no |

@@ -34,7 +34,7 @@ product.md's Boards row.
 
 | Block | Parts | Notes |
 |---|---|---|
-| USB-C + PD | J1 HRO TYPE-C-31-M-12 (20 V/5 A), U1 CH224A, D1 SMBJ20A | asks for 20 V (Rset 120k); I2C 0x22 on the codec's bus, so firmware reads the protocol status (0x09) and the PDO's max current (0x50). The CH224A has no SRCCAP registers (CH224Q only). |
+| USB-C + PD | J1 HRO TYPE-C-31-M-12 (20 V/5 A), U1 CH224A, D1 SMBJ22A | asks for 20 V (Rset 120k); I2C 0x22 on the codec's bus, so firmware reads the protocol status (0x09) and the PDO's max current (0x50). The CH224A has no SRCCAP registers (CH224Q only). |
 | PVDD switch | Q1 AO4485, Q4 MMBT3904 | on only when GPIO18 is high **and** the PD contract is good (Q4's emitter is CH224A PG); C19 holds the gate shut on VBUS steps; soft start ~28 ms, 0.41 A inrush; R16 bleeder |
 | 5 V | U2 TPS54302, L5 10 uH | TI design-example values |
 | 3.3 V | U3 SY8089 (digital), U4 LP5907 (codec analog) | |
@@ -119,9 +119,12 @@ was done about each finding is in
   the firmware can drop it before a PD renegotiation.
 - **5 V buck is a TPS54302**, not the SY8303 in the cost estimate: TI's
   datasheet design example gives every value. 5.18 V (100k/13k, Basic parts).
-- **SMBJ20A TVS** (breakdown 22.2–24.5 V), not 24 V: it clamps nearer the
-  30 V abs-max of the TPS54302 and TPA3118. A TVS can't hold a 20 V bus under
-  30 V at its full rated surge; that residual risk is noted.
+- **SMBJ22A TVS** (standoff 22 V, breakdown 24.4–26.9 V, clamp 35.5 V).
+  Its standoff covers the 21 V a 20 V PD contract may reach (+5 %); the
+  SMBJ20A it replaced was rated 20 V, which hwde's check_ratings fails. It is
+  the lowest standoff that does, so it clamps nearer the 30 V abs-max of the
+  TPS54302 and TPA3118 than a 24 V part. A TVS can't hold a 20 V bus under
+  30 V at its full rated surge; that residual risk is noted (POWER-9).
 - **TPA3118 gain 26 dB.** The ES8388's full scale (~0.9 Vrms) x 20 clips at
   20 V into 4 ohm 3.7 dB before 0 dBFS, so firmware caps the codec volume.
   20 dB would leave only 20 W.
@@ -161,7 +164,10 @@ was done about each finding is in
 | Verify suite (`verify`) | pass, with one signed waiver (U8 thermal, below) and 44 warnings, now shown by hwde e225475: 25 route-style (off-45 jogs in Freerouting and maze-router copper; DRC-clean, cosmetic), 18 part ratings with no datasheet extraction (each part's voltage and current margin is in `docs/review-2/` instead), 1 decoupler 5.3 mm from U8 pin 31 (C57, 1 nF HF cap, limit 5.0; 0.3 mm over, left) |
 | JLC DFM on the exported Gerbers (`dfm`) | pass, 0 errors. 3 warnings: thin silk strokes inside stock/EasyEDA footprints, and J2/J3's LCSC model pad centre 0.79 mm off because of the added locating pegs. Every CPL rotation was checked against the LCSC model. |
 
-All gates last passed on hive-hwde c23e27e (2026-10-29), after the review-2 ECO.
+All gates last passed on hive-hwde 4827325 (2026-10-30), after D1 went from
+SMBJ20A to SMBJ22A (its 20 V standoff failed check_ratings against VBUS's
+21 V). That hwde's verify adds 3 warnings to the 44 above: one each from
+check_antenna, check_power_path and check_straps.
 
 **The one waiver: TPA3118 thermal**
 ([`reports/verify-waivers.json`](reports/verify-waivers.json)):

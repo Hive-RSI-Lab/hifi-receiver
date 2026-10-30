@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/work/boards/lite-main/kicad/lite-main.kicad_sch")
-		(date "2026-10-29T01:27:08")
+		(date "2026-10-30T05:50:38")
 		(tool "Eeschema 10.0.6")
 		(sheet
 			(number "1")
@@ -4244,11 +4244,11 @@
 		)
 		(comp
 			(ref "D1")
-			(value "SMBJ20A")
+			(value "SMBJ22A")
 			(footprint "aiee:SMB_L4.6-W3.6-LS5.3-RD")
 			(fields
 				(field
-					(name "LCSC") "C364296")
+					(name "LCSC") "C113993")
 				(field
 					(name "Footprint") "aiee:SMB_L4.6-W3.6-LS5.3-RD")
 				(field
@@ -4260,12 +4260,12 @@
 			)
 			(libsource
 				(lib "aiee")
-				(part "SMBJ20A_C364296")
+				(part "SMBJ22A_C113993")
 				(description "")
 			)
 			(property
 				(name "LCSC")
-				(value "C364296")
+				(value "C113993")
 			)
 			(property
 				(name "Sheetname")
@@ -10094,26 +10094,26 @@
 		)
 		(libpart
 			(lib "aiee")
-			(part "SMBJ20A_C364296")
-			(docs "https://lcsc.com/product-detail/Others_MDD-Jiangsu-Yutai-Elec-SMBJ20A_C364296.html")
+			(part "SMBJ22A_C113993")
+			(docs "https://lcsc.com/product-detail/TVS_SMBJ22A_C113993.html")
 			(fields
 				(field
 					(name "Reference") "D")
 				(field
-					(name "Value") "SMBJ20A_C364296")
+					(name "Value") "SMBJ22A_C113993")
 				(field
 					(name "Footprint") "aiee:SMB_L4.6-W3.6-LS5.3-RD")
 				(field
-					(name "Datasheet") "https://lcsc.com/product-detail/Others_MDD-Jiangsu-Yutai-Elec-SMBJ20A_C364296.html")
+					(name "Datasheet") "https://lcsc.com/product-detail/TVS_SMBJ22A_C113993.html")
 				(field
 					(name "Description")
 				)
 				(field
 					(name "Manufacturer") "MDD(辰达半导体)")
 				(field
-					(name "MPN") "SMBJ20A")
+					(name "MPN") "SMBJ22A")
 				(field
-					(name "LCSC Part") "C364296")
+					(name "LCSC Part") "C113993")
 			)
 			(pins
 				(pin

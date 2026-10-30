@@ -1,0 +1,96 @@
+{
+ "script": "parts_search",
+ "status": "pass",
+ "source": "live",
+ "query": "C113993",
+ "total": 1,
+ "count": 1,
+ "results": [
+  {
+   "lcsc": "C113993",
+   "mpn": "SMBJ22A",
+   "brand": "MDD(Microdiode Semiconductor)",
+   "description": "-65\u2103~+150\u2103 16.9A@10/1000us 1uA 22V 26.9V 35.5V 600W@10/1000us TVS Unidirectional DO-214AA(SMB) ESD and Surge Protection (TVS/ESD) ROHS",
+   "package": "DO-214AA(SMB)",
+   "category": "ESD and Surge Protection (TVS/ESD)",
+   "type": "Extended",
+   "basic": false,
+   "stock": 605,
+   "price": 0.0566,
+   "price_breaks": [
+    {
+     "qty": 1,
+     "price": 0.0566
+    },
+    {
+     "qty": 100,
+     "price": 0.0468
+    },
+    {
+     "qty": 300,
+     "price": 0.0418
+    },
+    {
+     "qty": 3000,
+     "price": 0.0314
+    },
+    {
+     "qty": 6000,
+     "price": 0.0284
+    },
+    {
+     "qty": 9000,
+     "price": 0.0269
+    }
+   ],
+   "min_qty": 1,
+   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2407291900_MDD-Microdiode-Semiconductor-SMBJ22A_C113993.pdf",
+   "url": "https://www.lcsc.com/product-detail/esd-and-surge-protection-tvs-esd_mdd-microdiode-semiconductor-smbj22a_C113993.html",
+   "attributes": [
+    {
+     "name": "Operating Temperature",
+     "value": "-65\u2103~+150\u2103"
+    },
+    {
+     "name": "Type",
+     "value": "TVS"
+    },
+    {
+     "name": "Peak Pulse Power Dissipation (Ppp)",
+     "value": "600W@10/1000us"
+    },
+    {
+     "name": "Number of Channels",
+     "value": "Single-channel"
+    },
+    {
+     "name": "Clamping Voltage",
+     "value": "35.5V"
+    },
+    {
+     "name": "Polarity",
+     "value": "Unidirectional"
+    },
+    {
+     "name": "Peak Pulse Current (Ipp)",
+     "value": "16.9A@10/1000us"
+    },
+    {
+     "name": "Voltage - Breakdown",
+     "value": "26.9V"
+    },
+    {
+     "name": "Reverse Stand-Off Voltage (Vrwm)",
+     "value": "22V"
+    },
+    {
+     "name": "Reverse Leakage Current (Ir)",
+     "value": "1uA"
+    }
+   ],
+   "rank": 0
+  }
+ ],
+ "filters": {},
+ "placeholders_filtered": 0
+}

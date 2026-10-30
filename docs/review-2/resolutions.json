@@ -106,5 +106,13 @@
  "parts:64": {
   "status": "open-ultra",
   "how": "FFC contact side/cable type depends on the ultra-front board (Ultra only)."
+ },
+ "power:10": {
+  "status": "verified",
+  "how": "Lite's D1 is now SMBJ22A (MDD C113993, task 261030-093037): VRWM 22 V, VBR 24.4-26.9 V, Vc 35.5 V @ 16.9 A, 600 W (LCSC listing for C113993). The SMBJ20A's 20 V standoff sat under the 21 V a 20 V PD contract may reach. Core's SMBJ30A (C113998): VBR 33.3-36.8 V, Vc 48.4 V (MDD)."
+ },
+ "thermal:30": {
+  "status": "resolved",
+  "how": "D1 is now SMBJ22A (standoff 22 V): VBUS at 21 V (PD +5 %) is below VRWM, so leakage stays at the rated IR (1 uA at VRWM), ~21 uW."
  }
 }
