@@ -249,3 +249,20 @@ int hj_get_num_array(const char *json, const char *k, double *out, int max) {
 	}
 	return n < max ? n : max;
 }
+
+bool hj_get_raw(const char *json, const char *k, const char **val, size_t *len) {
+	const char *p = find(json, k), *end;
+	if (!p || !(end = skip_value(p))) return false;
+	*val = p;
+	*len = (size_t) (end - p);
+	return true;
+}
+
+bool hj_get_str_span(const char *json, const char *k, const char **val, size_t *len) {
+	const char *p;
+	size_t n;
+	if (!hj_get_raw(json, k, &p, &n) || *p != '"' || memchr(p, '\\', n)) return false;
+	*val = p + 1;
+	*len = n - 2;
+	return true;
+}

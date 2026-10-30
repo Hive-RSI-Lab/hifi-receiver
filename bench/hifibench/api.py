@@ -1,10 +1,13 @@
 """The board's test API (docs/test-api.md), over HTTP or the USB serial console.
 
-Both transports carry the same ops and the same JSON: HTTP as
-`GET|POST /api/v1/<op>`, the console as a line `api <op> [json]` answered by
-one line `API {json}` (an error as `API {"error": ..., "status": N}`). So a
-board on a laptop's USB port with no network is tested the same way as one
-found on the LAN.
+Every transport carries the same ops and the same JSON: HTTP as
+`GET|POST /api/v1/<op>`; the console as a line `api <op>` (a GET) or
+`api <op> "<json>"` (a POST, the JSON in double quotes with quotes and
+backslashes escaped, because ESP-IDF's console splits its arguments on spaces),
+answered by one line `API {json}` (an error as `API {"error": ..., "status":
+N}`); and the relay (relay.py) as signed commands over MQTT. So a board on a
+laptop's USB port with no network is tested the same way as one found on the
+LAN or left at home.
 """
 from __future__ import annotations
 
@@ -17,9 +20,46 @@ from . import API
 
 
 class ApiError(Exception):
-    def __init__(self, op: str, status: int, msg: str):
+    def __init__(self, op: str, status: int, msg: str, body: dict | None = None):
         super().__init__(f"{op}: {status} {msg}")
         self.op, self.status, self.msg = op, status, msg
+        self.body = body or {}  # the whole error reply, e.g. ota/chunk's "next"
+
+
+def quote_arg(text: str) -> str:
+    """One console argument: double-quoted, with quotes and backslashes escaped."""
+    return '"' + text.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def console_line(op: str, body: dict | None = None, post: bool = False) -> str:
+    if body is None and not post:
+        return f"api {op}"
+    return f"api {op} " + quote_arg(json.dumps(body if body is not None else {}, separators=(",", ":")))
+
+
+def split_argv(line: str) -> list[str]:
+    """ESP-IDF's esp_console_split_argv: spaces split, double quotes group,
+    a backslash takes the next character as it is."""
+    out, cur, quoted, have, i = [], [], False, False, 0
+    while i < len(line):
+        c = line[i]
+        if c == "\\" and i + 1 < len(line):
+            cur.append(line[i + 1])
+            have, i = True, i + 2
+            continue
+        if c == '"':
+            quoted, have = not quoted, True
+        elif c == " " and not quoted:
+            if have:
+                out.append("".join(cur))
+            cur, have = [], False
+        else:
+            cur.append(c)
+            have = True
+        i += 1
+    if have:
+        out.append("".join(cur))
+    return out
 
 
 class Http:
@@ -42,10 +82,11 @@ class Http:
                 return json.loads(r.read() or b"{}")
         except urllib.error.HTTPError as e:
             try:
-                msg = json.loads(e.read()).get("error", e.reason)
+                err = json.loads(e.read())
+                msg = err.get("error", e.reason)
             except Exception:
-                msg = e.reason
-            raise ApiError(op, e.code, str(msg)) from None
+                err, msg = {}, e.reason
+            raise ApiError(op, e.code, str(msg), err if isinstance(err, dict) else {}) from None
 
 
 class Console:
@@ -58,7 +99,7 @@ class Console:
         return self.name
 
     def call(self, op: str, body: dict | None = None, post: bool = False) -> dict:
-        line = f"api {op}" + (" " + json.dumps(body) if body is not None else "")
+        line = console_line(op, body, post)
         self.port.write((line + "\n").encode())
         end = time.monotonic() + self.timeout
         while time.monotonic() < end:
@@ -69,7 +110,7 @@ class Console:
             if text.startswith("API "):  # everything else is the firmware's log
                 out = json.loads(text[4:])
                 if isinstance(out, dict) and "error" in out:
-                    raise ApiError(op, out.get("status", 400), out["error"])
+                    raise ApiError(op, out.get("status", 400), out["error"], out)
                 return out
         raise ApiError(op, 0, f"no answer on {self.name} in {self.timeout:g} s")
 

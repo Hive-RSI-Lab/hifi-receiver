@@ -1,7 +1,8 @@
 """The Plus and Ultra enclosures around the `core` board, in build123d with hive-mech.
 
 `plus.py` and `ultra.py` are the scripts `mech build` runs; both call
-build() here with their variant. Everything is in mech's board frame: mm,
+build() here with their variant. `lite.py` uses the shared pieces too
+(rca_ports, post_ports, base, lid, light_pipe, tray). Everything is in mech's board frame: mm,
 x right along the core's front edge, y back (the rear panel is the N edge,
 y = 100), z up, z = 0 the core's bottom face.
 
@@ -104,6 +105,36 @@ class CoreTray(Tray):
         return self.ztop
 
 
+# --- shared with Lite (lite.py): RCA barrels and binding posts through the rear wall ---------
+
+def rca_ports(board: Board, refs, feats: dict, gap_n: float):
+    """Stacked RCA jacks on the N edge: the body ends inside the rear wall; each barrel is a port
+    through a round hole (feats["rca"])."""
+    for ref in refs:
+        p = board.part(ref)
+        p.bbox[3] = min(p.bbox[3], board.size[1] + gap_n - 0.05)
+        for zb in RCA_AXES:
+            z = T_PCB + zb
+            h = RCA_BARREL / 2
+            name = f"{ref}{'u' if zb > 10 else 'l'}"
+            board.ports.append(Port(name, "N", [p.x - h, p.x + h, z - h, z + h], board.size[1], 0.0, "top"))
+            feats.setdefault("rca", []).append((name, p.x, z))
+
+
+def post_ports(board: Board, xs, zs: dict, y_wall_n: float, feats: dict):
+    """Binding posts through the rear wall at each x, one row per zone at zs[zone] (above the board's
+    bottom face): the hole is a port (a square inside the round hole), the nut and lug a box."""
+    for zone, z in zs.items():
+        for i, x in enumerate(xs):
+            name = f"P{zone}{i + 1}"
+            h = POST_HOLE / 2 / math.sqrt(2) - 0.1
+            board.ports.append(Port(name, "N", [x - h, x + h, z - h, z + h], y_wall_n, 0.0, "top"))
+            n = POST_NUT / 2
+            board.parts.append(box_part(name, x - n, y_wall_n - POST_DEPTH, z - n, x + n, y_wall_n, z + n,
+                                        "binding post nut and lug"))
+            feats.setdefault("posts", []).append((name, x, z))
+
+
 # --- the board as the box sees it ------------------------------------------------
 
 def post_z(variant):
@@ -120,32 +151,14 @@ def prepare(board: Board, variant: str, y_wall_n: float) -> dict:
     board.ports = [p for p in board.ports if p.ref in keep]
     feats = {"rca": [], "posts": [], "heatsinks": []}
 
-    # RCA: the body ends inside the rear wall; each barrel is a port through a round hole.
-    for ref in ("J4", "J5"):
-        p = board.part(ref)
-        p.bbox[3] = min(p.bbox[3], board.size[1] + GAP["N"] - 0.05)
-        for zb in RCA_AXES:
-            z = T_PCB + zb
-            h = RCA_BARREL / 2
-            name = f"{ref}{'u' if zb > 10 else 'l'}"
-            board.ports.append(Port(name, "N", [p.x - h, p.x + h, z - h, z + h], board.size[1], 0.0, "top"))
-            feats["rca"].append((name, p.x, z))
+    rca_ports(board, ("J4", "J5"), feats, GAP["N"])
 
     # TOSLINK (Ultra): its body face, straight out of the rear wall.
     if "U19" not in gone:
         p = board.part("U19")
         board.ports.append(Port("U19", "N", [p.bbox[0], p.bbox[2], p.z[0], p.z[1]], p.bbox[3], 0.0, "top"))
 
-    # Binding posts: the hole is a port (a square inside the round hole), the nut and lug a box.
-    for zone, z in post_z(variant).items():
-        for i, x in enumerate(POST_X):
-            name = f"P{zone}{i + 1}"
-            h = POST_HOLE / 2 / math.sqrt(2) - 0.1
-            board.ports.append(Port(name, "N", [x - h, x + h, z - h, z + h], y_wall_n, 0.0, "top"))
-            n = POST_NUT / 2
-            board.parts.append(box_part(name, x - n, y_wall_n - POST_DEPTH, z - n, x + n, y_wall_n, z + n,
-                                        "binding post nut and lug"))
-            feats["posts"].append((name, x, z))
+    post_ports(board, POST_X, post_z(variant), y_wall_n, feats)
 
     # Heatsink room over each fitted TPA3221's top slug: the free area round it, up to the lid.
     room = {"U15": (2.0, 52.5, 21.0, 64.5), "U16": (35.4, 52.5, 53.4, 64.5)}
@@ -164,7 +177,9 @@ def add_heatsinks(board: Board, feats: dict, z_top: float):
 
 # --- the shell -----------------------------------------------------------------
 
-def base(t: CoreTray, feats: dict):
+def base(t: CoreTray, feats: dict, ports=("J1", "J2", "U19")):
+    """Walls and floor, standoffs with the screws' clearance and counterbores from below, feet
+    recesses, the `ports` mech found, and feats' RCA holes, post holes and heatsink floor vents."""
     x0, y0, x1, y1 = t.outer
     ix0, iy0, ix1, iy1 = t.inner
     b = rounded(x0, y0, x1, y1, t.z_bottom, t.z_top, t.corner + t.wall)
@@ -176,24 +191,25 @@ def base(t: CoreTray, feats: dict):
     # feet recesses
     for fx, fy in ((x0 + 9, y0 + 9), (x1 - 9, y0 + 9), (x0 + 9, y1 - 9), (x1 - 9, y1 - 9)):
         b -= cylinder(fx, fy, t.z_bottom - 1, t.z_bottom + FOOT_DEPTH, FOOT_D)
-    b = t.cut_ports(b, refs=["J1", "J2", "U19"])
+    b = t.cut_ports(b, refs=list(ports))
     cut = t.wall + 2
     yn = y1 - t.wall / 2
-    for _, x, z in feats["rca"]:
+    for _, x, z in feats.get("rca", []):
         b -= Pos(x, yn, z) * Rot(90, 0, 0) * Cylinder(RCA_HOLE / 2, cut)
-    for _, x, z in feats["posts"]:
+    for _, x, z in feats.get("posts", []):
         b -= teardrop_y(x, yn, z, POST_HOLE, cut)
-    for _, hx0, hy0, hx1, hy1, _ in feats["heatsinks"]:
+    for _, hx0, hy0, hx1, hy1, _ in feats.get("heatsinks", []):
         b = t.vents(b, (hx0 + 1, hy0 - 2, hx1 - 1, hy1 + 2), along="y", where="floor")
     return b
 
 
 def lid(t: CoreTray, feats: dict):
+    """mech's lid with a pillar onto each mounting hole (the screws from below thread into it)."""
     l = t.lid()
     for h in t.board.holes:
         l += cylinder(h.x, h.y, T_PCB + PILLAR_SHORT, t.z_top + 0.01, PILLAR_OD)
         l -= cylinder(h.x, h.y, T_PCB, t.z_top + LID - 0.8, PILLAR_PILOT)
-    for _, hx0, hy0, hx1, hy1, _ in feats["heatsinks"]:
+    for _, hx0, hy0, hx1, hy1, _ in feats.get("heatsinks", []):
         l = t.vents(l, (hx0, hy0 - 2, hx1, hy1 + 2), along="y")
     return l
 

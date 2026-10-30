@@ -14,3 +14,10 @@ The person, Hive chat 2026-10-28, verbatim:
 15:43Z: "OK. Make sure as new fixes land in the hwde module, that the  boards get updated etc"
 16:55Z (supersedes 14:56Z on firmware): "you know what, resume all the fw stuff etc the board design needs to happen in tandem and be informed by fw and sw constraints. Build the whole product go"
 16:57Z: "remember how the hive works: you and agents etc can build and file new modules, spawn other agents recursively to build those out etc"
+
+The person, Hive chat 2026-10-29 (10-28 evening, their time), verbatim, on their part in bring-up:
+
+01:47Z: "it should all be autonomous without me mind you (except obviously plugging it in etc)"
+02:04Z: "Like essentially the flow on my end has to ideally be plug it in to power, connect some diagnostic USB or something to a laptop, or just have it connect to the internet, run some script on my laptop that configures wifi etc, and then i just leave it plugged in at home and the hive talks to it, brings it up, revs the FW, tests things, etc, all on its own. Like yea at some point i will proob need to use a scope etc, but whatever can be done for minimal increased cost and complexity to have the board monitor irself and its waveforms is best"
+02:05Z: "Like my involvement is literally: i give the spec, you design a product that will def work with appropriate contingencies, etc, as needed, then i order it, it arrives, i plug it in, do the minimal possible on my end, and leave it and then you ping me when it's ready for use"
+02:06Z: "This should be the flow for all board designs"

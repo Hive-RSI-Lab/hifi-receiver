@@ -27,7 +27,7 @@ and say why.
 | Streaming | Spotify Connect, AirPlay 1, Bluetooth, Lyrion (LMS) | same | same |
 | Control | web app, 3 buttons, IR (bring your own remote) | web app, knob + 2 buttons, IR remote in box | web app, 2" colour screen, knob + 3 buttons, IR remote |
 | Boards | 1: `lite-main` (2-layer) | 1: `core` (4-layer) | 2: `core` fully populated + `ultra-front` |
-| Unit cost at 100, board + assembly + PCB | **$14.9** incl. binding posts (board alone $13.2 per `tools/hwcheck.py score`; first-spin review fixes, CH340B and loopback taps included) | **$29.0** (review-2: through-hole USB-C, CH340B, TCA9539, self-measurement; TPA3220 pad-down amp, no heatsink) | **$40.0** |
+| Unit cost at 100, board + assembly + PCB | **$14.9** incl. binding posts (board alone $13.1 per `tools/hwcheck.py cost`) | **$29.0** (TPA3220 pad-down amp, no heatsink; `core` board alone $29.8 per `tools/hwcheck.py cost`) | **$40.0** |
 | Target retail (charger not included / with charger) | **$59 / $79** | **$129 / $159** | **$199 / $229** |
 | Build order | **first** | second | third |
 
@@ -283,6 +283,12 @@ the network so it can talk to the server"):
   PD contract (V/A), VBUS current, amp fault/clip/over-temperature, firmware
   version and the network. It can also play built-in test tones and sweeps,
   and run a self-test.
+- **Left at home, with no one there:** one command on the laptop
+  (`bench/provision.py`) sets up Wi-Fi; after that the board dials out to an
+  MQTT relay the Hive also reaches, takes signed commands, updates its own
+  firmware with rollback, and records its own speaker outputs through a
+  divider into the codec's spare ADC input (about $0.04 on Lite, $0.34 on
+  Plus, $0.70 on Ultra). The design: [remote.md](remote.md).
 
 ### Bill of materials and assembly cost
 
