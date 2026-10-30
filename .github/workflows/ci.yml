@@ -48,29 +48,32 @@ jobs:
         id: kicad
         with:
           path: ${{ runner.temp }}/tools/kicad-${{ env.KICAD_VERSION }}
-          key: kicad-${{ env.KICAD_APPIMAGE }}
+          # v2: the first key cached an empty folder (220 B), so every run that gated a board
+          # found no kicad-cli (PR #96, 10-30).
+          key: kicad-v2-${{ env.KICAD_APPIMAGE }}
       - name: KiCad ${{ env.KICAD_VERSION }} as an AppDir
-        # Not keyed on cache-hit alone: a hit that restored no AppRun (an empty or
-        # partial cache entry) left hwde with no kicad-cli on PR #76's runs.
         shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/tools" && cd "$RUNNER_TEMP/tools"
-          if [ -x "kicad-$KICAD_VERSION/AppRun" ]; then
-            echo "KiCad $KICAD_VERSION AppDir restored (cache hit: ${{ steps.kicad.outputs.cache-hit }})"
-            exit 0
+          dir="kicad-$KICAD_VERSION"
+          # A restored cache counts only if it holds a KiCad that runs; else fetch it again.
+          if [ ! -x "$dir/AppRun" ]; then
+            rm -rf "$dir" squashfs-root AppDir
+            curl -fsSL -o kicad.AppImage "$KICAD_APPIMAGE"
+            chmod +x kicad.AppImage
+            ./kicad.AppImage --appimage-extract >/dev/null
+            # The AppImage's runtime extracts to squashfs-root or AppDir, by its version.
+            if [ -d squashfs-root ]; then mv squashfs-root "$dir"; else mv AppDir "$dir"; fi
+            rm kicad.AppImage
           fi
-          echo "no kicad-$KICAD_VERSION/AppRun (cache hit: ${{ steps.kicad.outputs.cache-hit }}): extracting"
-          rm -rf "kicad-$KICAD_VERSION"
-          curl -fsSL -o kicad.AppImage "$KICAD_APPIMAGE"
-          chmod +x kicad.AppImage
-          ./kicad.AppImage --appimage-extract >/dev/null
-          mv squashfs-root "kicad-$KICAD_VERSION"
-          rm kicad.AppImage
+          ls -la "$dir" | head -20
+          du -sh "$dir"
+          test -x "$dir/AppRun"
+          xvfb-run -a "$dir/AppRun" kicad-cli version
       - name: the test (python3 tools/hwcheck.py test)
         shell: bash
         run: |
           set -o pipefail
-          echo "KiCad for hwde: $(ls -d "$HIVE_TOOLS"/kicad-10.* 2>/dev/null || echo none in "$HIVE_TOOLS")"
           python3 tools/hwcheck.py test 2>&1 | tee "$RUNNER_TEMP/test.log"
         env:
           HIVE_TOOLS: ${{ runner.temp }}/tools
