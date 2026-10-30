@@ -29,8 +29,11 @@ STEP moves it to Onshape later (see the end of this page).
   softens at about 55 °C.
 - **Settings:** 0.4 mm nozzle, 0.2 mm layers, 4 walls, 20–25 % infill.
 - **No supports.** The base prints on its floor, the lid on its top face and
-  each button on its cap. The holes in the walls either bridge (RCA, USB-C,
-  IR window) or are teardrops (binding posts).
+  each button on its cap. The holes in the walls are teardrops (RCA, binding
+  posts: the RCA ones cut flat 1 mm over the hole, a 3 mm bridge) or bridge
+  (USB-C, IR window). Each standoff has a 7.8 mm foot round its 6.2 mm
+  counterbore, so the ring left round it is two nozzle lines. The foot joins
+  the wall beside it.
 - **Bed:** both parts fit a 220 x 220 mm bed.
 
 ### What else it needs
@@ -77,8 +80,8 @@ STEP moves it to Onshape later (see the end of this page).
     and a stem down to 0.3 mm over its switch.
   - the status LED's light pipe, to the left of the buttons
   - vent slots over the amplifier. Keep them uncovered.
-- **Underside:** floor vents under the amplifier, a 40 x 22 mm label recess
-  and the four feet.
+- **Underside:** floor vents under the amplifier and the four feet. No label
+  recess: its roof would be a 22 mm bridge off the bed.
 
 There are no embossed labels yet: build123d's text needs a font this machine
 doesn't have set up. Until then, use a printed sticker.
@@ -141,7 +144,7 @@ They are built by `plus.py` and `ultra.py`, which call `core_box.py`.
 | Outside, without knob | 127.4 x 106.0 x 39.8 mm | 127.4 x 114.4 x 49.2 mm, plus a 4.2 mm control column on the front |
 | Printed parts | base, lid, knob, 2 buttons | base, lid, knob, 3 buttons |
 | PETG if solid | about 134 g | about 147 g |
-| Fit check | `out/plus/fit.md`, 24/24 | `out/ultra/fit.md`, 31/31 |
+| Fit check | `out/plus/fit.md`, 24/24 | `out/ultra/fit.md`, 51/51, printing without support included |
 
 Each `out/<tier>/` folder holds the STLs (already in print orientation),
 `enclosure.step` (the assembly with the board as a slab, for Onshape), the
@@ -154,7 +157,7 @@ fit report and renders (`iso.png`, `top.png`, `port-<edge>.png`).
     plugs fit. From the left, seen from the front: L pair, then R pair.
     They sit over the J6/J7 screw terminals, and each post wires to its
     terminal.
-  - SUB OUT (J4) and LINE IN (J5), round 12 mm holes per barrel.
+  - SUB OUT (J4) and LINE IN (J5), a 12 mm teardrop hole per barrel.
   - Ultra adds TOSLINK (U19) and a second row of posts for zone B
     (J10/J11) above zone A's.
 - **Left (W):** USB-C power (J1) and Ethernet (J2).
@@ -166,13 +169,19 @@ fit report and renders (`iso.png`, `top.png`, `port-<edge>.png`).
   face forward. Its J1 sits 4.1 mm in front of the core's J3, and its
   bottom edge is 4.4 mm over the floor, which leaves room for the FFC to
   turn under it. The panel has:
-  - **Screen:** a window over the LCD, active area + 1 mm a side, opening
-    at 45 degrees. The LCD's face is 2.7 mm behind the panel's outside.
+  - **Screen:** a window over the LCD, active area + 1 mm a side, its
+    sides opening at 45 degrees on a flat sill. It is a slot up to the
+    wall's top: a tab on the lid drops into it and is the window's top
+    edge (1 mm flat, then opening at 45 degrees). The LCD's face is 2.7 mm
+    behind the panel's outside.
   - **Buttons:** three plungers (SW1-3). Each has a cap through the wall
-    and a flange behind it, which the board holds captive.
+    and a flange behind it, which the board holds captive. Each prints
+    standing on the flange's flat back, cap up.
   - **Control column:** a raised column on the right with a pocket for the
     EC11 body and the IR receiver. It carries the knob (on the EC11's M7
-    bushing), the IR window and the RGB LED's hole.
+    bushing, through a teardrop hole), the IR window and the RGB LED's
+    hole. The pocket opens up under the lid, and in front of the wall its
+    roof rises at 45 degrees.
   - **Mounting:** the front board screws to four bosses on the wall with
     M2.5 x 6 thread-forming screws from behind. Fit it **before** the core.
   - **Core LED:** Ultra keeps the top light pipe for the core's D3.
@@ -248,9 +257,6 @@ python3 enclosure/fit_md.py plus ultra
   stuck on with tape. 19 x 12 mm is the room there is before the output
   inductors. That is enough for music (about 3 W) but not for long
   full-power sine tests.
-- **Ultra's front panel:** it prints as part of the base, on its edge.
-  That makes a 47 mm bridge over the screen window. If the bridge sags,
-  split the panel off as a separate part printed face down.
 - **Unchecked dimensions:**
   - the LCD's active-area offset in its module (datasheet p.10). The
     window is centred with 1 mm a side to spare.

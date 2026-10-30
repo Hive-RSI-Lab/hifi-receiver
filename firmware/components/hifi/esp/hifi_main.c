@@ -15,11 +15,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "driver/adc.h"
-#include "driver/gpio.h"
 #include "driver/i2c.h"
 #include "driver/i2s.h"
-#include "esp_adc_cal.h"
 #include "esp_console.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
@@ -40,6 +37,7 @@
 
 #include "hifi_api.h"
 #include "hifi_board.h"
+#include "hifi_bsp.h"
 #include "hifi_esp.h"
 #include "hifi_gov.h"
 #include "hifi_http.h"
@@ -70,7 +68,7 @@ static SemaphoreHandle_t lock;       /* power, contract and settings below */
 static hifi_power_t power;
 static hifi_gov_t gov;
 static hifi_contract_t contract;
-static float vbus_v;
+static float vbus_v, pvdd_v = NAN, vbus_i_a = NAN;
 static bool pg, fault, sink_ok;
 static uint8_t pd_status;
 static hifi_input_t input = HIFI_INPUT_STREAM;
@@ -87,7 +85,6 @@ static hifi_meta_t meta;
 static hifi_ir_t ir;
 
 static volatile bool audio_active;   /* set by the audio thread */
-static esp_adc_cal_characteristics_t adc_chars;
 
 /* the tone player */
 static TaskHandle_t tone_task;
@@ -121,18 +118,18 @@ static esp_err_t i2c_xfer(uint8_t addr, uint8_t reg, uint8_t *val, bool write) {
 	return err;
 }
 
-static esp_err_t i2c_read(uint8_t addr, uint8_t reg, uint8_t *val) { return i2c_xfer(addr, reg, val, false); }
-static esp_err_t i2c_write(uint8_t addr, uint8_t reg, uint8_t val) { return i2c_xfer(addr, reg, &val, true); }
+esp_err_t hifi_i2c_read(uint8_t addr, uint8_t reg, uint8_t *val) { return i2c_xfer(addr, reg, val, false); }
+esp_err_t hifi_i2c_write(uint8_t addr, uint8_t reg, uint8_t val) { return i2c_xfer(addr, reg, &val, true); }
 
 /*
- * Squeezelite installs the I2C driver when it starts the codec. If it hasn't
- * after a few seconds (recovery firmware, no codec config), install it here
- * so the PD contract can still be read.
+ * Squeezelite installs the I2C driver when it starts the codec (Lite) or its
+ * services (core). If it hasn't after a few seconds (recovery firmware, no
+ * codec config), install it here so the PD contract can still be read.
  */
-static void i2c_ensure(void) {
+void hifi_i2c_ensure(void) {
 	static bool tried;
 	uint8_t v;
-	if (tried || now_ms() < 8000 || i2c_read(CH224_I2C_ADDR, CH224_REG_STATUS, &v) != ESP_ERR_INVALID_STATE) return;
+	if (tried || now_ms() < 8000 || hifi_i2c_read(CH224_I2C_ADDR, CH224_REG_STATUS, &v) != ESP_ERR_INVALID_STATE) return;
 	tried = true;
 	i2c_config_t c = {
 		.mode = I2C_MODE_MASTER, .sda_io_num = I2C_SDA, .scl_io_num = I2C_SCL,
@@ -144,101 +141,42 @@ static void i2c_ensure(void) {
 	ESP_LOGW(TAG, "codec driver didn't start; installed I2C %d ourselves", I2C_PORT);
 }
 
-/* ------------------------------------------------------------------ codec */
-
-static int sub_code(float db) {
-	int code = (int) lrintf(30 + db / 1.5f);
-	return code < 0 ? 0 : code > 33 ? 33 : code;
-}
-
-/* Input routing and sub level onto the ES8388. Squeezelite's controlset
- * (firmware/patches, Kconfig) sets the rest at codec start. */
-static esp_err_t codec_apply(void) {
-	LOCK();
-	hifi_input_t in = input;
-	bool on = sub_on;
-	int code = sub_code(sub_db);
-	/* the bypass skips squeezelite, so the volume goes on the codec's outputs */
-	int out1 = hifi_vol_codec_code(&vol, ES8388_OUT1_FULL);
-	UNLOCK();
-	esp_err_t err = ESP_OK;
-	if (in == HIFI_INPUT_DJ_DIRECT) {
-		/* analog inputs on (ADCs stay off), mixers take LIN1/RIN1 at -3 dB, DAC out
-		 * of the mix: the line in reaches the amp and sub outs with no latency.
-		 * Muted: the line in leaves the mix too */
-		uint8_t mix = ES8388_MIX_LIN_M3DB | (out1 < 0 ? 0 : 0x40); /* bit6: LIN into the mixer */
-		err |= i2c_write(ES8388_ADDR, ES8388_ADCPOWER, 0x38);
-		err |= i2c_write(ES8388_ADDR, ES8388_DACCONTROL17, mix);
-		err |= i2c_write(ES8388_ADDR, ES8388_DACCONTROL20, mix);
-		err |= i2c_write(ES8388_ADDR, ES8388_LOUT1VOL, out1 < 0 ? 0 : out1);
-		err |= i2c_write(ES8388_ADDR, ES8388_ROUT1VOL, out1 < 0 ? 0 : out1);
-	} else {
-		/* squeezelite's own setting: DAC into the mixers, inputs powered down;
-		 * the volume is squeezelite's digital gain (hifi_volume_hook) */
-		err |= i2c_write(ES8388_ADDR, ES8388_DACCONTROL17, 0xB8);
-		err |= i2c_write(ES8388_ADDR, ES8388_DACCONTROL20, 0xB8);
-		err |= i2c_write(ES8388_ADDR, ES8388_ADCPOWER, 0xFC);
-		err |= i2c_write(ES8388_ADDR, ES8388_LOUT1VOL, ES8388_OUT1_FULL);
-		err |= i2c_write(ES8388_ADDR, ES8388_ROUT1VOL, ES8388_OUT1_FULL);
-	}
-	err |= i2c_write(ES8388_ADDR, ES8388_DACPOWER, on ? 0x3C : 0x30);
-	err |= i2c_write(ES8388_ADDR, ES8388_LOUT2VOL, on ? code : 0);
-	err |= i2c_write(ES8388_ADDR, ES8388_ROUT2VOL, on ? code : 0);
-	return err;
-}
-
 /* ------------------------------------------------------------------ power task */
-
-static float read_vbus(void) {
-	uint32_t sum = 0;
-	for (int i = 0; i < 8; i++) sum += adc1_get_raw(ADC_VBUS);
-	return esp_adc_cal_raw_to_voltage(sum / 8, &adc_chars) * VBUS_DIVIDER / 1000.0f;
-}
 
 static void power_task(void *arg) {
 	TickType_t wake = xTaskGetTickCount();
-	uint32_t last_pd = 0, codec_ok_at = 0;
+	static hifi_bsp_power_t bp; /* keeps the PD sink's last reading between reads */
 	for (;;) {
 		vTaskDelayUntil(&wake, pdMS_TO_TICKS(10));
 		uint32_t now = now_ms();
-		float v = read_vbus();
-		bool g = gpio_get_level(PIN_PD_PG) == 0;
-		bool f = gpio_get_level(PIN_AMP_FAULTZ) == 0;
+		hifi_bsp_power_in(now, &bp);
 
-		/* the PD sink's registers every 500 ms */
-		uint8_t st = pd_status, cur = 0;
-		bool ok = sink_ok, refreshed = now - last_pd >= 500;
-		if (refreshed) {
-			last_pd = now;
-			i2c_ensure();
-			ok = i2c_read(CH224_I2C_ADDR, CH224_REG_STATUS, &st) == ESP_OK &&
-			     i2c_read(CH224_I2C_ADDR, CH224_REG_CURRENT, &cur) == ESP_OK;
-			if (!ok) cur = 0;
-		}
-
-		/* the codec: re-apply our routing once it answers, and on request */
+		/* the routing: re-applied once the board's parts take it, and on request */
 		if (codec_dirty && !capture_busy) {
-			uint8_t dummy;
-			if (i2c_read(ES8388_ADDR, 0x00, &dummy) == ESP_OK) {
-				if (!codec_ok_at) codec_ok_at = now; /* let squeezelite finish its init */
-				if (now - codec_ok_at > 2000 && codec_apply() == ESP_OK) codec_dirty = false;
-			}
+			LOCK();
+			hifi_input_t in = input;
+			bool on = sub_on;
+			float db = sub_db;
+			hifi_vol_t v = vol;
+			UNLOCK();
+			if (hifi_bsp_route(in, on, db, &v, now)) codec_dirty = false;
 		}
 
 		LOCK();
-		vbus_v = v;
-		pg = g;
-		fault = f;
-		if (refreshed) {
-			sink_ok = ok;
-			pd_status = st;
-			if (ok) hifi_contract_from(true, st, cur, v, &contract);
-			else hifi_contract_from(false, 0, 0, v, &contract);
+		vbus_v = bp.vbus_v;
+		vbus_i_a = bp.vbus_i_a;
+		pvdd_v = bp.pvdd_v;
+		pg = bp.pg;
+		fault = bp.fault;
+		if (bp.pd_read) {
+			sink_ok = bp.sink_ok;
+			pd_status = bp.pd_status;
+			hifi_contract_from(bp.sink_ok, bp.sink_ok ? bp.pd_status : 0, bp.pd_current, bp.vbus_v, &contract);
 			/* until PG, assume no more than a USB 2.0 port */
 			hifi_gov_set_supply(&gov, contract.v, pg ? contract.w : 2.5f);
 		}
 		hifi_power_in_t in = {
-			.now_ms = now, .vbus_v = v, .pg = g, .fault = f,
+			.now_ms = now, .vbus_v = bp.vbus_v, .pvdd_v = bp.pvdd_v, .pg = bp.pg, .fault = bp.fault,
 			.audio = audio_active || tone_active || input == HIFI_INPUT_DJ_DIRECT ||
 				 (int32_t) (selftest_hold_until - now) > 0,
 		};
@@ -247,15 +185,12 @@ static void power_task(void *arg) {
 		int save_v = vol.volume, save_max = vol.max_volume;
 		if (save_vol) vol_dirty = false;
 		hifi_pwr_state_t before = power.state;
-		const hifi_power_out_t *o = hifi_power_step(&power, &in);
-		/* the amp goes into shutdown before PVDD opens, and comes out after */
-		if (!o->amp_on) gpio_set_level(PIN_AMP_SDZ, 0);
-		gpio_set_level(PIN_PVDD_EN, o->pvdd_en);
-		if (o->amp_on) gpio_set_level(PIN_AMP_SDZ, 1);
+		hifi_power_out_t o = *hifi_power_step(&power, &in);
 		if (power.state != before)
-			ESP_LOGI(TAG, "power %s -> %s (VBUS %.2f V, PG %d)", hifi_power_state_name(before),
-				 hifi_power_state_name(power.state), v, g);
+			ESP_LOGI(TAG, "power %s -> %s (VBUS %.2f V, PVDD %.2f V, PG %d)", hifi_power_state_name(before),
+				 hifi_power_state_name(power.state), bp.vbus_v, bp.pvdd_v, bp.pg);
 		UNLOCK();
+		hifi_bsp_power_out(&o);
 		if (save_vol) {
 			char sv[8];
 			snprintf(sv, sizeof(sv), "%d", save_v);
@@ -265,6 +200,10 @@ static void power_task(void *arg) {
 		}
 	}
 }
+
+bool hifi_main_amp_latched(void) { return power.latched; }
+
+void hifi_main_gov_amps(int n) { gov.amps = n; }
 
 /* ------------------------------------------------------------------ volume */
 
@@ -348,6 +287,22 @@ static void do_action(int a) {
 	if (local_action(a, true)) return;
 	actrls_handler h = IR_TO_ACTRLS[a] != ACTRLS_NONE ? get_ctrl_handler(IR_TO_ACTRLS[a]) : NULL;
 	if (h) h(true); /* like a button press (LMS's handlers act on the release too) */
+}
+
+void hifi_main_action(int a) { do_action(a); }
+
+/* The core board's knob: the receiver's own volume when nothing streams or
+ * in DJ direct, else the source's, a step per click, as the buttons do. */
+void hifi_main_knob(int detents) {
+	if (volume_is_local()) {
+		LOCK();
+		hifi_vol_turn(&vol, detents);
+		UNLOCK();
+		apply_volume();
+		return;
+	}
+	actrls_handler h = get_ctrl_handler(detents > 0 ? ACTRLS_VOLUP : ACTRLS_VOLDOWN);
+	for (int i = 0; h && i < abs(detents); i++) h(true);
 }
 
 /* A button press on the board (squeezelite's audio controls). */
@@ -454,12 +409,7 @@ static void op_info(hifi_info_t *i) {
 	snprintf(i->name, sizeof(i->name), "%s", s ? s : HIFI_MODEL);
 	free(s);
 	i->flash_mb = spi_flash_get_chip_size() >> 20;
-	i->psram_mb = heap_caps_get_total_size(MALLOC_CAP_SPIRAM) ? 8 : 0; /* WROVER-E N8R8 */
-	i->caps = (hifi_caps_t) {
-		.dj_direct = true, .eq_min_db = -12, .eq_max_db = 12,
-		.sub_count = 2, .sub_crossover = false, .sub_per_sub = false,
-		.zones = 1, .eth = false, .pdo_v_max = 20,
-	};
+	hifi_bsp_info(i);
 }
 
 static const char *source_name(void) {
@@ -492,7 +442,9 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	s->amp_faults = power.faults;
 	s->input = input;
 	s->sub_on = sub_on;
-	s->sub_db = (sub_code(sub_db) - 30) * 1.5f;
+	s->sub_db = hifi_bsp_sub_db(sub_db);
+	s->vbus_i_a = vbus_i_a;
+	s->pvdd_v = pvdd_v;
 	s->volume = vol.volume;
 	s->mute = vol.mute;
 	s->max_volume = vol.max_volume;
@@ -504,7 +456,6 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	s->ir_have_last = ir.have_last;
 	s->ir_last_code = ir.last_code;
 	UNLOCK();
-	s->pvdd_v = s->vbus_i_a = s->amp_temp_c = NAN; /* no sensors on lite-main */
 	s->gov_budget_w = gov.budget_w;
 	s->gov_in_w = hifi_gov_in_w(&gov);
 	s->gov_out_w = hifi_gov_out_w(&gov);
@@ -522,10 +473,7 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	char *h = config_alloc_get_str("host_name", NULL, HIFI_MODEL);
 	snprintf(s->hostname, sizeof(s->hostname), "%s", h ? h : HIFI_MODEL);
 	free(h);
-	esp_netif_ip_info_t ip = {0};
-	esp_netif_t *sta = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-	if (sta && esp_netif_get_ip_info(sta, &ip) == ESP_OK && ip.ip.addr)
-		snprintf(s->ip, sizeof(s->ip), IPSTR, IP2STR(&ip.ip));
+	hifi_net_ip(s->ip, sizeof(s->ip));
 	wifi_ap_record_t ap;
 	if (esp_wifi_sta_get_ap_info(&ap) == ESP_OK) {
 		snprintf(s->ssid, sizeof(s->ssid), "%s", (const char *) ap.ssid);
@@ -536,6 +484,8 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	s->net_mode = !s->ip[0] && (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA) ? "ap" : "sta";
 	s->heap_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
 	s->psram_free = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
+	hifi_net_update_status(&s->update);
+	hifi_bsp_snapshot(s); /* its sensors, zones and Ethernet */
 }
 
 static int op_tone_start(const hifi_tone_params_t *p, bool force, const char **err) {
@@ -593,7 +543,7 @@ static float op_set_sub(int on, float db) {
 	LOCK();
 	if (on >= 0) sub_on = on;
 	if (!isnan(db)) sub_db = db;
-	float set = (sub_code(sub_db) - 30) * 1.5f;
+	float set = hifi_bsp_sub_db(sub_db);
 	bool o = sub_on;
 	UNLOCK();
 	snprintf(v, sizeof(v), "%.1f", set);
@@ -618,7 +568,7 @@ static int op_set_eq(const float g[HIFI_EQ_BANDS]) {
 }
 
 /* The name people see in AirPlay, Bluetooth, Spotify and LMS. The hostname
- * stays hifi-lite so hifi-lite.local keeps working. */
+ * stays the model's (hifi-lite) so hifi-lite.local keeps working. */
 static int op_set_name(const char *name) {
 	int err = 0;
 	err |= config_set_value(NVS_TYPE_STR, "hifi_name", name) != ESP_OK;
@@ -667,7 +617,7 @@ static int op_control(const char *a) {
 
 static void op_selftest(hifi_selftest_t *t) {
 	uint8_t v;
-	bool pd = i2c_read(CH224_I2C_ADDR, CH224_REG_STATUS, &v) == ESP_OK;
+	bool pd = hifi_i2c_read(CH224_I2C_ADDR, CH224_REG_STATUS, &v) == ESP_OK;
 	hifi_selftest_add(t, "pd_sink_i2c", pd, pd ? "0x%02x acks" : "0x%02x doesn't answer", CH224_I2C_ADDR);
 
 	hifi_snapshot_t *s = calloc(1, sizeof(*s));
@@ -680,11 +630,7 @@ static void op_selftest(hifi_selftest_t *t) {
 				  amp_ok_supply ? "" : ": too low for the amp");
 	else
 		hifi_selftest_add(t, "pd_contract", false, "unknown (PD sink silent)");
-	bool vm = fabsf(s->vbus_v - s->contract.v) <= 0.08f * s->contract.v;
-	hifi_selftest_add(t, "vbus_matches", vm, "%.2f V", s->vbus_v);
-
-	bool codec = i2c_read(ES8388_ADDR, 0x00, &v) == ESP_OK;
-	hifi_selftest_add(t, "codec_i2c", codec, codec ? "0x%02x acks" : "0x%02x doesn't answer", ES8388_ADDR);
+	hifi_bsp_selftest(t); /* the board's own parts */
 
 	/* the amp: wake it for a moment and watch FAULTZ */
 	selftest_hold_until = now_ms() + 1500;
@@ -698,6 +644,11 @@ static void op_selftest(hifi_selftest_t *t) {
 	vTaskDelay(pdMS_TO_TICKS(200));
 	op_snapshot(s);
 	hifi_selftest_add(t, "pvdd_on", s->pvdd_on && s->pwr_state == HIFI_PWR_ON, "%s", hifi_power_state_name(s->pwr_state));
+	if (!isnan(s->pvdd_v)) { /* boards that sense PVDD after the switch (Lite) */
+		bool pu = s->pvdd_on && s->pvdd_v >= power.cfg.pvdd_min_frac * s->vbus_v;
+		hifi_selftest_add(t, "pvdd_sensed", pu, "PVDD %.2f V of VBUS %.2f V%s", s->pvdd_v, s->vbus_v,
+				  s->pvdd_on ? "" : " (switch not commanded on)");
+	}
 	if (s->amp_enabled)
 		hifi_selftest_add(t, "amp_no_fault", !s->amp_fault, s->amp_fault ? "FAULTZ low" : "FAULTZ high after 200 ms enabled");
 	else
@@ -734,6 +685,7 @@ static void op_ir_forget(int a) {
 
 /* ------------------------------------------------------------------ remote bring-up */
 
+#if HIFI_HAS_CAPTURE
 static bool has_taps(void) {
 	if (HIFI_HAS_TAPS) return true;
 	char *s = config_alloc_get_str("hifi_taps", NULL, "0");
@@ -756,14 +708,14 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 	if (capture_busy) return *err = "a capture is running", 409;
 	capture_busy = true;
 	esp_err_t e = ESP_OK;
-	e |= i2c_write(ES8388_ADDR, ES8388_ADCCONTROL1, 0x00);
-	e |= i2c_write(ES8388_ADDR, ES8388_ADCCONTROL2, src == HIFI_CAP_LOOPBACK ? 0x50 : 0x00);
-	e |= i2c_write(ES8388_ADDR, ES8388_ADCCONTROL4, 0x0C);
-	e |= i2c_write(ES8388_ADDR, ES8388_ADCCONTROL5, 0x02);
-	e |= i2c_write(ES8388_ADDR, ES8388_ADCCONTROL8, 0x00);
-	e |= i2c_write(ES8388_ADDR, ES8388_ADCCONTROL9, 0x00);
-	e |= i2c_write(ES8388_ADDR, ES8388_ADCCONTROL10, 0x00);
-	e |= i2c_write(ES8388_ADDR, ES8388_ADCPOWER, ES8388_ADCPOWER_CAPTURE);
+	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL1, 0x00);
+	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL2, src == HIFI_CAP_LOOPBACK ? 0x50 : 0x00);
+	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL4, 0x0C);
+	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL5, 0x02);
+	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL8, 0x00);
+	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL9, 0x00);
+	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL10, 0x00);
+	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCPOWER, ES8388_ADCPOWER_CAPTURE);
 	int st = 0;
 	if (e != ESP_OK) {
 		*err = "codec didn't take the ADC settings";
@@ -799,26 +751,39 @@ out:
 	codec_dirty = true; /* back to the routing for the input in use */
 	return st;
 }
+#endif
 
 static int op_set_wifi(const char *ssid, const char *password) {
 	network_async_connect(ssid, password); /* the network manager saves it once joined */
 	return 0;
 }
 
-static bool wifi_has_ip(void) {
+static bool netif_ip(esp_netif_t *n, esp_netif_ip_info_t *ip) {
+	const char *key = n ? esp_netif_get_ifkey(n) : NULL;
+	return n && !(key && !strcmp(key, "WIFI_AP_DEF")) && esp_netif_is_netif_up(n) &&
+	       esp_netif_get_ip_info(n, ip) == ESP_OK && ip->ip.addr;
+}
+
+bool hifi_net_ip(char *buf, size_t n) {
+	/* the default route's interface first, then any other that is up: on
+	 * Ethernet (Plus/Ultra, QEMU's open_eth) WIFI_STA_DEF has no address */
 	esp_netif_ip_info_t ip = {0};
-	esp_netif_t *sta = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-	return sta && esp_netif_get_ip_info(sta, &ip) == ESP_OK && ip.ip.addr;
+	bool ok = netif_ip(esp_netif_get_default_netif(), &ip);
+	for (esp_netif_t *i = esp_netif_next(NULL); !ok && i; i = esp_netif_next(i)) ok = netif_ip(i, &ip);
+	if (buf && n) {
+		if (ok) snprintf(buf, n, IPSTR, IP2STR(&ip.ip));
+		else buf[0] = 0;
+	}
+	return ok;
 }
 
 void hifi_main_trial_inputs(hifi_trial_t *t) {
-	uint8_t v;
 	t->component_ok = lock != NULL;
-	t->i2c_ok = i2c_read(CH224_I2C_ADDR, CH224_REG_STATUS, &v) == ESP_OK && i2c_read(ES8388_ADDR, 0x00, &v) == ESP_OK;
+	t->i2c_ok = hifi_bsp_parts_ok();
 	t->heap_ok = heap_caps_get_free_size(MALLOC_CAP_INTERNAL) > 20000;
 	wifi_config_t wc = {0};
 	t->wifi_configured = esp_wifi_get_config(WIFI_IF_STA, &wc) == ESP_OK && wc.sta.ssid[0];
-	t->wifi_ok = wifi_has_ip();
+	t->wifi_ok = hifi_net_ip(NULL, 0);
 }
 
 const hifi_ops_t hifi_ops = {
@@ -827,8 +792,16 @@ const hifi_ops_t hifi_ops = {
 	.set_sub = op_set_sub, .set_eq = op_set_eq, .set_name = op_set_name, .reboot = op_reboot,
 	.factory_reset = op_factory_reset, .control = op_control, .selftest = op_selftest,
 	.set_volume = op_set_volume, .ir_learn = op_ir_learn, .ir_forget = op_ir_forget,
-	.capture = op_capture, .set_wifi = op_set_wifi, .remote_status = hifi_remote_status,
+#if HIFI_HAS_CAPTURE
+	.capture = op_capture,
+#endif
+	.set_wifi = op_set_wifi, .remote_status = hifi_remote_status,
 	.remote_set = hifi_remote_set, .ota = &hifi_ota_session, .ota_status = hifi_ota_status,
+	.wifi_scan = hifi_net_wifi_scan, .wifi_forget = hifi_net_wifi_forget,
+#if HIFI_ZONES > 1
+	.set_zone = hifi_bsp_set_zone,
+#endif
+	.update_check = hifi_net_update_check, .update_start = hifi_net_update_start,
 };
 
 /* ------------------------------------------------------------------ console, mDNS */
@@ -905,9 +878,7 @@ static void services_task(void *arg) {
 			console = esp_console_cmd_register(&c) == ESP_OK && esp_console_cmd_register(&a) == ESP_OK;
 		}
 		if (!mdns) {
-			esp_netif_ip_info_t ip = {0};
-			esp_netif_t *sta = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-			if (sta && esp_netif_get_ip_info(sta, &ip) == ESP_OK && ip.ip.addr) {
+			if (hifi_net_ip(NULL, 0)) {
 				mdns_txt_item_t txt[] = {
 					{"model", HIFI_MODEL}, {"board", HIFI_BOARD}, {"fw", HIFI_FW_VERSION}, {"api", "1"},
 				};
@@ -924,6 +895,7 @@ static void services_task(void *arg) {
 void hifi_dsp_process(uint8_t *buf, uint32_t frames, int bytes_per_frame, uint32_t rate) {
 	hifi_gov_process(&gov, buf, frames, bytes_per_frame, rate);
 	audio_active = gov.ms_avg > 1e-8f; /* above about -77 dBFS */
+	hifi_bsp_audio(buf, frames, bytes_per_frame);
 }
 
 void hifi_http_register(httpd_handle_t server) { hifi_http_start(server, &hifi_ops); }
@@ -932,23 +904,10 @@ static bool hifi_init(void) {
 	lock = xSemaphoreCreateMutex();
 	tone_lock = xSemaphoreCreateMutex();
 
-	gpio_config_t out = {.pin_bit_mask = BIT64(PIN_PVDD_EN) | BIT64(PIN_AMP_SDZ), .mode = GPIO_MODE_OUTPUT};
-	gpio_set_level(PIN_PVDD_EN, 0);
-	gpio_set_level(PIN_AMP_SDZ, 0);
-	gpio_config(&out);
-	gpio_config_t in = {.pin_bit_mask = BIT64(PIN_PD_PG) | BIT64(PIN_AMP_FAULTZ), .mode = GPIO_MODE_INPUT,
-			    .pull_up_en = GPIO_PULLUP_ENABLE};
-	gpio_config(&in);
-
-	adc1_config_width(ADC_WIDTH_BIT_12);
-	adc1_config_channel_atten(ADC_VBUS, ADC_ATTEN_DB_12);
-	esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 1100, &adc_chars);
-
 	hifi_power_cfg_t pc;
-	hifi_power_cfg_lite(&pc);
-	hifi_power_init(&power, &pc, now_ms());
 	hifi_gov_cfg_t gc;
-	hifi_gov_cfg_lite(&gc);
+	hifi_bsp_init(&pc, &gc); /* the board's pins and parts, and its numbers */
+	hifi_power_init(&power, &pc, now_ms());
 	hifi_gov_init(&gov, &gc);
 
 	char *s = config_alloc_get_str("hifi_sub_db", NULL, "0");
@@ -972,6 +931,7 @@ static bool hifi_init(void) {
 	if (hifi_sink_start) xTaskCreatePinnedToCore(tone_main, "hifi_tone", 4096, NULL, ESP_TASK_PRIO_MIN + 2, &tone_task, 1);
 	xTaskCreate(services_task, "hifi_svc", 3072, NULL, ESP_TASK_PRIO_MIN + 1, NULL);
 	hifi_remote_start(&hifi_ops);
+	hifi_bsp_start();
 	ESP_LOGI(TAG, "%s on %s, firmware %s", HIFI_MODEL, HIFI_BOARD, HIFI_FW_VERSION);
 	return true;
 }

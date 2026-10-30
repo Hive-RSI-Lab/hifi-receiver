@@ -12,6 +12,12 @@
  *    play (or idle_off_ms is 0).
  *  - VBUS out of range while on opens everything at once; it comes back
  *    after recover_ms in range.
+ *  - Where the board senses PVDD (pvdd_v not NaN), the switch must be seen
+ *    closed (PVDD at pvdd_min_frac of VBUS) within pvdd_timeout_ms of
+ *    PVDD_EN before the amp may run, and must stay closed (a dip longer than
+ *    pvdd_drop_ms) while on; otherwise everything opens (no_pvdd) and retries
+ *    after recover_ms. fault_latch such failures inside fault_window_ms latch
+ *    it off until hifi_power_amp_reset().
  *  - A fault (FAULTZ low while enabled) holds the amp off for
  *    fault_retry_ms; fault_latch faults inside fault_window_ms latch it off
  *    until hifi_power_amp_reset().
@@ -27,6 +33,7 @@ typedef enum {
 	HIFI_PWR_ON,
 	HIFI_PWR_UNDERVOLT,
 	HIFI_PWR_OVERVOLT,
+	HIFI_PWR_NO_PVDD,  /* PVDD_EN set but the switch didn't close, or opened */
 } hifi_pwr_state_t;
 
 typedef struct {
@@ -40,11 +47,15 @@ typedef struct {
 	uint32_t fault_window_ms;
 	int fault_latch;
 	uint32_t idle_off_ms;      /* amp to shutdown after this much silence; 0 = never */
+	float pvdd_min_frac;       /* PVDD counts as up at this fraction of VBUS */
+	uint32_t pvdd_timeout_ms;  /* after PVDD_EN, PVDD must be up by then */
+	uint32_t pvdd_drop_ms;     /* PVDD low this long while on opens everything */
 } hifi_power_cfg_t;
 
 typedef struct {
 	uint32_t now_ms;
 	float vbus_v;
+	float pvdd_v;     /* PVDD as sensed, NaN where the board has no sense */
 	bool pg;          /* PD contract good (CH224 PG low) */
 	bool fault;       /* amp FAULTZ asserted (low) */
 	bool audio;       /* something non-silent is playing, or DJ direct is on */
@@ -71,11 +82,15 @@ typedef struct {
 	bool amp_was_on;
 	uint32_t t_amp_on;
 	uint32_t t_audio;      /* last time audio was seen */
+	uint32_t t_pvdd_ok;    /* last time PVDD read up (or wasn't sensed) */
+	int pvdd_fails;        /* PVDD failures inside fault_window_ms */
+	uint32_t t_pvdd_fail;  /* the first of them */
 	hifi_power_out_t out;
 } hifi_power_t;
 
-/* lite-main: 9-25 V window around the 20 V contract */
+/* lite-main: 14-25 V to start, 13-25 V to run, PVDD confirmed on GPIO39 */
 void hifi_power_cfg_lite(hifi_power_cfg_t *cfg);
+void hifi_power_cfg_core(hifi_power_cfg_t *cfg);
 void hifi_power_init(hifi_power_t *p, const hifi_power_cfg_t *cfg, uint32_t now_ms);
 const hifi_power_out_t *hifi_power_step(hifi_power_t *p, const hifi_power_in_t *in);
 void hifi_power_amp_enable(hifi_power_t *p, bool enable);

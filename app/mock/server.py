@@ -81,7 +81,8 @@ def initial_state(model: str, ap: bool, pdo: tuple[float, float], fault: bool) -
         "ir": {"learning": None, "learned": [], "last_code": None},
     }
     if CAPS[model]["zones"] > 1:
-        s["audio"]["zone_b"] = {"on": False, "volume": 30}
+        # core's zone B amp takes zone A's signal: it has no level of its own
+        s["audio"]["zone_b"] = {"on": False, "volume": None}
     if ap:
         s["net"].update(mode="ap", ssid="", rssi=None, ip="192.168.4.1", eth=False)
         s["audio"].update(source="idle", playing=None)
@@ -159,7 +160,7 @@ class Receiver:
                 if "on" in b:
                     z["on"] = boolean(b, "on")
                 if "volume" in b:
-                    z["volume"] = clamp(num(b, "volume"), 0, 100, int)
+                    raise ValueError("zone B has no level of its own: it plays at the main volume")
             elif path == "control":
                 act = b.get("action")
                 if act not in CONTROL:

@@ -1,0 +1,610 @@
+{
+ "domain": "thermal",
+ "findings": [
+  {
+   "id": "THERMAL-1",
+   "board": "core",
+   "severity": "blocker",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "nets": [
+    "GND",
+    "PVDD"
+   ],
+   "finding": "TPA3221DDVR is the pad-UP (top heat slug) DDV package; footprint has no EP and the board has no heatsink, no heatsink mounting provision and no keep-out. Without a heatsink Tj = 45 + 3.5 W x ~50 C/W = ~220 C at 1/8 power into 4 ohm (OTE 145-165 C, latched); even 8 ohm 1/8 power reaches ~120 C (OTW 115 C min). Max chip loss under OTW without heatsink ~1.4 W (~2 x 4 W into 4 ohm).",
+   "evidence": "SLASEE9C rev C: sec 5 'heat slug located on the top side', table 5-1 PowerPad 'placed on top side', DDV0044D note 5; 6.4 RthetaJA 44.8 C/W JEDEC 2s2p no heatsink; OTW/OTE 6.5; fig 6-9 system loss 4 ohm ~6.5 W @25 W out (30 V). core.kicad_pcb: U15 footprint 44 pads, no EP; only holes H1-H4. hwde check_thermal (2026-10-29) warns only 'found 9 vias, want >=36' and passes the rise using constraints.json theta 8.0 C/W; vias cannot fix a top-slug part (board path floor = RthetaJB 14.9 C/W; 36 vias -> ~185 C, still OTE).",
+   "fix": "Fit a heatsink per TPA3221: base 19x12 mm (free volume), fins >=25 mm tall to lid under lid vents, RthetaSA <=20 C/W natural convection; interface 0.2 mm >=3 W/mK pad or <=0.1 mm >=1.5 W/mK thermal adhesive with mechanical hold-down (NOT plain adhesive tape). Board: reserve 19x12 mm keep-out for parts >1.0 mm under the base; add two GND-plated 1.5 mm clip slots at dx = +/-9.5-10 mm on U15/U16 long axis (move C207/C209 ~2 mm out) so a wire clip clamps and grounds the heatsink. Plus firmware governor (THERMAL-2). Contingency: pad-down pin-compatible TPA3220DDW (C2879306, stock 0 on 2026-10-28) on an EP land with via array. Also add GND stitching vias next to GND pin groups 5-7, 18-20, 25-26, 33-34, 41-42 (zero cost, parallel board path ~16 -> ~15 C/W with heatsink). Ultra U16: identical heatsink + slots, enclosure vents >=2500 mm2.",
+   "margin": "With spec heatsink: total ~16-18 C/W -> Tj 101-108 C at 1/8 P 4 ohm (7-14 K under OTW min; 117-126 C at upper loss estimate), 69-72 C at 1/8 P 8 ohm. With 19x12x25 on adhesive tape: 118 C centre / 139 C upper -> insufficient."
+  },
+  {
+   "id": "THERMAL-2",
+   "board": "core",
+   "severity": "major",
+   "refs": [
+    "U15",
+    "U16",
+    "U3",
+    "R1",
+    "U17"
+   ],
+   "nets": [
+    "ISENSE",
+    "AMP_OTW",
+    "AMP_FAULT"
+   ],
+   "finding": "Continuous full power cannot be held by any passive heatsink in the available volume: chip ~19-22 W (4 ohm, supply-limited to ~113-154 W out) -> OTE in ~9 s with a clamped 19x12x25 heatsink (immediately with adhesive tape); 8 ohm full power (~9 W) -> OTE in ~30 s. Needs a firmware power governor.",
+   "evidence": "SLASEE9C fig 6-9 (26 W loss at 150 W out, 4 ohm); heatsink ~6.7 J/K; J-HS drop 22 W x 3.2 C/W = 70 K.",
+   "fix": "Firmware: ISENSE 60 s average <= 30 W in (1.05 A at 28 V) per TPA3221 (Ultra total <= 55 W, 2.0 A), 5 s average <= 70 W (2.5 A); OTW_CLIP low steadily >200 ms -> -3 dB every 2 s; FAULT -> mute, 1 s, toggle RESET, max 3 retries/10 min. Contingency: NTC 10k B3435 0603 (LCSC C2889048) within 3 mm of U15 GND pins 18-20, 10k pull-up to +3V3A into a free ESP32 ADC1 pin; board >70 C -> -3 dB/10 s, >85 C mute.",
+   "margin": "Sustainable chip loss with spec heatsink ~4 W (Tj 110 C at 45 C air)."
+  },
+  {
+   "id": "THERMAL-3",
+   "board": "lite-main",
+   "severity": "major",
+   "refs": [
+    "U8"
+   ],
+   "nets": [
+    "AMP_FAULTZ",
+    "AMP_SDZ"
+   ],
+   "finding": "TPA3118D2 passes at 1/8 power (Tj 94 C, 106 C upper, at 45 C air) but continuous full power trips its latched 150 C OTP: chip ~9 W into 4 ohm (~300 C steady), ~4.2 W into 8 ohm (163 C). The Lite has no current sense, no OTW pin, no temperature sensor: only FAULTZ after the fact.",
+   "evidence": "SLOS708G fig 14/16 (P1% ~38 W/ch at 20 V, eta 82-88 %), 6.6 thermal trip 150+ C, protection table 'Over Temperature ... Latched'; thetaJA 28 C/W estimate (TI 22 C/W on 2-layer EVM SLOU342A).",
+   "fix": "Firmware DSP RMS governor: 30 s RMS per channel <= 13 W at 4 ohm (<= 20 W at 8 ohm), i.e. -4.6 dB below 1 % full scale at 4 ohm; FAULTZ low -> mute, SDZ low >=100 ms, retry. Contingency: NTC 10k B3435 0603 LCSC C2889048 within 3 mm of U8 GND pins 13-15, 10k pull-up from +3V3A to a free ESP32 ADC1 pin; board >100 C -> -3 dB/10 s, >120 C mute.",
+   "margin": "1/8 P 4 ohm: 56 K (44 K upper) to 150 C; max sustainable chip loss 3.2 W for Tj 135 C."
+  },
+  {
+   "id": "THERMAL-4",
+   "board": "lite-main",
+   "severity": "minor",
+   "refs": [
+    "U8"
+   ],
+   "nets": [
+    "GND"
+   ],
+   "finding": "EP via array is 16 x 0.3 mm (4x4, 0.85 mm pitch), about half of TI's EVM (~32); in-pad vias are open (solder wicking/voids).",
+   "evidence": "lite-main.kicad_pcb U8 pad 33: 3.81x3.71 mm, 16 drilled pads 0.3/0.61 mm zone_connect solid; B.Cu GND 94 % within 10 mm; 16 vias ~13 C/W barrel resistance.",
+   "fix": "Add 8-12 more 0.3 mm GND vias in F.Cu GND around the EP between GND pins and at the package ends; order tented (bottom) via-in-pad.",
+   "margin": "-2 to -3 C/W, -4 to -5 K at 1/8 P."
+  },
+  {
+   "id": "THERMAL-5",
+   "board": "core",
+   "severity": "minor",
+   "refs": [
+    "C5",
+    "C6",
+    "C311",
+    "U15",
+    "U16"
+   ],
+   "nets": [
+    "PVDD"
+   ],
+   "finding": "Core PVDD bulk is only general-purpose 470 uF/50 V Rubycon PX (600 mA@120 Hz, x1.20 at >=10 kHz = 0.72 A); no polymer or extra ceramic bulk near the amp. Ripple ~0.55 A per cap at 1/8 P 4 ohm (76 %), ~1.25 A at full power (174 %, +20 K self-heating).",
+   "evidence": "Rubycon PX DS ripple multiplier table; tan d 0.10 -> ESR ~0.28 ohm@120 Hz; ripple ~Iout,rms x 0.5 per channel; per-chip ceramics 2 x (1 uF + 100 nF).",
+   "fix": "Add 2 x 10 uF/50 V X7R 1210 per TPA3221 at PVDD pins 29-31 and 36-38 (e.g. Samsung CL32B106KBJNNNE, LCSC number to verify), or change C5/C6/C311 to a low-impedance 50 V series (>=1.5 A at 100 kHz, e.g. Rubycon ZLH 470 uF 10x20, LCSC to verify), same footprint.",
+   "margin": "Life at 59 C: ~48,000 h (5.5 years of loud playing)."
+  },
+  {
+   "id": "THERMAL-6",
+   "board": "lite-main",
+   "severity": "minor",
+   "refs": [
+    "U8"
+   ],
+   "nets": [],
+   "finding": "Lite box: the board fills the box (0.6 mm wall gap), so floor vents feed only the 5 mm under-board space; floor-to-lid flow ~0.03 W/K. Box air ~47-52 C at 1/8 P (25-30 C room), 57-62 C at governed max, i.e. above the brief's 35-40 C assumption.",
+   "evidence": "enclosure/lite.py GAP 0.6, vents 8x(2x26) floor + lid; box 106x96x46.8 = 0.0393 m2, U ~3.5-4 W/m2K; heat 1.9/3.5/5.1 W idle/1/8P/governed.",
+   "fix": "Enclosure only: widen GAP to >=3 mm on left/right walls (540 mm2 riser) or add rear-high/front-low wall slots; keep PETG/ASA (never PLA).",
+   "margin": "PETG Tg ~80 C: 18 K at governed max; PLA (55-60 C): ~0 K -> do not use."
+  },
+  {
+   "id": "THERMAL-7",
+   "board": "core",
+   "severity": "minor",
+   "refs": [
+    "Q1"
+   ],
+   "nets": [
+    "PVDD"
+   ],
+   "finding": "Core Q1 AO4485 drain has no F.Cu PVDD copper (0 mm2 within 8 mm); heat and up to 5 A go through 4 vias into the 0.5 oz In2.Cu plane. Tj ~98 C at 5 A (0.48 W, 23 mohm max at 125 C).",
+   "evidence": "core.kicad_pcb copper measurement; AOS AO4485 DS RDS(on) 19/23 mohm at TJ 125 C, RthetaJA 75 C/W steady on 1 in2.",
+   "fix": "Add >=100 mm2 F.Cu PVDD pour on pins 5-8 and 4-6 more vias to In2.",
+   "margin": "52 K to 150 C (-> ~64 K with fix)."
+  },
+  {
+   "id": "THERMAL-8",
+   "board": "both",
+   "severity": "minor",
+   "refs": [
+    "U6",
+    "U8"
+   ],
+   "nets": [],
+   "finding": "CH340C (Lite U6, core U8) is rated -20 to +70 C ambient; Lite box air reaches 52 C at 1/8 P and 62 C governed in a 30 C room.",
+   "evidence": "WCH CH340 datasheet operating-temperature table; section 6.",
+   "fix": "Accept on Lite; if the core enclosure exceeds 60 C air, swap to CH343P (-40..85 C, board change).",
+   "margin": "15 K at 1/8 P, 5 K at governed max (Lite)."
+  },
+  {
+   "id": "THERMAL-9",
+   "board": "core",
+   "severity": "minor",
+   "refs": [
+    "U15",
+    "U4"
+   ],
+   "nets": [],
+   "finding": "core/kicad/constraints.json gives U15 theta_datasheet 8.0 C/W and 3.0 W; no source supports 8 C/W junction-to-ambient (datasheet: 44.8 no heatsink; 5.5 only to a heatsink held at 85 C). The verify gate passes the rise on that number while warning about via count, which cannot help a top-slug part.",
+   "evidence": "check_thermal run 2026-10-29: U15 rise 24 K (theta 8.0), warning 9 vias want >=36.",
+   "fix": "Set U15/U16 theta to 44.8 (or ~16 once the 1.5 heatsink exists) and power_w 3.5 (4.5 worst); add U16 for Ultra.",
+   "margin": "n/a"
+  },
+  {
+   "id": "THERMAL-10",
+   "board": "core",
+   "severity": "note",
+   "refs": [
+    "L1",
+    "L2",
+    "L3",
+    "L4",
+    "U15"
+   ],
+   "nets": [
+    "PVDD"
+   ],
+   "finding": "In AD mode (HEAD tied to GND) the output inductors see 1.17 A p-p ripple at idle (28 V, 10 uH, 600 kHz); unspecified core loss of ~0.2-0.4 W each puts ~1-1.5 W of 24/7 idle heat in the box, more than the TPA3221's 0.45 W.",
+   "evidence": "dI = PVDD*D(1-D)/(L f); SLASEE9C fig 6-16 idle 11 mA AD vs 8 mA HEAD at 28 V; PSPMAA0805 DS has no core-loss data.",
+   "fix": "Option to run HEAD mode: HEAD via 0R to AVDD / 0R to GND (one DNP); firmware puts amp in RESET after 10 min without a source.",
+   "margin": "Inductor dT at full power 21 K DCR + core loss, ~85 C part temp vs 125 C."
+  }
+ ],
+ "known_unknowns": [
+  {
+   "fact": "TPA3221DDV (C475500) thermal slug is on the TOP of the package",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "verified",
+   "source": "TI SLASEE9C rev C sec 5 p3, table 5-1, DDV0044D note 5 (front-page bullet 'pad on bottom' is contradicted)",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3221 RthetaJA 44.8 C/W (JEDEC 2s2p, no heatsink), RthetaJC(top) 1.1, psiJB 14.7, 5.5 C/W to 85 C heatsink",
+   "board": "core",
+   "refs": [
+    "U15"
+   ],
+   "status": "verified",
+   "source": "TI SLASEE9C 6.4 p6",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3221 OTW 115/125/135 C, OTE 145/155/165 C, OTE latched (RESET toggle)",
+   "board": "core",
+   "refs": [
+    "U15"
+   ],
+   "status": "verified",
+   "source": "TI SLASEE9C 6.5 p9, 8.4.5.5",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "Thermal resistance of a 19x12x25 mm finned heatsink in the (not yet designed) core enclosure ~20-25 C/W",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "unverified",
+   "source": "estimate scaled from typical BGA heatsink data; needs bench measurement",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3221 chip loss split from fig 6-9 system loss (inductor share ~1.5 W at 20 W out)",
+   "board": "core",
+   "refs": [
+    "U15",
+    "L1",
+    "L2",
+    "L3",
+    "L4"
+   ],
+   "status": "unverified",
+   "source": "SLASEE9C fig 6-9 read at 250 dpi; split is my estimate",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3118D2 DAP RthetaJA 22 C/W on TPA3118D2EVM; psiJB 4.7; thermal trip 150+ C, 15 C hysteresis, OTP latched",
+   "board": "lite-main",
+   "refs": [
+    "U8"
+   ],
+   "status": "verified",
+   "source": "TI SLOS708G 6.4, 6.6, 7.3.8 table",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3118D2EVM is a 2-layer board with ~32 thermal vias",
+   "board": "lite-main",
+   "refs": [
+    "U8"
+   ],
+   "status": "verified",
+   "source": "TI SLOU342A sec 3.2 figs 4-5 (layer count); via count read from the image, approximate",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "TPA3118D2 DAP exposed pad 2.46-3.04 x 3.16-3.74 mm fits the 3.81x3.71 land; paste 4x1.4x1.4 mm",
+   "board": "lite-main",
+   "refs": [
+    "U8"
+   ],
+   "status": "verified",
+   "source": "TI SLOS708G DAP0032C drawing; lite-main.kicad_pcb",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "Lite U8 thetaJA in the box 25-30 C/W (16 vias, 1 oz 2-layer)",
+   "board": "lite-main",
+   "refs": [
+    "U8"
+   ],
+   "status": "unverified",
+   "source": "my fin/via estimate; needs thermocouple on U8 at 1/8 P",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3118D2 chip loss 1.75 W at 1/8 P 4 ohm, 20 V",
+   "board": "lite-main",
+   "refs": [
+    "U8"
+   ],
+   "status": "unverified",
+   "source": "SLOS708G fig 16 is at 24 V; 20 V interpolated",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "TPA3221 idle: PVDD 11 mA AD at 28 V, GVDD 16 mA, AVDD 10 mA",
+   "board": "core",
+   "refs": [
+    "U15"
+   ],
+   "status": "verified",
+   "source": "SLASEE9C 6.5 p7, fig 6-16",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "Core box air temperature (enclosure not designed)",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "unverified",
+   "source": "none: enclosure for core does not exist yet",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "Lite box internal air rise 22 K at 1/8 P (G = 0.16 W/K)",
+   "board": "lite-main",
+   "refs": [],
+   "status": "unverified",
+   "source": "my wall/vent model, +/-30 %; measure with a probe",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "TPS54302 RthetaJA 118.9 C/W, TJ 125 C",
+   "board": "lite-main",
+   "refs": [
+    "U2"
+   ],
+   "status": "verified",
+   "source": "TI SLVSDG6C 5.4",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "SY8303 thetaJA 60.2 C/W, TJ 150 C, Vin 4.5-40 V, RDS 110/70 mohm",
+   "board": "core",
+   "refs": [
+    "U4"
+   ],
+   "status": "verified",
+   "source": "Silergy SY8303 datasheet (LCSC C97054) abs max, elec. char.",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "SY8089 thetaJA 120 C/W, TJ op 125 C",
+   "board": "both",
+   "refs": [
+    "U3",
+    "U5"
+   ],
+   "status": "verified",
+   "source": "Silergy SY8089A1 datasheet (LCSC C479074)",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "LP5907 DBV RthetaJA 193.4 C/W, TJ op 125 C",
+   "board": "both",
+   "refs": [
+    "U4",
+    "U6"
+   ],
+   "status": "verified",
+   "source": "TI SNVS798Q 5.4",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "LP5907 +3V3A load currents (ES8388 ~25 mA; ES9018K2M/ES7243E ~50 mA)",
+   "board": "both",
+   "refs": [
+    "U4",
+    "U6"
+   ],
+   "status": "unverified",
+   "source": "not computed from codec datasheets in this review",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "SY8303 5 V load 0.35 A avg / 0.6 A peak",
+   "board": "core",
+   "refs": [
+    "U4"
+   ],
+   "status": "unverified",
+   "source": "my estimate; power reviewer's budget",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "AO4485 RDS(on) 12.5 mohm @-10 V (UMW C5125949); 15 max @25 C, 23 max @125 C (AOS C51499); RthetaJA 75 C/W steady",
+   "board": "both",
+   "refs": [
+    "Q1"
+   ],
+   "status": "verified",
+   "source": "LCSC C5125949 record; AOS AO4485 DS",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "Lite Q1 VGS = -13.6 V at 20 V (R5 100k / R6 47k)",
+   "board": "lite-main",
+   "refs": [
+    "Q1"
+   ],
+   "status": "verified",
+   "source": "root.py values, divider calc",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "Core Q1 VGS = -14 V at 28 V (R4/R5 100k, D4 15 V)",
+   "board": "core",
+   "refs": [
+    "Q1"
+   ],
+   "status": "verified",
+   "source": "blocks.py values",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "R1 RLP25FEGR010 2512 rated 3 W",
+   "board": "core",
+   "refs": [
+    "R1"
+   ],
+   "status": "verified",
+   "source": "LCSC C393070 (TA-I)",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "XR0850-100M Irms 6.5 A at dT~40 C, Isat 8 A, DCR 30 mohm, part temp <=125 C",
+   "board": "lite-main",
+   "refs": [
+    "L1",
+    "L2",
+    "L3",
+    "L4"
+   ],
+   "status": "verified",
+   "source": "XR XR0850 DS notes 3,5 (LCSC C48391614)",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "PSPMAA0805-100M Irms 6 A at dT~40 C, Isat 10 A, DCR 30 mohm",
+   "board": "core",
+   "refs": [
+    "L1",
+    "L2",
+    "L3",
+    "L4"
+   ],
+   "status": "verified",
+   "source": "PROD PSPMAA DS / LCSC C2962885",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "Output inductor core loss at 600 kHz AD-mode ripple",
+   "board": "core",
+   "refs": [
+    "L1",
+    "L2",
+    "L3",
+    "L4"
+   ],
+   "status": "unverified",
+   "source": "not in datasheet",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "C58 MA35V470M10X13 3.8 A@100 kHz, 16 mohm, 2000 h@105 C",
+   "board": "lite-main",
+   "refs": [
+    "C58"
+   ],
+   "status": "verified",
+   "source": "JIERR DS / LCSC C46550472",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "C59 RVT 220 uF 35 V 195 mA@120 Hz, 2000 h@105 C, ESR not specified",
+   "board": "lite-main",
+   "refs": [
+    "C59"
+   ],
+   "status": "verified",
+   "source": "KNSCHA RVT spec (LCSC C2836441)",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "C5/C6 Rubycon 50PX470MEFC10X20: 600 mA@120 Hz, x1.20 at >=10 kHz, tan d 0.10, 2000 h@105 C",
+   "board": "core",
+   "refs": [
+    "C5",
+    "C6",
+    "C311"
+   ],
+   "status": "verified",
+   "source": "Rubycon PX DS (LCSC C88733)",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "PVDD ripple current estimate (~Iout,rms x 0.5 per BTL channel) and its split between ceramics and bulk",
+   "board": "both",
+   "refs": [
+    "C58",
+    "C5",
+    "C6"
+   ],
+   "status": "unverified",
+   "source": "approximation; SPICE of the amp's PVDD current not run",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "SMBJ20A leakage at 21 V and 60 C",
+   "board": "lite-main",
+   "refs": [
+    "D1"
+   ],
+   "status": "unverified",
+   "source": "datasheet gives IR only at VRWM 25 C",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "ESP32-WROVER-E-N8R8 -40..85 C ambient",
+   "board": "both",
+   "refs": [
+    "U5",
+    "U7"
+   ],
+   "status": "verified",
+   "source": "LCSC C2973667 record (Espressif)",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "CH340C operating -20..70 C",
+   "board": "both",
+   "refs": [
+    "U6",
+    "U8"
+   ],
+   "status": "verified",
+   "source": "WCH CH340 DS operating temperature table (LCSC C84681)",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "PETG Tg ~80 C, PLA softening 55-60 C",
+   "board": "lite-main",
+   "refs": [],
+   "status": "unverified",
+   "source": "general material data, not a filament datasheet",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  },
+  {
+   "fact": "Heatsink part fitting 19x12 mm with RthetaSA <=20 C/W",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "unverified",
+   "source": "no LCSC part found (C286198 20x20x10, C286230 14x14x10, C32487 30x30x25 checked)",
+   "date": "2026-10-29",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3220DDW pin-compatible pad-down alternative",
+   "board": "core",
+   "refs": [
+    "U15"
+   ],
+   "status": "verified",
+   "source": "SLASEE9C table 4 (pin-compatible Y, pad bottom); LCSC C2879306 stock 0 on 2026-10-28",
+   "date": "2026-10-29",
+   "could_stop_board": false
+  }
+ ],
+ "tools_wanted": [
+  {
+   "tool": "check_thermal top-slug mode",
+   "checks": "pad-up packages (TPA3221 DDV, TPA3116 DAD): heatsink path thetaJC(top)+TIM+thetaSA in parallel with thetaJB+board, instead of counting vias",
+   "why": "the gate asked for 36 vias on a part whose slug is on top; vias cannot fix it"
+  },
+  {
+   "tool": "check_thermal constraint sanity",
+   "checks": "flag theta_datasheet overrides lower than the datasheet's no-heatsink RthetaJA unless a heatsink part is on the BOM",
+   "why": "constraints.json gives U15 8 C/W with no heatsink"
+  },
+  {
+   "tool": "enclosure thermal model",
+   "checks": "box wall + vent (stack-effect) conductance from the build123d geometry, internal air rise per load case, plastic Tg margin",
+   "why": "internal air was assumed 35-40 C; the Lite box actually reaches ~52 C at 1/8 power"
+  },
+  {
+   "tool": "class-D PVDD ripple-current sim",
+   "checks": "ngspice behavioural BTL bridge at fsw with real cap ESR/ESL and layout inductance to split ripple between ceramics and bulk",
+   "why": "cap ripple/lifetime numbers here are hand estimates"
+  }
+ ]
+}

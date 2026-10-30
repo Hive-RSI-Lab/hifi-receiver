@@ -1,0 +1,42 @@
+{
+ "script": "sim_run",
+ "status": "pass",
+ "board": "eth_clk.cir",
+ "counts": {
+  "total": 0,
+  "by_severity": {},
+  "by_source": {}
+ },
+ "violations": [],
+ "input": "eth_clk.cir",
+ "engine": {
+  "dll": "/hive/home/.cache/hwde/bin/libngspice.so",
+  "ngspice_version": 45
+ },
+ "timeout_s": 60.0,
+ "testbenches": [
+  {
+   "name": "eth_clk",
+   "cir": "eth_clk.cir",
+   "bounds": 6,
+   "elapsed_s": 0.419,
+   "measures": {
+    "phy_vil": 2.98277e-09,
+    "phy_vih": 4.31007e-09,
+    "phy_trans": 1.3273e-09,
+    "esp_vil": 3.18545e-09,
+    "esp_vih": 3.85503e-09,
+    "esp_trans": 6.69579e-10,
+    "phy_max": 3.492264,
+    "esp_max": 3.491935,
+    "phy_min_hi": 2.872564,
+    "esp_min_hi": 2.997843
+   },
+   "status": "pass"
+  }
+ ],
+ "report_schema": 1,
+ "checker_version": 1,
+ "generated_at": "2026-10-29T04:04:32+00:00",
+ "input_digest": "text_eol:db8a4df4fd5f69c9fae664df1a70184abcdf6548ccacfc32422e426d099f87b8"
+}

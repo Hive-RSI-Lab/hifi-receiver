@@ -31,6 +31,7 @@ typedef struct {
 	bool active, done;
 	size_t size, written;
 	uint8_t sha[32];
+	bool check_sha;    /* false: the image's own appended hash only (commit checks it) */
 	char version[32];
 	const char *slot;
 	hifi_sha256_t h;
@@ -41,6 +42,11 @@ void hifi_ota_init(hifi_ota_t *o, const hifi_ota_io_t *io);
 /* Each returns an HTTP status (200 ok) with *err set otherwise. A begin
  * while one is open drops the old one: the sender restarted. */
 int hifi_ota_begin(hifi_ota_t *o, size_t size, const char *sha_hex, const char *version, const char **err);
+/* The same for an image from the person's own network (the app's upload,
+ * or a URL from a manifest without a hash): no SHA-256 to match, so only
+ * the image's own appended hash, which the board's commit checks
+ * (esp_ota_end), stands between it and the boot slot. */
+int hifi_ota_begin_local(hifi_ota_t *o, size_t size, const char *version, const char **err);
 /* 409 if off isn't where the image has got to (o->written says where) */
 int hifi_ota_chunk(hifi_ota_t *o, size_t off, const uint8_t *d, size_t n, const char **err);
 /* checks the hash and makes the image the next boot; the caller restarts */

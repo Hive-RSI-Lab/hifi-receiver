@@ -150,6 +150,8 @@ function powerNotice() {
   if (p.state === 'wait_pd') return h('div.card.warn', {}, h('b', {}, 'Speakers off: charger too weak. '),
     `This port gives ${c.v ?? 5} V. Use a USB-C charger of 65 W or more` +
     (I.caps.pdo_v_max > 20 ? ` (a 140 W one with a 240 W cable for full power).` : '.'));
+  if (p.state === 'no_pvdd') return h('div.card.err', {}, h('b', {}, 'Speakers off: the amplifier supply did not switch on. '),
+    'Unplug the charger and plug it back in. If this comes back, the box needs service.');
   if (p.state === 'undervolt' || p.state === 'overvolt') return h('div.card.err', {},
     h('b', {}, 'Speakers off: the supply is out of range. '), `It reads ${p.vbus_v?.toFixed(1)} V. Try another charger or cable.`);
   if (g.limiting && g.gain_db < -0.5) return h('div.card.warn', {}, h('b', {}, 'Power limit. '),
@@ -200,7 +202,7 @@ function zoneB() {
   const z = S.audio.zone_b || {};
   return h('div', {},
     h('div.row', {}, h('span.grow', {}, 'Zone B speakers'), onOff(z.on, (on) => set('zone', { zone: 'b', on }))),
-    z.on && h('div.row', {}, h('span.dim', {}, 'Level'),
+    z.on && z.volume != null && h('div.row', {}, h('span.dim', {}, 'Level'),
       h('div.grow', {}, slider({ min: 0, max: 100, value: z.volume }, (v) => set('zone', { zone: 'b', volume: v })))));
 }
 

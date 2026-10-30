@@ -45,7 +45,10 @@ What the box is.
 
 `name` is the player name people see in AirPlay, Bluetooth, Spotify and
 LMS. `caps` says what this tier can do, so one web app serves all three:
-Plus and Ultra set `crossover`, `per_sub`, `eth` and a `pdo_v_max` of 28.
+Plus and Ultra (`"board": "core"`) set `eth` and a `pdo_v_max` of 28, and
+Ultra `zones` 2. Their sub outputs have no crossover or per-sub settings
+yet (`crossover` and `per_sub` stay false): the PCM5102A gets the sum of
+the mains at the sub level.
 
 ## `GET /api/v1/state`
 
@@ -55,7 +58,7 @@ Everything the bench logs, in one read. Poll it at up to 10 Hz.
 {"uptime_s": 812,
  "power": {"state": "on", "vbus_v": 20.12, "pg": true,
            "contract": {"protocol": "pd", "epr": false, "v": 20.0, "i_max_a": 3.25, "w": 65.0},
-           "pvdd_on": true, "pvdd_v": null, "vbus_i_a": null},
+           "pvdd_on": true, "pvdd_v": 19.95, "vbus_i_a": null},
  "amp": {"enabled": true, "fault": false, "faults": 0, "latched": false, "temp_c": null},
  "governor": {"budget_w": 58.5, "in_w": 7.9, "out_w": 4.4,
               "gain_db": 0.0, "limiting": false, "limit_events": 0},
@@ -76,14 +79,28 @@ Everything the bench logs, in one read. Poll it at up to 10 Hz.
     negotiating). The box runs, the amp stays unpowered.
   - `soft_start`: PVDD switch closing, amp held off.
   - `on`: PVDD up; the amp may be enabled.
-  - `undervolt` / `overvolt`: VBUS outside 9–25 V (Lite) while it was on;
-    everything off until VBUS is back in range for 1 s.
+  - `undervolt` / `overvolt`: VBUS outside 13–25 V (Lite) while it was on;
+    everything off until VBUS is back in 14–25 V for 1 s.
+  - `no_pvdd`: the PVDD switch was commanded on but PVDD didn't come up
+    to 85 % of VBUS within 1 s, or fell under it for 50 ms while on (Lite
+    reads PVDD on GPIO39). Everything off; it retries after 1 s, and three
+    failures inside a minute hold it off until `POST /api/v1/amp
+    {"reset": true}` or a re-plug.
 - **`contract`** comes from the PD sink (CH224's status and current
   registers) and the VBUS reading. `protocol` is `pd`, `qc3`, `qc2`, `bc` or
   `none`; `v` is VBUS rounded to the nearest fixed PD level; `i_max_a` is
   `null` unless the protocol is PD.
-- **`pvdd_v`, `vbus_i_a`, `temp_c`:** `null` on Lite (no sensor). Plus/Ultra
-  read VBUS current from the INA180.
+- **`pvdd_v`:** PVDD after the switch, from GPIO39 (PVDD/11) on Lite;
+  `null` on Plus/Ultra (the core board has no PVDD sense).
+- **`vbus_i_a`, `temp_c`:** `null` on Lite (no sensor). Plus/Ultra
+  read the input current from the INA186 (`vbus_i_a`; 0 below about
+  0.4 A, where the ESP32's ADC reads nothing); `temp_c` stays `null`
+  there too.
+- **`vbus_v` on Plus/Ultra** is taken from the contract, not measured (the
+  core board has no VBUS divider): 28 V in an EPR contract, 20 V in
+  another PD one (once the handshake is in, the firmware asks the CH224Q
+  for 28 V if the charger offers EPR, else 20 V), 5 V otherwise. Their
+  amps start at 14 V and run 13–30 V.
 - **`amp.fault`** is the amp's FAULTZ pin now; `faults` counts them since
   boot. Three faults inside a minute **latch** the amp off until
   `POST /api/v1/amp {"reset": true}` or a re-plug.
@@ -112,7 +129,15 @@ Everything the bench logs, in one read. Poll it at up to 10 Hz.
   have a button. `last_code` is the last code the IR receiver decoded since
   boot, learned or not: the bench's check that the receiver works.
 - **`net.mode`** is `ap` while the box runs its own setup access point (no
-  Wi-Fi joined yet), else `sta`.
+  Wi-Fi joined yet), else `sta`. Plus and Ultra add **`net.eth`**: true when
+  the Ethernet port has an address (then `ip` is that address if Wi-Fi has
+  none).
+- **`audio.zone_b`** (Ultra only): `{"on": true, "volume": null}`. Zone B's
+  amp plays zone A's program at the main volume; it has no level of its own.
+- **`update`** appears while a firmware update the app started runs or
+  after it ends: `{"state": "downloading", "progress": 42, "error": null}`,
+  `state` being `downloading`, `flashing`, `done` (the box restarts into
+  it) or `error` (with the reason; the running firmware stays).
 
 ## `POST /api/v1/tone`
 
@@ -149,6 +174,10 @@ Reply: the `amp` object from `/state`.
 
 `{"input": "dj_direct"}` routes the RCA line in straight to the amp and the
 sub outs through the codec's analog bypass: zero latency for the DJ deck.
+On Plus/Ultra it is the TS5A23157 switch in front of the amps: the line in
+reaches the speakers with nothing digital in the way, so the receiver's
+volume and governor don't act on it (the deck's own level does), and the
+subs get nothing.
 `{"input": "stream"}` goes back to the streamed audio. Reply:
 `{"ok": true, "input": "..."}`.
 
@@ -156,8 +185,9 @@ sub outs through the codec's analog bypass: zero latency for the DJ deck.
 
 `{"level_db": -6}` sets the sub outputs' level, −30 to +6 dB; `{"on": false}`
 turns them off (either or both). Lite: the ES8388's LOUT2/ROUT2, 1.5 dB steps
-up to +4.5 dB, so the level it reports is the one it could set. Kept across
-restarts. Reply: the full `/state`.
+up to +4.5 dB, so the level it reports is the one it could set. Plus/Ultra:
+a digital gain on the sub DAC's stream, −40 to 0 dB in 0.5 dB steps (more
+would clip). Kept across restarts. Reply: the full `/state`.
 
 ## `POST /api/v1/eq`
 
@@ -266,6 +296,7 @@ Nothing in it needs a speaker or a load.
   {"name": "vbus_matches",  "pass": true,  "value": "20.12 V"},
   {"name": "codec_i2c",     "pass": true,  "value": "0x10 acks"},
   {"name": "pvdd_on",       "pass": true,  "value": "on"},
+  {"name": "pvdd_sensed",   "pass": true,  "value": "PVDD 19.95 V of VBUS 20.12 V"},
   {"name": "amp_no_fault",  "pass": true,  "value": "FAULTZ high after 200 ms enabled"},
   {"name": "psram",         "pass": true,  "value": "8 MB"},
   {"name": "heap",          "pass": true,  "value": "81234 B free"},
@@ -275,6 +306,11 @@ Nothing in it needs a speaker or a load.
 `pass` is true only if every check passes. A check that can't run (the amp
 on a 5 V port) fails with the reason in `value`; on a 5 V port that is
 expected, and the bench script knows it.
+
+Plus and Ultra have no `vbus_matches` or `codec_i2c`; their board checks
+are `expander_i2c` (the I/O expander at 0x20, or 0x74–0x77 for the
+TCA9539), `dac_i2c` (the ES9018K2M at 0x48 answers and took the 16-bit word
+length), `adc_i2c` (the ES7243E at 0x10) and `amp_otw` (OTW_CLIP high).
 
 ## Remote bring-up: `capture`, `ota`, `wifi`, `remote`
 
@@ -335,10 +371,69 @@ The relay link. POST `{"url": "mqtts://host:8883", "user", "password",
 `keys` is how many Hive signing keys the build trusts; with 0 the board
 reports but takes no command from the relay.
 
+## `POST /api/v1/zone`
+
+Ultra: `{"zone": "b", "on": true}` turns zone B's amp on or off (kept across
+restarts). Both amps go into reset for 10 ms and come out together, since
+zone B runs off zone A's clock. `volume` is refused (400): zone B plays at
+the main volume. Plus and Lite answer 404. Reply `{"ok": true}`.
+
+## Wi-Fi and updates from the app
+
+### `GET /api/v1/wifi/scan`
+
+Scans for about 4 s (through squeezelite's network manager) and lists the
+2.4 GHz networks in range, hidden ones left out:
+
+```json
+{"networks": [{"ssid": "home", "rssi": -48, "secure": true}, {"ssid": "cafe", "rssi": -81, "secure": false}]}
+```
+
+409 while the radio is busy (another scan, a join).
+
+### `POST /api/v1/wifi/forget`
+
+Forgets the joined network; the box opens its own setup access point
+again. Reply `{"ok": true}`.
+
+### `GET /api/v1/update/check`, `POST /api/v1/update`
+
+The check reads the update manifest at the URL in NVS `hifi_update_url`
+(or the build's `HIFI_UPDATE_URL`), 404 when neither is set:
+
+```json
+{"latest": "0.2.0", "notes": "Zone B",
+ "images": {"hifi-plus": {"url": "hifi-plus-0.2.0.bin", "sha256": "<64 hex>"},
+            "hifi-ultra": {"url": "hifi-ultra-0.2.0.bin", "sha256": "<64 hex>"}}}
+```
+
+(one `url`/`sha256` at the top level serves every model; a relative `url`
+is taken from the manifest's folder) and answers with this model's offer:
+
+```json
+{"current": "0.1.0", "latest": "0.2.0", "url": "http://hive.local/fw/hifi-plus-0.2.0.bin",
+ "sha256": "<64 hex>", "notes": "Zone B"}
+```
+
+`POST /api/v1/update` `{"url": "...", "sha256": "..."}` downloads that
+image into the other app slot in the background and restarts into it;
+`/state`'s `update` shows how far it got. Without `sha256` it uses the
+last check's for the same URL; with none at all only the image's own
+appended hash, which ESP-IDF checks, guards it. 409 while an update runs.
+The new image is on trial like the relay's (remote.md, "Rollback").
+
+### `POST /api/v1/update/upload`
+
+The image itself as the body (`Content-Type: application/octet-stream`),
+the app's "From a file…". It is written as it arrives; the reply is the
+full `/state` with `update.state` `done`, and the box restarts a moment
+later. 409 while another update runs; 400 if the body stops short or isn't
+an app image.
+
 ## squeezelite-esp32's own endpoints
 
-The web app also uses these, which squeezelite-esp32 already serves; this
-firmware doesn't wrap them.
+squeezelite-esp32 also serves these; the calls above do the same for the
+web app.
 
 | Call | Does |
 |---|---|
