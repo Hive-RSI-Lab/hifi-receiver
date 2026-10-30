@@ -30,7 +30,7 @@ and say why.
 | Streaming | Spotify Connect, AirPlay 1, Bluetooth, Lyrion (LMS) | same | same |
 | Control | web app, 3 buttons, IR (bring your own remote) | web app, knob + 2 buttons, IR remote in box | web app, 2" colour screen, knob + 3 buttons, IR remote |
 | Boards | 1: `lite-main` (2-layer) | 1: `core` (4-layer) | 2: `core` fully populated + `ultra-front` |
-| Unit cost at 100, board + assembly + PCB | **$14.9** incl. binding posts (board alone $13.1 per `tools/hwcheck.py cost`) | **$34.3** (two TPA3220s, one channel each, no heatsink; `core` board alone $35.4 per `tools/hwcheck.py cost`) | **$40.9** |
+| Unit cost at 100, board + assembly + PCB | **$14.8** (banana sockets on the board; board $14.5 per `tools/hwcheck.py cost`) | **$34.3** (two TPA3220s, one channel each, no heatsink; `core` board alone $35.4 per `tools/hwcheck.py cost`) | **$40.9** |
 | Target retail (charger not included / with charger) | **$59 / $79** | **$129 / $159** | **$199 / $229** |
 | Build order | **first** | second | third |
 
@@ -318,12 +318,12 @@ Per unit, from [`bom-estimate.csv`](bom-estimate.csv)
 
 | | Lite ×10 | Lite ×100 | Plus ×10 | Plus ×100 | Ultra ×10 | Ultra ×100 |
 |---|---|---|---|---|---|---|
-| Parts on the board | $13.05 | $11.41 | $33.72 | $27.63 | $39.91 | $32.82 |
-| JLC assembly (setup, stencil, $3 per unique extended part, joints) | $8.24 | $1.67 | $12.27 | $3.54 | $15.95 | $4.16 |
+| Parts on the board | $14.30 | $12.40 | $33.72 | $27.63 | $39.91 | $32.82 |
+| JLC assembly (setup, stencil, $3 per unique extended part, joints) | $8.61 | $1.77 | $12.27 | $3.54 | $15.95 | $4.16 |
 | PCB (hwde price points × 2.5 calibration) | $0.50 | $0.62 | $2.97 | $2.31 | $3.47 | $2.93 |
-| Off-board (Lite: binding posts; Plus/Ultra: remote, FFC cable) | $1.60 | $1.20 | $1.20 | $0.80 | $1.40 | $0.95 |
-| **Per unit** | **$23.39** | **$14.90** | **$50.16** | **$34.28** | **$60.73** | **$40.86** |
-| Unique extended parts / SMT joints / THT joints | 19 / 452 / 10 | | 27 / 860 / 64 | | 33 / 955 / 71 | |
+| Off-board (Lite: none; Plus/Ultra: remote, FFC cable) | $0.00 | $0.00 | $1.20 | $0.80 | $1.40 | $0.95 |
+| **Per unit** | **$23.41** | **$14.79** | **$50.16** | **$34.28** | **$60.73** | **$40.86** |
+| Unique extended parts / SMT joints / THT joints | 20 / 452 / 14 | | 27 / 860 / 64 | | 33 / 955 / 71 | |
 
 **Basic vs extended:** nearly every IC is an **extended** part, $3 per unique
 part per order. That is why the per-unit cost falls so far from ×10 to ×100.
@@ -357,7 +357,7 @@ capacitors are basic.
 | Encoder | EC11E1834403 (C361165) | $1.40 |
 | IR receiver | IRM-H638T (C91447) | $0.20 |
 | Dual RCA | XDJK-0271-1650 (C7527522) | $0.20 |
-| 4 mm banana socket | GC4010-F (C99865) | $0.15 |
+| 4 mm banana socket, board-mounted | Amass 24.243 (C7437321 red, C7437322 black) | $0.33 |
 | LCD | HS20HS072RX (C5329582) | $2.41 |
 | TOSLINK receiver | PLR237/T8BK (C17223620) | $1.25 |
 
@@ -511,10 +511,10 @@ The brief asks for a 3D-printable enclosure made in Onshape.
   access.
 - **Plus and Ultra: done in code** ([`enclosure/`](../enclosure/README.md#plus-and-ultra)), fitted to the routed `core` and, for Ultra, `ultra-front`: about 134 g and 146 g of PETG. Ultra needs a 20-pin 0.5 mm type-B FFC, 30-50 mm.
 - **Lite: done in code.** It is a build123d model in
-  [`enclosure/`](../enclosure/README.md), 106 x 96 x 47 mm. It is fitted to
+  [`enclosure/`](../enclosure/README.md), 124 x 96 x 40 mm. It is fitted to
   `lite-main`'s KiCad file and fit-checked against it, and exported as STEP
-  and STL. That is about 110 g of PETG, plus 4 M3 screws, 4 binding posts and
-  4 feet. Onshape can import its STEP files.
+  and STL. That is about 110 g of PETG, plus 4 M3 screws and 4 feet: the
+  speaker sockets are on the board. Onshape can import its STEP files.
 
 ### Core board as built (2026-10-28)
 
@@ -551,10 +551,12 @@ routed board:
    - **ES7243E:** confirm it runs without MCLK.
    - **ES9018K2M:** its S/PDIF input mux.
    - **TPA3251:** whether it is pin-compatible with the TPA3221.
-4. **Banana sockets:** settled for Lite. The GC4010-F is an RC bullet connector
-   with no PCB footprint, so `lite-main` has a 16 A 4-way 5.08 mm screw terminal
-   (DB128V, C2915641) and four 4 mm binding posts on the enclosure's rear panel are
-   wired to it (off-board line in `bom-estimate.csv`). Plus/Ultra can do the same.
+4. **Banana sockets:** settled for Lite (10-30, task 261030-140102). `lite-main`
+   carries four board-mounted 4 mm banana sockets, Amass 24.243 (red C7437321,
+   black C7437322, right-angle PCB mount, 24 A), which JLC fits: no binding
+   posts and no hand wiring. The GC4010-F is an RC bullet connector with no PCB
+   footprint. Plus/Ultra (`core`) still have screw terminals and wired posts;
+   the same sockets there need the rear edge re-laid (8 sockets for Ultra).
 5. **Thermal:** the made TPA3118 board's temperature under load was never
    measured.
 6. **Questions with the person** (step-back 2026-10-28):

@@ -47,8 +47,8 @@ enclosure on main at 18ceb29.
 
 | Fact | Source | Status |
 |---|---|---|
-| Lite rear, left to right: speaker posts on top (L+ L− R+ R−), USB-C low, SUB OUT, LINE IN; upper RCA = left (white) | `enclosure/README.md` (Panels), `boards/lite-main/README.md` | source |
-| Lite speaker posts: 4 mm binding posts at 19 mm pitch (dual banana fits), wired to a screw terminal on the board | `enclosure/README.md`, `boards/lite-main/README.md` | source |
+| Lite rear, left to right: speaker sockets low (R− R+ L− L+), USB-C low, SUB OUT, LINE IN; upper RCA = left (white) | `enclosure/README.md` (Panels), `boards/lite-main/README.md` | source |
+| Lite speaker outputs: four board-mounted 4 mm banana sockets (Amass 24.243, J4-J7) at 11 mm pitch (single plugs only), nothing wired by hand | `enclosure/README.md`, `boards/lite-main/README.md` | source |
 | Lite top: vol−, vol+, ▶ left to right along the front edge; status light pipe to their left; IR window front, bottom right | `enclosure/README.md` | source |
 | Lite status LED is one red LED (D2) | `boards/lite-main/README.md` | source |
 | Lite case 106 × 96 × 46.8 mm, PETG/ASA; no moulded labels yet (sticker) | `enclosure/README.md` | source |

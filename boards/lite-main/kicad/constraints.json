@@ -362,5 +362,34 @@
    "priority": 1,
    "connect": "solid"
   }
- ]
+ ],
+ "placement": {
+  "edges": [
+   {
+    "ref": "J1",
+    "edge": "top",
+    "why": "USB-C receptacle face at the rear edge"
+   },
+   {
+    "ref": "J4",
+    "edge": "top",
+    "why": "banana socket nose through the rear wall"
+   },
+   {
+    "ref": "J5",
+    "edge": "top",
+    "why": "banana socket nose through the rear wall"
+   },
+   {
+    "ref": "J6",
+    "edge": "top",
+    "why": "banana socket nose through the rear wall"
+   },
+   {
+    "ref": "J7",
+    "edge": "top",
+    "why": "banana socket nose through the rear wall"
+   }
+  ]
+ }
 }

@@ -793,9 +793,27 @@
  },
  {
   "ref": "J4",
-  "lcsc": "C2915641",
-  "value": "DB128V-5.08-4P",
-  "role": "speaker terminal L+ L- R+ R-"
+  "lcsc": "C7437321",
+  "value": "24.243 red",
+  "role": "speaker banana socket L+"
+ },
+ {
+  "ref": "J5",
+  "lcsc": "C7437322",
+  "value": "24.243 black",
+  "role": "speaker banana socket L-"
+ },
+ {
+  "ref": "J6",
+  "lcsc": "C7437321",
+  "value": "24.243 red",
+  "role": "speaker banana socket R+"
+ },
+ {
+  "ref": "J7",
+  "lcsc": "C7437322",
+  "value": "24.243 black",
+  "role": "speaker banana socket R-"
  },
  {
   "ref": "SW1",

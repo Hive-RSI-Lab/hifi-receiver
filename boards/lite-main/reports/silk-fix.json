@@ -2,7 +2,7 @@
  "script": "place_edit",
  "status": "pass",
  "board": "kicad/lite-main.kicad_pcb",
- "applied": 34,
+ "applied": 43,
  "verified": true,
  "results": [
   {
@@ -83,6 +83,34 @@
    "region": null
   },
   {
+   "ref": "J4",
+   "layer": "F.SilkS",
+   "removed": 0,
+   "only_offboard": false,
+   "region": null
+  },
+  {
+   "ref": "J5",
+   "layer": "F.SilkS",
+   "removed": 0,
+   "only_offboard": false,
+   "region": null
+  },
+  {
+   "ref": "J6",
+   "layer": "F.SilkS",
+   "removed": 0,
+   "only_offboard": false,
+   "region": null
+  },
+  {
+   "ref": "J7",
+   "layer": "F.SilkS",
+   "removed": 0,
+   "only_offboard": false,
+   "region": null
+  },
+  {
    "ref": "U2",
    "field": "reference",
    "layer": "F.SilkS",
@@ -115,37 +143,77 @@
    "thickness": 0.15
   },
   {
+   "ref": "R5",
+   "field": "reference",
+   "layer": "F.SilkS",
+   "hidden": true,
+   "size": 1.0,
+   "thickness": 0.15
+  },
+  {
+   "ref": "J4",
+   "field": "reference",
+   "layer": "F.SilkS",
+   "hidden": true,
+   "size": 1.0,
+   "thickness": 0.15
+  },
+  {
+   "ref": "J5",
+   "field": "reference",
+   "layer": "F.SilkS",
+   "hidden": true,
+   "size": 1.0,
+   "thickness": 0.15
+  },
+  {
+   "ref": "J6",
+   "field": "reference",
+   "layer": "F.SilkS",
+   "hidden": true,
+   "size": 1.0,
+   "thickness": 0.15
+  },
+  {
+   "ref": "J7",
+   "field": "reference",
+   "layer": "F.SilkS",
+   "hidden": true,
+   "size": 1.0,
+   "thickness": 0.15
+  },
+  {
    "ref": "Q11",
    "layer": "F.SilkS",
-   "removed": 0,
+   "removed": 5,
    "only_offboard": false,
    "region": null
   },
   {
    "ref": "Q12",
    "layer": "F.SilkS",
-   "removed": 0,
+   "removed": 5,
    "only_offboard": false,
    "region": null
   },
   {
    "ref": "Q13",
    "layer": "F.SilkS",
-   "removed": 0,
+   "removed": 5,
    "only_offboard": false,
    "region": null
   },
   {
    "ref": "Q14",
    "layer": "F.SilkS",
-   "removed": 0,
+   "removed": 5,
    "only_offboard": false,
    "region": null
   },
   {
    "ref": "Q15",
    "layer": "F.SilkS",
-   "removed": 0,
+   "removed": 5,
    "only_offboard": false,
    "region": null
   },
@@ -228,31 +296,31 @@
    "deg": 0.0
   },
   {
-   "text": "L+",
+   "text": "J4 L+",
    "layer": "F.SilkS",
-   "x": 98.045,
-   "y": 72.623,
+   "x": 100.265,
+   "y": 70.323,
    "deg": 0.0
   },
   {
-   "text": "L-",
+   "text": "J5 L-",
    "layer": "F.SilkS",
-   "x": 103.125,
-   "y": 72.623,
+   "x": 111.265,
+   "y": 70.323,
    "deg": 0.0
   },
   {
-   "text": "R+",
+   "text": "J6 R+",
    "layer": "F.SilkS",
-   "x": 108.205,
-   "y": 72.623,
+   "x": 122.265,
+   "y": 70.323,
    "deg": 0.0
   },
   {
-   "text": "R-",
+   "text": "J7 R-",
    "layer": "F.SilkS",
-   "x": 113.285,
-   "y": 72.623,
+   "x": 133.265,
+   "y": 70.323,
    "deg": 0.0
   }
  ]

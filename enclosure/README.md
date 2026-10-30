@@ -5,7 +5,7 @@ to the boards' KiCad files, and exported as STEP and STL. All three tiers
 are read, built, rendered and fit-checked with hive-mech's `mech`: each tier
 is a `mech build` script (`lite.py`, `plus.py`, `ultra.py`), and the pieces
 they share (screws from below into lid pillars, RCA holes, binding posts,
-light pipes) are in `core_box.py`.
+Lite's banana-socket holes, light pipes) are in `core_box.py`.
 
 The brief asked for Onshape. The Hive has no Onshape account or key (nothing
 in `/hive/tools` or the knowledge base), so the model is code in this repo.
@@ -15,13 +15,13 @@ STEP moves it to Onshape later (see the end of this page).
 
 ![lid lifted](out/lite/iso.png)
 
-- **Box:** 106 x 96 x 46.8 mm: a base (the tray), a lid and three printed
+- **Box:** 124 x 96 x 39.8 mm: a base (the tray), a lid and three printed
   buttons.
 - **Files:** `out/lite/base.stl`, `lid.stl` and `btn_SW1-3.stl` are already
   in print orientation. `out/lite/enclosure.step` is the assembly with the
   board as a slab, for Onshape.
 - **Fit:** `out/lite/fit.md` is the fit check's report against the board.
-- **Material:** about 107 g if printed solid, so about $2–3 of filament.
+- **Material:** about 110 g if printed solid, so about $2–3 of filament.
 
 ### Printing
 
@@ -29,9 +29,9 @@ STEP moves it to Onshape later (see the end of this page).
   softens at about 55 °C.
 - **Settings:** 0.4 mm nozzle, 0.2 mm layers, 4 walls, 20–25 % infill.
 - **No supports.** The base prints on its floor, the lid on its top face and
-  each button on its cap. The holes in the walls are teardrops (RCA, binding
-  posts: the RCA ones cut flat 1 mm over the hole, a 3 mm bridge) or bridge
-  (USB-C, IR window). Each standoff has a 7.8 mm foot round its 6.2 mm
+  each button on its cap. The holes in the walls are teardrops (RCA: cut
+  flat 1 mm over the hole, a 3 mm bridge), squares with a 45-degree roof (the
+  banana sockets) or bridge (USB-C, IR window). Each standoff has a 7.8 mm foot round its 6.2 mm
   counterbore, so the ring left round it is two nozzle lines. The foot joins
   the wall beside it.
 - **Bed:** both parts fit a 220 x 220 mm bed.
@@ -41,30 +41,27 @@ STEP moves it to Onshape later (see the end of this page).
 | Item | Qty | Note |
 |---|---|---|
 | M3 x 12 screw, socket or pan head | 4 | Threads straight into the lid's pillars (2.5 mm pilot), no inserts. |
-| 4 mm binding post, M4 thread | 4 | Red/black. The rear wall is 2.4 mm. |
 | Rubber foot, ≤ 11 mm dia | 4 | Self-adhesive. The underside has 0.8 mm recesses for them. |
-| Speaker wire, 18 AWG, ~80 mm | 4 | From each post's lug to J4. Use ferrules at the J4 end. |
 
 ### Assembly
 
 1. Drop the board onto the four standoffs, with its connectors to the rear
-   wall. The RCA and USB-C sockets line up with their holes.
-2. Push the four binding posts through the rear wall. Fit their nuts from the
-   inside: there is room above the RCA jacks.
-3. Wire each post to J4. J4's wire entries face into the box. Its terminals
-   are L+ L- R+ R- (`boards/lite/README.md`).
-4. Drop the three buttons into their holes in the lid from underneath, cap
+   wall: tilt it nose-first so the four banana sockets' square noses go into
+   their square holes, then lay it down. The RCA and USB-C sockets line up
+   with their holes. There is no wiring: the speaker sockets are on the board.
+2. Drop the three buttons into their holes in the lid from underneath, cap
    up, then put the lid on, holding them in. Its lip locates it inside the
    walls.
-5. Fit the four screws from underneath. Each one goes through the base and
+3. Fit the four screws from underneath. Each one goes through the base and
    the board's mounting hole into a lid pillar. Together they clamp the board
    and hold the lid. Don't overtighten them: the thread is plastic.
 
 ### Panels
 
 - **Rear, seen from behind, left to right:**
-  - the speaker posts along the top, at 19 mm pitch so dual banana plugs fit:
-    L+ and L- (left pair), then R+ and R-
+  - the speaker outputs, four 4 mm banana sockets low down at 11 mm pitch,
+    7.5 mm over the board: R- R+ (right speaker) then L- L+ (left speaker).
+    Red is +, black is -. Single banana plugs; a dual (19 mm) plug doesn't fit.
   - USB-C power, low down
   - SUB OUT, an RCA pair
   - LINE IN, an RCA pair, for the FLX4
@@ -100,16 +97,16 @@ z = 0 the board's bottom face. The dimensions behind it:
 | Lid | 2.2 | |
 | Board edge to wall | 0.6 | |
 | Standoff | 5.0 | RCA pins stick out 2.9 mm under the board |
-| Board top to lid | 36.0 | RCA pair 27 mm tall, then the binding-post nuts above it |
+| Board top to lid | 29.0 | RCA pair 27 mm tall, and 2 mm over it |
 | RCA holes | 12.0 | a plug's outer shell, over the 8.3 mm barrel |
 | USB-C opening | 13.4 x 7.6 | mech's USB-C plug (12.4 x 6.6) + 0.5 a side |
 | IR window | 9 x 8 | round the lens, 5 mm over the board |
+| Banana-socket holes | 6.8 square | the sockets' 6 mm square nose (it reaches 2.65 mm past the board edge, 2 mm into the wall) + 0.4 a side |
 
-Before mech's check sees the board, `lite.py` drops J4 (the speaker
-terminal: it is wired to the posts inside) from the ports, cuts the RCA
-jacks to their body inside the rear wall with a port per barrel, adds each
-binding post's nut and lug as a box, and makes U9's lens a port through the
-front wall.
+Before mech's check sees the board, `lite.py` cuts the RCA jacks to their
+body inside the rear wall with a port per barrel, cuts the banana sockets
+(J4-J7) the same way with their square nose as the port, and makes U9's lens
+a port through the front wall.
 
 Part heights come from `heights.json`: the parts' STEP models and LCSC's
 seated heights. The stacked-RCA model in the board library sits 13.5 mm too

@@ -217,8 +217,8 @@
    }
   }
  ],
- "targets": 149,
- "moved": 17,
+ "targets": 147,
+ "moved": 16,
  "residual": [
   {
    "ref": "Q15",
@@ -371,11 +371,31 @@
    "reason": "board_only"
   },
   {
+   "ref": "J4",
+   "reason": "hidden"
+  },
+  {
+   "ref": "J5",
+   "reason": "hidden"
+  },
+  {
+   "ref": "J6",
+   "reason": "hidden"
+  },
+  {
+   "ref": "J7",
+   "reason": "hidden"
+  },
+  {
    "ref": "R15",
    "reason": "hidden"
   },
   {
    "ref": "R4",
+   "reason": "hidden"
+  },
+  {
+   "ref": "R5",
    "reason": "hidden"
   },
   {
@@ -418,8 +438,8 @@
   },
   {
    "ref": "C3",
-   "moved": true,
-   "clearance_mm": 0.262,
+   "moved": false,
+   "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
   },
   {
@@ -485,8 +505,8 @@
   {
    "ref": "C37",
    "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.605
+   "clearance_mm": 0.26,
+   "beyond_extent_mm": 0.355
   },
   {
    "ref": "C44",
@@ -495,40 +515,34 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "C68",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
-  },
-  {
    "ref": "C81",
    "moved": false,
-   "clearance_mm": 0.237,
+   "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
    "ref": "C82",
    "moved": false,
-   "clearance_mm": 0.237,
+   "clearance_mm": 0.26,
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "Q4",
+   "ref": "L3",
    "moved": false,
-   "clearance_mm": 0.025,
-   "beyond_extent_mm": 1.7941
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 2.125
+  },
+  {
+   "ref": "L5",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 1.09
   },
   {
    "ref": "R3",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "C19",
    "moved": false,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.605
+   "beyond_extent_mm": 0.355
   },
   {
    "ref": "C45",
@@ -539,20 +553,26 @@
   {
    "ref": "C84",
    "moved": true,
-   "clearance_mm": 0.113,
+   "clearance_mm": 0.26,
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "D1",
-   "moved": false,
-   "clearance_mm": 0.185,
-   "beyond_extent_mm": 1.1333
-  },
-  {
-   "ref": "L5",
+   "ref": "L1",
    "moved": false,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 1.1766
+   "beyond_extent_mm": 2.125
+  },
+  {
+   "ref": "L2",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 2.125
+  },
+  {
+   "ref": "Q4",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.35
   },
   {
    "ref": "R33",
@@ -585,22 +605,22 @@
    "beyond_extent_mm": 0.605
   },
   {
+   "ref": "C19",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
    "ref": "C48",
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "L2",
+   "ref": "D1",
    "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 2.125
-  },
-  {
-   "ref": "L3",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 2.125
+   "clearance_mm": 0.185,
+   "beyond_extent_mm": 1.1333
   },
   {
    "ref": "L6",
@@ -663,6 +683,18 @@
    "beyond_extent_mm": 0.355
   },
   {
+   "ref": "C70",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.35
+  },
+  {
+   "ref": "C8",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.35
+  },
+  {
    "ref": "C83",
    "moved": false,
    "clearance_mm": 0.3,
@@ -681,12 +713,6 @@
    "beyond_extent_mm": 0.35
   },
   {
-   "ref": "L1",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 2.125
-  },
-  {
    "ref": "R50",
    "moved": false,
    "clearance_mm": 0.3,
@@ -695,12 +721,6 @@
   {
    "ref": "R80",
    "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "C2",
-   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
@@ -729,7 +749,13 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "C8",
+   "ref": "C68",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.35
+  },
+  {
+   "ref": "C69",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
@@ -795,6 +821,12 @@
    "beyond_extent_mm": 0.355
   },
   {
+   "ref": "C2",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
    "ref": "C42",
    "moved": false,
    "clearance_mm": 0.3,
@@ -831,10 +863,10 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "C69",
+   "ref": "C67",
    "moved": false,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
+   "beyond_extent_mm": 0.3992
   },
   {
    "ref": "C7",
@@ -843,10 +875,10 @@
    "beyond_extent_mm": 0.35
   },
   {
-   "ref": "C70",
+   "ref": "L4",
    "moved": false,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
+   "beyond_extent_mm": 2.125
   },
   {
    "ref": "R11",
@@ -855,13 +887,13 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "R5",
+   "ref": "R6",
    "moved": false,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 2.855
+   "beyond_extent_mm": 0.355
   },
   {
-   "ref": "R6",
+   "ref": "R68",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.605
@@ -880,6 +912,12 @@
   },
   {
    "ref": "C12",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.35
+  },
+  {
+   "ref": "C25",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
@@ -924,7 +962,7 @@
    "ref": "C65",
    "moved": false,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
+   "beyond_extent_mm": 0.605
   },
   {
    "ref": "C66",
@@ -933,22 +971,16 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "C67",
+   "ref": "C71",
    "moved": false,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "C80",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
+   "beyond_extent_mm": 0.35
   },
   {
    "ref": "Q1",
-   "moved": false,
+   "moved": true,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 1.1899
+   "beyond_extent_mm": 0.35
   },
   {
    "ref": "Q2",
@@ -1029,12 +1061,6 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "C25",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
-  },
-  {
    "ref": "C51",
    "moved": false,
    "clearance_mm": 0.3,
@@ -1048,6 +1074,12 @@
   },
   {
    "ref": "C63",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "C80",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
@@ -1095,22 +1127,10 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "R68",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
    "ref": "U6",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
-  },
-  {
-   "ref": "U9",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.36
   },
   {
    "ref": "C14",
@@ -1129,24 +1149,6 @@
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "C71",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
-  },
-  {
-   "ref": "J4",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.5324
-  },
-  {
-   "ref": "L4",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 2.125
   },
   {
    "ref": "Q3",
@@ -1179,6 +1181,12 @@
    "beyond_extent_mm": 0.3742
   },
   {
+   "ref": "U9",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.36
+  },
+  {
    "ref": "C30",
    "moved": false,
    "clearance_mm": 0.3,
@@ -1198,12 +1206,6 @@
   },
   {
    "ref": "R62",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "R65",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
@@ -1249,12 +1251,18 @@
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "R65",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
   }
  ],
  "applied": true,
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-30T21:13:10+00:00",
+ "generated_at": "2026-10-30T22:14:13+00:00",
  "input": "kicad/lite-main.kicad_pcb",
- "input_digest": "sexpr_no_uuid:23a0b192f944baa803f0fa3a34b30778c772ef6467d85c25fbeb9f397bdf5c8b"
+ "input_digest": "sexpr_no_uuid:65ca92a7985a188199cb7253cd5d1ea38e13e7f1ecc1c58783a18d340f63a151"
 }

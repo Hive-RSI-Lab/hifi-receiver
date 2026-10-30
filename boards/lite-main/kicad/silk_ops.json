@@ -3,14 +3,6 @@
  "ops": [
   {
    "op": "move_text",
-   "ref": "C3",
-   "field": "reference",
-   "x": 81.34,
-   "y": 81.823,
-   "deg": 90.0
-  },
-  {
-   "op": "move_text",
    "ref": "Q11",
    "field": "reference",
    "x": 68.9,
@@ -70,16 +62,8 @@
    "ref": "C37",
    "field": "reference",
    "x": 52.365,
-   "y": 88.168,
+   "y": 88.418,
    "deg": 0.0
-  },
-  {
-   "op": "move_text",
-   "ref": "R3",
-   "field": "reference",
-   "x": 82.52,
-   "y": 79.223,
-   "deg": 90.0
   },
   {
    "op": "move_text",
@@ -135,6 +119,14 @@
    "field": "reference",
    "x": 61.52,
    "y": 96.823,
+   "deg": 90.0
+  },
+  {
+   "op": "move_text",
+   "ref": "Q1",
+   "field": "reference",
+   "x": 95.1025,
+   "y": 66.3155,
    "deg": 90.0
   }
  ]

@@ -7,7 +7,8 @@ pattern: three round 1.6 mm holes and no leg holes, so the jack can't be
 inserted. This puts the library's pads on J4/J5 in place; tracks still end
 inside the grown pads 1/3, and pad 2 doesn't move.
 
-    KiCad's python: kicad/gen/eco_rca.py kicad/core.kicad_pcb
+    KiCad's python: kicad/gen/eco_rca.py kicad/core.kicad_pcb J4, then the same
+    with J5 (the holes are redone each run, idempotent; the courtyard is per part)
 """
 import sys
 
@@ -47,3 +48,29 @@ for ref in ("J4", "J5"):
         p.SetFPRelativePosition(pcbnew.VECTOR2I(M(x), M(y)))
     print(ref, "holes from the library")
 b.Save(pcb)
+
+# The legs at +-7.65 (2.0 x 3.0 at y +1.60) reach x +-8.65: the courtyard
+# steps out to +-8.75 beside them only (hwde verify check_courtyard), so it
+# stays clear of J11's beside J4
+OUTLINE = [(-8, -3.45), (8, -3.45), (8, -0.05), (8.75, -0.05), (8.75, 3.25), (8, 3.25),
+           (8, 21.8), (-8, 21.8), (-8, 3.25), (-8.75, 3.25), (-8.75, -0.05), (-8, -0.05)]
+# one part per run (kicad/gen/eco_rca.py PCB J4, then J5): after one
+# footprint's courtyard is replaced, KiCad's python hands back stale handles
+for ref in sys.argv[2:3] or ("J4",):
+    b = pcbnew.LoadBoard(pcb)
+    fp = b.FindFootprintByReference(ref)
+    for g in list(fp.GraphicalItems()):
+        if g.GetLayer() == pcbnew.F_CrtYd:
+            fp.Remove(g)
+    x0, y0 = fp.GetX(), fp.GetY()
+    flip = -1 if abs(fp.GetOrientationDegrees()) == 180 else 1
+    pts = [pcbnew.VECTOR2I(x0 + M(flip * x), y0 + M(flip * y)) for x, y in OUTLINE]
+    for a, c in zip(pts, pts[1:] + pts[:1]):
+        sh = pcbnew.PCB_SHAPE(fp, pcbnew.SHAPE_T_SEGMENT)
+        sh.SetLayer(pcbnew.F_CrtYd)
+        sh.SetWidth(M(0.05))
+        sh.SetStart(a)
+        sh.SetEnd(c)
+        fp.Add(sh)
+    print(ref, "courtyard holds the legs")
+    b.Save(pcb)

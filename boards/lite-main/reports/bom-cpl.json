@@ -2,8 +2,8 @@
  "script": "bom_cpl",
  "status": "pass",
  "board": "lite-main.kicad_pcb",
- "n_parts": 154,
- "n_placed": 154,
+ "n_parts": 157,
+ "n_placed": 157,
  "bom": "fab/BOM.csv",
  "bom_full": "fab/BOM-full.csv",
  "cpl": "fab/CPL.csv",
@@ -14,7 +14,7 @@
   "mouser": "fab/lite-main_BOM_mouser.csv",
   "cost": null,
   "boards": 1,
-  "lines": 54,
+  "lines": 55,
   "priced": {
    "digikey": false,
    "mouser": false
@@ -28,9 +28,9 @@
  "stock": {
   "status": "pass",
   "boards": 5,
-  "checked_at": "2026-10-30T22:10:56+00:00",
+  "checked_at": "2026-10-30T22:14:56+00:00",
   "counts": {
-   "ok": 54
+   "ok": 55
   },
   "rows": [
    {
@@ -38,7 +38,7 @@
     "need": 65,
     "mpn": "CL10A105KB8NNNC",
     "value": "1uF",
-    "checked_at": "2026-10-30T22:10:48+00:00",
+    "checked_at": "2026-10-30T22:14:48+00:00",
     "notes": [
      "LCSC shows 0 in stock; JLC's own stock covers the build (9075581)"
     ],
@@ -47,7 +47,7 @@
      "model": "CL10A105KB8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 12318910,
+     "stock": 12318902,
      "can_sell": 9075581,
      "for_sale": true,
      "no_buy_reason": null,
@@ -91,14 +91,14 @@
     "need": 90,
     "mpn": "CC0603KRX7R9BB104",
     "value": "100nF",
-    "checked_at": "2026-10-30T22:10:48+00:00",
+    "checked_at": "2026-10-30T22:14:48+00:00",
     "notes": [],
     "jlc": {
      "code": "C14663",
      "model": "CC0603KRX7R9BB104",
      "brand": "YAGEO",
      "library": "basic",
-     "stock": 42132380,
+     "stock": 42132214,
      "can_sell": 30975802,
      "for_sale": true,
      "no_buy_reason": null,
@@ -147,14 +147,14 @@
     "need": 5,
     "mpn": "CL31A106KBHNNNE",
     "value": "10uF",
-    "checked_at": "2026-10-30T22:10:48+00:00",
+    "checked_at": "2026-10-30T22:14:48+00:00",
     "notes": [],
     "jlc": {
      "code": "C13585",
      "model": "CL31A106KBHNNNE",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 3141887,
+     "stock": 3141867,
      "can_sell": 2328175,
      "for_sale": true,
      "no_buy_reason": null,
@@ -186,14 +186,14 @@
     "need": 5,
     "mpn": "1206B475K500NT",
     "value": "4.7uF",
-    "checked_at": "2026-10-30T22:10:48+00:00",
+    "checked_at": "2026-10-30T22:14:48+00:00",
     "notes": [],
     "jlc": {
      "code": "C29823",
      "model": "1206B475K500NT",
      "brand": "FH (Guangdong Fenghua Advanced Tech)",
      "library": "basic",
-     "stock": 803129,
+     "stock": 803116,
      "can_sell": 656234,
      "for_sale": true,
      "no_buy_reason": null,
@@ -225,14 +225,14 @@
     "need": 25,
     "mpn": "CL21A226MAQNNNE",
     "value": "22uF",
-    "checked_at": "2026-10-30T22:10:48+00:00",
+    "checked_at": "2026-10-30T22:14:48+00:00",
     "notes": [],
     "jlc": {
      "code": "C45783",
      "model": "CL21A226MAQNNNE",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 3792828,
+     "stock": 3792814,
      "can_sell": 2848870,
      "for_sale": true,
      "no_buy_reason": null,
@@ -268,14 +268,14 @@
     "need": 5,
     "mpn": "CL10C470JB8NNNC",
     "value": "47pF",
-    "checked_at": "2026-10-30T22:10:48+00:00",
+    "checked_at": "2026-10-30T22:14:48+00:00",
     "notes": [],
     "jlc": {
      "code": "C1671",
      "model": "CL10C470JB8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 813554,
+     "stock": 813549,
      "can_sell": 660927,
      "for_sale": true,
      "no_buy_reason": null,
@@ -307,7 +307,7 @@
     "need": 40,
     "mpn": "CL10A106KP8NNNC",
     "value": "10uF",
-    "checked_at": "2026-10-30T22:10:49+00:00",
+    "checked_at": "2026-10-30T22:14:49+00:00",
     "notes": [],
     "jlc": {
      "code": "C19702",
@@ -353,7 +353,7 @@
     "need": 5,
     "mpn": "CL10C220JB8NNNC",
     "value": "22pF",
-    "checked_at": "2026-10-30T22:10:49+00:00",
+    "checked_at": "2026-10-30T22:14:49+00:00",
     "notes": [],
     "jlc": {
      "code": "C1653",
@@ -392,7 +392,7 @@
     "need": 15,
     "mpn": "CL10A475KO8NNNC",
     "value": "4.7uF",
-    "checked_at": "2026-10-30T22:10:49+00:00",
+    "checked_at": "2026-10-30T22:14:49+00:00",
     "notes": [],
     "jlc": {
      "code": "C19666",
@@ -433,7 +433,7 @@
     "need": 5,
     "mpn": "CL10B473KB8NNNC",
     "value": "47nF",
-    "checked_at": "2026-10-30T22:10:49+00:00",
+    "checked_at": "2026-10-30T22:14:49+00:00",
     "notes": [
      "LCSC shows 0 in stock; JLC's own stock covers the build (607641)"
     ],
@@ -442,7 +442,7 @@
      "model": "CL10B473KB8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 938416,
+     "stock": 938414,
      "can_sell": 607641,
      "for_sale": true,
      "no_buy_reason": null,
@@ -474,7 +474,7 @@
     "need": 10,
     "mpn": "CL10C101JB8NNNC",
     "value": "100pF",
-    "checked_at": "2026-10-30T22:10:49+00:00",
+    "checked_at": "2026-10-30T22:14:49+00:00",
     "notes": [],
     "jlc": {
      "code": "C14858",
@@ -514,7 +514,7 @@
     "need": 15,
     "mpn": "CL21B105KBFNNNE",
     "value": "1uF",
-    "checked_at": "2026-10-30T22:10:50+00:00",
+    "checked_at": "2026-10-30T22:14:49+00:00",
     "notes": [
      "LCSC shows 0 in stock; JLC's own stock covers the build (1368426)"
     ],
@@ -557,7 +557,7 @@
     "need": 10,
     "mpn": "CL10B102KB8NNNC",
     "value": "1nF",
-    "checked_at": "2026-10-30T22:10:50+00:00",
+    "checked_at": "2026-10-30T22:14:50+00:00",
     "notes": [],
     "jlc": {
      "code": "C1588",
@@ -597,7 +597,7 @@
     "need": 5,
     "mpn": "MA35V470M10X13",
     "value": "470uF 35V polymer",
-    "checked_at": "2026-10-30T22:10:50+00:00",
+    "checked_at": "2026-10-30T22:14:50+00:00",
     "notes": [],
     "jlc": {
      "code": "C46550472",
@@ -636,7 +636,7 @@
     "need": 5,
     "mpn": "RVT220UF35V67RV0024",
     "value": "220uF 35V",
-    "checked_at": "2026-10-30T22:10:50+00:00",
+    "checked_at": "2026-10-30T22:14:50+00:00",
     "notes": [],
     "jlc": {
      "code": "C2836441",
@@ -675,7 +675,7 @@
     "need": 20,
     "mpn": "CL10B224KA8NNNC",
     "value": "220nF",
-    "checked_at": "2026-10-30T22:10:50+00:00",
+    "checked_at": "2026-10-30T22:14:50+00:00",
     "notes": [],
     "jlc": {
      "code": "C21120",
@@ -717,7 +717,7 @@
     "need": 20,
     "mpn": "CL31B105KBHNNNE",
     "value": "1uF",
-    "checked_at": "2026-10-30T22:10:50+00:00",
+    "checked_at": "2026-10-30T22:14:50+00:00",
     "notes": [],
     "jlc": {
      "code": "C1848",
@@ -759,7 +759,7 @@
     "need": 10,
     "mpn": "0603B471K500NT",
     "value": "470pF",
-    "checked_at": "2026-10-30T22:10:50+00:00",
+    "checked_at": "2026-10-30T22:14:50+00:00",
     "notes": [],
     "jlc": {
      "code": "C1620",
@@ -799,7 +799,7 @@
     "need": 5,
     "mpn": "SMBJ22A",
     "value": "SMBJ22A",
-    "checked_at": "2026-10-30T22:10:51+00:00",
+    "checked_at": "2026-10-30T22:14:50+00:00",
     "notes": [
      "JLC also lists C10214, C113993, C224015, C284010, C294874, C2989896, C3012514, C3019970, C353375, C362087, C3720133, C484347, C501381, C5119554, C5161380, C713670, C726829, C908800 as SMBJ22A: its BOM review may match by MPN, so check it shows C151920"
     ],
@@ -840,7 +840,7 @@
     "need": 5,
     "mpn": "KT-0603R",
     "value": "red",
-    "checked_at": "2026-10-30T22:10:51+00:00",
+    "checked_at": "2026-10-30T22:14:51+00:00",
     "notes": [],
     "jlc": {
      "code": "C2286",
@@ -879,7 +879,7 @@
     "need": 5,
     "mpn": "TYPE-C-31-M-12",
     "value": "TYPE-C-31-M-12",
-    "checked_at": "2026-10-30T22:10:51+00:00",
+    "checked_at": "2026-10-30T22:14:51+00:00",
     "notes": [
      "JLC also lists C9900091786 as TYPE-C-31-M-12: its BOM review may match by MPN, so check it shows C165948"
     ],
@@ -888,7 +888,7 @@
      "model": "TYPE-C-31-M-12",
      "brand": "Korean Hroparts Elec",
      "library": "extended",
-     "stock": 283392,
+     "stock": 283385,
      "can_sell": 270616,
      "for_sale": true,
      "no_buy_reason": null,
@@ -920,7 +920,7 @@
     "need": 10,
     "mpn": "XDJK-0271-1650",
     "value": "RCA line in",
-    "checked_at": "2026-10-30T22:10:51+00:00",
+    "checked_at": "2026-10-30T22:14:51+00:00",
     "notes": [],
     "jlc": {
      "code": "C7527522",
@@ -956,50 +956,95 @@
     "comment": "RCA line in"
    },
    {
-    "lcsc": "C2915641",
-    "need": 5,
-    "mpn": "DB128V-5.08-4P-GN-S",
-    "value": "DB128V-5.08-4P",
-    "checked_at": "2026-10-30T22:10:51+00:00",
-    "notes": [],
+    "lcsc": "C7437321",
+    "need": 10,
+    "mpn": "24.243.1",
+    "value": "24.243 red",
+    "checked_at": "2026-10-30T22:14:51+00:00",
+    "notes": [
+     "JLC also lists C17701754 as 24.243.1: its BOM review may match by MPN, so check it shows C7437321"
+    ],
     "jlc": {
-     "code": "C2915641",
-     "model": "DB128V-5.08-4P-GN-S",
-     "brand": "DORABO",
+     "code": "C7437321",
+     "model": "24.243.1",
+     "brand": "Changzhou Amass Elec",
      "library": "extended",
-     "stock": 97409,
-     "can_sell": 96121,
+     "stock": 5936,
+     "can_sell": 5665,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
      "min_purchase": 1,
-     "description": "-40\u2103~+105\u2103 1 12~22 14mm 16A 1x4P 2.5 300V 4 4P 5.08mm Green M2.5 Through Hole Plugin,P=5.08mm Screw Terminal Blocks ROHS",
-     "package": "Plugin,P=5.08mm"
+     "description": "24A 60V Terminal \u63d2\u4ef6 Banana Connectors / Alligator Clips ROHS",
+     "package": "Plugin"
     },
     "lcsc_record": {
-     "code": "C2915641",
-     "model": "DB128V-5.08-4P-GN-S",
-     "brand": "DORABO",
-     "stock": 95150
+     "code": "C7437321",
+     "model": "24.243.1",
+     "brand": "Changzhou Amass Elec",
+     "stock": 5515
     },
     "match": {
      "ok": true,
-     "why": "BOM MPN DB128V-5.08-4P-GN-S vs JLC model DB128V-5.08-4P-GN-S"
+     "why": "BOM MPN 24.243.1 vs JLC model 24.243.1"
     },
-    "available": 96121,
+    "available": 5665,
     "status": "ok",
-    "why": "96121 available at JLC, need 5; BOM MPN DB128V-5.08-4P-GN-S vs JLC model DB128V-5.08-4P-GN-S",
+    "why": "5665 available at JLC, need 10; BOM MPN 24.243.1 vs JLC model 24.243.1",
     "refs": [
-     "J4"
+     "J4",
+     "J6"
     ],
-    "comment": "DB128V-5.08-4P"
+    "comment": "24.243 red"
+   },
+   {
+    "lcsc": "C7437322",
+    "need": 10,
+    "mpn": "24.243.2",
+    "value": "24.243 black",
+    "checked_at": "2026-10-30T22:14:51+00:00",
+    "notes": [
+     "JLC also lists C17701807 as 24.243.2: its BOM review may match by MPN, so check it shows C7437322"
+    ],
+    "jlc": {
+     "code": "C7437322",
+     "model": "24.243.2",
+     "brand": "Changzhou Amass Elec",
+     "library": "extended",
+     "stock": 3301,
+     "can_sell": 3141,
+     "for_sale": true,
+     "no_buy_reason": null,
+     "alternative": null,
+     "min_purchase": 1,
+     "description": "24A 60V Terminal \u63d2\u4ef6 Banana Connectors / Alligator Clips ROHS",
+     "package": "Plugin"
+    },
+    "lcsc_record": {
+     "code": "C7437322",
+     "model": "24.243.2",
+     "brand": "Changzhou Amass Elec",
+     "stock": 3301
+    },
+    "match": {
+     "ok": true,
+     "why": "BOM MPN 24.243.2 vs JLC model 24.243.2"
+    },
+    "available": 3141,
+    "status": "ok",
+    "why": "3141 available at JLC, need 10; BOM MPN 24.243.2 vs JLC model 24.243.2",
+    "refs": [
+     "J5",
+     "J7"
+    ],
+    "comment": "24.243 black"
    },
    {
     "lcsc": "C48391614",
     "need": 20,
     "mpn": "XR0850-100M",
     "value": "10uH 8A",
-    "checked_at": "2026-10-30T22:10:51+00:00",
+    "checked_at": "2026-10-30T22:14:51+00:00",
     "notes": [],
     "jlc": {
      "code": "C48391614",
@@ -1041,7 +1086,7 @@
     "need": 5,
     "mpn": "SWPA6045S100MT",
     "value": "10uH",
-    "checked_at": "2026-10-30T22:10:52+00:00",
+    "checked_at": "2026-10-30T22:14:51+00:00",
     "notes": [],
     "jlc": {
      "code": "C79272",
@@ -1075,7 +1120,7 @@
     "need": 5,
     "mpn": "SWPA4020S2R2NT",
     "value": "2.2uH",
-    "checked_at": "2026-10-30T22:10:52+00:00",
+    "checked_at": "2026-10-30T22:14:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C305171",
@@ -1109,7 +1154,7 @@
     "need": 5,
     "mpn": "AO4485",
     "value": "AO4485",
-    "checked_at": "2026-10-30T22:10:52+00:00",
+    "checked_at": "2026-10-30T22:14:52+00:00",
     "notes": [
      "JLC also lists C48580949, C51499, C5183843, C5197352, C5261057, C5334068, C55488499 as AO4485: its BOM review may match by MPN, so check it shows C5125949"
     ],
@@ -1150,7 +1195,7 @@
     "need": 25,
     "mpn": "MMBT3904(RANGE:100-300)",
     "value": "MMBT3904",
-    "checked_at": "2026-10-30T22:10:52+00:00",
+    "checked_at": "2026-10-30T22:14:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C20526",
@@ -1193,14 +1238,14 @@
     "need": 15,
     "mpn": "2N7002",
     "value": "2N7002",
-    "checked_at": "2026-10-30T22:10:52+00:00",
+    "checked_at": "2026-10-30T22:14:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C8545",
      "model": "2N7002",
      "brand": "Jiangsu Changjing Electronics Technology Co., Ltd.",
      "library": "basic",
-     "stock": 3412445,
+     "stock": 3412441,
      "can_sell": 3247496,
      "for_sale": true,
      "no_buy_reason": null,
@@ -1234,7 +1279,7 @@
     "need": 10,
     "mpn": "0603WAF1203T5E",
     "value": "120k",
-    "checked_at": "2026-10-30T22:10:52+00:00",
+    "checked_at": "2026-10-30T22:14:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C25808",
@@ -1274,7 +1319,7 @@
     "need": 10,
     "mpn": "0603WAF0000T5E",
     "value": "0R",
-    "checked_at": "2026-10-30T22:10:53+00:00",
+    "checked_at": "2026-10-30T22:14:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C21189",
@@ -1314,14 +1359,14 @@
     "need": 90,
     "mpn": "0603WAF1002T5E",
     "value": "10k",
-    "checked_at": "2026-10-30T22:10:53+00:00",
+    "checked_at": "2026-10-30T22:14:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C25804",
      "model": "0603WAF1002T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 40314329,
+     "stock": 40314268,
      "can_sell": 30046995,
      "for_sale": true,
      "no_buy_reason": null,
@@ -1370,14 +1415,14 @@
     "need": 45,
     "mpn": "0603WAF1003T5E",
     "value": "100k",
-    "checked_at": "2026-10-30T22:10:53+00:00",
+    "checked_at": "2026-10-30T22:14:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C25803",
      "model": "0603WAF1003T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 17756517,
+     "stock": 17756503,
      "can_sell": 15413471,
      "for_sale": true,
      "no_buy_reason": null,
@@ -1417,14 +1462,14 @@
     "need": 5,
     "mpn": "0603WAF2203T5E",
     "value": "220k",
-    "checked_at": "2026-10-30T22:10:53+00:00",
+    "checked_at": "2026-10-30T22:14:52+00:00",
     "notes": [],
     "jlc": {
      "code": "C22961",
      "model": "0603WAF2203T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 1138049,
+     "stock": 1138044,
      "can_sell": 1051346,
      "for_sale": true,
      "no_buy_reason": null,
@@ -1456,7 +1501,7 @@
     "need": 5,
     "mpn": "0603WAF1302T5E",
     "value": "13k",
-    "checked_at": "2026-10-30T22:10:53+00:00",
+    "checked_at": "2026-10-30T22:14:53+00:00",
     "notes": [],
     "jlc": {
      "code": "C22797",
@@ -1495,7 +1540,7 @@
     "need": 5,
     "mpn": "0603WAF1503T5E",
     "value": "150k",
-    "checked_at": "2026-10-30T22:10:53+00:00",
+    "checked_at": "2026-10-30T22:14:53+00:00",
     "notes": [],
     "jlc": {
      "code": "C22807",
@@ -1534,7 +1579,7 @@
     "need": 5,
     "mpn": "0603WAF3302T5E",
     "value": "33k",
-    "checked_at": "2026-10-30T22:10:53+00:00",
+    "checked_at": "2026-10-30T22:14:53+00:00",
     "notes": [],
     "jlc": {
      "code": "C4216",
@@ -1573,14 +1618,14 @@
     "need": 20,
     "mpn": "0603WAF1001T5E",
     "value": "1k",
-    "checked_at": "2026-10-30T22:10:53+00:00",
+    "checked_at": "2026-10-30T22:14:53+00:00",
     "notes": [],
     "jlc": {
      "code": "C21190",
      "model": "0603WAF1001T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 31316232,
+     "stock": 31316198,
      "can_sell": 24645958,
      "for_sale": true,
      "no_buy_reason": null,
@@ -1615,7 +1660,7 @@
     "need": 10,
     "mpn": "0603WAF2202T5E",
     "value": "22k",
-    "checked_at": "2026-10-30T22:10:54+00:00",
+    "checked_at": "2026-10-30T22:14:53+00:00",
     "notes": [],
     "jlc": {
      "code": "C31850",
@@ -1655,14 +1700,14 @@
     "need": 10,
     "mpn": "0603WAF2201T5E",
     "value": "2.2k",
-    "checked_at": "2026-10-30T22:10:54+00:00",
+    "checked_at": "2026-10-30T22:14:53+00:00",
     "notes": [],
     "jlc": {
      "code": "C4190",
      "model": "0603WAF2201T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 5501334,
+     "stock": 5501289,
      "can_sell": 4788410,
      "for_sale": true,
      "no_buy_reason": null,
@@ -1695,14 +1740,14 @@
     "need": 10,
     "mpn": "0603WAF1502T5E",
     "value": "15k",
-    "checked_at": "2026-10-30T22:10:54+00:00",
+    "checked_at": "2026-10-30T22:14:53+00:00",
     "notes": [],
     "jlc": {
      "code": "C22809",
      "model": "0603WAF1502T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 3602451,
+     "stock": 3602446,
      "can_sell": 3191828,
      "for_sale": true,
      "no_buy_reason": null,
@@ -1735,7 +1780,7 @@
     "need": 15,
     "mpn": "0603WAF4702T5E",
     "value": "47k",
-    "checked_at": "2026-10-30T22:10:54+00:00",
+    "checked_at": "2026-10-30T22:14:53+00:00",
     "notes": [],
     "jlc": {
      "code": "C25819",
@@ -1776,7 +1821,7 @@
     "need": 5,
     "mpn": "0603WAF2002T5E",
     "value": "20k",
-    "checked_at": "2026-10-30T22:10:54+00:00",
+    "checked_at": "2026-10-30T22:14:53+00:00",
     "notes": [],
     "jlc": {
      "code": "C4184",
@@ -1815,14 +1860,14 @@
     "need": 5,
     "mpn": "0603WAF1000T5E",
     "value": "100R",
-    "checked_at": "2026-10-30T22:10:54+00:00",
+    "checked_at": "2026-10-30T22:14:54+00:00",
     "notes": [],
     "jlc": {
      "code": "C22775",
      "model": "0603WAF1000T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 9534309,
+     "stock": 9534289,
      "can_sell": 7325000,
      "for_sale": true,
      "no_buy_reason": null,
@@ -1854,7 +1899,7 @@
     "need": 15,
     "mpn": "TS-1187A-B-A-B",
     "value": "TS-1187A",
-    "checked_at": "2026-10-30T22:10:54+00:00",
+    "checked_at": "2026-10-30T22:14:54+00:00",
     "notes": [],
     "jlc": {
      "code": "C318884",
@@ -1895,7 +1940,7 @@
     "need": 5,
     "mpn": "CH224A",
     "value": "CH224A",
-    "checked_at": "2026-10-30T22:10:54+00:00",
+    "checked_at": "2026-10-30T22:14:54+00:00",
     "notes": [],
     "jlc": {
      "code": "C42459160",
@@ -1934,7 +1979,7 @@
     "need": 5,
     "mpn": "TPS54302DDCR",
     "value": "TPS54302",
-    "checked_at": "2026-10-30T22:10:54+00:00",
+    "checked_at": "2026-10-30T22:14:54+00:00",
     "notes": [
      "JLC also lists C316459 as TPS54302DDCR: its BOM review may match by MPN, so check it shows C311983"
     ],
@@ -1975,7 +2020,7 @@
     "need": 5,
     "mpn": "SY8089A1AAC",
     "value": "SY8089A1AAC",
-    "checked_at": "2026-10-30T22:10:55+00:00",
+    "checked_at": "2026-10-30T22:14:54+00:00",
     "notes": [],
     "jlc": {
      "code": "C479074",
@@ -2014,7 +2059,7 @@
     "need": 5,
     "mpn": "LP5907MFX-3.3/NOPB",
     "value": "LP5907-3.3",
-    "checked_at": "2026-10-30T22:10:55+00:00",
+    "checked_at": "2026-10-30T22:14:54+00:00",
     "notes": [],
     "jlc": {
      "code": "C80670",
@@ -2053,7 +2098,7 @@
     "need": 5,
     "mpn": "ESP32-WROVER-E-N8R8",
     "value": "ESP32-WROVER-E-N8R8",
-    "checked_at": "2026-10-30T22:10:55+00:00",
+    "checked_at": "2026-10-30T22:14:54+00:00",
     "notes": [
      "JLC also lists C701348 as ESP32-WROVER-E-N8R8: its BOM review may match by MPN, so check it shows C2973667"
     ],
@@ -2094,7 +2139,7 @@
     "need": 5,
     "mpn": "CH340B",
     "value": "CH340B",
-    "checked_at": "2026-10-30T22:10:55+00:00",
+    "checked_at": "2026-10-30T22:14:54+00:00",
     "notes": [],
     "jlc": {
      "code": "C81010",
@@ -2133,7 +2178,7 @@
     "need": 5,
     "mpn": "ES8388",
     "value": "ES8388",
-    "checked_at": "2026-10-30T22:10:55+00:00",
+    "checked_at": "2026-10-30T22:14:55+00:00",
     "notes": [],
     "jlc": {
      "code": "C365736",
@@ -2172,7 +2217,7 @@
     "need": 5,
     "mpn": "TPA3118D2DAPR",
     "value": "TPA3118D2",
-    "checked_at": "2026-10-30T22:10:55+00:00",
+    "checked_at": "2026-10-30T22:14:55+00:00",
     "notes": [],
     "jlc": {
      "code": "C46497",
@@ -2211,7 +2256,7 @@
     "need": 5,
     "mpn": "IRM-3638T",
     "value": "IRM-3638T",
-    "checked_at": "2026-10-30T22:10:55+00:00",
+    "checked_at": "2026-10-30T22:14:55+00:00",
     "notes": [
      "JLC also lists C16216 as IRM-3638T: its BOM review may match by MPN, so check it shows C42421366"
     ],
@@ -2385,10 +2430,16 @@
    "LCSC": "C7527522"
   },
   {
-   "Comment": "DB128V-5.08-4P",
-   "Designator": "J4",
-   "Footprint": "CONN-TH_4P-P5.08_DIBO_DB128V-5.08",
-   "LCSC": "C2915641"
+   "Comment": "24.243 red",
+   "Designator": "J4,J6",
+   "Footprint": "CONN-TH_24.243.1_RED",
+   "LCSC": "C7437321"
+  },
+  {
+   "Comment": "24.243 black",
+   "Designator": "J5,J7",
+   "Footprint": "CONN-TH_24.243.2",
+   "LCSC": "C7437322"
   },
   {
    "Comment": "10uH 8A",
@@ -2629,13 +2680,23 @@
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
-   "LCSC": "C2915641",
-   "MPN": "DB128V-5.08-4P-GN-S",
-   "Comment": "DB128V-5.08-4P",
-   "Designator": "J4",
-   "Qty Per Board": "1",
+   "LCSC": "C7437321",
+   "MPN": "24.243.1",
+   "Comment": "24.243 red",
+   "Designator": "J4,J6",
+   "Qty Per Board": "2",
    "Boards": "5",
-   "Qty To Buy": "5",
+   "Qty To Buy": "10",
+   "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
+  },
+  {
+   "LCSC": "C7437322",
+   "MPN": "24.243.2",
+   "Comment": "24.243 black",
+   "Designator": "J5,J7",
+   "Qty Per Board": "2",
+   "Boards": "5",
+   "Qty To Buy": "10",
    "Note": "Extended part: JLC's BOM review may show it as idle stock (unselected, qty 0) that has to be bought into your parts inventory before assembly."
   },
   {
@@ -3291,12 +3352,22 @@
    "Instructions": "Through-hole - JLC THT assembly (or hand-solder after reflow); not on the SMT line."
   },
   {
-   "Comment": "DB128V-5.08-4P",
-   "Designator": "J4",
-   "Qty Per Board": "1",
-   "Footprint": "CONN-TH_4P-P5.08_DIBO_DB128V-5.08",
-   "MPN": "DB128V-5.08-4P-GN-S",
-   "LCSC": "C2915641",
+   "Comment": "24.243 red",
+   "Designator": "J4,J6",
+   "Qty Per Board": "2",
+   "Footprint": "CONN-TH_24.243.1_RED",
+   "MPN": "24.243.1",
+   "LCSC": "C7437321",
+   "Assembly Class": "tht",
+   "Instructions": "Through-hole - JLC THT assembly (or hand-solder after reflow); not on the SMT line."
+  },
+  {
+   "Comment": "24.243 black",
+   "Designator": "J5,J7",
+   "Qty Per Board": "2",
+   "Footprint": "CONN-TH_24.243.2",
+   "MPN": "24.243.2",
+   "LCSC": "C7437322",
    "Assembly Class": "tht",
    "Instructions": "Through-hole - JLC THT assembly (or hand-solder after reflow); not on the SMT line."
   },
@@ -3762,30 +3833,30 @@
   {
    "Designator": "C68",
    "Mid X": "89.8650",
-   "Mid Y": "-78.8230",
+   "Mid Y": "-82.8730",
    "Layer": "Top",
    "Rotation": "0.0000"
   },
   {
    "Designator": "C69",
    "Mid X": "98.3650",
-   "Mid Y": "-78.8230",
+   "Mid Y": "-82.8730",
    "Layer": "Top",
    "Rotation": "0.0000"
   },
   {
    "Designator": "C70",
    "Mid X": "106.8650",
-   "Mid Y": "-78.8230",
+   "Mid Y": "-82.8730",
    "Layer": "Top",
    "Rotation": "0.0000"
   },
   {
    "Designator": "C71",
    "Mid X": "115.3650",
-   "Mid Y": "-78.8230",
+   "Mid Y": "-82.8730",
    "Layer": "Top",
-   "Rotation": "0.0000"
+   "Rotation": "180.0000"
   },
   {
    "Designator": "C80",
@@ -3866,36 +3937,57 @@
   },
   {
    "Designator": "J4",
-   "Mid X": "105.6650",
-   "Mid Y": "-65.9230",
+   "Mid X": "100.2650",
+   "Mid Y": "-70.3230",
    "Layer": "Top",
-   "Rotation": "0.0000"
+   "Rotation": "90.0000"
+  },
+  {
+   "Designator": "J5",
+   "Mid X": "111.2650",
+   "Mid Y": "-70.3230",
+   "Layer": "Top",
+   "Rotation": "90.0000"
+  },
+  {
+   "Designator": "J6",
+   "Mid X": "122.2650",
+   "Mid Y": "-70.3230",
+   "Layer": "Top",
+   "Rotation": "90.0000"
+  },
+  {
+   "Designator": "J7",
+   "Mid X": "133.2650",
+   "Mid Y": "-70.3230",
+   "Layer": "Top",
+   "Rotation": "90.0000"
   },
   {
    "Designator": "L1",
    "Mid X": "89.8650",
-   "Mid Y": "-87.3230",
+   "Mid Y": "-89.5230",
    "Layer": "Top",
    "Rotation": "90.0000"
   },
   {
    "Designator": "L2",
    "Mid X": "98.3650",
-   "Mid Y": "-87.3230",
+   "Mid Y": "-89.5230",
    "Layer": "Top",
    "Rotation": "90.0000"
   },
   {
    "Designator": "L3",
    "Mid X": "106.8650",
-   "Mid Y": "-87.3230",
+   "Mid Y": "-89.5230",
    "Layer": "Top",
    "Rotation": "90.0000"
   },
   {
    "Designator": "L4",
    "Mid X": "115.3650",
-   "Mid Y": "-87.3230",
+   "Mid Y": "-89.5230",
    "Layer": "Top",
    "Rotation": "90.0000"
   },
@@ -4293,10 +4385,10 @@
   },
   {
    "Designator": "R68",
-   "Mid X": "103.4700",
-   "Mid Y": "-79.0200",
+   "Mid X": "102.6150",
+   "Mid Y": "-82.8730",
    "Layer": "Top",
-   "Rotation": "90.0000"
+   "Rotation": "180.0000"
   },
   {
    "Designator": "R69",
@@ -4493,6 +4585,9 @@
   "J2": "tht",
   "J3": "tht",
   "J4": "tht",
+  "J5": "tht",
+  "J6": "tht",
+  "J7": "tht",
   "L1": "tht",
   "L2": "tht",
   "L3": "tht",
@@ -4572,8 +4667,8 @@
   "U9": "tht"
  },
  "class_counts": {
+  "tht": 11,
   "smt_placed": 146,
-  "tht": 8,
   "board_feature": 4
  },
  "not_placed": [],
@@ -5221,9 +5316,9 @@
   {
    "ref": "C71",
    "package": "C_1206_3216Metric",
-   "base_rot": 0.0,
+   "base_rot": 180.0,
    "correction": 0.0,
-   "final_rot": 0.0,
+   "final_rot": 180.0,
    "matched": null,
    "source": "lcsc_model",
    "layer": "Top"
@@ -5340,10 +5435,40 @@
   },
   {
    "ref": "J4",
-   "package": "CONN-TH_4P-P5.08_DIBO_DB128V-5.08",
-   "base_rot": 0.0,
+   "package": "CONN-TH_24.243.1_RED",
+   "base_rot": 90.0,
    "correction": 0.0,
-   "final_rot": 0.0,
+   "final_rot": 90.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "J5",
+   "package": "CONN-TH_24.243.2",
+   "base_rot": 90.0,
+   "correction": 0.0,
+   "final_rot": 90.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "J6",
+   "package": "CONN-TH_24.243.1_RED",
+   "base_rot": 90.0,
+   "correction": 0.0,
+   "final_rot": 90.0,
+   "matched": null,
+   "source": "lcsc_model",
+   "layer": "Top"
+  },
+  {
+   "ref": "J7",
+   "package": "CONN-TH_24.243.2",
+   "base_rot": 90.0,
+   "correction": 0.0,
+   "final_rot": 90.0,
    "matched": null,
    "source": "lcsc_model",
    "layer": "Top"
@@ -5951,9 +6076,9 @@
   {
    "ref": "R68",
    "package": "R_0603_1608Metric",
-   "base_rot": 90.0,
+   "base_rot": 180.0,
    "correction": 0.0,
-   "final_rot": 90.0,
+   "final_rot": 180.0,
    "matched": null,
    "source": "lcsc_model",
    "layer": "Top"

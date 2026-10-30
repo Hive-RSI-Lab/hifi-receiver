@@ -1,85 +1,81 @@
 {
- "source": "boards/lite-main/kicad/lite-main.kicad_pcb",
+ "source": "../boards/lite-main/kicad/lite-main.kicad_pcb",
  "thickness": 1.6,
  "outline": [
   [
-   98.3473,
+   116.3473,
    0.0304
   ],
   [
-   98.684,
+   116.684,
    0.1206
   ],
   [
-   99.0,
+   117.0,
    0.2679
   ],
   [
-   99.2856,
+   117.2856,
    0.4679
   ],
   [
-   99.5321,
+   117.5321,
    0.7144
   ],
   [
-   99.7321,
+   117.7321,
    1.0
   ],
   [
-   99.8794,
+   117.8794,
    1.316
   ],
   [
-   99.9696,
+   117.9696,
    1.6527
   ],
   [
-   100.0,
+   118.0,
    2.0
   ],
   [
-   100.0,
+   118.0,
    88.0
   ],
   [
-   99.9754,
-   88.3129
+   117.9696,
+   88.3473
   ],
   [
-   99.9021,
-   88.618
+   117.8794,
+   88.684
   ],
   [
-   99.782,
-   88.908
+   117.7321,
+   89.0
   ],
   [
-   99.618,
-   89.1756
+   117.5321,
+   89.2856
   ],
   [
-   99.4142,
-   89.4142
+   117.2856,
+   89.5321
   ],
   [
-   99.1756,
-   89.618
+   117.0,
+   89.7321
   ],
   [
-   98.908,
-   89.782
+   116.684,
+   89.8794
   ],
   [
-   98.618,
-   89.9021
+   116.3473,
+   89.9696
   ],
   [
-   98.3129,
-   89.9754
-  ],
-  [
-   98.0,
+   116.0,
    90.0
   ],
   [
@@ -167,13 +163,13 @@
    0.0
   ],
   [
-   98.0,
+   116.0,
    0.0
   ]
  ],
  "cutouts": [],
  "size": [
-  100.0,
+  118.0,
   90.0
  ],
  "kicad_origin": [
@@ -183,8 +179,8 @@
  "holes": [
   {
    "ref": "H2",
-   "x": 96.45,
-   "y": 86.4499,
+   "x": 114.45,
+   "y": 63.0,
    "drill": 3.2,
    "pad": 6.4,
    "plated": true
@@ -207,8 +203,8 @@
   },
   {
    "ref": "H3",
-   "x": 96.45,
-   "y": 3.5499,
+   "x": 114.45,
+   "y": 3.55,
    "drill": 3.2,
    "pad": 6.4,
    "plated": true
@@ -228,6 +224,29 @@
     59.77,
     35.48,
     61.23
+   ],
+   "z": [
+    1.6,
+    2.4
+   ],
+   "height_from": "model",
+   "tht": false,
+   "model": "C_0603_1608Metric.step",
+   "under": 0.0
+  },
+  {
+   "ref": "C19",
+   "value": "4.7uF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "side": "top",
+   "x": 62.735,
+   "y": 71.193,
+   "rot": 0.0,
+   "bbox": [
+    61.255,
+    70.463,
+    64.215,
+    71.923
    ],
    "z": [
     1.6,
@@ -400,6 +419,29 @@
    "under": 0.0
   },
   {
+   "ref": "J4",
+   "value": "24.243 red",
+   "footprint": "aiee:CONN-TH_24.243.1_RED",
+   "side": "top",
+   "x": 77.4,
+   "y": 80.0,
+   "rot": 90.0,
+   "bbox": [
+    71.75,
+    68.65,
+    82.45,
+    90.55
+   ],
+   "z": [
+    1.6,
+    14.6
+   ],
+   "height_from": "override",
+   "tht": true,
+   "model": null,
+   "under": 4.4
+  },
+  {
    "ref": "C53",
    "value": "100nF",
    "footprint": "Capacitor_SMD:C_0603_1608Metric",
@@ -458,6 +500,29 @@
     71.52,
     52.53,
     74.48
+   ],
+   "z": [
+    1.6,
+    2.4
+   ],
+   "height_from": "model",
+   "tht": false,
+   "model": "C_0603_1608Metric.step",
+   "under": 0.0
+  },
+  {
+   "ref": "C26",
+   "value": "47nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "side": "top",
+   "x": 75.125,
+   "y": 33.793,
+   "rot": 0.0,
+   "bbox": [
+    73.645,
+    33.063,
+    76.605,
+    34.523
    ],
    "z": [
     1.6,
@@ -573,6 +638,29 @@
     67.27,
     39.98,
     68.73
+   ],
+   "z": [
+    1.6,
+    2.4
+   ],
+   "height_from": "model",
+   "tht": false,
+   "model": "C_0603_1608Metric.step",
+   "under": 0.0
+  },
+  {
+   "ref": "C84",
+   "value": "1uF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "side": "top",
+   "x": 29.735,
+   "y": 64.823,
+   "rot": 0.0,
+   "bbox": [
+    28.255,
+    64.093,
+    31.215,
+    65.553
    ],
    "z": [
     1.6,
@@ -722,18 +810,41 @@
    "under": 2.5
   },
   {
+   "ref": "J5",
+   "value": "24.243 black",
+   "footprint": "aiee:CONN-TH_24.243.2",
+   "side": "top",
+   "x": 88.4,
+   "y": 80.0,
+   "rot": 90.0,
+   "bbox": [
+    82.75,
+    68.65,
+    93.45,
+    90.55
+   ],
+   "z": [
+    1.6,
+    14.6
+   ],
+   "height_from": "override",
+   "tht": true,
+   "model": null,
+   "under": 4.4
+  },
+  {
    "ref": "L1",
    "value": "10uH 8A",
    "footprint": "aiee:IND-SMD_L8.0-W8.0_XR0850",
    "side": "top",
    "x": 67.0,
-   "y": 63.0,
+   "y": 60.8,
    "rot": 90.0,
    "bbox": [
     63.0,
-    57.65,
+    55.45,
     71.0,
-    68.35
+    66.15
    ],
    "z": [
     1.6,
@@ -746,7 +857,7 @@
   },
   {
    "ref": "C9",
-   "value": "100pF",
+   "value": "47pF",
    "footprint": "Capacitor_SMD:C_0603_1608Metric",
    "side": "top",
    "x": 47.0,
@@ -952,6 +1063,29 @@
    "under": 0.0
   },
   {
+   "ref": "R68",
+   "value": "100k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "side": "top",
+   "x": 79.75,
+   "y": 67.45,
+   "rot": 180.0,
+   "bbox": [
+    78.27,
+    66.72,
+    81.23,
+    68.18
+   ],
+   "z": [
+    1.6,
+    2.05
+   ],
+   "height_from": "model",
+   "tht": false,
+   "model": "R_0603_1608Metric.step",
+   "under": 0.0
+  },
+  {
    "ref": "C17",
    "value": "100nF",
    "footprint": "Capacitor_SMD:C_0603_1608Metric",
@@ -1022,7 +1156,7 @@
   },
   {
    "ref": "R30",
-   "value": "10k",
+   "value": "15k",
    "footprint": "Resistor_SMD:R_0603_1608Metric",
    "side": "top",
    "x": 15.5,
@@ -1087,29 +1221,6 @@
    "height_from": "model",
    "tht": false,
    "model": "C_0603_1608Metric.step",
-   "under": 0.0
-  },
-  {
-   "ref": "J1",
-   "value": "USB4105-GF-A-120",
-   "footprint": "aiee:USB-C-SMD_MC-311D",
-   "side": "top",
-   "x": 58.5,
-   "y": 84.93,
-   "rot": 180.0,
-   "bbox": [
-    53.43,
-    81.72,
-    63.57,
-    90.0
-   ],
-   "z": [
-    1.6,
-    5.0
-   ],
-   "height_from": "override",
-   "tht": true,
-   "model": null,
    "under": 0.0
   },
   {
@@ -1205,6 +1316,29 @@
    "under": 0.0
   },
   {
+   "ref": "R66",
+   "value": "100k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "side": "top",
+   "x": 61.805,
+   "y": 68.013,
+   "rot": 90.0,
+   "bbox": [
+    61.075,
+    66.533,
+    62.535,
+    69.493
+   ],
+   "z": [
+    1.6,
+    2.05
+   ],
+   "height_from": "model",
+   "tht": false,
+   "model": "R_0603_1608Metric.step",
+   "under": 0.0
+  },
+  {
    "ref": "R24",
    "value": "10k",
    "footprint": "Resistor_SMD:R_0603_1608Metric",
@@ -1229,7 +1363,7 @@
   },
   {
    "ref": "R33",
-   "value": "10k",
+   "value": "15k",
    "footprint": "Resistor_SMD:R_0603_1608Metric",
    "side": "top",
    "x": 21.5,
@@ -1527,6 +1661,29 @@
    "under": 0.0
   },
   {
+   "ref": "R69",
+   "value": "10k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "side": "top",
+   "x": 29.735,
+   "y": 68.023,
+   "rot": 0.0,
+   "bbox": [
+    28.255,
+    67.293,
+    31.215,
+    68.753
+   ],
+   "z": [
+    1.6,
+    2.05
+   ],
+   "height_from": "model",
+   "tht": false,
+   "model": "R_0603_1608Metric.step",
+   "under": 0.0
+  },
+  {
    "ref": "U3",
    "value": "SY8089A1AAC",
    "footprint": "aiee:TSOT-23-5_L2.9-W1.6-P0.95-LS2.8-BR",
@@ -1624,13 +1781,13 @@
    "footprint": "Capacitor_SMD:C_1206_3216Metric",
    "side": "top",
    "x": 75.5,
-   "y": 71.5,
+   "y": 67.45,
    "rot": 0.0,
    "bbox": [
     73.2,
-    70.35,
+    66.3,
     77.8,
-    72.65
+    68.6
    ],
    "z": [
     1.6,
@@ -1643,7 +1800,7 @@
   },
   {
    "ref": "R54",
-   "value": "100k",
+   "value": "10k",
    "footprint": "Resistor_SMD:R_0603_1608Metric",
    "side": "top",
    "x": 72.5,
@@ -1803,6 +1960,29 @@
    "under": 0.0
   },
   {
+   "ref": "R67",
+   "value": "10k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "side": "top",
+   "x": 26.135,
+   "y": 68.023,
+   "rot": 0.0,
+   "bbox": [
+    24.655,
+    67.293,
+    27.615,
+    68.753
+   ],
+   "z": [
+    1.6,
+    2.05
+   ],
+   "height_from": "model",
+   "tht": false,
+   "model": "R_0603_1608Metric.step",
+   "under": 0.0
+  },
+  {
    "ref": "C51",
    "value": "1uF",
    "footprint": "Capacitor_SMD:C_0805_2012Metric",
@@ -1854,13 +2034,13 @@
    "footprint": "Capacitor_SMD:C_1206_3216Metric",
    "side": "top",
    "x": 92.5,
-   "y": 71.5,
-   "rot": 0.0,
+   "y": 67.45,
+   "rot": 180.0,
    "bbox": [
     90.2,
-    70.35,
+    66.3,
     94.8,
-    72.65
+    68.6
    ],
    "z": [
     1.6,
@@ -1915,6 +2095,29 @@
    "height_from": "override",
    "tht": false,
    "model": null,
+   "under": 0.0
+  },
+  {
+   "ref": "C81",
+   "value": "470pF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "side": "top",
+   "x": 26.135,
+   "y": 66.423,
+   "rot": 0.0,
+   "bbox": [
+    24.655,
+    65.693,
+    27.615,
+    67.153
+   ],
+   "z": [
+    1.6,
+    2.4
+   ],
+   "height_from": "model",
+   "tht": false,
+   "model": "C_0603_1608Metric.step",
    "under": 0.0
   },
   {
@@ -2107,13 +2310,13 @@
    "footprint": "Capacitor_SMD:C_1206_3216Metric",
    "side": "top",
    "x": 67.0,
-   "y": 71.5,
+   "y": 67.45,
    "rot": 0.0,
    "bbox": [
     64.7,
-    70.35,
+    66.3,
     69.3,
-    72.65
+    68.6
    ],
    "z": [
     1.6,
@@ -2306,6 +2509,29 @@
    "height_from": "model",
    "tht": false,
    "model": "C_1206_3216Metric.step",
+   "under": 0.0
+  },
+  {
+   "ref": "U6",
+   "value": "CH340B",
+   "footprint": "aiee:SOP-16_L10.0-W3.9-P1.27-LS6.0-BL",
+   "side": "top",
+   "x": 46.0,
+   "y": 28.0,
+   "rot": 90.0,
+   "bbox": [
+    42.01,
+    23.02,
+    49.99,
+    32.98
+   ],
+   "z": [
+    1.6,
+    3.4
+   ],
+   "height_from": "table",
+   "tht": false,
+   "model": null,
    "under": 0.0
   },
   {
@@ -2539,6 +2765,29 @@
    "under": 0.0
   },
   {
+   "ref": "J1",
+   "value": "TYPE-C-31-M-12",
+   "footprint": "aiee:USB-C_SMD-TYPE-C-31-M-12_1",
+   "side": "top",
+   "x": 58.5,
+   "y": 84.93,
+   "rot": 180.0,
+   "bbox": [
+    53.3,
+    81.53,
+    63.7,
+    90.03
+   ],
+   "z": [
+    1.6,
+    4.9
+   ],
+   "height_from": "override",
+   "tht": false,
+   "model": null,
+   "under": 0.9
+  },
+  {
    "ref": "C5",
    "value": "100nF",
    "footprint": "Capacitor_SMD:C_0603_1608Metric",
@@ -2590,13 +2839,13 @@
    "footprint": "aiee:IND-SMD_L8.0-W8.0_XR0850",
    "side": "top",
    "x": 92.5,
-   "y": 63.0,
+   "y": 60.8,
    "rot": 90.0,
    "bbox": [
     88.5,
-    57.65,
+    55.45,
     96.5,
-    68.35
+    66.15
    ],
    "z": [
     1.6,
@@ -2628,29 +2877,6 @@
    "height_from": "model",
    "tht": false,
    "model": "R_0603_1608Metric.step",
-   "under": 0.0
-  },
-  {
-   "ref": "U6",
-   "value": "CH340C",
-   "footprint": "aiee:SOP-16_L10.0-W3.9-P1.27-LS6.0-BL",
-   "side": "top",
-   "x": 46.0,
-   "y": 28.0,
-   "rot": 90.0,
-   "bbox": [
-    42.01,
-    23.02,
-    49.99,
-    32.98
-   ],
-   "z": [
-    1.6,
-    3.4
-   ],
-   "height_from": "table",
-   "tht": false,
-   "model": null,
    "under": 0.0
   },
   {
@@ -2705,13 +2931,13 @@
    "footprint": "Capacitor_SMD:C_1206_3216Metric",
    "side": "top",
    "x": 84.0,
-   "y": 71.5,
+   "y": 67.45,
    "rot": 0.0,
    "bbox": [
     81.7,
-    70.35,
+    66.3,
     86.3,
-    72.65
+    68.6
    ],
    "z": [
     1.6,
@@ -2720,6 +2946,29 @@
    "height_from": "model",
    "tht": false,
    "model": "C_1206_3216Metric.step",
+   "under": 0.0
+  },
+  {
+   "ref": "C83",
+   "value": "470pF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "side": "top",
+   "x": 29.735,
+   "y": 66.423,
+   "rot": 0.0,
+   "bbox": [
+    28.255,
+    65.693,
+    31.215,
+    67.153
+   ],
+   "z": [
+    1.6,
+    2.4
+   ],
+   "height_from": "model",
+   "tht": false,
+   "model": "C_0603_1608Metric.step",
    "under": 0.0
   },
   {
@@ -2789,6 +3038,29 @@
    "height_from": "model",
    "tht": false,
    "model": "C_0603_1608Metric.step",
+   "under": 0.0
+  },
+  {
+   "ref": "C25",
+   "value": "22uF",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "side": "top",
+   "x": 64.035,
+   "y": 51.323,
+   "rot": 90.0,
+   "bbox": [
+    63.055,
+    49.623,
+    65.015,
+    53.023
+   ],
+   "z": [
+    1.6,
+    2.85
+   ],
+   "height_from": "model",
+   "tht": false,
+   "model": "C_0805_2012Metric.step",
    "under": 0.0
   },
   {
@@ -3004,13 +3276,13 @@
    "footprint": "aiee:IND-SMD_L8.0-W8.0_XR0850",
    "side": "top",
    "x": 84.0,
-   "y": 63.0,
+   "y": 60.8,
    "rot": 90.0,
    "bbox": [
     80.0,
-    57.65,
+    55.45,
     88.0,
-    68.35
+    66.15
    ],
    "z": [
     1.6,
@@ -3073,13 +3345,13 @@
    "footprint": "aiee:IND-SMD_L8.0-W8.0_XR0850",
    "side": "top",
    "x": 75.5,
-   "y": 63.0,
+   "y": 60.8,
    "rot": 90.0,
    "bbox": [
     71.5,
-    57.65,
+    55.45,
     79.5,
-    68.35
+    66.15
    ],
    "z": [
     1.6,
@@ -3088,6 +3360,29 @@
    "height_from": "override",
    "tht": true,
    "model": null,
+   "under": 0.0
+  },
+  {
+   "ref": "C82",
+   "value": "1uF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "side": "top",
+   "x": 26.135,
+   "y": 64.823,
+   "rot": 0.0,
+   "bbox": [
+    24.655,
+    64.093,
+    27.615,
+    65.553
+   ],
+   "z": [
+    1.6,
+    2.4
+   ],
+   "height_from": "model",
+   "tht": false,
+   "model": "C_0603_1608Metric.step",
    "under": 0.0
   },
   {
@@ -3160,6 +3455,29 @@
    "under": 0.0
   },
   {
+   "ref": "J7",
+   "value": "24.243 black",
+   "footprint": "aiee:CONN-TH_24.243.2",
+   "side": "top",
+   "x": 110.4,
+   "y": 80.0,
+   "rot": 90.0,
+   "bbox": [
+    104.75,
+    68.65,
+    115.45,
+    90.55
+   ],
+   "z": [
+    1.6,
+    14.6
+   ],
+   "height_from": "override",
+   "tht": true,
+   "model": null,
+   "under": 4.4
+  },
+  {
    "ref": "R18",
    "value": "10k",
    "footprint": "Resistor_SMD:R_0603_1608Metric",
@@ -3204,29 +3522,6 @@
    "tht": false,
    "model": null,
    "under": 0.0
-  },
-  {
-   "ref": "J4",
-   "value": "DB128V-5.08-4P",
-   "footprint": "aiee:CONN-TH_4P-P5.08_DIBO_DB128V-5.08",
-   "side": "top",
-   "x": 82.8,
-   "y": 84.4,
-   "rot": 0.0,
-   "bbox": [
-    72.64,
-    79.2,
-    92.96,
-    89.4
-   ],
-   "z": [
-    1.6,
-    15.6
-   ],
-   "height_from": "override",
-   "tht": true,
-   "model": null,
-   "under": 1.9
   },
   {
    "ref": "C6",
@@ -3275,8 +3570,31 @@
    "under": 0.0
   },
   {
+   "ref": "J6",
+   "value": "24.243 red",
+   "footprint": "aiee:CONN-TH_24.243.1_RED",
+   "side": "top",
+   "x": 99.4,
+   "y": 80.0,
+   "rot": 90.0,
+   "bbox": [
+    93.75,
+    68.65,
+    104.45,
+    90.55
+   ],
+   "z": [
+    1.6,
+    14.6
+   ],
+   "height_from": "override",
+   "tht": true,
+   "model": null,
+   "under": 4.4
+  },
+  {
    "ref": "R6",
-   "value": "47k",
+   "value": "220k",
    "footprint": "Resistor_SMD:R_0603_1608Metric",
    "side": "top",
    "x": 67.4,
@@ -3296,98 +3614,6 @@
    "tht": false,
    "model": "R_0603_1608Metric.step",
    "under": 0.0
-  },
-  {
-   "ref": "PA1",
-   "value": "binding post nut and lug",
-   "footprint": "enclosure:binding post nut and lug",
-   "side": "top",
-   "x": 16.0,
-   "y": 85.6,
-   "rot": 0.0,
-   "bbox": [
-    11.5,
-    80.6,
-    20.5,
-    90.6
-   ],
-   "z": [
-    28.6,
-    37.6
-   ],
-   "height_from": "override",
-   "tht": false,
-   "model": null,
-   "under": 0.0
-  },
-  {
-   "ref": "PA2",
-   "value": "binding post nut and lug",
-   "footprint": "enclosure:binding post nut and lug",
-   "side": "top",
-   "x": 35.0,
-   "y": 85.6,
-   "rot": 0.0,
-   "bbox": [
-    30.5,
-    80.6,
-    39.5,
-    90.6
-   ],
-   "z": [
-    28.6,
-    37.6
-   ],
-   "height_from": "override",
-   "tht": false,
-   "model": null,
-   "under": 0.0
-  },
-  {
-   "ref": "PA3",
-   "value": "binding post nut and lug",
-   "footprint": "enclosure:binding post nut and lug",
-   "side": "top",
-   "x": 65.0,
-   "y": 85.6,
-   "rot": 0.0,
-   "bbox": [
-    60.5,
-    80.6,
-    69.5,
-    90.6
-   ],
-   "z": [
-    28.6,
-    37.6
-   ],
-   "height_from": "override",
-   "tht": false,
-   "model": null,
-   "under": 0.0
-  },
-  {
-   "ref": "PA4",
-   "value": "binding post nut and lug",
-   "footprint": "enclosure:binding post nut and lug",
-   "side": "top",
-   "x": 84.0,
-   "y": 85.6,
-   "rot": 0.0,
-   "bbox": [
-    79.5,
-    80.6,
-    88.5,
-    90.6
-   ],
-   "z": [
-    28.6,
-    37.6
-   ],
-   "height_from": "override",
-   "tht": false,
-   "model": null,
-   "under": 0.0
   }
  ],
  "ports": [
@@ -3395,13 +3621,13 @@
    "ref": "J1",
    "edge": "N",
    "face": [
-    53.43,
-    63.57,
+    53.3,
+    63.7,
     1.6,
-    5.0
+    4.9
    ],
-   "plane": 90.0,
-   "overhang": -0.0,
+   "plane": 90.03,
+   "overhang": 0.03,
    "side": "top",
    "kind": "usb-c"
   },
@@ -3462,57 +3688,57 @@
    "kind": "generic"
   },
   {
-   "ref": "PA1",
+   "ref": "J4",
    "edge": "N",
    "face": [
-    14.579720420448924,
-    17.420279579551078,
-    31.679720420448923,
-    34.52027957955108
+    74.1,
+    80.1,
+    6.1,
+    12.1
    ],
-   "plane": 90.6,
+   "plane": 90.0,
    "overhang": 0.0,
    "side": "top",
    "kind": "generic"
   },
   {
-   "ref": "PA2",
+   "ref": "J5",
    "edge": "N",
    "face": [
-    33.57972042044892,
-    36.42027957955108,
-    31.679720420448923,
-    34.52027957955108
+    85.1,
+    91.1,
+    6.1,
+    12.1
    ],
-   "plane": 90.6,
+   "plane": 90.0,
    "overhang": 0.0,
    "side": "top",
    "kind": "generic"
   },
   {
-   "ref": "PA3",
+   "ref": "J6",
    "edge": "N",
    "face": [
-    63.57972042044892,
-    66.42027957955108,
-    31.679720420448923,
-    34.52027957955108
+    96.1,
+    102.1,
+    6.1,
+    12.1
    ],
-   "plane": 90.6,
+   "plane": 90.0,
    "overhang": 0.0,
    "side": "top",
    "kind": "generic"
   },
   {
-   "ref": "PA4",
+   "ref": "J7",
    "edge": "N",
    "face": [
-    82.57972042044892,
-    85.42027957955108,
-    31.679720420448923,
-    34.52027957955108
+    107.1,
+    113.1,
+    6.1,
+    12.1
    ],
-   "plane": 90.6,
+   "plane": 90.0,
    "overhang": 0.0,
    "side": "top",
    "kind": "generic"
