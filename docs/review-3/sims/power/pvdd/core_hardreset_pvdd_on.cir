@@ -1,0 +1,55 @@
+core: PD hard reset with PVDD on (amp in shutdown): does VBUS reach vSafe0V (0.8 V) by tSafe0V (650 ms)?
+.include models.inc
+* core PVDD switch as on main: Q1 AO4485, R4/R5 470k, C4 100n G-D, C8 2.2u/50V G-S, D4 15 V clamp,
+* Q2 2N7002 (S = PD_PG), R6 1k, R7 100k, R404 100k + D5 BAS16 + Q3 unit 2 fast-off follower,
+* D2 33 V + R8/R9 10k + Q3 unit 1 OV trip, R20 10k PG pull-up. Bulk C5, C6, C311 470u/50V PX (ESR ~0.2 R).
+Rcab vsrc vc 0.1
+Lcab vc VBUS_IN 0.6u
+R1 VBUS_IN VBUS 10m
+* C10 10u/50V 1206 (2.6u at 28 V, 4.1u at 20 V) + C11 100n; R17 10R + C1 1u/50V 0805 (0.58u)
+C10 VBUS 0 3u
+R17 VBUS VBUS_PD 10
+C1 VBUS_PD 0 0.6u
+Rbuck VBUS 0 150
+M1 PVDDm PVDD_G VBUS AO4485
+Vfetm PVDD PVDDm 0
+R4 VBUS PVDD_G 470k
+R5 PVDD_G PVDD_PD 470k
+C4 PVDD_G PVDD 100n
+C8 VBUS PVDD_G 1.8u
+D4 PVDD_G VBUS DZ15
+M2 PVDD_PD PVDD_ENG PD_PG N2N7002
+R6 PVDD_EN PVDD_ENG 1k
+R7 PVDD_ENG 0 100k
+R404 VBUS PVDD_PD 100k
+D5 PVDD_PD PVDD_OFFB DBAS16
+Q3B VBUS PVDD_OFFB PVDD_G Q3904
+D2 OV_Z VBUS DZ33
+R8 OV_Z OV_B 10k
+R9 OV_B 0 10k
+Q3A PVDD_ENG OV_B 0 Q3904
+R20 PD_PG V3V3 10k
+V3 V3V3 0 3.3
+Spg PD_PG 0 vpg 0 SWPG
+.model SWPG SW(Ron=30 Roff=1e9 Vt=1.5 Vh=0.1)
+C5 PVDD p5 470u
+R5e p5 0 0.2
+C6 PVDD p6 470u
+R6e p6 0 0.2
+C311 PVDD p311 470u
+R311e p311 0 0.2
+* C7 10u/50V 1206 (2.6u) + 4 x 1u/50V 0805 (0.58u) + 4 x 100n
+Ccer PVDD 0 5.3u
+Ramp PVDD 0 14k
+
+Vsrc vsrco 0 PWL(0 28 10m 28 10.1m 0 2 0)
+Dsrc vsrco vsrc DIDEAL
+Rdis vsrc 0 200
+Vpg vpg 0 PWL(0 3 10m 3 10.01m 0)
+Ven PVDD_EN 0 PWL(0 3.3 10m 3.3 10.01m 0)
+.ic v(PVDD)=28 v(VBUS)=28 v(VBUS_IN)=28 v(VBUS_PD)=28 v(PVDD_G)=14
+.tran 100u 1 0 100u uic
+.meas tran vbus_650 find v(VBUS) at=660m
+.meas tran pvdd_650 find v(PVDD) at=660m
+.meas tran ifet_rev max par('i(Vfetm)') from=10m to=1
+.end

@@ -1,0 +1,350 @@
+{
+ "domain": "AMP",
+ "findings": [
+  {
+   "id": "R3-AMP-1",
+   "board": "core",
+   "severity": "major",
+   "repeat_of": "new",
+   "refs": [
+    "C222",
+    "C223",
+    "C224",
+    "C225",
+    "C320",
+    "C321",
+    "C322",
+    "C323",
+    "U15",
+    "U16"
+   ],
+   "nets": [
+    "/amp_a/A_BST1M",
+    "/amp_a/A_BST1P",
+    "/amp_a/A_BST2M",
+    "/amp_a/A_BST2P",
+    "/amp_b/B_BST1M",
+    "/amp_b/B_BST1P",
+    "/amp_b/B_BST2M",
+    "/amp_b/B_BST2P"
+   ],
+   "finding": "Bootstrap caps sit 5.8-29.4 mm from their BST pins; BST traces are 0.2 mm and up to 35.6 mm long (with vias), and the OUT side comes back by a second long route. A large HS gate-drive loop risks bootstrap UVP half-bridge dropouts (not flagged on FAULT) and puts a 28 V/600 kHz node on long traces.",
+   "evidence": "sims/amp/check_amp_layout.py (pad-to-pin C222 25.88, C223 13.63, C224 5.83, C225 10.43, C320 29.39, C321 9.56, C322 9.29, C323 15.44 mm); BST net copper A_BST1M 32.4, B_BST1M 35.6, B_BST2P 31.8 mm from core.kicad_pcb segments",
+   "reference_design": "SLASEN3B fig 53: BST caps at both row ends, ~1-2 mm from pins 43/44 and 23/24, other pad straight back to OUT; 11.1.4 'place the BST capacitors close ... keep PCB routing traces at minimum length'. TPA3220EVM same.",
+   "fix": "Re-place C222/C223 (C320/C321) at the pin-44 end and C224/C225 (C322/C323) at the pin-23 end, <= 2 mm from the BST pins; OUT pads to OUT pins 39/40, 35, 32, 27/28 with <= 5 mm, >= 0.4 mm stubs. Do it together with R3-AMP-2 (the PVDD caps there move).",
+   "margin": "Fails by 1.5-7x against a 4 mm bound"
+  },
+  {
+   "id": "R3-AMP-2",
+   "board": "core",
+   "severity": "major",
+   "repeat_of": "new",
+   "refs": [
+    "C207",
+    "C208",
+    "C209",
+    "C210",
+    "C307",
+    "C308",
+    "C309",
+    "C310",
+    "U15",
+    "U16"
+   ],
+   "nets": [
+    "PVDD"
+   ],
+   "finding": "PVDD HF decoupling (1 uF 0805 + 100 nF) sits at the pin-row ends, 6.5-8.1 mm from PVDD pins 29-31/36-38, with nothing closer. The estimated edge spike is ~7.7 V on 29.4 V = 37.1 V vs 37 V abs max. The 0805 1 uF/50 V keeps ~40-60 % at 28 V.",
+   "evidence": "sims/amp/check_amp_layout.py (6.45-8.08 mm); sims/amp/pvdd_spike.py (3.3 nH loop, 7 A/3 ns assumed -> 37.1 V; TI-style 2 mm -> 33.2 V)",
+   "reference_design": "SLASEN3B fig 53 note T2: 1 uF X7R under the heatsink close to the PVDD pins on the top-layer PVDD trace, outputs on the bottom layer; 10.2.1.2.1: >= 50 V rating; TPA3220EVM 4 x 1 uF/100 V 1206.",
+   "fix": "Add 1 uF/100 V X7R 1206 (e.g. Samsung CL31B105KCHNNNE, LCSC id to confirm) + 100 nF/100 V 0603 per PVDD group <= 2 mm from pins 29-31 and 36-38, returning to GND pins 33/34, 41/42 / 25/26; if the top is full, on B.Cu directly under the groups with >= 2 vias per pad. Bench: PVDD pin 29 to GND 33 peak <= 35 V at 4 ohm full power.",
+   "margin": "-0.1 V to abs max (estimate; edge rate assumed)"
+  },
+  {
+   "id": "R3-AMP-3",
+   "board": "core",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "L1",
+    "L2",
+    "L3",
+    "L4",
+    "L5",
+    "L6",
+    "L7",
+    "L8"
+   ],
+   "nets": [],
+   "finding": "PSPMAA0805-100M (10 uH +/-20 %, Isat 10 A at -30 %) keeps ~5.6 uH at the 10 A typ IOC against TI's 5 uH minimum; IOC has no max. Fine at 3.2-8 ohm.",
+   "evidence": "sims/amp/lc_bench.py; PROD Tech PSPMAA spec p11 (0805 series); SLASEN3B 7.3/7.5 IOC 10 A",
+   "reference_design": "TPA3220EVM Sagami 7G14J-100M-R, Isat 18 A (SLAU754A 3.7)",
+   "fix": "None needed; optional higher-Isat 10 uH (1050 size) if a short-circuit bench test shows trouble.",
+   "margin": "12 % over 5 uH at IOC typ; 4 ohm peak 7.63 A vs Isat 10 A (24 %); Irms 4.86 vs 6 A (19 %)"
+  },
+  {
+   "id": "R3-AMP-4",
+   "board": "core",
+   "severity": "minor",
+   "repeat_of": "AUDIO-12",
+   "refs": [
+    "R227",
+    "R230",
+    "R233",
+    "R236",
+    "C228",
+    "C231",
+    "C234",
+    "C237",
+    "R325",
+    "R328",
+    "R331",
+    "R334",
+    "C326",
+    "C329",
+    "C332",
+    "C335"
+   ],
+   "nets": [
+    "/A_SPK_L+"
+   ],
+   "finding": "The 4.7 R + 1 nF networks on the speaker nodes are in parallel with 1 uF and damp neither the LC (open-load +28 dB at 73 kHz) nor HF ringing the way TI's 3R3 + 10 nF does.",
+   "evidence": "sims/amp/lc_bench.py; check_amp_netlist.py INFO lines",
+   "reference_design": "SLASEN3B fig 50: per leg 1 uF + 1 nF + 3R3/10 nF; TPA3220EVM: 1 uF film, snubbers DNP",
+   "fix": "Snubber caps to 10 nF/50 V X7R 0603 (C57112) and R to 3.3 R 0603.",
+   "margin": "n/a"
+  },
+  {
+   "id": "R3-AMP-5",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "U8"
+   ],
+   "nets": [
+    "/OUT_L_P",
+    "/OUT_L_N",
+    "/OUT_R_P",
+    "/OUT_R_N"
+   ],
+   "finding": "No switch-node snubber footprints; BD idle common-mode ripple 0.6 Vpp at 400 kHz on the speaker wires; an EMI-only risk.",
+   "evidence": "sims/amp/lc_bench.py; check_amp_netlist.py",
+   "reference_design": "TPA3118D2EVM (SLOU342A fig 3): 10 R 0805 + 330 pF C0G per OUT pre-filter, 3.3 R + 10 nF post-filter",
+   "fix": "DNP footprints 10 R 0805 + 330 pF C0G 0603 from each OUT to GND next to U8 pins 21/23/27/29.",
+   "margin": "n/a"
+  },
+  {
+   "id": "R3-AMP-6",
+   "board": "both",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "U8",
+    "U15",
+    "U16"
+   ],
+   "nets": [
+    "PVDD",
+    "PD_PG"
+   ],
+   "finding": "On a lost PD contract PVDD is cut in hardware while SDZ/RESET is still high; at most a soft thump.",
+   "evidence": "SLOS708G 7.3.3; SLASEN3B 9.4.2",
+   "reference_design": "TI: shut the amp down before removing PVDD",
+   "fix": "none",
+   "margin": "n/a"
+  },
+  {
+   "id": "R3-AMP-7",
+   "board": "core",
+   "severity": "note",
+   "repeat_of": "THERMAL-10",
+   "refs": [
+    "L1",
+    "L8"
+   ],
+   "nets": [],
+   "finding": "Plus runs one channel per chip open-load, which is safe (pre-filter feedback) but adds AD idle loss plus unspecified inductor core loss at 1.53 App ripple.",
+   "evidence": "sims/amp/lc_bench.py",
+   "reference_design": "SLASEN3B 7.6 note 2",
+   "fix": "Bench: inductor temperature after 1 h idle; HEAD mode if it is hot.",
+   "margin": "n/a"
+  },
+  {
+   "id": "R3-AMP-8",
+   "board": "core",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "U17"
+   ],
+   "nets": [
+    "/AMP_OTW"
+   ],
+   "finding": "The ~500 ns OTW_CLIP clip pulses aren't reliably seen through the polled TCA9539; thermal OTW is.",
+   "evidence": "SLASEN3B 9.4.5.2; board_core.c",
+   "reference_design": "EVM: LED only",
+   "fix": "none",
+   "margin": "n/a"
+  },
+  {
+   "id": "R3-AMP-9",
+   "board": "core",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "nets": [],
+   "finding": "TPA3220DDWR C2879306 LCSC/JLC stock 0; a pre-buy is planned (fab/prebuy.csv).",
+   "evidence": "LCSC product API 2026-10-30: stock 0",
+   "reference_design": "n/a",
+   "fix": "keep the pre-buy",
+   "margin": "n/a"
+  }
+ ],
+ "round1_fixes_checked": [
+  {
+   "id": "AUDIO-4",
+   "holds": true,
+   "how": "lite-main.net: R54 10k AMP_SDZ_IO->AMP_SDZ, C26 47nF, R52 100k pull-down"
+  },
+  {
+   "id": "DIGITAL-14",
+   "holds": true,
+   "how": "same as AUDIO-4"
+  },
+  {
+   "id": "THERMAL-1",
+   "holds": true,
+   "how": "U15/U16 TPA3220 pad 45 GND; all pins match SLASEN3B (check_amp_netlist.py)"
+  },
+  {
+   "id": "PARTS-4",
+   "holds": true,
+   "how": "U17 TCA9539; R40/R41 100k hold AMP_A_RST/AMP_B_RST low"
+  },
+  {
+   "id": "S-2",
+   "holds": true,
+   "how": "hifi_power.c lite soft_start_ms 400"
+  },
+  {
+   "id": "POWER-13",
+   "holds": true,
+   "how": "v_start 14 V: no amp on 5 V ports"
+  },
+  {
+   "id": "AUDIO-12",
+   "holds": false,
+   "how": "snubber still does not damp; now R3-AMP-4 (minor) with a value change"
+  }
+ ],
+ "field_issues": [
+  {
+   "issue": "Bootstrap UVP / HS dropouts from far BST caps",
+   "source": "SLASEN3B 9.4.5, 11.1.4, fig 53; TI E2E TPA32xx threads (not fetched)",
+   "our_board": "has it",
+   "how": "core R3-AMP-1; Lite 3.5-4.7 mm, immune"
+  },
+  {
+   "issue": "Turn-on pop / DC-detect nuisance trips",
+   "source": "SLOS708G 7.3.7, 7.3.9",
+   "our_board": "immune",
+   "how": "matched input caps; SDZ held 400 ms after PVDD; CMUTE 33 nF"
+  },
+  {
+   "issue": "Inductor heating at idle",
+   "source": "SLASEN3B 7.6 note 2",
+   "our_board": "unverified",
+   "how": "core loss unspecified; bench (R3-AMP-7)"
+  },
+  {
+   "issue": "Oscillation with open load",
+   "source": "SLAU754A 3.7; SLAA701",
+   "our_board": "immune",
+   "how": "pre-filter feedback; resonance 61/73 kHz"
+  },
+  {
+   "issue": "Shorted speaker cable recovery",
+   "source": "SLASEN3B table 6; SLOS708G 7.3.10",
+   "our_board": "immune",
+   "how": "firmware cycles SDZ/RESET 1 s, latches after 3 in 60 s; PPSC; L margin R3-AMP-3"
+  },
+  {
+   "issue": "PBTL/BTL misconfig",
+   "source": "SLASEN3B table 1; SLOS708G 7.4.1",
+   "our_board": "immune",
+   "how": "IN2/LIN AC-coupled -> BTL"
+  },
+  {
+   "issue": "Unsynchronised multi-amp beat tones",
+   "source": "SLASEN3B 9.3.2",
+   "our_board": "immune",
+   "how": "master/slave, both RESETs in one write"
+  },
+  {
+   "issue": "Chinese TPA3116/3118 boards drop snubbers and run near 26 V",
+   "source": "common XH-M543 designs (unverified)",
+   "our_board": "has it",
+   "how": "Lite has no snubbers (R3-AMP-5); PVDD 21 V vs 27 V OVLO"
+  }
+ ],
+ "tests_built": [
+  {
+   "path": "docs/review-3/sims/amp/check_amp_netlist.py",
+   "checks": "pin-by-pin and divider/value check of U8, U15, U16 vs SLOS708G/SLASEN3B",
+   "result": "pass"
+  },
+  {
+   "path": "docs/review-3/sims/amp/lc_bench.py",
+   "checks": "LC response, inductor peak vs Isat, Irms, L at IOC, ripple, open-load at 3.2/4/6/8 ohm/open",
+   "result": "pass"
+  },
+  {
+   "path": "docs/review-3/sims/amp/check_amp_layout.py",
+   "checks": "BST/PVDD/AVDD/GVDD cap distance to pins",
+   "result": "fail"
+  },
+  {
+   "path": "docs/review-3/sims/amp/pvdd_spike.py",
+   "checks": "PVDD edge-spike estimate vs 37 V abs max",
+   "result": "fail"
+  }
+ ],
+ "known_unknowns": [
+  {
+   "fact": "TPA3220 switching edge rate and real PVDD overshoot at the pins",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "unverified",
+   "source": "pvdd_spike.py assumption 7 A/3 ns",
+   "date": "2026-10-30",
+   "could_stop_board": true
+  },
+  {
+   "fact": "PSPMAA0805-100M L vs I curve beyond Isat and core loss at 600 kHz",
+   "board": "core",
+   "refs": [
+    "L1"
+   ],
+   "status": "unverified",
+   "source": "PROD Tech spec gives only Isat at -30 %",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "Vienna Acoustics Mozart minimum impedance (assumed >= 3.2 ohm)",
+   "board": "both",
+   "refs": [],
+   "status": "unverified",
+   "source": "none fetched",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  }
+ ]
+}

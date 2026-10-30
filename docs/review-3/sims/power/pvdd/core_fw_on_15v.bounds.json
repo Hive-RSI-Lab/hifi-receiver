@@ -1,0 +1,32 @@
+[
+ {
+  "measure": "ifet_pk",
+  "severity": "error",
+  "msg": "inrush",
+  "max": 2.0
+ },
+ {
+  "measure": "pfet_pk",
+  "severity": "error",
+  "msg": "FET peak under ~20 W (100 ms SOA)",
+  "max": 20
+ },
+ {
+  "measure": "efet",
+  "severity": "error",
+  "msg": "FET energy",
+  "max": 0.6
+ },
+ {
+  "measure": "t90",
+  "severity": "warning",
+  "msg": "PVDD at 90 % before firmware's soft_start_ms = 100 ms releases the amps",
+  "max": 0.12
+ },
+ {
+  "measure": "vsg_end",
+  "severity": "error",
+  "msg": "gate drive",
+  "min": 4.5
+ }
+]

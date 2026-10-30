@@ -3,7 +3,7 @@ per corner, the LC filter response, the inductor's peak current against its
 saturation, ripple at idle, DCR heating and open-load peaking. Exits 1 on a
 FAIL. Inputs are the BOM parts' own datasheet figures (cited inline).
 
-  python3 lc_bench.py
+  eval "$(/hive/tools/hwde/bin/hwde env)"; $HWDE_PY lc_bench.py   (needs numpy)
 """
 import math, sys
 import numpy as np
