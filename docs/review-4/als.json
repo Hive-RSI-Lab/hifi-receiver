@@ -1,0 +1,329 @@
+{
+ "domain": "ALS",
+ "findings": [
+  {
+   "id": "R4-ALS-1",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "Q13",
+    "Q14",
+    "Q15",
+    "Q12"
+   ],
+   "nets": [
+    "SUB_L",
+    "SUB_R",
+    "MUTE_S",
+    "SUB_MUTE"
+   ],
+   "finding": "With the mute off, its gates sit at Q12's Vce(sat) (0.07 V). At the firmware cap (LOUT2 code 26, 0.71 Vpk) a Vth-min 2N7002 (1.0 V at 25 C, -4 mV/K) leaks below threshold on the negative peaks once the box is warm. At 50 C: THD 0.09-0.11 %. At 70 C: THD 0.24-0.39 %, negative peak down 32-63 mV. L->R crosstalk through the shared MUTE_S node is -56 dB (10k sub) / -61 dB (100k) at 1 kHz. With Vth >= 1.5 V, or at 25 C, the line is clean (THD 0.0003 %, crosstalk -116 dB). Round 2's tb_play_cap passes only because its level-1 FET model has no subthreshold current and no tempco.",
+   "evidence": "docs/review-4/sims/als/mute_corners.py (models_ekv.inc: subthreshold, n 1.5, Ispec 520 uA -> 250 uA at Vth; Vth 1.0/1.5/2.1; 25/50/70 C; sub 10k/100k); out/mute_corners.txt. CJ 2N7002 (C8545) VGS(th) 1.0-2.5 V at 250 uA. Code 24 (-9 dB, 0.50 Vpk) at 70 C, Vth 1.0: THD 0.014 %, 0.9-3.1 mV peak loss.",
+   "reference_design": "Consumer line-out muting (inverted-mode BJT or JFET) holds the off gate/base below the most negative swing. Ours relies on Vth(min) > peak swing + Vce(sat).",
+   "fix": "Firmware: SUB_CODE_MAX 26 -> 24 (-9 dB, 0.50 Vpk) in board_lite.c. This costs 3 dB of sub drive (0.35 Vrms at 0 dBFS, enough for typical powered subs at 0.1-0.5 V sensitivity). Or keep 26 and accept 0.4 % THD on tail parts in a hot box, which is inaudible on a sub.",
+   "margin": "Cap 0.71 Vpk vs onset ~0.6 Vpk at Vth 1.0 / 70 C (negative); +0.5 V at Vth 1.5"
+  },
+  {
+   "id": "R4-ALS-2",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "U7",
+    "Q13",
+    "Q14",
+    "Q15"
+   ],
+   "nets": [
+    "SUB_L",
+    "SUB_R"
+   ],
+   "finding": "The sub cap does not hold during start-up. Lite's DAC_CONTROLSET init (firmware/patches/0001, HIFI_LITE) writes reg 48/49 (LOUT2/ROUT2VOL) = 30, which is 0 dB and 1.41 Vpk. hifi_bsp_route() writes the capped code 26 only 2 s after the codec first acks (codec_ok_at + 2000 ms). The amps are held through this window, but the sub outs are not. Music that starts in this window (LMS resume, a tone) reaches the sub at 0 dB. With Vth-min FETs that gives THD 2.6 % (25 C) to 3.3 % (70 C) and 0.4-0.6 V lost off the negative peak. With Vth 1.5 V: 0.14-0.9 %. With Vth 2.1 V: clean.",
+   "evidence": "docs/review-4/sims/als/mute_corners.py init_0dB rows; out/mute_corners.txt; patch line DAC_CONTROLSET HIFI_LITE {reg 48 val 30},{reg 49 val 30}; board_lite.c hifi_bsp_route 2000 ms",
+   "reference_design": "-",
+   "fix": "Firmware: put {\"reg\":48,\"val\":26},{\"reg\":49,\"val\":26} in the HIFI_LITE DAC_CONTROLSET (0 is better still: let codec_apply raise it). The same init also writes LOUT1/ROUT1 = 28 (-3 dB, above ES8388_OUT1_FULL 27). That is harmless only because the amps are held; set it to 27 too.",
+   "margin": "transient, >= 2 s per boot"
+  },
+  {
+   "id": "R4-ALS-3",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "Q12",
+    "R80",
+    "R81",
+    "Q13",
+    "Q14",
+    "Q15"
+   ],
+   "nets": [
+    "MUTE_DET",
+    "SUB_MUTE",
+    "+5V"
+   ],
+   "finding": "Q12's release point on +5V moves about -13 mV/K (Vbe x 142/22). The gate reaches 3 V at +5V = 3.77 V at 25 C, 3.44 V at 50 C and 3.17 V at 70 C. Round 2 assumes the codec output collapses when +5V reaches 3.4 V. Under that assumption, at 70 C with Vth-max (2.5 V) FETs and a 20 ms +5V fall, the gate is only 0.79 V at the collapse and the sub sees -0.33 V. That fails round 2's 0.2 V bound, though it is still 14 dB under the 1.61 V unmuted thump. All other 46 corners: 24-50 mV. If the ES8388 output holds until +5V < 3.0 V (likely: VMID sits on 10 uF), every corner passes.",
+   "evidence": "docs/review-4/sims/als/mute_powerloss.py (48 corners: 25/50/70 C x Vth 1.0/2.5 x fall 20/2 ms x collapse at 3.4/3.0 V x sub 10k/100k); out/mute_powerloss.txt; Q12 DC sweep in the md",
+   "reference_design": "Round 2's own fix proposal put the trip at ~4.0 V from a PNP off the reservoir; the as-built divider + NPN Vbe has no reference.",
+   "fix": "Bring-up test: warm box (~60 C), 10k on J3, scope SUB_L, pull the USB-C during play. Note the +5V level where LOUT2 collapses. If it is >= 3.2 V, change R81 22k -> 20k (C4184, basic): the threshold rises ~0.4 V (70 C: ~3.55 V), which leaves the 5 V-only port's 4.6 V clear above 0 C. Do not go lower: at 0 C a 20k trips at ~4.6 V.",
+   "margin": "25 C: 0.37 V between mute-full-on and the assumed collapse; 70 C: -0.23 V"
+  },
+  {
+   "id": "R4-ALS-4",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "R3-SYSTEM-7",
+   "refs": [
+    "J3",
+    "Q13",
+    "Q14",
+    "Q15",
+    "Q12"
+   ],
+   "nets": [
+    "SUB_L",
+    "SUB_R",
+    "MUTE_S",
+    "SUB_MUTE"
+   ],
+   "finding": "The sub RCA still has no TVS. A discharge into the tip now meets the mute FETs before the codec. Positive strikes avalanche Q13 (~75 V), and the codec side then sees about 1 A instead of round 2's ~19 A. Negative strikes drag MUTE_S to about -80 to -110 V through Q13's body diode. The gate follows only in part, so Vgs reaches 31.5 V at -8 kV contact (abs max 20 V), 17.8 V at -2 kV, and 16.9 V from a -325 V Y-capacitor ground (centre pin making contact before the sleeve with a Class-II charger or sub). Gate-oxide margin is thin at the IEC level.",
+   "evidence": "docs/review-4/sims/als/mute_esd.py (IEC 150 pF/330 ohm +-2/8 kV; 2.2 nF at +-325 V via 10 ohm; 75 V avalanche, Q12 junction clamp, 10 nH SUB_MUTE trace); out/mute_esd.txt. With a 6 V bidirectional TVS: Vgs <= 5.2 V, codec side <= 0.07 A.",
+   "reference_design": "RCA line outs on commercial receivers carry a TVS or a series R of 470R-1k at the jack.",
+   "fix": "One PESD5V0S2BT (LCSC C49338, SOT-23, dual bidirectional 5 V, extended, 22k in stock) at J3: pin 1 to SUB_L, pin 2 to SUB_R, pin 3 to GND next to J3 pin 2. Place it between J3 and Q13/Q15.",
+   "margin": "-8 kV: 31.5 V vs 20 V abs max (oxide typically breaks at 2-3x); -2 kV: 2.2 V under"
+  },
+  {
+   "id": "R4-ALS-5",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "R3-LAYOUT-14",
+   "refs": [
+    "J1",
+    "U6",
+    "U1"
+   ],
+   "nets": [
+    "USB_DP",
+    "USB_DM",
+    "CC1",
+    "CC2"
+   ],
+   "finding": "Still no ESD protection on USB D+/D- or CC1/CC2 at J1 (root.py: D1 SMBJ22A on VBUS only). The laptop bring-up and every charger plug-in go through this jack.",
+   "evidence": "root.py B1; round-2 R3-LAYOUT-14 unchanged",
+   "reference_design": "Espressif DevKitC / CH340 boards fit a USBLC6-2 or ESD diodes at the connector",
+   "fix": "As round 2: USBLC6-2SC6 (C7519) on D+/D- at J1, and 22 V-rated ESD on CC1/CC2 if space allows.",
+   "margin": "-"
+  },
+  {
+   "id": "R4-ALS-6",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "R3-AUDIO-5",
+   "refs": [],
+   "nets": [],
+   "finding": "The Lite firmware's scale constants are still stale. LINE_DIVIDER is 2.0 but R30/R31 15k/10k is 2.5. HIFI_HAS_TAPS is 0 though R66-R69 are fitted. The PIN_AMP_SDZ comment still says 100k (R54 is 10k). Captures will read 1.9 dB off, and the loopback taps are off by default.",
+   "evidence": "firmware/components/hifi/esp/hifi_board_lite.h; root.py R30-R34, R66-R69",
+   "reference_design": "-",
+   "fix": "LINE_DIVIDER 2.5 (or the loaded value from R3-AUDIO-5), HIFI_HAS_TAPS 1 for this revision",
+   "margin": "-"
+  },
+  {
+   "id": "R4-ALS-7",
+   "board": "lite-main",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "Q11",
+    "Q12",
+    "Q13",
+    "Q14",
+    "Q15",
+    "C90",
+    "R80",
+    "R81",
+    "R82"
+   ],
+   "nets": [
+    "GND"
+   ],
+   "finding": "The mute ECO's layout passes. Netlist pins match root.py. CPL rotation and pin 1 of the 9 new parts land on the board pads (cpl_pin1: 154 fitted, 0 FAIL). Its two CHECKs are Q14 (drain on GND, intended) and U8 (known). No GND islands (31 fragments in 1 group). The fragments the ECO cut are stitched: R37/Q14 GND 2 vias on F.Cu plus a 5-via B.Cu fragment; R39's 6.6 mm2 F.Cu piece has 1 via plus the B.Cu fragment. Sub nets sit >= 7.6 mm from BUCK5_SW. SUB_L-SUB_R spacing is 1.8 mm. SUB_R grew to 27 mm, harmless at 100R source impedance. JLC stock: all 6 lines are basic parts with 0.8-3.8 M in stock.",
+   "evidence": "docs/review-4/sims/als/out/cpl_pin1_lite.txt, gnd_islands.py, out/gnd_islands.txt, out/bom_mute.csv (jlc_stock.py 2026-10-30)",
+   "reference_design": "-",
+   "fix": "-",
+   "margin": "-"
+  },
+  {
+   "id": "R4-ALS-8",
+   "board": "lite-main",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "U7",
+    "C47",
+    "C48",
+    "C39"
+   ],
+   "nets": [
+    "SUB_L",
+    "SUB_R",
+    "CODEC_VMID"
+   ],
+   "finding": "Cold-start sub thump (round 2's known unknown). The VMID ramp (reg0 = 0x05, 50k, C39 10 uF, tau 125-250 ms) gives 0.32-0.90 V at the RCA but only 22-45 mV after a sub's 20 Hz high-pass. That passes against 0.14 V. If a driver used the 5k fast VMID, it would be 0.19 V.",
+   "evidence": "docs/review-4/sims/als/sub_poweron.py, out/sub_poweron.txt",
+   "reference_design": "-",
+   "fix": "Keep VMIDSEL = 01 in DAC_CONTROLSET.",
+   "margin": "3x under 0.14 V"
+  },
+  {
+   "id": "R4-ALS-9",
+   "board": "lite-main",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "U8"
+   ],
+   "nets": [
+    "PVDD"
+   ],
+   "finding": "Thermal at the 9 W/ch governor limit (thermal_out_w 18 W, tau 30 s) passes. Into 6 ohm: 1.22 A rms, 2 x 168 mOhm hot -> 0.50 W/ch, plus 0.64 W idle and ~0.2 W switching = ~1.8 W, so Tj ~ 62 + 1.8 x 22 = 102 C. Into 4 ohm: ~2.15 W, Tj ~109 C. The governor assumes 4 ohm and -3 dB LOUT1 (actually -4.5 dB), so it is conservative for 6 ohm. DJ-direct bypasses the governor but is capped at 5.4 Vrms (7.3 W/4 ohm, 4.9 W/6 ohm) by the codec caps.",
+   "evidence": "hifi_gov.c hifi_gov_cfg_lite; TPA3118 SLOS708G Rds(on); round-1 62 C box; R3-AUDIO-4 DJ level",
+   "reference_design": "TI EVM 22 C/W",
+   "fix": "-",
+   "margin": "~40 C to the 150 C OTP"
+  }
+ ],
+ "round2_fixes_checked": [
+  {
+   "id": "R3-AUDIO-2",
+   "holds": true,
+   "how": "Parts and nets in root.py, .net and .kicad_pcb match: Q11 diode +5V->MUTE_RES, Q12 C on SUB_MUTE, Q13/Q15 D on SUB_L/SUB_R, Q14 D on GND. Round 2's benches re-run and pass (tb_play_cap peak 0.711 V, mute 0.075 V; tb_powerloss -25 mV). Broken at corners: R4-ALS-1 (subthreshold, warm), R4-ALS-3 (hot release point), R4-ALS-4 (ESD)."
+  },
+  {
+   "id": "R3-AUDIO-2 firmware cap (SUB_CODE_MAX 26)",
+   "holds": false,
+   "how": "Holds after hifi_bsp_route, but DAC_CONTROLSET init writes 30 (0 dB) for >= 2 s (R4-ALS-2)."
+  },
+  {
+   "id": "R3-LAYOUT-13 (Lite thermal 9 W/ch)",
+   "holds": true,
+   "how": "hifi_gov.c thermal_out_w 18 W total, tau 30 s; Tj ~102-109 C (R4-ALS-9)."
+  },
+  {
+   "id": "R3-SYSTEM-5 L4 (amps held until codec settles)",
+   "holds": true,
+   "how": "hifi_main.c: amp_on false until codec_up + 2500 ms; codec_up set when codec_apply succeeds."
+  },
+  {
+   "id": "R3-SYSTEM-9 (input saved)",
+   "holds": true,
+   "how": "hifi_main.c:279 saves hifi_input, :963 restores it."
+  },
+  {
+   "id": "mute ECO GND rejoin vias",
+   "holds": true,
+   "how": "gnd_islands.py: 1 GND group, no islands; ECO fragments stitched by 1-5 vias (R4-ALS-7)."
+  }
+ ],
+ "field_issues": [
+  {
+   "issue": "Line-out thump into a separately powered sub at power loss",
+   "source": "R3-AUDIO-2; common on ESP32-A1S / LyraT-style boards used as line sources",
+   "our_board": "immune",
+   "how": "Mute: 24-50 mV in 46 of 48 corners; -0.33 V at 70 C with Vth-max FETs and a late codec collapse (R4-ALS-3)."
+  },
+  {
+   "issue": "Plugging RCA cables with a Class-II (Y-cap) charger or sub: the centre pin makes contact first and discharges up to ~325 V peak",
+   "source": "Y-capacitor leakage, IEC 60065 touch current; common hum/pop-on-plug reports",
+   "our_board": "has it (marginal)",
+   "how": "mute_esd.py: Vgs 16.9 V vs 20 V; TVS fix in R4-ALS-4."
+  },
+  {
+   "issue": "2N7002 used as an analog shunt passes signal when the swing goes below -Vth (body diode / reverse channel)",
+   "source": "onsemi AND9093 (MOSFET in analog switch use); forum threads on MOSFET mutes",
+   "our_board": "has it (tail parts, warm)",
+   "how": "R4-ALS-1, R4-ALS-2"
+  },
+  {
+   "issue": "USB-C 5 V-only laptop port: board must still boot and sub mute stay off",
+   "source": "R3-SYSTEM-N1",
+   "our_board": "immune",
+   "how": "Q12 holds SUB_MUTE at 0.10 V at 4.6 V and 0 C (0.58 V at -20 C)."
+  },
+  {
+   "issue": "PD charger renegotiation 20 -> 5 -> 20 V mid-play",
+   "source": "CH224 / PD hard reset behaviour",
+   "our_board": "immune",
+   "how": "+5V stays >= 4.6 V, so the mute stays off. A hard reset (VBUS to 0) is a power loss, which the mute covers."
+  }
+ ],
+ "tests_built": [
+  {
+   "path": "docs/review-4/sims/als/mute_corners.py",
+   "checks": "mute off: THD/peak loss at cap, init 0 dB, DJ level; Vth x T x sub Z; L->R crosstalk",
+   "result": "fail"
+  },
+  {
+   "path": "docs/review-4/sims/als/mute_powerloss.py",
+   "checks": "power-loss thump across T, Vth, fall time, collapse point, sub Z",
+   "result": "fail"
+  },
+  {
+   "path": "docs/review-4/sims/als/mute_esd.py",
+   "checks": "IEC +-2/8 kV and Y-cap +-325 V into SUB_L: FET Vgs, codec-side current, with/without TVS",
+   "result": "fail"
+  },
+  {
+   "path": "docs/review-4/sims/als/sub_poweron.py",
+   "checks": "cold-start VMID ramp at the sub after its 20 Hz HPF",
+   "result": "pass"
+  },
+  {
+   "path": "docs/review-4/sims/als/gnd_islands.py",
+   "checks": "GND pour fragments joined by vias/THT; no islands; ECO window stitch counts",
+   "result": "pass"
+  },
+  {
+   "path": "docs/review-4/sims/als/models_ekv.inc",
+   "checks": "2N7002 model with subthreshold and Vth tempco (used by the above)",
+   "result": "pass"
+  }
+ ],
+ "known_unknowns": [
+  {
+   "fact": "+5V level at which ES8388 LOUT2/ROUT2 collapse on power loss (round 2 assumed 3.4 V)",
+   "board": "lite-main",
+   "refs": [
+    "U7"
+   ],
+   "status": "unverified",
+   "source": "ES8388 DS has no brown-out spec",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "CJ 2N7002 (C8545) Vth distribution and tempco (1.0-2.5 V spec; -4 mV/K assumed)",
+   "board": "lite-main",
+   "refs": [
+    "Q13",
+    "Q14",
+    "Q15"
+   ],
+   "status": "unverified",
+   "source": "CJ 2N7002 datasheet",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "ES8388 disabled-output state (DACPOWER 0x30 when sub off): VROI to VREF, assumed no step",
+   "board": "lite-main",
+   "refs": [
+    "U7"
+   ],
+   "status": "unverified",
+   "source": "ES8388 DS reg 0x2D VROI",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  }
+ ]
+}

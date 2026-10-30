@@ -1,0 +1,21 @@
+J1       2 +3V3                         DIRECT-TO-IC, no TVS   C2(10uF) 6.7mm, C4(100nF) 9.7mm, J2(FPC-05FB-12PH20) 15.2mm, J2(FPC-05FB-12PH20) 15.6mm, R8(10k) 20.9mm, U1.2(TCA9535PWR) 26.9mm
+J1       3 +5V                                                 C3(10uF) 7.0mm, R17(120R) 13.0mm, R13(120R) 13.1mm, R18(120R) 13.5mm, D1(TJ-S1615SW6TGLCCYRGB-A5) 88.6mm
+J1       5 /LCD_SCK                                            J2(FPC-05FB-12PH20) 18.1mm
+J1       7 /LCD_MOSI                                           J2(FPC-05FB-12PH20) 18.2mm
+J1       8 /LCD_CS                                             J2(FPC-05FB-12PH20) 19.8mm
+J1       9 /LCD_DC                                             J2(FPC-05FB-12PH20) 19.6mm
+J1      10 /LCD_BL_PWM                                         R12(100R) 5.5mm
+J1      12 /I2C_SCL                     DIRECT-TO-IC, no TVS   U1.22(TCA9535PWR) 32.7mm
+J1      13 /I2C_SDA                     DIRECT-TO-IC, no TVS   U1.23(TCA9535PWR) 32.8mm
+J1      14 /FRONT_INT_N                 DIRECT-TO-IC, no TVS   U1.1(TCA9535PWR) 26.9mm, R7(10k) 31.2mm
+J1      15 /IR_OUT                      DIRECT-TO-IC, no TVS   R9(10k) 81.5mm, U2.3(IRM-H638T/TR2) 89.9mm
+J1      16 /ENC_A                       DIRECT-TO-IC, no TVS   U1.4(TCA9535PWR) 26.8mm, R1(10k) 79.3mm, C6(10nF) 87.1mm, SW4(EC11E1834403) 87.2mm
+J1      17 /ENC_B                       DIRECT-TO-IC, no TVS   U1.5(TCA9535PWR) 26.8mm, SW4(EC11E1834403) 81.8mm, R2(10k) 81.9mm, C7(10nF) 89.7mm
+J2       2 /LCD_CS                                             J1(FPC-05F-20PH20) 19.8mm
+J2       3 /LCD_DC                                             J1(FPC-05F-20PH20) 19.6mm
+J2       4 /LCD_SCK                                            J1(FPC-05F-20PH20) 18.1mm
+J2       5 /LCD_MOSI                                           J1(FPC-05F-20PH20) 18.2mm
+J2       6 /LCD_RST                     DIRECT-TO-IC, no TVS   R8(10k) 12.0mm, U1.13(TCA9535PWR) 25.6mm
+J2       8 +3V3                         DIRECT-TO-IC, no TVS   C4(100nF) 6.3mm, C2(10uF) 10.9mm, R8(10k) 11.4mm, J1(FPC-05F-20PH20) 15.6mm, U1.2(TCA9535PWR) 17.5mm, U1.3(TCA9535PWR) 18.0mm
+J2      10 /BL_A                                               R13(120R) 23.2mm, R17(120R) 24.5mm, R18(120R) 26.1mm
+J2      11 /BL_K                                               Q1(AO3400A) 11.0mm

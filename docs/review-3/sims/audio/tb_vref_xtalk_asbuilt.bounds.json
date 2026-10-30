@@ -1,0 +1,26 @@
+[
+ {
+  "measure": "sepspk1k",
+  "min": 60.0,
+  "severity": "warning",
+  "msg": "L/R separation at the speaker, 1 kHz (dB)"
+ },
+ {
+  "measure": "sepspk100",
+  "min": 40.0,
+  "severity": "warning",
+  "msg": "L/R separation at the speaker, 100 Hz (dB)"
+ },
+ {
+  "measure": "sep1k",
+  "min": 0.0,
+  "severity": "warning",
+  "msg": "L/R separation at 1 kHz (dB)"
+ },
+ {
+  "measure": "sep100",
+  "min": 0.0,
+  "severity": "warning",
+  "msg": "L/R separation at 100 Hz (dB)"
+ }
+]

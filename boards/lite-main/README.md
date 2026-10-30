@@ -213,6 +213,12 @@ $14.79 at 100 and $23.41 at 10.
   each per order and may need pre-buying: see `fab/prebuy.csv`.
 - **Quote:** none yet. JLC's quote is the real price, and ordering and paying
   are the person's.
+- **Order remarks** (review-4 R4-BAN-5): the banana sockets J4-J7 have two
+  identical pads and their key lies past the board edge, so the remark says
+  "J4-J7: plug face outward, past the rear edge (2.65 mm overhang is by
+  design)". Before the order, measure one Amass 24.243 sample: the collar
+  (round, ~9.5 mm on Amass's drawing; the box's holes are 10.2 mm) and a 15 mm
+  and a 19 mm banana plug's contact.
 
 ## How to rebuild and re-check it
 

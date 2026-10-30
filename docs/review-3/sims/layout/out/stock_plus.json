@@ -1,0 +1,498 @@
+{
+ "date": "2026-10-30",
+ "boards": 5,
+ "parts": {
+  "C28323": {
+   "type": "base",
+   "stock": 2316476,
+   "mpn": "1uF \u00b110% 50V",
+   "package": "0805"
+  },
+  "C1525": {
+   "type": "base",
+   "stock": 35984247,
+   "mpn": "100nF \u00b110% 16V",
+   "package": "0402"
+  },
+  "C15195": {
+   "type": "base",
+   "stock": 6128582,
+   "mpn": "10nF \u00b110% 50V",
+   "package": "0402"
+  },
+  "C14663": {
+   "type": "base",
+   "stock": 42216747,
+   "mpn": "100nF \u00b110% 50V",
+   "package": "0603"
+  },
+  "C88733": {
+   "type": "expand",
+   "stock": 59466,
+   "mpn": "470uF \u00b120% 50V \u3010\u5f15\u7ebf\u3011",
+   "package": "Plugin,D10xL20mm"
+  },
+  "C13585": {
+   "type": "base",
+   "stock": 3142174,
+   "mpn": "10uF \u00b110% 50V",
+   "package": "1206"
+  },
+  "C377773": {
+   "type": "base",
+   "stock": 890565,
+   "mpn": "2.2uF \u00b110% 50V",
+   "package": "0805"
+  },
+  "C307331": {
+   "type": "base",
+   "stock": 21018875,
+   "mpn": "100nF \u00b110% 50V",
+   "package": "0402"
+  },
+  "C45783": {
+   "type": "base",
+   "stock": 3793857,
+   "mpn": "22uF \u00b120% 25V",
+   "package": "0805"
+  },
+  "C19702": {
+   "type": "base",
+   "stock": 11850386,
+   "mpn": "10uF \u00b110% 10V",
+   "package": "0603"
+  },
+  "C52923": {
+   "type": "base",
+   "stock": 10317280,
+   "mpn": "1uF \u00b110% 25V",
+   "package": "0402"
+  },
+  "C19666": {
+   "type": "base",
+   "stock": 4250663,
+   "mpn": "4.7uF \u00b110% 16V",
+   "package": "0603"
+  },
+  "C23630": {
+   "type": "base",
+   "stock": 2851888,
+   "mpn": "2.2uF \u00b110% 16V",
+   "package": "0603"
+  },
+  "C1523": {
+   "type": "base",
+   "stock": 2435417,
+   "mpn": "1nF \u00b110% 50V",
+   "package": "0402"
+  },
+  "C1779": {
+   "type": "base",
+   "stock": 1827748,
+   "mpn": "4.7uF \u00b110% 25V",
+   "package": "0805"
+  },
+  "C1620": {
+   "type": "base",
+   "stock": 769105,
+   "mpn": "470pF \u00b110% 50V",
+   "package": "0603"
+  },
+  "C21117": {
+   "type": "base",
+   "stock": 817082,
+   "mpn": "33nF \u00b110% 50V",
+   "package": "0603"
+  },
+  "C15850": {
+   "type": "base",
+   "stock": 8418372,
+   "mpn": "10uF \u00b110% 25V",
+   "package": "0805"
+  },
+  "C1588": {
+   "type": "base",
+   "stock": 6010841,
+   "mpn": "1nF \u00b110% 50V",
+   "package": "0603"
+  },
+  "C113998": {
+   "type": "expand",
+   "stock": 136801,
+   "mpn": "\u5355\u5411TVS 30V\u622a\u6b62 \u5cf0\u503c\u6d6a\u6d8c\u7535\u6d41\uff1a12.4A@10/1000us",
+   "package": "DO-214AA(SMB)"
+  },
+  "C266574": {
+   "type": "expand",
+   "stock": 16672,
+   "mpn": "BZT52C33",
+   "package": "SOD-123"
+  },
+  "C2286": {
+   "type": "base",
+   "stock": 7287075,
+   "mpn": "0603 \u7ea2\u706f \u9ad8\u4eae",
+   "package": "0603"
+  },
+  "C173427": {
+   "type": "expand",
+   "stock": 148302,
+   "mpn": "BZT52C15",
+   "package": "SOD-123"
+  },
+  "C99382": {
+   "type": "expand",
+   "stock": 66164,
+   "mpn": "BAS16L,315",
+   "package": "DFN1006-2"
+  },
+  "C14709": {
+   "type": "base",
+   "stock": 2382693,
+   "mpn": "\u5355\u8def 0603\u78c1\u73e0 \u963b\u6297120\u03a9@100MHz",
+   "package": "0603"
+  },
+  "C7095263": {
+   "type": "expand",
+   "stock": 2899,
+   "mpn": "Type-C \u6bcd \u5f2f\u63d2",
+   "package": "Plugin"
+  },
+  "C12074": {
+   "type": "expand",
+   "stock": 59945,
+   "mpn": "\u5f2f\u63d2 \u5e26LED \u3010\u63d2\u4ef6\u3011",
+   "package": "Plugin"
+  },
+  "C7527522": {
+   "type": "expand",
+   "stock": 4328,
+   "mpn": "\u3010\u63d2\u4ef6\u3011 \u53cc\u5c42\u83b2\u82b1\u5ea7",
+   "package": "Plugin"
+  },
+  "C474881": {
+   "type": "expand",
+   "stock": 55646,
+   "mpn": "1x2P 5mm \u76f4\u63d2 \u6392\u6570:1 \u6bcf\u6392P\u6570:2 \u3010\u87ba\u9489\u3011",
+   "package": "Plugin,P=5mm"
+  },
+  "C2962885": {
+   "type": "expand",
+   "stock": 17350,
+   "mpn": "10uH \u00b120% 10A",
+   "package": "SMD,8.5x8mm"
+  },
+  "C57269": {
+   "type": "expand",
+   "stock": 40751,
+   "mpn": "4.7uH \u00b120% 3.2A",
+   "package": "SMD,4x4mm"
+  },
+  "C36409": {
+   "type": "expand",
+   "stock": 33731,
+   "mpn": "2.2uH \u00b120%",
+   "package": "SMD,4x4mm"
+  },
+  "C51499": {
+   "type": "expand",
+   "stock": 53111,
+   "mpn": "AO4485",
+   "package": "SOIC-8"
+  },
+  "C8545": {
+   "type": "base",
+   "stock": 3412599,
+   "mpn": "2N7002",
+   "package": "SOT-23"
+  },
+  "C83572": {
+   "type": "expand",
+   "stock": 31272,
+   "mpn": "MMDT3904-7-F",
+   "package": "SOT-363"
+  },
+  "C2146": {
+   "type": "base",
+   "stock": 1488712,
+   "mpn": "S8050 J3Y(RANGE:200-350)",
+   "package": "SOT-23"
+  },
+  "C393070": {
+   "type": "expand",
+   "stock": 71058,
+   "mpn": "10m\u03a9 \u00b11% 3W",
+   "package": "2512"
+  },
+  "C2998176": {
+   "type": "expand",
+   "stock": 491255,
+   "mpn": "\u539a\u819c\u7535\u963b 210k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C11702": {
+   "type": "base",
+   "stock": 21625280,
+   "mpn": "\u539a\u819c\u7535\u963b 1k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25790": {
+   "type": "expand",
+   "stock": 181810,
+   "mpn": "\u539a\u819c\u7535\u963b 470k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25741": {
+   "type": "base",
+   "stock": 8373821,
+   "mpn": "\u539a\u819c\u7535\u963b 100k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25744": {
+   "type": "base",
+   "stock": 16832272,
+   "mpn": "\u539a\u819c\u7535\u963b 10k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25756": {
+   "type": "base",
+   "stock": 2536526,
+   "mpn": "\u539a\u819c\u7535\u963b 15k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C4109": {
+   "type": "base",
+   "stock": 9995942,
+   "mpn": "\u539a\u819c\u7535\u963b 2k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25768": {
+   "type": "base",
+   "stock": 1194307,
+   "mpn": "\u539a\u819c\u7535\u963b 22k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25077": {
+   "type": "base",
+   "stock": 3191798,
+   "mpn": "\u539a\u819c\u7535\u963b 10\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25879": {
+   "type": "base",
+   "stock": 3756524,
+   "mpn": "\u539a\u819c\u7535\u963b 2.2k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25105": {
+   "type": "base",
+   "stock": 1949913,
+   "mpn": "\u539a\u819c\u7535\u963b 33\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25752": {
+   "type": "base",
+   "stock": 800191,
+   "mpn": "\u539a\u819c\u7535\u963b 12k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25867": {
+   "type": "base",
+   "stock": 1542195,
+   "mpn": "\u539a\u819c\u7535\u963b 1.5k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25120": {
+   "type": "base",
+   "stock": 1295078,
+   "mpn": "\u539a\u819c\u7535\u963b 49.9\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25866": {
+   "type": "expand",
+   "stock": 36456,
+   "mpn": "\u539a\u819c\u7535\u963b 1.3k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25117": {
+   "type": "base",
+   "stock": 1114293,
+   "mpn": "\u539a\u819c\u7535\u963b 470\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25900": {
+   "type": "base",
+   "stock": 14868264,
+   "mpn": "\u539a\u819c\u7535\u963b 4.7k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C22807": {
+   "type": "base",
+   "stock": 848035,
+   "mpn": "\u539a\u819c\u7535\u963b 150k\u03a9 \u00b11% 100mW",
+   "package": "0603"
+  },
+  "C25792": {
+   "type": "base",
+   "stock": 6903959,
+   "mpn": "\u539a\u819c\u7535\u963b 47k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C23164": {
+   "type": "base",
+   "stock": 403255,
+   "mpn": "\u539a\u819c\u7535\u963b 4.7\u03a9 \u00b11% 100mW",
+   "package": "0603"
+  },
+  "C25765": {
+   "type": "base",
+   "stock": 2871121,
+   "mpn": "\u539a\u819c\u7535\u963b 20k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25798": {
+   "type": "expand",
+   "stock": 430402,
+   "mpn": "\u539a\u819c\u7535\u963b 75k\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C17168": {
+   "type": "base",
+   "stock": 11144193,
+   "mpn": "\u539a\u819c\u7535\u963b 0\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C25076": {
+   "type": "base",
+   "stock": 6079585,
+   "mpn": "\u539a\u819c\u7535\u963b 100\u03a9 \u00b11% 62.5mW",
+   "package": "0402"
+  },
+  "C361165": {
+   "type": "expand",
+   "stock": 3182,
+   "mpn": "\u7f16\u7801\u5668 \u3010\u65cb\u8f6c\u3011",
+   "package": "Plugin"
+  },
+  "C318884": {
+   "type": "base",
+   "stock": 1107578,
+   "mpn": "5.1*5.1*1.5mm \u7acb\u8d34 \u8f7b\u89e6\u5f00\u5173",
+   "package": "SMD-4P,5.1x5.1mm"
+  },
+  "C46061833": {
+   "type": "expand",
+   "stock": 10858,
+   "mpn": "USBPD\u591a\u5feb\u5145\u534f\u8bae\u53d7\u7535\u82af\u7247",
+   "package": "DFN-10-EP(2x2)"
+  },
+  "C2687116": {
+   "type": "expand",
+   "stock": 119980,
+   "mpn": "\u8d85\u4f4e\u6f0f\u7535\u6d41\u3001\u4f4e\u94b3\u4f4d\u7535\u538b\u7684ESD\u3001EFT\u3001\u6d6a\u6d8c\u9632\u62a4\u5668\u4ef6",
+   "package": "SOT-23-6"
+  },
+  "C2058311": {
+   "type": "expand",
+   "stock": 3585,
+   "mpn": "\u5177\u6709\u4f7f\u80fd\u5f15\u811a\u7684\u53cc\u5411\u3001\u4f4e\u529f\u8017\u3001\u96f6\u6f02\u79fb\u3001\u5bbd\u52a8\u6001\u8303\u56f4\u7535\u6d41\u611f\u6d4b\u653e\u5927\u5668",
+   "package": "SC-70-6"
+  },
+  "C97054": {
+   "type": "expand",
+   "stock": 123693,
+   "mpn": "\u964d\u538b\u578b 3A 4.5V~40V",
+   "package": "TSOT-23-8"
+  },
+  "C479074": {
+   "type": "expand",
+   "stock": 66169,
+   "mpn": "\u964d\u538b\u578b 2A 2.5V~5.5V",
+   "package": "SOT-23-5"
+  },
+  "C80670": {
+   "type": "expand",
+   "stock": 33720,
+   "mpn": "3.3V 250mA 5.5V",
+   "package": "SOT-23-5"
+  },
+  "C2973667": {
+   "type": "expand",
+   "stock": 4289,
+   "mpn": "\u4e0d\u5e26\u56fa\u4ef6 \u901a\u7528\u578bWi-Fi+BT+BLE MCU\u6a21\u7ec4",
+   "package": "SMD,31.4x18mm"
+  },
+  "C81010": {
+   "type": "expand",
+   "stock": 4995,
+   "mpn": "USB\u8f6c\u4e32\u53e3\u82af\u7247",
+   "package": "SOP-16"
+  },
+  "C45223": {
+   "type": "expand",
+   "stock": 29290,
+   "mpn": "\u5c0f\u578bRMIl 10/100\u4ee5\u592a\u7f51\u6536\u53d1\u5668\uff0c\u652f\u6301HP Auto-MDIX",
+   "package": "QFN-24"
+  },
+  "C2688377": {
+   "type": "expand",
+   "stock": 705,
+   "mpn": "32\u4f4d\u7acb\u4f53\u58f0\u4f4e\u529f\u8017\u97f3\u9891DAC",
+   "package": "QFN-28-EP(5x5)"
+  },
+  "C192421": {
+   "type": "expand",
+   "stock": 8929,
+   "mpn": "OPA167x \u4f4e\u5931\u771f\u97f3\u9891\u8fd0\u7b97\u653e\u5927\u5668",
+   "package": "SOIC-8-150mil"
+  },
+  "C107671": {
+   "type": "expand",
+   "stock": 2933,
+   "mpn": "\u5177\u6709PLL\u548c32\u4f4d\u3001384kHz PCM\u63a5\u53e3\u76842.1VRMS\u97f3\u9891\u7acb\u4f53\u58f0DAC",
+   "package": "TSSOP-20"
+  },
+  "C2929446": {
+   "type": "expand",
+   "stock": 7978,
+   "mpn": "\u9ad8\u6027\u80fd\u7acb\u4f53\u58f0\u97f3\u9891ADC",
+   "package": "QFN-20"
+  },
+  "C11133": {
+   "type": "expand",
+   "stock": 5328,
+   "mpn": "TS5A23157 \u53cc 10\u03a9 SPDT \u6a21\u62df\u5f00\u5173",
+   "package": "MSOP-10"
+  },
+  "C2879306": {
+   "type": "expand",
+   "stock": 0,
+   "mpn": "60W\u7acb\u4f53\u58f0100W\u5cf0\u503c\u9ad8\u6e05\u6a21\u62df\u8f93\u5165D\u7c7b\u653e\u5927\u5668",
+   "package": "HTSSOP-44-EP-6.1mm"
+  },
+  "C131972": {
+   "type": "expand",
+   "stock": 8108,
+   "mpn": "TCA9539 \u4f4e\u7535\u538b16\u4f4d I\u00b2C \u548c SMBus \u4f4e\u529f\u8017 I/O \u6269\u5c55\u5668\uff0c\u5e26\u4e2d\u65ad\u8f93\u51fa\u3001\u590d\u4f4d\u5f15\u811a\u548c\u914d\u7f6e\u5bc4\u5b58\u5668",
+   "package": "TSSOP-24"
+  },
+  "C42421366": {
+   "type": "expand",
+   "stock": 101002,
+   "mpn": "IRM-3638T",
+   "package": "SIP-3-2.54mm"
+  },
+  "C7431354": {
+   "type": "expand",
+   "stock": 497,
+   "mpn": "49.152MHz \u00b110ppm 3.3V CMOS",
+   "package": "SMD3225-4P"
+  },
+  "C717684": {
+   "type": "expand",
+   "stock": 48789,
+   "mpn": "YSO110TR 50MHZ 1.8V-3.3V \u00b110PPM -40~85\u2103 (\u00b120PPM) CMOS",
+   "package": "SMD3225-4P"
+  }
+ }
+}

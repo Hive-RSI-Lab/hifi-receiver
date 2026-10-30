@@ -1,0 +1,14 @@
+[
+ {
+  "measure": "vsg_max",
+  "severity": "error",
+  "msg": "Vsg under 1.7 V min Vth",
+  "max": 1.5
+ },
+ {
+  "measure": "pvdd_max",
+  "severity": "error",
+  "msg": "PVDD stays off",
+  "max": 1.0
+ }
+]

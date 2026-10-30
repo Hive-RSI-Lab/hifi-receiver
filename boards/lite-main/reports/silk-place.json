@@ -1,17 +1,354 @@
 {
  "script": "silk_place",
- "status": "pass",
+ "status": "violations",
  "board": "lite-main.kicad_pcb",
  "counts": {
-  "total": 0,
-  "by_severity": {},
-  "by_source": {}
+  "total": 6,
+  "by_severity": {
+   "warning": 6
+  },
+  "by_source": {
+   "silk_place": 6
+  }
  },
- "violations": [],
- "targets": 143,
- "moved": 19,
- "residual": [],
- "unplaceable": [],
+ "violations": [
+  {
+   "check": "silk_place",
+   "severity": "warning",
+   "pos": null,
+   "layer": null,
+   "net": null,
+   "refs": [
+    "Q15"
+   ],
+   "msg": "Q15: unplaceable - none of 2 collision-free spots passes check_silk; the closest is 3.05 mm beyond its own pads and 0.00 mm from R10 (silk_misattributed); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "source": "silk_place",
+   "items": [
+    {
+     "msg": "Q15: unplaceable - none of 2 collision-free spots passes check_silk; the closest is 3.05 mm beyond its own pads and 0.00 mm from R10 (silk_misattributed); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+     "pos": null
+    }
+   ],
+   "kind": "silk_residual",
+   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "fix_ops": {
+    "shrink": {
+     "op": "set_text",
+     "ref": "Q15",
+     "field": "reference",
+     "size": 0.8
+    },
+    "hide": {
+     "op": "set_text",
+     "ref": "Q15",
+     "field": "reference",
+     "hide": true
+    }
+   }
+  },
+  {
+   "check": "silk_place",
+   "severity": "warning",
+   "pos": null,
+   "layer": null,
+   "net": null,
+   "refs": [
+    "R39"
+   ],
+   "msg": "R39: unplaceable - none of 4 collision-free spots passes check_silk; the closest is 1.30 mm beyond its own pads and 0.00 mm from R37 (silk_misattributed); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "source": "silk_place",
+   "items": [
+    {
+     "msg": "R39: unplaceable - none of 4 collision-free spots passes check_silk; the closest is 1.30 mm beyond its own pads and 0.00 mm from R37 (silk_misattributed); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+     "pos": null
+    }
+   ],
+   "kind": "silk_residual",
+   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "fix_ops": {
+    "shrink": {
+     "op": "set_text",
+     "ref": "R39",
+     "field": "reference",
+     "size": 0.8
+    },
+    "hide": {
+     "op": "set_text",
+     "ref": "R39",
+     "field": "reference",
+     "hide": true
+    }
+   }
+  },
+  {
+   "check": "silk_place",
+   "severity": "warning",
+   "pos": null,
+   "layer": null,
+   "net": null,
+   "refs": [
+    "C9"
+   ],
+   "msg": "C9: unplaceable - none of 23 collision-free spots passes check_silk; the closest is 1.81 mm beyond its own pads and 0.00 mm from R10 (silk_misattributed); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "source": "silk_place",
+   "items": [
+    {
+     "msg": "C9: unplaceable - none of 23 collision-free spots passes check_silk; the closest is 1.81 mm beyond its own pads and 0.00 mm from R10 (silk_misattributed); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+     "pos": null
+    }
+   ],
+   "kind": "silk_residual",
+   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "fix_ops": {
+    "shrink": {
+     "op": "set_text",
+     "ref": "C9",
+     "field": "reference",
+     "size": 0.8
+    },
+    "hide": {
+     "op": "set_text",
+     "ref": "C9",
+     "field": "reference",
+     "hide": true
+    }
+   }
+  },
+  {
+   "check": "silk_place",
+   "severity": "warning",
+   "pos": null,
+   "layer": null,
+   "net": null,
+   "refs": [
+    "Q13"
+   ],
+   "msg": "Q13: unplaceable - no collision-free candidate within +3.0 mm push (channel narrower than the label); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "source": "silk_place",
+   "items": [
+    {
+     "msg": "Q13: unplaceable - no collision-free candidate within +3.0 mm push (channel narrower than the label); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+     "pos": null
+    }
+   ],
+   "kind": "silk_residual",
+   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "fix_ops": {
+    "shrink": {
+     "op": "set_text",
+     "ref": "Q13",
+     "field": "reference",
+     "size": 0.8
+    },
+    "hide": {
+     "op": "set_text",
+     "ref": "Q13",
+     "field": "reference",
+     "hide": true
+    }
+   }
+  },
+  {
+   "check": "silk_place",
+   "severity": "warning",
+   "pos": null,
+   "layer": null,
+   "net": null,
+   "refs": [
+    "C33"
+   ],
+   "msg": "C33: unplaceable - no collision-free candidate within +3.0 mm push (channel narrower than the label); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "source": "silk_place",
+   "items": [
+    {
+     "msg": "C33: unplaceable - no collision-free candidate within +3.0 mm push (channel narrower than the label); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+     "pos": null
+    }
+   ],
+   "kind": "silk_residual",
+   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "fix_ops": {
+    "shrink": {
+     "op": "set_text",
+     "ref": "C33",
+     "field": "reference",
+     "size": 0.8
+    },
+    "hide": {
+     "op": "set_text",
+     "ref": "C33",
+     "field": "reference",
+     "hide": true
+    }
+   }
+  },
+  {
+   "check": "silk_place",
+   "severity": "warning",
+   "pos": null,
+   "layer": null,
+   "net": null,
+   "refs": [
+    "R82"
+   ],
+   "msg": "R82: unplaceable - no collision-free candidate within +3.0 mm push (channel narrower than the label); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "source": "silk_place",
+   "items": [
+    {
+     "msg": "R82: unplaceable - no collision-free candidate within +3.0 mm push (channel narrower than the label); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+     "pos": null
+    }
+   ],
+   "kind": "silk_residual",
+   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "fix_ops": {
+    "shrink": {
+     "op": "set_text",
+     "ref": "R82",
+     "field": "reference",
+     "size": 0.8
+    },
+    "hide": {
+     "op": "set_text",
+     "ref": "R82",
+     "field": "reference",
+     "hide": true
+    }
+   }
+  }
+ ],
+ "targets": 147,
+ "moved": 16,
+ "residual": [
+  {
+   "ref": "Q15",
+   "reason": "none of 2 collision-free spots passes check_silk; the closest is 3.05 mm beyond its own pads and 0.00 mm from R10 (silk_misattributed)",
+   "unplaceable": true,
+   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "fix_ops": {
+    "shrink": {
+     "op": "set_text",
+     "ref": "Q15",
+     "field": "reference",
+     "size": 0.8
+    },
+    "hide": {
+     "op": "set_text",
+     "ref": "Q15",
+     "field": "reference",
+     "hide": true
+    }
+   }
+  },
+  {
+   "ref": "R39",
+   "reason": "none of 4 collision-free spots passes check_silk; the closest is 1.30 mm beyond its own pads and 0.00 mm from R37 (silk_misattributed)",
+   "unplaceable": true,
+   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "fix_ops": {
+    "shrink": {
+     "op": "set_text",
+     "ref": "R39",
+     "field": "reference",
+     "size": 0.8
+    },
+    "hide": {
+     "op": "set_text",
+     "ref": "R39",
+     "field": "reference",
+     "hide": true
+    }
+   }
+  },
+  {
+   "ref": "C9",
+   "reason": "none of 23 collision-free spots passes check_silk; the closest is 1.81 mm beyond its own pads and 0.00 mm from R10 (silk_misattributed)",
+   "unplaceable": true,
+   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "fix_ops": {
+    "shrink": {
+     "op": "set_text",
+     "ref": "C9",
+     "field": "reference",
+     "size": 0.8
+    },
+    "hide": {
+     "op": "set_text",
+     "ref": "C9",
+     "field": "reference",
+     "hide": true
+    }
+   }
+  },
+  {
+   "ref": "Q13",
+   "reason": "no collision-free candidate within +3.0 mm push (channel narrower than the label)",
+   "unplaceable": true,
+   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "fix_ops": {
+    "shrink": {
+     "op": "set_text",
+     "ref": "Q13",
+     "field": "reference",
+     "size": 0.8
+    },
+    "hide": {
+     "op": "set_text",
+     "ref": "Q13",
+     "field": "reference",
+     "hide": true
+    }
+   }
+  },
+  {
+   "ref": "C33",
+   "reason": "no collision-free candidate within +3.0 mm push (channel narrower than the label)",
+   "unplaceable": true,
+   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "fix_ops": {
+    "shrink": {
+     "op": "set_text",
+     "ref": "C33",
+     "field": "reference",
+     "size": 0.8
+    },
+    "hide": {
+     "op": "set_text",
+     "ref": "C33",
+     "field": "reference",
+     "hide": true
+    }
+   }
+  },
+  {
+   "ref": "R82",
+   "reason": "no collision-free candidate within +3.0 mm push (channel narrower than the label)",
+   "unplaceable": true,
+   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
+   "fix_ops": {
+    "shrink": {
+     "op": "set_text",
+     "ref": "R82",
+     "field": "reference",
+     "size": 0.8
+    },
+    "hide": {
+     "op": "set_text",
+     "ref": "R82",
+     "field": "reference",
+     "hide": true
+    }
+   }
+  }
+ ],
+ "unplaceable": [
+  "Q15",
+  "R39",
+  "C9",
+  "Q13",
+  "C33",
+  "R82"
+ ],
  "skipped": [
   {
    "ref": "C38",
@@ -34,11 +371,31 @@
    "reason": "board_only"
   },
   {
+   "ref": "J4",
+   "reason": "hidden"
+  },
+  {
+   "ref": "J5",
+   "reason": "hidden"
+  },
+  {
+   "ref": "J6",
+   "reason": "hidden"
+  },
+  {
+   "ref": "J7",
+   "reason": "hidden"
+  },
+  {
    "ref": "R15",
    "reason": "hidden"
   },
   {
    "ref": "R4",
+   "reason": "hidden"
+  },
+  {
+   "ref": "R5",
    "reason": "hidden"
   },
   {
@@ -81,8 +438,8 @@
   },
   {
    "ref": "C3",
-   "moved": true,
-   "clearance_mm": 0.262,
+   "moved": false,
+   "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
   },
   {
@@ -92,16 +449,64 @@
    "beyond_extent_mm": 1.375
   },
   {
-   "ref": "J4",
+   "ref": "Q11",
    "moved": true,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 5.775
+   "beyond_extent_mm": 0.85
+  },
+  {
+   "ref": "Q12",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.85
+  },
+  {
+   "ref": "Q14",
+   "moved": true,
+   "clearance_mm": 0.055,
+   "beyond_extent_mm": 0.8901
+  },
+  {
+   "ref": "R10",
+   "moved": true,
+   "clearance_mm": 0.248,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "R37",
+   "moved": true,
+   "clearance_mm": 0.04,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "R38",
+   "moved": true,
+   "clearance_mm": 0.02,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "R9",
+   "moved": false,
+   "clearance_mm": 0.248,
+   "beyond_extent_mm": 0.355
   },
   {
    "ref": "U7",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
+  },
+  {
+   "ref": "C32",
+   "moved": true,
+   "clearance_mm": 0.045,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "C37",
+   "moved": true,
+   "clearance_mm": 0.26,
+   "beyond_extent_mm": 0.355
   },
   {
    "ref": "C44",
@@ -112,12 +517,12 @@
   {
    "ref": "C81",
    "moved": false,
-   "clearance_mm": 0.237,
+   "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
    "ref": "C82",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.26,
    "beyond_extent_mm": 0.355
   },
@@ -129,13 +534,13 @@
   },
   {
    "ref": "L5",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 1.09
   },
   {
    "ref": "R3",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
@@ -143,6 +548,12 @@
    "ref": "C45",
    "moved": false,
    "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "C84",
+   "moved": true,
+   "clearance_mm": 0.26,
    "beyond_extent_mm": 0.355
   },
   {
@@ -159,7 +570,7 @@
   },
   {
    "ref": "Q4",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
   },
@@ -176,8 +587,8 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "R38",
-   "moved": false,
+   "ref": "R36",
+   "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
@@ -188,20 +599,20 @@
    "beyond_extent_mm": 0.605
   },
   {
-   "ref": "C19",
+   "ref": "R81",
    "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "C37",
-   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.605
   },
   {
-   "ref": "C48",
+   "ref": "C19",
    "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "C48",
+   "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
@@ -224,21 +635,9 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "R39",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.605
-  },
-  {
    "ref": "R66",
    "moved": false,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "R9",
-   "moved": false,
-   "clearance_mm": 0.248,
    "beyond_extent_mm": 0.355
   },
   {
@@ -248,6 +647,12 @@
    "beyond_extent_mm": 1.11
   },
   {
+   "ref": "C34",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
    "ref": "C39",
    "moved": false,
    "clearance_mm": 0.26,
@@ -255,6 +660,12 @@
   },
   {
    "ref": "C5",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "C6",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
@@ -273,7 +684,7 @@
   },
   {
    "ref": "C70",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
   },
@@ -284,10 +695,16 @@
    "beyond_extent_mm": 0.35
   },
   {
-   "ref": "C84",
+   "ref": "C83",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.605
+  },
+  {
+   "ref": "C90",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
   },
   {
    "ref": "J2",
@@ -302,19 +719,25 @@
    "beyond_extent_mm": 0.355
   },
   {
+   "ref": "R80",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
    "ref": "C26",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 1.105
   },
   {
-   "ref": "C32",
-   "moved": false,
+   "ref": "C35",
+   "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "C34",
+   "ref": "C36",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
@@ -333,39 +756,15 @@
   },
   {
    "ref": "C69",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
-  },
-  {
-   "ref": "C83",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.605
-  },
-  {
-   "ref": "C9",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 1.6084
   },
   {
    "ref": "J1",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.37
-  },
-  {
-   "ref": "J5",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 5.775
-  },
-  {
-   "ref": "R10",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
   },
   {
    "ref": "R30",
@@ -377,12 +776,6 @@
    "ref": "R31",
    "moved": false,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "R5",
-   "moved": true,
-   "clearance_mm": 0.037,
    "beyond_extent_mm": 0.355
   },
   {
@@ -410,6 +803,12 @@
    "beyond_extent_mm": 0.605
   },
   {
+   "ref": "C10",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
    "ref": "C13",
    "moved": false,
    "clearance_mm": 0.3,
@@ -426,12 +825,6 @@
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "C33",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 1.855
   },
   {
    "ref": "C42",
@@ -465,13 +858,13 @@
   },
   {
    "ref": "C64",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
    "ref": "C67",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.3992
   },
@@ -494,26 +887,14 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "R36",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "R37",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.605
-  },
-  {
    "ref": "R6",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
    "ref": "R68",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.605
   },
@@ -530,12 +911,6 @@
    "beyond_extent_mm": 0.35
   },
   {
-   "ref": "C10",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
    "ref": "C12",
    "moved": false,
    "clearance_mm": 0.3,
@@ -546,18 +921,6 @@
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
-  },
-  {
-   "ref": "C35",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "C36",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
   },
   {
    "ref": "C40",
@@ -590,12 +953,6 @@
    "beyond_extent_mm": 1.105
   },
   {
-   "ref": "C6",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
    "ref": "C62",
    "moved": false,
    "clearance_mm": 0.3,
@@ -603,7 +960,7 @@
   },
   {
    "ref": "C65",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.605
   },
@@ -615,15 +972,15 @@
   },
   {
    "ref": "C71",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
   },
   {
    "ref": "Q1",
-   "moved": false,
+   "moved": true,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 1.1899
+   "beyond_extent_mm": 0.35
   },
   {
    "ref": "Q2",
@@ -726,12 +1083,6 @@
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "J6",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 5.775
   },
   {
    "ref": "R13",
@@ -848,12 +1199,6 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "J7",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 5.775
-  },
-  {
    "ref": "R21",
    "moved": false,
    "clearance_mm": 0.3,
@@ -917,7 +1262,7 @@
  "applied": true,
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-30T20:46:15+00:00",
+ "generated_at": "2026-10-30T22:14:13+00:00",
  "input": "kicad/lite-main.kicad_pcb",
- "input_digest": "sexpr_no_uuid:a9afd935a4e8f6e2a076c320022757beb357387d1c210c165bec39bdd05056d7"
+ "input_digest": "sexpr_no_uuid:65ca92a7985a188199cb7253cd5d1ea38e13e7f1ecc1c58783a18d340f63a151"
 }

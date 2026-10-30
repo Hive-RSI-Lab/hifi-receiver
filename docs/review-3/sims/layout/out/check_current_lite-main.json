@@ -1,0 +1,243 @@
+{
+ "script": "check_current",
+ "status": "pass",
+ "board": "lite-main.kicad_pcb",
+ "counts": {
+  "total": 0,
+  "by_severity": {},
+  "by_source": {}
+ },
+ "violations": [],
+ "checked": [
+  {
+   "net": "VBUS",
+   "current_a": 0.4,
+   "dt_c": 20.0,
+   "required_mm_by_layer": {
+    "F.Cu": 0.1474,
+    "B.Cu": 0.1474
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 0.2,
+    "B.Cu": 0.2
+   },
+   "via_clusters": 9,
+   "plane_fed": true,
+   "advisory_violations": 0
+  },
+  {
+   "net": "PVDD",
+   "current_a": 0.8,
+   "dt_c": 20.0,
+   "required_mm_by_layer": {
+    "F.Cu": 0.2949,
+    "B.Cu": 0.2949
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 0.295,
+    "B.Cu": 0.295
+   },
+   "via_clusters": 6,
+   "stitch_vias": 15,
+   "stitch_bundles": 3,
+   "plane_fed": true,
+   "advisory_violations": 0
+  },
+  {
+   "net": "GND",
+   "current_a": 0.5,
+   "dt_c": 20.0,
+   "required_mm_by_layer": {
+    "F.Cu": 0.1843,
+    "B.Cu": 0.1843
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 0.2,
+    "B.Cu": 0.2
+   },
+   "via_clusters": 84,
+   "stitch_vias": 22,
+   "stitch_bundles": 3,
+   "plane_fed": true,
+   "advisory_violations": 0
+  },
+  {
+   "net": "+5V",
+   "current_a": 0.8,
+   "dt_c": 10.0,
+   "required_mm_by_layer": {
+    "F.Cu": 0.4,
+    "B.Cu": 0.4
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 0.4,
+    "B.Cu": 0.405
+   },
+   "via_clusters": 2
+  },
+  {
+   "net": "+3V3",
+   "current_a": 0.55,
+   "dt_c": 20.0,
+   "required_mm_by_layer": {
+    "F.Cu": 0.2027,
+    "B.Cu": 0.2027
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 0.204,
+    "B.Cu": 0.205
+   },
+   "via_clusters": 5
+  },
+  {
+   "net": "+3V3A",
+   "current_a": 0.05,
+   "dt_c": 10.0,
+   "required_mm_by_layer": {
+    "F.Cu": 0.025,
+    "B.Cu": 0.025
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 0.2,
+    "B.Cu": 0.2
+   },
+   "via_clusters": 2
+  },
+  {
+   "net": "/OUT_R_P",
+   "current_a": 1.0,
+   "dt_c": 30.0,
+   "required_mm_by_layer": {
+    "F.Cu": 0.3083,
+    "B.Cu": 0.3083
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 0.3084
+   },
+   "via_clusters": 0
+  },
+  {
+   "net": "/OUT_R_N",
+   "current_a": 1.0,
+   "dt_c": 30.0,
+   "required_mm_by_layer": {
+    "F.Cu": 0.3083,
+    "B.Cu": 0.3083
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 0.3084
+   },
+   "via_clusters": 0
+  },
+  {
+   "net": "/OUT_L_P",
+   "current_a": 1.0,
+   "dt_c": 30.0,
+   "required_mm_by_layer": {
+    "F.Cu": 0.3083,
+    "B.Cu": 0.3083
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 0.3084
+   },
+   "via_clusters": 0
+  },
+  {
+   "net": "/OUT_L_N",
+   "current_a": 1.0,
+   "dt_c": 30.0,
+   "required_mm_by_layer": {
+    "F.Cu": 0.3083,
+    "B.Cu": 0.3083
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 0.3084
+   },
+   "via_clusters": 0
+  },
+  {
+   "net": "/SPK_L_P",
+   "current_a": 3.5,
+   "dt_c": 30.0,
+   "required_mm_by_layer": {
+    "F.Cu": 1.2109,
+    "B.Cu": 1.2109
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 1.211
+   },
+   "via_clusters": 0
+  },
+  {
+   "net": "/SPK_L_N",
+   "current_a": 3.5,
+   "dt_c": 30.0,
+   "required_mm_by_layer": {
+    "F.Cu": 1.2109,
+    "B.Cu": 1.2109
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 1.211
+   },
+   "via_clusters": 0
+  },
+  {
+   "net": "/SPK_R_P",
+   "current_a": 3.5,
+   "dt_c": 30.0,
+   "required_mm_by_layer": {
+    "F.Cu": 1.2109,
+    "B.Cu": 1.2109
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 1.211
+   },
+   "via_clusters": 0
+  },
+  {
+   "net": "/SPK_R_N",
+   "current_a": 3.5,
+   "dt_c": 30.0,
+   "required_mm_by_layer": {
+    "F.Cu": 1.2109,
+    "B.Cu": 1.2109
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 1.211
+   },
+   "via_clusters": 0
+  },
+  {
+   "net": "/BUCK5_SW",
+   "current_a": 0.8,
+   "dt_c": 10.0,
+   "required_mm_by_layer": {
+    "F.Cu": 0.4,
+    "B.Cu": 0.4
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 0.4
+   },
+   "via_clusters": 0
+  },
+  {
+   "net": "/BUCK3_LX",
+   "current_a": 1.0,
+   "dt_c": 10.0,
+   "required_mm_by_layer": {
+    "F.Cu": 0.5,
+    "B.Cu": 0.5
+   },
+   "min_track_mm_by_layer": {
+    "F.Cu": 0.5
+   },
+   "via_clusters": 0
+  }
+ ],
+ "stackup_assumed": false,
+ "report_schema": 1,
+ "checker_version": 1,
+ "generated_at": "2026-10-30T20:25:10+00:00",
+ "input": "lite-main.kicad_pcb",
+ "input_digest": "sexpr_no_uuid:5419edc852a8e932dd3ed2f0db6dbace1740e92fc2934672027706135a87b8d2"
+}

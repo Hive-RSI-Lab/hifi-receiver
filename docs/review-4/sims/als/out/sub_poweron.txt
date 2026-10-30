@@ -1,0 +1,10 @@
+tau 250 ms, sub 10k: RCA peak 0.318 V, after 20 Hz HPF 0.022 V
+tau 250 ms, sub 47k: RCA peak 0.590 V, after 20 Hz HPF 0.023 V
+tau 250 ms, sub 100k: RCA peak 0.684 V, after 20 Hz HPF 0.023 V
+tau 125 ms, sub 10k: RCA peak 0.489 V, after 20 Hz HPF 0.043 V
+tau 125 ms, sub 47k: RCA peak 0.807 V, after 20 Hz HPF 0.045 V
+tau 125 ms, sub 100k: RCA peak 0.904 V, after 20 Hz HPF 0.045 V
+tau 25 ms, sub 10k: RCA peak 0.985 V, after 20 Hz HPF 0.184 V
+tau 25 ms, sub 47k: RCA peak 1.265 V, after 20 Hz HPF 0.191 V
+tau 25 ms, sub 100k: RCA peak 1.330 V, after 20 Hz HPF 0.192 V
+PASS worst high-passed 0.045 V vs 0.14 V

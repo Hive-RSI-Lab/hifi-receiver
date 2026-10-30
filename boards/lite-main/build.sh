@@ -33,6 +33,7 @@ board)
 	h rules_gen --constraints kicad/constraints.json --layers 2 --out-dru kicad/lite-main.kicad_dru \
 		--pro kicad/lite-main.kicad_pro >reports/rules-gen.json
 	python3 kicad/gen/pro_clearance.py kicad/lite-main.kicad_pro >/dev/null
+	cat kicad/gen/extra_rules.dru >>kicad/lite-main.kicad_dru
 	python3 kicad/gen/place.py >kicad/place-ops.json
 	h place_edit --pcb kicad/lite-main.kicad_pcb --ops kicad/place-ops.json --out-report reports/place-edit.json >/dev/null
 	kpy kicad/gen/keepout.py kicad/lite-main.kicad_pcb >/dev/null

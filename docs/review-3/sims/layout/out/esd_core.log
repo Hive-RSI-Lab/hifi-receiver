@@ -1,0 +1,35 @@
+J1      A4 VBUS_IN                                             *D1(SMBJ30A) 5.1mm, R1(10m) 5.6mm, R18(10R) 9.7mm
+J1      A5 /power_in/CC1                DIRECT-TO-IC, no TVS   U1.6(CH224Q) 10.1mm
+J1      A6 /USB_DP                                             *U2(USBLC6-2SC6) 13.4mm, *U2(USBLC6-2SC6) 15.3mm, U8.5(CH340B) 44.9mm
+J1      A7 /USB_DM                                             *U2(USBLC6-2SC6) 14.0mm, *U2(USBLC6-2SC6) 15.7mm, U8.6(CH340B) 44.4mm
+J1      B5 /power_in/CC2                DIRECT-TO-IC, no TVS   U1.7(CH224Q) 8.2mm
+J2       1 /ethernet/ETH_TXP            DIRECT-TO-IC, no TVS   R63(49.9R) 6.2mm, U9.21(LAN8720A) 11.1mm
+J2       2 /ethernet/ETH_TXN            DIRECT-TO-IC, no TVS   R64(49.9R) 5.3mm, U9.20(LAN8720A) 8.1mm
+J2       3 /ethernet/ETH_RXP            DIRECT-TO-IC, no TVS   R65(49.9R) 6.6mm, U9.23(LAN8720A) 10.6mm
+J2       4 +3V3E                        DIRECT-TO-IC, no TVS   R65(49.9R) 3.5mm, R63(49.9R) 3.8mm, R66(49.9R) 5.5mm, C43(100nF) 5.6mm, R64(49.9R) 6.2mm, U9.19(LAN8720A) 7.7mm
+J2       6 /ethernet/ETH_RXN            DIRECT-TO-IC, no TVS   R66(49.9R) 4.3mm, U9.22(LAN8720A) 7.9mm
+J3       2 +3V3                         DIRECT-TO-IC, no TVS   U9.9(LAN8720A) 19.9mm, C44(100nF) 21.6mm, C46(100nF) 24.1mm, R400(100R) 25.4mm, Y2(50MHz) 26.3mm, R20(10k) 30.0mm
+J3       3 +5V                                                 *U2(USBLC6-2SC6) 26.9mm, U5.1(SY8089A1AAC) 36.4mm, U5.4(SY8089A1AAC) 37.1mm, R205(4.7R) 39.1mm, C15(10uF) 39.3mm, R203(4.7R) 42.4mm
+J3       5 /ui/FFC_SCK                                         R402(33R) 47.4mm
+J3       7 /ui/FFC_MOSI                                        R403(33R) 48.5mm
+J3       8 /LCD_CS                                             R57(10k) 33.9mm
+J3       9 /LCD_DC                      DIRECT-TO-IC, no TVS   U7.23(ESP32-WROVER-E-N8R8) 76.0mm
+J3      10 /LCD_BL                      DIRECT-TO-IC, no TVS   U17.10(TCA9539) 67.6mm
+J3      12 /I2C_SCL                     DIRECT-TO-IC, no TVS   U1.2(CH224Q) 29.9mm, R35(2.2k) 58.4mm, U17.22(TCA9539) 65.8mm, U7.13(ESP32-WROVER-E-N8R8) 81.7mm, U10.3(ES9018K2M) 90.1mm, U13.19(ES7243E) 100.7mm
+J3      13 /I2C_SDA                     DIRECT-TO-IC, no TVS   U1.3(CH224Q) 29.9mm, R34(2.2k) 56.2mm, U17.23(TCA9539) 64.9mm, U7.16(ESP32-WROVER-E-N8R8) 77.6mm, U10.4(ES9018K2M) 90.1mm, U13.18(ES7243E) 100.5mm
+J3      14 /EXP_INT                     DIRECT-TO-IC, no TVS   R36(10k) 50.4mm, U17.1(TCA9539) 60.7mm, U7.5(ESP32-WROVER-E-N8R8) 90.5mm
+J3      15 /IR_IN                       DIRECT-TO-IC, no TVS   U18.1(IRM-3638T) 17.3mm, R58(10k) 43.8mm, U7.7(ESP32-WROVER-E-N8R8) 87.6mm
+J3      16 /ENC_A                       DIRECT-TO-IC, no TVS   C37(10nF) 34.5mm, R52(10k) 36.2mm, SW1(EC11) 37.4mm, U17.15(TCA9539) 68.0mm
+J3      17 /ENC_B                       DIRECT-TO-IC, no TVS   C38(10nF) 31.7mm, SW1(EC11) 32.1mm, R53(10k) 33.1mm, U17.16(TCA9539) 67.0mm
+J4       1 /dac/SUB1_OUT                                       C71(1nF) 3.0mm, R92(470R) 4.0mm
+J4       3 /dac/SUB2_OUT                                       C72(1nF) 3.9mm, R93(470R) 6.2mm
+J5       1 /linein/LIN_L                                       R100(4.7k) 23.0mm
+J5       3 /linein/LIN_R                                       R110(4.7k) 19.2mm
+J6       1 /A_SPK_L+                                           R230(4.7R) 6.8mm, C229(1uF) 7.4mm, L2(10uH) 23.7mm, R130(150k) 46.5mm
+J6       2 /amp_a/A_SPK_L-                                     R227(4.7R) 8.7mm, C226(1uF) 10.3mm, L1(10uH) 11.8mm
+J7       1 /A_SPK_R+                                           C235(1uF) 7.3mm, R236(4.7R) 7.9mm, L4(10uH) 15.4mm, R136(150k) 40.0mm
+J7       2 /amp_a/A_SPK_R-                                     R233(4.7R) 6.9mm, C232(1uF) 7.7mm, L3(10uH) 21.8mm
+J10      1 /amp_b/B_SPK_L+                                     R328(4.7R) 6.8mm, C327(1uF) 7.4mm, L6(10uH) 23.7mm
+J10      2 /amp_b/B_SPK_L-                                     R325(4.7R) 8.7mm, C324(1uF) 10.3mm, L5(10uH) 11.8mm
+J11      1 /amp_b/B_SPK_R+                                     R334(4.7R) 12.0mm, C333(1uF) 13.0mm, L8(10uH) 15.4mm
+J11      2 /amp_b/B_SPK_R-                                     R331(4.7R) 6.9mm, C330(1uF) 7.7mm, L7(10uH) 21.8mm

@@ -1,0 +1,46 @@
+Lite: VBUS 15 V settled, PG good, firmware sets PVDD_EN at 20 ms: inrush/FET SOA
+.include models.inc
+* Lite PVDD switch as on main: Q1 AO4485, R5 100k G-S, R15 1k + C2 100n G-D (Miller), R6 220k,
+* C19 4.7u/16V G-S (2.4u at its <=6.6 V bias), Q4 MMBT3904 E=PD_PG, R7 10k, R8 100k, R4 10k PG pull-up.
+Rcab vsrc vc 0.1
+Lcab vc VBUS 0.6u
+* VBUS ceramics: C1 1u/50V 0603 (0.47u at 21 V), C3 10u/50V 1206 (4.1u), C4 4.7u/50V 1206 (2.8u), C5 100n
+Cvb VBUS 0 7.5u
+Rbuck VBUS 0 240
+Rvs VBUS 0 110k
+M1 PVDDm PSW_G VBUS AO4485
+Vfetm PVDD PVDDm 0
+R5 VBUS PSW_G 100k
+R15 PSW_G PSW_MILLER 1k
+C2 PSW_MILLER PVDD 100n
+R6 PSW_G PSW_PULL 220k
+C19 VBUS PSW_G 2.4u
+Q4 PSW_PULL PSW_B PD_PG Q3904
+R7 PVDD_EN PSW_B 10k
+R8 PVDD_EN 0 100k
+R4 PD_PG V3V3 10k
+V3 V3V3 0 3.3
+Spg PD_PG 0 vpg 0 SWPG
+.model SWPG SW(Ron=30 Roff=1e9 Vt=1.5 Vh=0.1)
+* PVDD bulk: C58 470u polymer 16 mR, C59 220u Al 0.3 R, 3x1u/50V 0805 (0.73u) + 2x100n + 2x1n, R16 22k, R17/R18 110k
+C58 PVDD p58 470u
+R58 p58 0 16m
+C59 PVDD p59 220u
+R59 p59 0 0.3
+Ccer PVDD 0 2.4u
+R16 PVDD 0 22k
+Rps PVDD 0 110k
+Ramp PVDD 0 1G
+
+Vsrc vsrc 0 15
+Vpg vpg 0 3
+Ven PVDD_EN 0 PWL(0 0 20m 0 20.01m 3.3)
+.ic v(PVDD)=0 v(PSW_G)=15 v(VBUS)=15
+.tran 50u 1.2 0 50u uic
+.meas tran ifet_pk max par('-i(Vfetm)') from=20m to=1.2
+.meas tran pfet_pk max par('(v(VBUS)-v(PVDD))*(-i(Vfetm))') from=20m to=1.2
+.meas tran efet integ par('(v(VBUS)-v(PVDD))*(-i(Vfetm))') from=20m to=1.2
+.meas tran isrc_pk max i(Lcab) from=20m to=1.2
+.meas tran t90 when v(PVDD)=13.5 rise=1
+.meas tran vsg_end find par('v(VBUS)-v(PSW_G)') at=1.19
+.end

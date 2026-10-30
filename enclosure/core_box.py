@@ -64,9 +64,11 @@ RCA_CAP = 7.0       # its teardrop point is cut off 1 mm over the hole: a 3 mm b
                     # stays under Plus's wall top (30.6)
 RCA_BARREL = 8.3
 RCA_AXES = (6.5, 20.5)   # barrel axes above the board top (Lite's corrected model; same part)
-BANANA_NOSE = 6.0   # Amass 24.243 socket: the square nose round its 4 mm bore, 2.5 mm past the body
-BANANA_AXIS = 7.5   # bore axis over the board top
-BANANA_HOLE = 6.8   # square hole round the nose, 0.4 mm a side
+BANANA_NOSE = 9.6   # Amass 24.243 socket: the round collar round its 4 mm bore, ~9.5 mm across on
+                    # Amass's drawing (LCSC datasheet; the EasyEDA footprint's 6 mm square is a silk
+                    # mark, not the part: docs/review-4/ban.md R4-BAN-1). Measure a sample
+BANANA_AXIS = 8.1   # bore axis over the board top (Amass drawing)
+BANANA_HOLE = 10.2  # round hole (a teardrop roof) round the collar, 0.3 mm a side
 POST_HOLE = 4.3     # M4-thread 4 mm binding posts
 POST_NUT = 9.0      # M4 nut (8.1 across corners) + ring lug, inside the wall
 POST_DEPTH = 10.0   # shank, nut and lug inside the wall
@@ -148,22 +150,16 @@ def rca_ports(board: Board, refs, feats: dict, gap_n: float):
 
 def banana_ports(board: Board, refs, feats: dict, gap_n: float):
     """Board-mounted 4 mm banana sockets on the N edge (Lite's J4-J7): the body stops at the rear
-    wall and its square nose sits in a square hole (feats["banana"]), so a plug goes straight in."""
+    wall and its round collar sits in a round hole (feats["banana"]), so a plug goes straight in."""
     board.ports = [p for p in board.ports if p.ref not in refs]
     for ref in refs:
         p = board.part(ref)
         p.bbox[3] = min(p.bbox[3], board.size[1] + gap_n - 0.05)
-        x, z, h = (p.bbox[0] + p.bbox[2]) / 2, T_PCB + BANANA_AXIS, BANANA_NOSE / 2
+        # mech's port is a square: the one inside the round collar, which the hole
+        # (concentric, 0.3 mm larger a side) clears all round
+        x, z, h = (p.bbox[0] + p.bbox[2]) / 2, T_PCB + BANANA_AXIS, BANANA_NOSE / 2 / math.sqrt(2)
         board.ports.append(Port(ref, "N", [x - h, x + h, z - h, z + h], board.size[1], 0.0, "top"))
         feats.setdefault("banana", []).append((ref, x, z))
-
-
-def square_hole_y(x, y, z, w, length) -> object:
-    """A w-square hole along y with a 45-degree roof, so a vertical wall prints it without support."""
-    h = w / 2
-    a = h * math.sqrt(2)
-    return block(x - h, y - length / 2, z - h, x + h, y + length / 2, z + h) + \
-        Pos(x, y, z + h) * Rot(0, 45, 0) * Box(a, length, a)
 
 
 def post_ports(board: Board, xs, zs: dict, y_wall_n: float, feats: dict):
@@ -256,7 +252,7 @@ def base(t: CoreTray, feats: dict, ports=("J1", "J2", "U19")):
     for _, x, z in feats.get("posts", []):
         b -= teardrop_y(x, yn, z, POST_HOLE, cut)
     for _, x, z in feats.get("banana", []):
-        b -= square_hole_y(x, yn, z, BANANA_HOLE, cut)
+        b -= teardrop_y(x, yn, z, BANANA_HOLE, cut)
     under = feats.get("amp_floor", [h[1:5] for h in feats.get("heatsinks", [])])
     for hx0, hy0, hx1, hy1 in under:
         b = t.vents(b, (hx0 + 1, hy0 - 2, hx1 - 1, hy1 + 2), along="y", where="floor")

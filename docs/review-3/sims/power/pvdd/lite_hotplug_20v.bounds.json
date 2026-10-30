@@ -1,0 +1,14 @@
+[
+ {
+  "measure": "vbus_pk",
+  "severity": "warning",
+  "msg": "TPS54302 VIN / TPA3118 abs max 30 V",
+  "max": 30
+ },
+ {
+  "measure": "pvdd_max",
+  "severity": "warning",
+  "msg": "PVDD stays off",
+  "max": 2.0
+ }
+]

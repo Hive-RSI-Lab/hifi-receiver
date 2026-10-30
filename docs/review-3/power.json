@@ -1,0 +1,422 @@
+{
+ "domain": "POWER",
+ "status": "done",
+ "findings": [
+  {
+   "id": "R3-POWER-1",
+   "board": "lite-main",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "U2"
+   ],
+   "nets": [
+    "unconnected-(U2-EN-Pad5)",
+    "VBUS"
+   ],
+   "finding": "TPS54302 EN (pad 5) is left floating. This is correct: the internal pull-up (0.7 uA) enables the part and the internal VIN UVLO (3.8-4.4 V rising, 3.3-3.9 V falling) lets it start and run in 100 % duty dropout on a 5 V-only port (+5V about 4.6-4.7 V), so the ESP32 still runs. A UVLO divider like the EVM's (510k/105k, 6.74 V start) would leave a 5 V port fully dark; tying EN to VBUS would exceed EN abs max 7 V.",
+   "evidence": "TI SLVSDG6C rev C table 4-1 ('Float the EN pin to enable'), sec 5.1 (EN abs max 7 V), 5.5 (VIN UVLO, EN thresholds 1.23-1.28/1.1-1.16 V, Ip 0.7 uA), 6.3.5, 6.3.10 (100 % duty); netlist: pad 5 alone on its net; docs/review-3/sims/power/lite_u2_en.py (PASS: no copper on pad 5; FB and BOOT pads 0.95 mm)",
+   "reference_design": "TPS54302EVM-716 (SLVUAP9B sec 1.3.3, BOM): R4 510k / R5 105k UVLO divider, JP1 open = enabled; datasheet pin table allows floating",
+   "fix": "None needed. Optional contingency: DNP 0603 EN-GND footprint for a 1-10 nF filter cap (start delay 1.8-18 ms).",
+   "margin": "5 V port: 4.75 V min source minus about 0.05 V cable drop, against 4.4 V max UVLO rising: 0.3 V. 21 V max PD against 28 V recommended / 30 V abs: 7 V."
+  },
+  {
+   "id": "R3-POWER-2",
+   "board": "core",
+   "severity": "major",
+   "repeat_of": "POWER-2",
+   "refs": [
+    "Q1",
+    "C4",
+    "C8",
+    "C311",
+    "C5",
+    "C6"
+   ],
+   "nets": [
+    "PVDD",
+    "PVDD_G",
+    "VBUS"
+   ],
+   "finding": "PVDD turn-on: firmware soft_start_ms 100 releases the amps (RESET high) while PVDD is still ramping (t90 122/155/196 ms after PVDD_EN at 28/20/15 V). Zone B's C311 raised the bulk to 1410 uF, so Q1 sees 14.8 W peak and 0.55 J at 28 V (round-1 fix was sized for 940 uF). An amp drawing current while Q1 is in its linear ramp adds Vds x I_load.",
+   "evidence": "pvdd/core_fw_on_{28,20,15}v (t90 0.142/0.175/0.216 s from t=0, EN at 20 ms; pfet 14.8 W, efet 0.55 J); hwde soa_check --hotswap AO4485 1410u 28 V 75 ms: Tj 125 C at 40 C, 135 C at 50 C; with 1 A load 286 C; firmware hifi_power.c hifi_power_cfg_core soft_start_ms=100 (its comment cites only the 10-90 % time, 47 ms, not the 76 ms delay)",
+   "reference_design": "TPA3220 SLASEN3B 9.x: hold RESET until PVDD is stable; AO4485 SOA fig 9/10",
+   "fix": "C4 100 nF -> 200 nF by adding a parallel 100nF/50V 0603 (C14663, Basic); C8 2.2 uF -> ~4.4 uF by adding a parallel 2.2uF/50V 0805 (C377773, Basic); firmware hifi_power_cfg_core soft_start_ms = 500. FIX sim: 7.7 W peak, t90 244 ms after EN, Vsg on the 5->28 V step 1.15 V (holds off), Tj 96 C at 50 C ambient.",
+   "margin": "now: Tj 135 C vs 150 C at 50 C ambient with no load, negative with load during the ramp; FIX: 54 K"
+  },
+  {
+   "id": "R3-POWER-3",
+   "board": "both",
+   "severity": "major",
+   "repeat_of": "new",
+   "refs": [
+    "U8",
+    "U15",
+    "U16",
+    "U1"
+   ],
+   "nets": [
+    "VBUS",
+    "PVDD"
+   ],
+   "finding": "The governor (hifi_gov.c) limits the 1 s mean input power to 0.9 x the contract's V*I. A sustained low-crest signal (test tone, room sweep, sub-bass) at that mean draws sin^2 current, peaking at 1.7-1.8x the PDO current for every charger checked. The bulk caps can't carry the 80-200 Hz ripple (690-1410 uF against a 0.15 ohm source). Lite has no thermal cap configured (thermal_out_w = 0; L1's 13 W/ch is not implemented), so the condition holds indefinitely; core only for the first ~60 s (thermal tau). Result: charger OCP, hard reset, ESP32 brown-out/reboot, then a repeat. Overlaps R3-SYSTEM-1. Its uncommitted hifi_gov.c change in the working tree (tau 1 s -> 50 ms) still limits a mean: a 40 Hz sine's sin^2 peaks are 2x the 50 ms mean, so the 1.7x stands unless the budget is applied to the peak or the 0.9 fraction is halved for low-crest signals.",
+   "evidence": "sims/power/charger_peak.py (FAIL): Lite 60 W 5.27 A pk vs 3 A; Lite 45 W 3.92 vs 2.25; core 45 W 3.84 vs 2.25; core 65 W 5.63 vs 3.25; core 140 W 8.83 vs 5 A; firmware hifi_gov.c (budget_frac 0.9, tau 1 s), board_lite.c (no thermal_out_w)",
+   "reference_design": "USB PD: the source guarantees its PDO current; overload is only allowed per the PDO Peak Current bits (most chargers 00)",
+   "fix": "Firmware: add a 10-20 ms window limit, idle + p_out_inst/eff <= 1.0 x V*I_pdo (fast attack, as now), keeping the 1 s mean limit; core: clamp gain when INA186 ISENSE > i_max for > 5 ms; Lite: implement firmware-requirements L1 (13 W/ch 30 s), which on its own brings a 60 W charger to ~1.0x. Bench: 40 Hz sine at max volume on 45 W and 60 W chargers, log VBUS/PG for 5 min.",
+   "margin": "-70 to -77 % (peak/PDO 1.68-1.77)"
+  },
+  {
+   "id": "R3-POWER-4",
+   "board": "core",
+   "severity": "major",
+   "repeat_of": "new",
+   "refs": [
+    "U1"
+   ],
+   "nets": [
+    "VBUS",
+    "PD_PG"
+   ],
+   "finding": "Core has no VBUS ADC. hifi_ch224_vbus() takes VBUS = 20 V for any non-EPR PD contract, and board_core.c feeds that to the sequencer (14 V start floor) and to the governor (contract.v * i_max). On chargers without a 20 V PDO (18-30 W: 5/9/12/15 V) or on a 5 V-only PD source, the floor is bypassed and the budget is overstated by up to 20/9 = 2.2x. What the CH224Q settles at when 28/20 V isn't offered is not documented.",
+   "evidence": "firmware/components/hifi/core/hifi_pd.c hifi_ch224_vbus, esp/board_core.c lines 160-173; WCH CH224 V2.0 has no fallback rule; felixardyansyah CH224A tests show 'not supported' results",
+   "reference_design": "WCH CH224 V2.0 5.2.3: CH224Q 0x60-0x8F holds the full SRCCAP",
+   "fix": "Firmware: read SRCCAP (0x60-0x8F) after the handshake; assume 20 V only if a 20 V fixed PDO exists, else the highest fixed PDO <= 20 V for the budget; don't set PVDD_EN unless a >= 15 V PDO is present (as Lite's v_start). Bench: 18 W, 30 W and 45 W chargers, logging status/0x50 and the INA186.",
+   "margin": "budget overstated by 1.33x (15 V) to 2.2x (9 V)"
+  },
+  {
+   "id": "R3-POWER-5",
+   "board": "core",
+   "severity": "major",
+   "repeat_of": "new",
+   "refs": [
+    "U1",
+    "Q1",
+    "C5",
+    "C6",
+    "C311"
+   ],
+   "nets": [
+    "VBUS",
+    "PVDD"
+   ],
+   "finding": "Firmware can close PVDD on the SPR contract (status bit 3, then a 200 ms settle) before the CH224Q completes EPR entry. The 20 -> 28 V step then charges 1410 uF with Q1 on, or with Q1 mid-ramp. An ideal source supplies 26.6 A at the 30 V/ms PD slew; a real one current-limits. Whether a given EPR charger rides through (11.3 mC; 2.3 ms at 5 A) or OCPs and hard-resets is charger-dependent. Whether CH224Q PG releases during EPR entry is unknown.",
+   "evidence": "pvdd/core_epr_step_20to28_on (isrc 26.6 A, pfet 11.3 W); hifi_power.c settle_ms 200; board_core.c pg = status & 0x18",
+   "reference_design": "USB PD 3.1 EPR entry: SPR explicit contract first, then EPR_Mode, then EPR request",
+   "fix": "Firmware: if status bit 5 (EPR offered), require bit 4 (EPR active) before PVDD_EN; and only 500 ms after the last contract change or the firmware's own VREQ write.",
+   "margin": "charger-dependent"
+  },
+  {
+   "id": "R3-POWER-6",
+   "board": "both",
+   "severity": "minor",
+   "repeat_of": "POWER-9",
+   "refs": [
+    "D1",
+    "U2",
+    "U8",
+    "U4",
+    "U3"
+   ],
+   "nets": [
+    "VBUS",
+    "VBUS_IN"
+   ],
+   "finding": "Hot plug into a non-compliant live source (1 uH/50 mohm cable): Lite VBUS 32.2 V vs TPS54302/TPA3118 30 V abs; core VBUS 43.6 V vs SY8303 40 V / INA186 42 V. CH224Q VBUS_PD 28.8 V (R17/C1). A compliant 5 V attach rings to 9.0/8.9 V.",
+   "evidence": "pvdd/lite_hotplug_20v, core_hotplug_28v, *_hotplug_5v",
+   "reference_design": "PD: attach at vSafe5V only",
+   "fix": "Keep (only PD-violating sources)",
+   "margin": "5 V attach: 3x; non-compliant: -7 % (Lite), -9 % (core)"
+  },
+  {
+   "id": "R3-POWER-7",
+   "board": "core",
+   "severity": "minor",
+   "repeat_of": "POWER-11",
+   "refs": [
+    "C10",
+    "U4"
+   ],
+   "nets": [
+    "VBUS"
+   ],
+   "finding": "SY8303 Cin C10 (10uF/50V X5R 1206) is 2.6 uF typ / 1.75 uF low at 28 V, against 'at least 4.7 uF'. Round 1's justification ('470 uF bulk through Q1's body') is wrong while PVDD is off: the body diode conducts PVDD->VBUS and is not in the buck's input loop.",
+   "evidence": "hwde mlcc_dcbias 10u 1206 50 V at 29.4 V: 2.64 uF (1.75 low); AN_SY8303 pin table",
+   "reference_design": "AN_SY8303: >= 4.7 uF ceramic at IN",
+   "fix": "Add a 10uF/50V 1206 (C13585, Basic) at U4 IN-GND",
+   "margin": "-44 % (typ)"
+  },
+  {
+   "id": "R3-POWER-8",
+   "board": "both",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "L9",
+    "L5"
+   ],
+   "nets": [
+    "BUCK5_LX",
+    "BUCK5_SW"
+   ],
+   "finding": "Inductor Isat (L9 3.2 A, L5 3.2-3.5 A) is below the buck current limits (SY8303 4-6.8 A, TPS54302 4-6 A); normal peaks 1.73 A / ~1.3 A. Matters only in an output short.",
+   "evidence": "AN_SY8303 elec. table; SLVSDG6C 5.5; LCSC attributes",
+   "reference_design": "TPS54302EVM L1 Wurth 7447714100 4.3 A",
+   "fix": "none (optional higher-Isat part)",
+   "margin": "1.85x on normal peak"
+  },
+  {
+   "id": "R3-POWER-9",
+   "board": "core",
+   "severity": "note",
+   "repeat_of": "POWER-13",
+   "refs": [
+    "U4",
+    "U1"
+   ],
+   "nets": [
+    "+5V"
+   ],
+   "finding": "5 V-only port: +5V about 4.4 V (Dmax 87 %). With a 5 V-only PD source, firmware takes VBUS as 20 V (R3-POWER-4); PG keeps Q1 off, so this is harmless but silent.",
+   "evidence": "AN_SY8303 min off-time 120 ns",
+   "reference_design": "-",
+   "fix": "via R3-POWER-4",
+   "margin": "-"
+  }
+ ],
+ "round1_fixes_checked": [
+  {
+   "id": "POWER-1",
+   "holds": true,
+   "how": "core_power_vias.py: 7/7/5/10 vias at R1 in/out, Q1 S/D, 5/7 at U15/U16 PVDD (>= 6 A)"
+  },
+  {
+   "id": "POWER-2",
+   "holds": false,
+   "how": "Fix sized for 940 uF; the bulk is now 1410 uF (C311): 14.8 W peak, Tj 125-135 C (soa_check), and firmware releases the amps mid-ramp -> R3-POWER-2"
+  },
+  {
+   "id": "POWER-3",
+   "holds": true,
+   "how": "lite_pdstep_5to20_fwoff: Vsg 0.79 V vs Vth 1.7 V, PVDD 3 mV (C19 4.7u at 2.4u effective)"
+  },
+  {
+   "id": "POWER-4",
+   "holds": true,
+   "how": "lite_fw_on_20v: 0.41 A, 5.6 W, 0.14 J, Tj 65 C at 40 C; t90 75 ms after EN vs soft_start 400 ms"
+  },
+  {
+   "id": "POWER-5",
+   "holds": true,
+   "how": "TCA9539 (no pull-ups) in blocks_mcu.py, R43 100k PVDD_EN-GND"
+  },
+  {
+   "id": "POWER-6",
+   "holds": true,
+   "how": "power_netrules.py: core Q2 source on PD_PG with R20 10k"
+  },
+  {
+   "id": "POWER-7",
+   "holds": true,
+   "how": "core_pdstep_5to28_fwoff: Vsg 1.21 V vs 1.7 V"
+  },
+  {
+   "id": "POWER-8",
+   "holds": true,
+   "how": "justified, unchanged"
+  },
+  {
+   "id": "POWER-9",
+   "holds": true,
+   "how": "justified; quantified as R3-POWER-6 (non-compliant sources only)"
+  },
+  {
+   "id": "POWER-10",
+   "holds": true,
+   "how": "3x22u = 38.7 uF eff, C9 47 pF, fo 25-33 kHz vs 40 kHz"
+  },
+  {
+   "id": "POWER-11",
+   "holds": false,
+   "how": "justification ('bulk through Q1 body') wrong while PVDD is off -> R3-POWER-7"
+  },
+  {
+   "id": "POWER-12",
+   "holds": true,
+   "how": "not re-measured (layout domain)"
+  },
+  {
+   "id": "POWER-13",
+   "holds": true,
+   "how": "Lite v_start 14 V; core leaks via the assumed VBUS -> R3-POWER-4/9"
+  },
+  {
+   "id": "core fast-off (R404/D5/Q3b)",
+   "holds": true,
+   "how": "core_hardreset_pvdd_on: VBUS 0.16 V at 650 ms with a 200 ohm source discharge"
+  }
+ ],
+ "field_issues": [
+  {
+   "issue": "CH224 fallback when the requested PDO isn't offered",
+   "source": "https://github.com/felixardyansyah/CH224A_MODULE_FGV ; https://prototypeguru.com/ch224k-usb-pd-trigger-module-guide/",
+   "our_board": "has it",
+   "how": "core firmware assumes 20 V: R3-POWER-4"
+  },
+  {
+   "issue": "CH224 on QC/BC (A-to-C) chargers gives 9/12 V only",
+   "source": "https://github.com/felixardyansyah/CH224A_MODULE_FGV",
+   "our_board": "immune",
+   "how": "Lite v_start 14 V; core needs the PD bit"
+  },
+  {
+   "issue": "PD/laptop supply trips under class-D bass bursts",
+   "source": "https://www.diyaudio.com/community/threads/tpa3116-cutting-out.300868/ ; https://dorkythorpy.blogspot.com/2018/01/tpa3116-amplifier-power-supply.html",
+   "our_board": "has it",
+   "how": "R3-POWER-3"
+  },
+  {
+   "issue": "TPS54302 low phase margin with all-ceramic Cout",
+   "source": "TI SLVSDG6C 7.2.3.5.2-3",
+   "our_board": "immune",
+   "how": "fo 25-33 kHz, 47 pF feed-forward"
+  },
+  {
+   "issue": "Type-C hot-plug overshoot with ceramic-only input",
+   "source": "TI Type-C hot-plug app notes (not retrieved); pvdd/*_hotplug_*",
+   "our_board": "immune",
+   "how": "9 V peak at a 5 V attach; only non-compliant live sources exceed abs max (R3-POWER-6)"
+  },
+  {
+   "issue": "Sink bulk back-feeds VBUS through the P-FET body diode on PD hard reset",
+   "source": "USB PD tSafe0V; pvdd/*_hardreset_pvdd_on",
+   "our_board": "immune",
+   "how": "VBUS < 0.8 V at 650 ms with >= 200 ohm source discharge"
+  },
+  {
+   "issue": "High-side FET SOA blown by inrush into large bulk",
+   "source": "hwde soa_check, AOS AO4485 SOA",
+   "our_board": "has it",
+   "how": "core: R3-POWER-2"
+  }
+ ],
+ "tests_built": [
+  {
+   "path": "docs/review-3/sims/power/lite_u2_en.py",
+   "checks": "Lite U2 EN pad has no net or copper",
+   "result": "pass"
+  },
+  {
+   "path": "docs/review-3/sims/power/power_netrules.py",
+   "checks": "CH224 wiring vs WCH reference, Rset, PG interlock, buck set points/fsw/on-time, EN handling, TVS, bulk count",
+   "result": "pass"
+  },
+  {
+   "path": "docs/review-3/sims/power/core_power_vias.py",
+   "checks": ">= 5 vias on 5 A nets at R1, Q1, amps",
+   "result": "pass"
+  },
+  {
+   "path": "docs/review-3/sims/power/charger_peak.py",
+   "checks": "charger peak current at the governor budget, sustained tones",
+   "result": "fail"
+  },
+  {
+   "path": "docs/review-3/sims/power/pvdd/ (gen.py, 16 .cir + .bounds.json, RESULTS.txt)",
+   "checks": "PVDD turn-on SOA/t90, PD step with firmware off, hot plug 5 V and live 20/28 V, EPR step with Q1 on, hard reset, core FIX",
+   "result": "fail"
+  }
+ ],
+ "known_unknowns": [
+  {
+   "fact": "CH224Q/A voltage and PG state when the Rset/I2C-requested PDO (28 V or 20 V) is not offered; whether a 5 V capability-mismatch contract still sets status bit 3",
+   "board": "both",
+   "refs": [
+    "U1"
+   ],
+   "status": "unverified",
+   "source": "WCH CH224 V2.0 silent; third-party tests only",
+   "date": "2026-10-30",
+   "could_stop_board": true
+  },
+  {
+   "fact": "CH224Q PG behaviour during EPR entry (SPR 20 V -> EPR 28 V)",
+   "board": "core",
+   "refs": [
+    "U1"
+   ],
+   "status": "unverified",
+   "source": "not in datasheet",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "CH224A sec 7.1 says VBUS pin 3.8 V tolerant; table 8.1.1 says 32 V; the reference schematic ties it to VHV",
+   "board": "lite-main",
+   "refs": [
+    "U1"
+   ],
+   "status": "unverified",
+   "source": "WCH CH224 V2.0",
+   "date": "2026-10-30",
+   "could_stop_board": true
+  },
+  {
+   "fact": "PX 470uF/50V (C88733): 600 mA rms at 120 Hz, x1.2 >= 10 kHz, tan d 0.12 (not low-ESR as TI recommends)",
+   "board": "core",
+   "refs": [
+    "C5",
+    "C6",
+    "C311"
+   ],
+   "status": "verified",
+   "source": "LCSC PX series sheet",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "AO4485 Zth/SOA as fitted in hwde soa_check (50 W at 1 ms, 20 W at 10 ms)",
+   "board": "both",
+   "refs": [
+    "Q1"
+   ],
+   "status": "unverified",
+   "source": "hwde thermal table, marked verified: false",
+   "date": "2026-10-30",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPS54302: EN float = enabled, Ip 0.7 uA, EN abs max 7 V, VIN UVLO 3.8-4.4/3.3-3.9 V, 100 % duty",
+   "board": "lite-main",
+   "refs": [
+    "U2"
+   ],
+   "status": "verified",
+   "source": "TI SLVSDG6C rev C 4-1, 5.1, 5.5, 6.3.5, 6.3.10",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "SY8303: IN 4.5-40 V, min on 80 ns, min off 120 ns, BS 10 nF, Cin >= 4.7 uF, Cout > 22 uF",
+   "board": "core",
+   "refs": [
+    "U4"
+   ],
+   "status": "verified",
+   "source": "Silergy AN_SY8303 Rev 0.9A",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "TPA3220 PVDD abs max 37 V, rec 7-32 V, UVP 6.4 V, 470 uF/50 V low-ESR per full bridge",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "verified",
+   "source": "TI SLASEN3B 7.1, 7.3, 10.2.1.2.2",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  }
+ ]
+}

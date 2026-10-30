@@ -125,20 +125,62 @@ static void knob_volume(void) {
 static void pd_request(void) {
 	uint8_t code = 0xFF;
 	/* before the PD handshake: nothing asked, VBUS taken as 5 V */
-	CHECK_NEAR(hifi_ch224_request(0x00, &code), 0, 0);
-	CHECK_NEAR(hifi_ch224_request(0x02 | CH224_ST_EPR_OFFERED, &code), 0, 0); /* QC2 */
+	CHECK_NEAR(hifi_ch224_request(0x00, NULL, 0, &code), 0, 0);
+	CHECK_NEAR(hifi_ch224_request(0x02 | CH224_ST_EPR_OFFERED, NULL, 0, &code), 0, 0); /* QC2 */
 	CHECK(code == 0xFF);
-	CHECK_NEAR(hifi_ch224_vbus(0x02), 5, 0);
+	CHECK_NEAR(hifi_ch224_vbus(0x02, 0), 5, 0);
 	/* PD, EPR offered: ask for 28 V; in EPR it is 28 V */
-	CHECK_NEAR(hifi_ch224_request(0x08 | CH224_ST_EPR_OFFERED, &code), 28, 0);
+	CHECK_NEAR(hifi_ch224_request(0x08 | CH224_ST_EPR_OFFERED, NULL, 0, &code), 28, 0);
 	CHECK(code == 5);
-	CHECK_NEAR(hifi_ch224_vbus(0x08 | CH224_ST_EPR_OFFERED), 20, 0);
-	CHECK_NEAR(hifi_ch224_vbus(0x10 | CH224_ST_EPR_OFFERED), 28, 0);
-	CHECK_NEAR(hifi_ch224_request(0x10, &code), 28, 0);
-	/* PD without EPR: 20 V */
-	CHECK_NEAR(hifi_ch224_request(0x08, &code), 20, 0);
+	CHECK_NEAR(hifi_ch224_vbus(0x08 | CH224_ST_EPR_OFFERED, 28), 20, 0);
+	CHECK_NEAR(hifi_ch224_vbus(0x10 | CH224_ST_EPR_OFFERED, 28), 28, 0);
+	CHECK_NEAR(hifi_ch224_request(0x10, NULL, 0, &code), 28, 0);
+	/* PD without EPR and no capability list: 20 V */
+	CHECK_NEAR(hifi_ch224_request(0x08, NULL, 0, &code), 20, 0);
 	CHECK(code == 4);
-	CHECK_NEAR(hifi_ch224_vbus(0x08), 20, 0);
+	CHECK_NEAR(hifi_ch224_vbus(0x08, 0), 20, 0);
+
+	/* a 30 W phone charger: 5/9/15 V fixed plus a PPS APDO, as a PD
+	 * message (header: Source_Capabilities, 4 objects) */
+	uint32_t pdos[4] = {
+		(100u << 10) | 300,             /* 5 V 3 A */
+		(180u << 10) | 300,             /* 9 V 3 A */
+		(300u << 10) | 200,             /* 15 V 2 A */
+		(3u << 30) | (110u << 17) | 60, /* PPS 3.3-11 V */
+	};
+	uint8_t raw[CH224_SRCCAP_LEN] = {0};
+	uint16_t hdr = 1 | 4 << 12;
+	raw[0] = hdr & 0xff;
+	raw[1] = hdr >> 8;
+	for (int k = 0; k < 4; k++)
+		for (int b = 0; b < 4; b++) raw[2 + 4 * k + b] = pdos[k] >> (8 * b) & 0xff;
+	float v[7], i[7];
+	int n = hifi_pd_srccap_fixed(raw, sizeof raw, v, i, 7);
+	CHECK(n == 3);
+	CHECK_NEAR(v[2], 15, 0.01);
+	CHECK_NEAR(i[2], 2, 0.01);
+	CHECK_NEAR(hifi_ch224_request(0x08, v, n, &code), 15, 0);
+	CHECK(code == 3);
+	CHECK_NEAR(hifi_ch224_vbus(0x08, 15), 15, 0);
+	/* the same PDOs without the header */
+	uint8_t bare[CH224_SRCCAP_LEN] = {0};
+	for (int k = 0; k < 4; k++)
+		for (int b = 0; b < 4; b++) bare[4 * k + b] = pdos[k] >> (8 * b) & 0xff;
+	CHECK(hifi_pd_srccap_fixed(bare, sizeof bare, v, i, 7) == 3);
+	/* nonsense (all zero, or no 5 V first): unknown */
+	uint8_t zero[CH224_SRCCAP_LEN] = {0};
+	CHECK(hifi_pd_srccap_fixed(zero, sizeof zero, v, i, 7) == 0);
+	/* a 5/9/12 V-only charger: 12 V, under core's 14 V start floor */
+	float v12[3] = {5, 9, 12};
+	CHECK_NEAR(hifi_ch224_request(0x08, v12, 3, &code), 12, 0);
+	CHECK(code == 2);
+
+	/* EPR offered but not yet entered: not settled, for up to the wait */
+	CHECK(!hifi_ch224_settled(0x08 | CH224_ST_EPR_OFFERED, 100, 3000));
+	CHECK(hifi_ch224_settled(0x08 | CH224_ST_EPR_OFFERED, 3000, 3000));
+	CHECK(hifi_ch224_settled(0x10 | CH224_ST_EPR_OFFERED, 0, 3000));
+	CHECK(hifi_ch224_settled(0x08, 0, 3000));
+	CHECK(!hifi_ch224_settled(0x02, 9999, 3000));
 }
 
 static void core_power_gov(void) {
@@ -148,7 +190,13 @@ static void core_power_gov(void) {
 	hifi_power_init(&p, &pc, 0);
 	uint32_t t = 0;
 	hifi_power_in_t in = {.vbus_v = 28, .pg = true, .audio = true};
-	for (; t < 1000; t += 10) {
+	/* 500 ms settle, then 500 ms for 1410 uF of PVDD (R3-POWER-2/5) */
+	for (; t < 990; t += 10) {
+		in.now_ms = t;
+		hifi_power_step(&p, &in);
+	}
+	CHECK(p.state == HIFI_PWR_SOFT_START && p.out.pvdd_en && !p.out.amp_on);
+	for (; t < 1500; t += 10) {
 		in.now_ms = t;
 		hifi_power_step(&p, &in);
 	}

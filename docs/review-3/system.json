@@ -1,0 +1,480 @@
+{
+ "domain": "SYSTEM",
+ "findings": [
+  {
+   "id": "R3-SYSTEM-1",
+   "board": "both",
+   "severity": "major",
+   "repeat_of": "new",
+   "refs": [
+    "U8",
+    "U15",
+    "U16"
+   ],
+   "nets": [
+    "VBUS",
+    "PVDD"
+   ],
+   "finding": "The power governor (hifi_gov.c) at HEAD let the input pass the USB-C contract. (1) It took its gain from the clip-capped power, so on core at 20 V (0 dBFS 25.8 Vpk vs 19.0 V clip) the input was 104.4 W against a 65 W contract (1.61x), while its own estimate said 58.5 W. Lite at 15 V: 60.6 W against 45 W. (2) Its 1 s window let a 0 dBFS 45 Hz drop after quiet music run 1.39-1.64x over the contract for 507-597 ms: 9-21 J against 0.08-0.43 J of PVDD bulk. FIXED in the working tree; confirmed.",
+   "evidence": "docs/review-3/sims/system/run_gov.sh (gov_burst.c linked with the real hifi_gov.c): FAIL at HEAD ac484b1; PASS on the working tree: steady at or under 0.9x the contract, worst burst 1.08x for 5 ms on core at 65 W",
+   "reference_design": "PD sources' overload capability is optional (PD 3.x PDO peak-current bits, 1.1-1.5x for ms); commercial PD amps (Fosi/Aiyima) cut out on bass at volume",
+   "fix": "Applied: limiter on the unclipped power, tau_s 0.05 s, attack_s 0.01 s (plus R3-POWER-3's peak limit). Bring-up: 0 dBFS 45 Hz drop on a 65 W charger while scoping VBUS.",
+   "margin": "after the fix: core 20 V/65 W steady 58.4 W (10 % under the contract); burst 1.08x for 5 ms, 0.027 J against 0.163 J of bulk"
+  },
+  {
+   "id": "R3-SYSTEM-2",
+   "board": "lite-main",
+   "severity": "major",
+   "repeat_of": "THERMAL-3",
+   "refs": [
+    "U8"
+   ],
+   "nets": [],
+   "finding": "Firmware duty L1 (Lite 13 W/ch over 30 s into 4 ohm, or the TPA3118 latches its 150 C OTP) was not implemented: hifi_gov_cfg_lite set no thermal_out_w (0 = no limit). At HEAD, -3 dBFS held 20.2 W/ch indefinitely. FIXED in the working tree (thermal_out_w 26 W, tau 30 s); confirmed: 13.1 W/ch steady. Residue: the 30 s exponential lets 20.2 W/ch (1.55x) through for the first ~31 s.",
+   "evidence": "docs/review-3/sims/system/thermal_lite.c: FAIL at HEAD (20.2 W/ch), PASS on the working tree (last 30 s 13.1 W/ch; highest 30 s window 20.2 W)",
+   "reference_design": "docs/review-2/firmware-requirements.md L1; THERMAL-3",
+   "fix": "Applied. Optional: thermal_tau_s 10 s if the thermal reviewer finds the first-30 s overshoot matters.",
+   "margin": "steady 13.1 W vs 13 W (+0.8 %); Lite DJ direct 6.8 W/ch at FLX4 2.1 Vrms = 52 % of L1 (no limit needed)"
+  },
+  {
+   "id": "R3-SYSTEM-3",
+   "board": "core",
+   "severity": "major",
+   "repeat_of": "DIGITAL-1",
+   "refs": [
+    "U7",
+    "U17",
+    "Y2",
+    "R45"
+   ],
+   "nets": [
+    "PHY_RST",
+    "ETH_CLK",
+    "ESP_EN"
+   ],
+   "finding": "Duty C1 (P05/PHY_RST low before a restart) is not in the firmware: esp_restart() is called from restart_cb, hifi_net.c (OTA) and the panic path with P05 high, and there is no shutdown handler. A brown-out (+3V3 under 2.43 V but above the TCA9539 POR) or an RTC-watchdog reset does not move EN but does re-read the straps. The 50 MHz oscillator then drives GPIO0 at the strap read, and the ESP32 can boot into ROM download mode: the box is silent and off the network until it is unplugged.",
+   "evidence": "fw_duties.py C1 FAIL; board_core.c has no esp_register_shutdown_handler; sdkconfig BROWNOUT_DET_LVL_SEL_0; blocks_mcu.py: Y2 OE = PHY_RST from TCA9539 P05, TCA9539 ~RESET = ESP_EN",
+   "reference_design": "Espressif ESP32 hardware design guidelines: use a reset supervisor on EN when the supply can ramp slowly or dip; LAN8720 + ESP32 boards (WT32-ETH01, Olimex) gate the oscillator from a GPIO for this reason",
+   "fix": "Firmware: esp_register_shutdown_handler() in board_core.c that writes port 0 with P05, P03, P00 and P01 low before every restart. Hardware: an open-drain 2.9-3.0 V supervisor (APX803S-29 / TPS3839 class, SOT-23; LCSC at fix time) from +3V3 on ESP_EN beside C32, so any dip resets the ESP32 and the TCA9539 together (R45 holds OE low). If there is no room: a DNP footprint.",
+   "margin": "none today: one brown-out with PHY_RST high is enough"
+  },
+  {
+   "id": "R3-SYSTEM-4",
+   "board": "core",
+   "severity": "major",
+   "repeat_of": "new",
+   "refs": [
+    "U14",
+    "U15",
+    "U16",
+    "U3"
+   ],
+   "nets": [
+    "AMP_IN_L",
+    "AMP_IN_R",
+    "AMP_OTW",
+    "ISENSE"
+   ],
+   "finding": "DJ direct (FLX4) bypasses every thermal limit, and OTW is never acted on (C2's '-3 dB every 2 s' is missing; EXP_AMP_OTW is read only in the self-test; ISENSE feeds nothing). FLX4 at 2.1 Vrms gives 11.6 Vrms at the speaker, 33.6 W/ch sine into 4 ohm. DJ program (crest 8-10 dB) averages 6.7-10.6 W/ch, against Ultra's 4.4 W/ch budget (1.5-2.4x) and Plus's 9.6 W/ch (0.7-1.1x). That leads to OTE, a latched FAULT, retries, and after 3 in 60 s the amps latch off mid-set.",
+   "evidence": "fw_duties.py C2-OTW FAIL; board_core.c hifi_bsp_route (DJ_DIRECT only flips the switch); docs/firmware.md 'Not covered'; level from R3-AUDIO-12; budgets from firmware-requirements C2 / hifi_gov.c",
+   "reference_design": "TPA3220 OTW_CLIP is meant as the pre-shutdown warning (SLASEN3B); WiiM/Arylic route line in through the DSP",
+   "fix": "Firmware: (1) the governed path (ES7243E, I2S RX, DSP, DAC) as the default line-in route, which is also R3-AUDIO-3's fix; DJ direct opt-in. (2) In DJ direct, a 60 s average of ISENSE x VBUS against the C2 budget / 0.88 (Ultra one zone ~14 W in, Plus ~26 W); above it, or OTW low >200 ms, switch out of DJ direct with the amps held in RESET. (3) OTW step-down in the digital path.",
+   "margin": "Ultra -1.8 to -3.8 dB short of its budget at 4 ohm with DJ program; Plus 0.4 dB under to 0.6 dB over"
+  },
+  {
+   "id": "R3-SYSTEM-5",
+   "board": "both",
+   "severity": "minor",
+   "repeat_of": "AUDIO-17",
+   "refs": [
+    "U7",
+    "U8",
+    "U14",
+    "U15",
+    "U16"
+   ],
+   "nets": [
+    "AMP_SDZ",
+    "DJ_SEL"
+   ],
+   "finding": "Pop duties not implemented. L4 (Lite): SDZ goes high 600 ms after PG, whatever the codec's state. The ES8388 is set up only when squeezelite's output starts (after Wi-Fi on first set-up). Its 1.65 V VMID ramp (tau ~0.25 s) through C60 1 uF into 30 kohm gives ~0.15 V at the amp input, ~3 V peak subsonic at the speaker, at every cold start. C5 (core, also AUDIO-9): the DJ_DIRECT switch flips with the amps running: a ~0.8 V step, a click at each Input press.",
+   "evidence": "fw_duties.py L4 and C5 FAIL; hifi_power.c settle 200 + soft start 400 ms; TPA3118 Zi 30 kohm at 26 dB (SLOS708G table 1); HPF/ramp calc y = 1.65 x 30/220 x (e^-0.29 - e^-2.41) = 0.148 V x 19.95",
+   "reference_design": "TI SLOS708G sec 'pop and click': unmute the amp after the source has settled",
+   "fix": "L4: gate amp_on on a codec-ready flag set when codec_apply() succeeds, plus 2.5 s. C5: on an input change, AMP_A/B_RST low, 20 ms, DJ_DIRECT, release both in one write.",
+   "margin": "3 V peak at 3-5 Hz into 6 ohm (1.5 W peak): no damage"
+  },
+  {
+   "id": "R3-SYSTEM-6",
+   "board": "core",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "J6",
+    "J7",
+    "J10",
+    "J11",
+    "R136",
+    "R137"
+   ],
+   "nets": [
+    "A_SPK_R+",
+    "B_SPK_R+"
+   ],
+   "finding": "Plus plays L on zone A (J6) and R on zone B (J11), but both chips play both channels, so J7/J10 are live. Wiring the pair to J6+J7 (zone A's own L/R) puts both channels on one chip, twice what the split's 19 W limit assumes. Plus's right speaker tap (R136/R137) is on A_SPK_R+ (J7), which is unloaded on Plus, so the 'spk_r+' loopback measures nothing the person hears.",
+   "evidence": "core.net: /A_SPK_R+ = C235, J7, L4, R136, R236; /amp_b/B_SPK_R+ has no tap; hifi_board_core.h HIFI_SPLIT comment",
+   "reference_design": "-",
+   "fix": "Binding-post task: on Plus fit/wire only the J6 and J11 posts, marked L/R; silk J7/J10 'Ultra only'. Firmware: report the loopback as L only on Plus.",
+   "margin": "a mis-wired Plus runs one chip at 2x its thermal budget"
+  },
+  {
+   "id": "R3-SYSTEM-7",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "J3",
+    "R36",
+    "R38",
+    "C47",
+    "C48",
+    "U7"
+   ],
+   "nets": [
+    "SUB_L",
+    "SUB_R"
+   ],
+   "finding": "The sub-out RCA is the weakest ESD path. Lite: centre pin, 100R, 10 uF (a short at ESD speeds), ES8388 LOUT2/ROUT2. An 8 kV contact pulse (IEC 61000-4-2, 150 pF/330 ohm) puts ~19 A peak into the codec's pin diodes. Core sub out: 470R + 1 nF, ~10 A; line ins: 15k (0.5 A), 4.7k (1.6 A).",
+   "evidence": "root.py R36/R38 100R, C47/C48 10 uF; blocks_audio.py R92/R93 470R; calc 8 kV / (330 + 100) ohm",
+   "reference_design": "-",
+   "fix": "A bidirectional 5 V ~10 pF TVS (PESD5V0S1BB class, SOD-523) from SUB_L/SUB_R to GND at J3; bidirectional because the signal swings ±1.4 V about 0 V. Or R36/R38 470R (340 kHz with 1 nF of cable).",
+   "margin": "codec HBM rating, not a system ESD rating, is all that protects it"
+  },
+  {
+   "id": "R3-SYSTEM-8",
+   "board": "core",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "U1"
+   ],
+   "nets": [
+    "I2C_SDA",
+    "I2C_SCL"
+   ],
+   "finding": "hifi_ch224_request() writes VREQ 20/28 V on any PD contract without reading the source's capabilities (CH224Q 0x60-0x8F), and only once. On a laptop's 5 V-only port at bring-up, the CH224Q's answer to an unoffered request isn't documented: a Hard-Reset loop would reboot the board every few seconds. An EPR charger with a non-EPR cable never gets 28 V and gets no fall-back to 20 V.",
+   "evidence": "firmware/components/hifi/core/hifi_pd.c hifi_ch224_request; board_core.c vreq_sent; WCH CH224 datasheet V2.0 sec 5.2.3 (0x60-0x8F SRCCAP, CH224Q only); known-unknowns power:5",
+   "reference_design": "WCH reference uses the Rset request only; PD sinks pick from Source_Capabilities",
+   "fix": "Read SRCCAP, request only an offered fixed PDO (28, else 20, else 15 V), retry 20 V if EPR isn't active 2 s after asking for 28 V, and take the contract V/I from that PDO (with R3-POWER-4/5).",
+   "margin": "unknown until a 5 V laptop and a non-EPR cable are tried at bring-up"
+  },
+  {
+   "id": "R3-SYSTEM-9",
+   "board": "both",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [],
+   "nets": [],
+   "finding": "The input (DJ direct) isn't saved: hifi_main.c starts at HIFI_INPUT_STREAM. Any charger blip, OTA reboot or crash in a DJ set brings the box back with the FLX4 silent until someone presses Input.",
+   "evidence": "fw_duties.py 'input saved' FAIL; hifi_main.c static input = HIFI_INPUT_STREAM, op_set_input/toggle_input don't call config_set_value",
+   "reference_design": "-",
+   "fix": "Save 'hifi_input' to NVS on change; restore it in hifi_init (core: release the amps only after the switch is set, C5).",
+   "margin": "-"
+  },
+  {
+   "id": "R3-SYSTEM-N1",
+   "board": "both",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [],
+   "nets": [],
+   "finding": "Bring-up on a laptop: 5 V only, so PVDD stays off by PG and the amp can't be tested on the console; Lite +5V ≈ VBUS-0.3 V at 100 % duty (TPS54302 UVLO falling 3.6 V), core 4.35-4.6 V (POWER-13). Test the amp on a charger through the API over Wi-Fi.",
+   "evidence": "see system.md Notes",
+   "reference_design": "-",
+   "fix": "-",
+   "margin": "-"
+  },
+  {
+   "id": "R3-SYSTEM-N2",
+   "board": "both",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [],
+   "nets": [],
+   "finding": "Volume at boot: NVS volume (default 30), capped by max_volume (default 100); a source may push 100 %. Suggest a first-boot max_volume of 80.",
+   "evidence": "see system.md Notes",
+   "reference_design": "-",
+   "fix": "-",
+   "margin": "-"
+  },
+  {
+   "id": "R3-SYSTEM-N3",
+   "board": "core",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [],
+   "nets": [],
+   "finding": "Ethernet: HR911105A magnetics 1500 Vrms with integral Bob-Smith termination, shield on GND, no line-side TVS: usual for consumer gear. Accepted.",
+   "evidence": "see system.md Notes",
+   "reference_design": "-",
+   "fix": "-",
+   "margin": "-"
+  },
+  {
+   "id": "R3-SYSTEM-N4",
+   "board": "both",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [],
+   "nets": [],
+   "finding": "IR: IRM-3638T AGC + 100R/4.7 uF supply filter; NEC by RMT; check under a dimmed LED lamp at bring-up.",
+   "evidence": "see system.md Notes",
+   "reference_design": "-",
+   "fix": "-",
+   "margin": "-"
+  },
+  {
+   "id": "R3-SYSTEM-N5",
+   "board": "both",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [],
+   "nets": [],
+   "finding": "Wi-Fi in the PETG box: core keep-out on all layers, E gap 2 mm; Lite side clearance 2.5 mm (DIGITAL-18; WROVER-IE contingency). Read RSSI in the closed box.",
+   "evidence": "see system.md Notes",
+   "reference_design": "-",
+   "fix": "-",
+   "margin": "-"
+  },
+  {
+   "id": "R3-SYSTEM-N6",
+   "board": "both",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [],
+   "nets": [],
+   "finding": "Immune: speaker shorts (OC latch, 1 s retry, latch after 3 in 60 s) and update bricking (two OTA slots, factory recovery, rollback, 120 s trial judge).",
+   "evidence": "see system.md Notes",
+   "reference_design": "-",
+   "fix": "-",
+   "margin": "-"
+  }
+ ],
+ "round1_fixes_checked": [
+  {
+   "id": "POWER-6",
+   "holds": true,
+   "how": "core.net /power_in/PD_PG = Q2.2, R20, U1.10; R404/D5/Q3 fast-off in blocks.py"
+  },
+  {
+   "id": "POWER-3",
+   "holds": true,
+   "how": "root.py R6 220k, C19 4.7 uF; lite-main.net Q4.2 on PD_PG"
+  },
+  {
+   "id": "POWER-13",
+   "holds": true,
+   "how": "Lite: PG hardware gate + v_start 14 V on measured VBUS. Core: holds only through PG; firmware trusts the status bits (R3-POWER-4, R3-SYSTEM-8)"
+  },
+  {
+   "id": "THERMAL-3",
+   "holds": false,
+   "how": "L1 absent at HEAD (thermal_lite.c 20.2 W/ch); present in the working tree (13.1 W/ch). R3-SYSTEM-2"
+  },
+  {
+   "id": "THERMAL-2",
+   "holds": false,
+   "how": "C2's thermal_out_w 9/17 W and Plus 19 W are in the code; the OTW step-down is missing and DJ direct is unlimited (R3-SYSTEM-4)"
+  },
+  {
+   "id": "AUDIO-17",
+   "holds": false,
+   "how": "L4's codec/VMID gate is missing (fw_duties.py); R3-SYSTEM-5"
+  },
+  {
+   "id": "AUDIO-9",
+   "holds": false,
+   "how": "C5's amp reset across DJ_DIRECT is missing in board_core.c hifi_bsp_route; R3-SYSTEM-5"
+  },
+  {
+   "id": "DIGITAL-1",
+   "holds": false,
+   "how": "hardware holds (TCA9539 ~RESET = ESP_EN, R45 2.2k); firmware C1 (P05 low before restart) missing; R3-SYSTEM-3"
+  },
+  {
+   "id": "AUDIO-6",
+   "holds": true,
+   "how": "ES8388_OUT1_FULL 27 (-4.5 dB), ES8388_MIX_LIN_M3DB"
+  },
+  {
+   "id": "AUDIO-7",
+   "holds": true,
+   "how": "root.py R30/R33 15k, R31/R34 10k"
+  },
+  {
+   "id": "DIGITAL-11",
+   "holds": true,
+   "how": "partitions.csv: recovery + two 3.06 MB OTA slots, rollback enabled (offsets differ from L9's table)"
+  }
+ ],
+ "field_issues": [
+  {
+   "issue": "PD charger trips at volume on bass (Fosi/Aiyima PD amps)",
+   "source": "user reports of PD-powered class-D amps; USB PD 3.x PDO peak-current field",
+   "our_board": "has it (fixed in working tree)",
+   "how": "R3-SYSTEM-1: run_gov.sh 1.6x for 0.6 s at HEAD; now 1.08x for 5 ms"
+  },
+  {
+   "issue": "CH224 PG stays high when the charger lacks the requested voltage",
+   "source": "https://prototypeguru.com/ch224k-usb-pd-trigger-module-guide/ ; https://felixardyansyah.github.io/CH224A_MODULE_FGV/ (Dell 65 W: 12 V and 28 V 'not supported')",
+   "our_board": "has it (core)",
+   "how": "Lite measures VBUS; core asks 28 V by Rset and relies on the firmware's 20 V request (R3-SYSTEM-8, R3-POWER-4)"
+  },
+  {
+   "issue": "ES8388/ESP32-A1S power-on pop",
+   "source": "squeezelite-esp32 / ESP-ADF user issues on A1S/LyraT boards",
+   "our_board": "has it",
+   "how": "R3-SYSTEM-5: ~3 V subsonic at the speaker"
+  },
+  {
+   "issue": "Sub-out thump at power-off (WiiM Amp)",
+   "source": "WiiM forum sub-out pop reports",
+   "our_board": "has it",
+   "how": "R3-AUDIO-2 (Lite); core PCM5102A ground-centred"
+  },
+  {
+   "issue": "Pop on source switch",
+   "source": "general",
+   "our_board": "has it (core)",
+   "how": "R3-SYSTEM-5 / AUDIO-9 0.8 V step"
+  },
+  {
+   "issue": "Ground-loop hum with a laptop DJ controller + earthed sub",
+   "source": "general; WiiM/Arylic forum hum threads",
+   "our_board": "has it",
+   "how": "R3-AUDIO-7"
+  },
+  {
+   "issue": "Wi-Fi drops inside the box",
+   "source": "WiiM/Up2Stream in metal racks",
+   "our_board": "immune",
+   "how": "PETG box, keep-outs (N5)"
+  },
+  {
+   "issue": "Overheating in a closed box (TPA3116/3118 boards)",
+   "source": "TPA31xx board user reports; THERMAL-3",
+   "our_board": "has it (core DJ); Lite fixed",
+   "how": "R3-SYSTEM-2, R3-SYSTEM-4"
+  },
+  {
+   "issue": "Speaker-wire short at the terminals",
+   "source": "TPA3118/TPA3220 OC latch",
+   "our_board": "immune",
+   "how": "FAULT, 1 s retry, latch after 3 (N6)"
+  },
+  {
+   "issue": "Dead board after lightning/ESD on Ethernet",
+   "source": "LAN8720 boards",
+   "our_board": "n/a (accepted)",
+   "how": "magnetics 1500 Vrms, no line-side TVS (N3)"
+  },
+  {
+   "issue": "Hangs in download mode after a glitch (oscillator on GPIO0, WT32-ETH01/LAN8720 ESP32 boards)",
+   "source": "ESP32 + LAN8720 community boards; Espressif HW guidelines (EN supervisor)",
+   "our_board": "has it (core)",
+   "how": "R3-SYSTEM-3"
+  },
+  {
+   "issue": "Firmware update bricks the box",
+   "source": "OTA without rollback",
+   "our_board": "immune",
+   "how": "two OTA slots, factory recovery, rollback, trial judge (N6)"
+  },
+  {
+   "issue": "IR remote fooled by sunlight/LED lighting",
+   "source": "IR receiver AGC notes",
+   "our_board": "immune",
+   "how": "IRM-3638T AGC + RC filter (N4)"
+  },
+  {
+   "issue": "Volume jumps to full at boot / on connect (Up2Stream, Spotify Connect)",
+   "source": "Arylic/WiiM user reports",
+   "our_board": "has it (partly)",
+   "how": "NVS volume restored; a source can set 100 % up to max_volume (N2)"
+  },
+  {
+   "issue": "Box forgets its input after a power blip",
+   "source": "general",
+   "our_board": "has it",
+   "how": "R3-SYSTEM-9"
+  }
+ ],
+ "tests_built": [
+  {
+   "path": "docs/review-3/sims/system/run_gov.sh",
+   "checks": "governor (real hifi_gov.c) vs charger contract: 0 dBFS 45 Hz burst after quiet passage (over-time ≤150 ms) and steady 0 dBFS (input ≤ contract), Lite and core, 45-140 W",
+   "result": "pass"
+  },
+  {
+   "path": "docs/review-3/sims/system/gov_burst.c",
+   "checks": "the bench behind run_gov.sh",
+   "result": "pass"
+  },
+  {
+   "path": "docs/review-3/sims/system/thermal_lite.c",
+   "checks": "duty L1: Lite 30 s output ≤13 W/ch at 4 ohm after 180 s at -3 dBFS",
+   "result": "pass"
+  },
+  {
+   "path": "docs/review-3/sims/system/fw_duties.py",
+   "checks": "round-1 firmware duties for field use are in the source: L1, L4, C5, C1, C2-OTW, saved input",
+   "result": "fail"
+  }
+ ],
+ "known_unknowns": [
+  {
+   "fact": "CH224Q response to a VREQ for a voltage the source doesn't offer (laptop 5 V-only port; 9 V-only charger): Reject, Hard Reset loop, or stays",
+   "board": "core",
+   "refs": [
+    "U1"
+   ],
+   "status": "unverified",
+   "source": "WCH CH224 datasheet V2.0 silent; known-unknowns power:5",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "ESP32 re-reads strapping pins (GPIO0) on brown-out and RTC-WDT resets but not on esp_restart()",
+   "board": "core",
+   "refs": [
+    "U7",
+    "Y2"
+   ],
+   "status": "unverified",
+   "source": "ESP32 TRM reset chapter (not re-fetched this round)",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "ES7243E can derive its clock from a 32 fs BCLK (squeezelite 16-bit build) with MCLK_SEL from BCLK",
+   "board": "core",
+   "refs": [
+    "U13"
+   ],
+   "status": "unverified",
+   "source": "ES7243E datasheet rev 5.0 sec 3 lists 64 fs and up",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "TPA3118 thermal time constant on the Lite board, for whether the 30 s thermal average's first-minute overshoot (1.55x L1) matters",
+   "board": "lite-main",
+   "refs": [
+    "U8"
+   ],
+   "status": "unverified",
+   "source": "thermal reviewer / bring-up",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  }
+ ]
+}

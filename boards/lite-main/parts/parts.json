@@ -238,7 +238,8 @@
   {
    "lcsc": "C25808",
    "refdes": [
-    "R1"
+    "R1",
+    "R80"
    ],
    "value": "120k",
    "mpn": "0603WAF1203T5E",
@@ -305,7 +306,7 @@
      "value": "±100ppm/℃"
     }
    ],
-   "role": "CH224Q Rset: 20 V (table 5-1)",
+   "role": "CH224Q Rset: 20 V (table 5-1); +5V sense divider top (off below ~4.1 V)",
    "ref_prefix_hint": "R"
   },
   {
@@ -727,6 +728,8 @@
    "lcsc": "C21190",
    "refdes": [
     "R15",
+    "R36",
+    "R38",
     "R64"
    ],
    "value": "1k",
@@ -794,7 +797,7 @@
      "value": "±100ppm/℃"
     }
    ],
-   "role": "Q1 Miller cap series; LED current 1.3 mA",
+   "role": "Q1 Miller cap series; sub out build-out; LED current 1.3 mA",
    "ref_prefix_hint": "R"
   },
   {
@@ -1016,7 +1019,9 @@
    "refdes": [
     "Q4",
     "Q2",
-    "Q3"
+    "Q3",
+    "Q11",
+    "Q12"
    ],
    "value": "MMBT3904",
    "mpn": "MMBT3904(RANGE:100-300)",
@@ -1099,13 +1104,14 @@
      "value": "100nA"
     }
    ],
-   "role": "PVDD switch driver (GPIO18 AND PG); auto-program: EN; auto-program: GPIO0",
+   "role": "PVDD switch driver (GPIO18 AND PG); auto-program: EN; auto-program: GPIO0; diode (B-C to E): +5V into the mute reservoir; +5V good: holds SUB_MUTE low",
    "ref_prefix_hint": "Q"
   },
   {
    "lcsc": "C31850",
    "refdes": [
-    "R16"
+    "R16",
+    "R81"
    ],
    "value": "22k",
    "mpn": "0603WAF2202T5E",
@@ -1172,7 +1178,7 @@
      "value": "±100ppm/℃"
     }
    ],
-   "role": "PVDD bleeder (Q1 body diode back-feeds VBUS)",
+   "role": "PVDD bleeder (Q1 body diode back-feeds VBUS); +5V sense divider bottom",
    "ref_prefix_hint": "R"
   },
   {
@@ -1461,7 +1467,8 @@
     "C7",
     "C8",
     "C25",
-    "C12"
+    "C12",
+    "C90"
    ],
    "value": "22uF/25V",
    "mpn": "CL21A226MAQNNNE",
@@ -1516,7 +1523,7 @@
      "value": "X5R"
     }
    ],
-   "role": "5 V output; 5 V output (review-2 POWER-10: 2 x 22 uF derate to ~22 uF); 3.3 V output",
+   "role": "5 V output; 5 V output (review-2 POWER-10: 2 x 22 uF derate to ~22 uF); 3.3 V output; mute reservoir: holds SUB_MUTE up for seconds",
    "ref_prefix_hint": "C"
   },
   {
@@ -2695,85 +2702,11 @@
    "ref_prefix_hint": "C"
   },
   {
-   "lcsc": "C22775",
-   "refdes": [
-    "R36",
-    "R38",
-    "R65"
-   ],
-   "value": "100R",
-   "mpn": "0603WAF1000T5E",
-   "brand": "UNI-ROYAL(Uniroyal Elec)",
-   "package": "0603",
-   "basic": true,
-   "stock": 10118512,
-   "price": 0.0023,
-   "price_breaks": [
-    {
-     "qty": 1,
-     "price": 0.0023
-    },
-    {
-     "qty": 1000,
-     "price": 0.0019
-    },
-    {
-     "qty": 5000,
-     "price": 0.0016
-    },
-    {
-     "qty": 10000,
-     "price": 0.0013
-    },
-    {
-     "qty": 50000,
-     "price": 0.0012
-    },
-    {
-     "qty": 50200,
-     "price": 0.0012
-    }
-   ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf",
-   "description": "-55℃~+155℃ 100mW 100Ω 75V Thick Film Resistor ±1% ±100ppm/℃ 0603 Chip Resistor - Surface Mount ROHS",
-   "attributes": [
-    {
-     "name": "Resistance",
-     "value": "100Ω"
-    },
-    {
-     "name": "Operating Temperature",
-     "value": "-55℃~+155℃"
-    },
-    {
-     "name": "Power(Watts)",
-     "value": "100mW"
-    },
-    {
-     "name": "Type",
-     "value": "Thick Film Resistor"
-    },
-    {
-     "name": "Voltage-Supply(Max)",
-     "value": "75V"
-    },
-    {
-     "name": "Tolerance",
-     "value": "±1%"
-    },
-    {
-     "name": "Temperature Coefficient",
-     "value": "±100ppm/℃"
-    }
-   ],
-   "role": "sub out build-out; IR supply filter",
-   "ref_prefix_hint": "R"
-  },
-  {
    "lcsc": "C25819",
    "refdes": [
     "R37",
-    "R39"
+    "R39",
+    "R82"
    ],
    "value": "47k",
    "mpn": "0603WAF4702T5E",
@@ -2840,7 +2773,7 @@
      "value": "±100ppm/℃"
     }
    ],
-   "role": "sub out bleeder",
+   "role": "sub out bleeder; mute pull-up from the reservoir",
    "ref_prefix_hint": "R"
   },
   {
@@ -3887,6 +3820,79 @@
    "ref_prefix_hint": "U"
   },
   {
+   "lcsc": "C22775",
+   "refdes": [
+    "R65"
+   ],
+   "value": "100R",
+   "mpn": "0603WAF1000T5E",
+   "brand": "UNI-ROYAL(Uniroyal Elec)",
+   "package": "0603",
+   "basic": true,
+   "stock": 10118512,
+   "price": 0.0023,
+   "price_breaks": [
+    {
+     "qty": 1,
+     "price": 0.0023
+    },
+    {
+     "qty": 1000,
+     "price": 0.0019
+    },
+    {
+     "qty": 5000,
+     "price": 0.0016
+    },
+    {
+     "qty": 10000,
+     "price": 0.0013
+    },
+    {
+     "qty": 50000,
+     "price": 0.0012
+    },
+    {
+     "qty": 50200,
+     "price": 0.0012
+    }
+   ],
+   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2411221126_UNI-ROYAL-Uniroyal-Elec-0603WAF1000T5E_C22775.pdf",
+   "description": "-55℃~+155℃ 100mW 100Ω 75V Thick Film Resistor ±1% ±100ppm/℃ 0603 Chip Resistor - Surface Mount ROHS",
+   "attributes": [
+    {
+     "name": "Resistance",
+     "value": "100Ω"
+    },
+    {
+     "name": "Operating Temperature",
+     "value": "-55℃~+155℃"
+    },
+    {
+     "name": "Power(Watts)",
+     "value": "100mW"
+    },
+    {
+     "name": "Type",
+     "value": "Thick Film Resistor"
+    },
+    {
+     "name": "Voltage-Supply(Max)",
+     "value": "75V"
+    },
+    {
+     "name": "Tolerance",
+     "value": "±1%"
+    },
+    {
+     "name": "Temperature Coefficient",
+     "value": "±100ppm/℃"
+    }
+   ],
+   "role": "IR supply filter",
+   "ref_prefix_hint": "R"
+  },
+  {
    "lcsc": "C2286",
    "refdes": [
     "D2"
@@ -3978,6 +3984,97 @@
    ],
    "role": "status LED",
    "ref_prefix_hint": "D"
+  },
+  {
+   "lcsc": "C8545",
+   "refdes": [
+    "Q13",
+    "Q15",
+    "Q14"
+   ],
+   "value": "2N7002",
+   "mpn": "2N7002",
+   "brand": "Jiangsu Changjing Electronics Technology Co., Ltd.",
+   "package": "SOT-23",
+   "basic": true,
+   "stock": 3412544,
+   "price": 0.0166,
+   "price_breaks": [
+    {
+     "qty": 1,
+     "price": 0.0166
+    },
+    {
+     "qty": 500,
+     "price": 0.0129
+    },
+    {
+     "qty": 3000,
+     "price": 0.0113
+    },
+    {
+     "qty": 6000,
+     "price": 0.01
+    },
+    {
+     "qty": 24000,
+     "price": 0.0096
+    },
+    {
+     "qty": 51000,
+     "price": 0.0092
+    }
+   ],
+   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2304140030_Jiangsu-Changjing-Electronics-Technology-Co---Ltd--2N7002_C8545.pdf",
+   "description": "1 N-channel 115mA 2.5V 225mW 25pF 50pF 5pF 5Ω@10V 60V N-Channel ±20V SOT-23 MOSFETs ROHS",
+   "attributes": [
+    {
+     "name": "Vgs",
+     "value": "±20V"
+    },
+    {
+     "name": "Reverse Transfer Capacitance (Crss@Vds)",
+     "value": "5pF"
+    },
+    {
+     "name": "Current - Continuous Drain(Id)",
+     "value": "115mA"
+    },
+    {
+     "name": "Drain to Source Voltage",
+     "value": "60V"
+    },
+    {
+     "name": "Output Capacitance(Coss)",
+     "value": "25pF"
+    },
+    {
+     "name": "RDS(on)",
+     "value": "5Ω@10V"
+    },
+    {
+     "name": "Input Capacitance(Ciss)",
+     "value": "50pF"
+    },
+    {
+     "name": "Type",
+     "value": "N-Channel"
+    },
+    {
+     "name": "Gate Threshold Voltage (Vgs(th))",
+     "value": "2.5V"
+    },
+    {
+     "name": "Number",
+     "value": "1 N-channel"
+    },
+    {
+     "name": "Pd - Power Dissipation",
+     "value": "225mW"
+    }
+   ],
+   "role": "sub L mute, signal side; sub R mute, signal side; sub mute, ground side (both channels)",
+   "ref_prefix_hint": "Q"
   }
  ]
 }

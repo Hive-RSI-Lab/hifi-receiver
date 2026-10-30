@@ -1,0 +1,13 @@
+J1    A4B9 VBUS                                                Q1(AO4485) 4.2mm, Q1(AO4485) 4.7mm, Q1(AO4485) 5.4mm, *D1(SMBJ22A) 5.6mm, U1.8(CH224A) 6.0mm, R5(100k) 7.8mm
+J1      A5 /CC1                         DIRECT-TO-IC, no TVS   U1.6(CH224A) 3.7mm
+J1      A6 /USB_DP                      DIRECT-TO-IC, no TVS   U6.5(CH340B) 54.8mm
+J1      A7 /USB_DM                      DIRECT-TO-IC, no TVS   U6.6(CH340B) 53.5mm
+J1      B5 /CC2                         DIRECT-TO-IC, no TVS   U1.7(CH224A) 3.1mm
+J2       1 /LINEIN_L                                           R30(15k) 10.6mm, C42(100pF) 14.3mm
+J2       3 /LINEIN_R                                           R33(15k) 7.7mm, C45(100pF) 12.3mm
+J3       1 /SUB_L                                              R36(100R) 9.6mm, R37(47k) 12.0mm
+J3       3 /SUB_R                                              R38(100R) 10.0mm, R39(47k) 10.4mm
+J4       1 /SPK_L_P                                            C68(1uF) 16.1mm, L1(10uH 8A) 19.3mm, R66(100k) 21.8mm
+J4       2 /SPK_L_N                                            C69(1uF) 14.3mm, L2(10uH 8A) 18.1mm
+J4       3 /SPK_R_P                                            C70(1uF) 13.2mm, R68(100k) 14.7mm, L3(10uH 8A) 17.6mm
+J4       4 /SPK_R_N                                            C71(1uF) 12.9mm, L4(10uH 8A) 17.6mm

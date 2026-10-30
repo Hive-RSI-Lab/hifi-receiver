@@ -1,0 +1,14 @@
+[
+ {
+  "measure": "isrc_step",
+  "severity": "warning",
+  "msg": "the source must deliver this during its own slew; an ideal source here (a real one current-limits)",
+  "max": 6.0
+ },
+ {
+  "measure": "pfet_step",
+  "severity": "error",
+  "msg": "FET fully on: no SOA stress",
+  "max": 20
+ }
+]

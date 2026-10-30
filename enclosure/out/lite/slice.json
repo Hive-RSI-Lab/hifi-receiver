@@ -1,0 +1,102 @@
+{
+ "base": {
+  "filament_g": 74.63,
+  "filament_m": 24.43,
+  "filament_cm3": 58.76,
+  "cost": 1.87,
+  "support_cm3": 2.85,
+  "support_g": 3.62,
+  "time": "4h 27m 7s",
+  "time_s": 16027,
+  "by_type_g": {
+   "bridge infill": 3.58,
+   "external perimeter": 16.08,
+   "internal infill": 0.46,
+   "overhang perimeter": 0.08,
+   "perimeter": 30.55,
+   "skirt/brim": 0.04,
+   "solid infill": 17.65,
+   "support material": 3.32,
+   "support material interface": 0.3,
+   "top solid infill": 2.56
+  },
+  "support_share": 0.049
+ },
+ "btn_SW1": {
+  "filament_g": 0.54,
+  "filament_m": 0.18,
+  "filament_cm3": 0.43,
+  "cost": 0.01,
+  "support_cm3": 0.15,
+  "support_g": 0.18,
+  "time": "6m 37s",
+  "time_s": 397,
+  "by_type_g": {
+   "external perimeter": 0.14,
+   "perimeter": 0.19,
+   "skirt/brim": 0.01,
+   "solid infill": 0.02,
+   "support material": 0.18,
+   "top solid infill": 0.0
+  },
+  "support_share": 0.333
+ },
+ "btn_SW2": {
+  "filament_g": 0.54,
+  "filament_m": 0.18,
+  "filament_cm3": 0.43,
+  "cost": 0.01,
+  "support_cm3": 0.15,
+  "support_g": 0.18,
+  "time": "6m 37s",
+  "time_s": 397,
+  "by_type_g": {
+   "external perimeter": 0.14,
+   "perimeter": 0.19,
+   "skirt/brim": 0.01,
+   "solid infill": 0.02,
+   "support material": 0.18,
+   "top solid infill": 0.0
+  },
+  "support_share": 0.333
+ },
+ "btn_SW3": {
+  "filament_g": 0.54,
+  "filament_m": 0.18,
+  "filament_cm3": 0.43,
+  "cost": 0.01,
+  "support_cm3": 0.15,
+  "support_g": 0.18,
+  "time": "6m 37s",
+  "time_s": 397,
+  "by_type_g": {
+   "external perimeter": 0.14,
+   "perimeter": 0.19,
+   "skirt/brim": 0.01,
+   "solid infill": 0.02,
+   "support material": 0.18,
+   "top solid infill": 0.0
+  },
+  "support_share": 0.333
+ },
+ "lid": {
+  "filament_g": 34.21,
+  "filament_m": 11.2,
+  "filament_cm3": 26.94,
+  "cost": 0.86,
+  "support_cm3": 0.0,
+  "support_g": 0.0,
+  "time": "2h 4m 4s",
+  "time_s": 7444,
+  "by_type_g": {
+   "bridge infill": 3.55,
+   "external perimeter": 4.06,
+   "internal infill": 0.97,
+   "perimeter": 5.06,
+   "skirt/brim": 0.04,
+   "solid infill": 17.94,
+   "top solid infill": 2.59
+  },
+  "support_share": 0.0
+ }
+}

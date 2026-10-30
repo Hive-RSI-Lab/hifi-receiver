@@ -1,0 +1,43 @@
+Lite: hot plug into a live 20 V source (non-compliant charger or adapter), 1 uH/50 mR
+.include models.inc
+* Lite PVDD switch as on main: Q1 AO4485, R5 100k G-S, R15 1k + C2 100n G-D (Miller), R6 220k,
+* C19 4.7u/16V G-S (2.4u at its <=6.6 V bias), Q4 MMBT3904 E=PD_PG, R7 10k, R8 100k, R4 10k PG pull-up.
+Rcab vsrc vc 0.05
+Lcab vc VBUS 1u
+* VBUS ceramics: C1 1u/50V 0603 (0.47u at 21 V), C3 10u/50V 1206 (4.1u), C4 4.7u/50V 1206 (2.8u), C5 100n
+Cvb VBUS 0 7.5u
+Rbuck VBUS 0 240
+Rvs VBUS 0 110k
+M1 PVDDm PSW_G VBUS AO4485
+Vfetm PVDD PVDDm 0
+R5 VBUS PSW_G 100k
+R15 PSW_G PSW_MILLER 1k
+C2 PSW_MILLER PVDD 100n
+R6 PSW_G PSW_PULL 220k
+C19 VBUS PSW_G 2.4u
+Q4 PSW_PULL PSW_B PD_PG Q3904
+R7 PVDD_EN PSW_B 10k
+R8 PVDD_EN 0 100k
+R4 PD_PG V3V3 10k
+V3 V3V3 0 3.3
+Spg PD_PG 0 vpg 0 SWPG
+.model SWPG SW(Ron=30 Roff=1e9 Vt=1.5 Vh=0.1)
+* PVDD bulk: C58 470u polymer 16 mR, C59 220u Al 0.3 R, 3x1u/50V 0805 (0.73u) + 2x100n + 2x1n, R16 22k, R17/R18 110k
+C58 PVDD p58 470u
+R58 p58 0 16m
+C59 PVDD p59 220u
+R59 p59 0 0.3
+Ccer PVDD 0 2.4u
+R16 PVDD 0 22k
+Rps PVDD 0 110k
+Ramp PVDD 0 1G
+D1 0 VBUS DTVS22
+
+Vsrc vsrc 0 PWL(0 0 10u 0 10.2u 20 50m 20)
+Vpg vpg 0 0
+Ven PVDD_EN 0 0
+.tran 0.1u 50m 0 0.1u
+.meas tran vbus_pk max v(VBUS) from=0 to=50m
+.meas tran vsg_max max par('v(VBUS)-v(PSW_G)') from=0 to=50m
+.meas tran pvdd_max max v(PVDD) from=0 to=50m
+.end

@@ -5,6 +5,10 @@
   narrow them clear); L1-L4 and J1's pin-1 circle collide with neighbours.
   U9's lens arc reaches the front edge. Their footprint silk goes; C58/C59 get a "+" at the + pad instead.
 - U2, R4, C38, R15: no legal spot for the refdes in the dense power/codec areas.
+- The sub-out mute (review-3 R3-AUDIO-2): Q11-Q15 sit in two rows of touching
+  courtyards, so their body outlines overlap each other; their outlines go, and
+  the refdes of the parts silk_place can't place there (Q13, Q15, R82, R39, C9,
+  C33, and R38/C32 it then crowds) stay on the fab layer only.
 
     python3 kicad/gen/silk.py > kicad/silk-fix-ops.json
 """
@@ -18,6 +22,9 @@ ops += [{"op": "silk_clear", "ref": r, "layer": "F.SilkS"} for r in ("C58", "C59
                                                                  "J4", "J5", "J6", "J7")]
 ops += [{"op": "set_text", "ref": r, "field": "reference", "hide": True}
         for r in ("U2", "R4", "C38", "R15", "R5", "J4", "J5", "J6", "J7")]
+ops += [{"op": "silk_clear", "ref": r, "layer": "F.SilkS"} for r in ("Q11", "Q12", "Q13", "Q14", "Q15")]
+ops += [{"op": "set_text", "ref": r, "field": "reference", "hide": True}
+        for r in ("Q13", "Q15", "R82", "R39", "C9", "C33", "R38", "C32")]
 for u, v in ((61.0, 43.8), (97.6, 43.8)):      # C58, C59 "+" (pad 1 up, rot 270)
     ops.append({"op": "add_text", "text": "+", "x": round(X0 + u, 3), "y": round(Y0 + v, 3),
                 "layer": "F.SilkS", "size": 1.2, "thickness": 0.2})

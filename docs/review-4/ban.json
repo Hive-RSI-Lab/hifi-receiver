@@ -1,0 +1,295 @@
+{
+ "domain": "BAN",
+ "findings": [
+  {
+   "id": "R4-BAN-1",
+   "board": "lite-main",
+   "severity": "blocker",
+   "repeat_of": "new",
+   "refs": [
+    "J4",
+    "J5",
+    "J6",
+    "J7"
+   ],
+   "nets": [],
+   "finding": "The rear-wall holes in Lite's box are 6.8 mm squares centred 7.5 mm over the board. They were drawn for a 6 mm square nose (enclosure/core_box.py: BANANA_NOSE 6.0, BANANA_AXIS 7.5, BANANA_HOLE 6.8). On the Amass 24.243 the nose is a round collar about 9.5 mm across, with the bore axis 8.1 mm over the board. The collar spans 3.4-12.9 mm over the board; the hole spans 4.1-10.9. The collar reaches 2.65 mm past the board edge and 2.05 mm into the 2.4 mm wall, so it hits the wall: the board cannot be laid onto its standoffs, and its screw holes stay about 2 mm off the pillars. mech's fit check passes (44/44, port_J4..J7) only because its model of the socket uses the 6 mm nose. The 6 mm figure comes from the EasyEDA footprint's silk tab (+-3 mm), which is not the part's size.",
+   "evidence": "docs/review-4/sims/ban/amass_nose.py measures the vector drawing in LCSC's datasheet for C7437321 (Amass 'Product Specification' VER 2.0, the 24.243 side view). Scale is 6.677 pt/mm from the 24 mm overall length. Body 13.00 mm tall (the drawing's 19 - 6). Nose 9.49 mm tall and 2.51 mm long, its bottom 3.35 mm over the board. Bore axis (the red centre line) 8.11 mm over the board, bore 4.06 mm. Pins 1.20 mm wide at a 15.77 mm pitch. Result: FAIL, out/amass_nose.txt. The nose is round: LCSC's product photos of C7437321 (front/back/blank) and C7437322 (front) show a cylindrical collar about as tall as 3/4 of the 13 mm body.",
+   "reference_design": "Hirschmann/Amass right-angle PCB sockets are panel-mounted through a round clearance hole the collar's size; the body's flat face bears on the panel's inner face.",
+   "fix": "enclosure/core_box.py: BANANA_NOSE 9.6 (round), BANANA_AXIS 8.1, BANANA_HOLE 10.2. Make the holes round (teardrop roof for printing), or make one 44 x 10.2 mm slot across all four sockets (x from J4 - 5.1 to J7 + 5.1). Then the 10.1 x 13 mm body faces bear on the wall above and below for plug extraction. Separate round holes at 11 mm pitch leave a 0.8 mm web, the PETG minimum. Change banana_ports() to model a cylinder of that diameter, set heights.json's note to 'axis 8.1', and re-run mech build/fit. Before the order, measure one sample with calipers (collar diameter, axis height) and adjust. No board change.",
+   "margin": "-2.7 mm (9.5 mm collar in a 6.8 mm hole); axis 0.6 mm off"
+  },
+  {
+   "id": "R4-BAN-2",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "C68",
+    "C69",
+    "L1",
+    "L2",
+    "R68",
+    "U8"
+   ],
+   "nets": [
+    "/TAP_R",
+    "GND",
+    "/SPK_L_P",
+    "/SPK_L_N"
+   ],
+   "finding": "The new TAP_R route (banana_route.py: 'under the L1/L2 bodies', y 89.52, x 86.3-102.5, 0.25 mm on F.Cu) cuts the F.Cu GND pour under L1/L2 in two. That pour is the left channel's output-filter return. B.Cu under the whole L/C row is the PVDD pour, so C68/C69's ground now goes back to U8 another way. It crosses the board west to a GND via near (84, 80), then runs on B.Cu down the left of the PVDD pour. Shortest GND path from the cap's GND pad to a U8 GND pin: C68 58.7 mm and C69 67.2 mm. Before the change it was 41.9 / 38.2 mm, and 22.1 / 19.4 mm with the TAP_R run deleted. The right channel is unaffected (C70 22.0, C71 23.8 mm, F.Cu only). This loop carries BD-mode common-mode ripple, about 1.3 A p-p per output at 400 kHz (21 V x 0.25 / (10 uH x 400 kHz)). The longer loop costs EMI only: the filter still works (60 mm is ~60 nH, so the cap's self-resonance is ~650 kHz and attenuation above it is still L/Lpar ~ 44 dB). TAP_R also runs 16 mm under the left channel's inductors, picking up left-channel switching field into the right tap; the firmware does not read the taps (HIFI_HAS_TAPS 0).",
+   "evidence": "docs/review-4/sims/ban/cap_return.py runs Dijkstra on a 0.1 mm grid over the refilled GND copper of F.Cu and B.Cu, joined at GND vias. It was run on this board, on d1543da^, and on a copy with the 5 TAP_R segments under L1/L2 removed and zones refilled (out/cap_return.txt). docs/review-4/sims/ban/ban_geom.py also shows each cap's nearest GND via: C68 9.0 mm, C69 8.3 mm, C70 3.7 mm, C71 4.2 mm. The change also ripped the old 'C68 GND stub' and its via.",
+   "reference_design": "TPA3118D2 datasheet SLOS708G section 10.1 (layout): keep the output filter's ground return short and back to the device's ground; on the TPA3118D2EVM the filter caps' ground lands on a solid plane next to the IC.",
+   "fix": "Route TAP_R so that it does not divide the F.Cu GND under L1/L2. For example, take R68 pad 2 into a via and run TAP_R on B.Cu along the PVDD pour's top edge (y ~81.6-82.0, 0.2 mm). PVDD flows round it; it carries 0.8 A budgeted, mostly on F.Cu. Or run TAP_R round the north side of the L1/L2 caps. Target: cap_return.py C68/C69 <= 30 mm (22/19 mm without the cut). Or, since the firmware does not use the taps, DNP R68/R69 and leave the track out.",
+   "margin": "C68/C69 return 59/67 mm vs 22/19 mm achievable; the 30 mm test bound fails"
+  },
+  {
+   "id": "R4-BAN-3",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "J4",
+    "J5",
+    "J6",
+    "J7"
+   ],
+   "nets": [
+    "/SPK_L_P",
+    "/SPK_L_N",
+    "/SPK_R_P",
+    "/SPK_R_N",
+    "GND",
+    "PVDD"
+   ],
+   "finding": "The GND pour comes within 0.127 mm of all 8 socket THT rings, on both sides. The pour clearance (netclass Default, min_clearance 0.127) also puts it 0.127 mm from the 1.25 mm speaker tracks, as does the B.Cu PVDD pour where SPK_L_N/SPK_R_N run along its edge. At <= 21 V this meets IPC-2221B (B2 0.1 mm, B4 0.13 mm for 16-30 V). The risk is assembly. These are the only THT joints on the speaker nets, and JLC solders them by wave or hand. JLC's solder-mask expansion is ~0.05 mm, so the mask web between the 3.0 mm ring and the GND pour is ~0.08 mm, below JLC's 0.1 mm minimum web. The ring is then effectively bare next to bare GND. A bridge is an output-to-GND short at first power. The TPA3118 latches off on over-current, so nothing is damaged, but there is no sound until it is reworked. The old 4-pin terminal had the same 0.127 mm, so the ring clearance is not new to this change, but the rings are.",
+   "evidence": "docs/review-4/sims/ban/ban_geom.py: min gap from each SPK net to GND/PVDD 0.122-0.127 mm, from each J4-J7 pad to GND 0.13 mm on F.Cu and B.Cu (out/ban_geom.txt). Old J4 (DB128V terminal) pads were also at 0.127 mm (d1543da^). Inter-speaker-net minimum is 0.475 mm (SPK_L_N to SPK_R_P, F.Cu).",
+   "reference_design": "TPA3118D2EVM and other class-D boards keep speaker-terminal pads 0.3-0.5 mm from the pour; JLC asks for >= 0.2 mm pad-to-copper on THT parts that are wave-soldered.",
+   "fix": "Add a netclass 'Speaker' (patterns /SPK_*) with clearance 0.3 mm, or a rule area round J4-J7 (a custom DRC rule: clearance 0.3 mm for A.NetName =~ '/SPK_*' && B.Type == 'Zone'). Refill. No re-route is needed: the pour pulls back.",
+   "margin": "0.127 mm vs 0.2-0.3 mm wanted for THT rings; electrically +0.027 mm over IPC B2"
+  },
+  {
+   "id": "R4-BAN-4",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "J4",
+    "J5",
+    "J6",
+    "J7"
+   ],
+   "nets": [],
+   "finding": "Speaker plugs at 11 mm pitch. The ~9.5 mm collars sit 1.5 mm apart, and a plug's shell bears on the wall face beside the next one. Banana plugs with metal shells (the common gold-plated audio type, whose shell is the conductor) wider than 11 mm either do not seat side by side or touch. Touching on L+/L- or on L-/R+ (J5/J6, two channels) shorts two BTL outputs: the TPA3118 trips over-current and mutes. The user manual's 'Speakers > Terminals' paragraph says '4 mm binding posts ... single banana plugs, dual banana plugs, spades, or bare wire under the nut' with no tier qualifier. That is wrong for Lite: the quick start is correct, the manual is not. A Lite owner with bare-wire speaker cable (the most common at home) needs four banana plugs, which the box does not include. There is no plug-size limit in the docs.",
+   "evidence": "Board: socket pitch 11.00 mm, body gap 0.90 mm (ban_geom.py). Collar 9.5 mm (amass_nose.py). docs/manual/user-manual.md lines 120-123 vs docs/manual/quick-start.md lines 21-22.",
+   "reference_design": "Receivers with board-mounted 4 mm sockets (e.g. compact class-D amps) use 15-19 mm pitch or insulated binding posts; IEC 61010-style shrouded sockets put an insulating collar round each.",
+   "fix": "Docs now: in user-manual.md 'Terminals', split Lite ('4 mm banana sockets: single banana plugs no wider than 10.5 mm, or plugs with an insulated shell; no bare wire, spades or dual plugs') from Plus/Ultra. List 4 banana plugs in the Lite 'What else it needs'. Next spin, if the board edge allows: 13 mm pitch within a pair and 15 mm between pairs.",
+   "margin": "plugs <= 11 mm across fit; > 11 mm collide"
+  },
+  {
+   "id": "R4-BAN-5",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "J4",
+    "J5",
+    "J6",
+    "J7"
+   ],
+   "nets": [],
+   "finding": "JLC's THT fitting has nothing to stop a socket going in back to front. The two pads are identical (3.0 mm, 2.0 mm drill, +-7.85 mm), so a socket turned 180 degrees inserts and solders, with its plug collar facing into the board and its back face out at the wall. The cpl_pin1 check passes either way. The footprint's only orientation cue on silk, the nose tab (local x 10.15-12.65), lies off the board past the rear edge, so it is not printed. What is left is the pin-1 dot at the back corner and a 1.2 mm asymmetry in the body outline. The nose also overhangs the board edge by 2.65 mm. JLC flags parts that overhang the outline (it needs edge rails on the other sides or an order note), and the fab output has no note about it.",
+   "evidence": "ban_geom.py: nose tip 2.65 mm past the rear edge, body face +0.15 mm. Footprint CONN-TH_24.243.1_RED / .2: silk rectangle -11.35..10.15, nose tab 10.15..12.65 (y +-3.0), dot at (-11.35, -5.65) / (-11.35, 5.05). CPL J4-J7 rotation 90, layer Top.",
+   "reference_design": "Symmetric 2-pin THT parts at JLC are usually keyed by a printed outline and an arrow or a 'pin 1' mark that JLC's operator sees; overhanging connectors are declared in the order remark.",
+   "fix": "Add silk at each socket's rear end on the board (e.g. an arrow and 'PLUG ->' pointing at the rear edge, inside the outline). Add a remark to the JLC order: 'J4-J7 banana sockets: round plug collar toward the board's rear edge, overhanging 2.65 mm'. Choose rails on the left/right/front edges only, or none.",
+   "margin": "n/a (assembly risk)"
+  },
+  {
+   "id": "R4-BAN-6",
+   "board": "lite-main",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "J4",
+    "J5",
+    "J6",
+    "J7",
+    "L1",
+    "L2",
+    "L3",
+    "L4",
+    "C68",
+    "C69",
+    "C70",
+    "C71"
+   ],
+   "nets": [
+    "/SPK_L_P",
+    "/SPK_L_N",
+    "/SPK_R_P",
+    "/SPK_R_N"
+   ],
+   "finding": "Passes: the footprint, pinout and polarity against Amass and LCSC, and the copper current. Footprint: pin pitch 15.70 mm against the drawing's 15.7 dimension (15.77 measured). Pin 1 (back) is 3.5 mm from the back face (drawing 3.41) and pin 2 is 4.8 mm from the nose (drawing 4.82). The 2.0 mm drill takes the 1.2 mm blade pin (the blade's diagonal is ~1.3 mm, ~0.35 mm radial), with a 0.5 mm ring. The drawing's section shows the brass contact and its tail at the back end, on pin 1, and both route tracks land on pin 1, so pin 2's connection does not matter. Polarity: J4/J6 are C7437321 (24.243.1, red, confirmed by the LCSC photo) on SPK_L_P/SPK_R_P, and J5/J7 are C7437322 (24.243.2, black, confirmed by the LCSC photo) on SPK_L_N/SPK_R_N. The rating (24 A, 60 V DC) covers 21 V PVDD and 4.6 A peak. Current: the speaker tracks are 1.25 mm everywhere. hwde check_current/IPC-2152 at +30 C needs 0.825 mm at 2.5 A rms (3.5 A peak) and 1.084 mm at 3.2 A rms (4 ohm full-power sine with no governor): margin 15 %. Each N net has 7 vias of 0.4 mm drill (~1 A each), against 2.5 A rms. Contact resistance <= 5 mOhm gives 31 mW per socket at 2.5 A. Filter: each L pad 2 is 3.1 mm centre-to-centre from its C pad 1. The L row moved 2.2 mm toward U8, so OUT runs 22-28 mm from the pin to C. No GND islands in the socket area (gnd_islands.py, 1 group).",
+   "evidence": "ban_geom.py, spk_current.py (out/spk_current.txt: SPK pass at 2.5 and 3.2 A), docs/review-4/sims/als/gnd_islands.py on the refilled copy, amass_nose.py, LCSC images 20230808_Changzhou-Amass-Elec-24-243-1_C7437321_{front,back,blank}.jpg and C7437322 front.",
+   "reference_design": "TPA3118D2EVM (SLOU342A) uses wide pours on the outputs; ours uses 1.25 mm tracks within IPC-2152.",
+   "fix": "none",
+   "margin": "SPK tracks +15 % width at 3.2 A rms; vias 7 x ~1 A vs 2.5 A"
+  },
+  {
+   "id": "R4-BAN-7",
+   "board": "lite-main",
+   "severity": "note",
+   "repeat_of": "R3-LAYOUT-11",
+   "refs": [
+    "U8"
+   ],
+   "nets": [
+    "/OUT_L_P",
+    "/OUT_L_N",
+    "/OUT_R_P",
+    "/OUT_R_N"
+   ],
+   "finding": "The OUT nets are still 0.308 mm wide for 5.6-6.6 mm from the U8 pins to the bootstrap-cap pads, against 0.825 mm needed at 2.5 A rms (IPC-2152, +30 C). The constraints still budget them at 1.0 A, so hwde passes them. The new L pad 1 links are 0.8 mm (4.0-8.8 mm long), at the limit at 2.5 A. Short runs on pads heatsunk by the EP. The banana change did not touch the fan-out.",
+   "evidence": "spk_current.py (OUT rows INFO-under), track widths by net on the refilled copy.",
+   "reference_design": "TPA3118D2EVM widens the outputs to pours straight off the pins.",
+   "fix": "As round 2: widen OUT after the bootstrap-cap pads to >= 0.8 mm, and set constraints.json OUT_x to 2.5 A so the check sees it.",
+   "margin": "0.31 vs 0.83 mm for ~6 mm"
+  }
+ ],
+ "round2_fixes_checked": [
+  {
+   "id": "R3-AUDIO-2",
+   "holds": true,
+   "how": "Only the presence check, after the merge that re-applied it: Q11-Q15, R80-R82 and C90 are on the board and in the BOM; R36/R38 are 1k (R4-PAD-1, commit 67306d6). The mute's behaviour is ALS/PAD's domain (R4-ALS-1..4)."
+  },
+  {
+   "id": "R3-LAYOUT-11",
+   "holds": false,
+   "how": "The OUT_x fan-out is still 0.308 mm and still budgeted at 1.0 A (R4-BAN-7). The SPK_x budget of 3.5 A is now realistic and passes."
+  },
+  {
+   "id": "R3-AMP-5",
+   "holds": false,
+   "how": "Still no snubber footprints. The banana change made the left channel's filter-cap ground return longer (R4-BAN-2), which adds to the same EMI risk."
+  }
+ ],
+ "field_issues": [
+  {
+   "issue": "Board-mounted banana socket loosening (a nut backing off, as on binding posts)",
+   "source": "general field experience with panel binding posts",
+   "our_board": "immune",
+   "how": "No nut: the socket is soldered by two 1.2 mm blade pins. The plug's spring is the wearing part and a plug is cheap to replace. Insertion pushes the socket inward onto its joints, and the box screws clamp the board. Extraction pulls the body face onto the wall's inner face 0.45 mm away, once the R4-BAN-1 holes keep the body face bearing."
+  },
+  {
+   "issue": "Bare-wire strands shorting adjacent outputs",
+   "source": "receiver manuals; TPA3118 SLOS708G 8.3.6 (short-circuit protection)",
+   "our_board": "has it (mild)",
+   "how": "Banana sockets cannot hold bare wire. Strands pushed into the 4 mm bores are not retained and can bridge the 1.5 mm between collars. The TPA3118 latches off on over-current, so nothing is damaged. The docs say 'no bare wire' for Lite only in the quick start (R4-BAN-4)."
+  },
+  {
+   "issue": "Spade lug touching the neighbouring terminal",
+   "source": "binding-post receivers",
+   "our_board": "n/a",
+   "how": "Sockets do not take spades."
+  },
+  {
+   "issue": "Metal-shell banana plugs touching at close pitch",
+   "source": "general (audio plugs with conductive shells are common)",
+   "our_board": "has it",
+   "how": "11 mm pitch: plugs wider than 11 mm collide or touch; J5/J6 are two different channels (R4-BAN-4)."
+  },
+  {
+   "issue": "Socket mounted with the plug collar facing inward (symmetric 2-pin THT)",
+   "source": "JLC THT assembly practice",
+   "our_board": "has it (risk)",
+   "how": "R4-BAN-5."
+  },
+  {
+   "issue": "Board-mounted connector nose clashing with the case hole",
+   "source": "this board",
+   "our_board": "has it",
+   "how": "R4-BAN-1."
+  }
+ ],
+ "tests_built": [
+  {
+   "path": "docs/review-4/sims/ban/amass_nose.py",
+   "checks": "Amass 24.243 drawing (vector) vs enclosure BANANA_NOSE/AXIS/HOLE: collar 9.49 mm, axis 8.11 mm vs a 6.8 mm hole at 7.5",
+   "result": "fail"
+  },
+  {
+   "path": "docs/review-4/sims/ban/ban_geom.py",
+   "checks": "socket pitch/pads/nets/body gap/overhang; SPK copper gaps to every net; SPK widths; N-net vias; L-C distance; cap GND via distance",
+   "result": "fail"
+  },
+  {
+   "path": "docs/review-4/sims/ban/cap_return.py",
+   "checks": "GND path length from C68-C71 to U8 (grid Dijkstra over both layers); now, d1543da^, and with TAP_R removed",
+   "result": "fail"
+  },
+  {
+   "path": "docs/review-4/sims/ban/spk_current.py",
+   "checks": "hwde check_current on a /tmp copy with SPK/OUT at 2.5 A and 3.2 A rms",
+   "result": "pass"
+  }
+ ],
+ "known_unknowns": [
+  {
+   "fact": "The 24.243 collar is round, ~9.5 mm across, with the bore axis 8.1 mm over the board",
+   "board": "lite-main",
+   "refs": [
+    "J4",
+    "J5",
+    "J6",
+    "J7"
+   ],
+   "status": "unverified",
+   "source": "Amass drawing VER 2.0 (scaled: the collar is not dimensioned) and LCSC photos",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "How far the brass contact runs toward the collar. The drawing's broken-out section shows brass only from the back face to ~7 mm in, i.e. 17-24 mm from the plug face. If that is all there is, short audio plugs (15 mm pins) would not reach it",
+   "board": "lite-main",
+   "refs": [
+    "J4",
+    "J5",
+    "J6",
+    "J7"
+   ],
+   "status": "unverified",
+   "source": "Amass drawing VER 2.0 section; LCSC photos (plastic visible inside the collar)",
+   "date": "2026-10-30",
+   "could_stop_board": true
+  },
+  {
+   "fact": "Whether pin 2 (by the collar) is connected to the contact",
+   "board": "lite-main",
+   "refs": [
+    "J4",
+    "J5",
+    "J6",
+    "J7"
+   ],
+   "status": "unverified",
+   "source": "drawing shows pin 2 unsectioned",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "JLC accepts the 2.65 mm edge overhang without rails on the rear edge",
+   "board": "lite-main",
+   "refs": [
+    "J4",
+    "J5",
+    "J6",
+    "J7"
+   ],
+   "status": "unverified",
+   "source": "JLC assembly rules",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  }
+ ]
+}
