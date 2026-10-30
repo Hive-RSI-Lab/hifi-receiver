@@ -1,0 +1,22 @@
+* lc_lite_derated_6: BTL LC filter, L=8e-06 DCR=0.03 C=8.5e-07 per leg, RL=6.0
+Vp dp 0 DC 0 AC 0.5
+Vn dn 0 DC 0 AC 0.5 180
+La dp la 8.000000000000001e-06
+Rla la a 0.03
+Lb dn lb 8.000000000000001e-06
+Rlb lb b 0.03
+Ca a ca 8.499999999999999e-07
+Rca ca 0 0.005
+Cb b cb 8.499999999999999e-07
+Rcb cb 0 0.005
+RL a b 6.0
+Ed d 0 a b 1
+.ac dec 400 100 2Meg
+.measure ac hpk MAX vdb(d)
+.measure ac f0 WHEN vp(d)=-1.5708
+.measure ac h1k FIND vdb(d) AT=1k
+.measure ac h20k FIND vdb(d) AT=20k
+.measure ac f3 WHEN vdb(d)=-3 FALL=LAST
+.measure ac h400k FIND vdb(d) AT=400k
+.measure ac h600k FIND vdb(d) AT=600k
+.end

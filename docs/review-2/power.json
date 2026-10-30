@@ -1,0 +1,643 @@
+{
+ "domain": "power",
+ "findings": [
+  {
+   "id": "POWER-1",
+   "board": "core",
+   "severity": "blocker",
+   "refs": [
+    "J1",
+    "R1",
+    "D1",
+    "Q1",
+    "U15",
+    "U16"
+   ],
+   "nets": [
+    "VBUS_IN",
+    "VBUS",
+    "PVDD"
+   ],
+   "finding": "5 A VBUS/PVDD path routed in 0.255 mm F.Cu tracks and 1-3 x 0.3 mm vias per layer change: J1 VBUS pads to R1/D1 via 0.255 mm tracks only; R1 pad1 one via; Q1 source 3 vias, drain 2 vias; TPA3221 PVDD groups 3 vias each",
+   "evidence": "Parsed core.kicad_pcb: VBUS_IN tracks 0.25-0.3 mm, 3 vias; VBUS 15 vias (3 at R1, 3 at Q1); PVDD Q1 drain vias (54.16,170.25),(58.44,170.25); IPC-2152 10 mil 1 oz ext ~1 A @10 C; 2.5 A/trace, 1.7-2.5 A/via at 5 A",
+   "fix": "F.Cu pours >=2.5 mm wide J1->R1/D1 (VBUS_IN), R1->Q1 S (VBUS), on Q1 D (PVDD); >=6 x 0.3 mm vias at R1 pad1, R1 pad2, Q1 S, Q1 D, each TPA3221 PVDD group; with USB4085-GF-A THT pins tie VBUS into pours on all layers",
+   "margin": "-150 % (2.5 A per via vs 1-1.5 A guideline)"
+  },
+  {
+   "id": "POWER-2",
+   "board": "core",
+   "severity": "major",
+   "refs": [
+    "Q1",
+    "R5",
+    "C4",
+    "C8",
+    "R4"
+   ],
+   "nets": [
+    "PVDD",
+    "PVDD_G"
+   ],
+   "finding": "Firmware turn-on of PVDD exceeds AO4485 single-pulse SOA: 940 uF charged in ~12 ms",
+   "evidence": "sim tb_core_fw_on_28v: 2.16 A, 46.7 W peak, 0.364 J, 10-90 % 10 ms; AOS AO4485 Rev1.1 fig 10: ~20 W at 10 ms (~0.2 J)",
+   "fix": "R4,R5 100k->470k (0402), C8 1uF->2.2uF/50V 0805; sim tb_core_fw_on_28v_FIX: 0.47 A, 9.8 W peak, ~60 ms ramp, 2.5x SOA margin; firmware holds amps in RESET before dropping PVDD_EN (turn-off tau 1.1 s)",
+   "margin": "-80 % (energy 0.36 J vs ~0.2 J allowed)"
+  },
+  {
+   "id": "POWER-3",
+   "board": "lite-main",
+   "severity": "major",
+   "refs": [
+    "Q1",
+    "C2",
+    "R15",
+    "R5"
+   ],
+   "nets": [
+    "PVDD",
+    "PSW_G",
+    "VBUS"
+   ],
+   "finding": "Miller cap C2 (gate-drain) turns Q1 on at every VBUS rising edge with firmware off: PVDD follows VBUS minus Vth during attach and the 5->20 V PD step; inrush up to 20.6 A at the PD max slew; Q4/PG AND does not help",
+   "evidence": "sims tb_lite_pd_step_fw_off_sr30/3/0.5: 20.6/2.0/0.30 A source, PVDD 15.6/14.8/10.5 V; attach 6.1 A, PVDD 2.8 V",
+   "fix": "R6 47k->220k (0603), add 2.2uF/25V 0603 X5R VBUS->PSW_G (new part, e.g. C23630 is 2.2uF 0603 - check voltage); sim FIX: Vsg 0.77 V at 30 V/ms with Vth 1.7 V, PVDD 3 mV",
+   "margin": "source current 20.6 A vs 3 A contract"
+  },
+  {
+   "id": "POWER-4",
+   "board": "lite-main",
+   "severity": "major",
+   "refs": [
+    "Q1",
+    "C58",
+    "C59",
+    "R6"
+   ],
+   "nets": [
+    "PVDD"
+   ],
+   "finding": "Firmware turn-on of PVDD at the AO4485 SOA edge and 2.5 A inrush on a 3 A contract",
+   "evidence": "sim tb_lite_fw_on_20v: 2.40 A FET, 2.49 A source, 43 W peak, 0.134 J in ~5 ms vs ~25 W at 5 ms (0.12-0.15 J)",
+   "fix": "same fix as POWER-3; sim tb_lite_fw_on_20v_FIX: 0.41 A, 5.8 W peak, 28 ms ramp, final Vsg 5.5 V",
+   "margin": "~0 % SOA; 13 % source current"
+  },
+  {
+   "id": "POWER-5",
+   "board": "core",
+   "severity": "major",
+   "refs": [
+    "U17",
+    "R40",
+    "R41",
+    "R42",
+    "R43",
+    "R44",
+    "R45",
+    "Q2",
+    "R7"
+   ],
+   "nets": [
+    "PVDD_EN",
+    "PVDD_ENG",
+    "AMP_A_RST",
+    "AMP_B_RST",
+    "DAC_EN",
+    "PHY_RST",
+    "DJ_DIRECT"
+   ],
+   "finding": "TCA9555 internal ~100k pull-ups vs 100k pull-downs: enables float at 1.1-1.65 V from power-up until firmware writes the expander; low-Vth 2N7002 turns PVDD on",
+   "evidence": "TI SCPS200E sec 5 (TCA9555 = TCA9535 + internal pull-up), IIL -100 uA max -> Rpu >= 55k; PVDD_ENG = 3.3*50/(Rpu+50) = 1.1-1.57 V; JSCJ 2N7002 Vth 1.0-2.5 V; Q1 needs 0.14 mA",
+   "fix": "R40-R45 100k -> 10k (C25744): PVDD_ENG <= 0.47 V; or TCA9535PWR",
+   "margin": "Vgs 1.1-1.57 V vs Vth min 1.0 V: negative"
+  },
+  {
+   "id": "POWER-6",
+   "board": "core",
+   "severity": "major",
+   "refs": [
+    "U1",
+    "Q2",
+    "Q1"
+   ],
+   "nets": [
+    "PVDD_PD",
+    "VBUS"
+   ],
+   "finding": "No hardware link between PD contract and PVDD: through hard reset / renegotiation / replug Q1 stays on (held by TCA9555), the source then charges 940 uF at its own slew on the 5->28 V step -> OCP / hard-reset loop; no VBUS ADC sense on core; CH224Q PG unconnected",
+   "evidence": "topology; slew analysis as POWER-3 (940 uF x 30 V/ms = 28 A)",
+   "fix": "Q2 source to new net PD_PG = U1 pin 10 (PG open drain, low=good) + 10k to +3V3 (Lite's AND); optional PD_PG to a TCA9555 input; DNP 0R PD_PG-GND as contingency",
+   "margin": "n/a"
+  },
+  {
+   "id": "POWER-7",
+   "board": "core",
+   "severity": "minor",
+   "refs": [
+    "C8",
+    "C4",
+    "Q1"
+   ],
+   "nets": [
+    "PVDD_G"
+   ],
+   "finding": "C8 hold-off margin thin: Vsg 2.17 V on a 5->28 V step at 30 V/ms (9 % coupling) > Vth min 1.7 V; low-Vth FET passes 3.8 A, PVDD to 5 V",
+   "evidence": "sims tb_core_pd_step_fw_off_sr30(_vth1.7/2.5), sr3, sr0.5",
+   "fix": "C8 -> 2.2 uF (part of POWER-2 fix): Vsg 1.19 V, 70 uA",
+   "margin": "Vsg 2.17 V vs Vth 1.7-2.5 V"
+  },
+  {
+   "id": "POWER-8",
+   "board": "core",
+   "severity": "minor",
+   "refs": [
+    "D2",
+    "Q3",
+    "R8",
+    "R9"
+   ],
+   "nets": [
+    "OV_Z",
+    "VBUS"
+   ],
+   "finding": "OV trip ~31-35 V: ~6 % above EPR 29.4 V at low corner, ~1 V below TPA3221 abs 37 V at high; releases Q1 with tau 110 ms so not surge protection",
+   "evidence": "BORN BZT52C33 Vz 31-35 V @2 mA, IR 0.1 uA @23.1 V; trip = Vz+2Vbe; D2 polarity verified (pad1 = bar = VBUS)",
+   "fix": "document as sustained-fault cut-off; no change",
+   "margin": "~2 V / ~1 V"
+  },
+  {
+   "id": "POWER-9",
+   "board": "both",
+   "severity": "minor",
+   "refs": [
+    "D1"
+   ],
+   "nets": [
+    "VBUS",
+    "VBUS_IN"
+   ],
+   "finding": "TVS clamp above downstream abs-max: SMBJ20A 32.4 V vs TPS54302/TPA3118 30 V, CH224A 32 V; SMBJ30A 48.4 V vs TPA3221 37, CH224Q 32, SY8303 40, INA186 42 V. Low real threat (attach at 5 V, ESD charge absorbed by ~13 uF)",
+   "evidence": "MDD SMBJ datasheet table: SMBJ20A VBR 22.2-24.5 Vc 32.4@18.6A; SMBJ30A 33.3-36.8 Vc 48.4@12.4A",
+   "fix": "keep; no cheap better part (SMBJ28A gains little)",
+   "margin": "standoff: Lite VBR 5.7 % over 21 V; core 13 % over 29.4 V"
+  },
+  {
+   "id": "POWER-10",
+   "board": "lite-main",
+   "severity": "minor",
+   "refs": [
+    "U2",
+    "C7",
+    "C8",
+    "C9"
+   ],
+   "nets": [
+    "+5V"
+   ],
+   "finding": "TPS54302 crossover likely above TI's 40 kHz rule: 2x22uF 0805 X5R ~22 uF eff -> fo 45 kHz, plus 100 pF FF zero at 15.9 kHz raises it further",
+   "evidence": "TI SLVSDG6C eq 14/16, table 7-2 (75 pF, 44 uF)",
+   "fix": "add third 22uF/25V (C45783) or 1206 parts; C9 -> 47-68 pF; C9 removable as contingency; bench load step",
+   "margin": "fo 45 vs 40 kHz"
+  },
+  {
+   "id": "POWER-11",
+   "board": "core",
+   "severity": "minor",
+   "refs": [
+    "U4",
+    "C10",
+    "C13",
+    "C14"
+   ],
+   "nets": [
+    "VBUS",
+    "+5V"
+   ],
+   "finding": "SY8303 Cin 10uF/50V X5R 1206 ~3-4 uF at 28 V vs >=4.7 uF; Cout 2x22uF 0805 ~22 uF eff vs >22 uF",
+   "evidence": "Silergy AN_SY8303 Rev0.9A p2/p6",
+   "fix": "add 10uF/50V 1206 (C13585) at IN, third 22uF on +5V",
+   "margin": "~-25 % Cin"
+  },
+  {
+   "id": "POWER-12",
+   "board": "lite-main",
+   "severity": "minor",
+   "refs": [
+    "J1"
+   ],
+   "nets": [
+    "VBUS"
+   ],
+   "finding": "B4-A9 VBUS path crosses a single 0.3 mm via (78.97,69.22) at ~1.4 A of 3.5 A",
+   "evidence": "parsed lite-main.kicad_pcb",
+   "fix": "add 2 vias beside it",
+   "margin": "1.4 A vs 1-1.5 A"
+  },
+  {
+   "id": "POWER-13",
+   "board": "core",
+   "severity": "minor",
+   "refs": [
+    "U4"
+   ],
+   "nets": [
+    "+5V"
+   ],
+   "finding": "5 V-only port: SY8303 Dmax ~87 % (min off 120 ns at 1.05 MHz) -> +5V ~4.35-4.6 V, below TPA3221 VDD 4.5 V min",
+   "evidence": "AN_SY8303 EC table",
+   "fix": "firmware: no amp enable without a PD contract >= 9 V",
+   "margin": "-3 %"
+  },
+  {
+   "id": "POWER-14",
+   "board": "both",
+   "severity": "note",
+   "refs": [
+    "J1"
+   ],
+   "nets": [
+    "VBUS",
+    "CC1",
+    "CC2"
+   ],
+   "finding": "Footprint USB-C-SMD_MC-311D does not match value USB4105-GF-A-120. Lead's swap: Lite HRO TYPE-C-31-M-12 (20 V/5 A, 3.5 A load = 30 % margin; 21 V vs 20 V rating -5 %), core GCT USB4085-GF-A (48 V/5 A, 0 % current margin at full 140 W). Wire all 4 VBUS and 4 GND contacts, CC1 A5/CC2 B5 direct to CH224 pins 7/6, no Rd",
+   "evidence": "LCSC attributes C165948, C7095263 (datasheets not retrievable)",
+   "fix": "as stated; THT pins into VBUS_IN pours",
+   "margin": "see finding"
+  },
+  {
+   "id": "POWER-15",
+   "board": "core",
+   "severity": "note",
+   "refs": [],
+   "nets": [
+    "A_SPK_L+",
+    "A_SPK_R+"
+   ],
+   "finding": "Proposed 150k/10k speaker loopback dividers: 87 uA DC, 4.6 mW peak in 150k (0402 63 mW), 28 V vs 50 V rating, tap 0-1.75 V; harmless to power stage",
+   "evidence": "calc",
+   "fix": "add 1 nF at tap; check receiver clamp current 0.19 mA if unpowered",
+   "margin": "7 % power, 44 % voltage"
+  }
+ ],
+ "known_unknowns": [
+  {
+   "fact": "CH224Q/A VHV abs max 32 V, OVR 32-34 V, operating 3.3-30 V",
+   "board": "both",
+   "refs": [
+    "U1"
+   ],
+   "status": "verified",
+   "source": "WCH CH224 datasheet V2.0 sec 8.1.1/8.2.1",
+   "date": "2026-10-28",
+   "could_stop_board": false
+  },
+  {
+   "fact": "CH224A VBUS pin tolerant to 32 V (sec 7.1 says 3.8 V, table 8.1.1 says 32 V)",
+   "board": "lite-main",
+   "refs": [
+    "U1"
+   ],
+   "status": "unverified",
+   "source": "WCH CH224 V2.0 sec 7.1 vs 8.1.1 contradict",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "CH224Q/A pinout VHV1 CFG2 2 CFG3 3 DP4 DM5 CC2 6 CC1 7 VBUS8 CFG1 9 PG10 EP GND",
+   "board": "both",
+   "refs": [
+    "U1"
+   ],
+   "status": "verified",
+   "source": "WCH CH224 V2.0 table 4-1; netlists match",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "Rset 120k=20 V, 210k=28 V",
+   "board": "both",
+   "refs": [
+    "R1",
+    "R2"
+   ],
+   "status": "verified",
+   "source": "WCH CH224 V2.0 table 5-1",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "CH224 single-resistor mode selected by CFG1 resistor even when CFG2/CFG3 read low at boot (I2C pull-ups to unpowered +3V3)",
+   "board": "both",
+   "refs": [
+    "U1"
+   ],
+   "status": "unverified",
+   "source": "not stated in datasheet",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "CH224 behaviour when requested PDO (20 V / 28 V EPR) not offered (fallback voltage)",
+   "board": "both",
+   "refs": [
+    "U1"
+   ],
+   "status": "unverified",
+   "source": "not in datasheet",
+   "date": "2026-10-28",
+   "could_stop_board": false
+  },
+  {
+   "fact": "CH224A PG asserts only after contract voltage reached and deasserts during hard reset / renegotiation; PG sink current >=1 mA",
+   "board": "lite-main",
+   "refs": [
+    "U1",
+    "Q4"
+   ],
+   "status": "unverified",
+   "source": "datasheet: 'PowerGood, active low, can be customized' only",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "CH224 needs no external Rd on CC",
+   "board": "both",
+   "refs": [
+    "U1"
+   ],
+   "status": "verified",
+   "source": "WCH CH224 V2.0 fig 6.1.1 reference schematic (no Rd)",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "AO4485 VDS -40 V, VGS +-20 V, Vth -1.7/-1.9/-2.5 V, Ciss 2500 pF, SOA fig 9/10",
+   "board": "core",
+   "refs": [
+    "Q1"
+   ],
+   "status": "verified",
+   "source": "AOS AO4485 Rev1.1 Mar 2024 p1-4",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "UMW AO4485 clone (C5125949) matches AOS ratings/SOA",
+   "board": "lite-main",
+   "refs": [
+    "Q1"
+   ],
+   "status": "unverified",
+   "source": "UMW datasheet downloaded, SOA not compared",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "SMBJ20A VBR 22.2-24.5 V, Vc 32.4 V; SMBJ30A VBR 33.3-36.8 V, Vc 48.4 V (MDD)",
+   "board": "both",
+   "refs": [
+    "D1"
+   ],
+   "status": "verified",
+   "source": "MDD SMBJ series datasheet table (LCSC C364296/C113998)",
+   "date": "2026-10-28",
+   "could_stop_board": false
+  },
+  {
+   "fact": "TPS54302 VIN abs 30 V rec 28 V, VFB 0.596 V, tmin_on 110 ns, EN float = on, UVLO 4.1 V",
+   "board": "lite-main",
+   "refs": [
+    "U2"
+   ],
+   "status": "verified",
+   "source": "TI SLVSDG6C sec 5.1/5.5/5.6",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPS54302 pinout GND1 SW2 VIN3 FB4 EN5 BOOT6",
+   "board": "lite-main",
+   "refs": [
+    "U2"
+   ],
+   "status": "verified",
+   "source": "TI SLVSDG6C pin table; netlist matches",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "SY8303 IN/EN abs 40 V, VREF 0.6 V, FS 105/R kHz, min on 80 ns, EN must not float; pinout FB1 FS2 GND3,4 IN5 LX6 BS7 EN8",
+   "board": "core",
+   "refs": [
+    "U4"
+   ],
+   "status": "verified",
+   "source": "Silergy AN_SY8303 Rev0.9A p2-3; netlist matches",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "SY8089A1 abs 6 V, rec 2.5-5.5 V, VREF 0.6 V, pinout EN1 GND2 LX3 IN4 FB5",
+   "board": "both",
+   "refs": [
+    "U3",
+    "U5"
+   ],
+   "status": "verified",
+   "source": "Silergy AN_SY8089A1 Rev0.0 p2-3",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "LP5907 VIN abs 6 V rec 5.5 V, Cout 0.7-10 uF, SOT-23-5 IN1 GND2 EN3 NC4 OUT5",
+   "board": "both",
+   "refs": [
+    "U4",
+    "U6"
+   ],
+   "status": "verified",
+   "source": "TI SNVS798Q sec 6",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TPA3118 PVCC abs 30 V, rec 4.5-26 V",
+   "board": "lite-main",
+   "refs": [
+    "U8"
+   ],
+   "status": "verified",
+   "source": "TI SLOS708G (per LCSC/TI); not re-read in this pass beyond rating",
+   "date": "2026-10-28",
+   "could_stop_board": false
+  },
+  {
+   "fact": "TPA3221 PVDD abs 37 V rec 7-32 V, UVP 6.4 V, no OVP, VDD 5 V bypass mode, no sequencing needed",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "verified",
+   "source": "TI SLASEE9C sec 6.1/6.3/6.5/8.4.1",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "INA186 VCM -0.2..40 V, IN abs 42 V, VS 1.7-5.5 V, DCK pinout REF1 GND2 VS3 IN+4 IN-5 OUT6",
+   "board": "core",
+   "refs": [
+    "U3"
+   ],
+   "status": "verified",
+   "source": "TI SBOS318B sec 5/6.1/6.3",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TCA9555 has internal I/O pull-ups (IIL -100 uA max)",
+   "board": "core",
+   "refs": [
+    "U17"
+   ],
+   "status": "verified",
+   "source": "TI SCPS200E sec 5, 7.5",
+   "date": "2026-10-28",
+   "could_stop_board": true
+  },
+  {
+   "fact": "2N7002 (JSCJ) Vth 1.0-2.5 V",
+   "board": "core",
+   "refs": [
+    "Q2"
+   ],
+   "status": "verified",
+   "source": "JSCJ 2N7002 datasheet",
+   "date": "2026-10-28",
+   "could_stop_board": false
+  },
+  {
+   "fact": "BZT52C33 (BORN) Vz 31-35 V @2 mA; pad 1 = cathode in SOD-123 footprint",
+   "board": "core",
+   "refs": [
+    "D2"
+   ],
+   "status": "verified",
+   "source": "BORN BZT52 datasheet table; aiee.pretty SOD-123 silk bar at pad 1",
+   "date": "2026-10-28",
+   "could_stop_board": false
+  },
+  {
+   "fact": "SWPA4030S4R7MT Isat 2.9 A Irms 2.0 A; SWPA6045S100MT Isat 3.2 A Irms 2.45 A; SWPA4020S2R2NT Isat 3.4 A Irms 1.85 A",
+   "board": "both",
+   "refs": [
+    "L5",
+    "L6",
+    "L9",
+    "L10"
+   ],
+   "status": "verified",
+   "source": "Sunlord SWPA4030S spec Rev11 app. A; Sunlord SWPA catalog",
+   "date": "2026-10-28",
+   "could_stop_board": false
+  },
+  {
+   "fact": "MLCC DC-bias: CL21A226MAQNNNE ~50 % at 5 V; CL31A106KBHNNNE ~35-40 % of nominal at 28 V",
+   "board": "both",
+   "refs": [
+    "C7",
+    "C8",
+    "C13",
+    "C14",
+    "C10",
+    "C3"
+   ],
+   "status": "unverified",
+   "source": "engineering estimate; Samsung curves not retrieved",
+   "date": "2026-10-28",
+   "could_stop_board": false
+  },
+  {
+   "fact": "1 uF 0402 C52923 voltage rating on +5V",
+   "board": "core",
+   "refs": [
+    "C18"
+   ],
+   "status": "unverified",
+   "source": "not checked",
+   "date": "2026-10-28",
+   "could_stop_board": false
+  },
+  {
+   "fact": "HRO TYPE-C-31-M-12 rated 20 V / 5 A total VBUS",
+   "board": "lite-main",
+   "refs": [
+    "J1"
+   ],
+   "status": "unverified",
+   "source": "LCSC attributes only (datasheet stubbed)",
+   "date": "2026-10-28",
+   "could_stop_board": false
+  },
+  {
+   "fact": "GCT USB4085-GF-A rated 48 V / 5 A, VBUS pins THT",
+   "board": "core",
+   "refs": [
+    "J1"
+   ],
+   "status": "unverified",
+   "source": "LCSC attributes only",
+   "date": "2026-10-28",
+   "could_stop_board": false
+  },
+  {
+   "fact": "USB PD source slew <=30 mV/us; sink cSnkBulkPd <=100 uF; attach always at vSafe5V",
+   "board": "both",
+   "refs": [],
+   "status": "unverified",
+   "source": "USB PD spec values from memory, not re-read",
+   "date": "2026-10-28",
+   "could_stop_board": false
+  },
+  {
+   "fact": "0.3 mm via current ~1-1.5 A; IPC-2152 10 mil 1 oz external ~1 A at 10 C",
+   "board": "both",
+   "refs": [],
+   "status": "unverified",
+   "source": "brief guideline / IPC-2152 charts from memory",
+   "date": "2026-10-28",
+   "could_stop_board": false
+  },
+  {
+   "fact": "JLC 4-layer inner copper 0.5 oz (15.2 um in stackup)",
+   "board": "core",
+   "refs": [],
+   "status": "verified",
+   "source": "core.kicad_pcb stackup",
+   "date": "2026-10-28",
+   "could_stop_board": false
+  }
+ ],
+ "tools_wanted": [
+  {
+   "tool": "soa_check",
+   "checks": "integrate Vds*Id from a transient sim against the FET's Zth(t)/SOA curve, give Tj peak",
+   "why": "PVDD switch ramps (POWER-2/4) needed manual reading of SOA plots"
+  },
+  {
+   "tool": "series_path_current",
+   "checks": "for a power net and a current, walk pad->track->via->plane and report the narrowest track width and via count at each layer change",
+   "why": "check_current is blind to via count per transition; the core blocker POWER-1 was found by hand"
+  },
+  {
+   "tool": "mlcc_dcbias",
+   "checks": "effective capacitance of an MLCC (by MPN) at DC bias/temperature",
+   "why": "buck loop and LDO Cout limits depend on derated values"
+  },
+  {
+   "tool": "pd_source_model",
+   "checks": "SPICE PD source with slew, OCP and hard-reset behaviour",
+   "why": "charger compatibility of inrush paths"
+  }
+ ]
+}

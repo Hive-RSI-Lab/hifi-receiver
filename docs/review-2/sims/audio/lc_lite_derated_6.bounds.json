@@ -1,0 +1,15 @@
+[
+ {
+  "measure": "h20k",
+  "min": -3.0,
+  "max": 3.0,
+  "severity": "warning",
+  "msg": "audio band edge within +/-3 dB"
+ },
+ {
+  "measure": "hpk",
+  "max": 6.0,
+  "severity": "warning",
+  "msg": "resonant peaking"
+ }
+]

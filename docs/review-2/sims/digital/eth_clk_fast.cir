@@ -1,0 +1,28 @@
+* core ETH_CLK 50 MHz distribution (DIGITAL review). Y2 (YSO110TR, Rout~15R, tr 0.4 ns (fast corner)) -> ETH_OSC 19 mm -> R60 33R
+* -> T junction: ~30 mm to LAN8720A CLKIN (U9.5), ~65 mm to ESP32 GPIO0 (U7.25) via Q5 C (5 pF) and R31 10k.
+* Lossless microstrip Z0 50 ohm, 6.0 ps/mm. Lengths from core.kicad_pcb (ETH_OSC 19.0 mm, ETH_CLK 95.7 mm).
+Vsrc src 0 PULSE(0 3.3 2n 0.4n 0.4n 9.6n 20n)
+Rout src y2 15
+T1 y2 0 r60a 0 Z0=50 TD=114p
+R60 r60a r60b 33
+Tphy r60b 0 phy 0 Z0=50 TD=180p
+Cphy phy 0 4p
+Tesp1 r60b 0 q5 0 Z0=50 TD=30p
+Cq5 q5 0 5p
+Tesp2 q5 0 r31 0 Z0=50 TD=35p
+R31 r31 vdd 10k
+Vdd vdd 0 3.3
+Tesp3 r31 0 esp 0 Z0=50 TD=330p
+Cesp esp 0 5p
+.tran 5p 30n
+.meas tran phy_vil when v(phy)=0.99 rise=1
+.meas tran phy_vih when v(phy)=2.31 rise=1
+.meas tran phy_trans param='phy_vih-phy_vil'
+.meas tran esp_vil when v(esp)=0.825 rise=1
+.meas tran esp_vih when v(esp)=2.475 rise=1
+.meas tran esp_trans param='esp_vih-esp_vil'
+.meas tran phy_max max v(phy) from=2n to=12n
+.meas tran esp_max max v(esp) from=2n to=12n
+.meas tran phy_min_hi min v(phy) from=6n to=11n
+.meas tran esp_min_hi min v(esp) from=6n to=11n
+.end
