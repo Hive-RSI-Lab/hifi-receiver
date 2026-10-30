@@ -144,6 +144,12 @@ def core_extra(comps, nets, pn, at):
         want = int(m.group(1)) if m else None
     else:
         want = 1   # squeezelite-esp32 ee1720c network_driver_LAN8720.c: phy_config.phy_addr = 1;
+    # our patches to upstream win over upstream's own value
+    import glob
+    for pf in sorted(glob.glob(f"{ROOT}/firmware/patches/*.patch")):
+        m = re.search(r'^\+\s*phy_config\.phy_addr\s*=\s*(-?\d+)', open(pf).read(), re.M)
+        if m:
+            want = int(m.group(1))
     chk(want in (-1, phyad), f"core LAN8720A PHYAD0 strap -> address {phyad} (pin 10 net {strap}); squeezelite queries address {want}")
 
 board('core', f"{ROOT}/boards/core/kicad/core.net", 'U7', C, 'HIFI_PLUS', core_out, core_in, core_extra)

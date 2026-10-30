@@ -727,8 +727,7 @@ static void op_ir_forget(int a) {
 
 #if HIFI_HAS_CAPTURE
 static bool has_taps(void) {
-	if (HIFI_HAS_TAPS) return true;
-	char *s = config_alloc_get_str("hifi_taps", NULL, "0");
+	char *s = config_alloc_get_str("hifi_taps", NULL, HIFI_HAS_TAPS ? "1" : "0");
 	bool on = s && !strcmp(s, "1");
 	free(s);
 	return on;
