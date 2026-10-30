@@ -1,11 +1,14 @@
 """The score's own logic: needed functions, the spec. No gates run (test_pieces.py has the pieces)."""
 import contextlib
 import io
+import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import hwcheck  # noqa: E402
@@ -57,10 +60,10 @@ class Test(unittest.TestCase):
     """cmd_test counts each failing gate, not each gated board; what is
     unverified is neither a pass nor a fail."""
 
-    def run_test(self, gates):
+    def run_test(self, gates, smoke=(True, None), env=None):
         saved = {k: getattr(hwcheck, k) for k in ("check_product", "run_unittests", "firmware_tests",
                                                     "boards", "run_gates", "cant_run",
-                                                    "firmware_pins")}
+                                                    "firmware_pins", "firmware_smoke")}
         dirs = list(gates)
         hwcheck.check_product = lambda: ([], {})
         hwcheck.run_unittests = lambda: []
@@ -68,6 +71,7 @@ class Test(unittest.TestCase):
         hwcheck.firmware_pins = lambda: []
         hwcheck.boards = lambda: dirs
         hwcheck.run_gates = lambda todo: {d: gates[d] for d in todo}
+        hwcheck.firmware_smoke = lambda: smoke
         self.cant = None
 
         def cant_run(tool, why):  # the real one execs the shell's not-found
@@ -75,7 +79,7 @@ class Test(unittest.TestCase):
             raise SystemExit(127)
         hwcheck.cant_run = cant_run
         try:
-            with contextlib.redirect_stdout(io.StringIO()):
+            with contextlib.redirect_stdout(io.StringIO()), mock.patch.dict(os.environ, env or {}):
                 try:
                     return hwcheck.cmd_test(all_boards=True)
                 except SystemExit as e:
@@ -101,6 +105,51 @@ class Test(unittest.TestCase):
         u = ("b dfm: placement unverified: U1", hwcheck.UNVERIFIED)
         self.assertEqual(self.run_test({Path("a"): [("a drc_routed", 1)], Path("b"): [u]}), 1)
         self.assertIsNone(self.cant)
+
+    def test_the_firmware_smoke(self):
+        a = {Path("a"): []}
+        self.assertEqual(self.run_test(a, smoke=(False, None)), 1)
+        self.assertEqual(self.run_test(a, smoke=(False, ("squeezelite-fetch", "HTTP 503"))), 127)
+        self.assertEqual(self.cant[0], "squeezelite-fetch")
+
+    def test_no_idf_or_qemu_yet_is_no_boot_unless_asked(self):
+        a, absent = {Path("a"): []}, (None, ("idf.py", "idf MISSING (fw setup)"))
+        self.assertEqual(self.run_test(a, smoke=absent), 0)
+        self.assertIsNone(self.cant)
+        self.assertEqual(self.run_test(a, smoke=absent, env={"HWCHECK_QEMU": "1"}), 127)
+        self.assertEqual(self.cant[0], "idf.py")
+
+
+class Smoke(unittest.TestCase):
+    """firmware_smoke() reads hive-fw's doctor, build and qemu."""
+
+    def smoke(self, doctor="idf       /hive/tools/fw/esp-idf-v4.4.8\nqemu      /q", build=(0, ""), qemu=(0, "ok")):
+        def fake(args, **kw):
+            out = {"doctor": (0 if "MISSING" not in doctor else 1, doctor), "build": build, "qemu": qemu}[args[1]]
+            return subprocess.CompletedProcess(args, out[0], out[1], "")
+        with mock.patch.object(hwcheck, "fw_bin", lambda: "fw"), mock.patch.object(subprocess, "run", fake), \
+                contextlib.redirect_stdout(io.StringIO()):
+            return hwcheck.firmware_smoke()
+
+    def test_boots(self):
+        self.assertEqual(self.smoke(), (True, None))
+        self.assertEqual(self.smoke(qemu=(1, "fw qemu: no boot line")), (False, None))
+
+    def test_no_fw_idf_or_qemu(self):
+        with mock.patch.object(hwcheck, "fw_bin", lambda: None):
+            self.assertEqual(hwcheck.firmware_smoke()[0], None)
+        self.assertEqual(self.smoke(doctor="idf       MISSING (fw setup)\nqemu      MISSING (fw setup)")[1][0],
+                         "idf.py")
+        self.assertEqual(self.smoke(doctor="idf       /i\nqemu      MISSING (fw setup)")[1][0],
+                         "qemu-system-xtensa")
+
+    def test_a_build_fails_unless_the_fetch_did_on_the_network(self):
+        self.assertEqual(self.smoke(build=(1, "error: hifi_main.c:3: expected ';'")), (False, None))
+        self.assertEqual(self.smoke(build=(1, "error: patch failed: main/x.c:1\nfw: prepare failed (1)")),
+                         (False, None))
+        got = self.smoke(build=(128, "fatal: unable to access 'https://github.com/': Could not resolve host"
+                                     "\nfw: prepare failed (128)"))
+        self.assertEqual(got[1][0], "squeezelite-fetch")
 
 
 class Pins(unittest.TestCase):

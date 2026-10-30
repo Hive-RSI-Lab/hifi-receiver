@@ -5,7 +5,10 @@
                                      the check: docs/product.md, the software's
                                      unit tests, the firmware's host tests, each
                                      tier's firmware pins against its board's
-                                     ESP32 pads (tools/pieces.py), then
+                                     ESP32 pads (tools/pieces.py), the
+                                     firmware booted in QEMU (hive-fw's fw
+                                     build --qemu and fw qemu) when firmware/
+                                     changed and fw has ESP-IDF and QEMU, then
                                      the hwde gates of each board whose files
                                      changed since the merge base with main
                                      (every board with --all or HWCHECK_ALL=1)
@@ -32,11 +35,12 @@ firmware's host tests are there to run.
 
 What ran but couldn't be verified is neither a pass nor a fail: a gate that
 couldn't fetch part models (hwde's dfm `unverified`: EasyEDA's rate limit,
-the network). With nothing
+the network), and a QEMU smoke whose source fetch failed on the network or
+whose QEMU wouldn't start. With nothing
 failing, the test then exits 127 too, naming what is unverified; any real
 failure still makes it exit 1. That 127 comes from the shell's own "not
-found" for a tool named for what is missing (easyeda-models),
-the only 127 the Hive reads as no verdict rather than a red.
+found" for a tool named for what is missing (easyeda-models,
+squeezelite-fetch, qemu-system-xtensa), the only 127 the Hive reads as no verdict rather than a red.
 """
 from __future__ import annotations
 
@@ -449,6 +453,71 @@ def cant_run(tool: str, why: list[str]) -> None:
     os.execvp("sh", ["sh", "-c", tool])
 
 
+def fw_bin() -> str | None:
+    """hive-fw's bin/fw: $FW_BIN, `fw` on PATH, or the installed module's
+    ($HIVE_MODULES, else /hive/modules)."""
+    mods = Path(os.environ.get("HIVE_MODULES") or "/hive/modules")
+    for c in (os.environ.get("FW_BIN"), shutil.which("fw"), mods / "hive-fw" / "bin" / "fw"):
+        if c and Path(c).is_file():
+            return str(c)
+    return None
+
+
+# A prepare step (firmware/tools/fetch.sh) that failed on the network, not on
+# the commit: git couldn't reach upstream or its submodules.
+NET = re.compile(r"unable to access|Could not resolve|Failed to connect|Connection (refused|reset|timed out)"
+                 r"|early EOF|RPC failed|returned error: \d+|Operation timed out", re.I)
+
+
+def firmware_smoke() -> tuple[bool | None, tuple[str, str] | None]:
+    """firmware/ built for QEMU and booted there by hive-fw (fw build --qemu,
+    fw qemu): the boot line, then firmware/fw.json's qemu.http probes over
+    QEMU's Ethernet (GET /api/v1/info first). (True, None) passed, (False,
+    None) failed; (None, (tool, why)) when hive-fw, its ESP-IDF or its QEMU
+    isn't here (fw doctor: /hive/tools/fw or the agent's own), and (False,
+    (tool, why)) when it couldn't run otherwise (the source fetch's network,
+    QEMU itself)."""
+    fw = fw_bin()
+    if not fw:
+        return None, ("fw", "no hive-fw (looked at $FW_BIN, fw on PATH, $HIVE_MODULES/hive-fw/bin/fw)")
+    proj = str(ROOT / "firmware")
+
+    def run(*args: str, timeout: int) -> tuple[int, str]:
+        try:
+            r = subprocess.run([fw, *args], capture_output=True, text=True, timeout=timeout,
+                               stdin=subprocess.DEVNULL)
+        except subprocess.TimeoutExpired:
+            return -1, f"fw {args[0]}: no answer in {timeout} s"
+        return r.returncode, (r.stdout + r.stderr).strip()
+
+    rc, out = run("doctor", proj, timeout=120)
+    missing = [ln.strip() for ln in out.splitlines() if "MISSING" in ln]
+    if rc or missing:
+        tool = "qemu-system-xtensa" if missing and all(m.startswith("qemu") for m in missing) else "idf.py"
+        return None, (tool, "no ESP-IDF or QEMU for fw here: " + ("; ".join(missing) or out[-300:]))
+    rc, out = run("build", proj, "--qemu", timeout=3600)
+    if rc:
+        if "prepare failed" in out and NET.search(out):
+            return False, ("squeezelite-fetch", "fetching squeezelite-esp32 failed on the network: "
+                           + next((ln for ln in reversed(out.splitlines()) if NET.search(ln)), "")[:200])
+        print(out[-4000:])
+        print(f"firmware (QEMU): FAIL (fw build --qemu exit {rc})", flush=True)
+        return False, None
+    rc, out = run("qemu", proj, timeout=900)
+    print(out[-2000:])
+    if rc not in (0, 1):
+        return False, ("qemu-system-xtensa", f"fw qemu exit {rc}: {out.splitlines()[-1] if out else ''}"[:300])
+    print(f"firmware (QEMU): {'pass' if rc == 0 else 'FAIL'}", flush=True)
+    return rc == 0, None
+
+
+def firmware_changed(all_boards: bool) -> bool:
+    if all_boards or os.environ.get("HWCHECK_ALL"):
+        return True
+    changed, _ = changed_files()
+    return changed is None or any(f.startswith("firmware/") for f in changed)
+
+
 def firmware_pins() -> list[str]:
     """Each tier's firmware that exists (firmware/board/<fw>) against its
     board: every pin it gives a job lands on its board's ESP32 on a net named
@@ -482,6 +551,18 @@ def cmd_test(all_boards: bool = False) -> int:
         bad.append("firmware/test")
     bad += firmware_pins()
     unv = []
+    if (ROOT / "firmware" / "fw.json").is_file() and not firmware_changed(all_boards):
+        print("firmware (QEMU): firmware/ unchanged, not booted", flush=True)
+    elif (ROOT / "firmware" / "fw.json").is_file():
+        ok, why = firmware_smoke()
+        if ok is None and not os.environ.get("HWCHECK_QEMU"):
+            # Not here yet: the smoke counts once /hive/tools/fw has them.
+            print(f"firmware (QEMU): not booted: {why[1]} (HWCHECK_QEMU=1 makes that couldn't-run)", flush=True)
+        elif why:
+            print(f"firmware (QEMU): couldn't run: {why[1]}", flush=True)
+            unv.append((why[0], f"firmware QEMU smoke: {why[1]}"))
+        elif not ok:
+            bad.append("firmware (QEMU)")
     dirs = boards()
     if not dirs:
         print("boards/: no boards yet, no gates to run")

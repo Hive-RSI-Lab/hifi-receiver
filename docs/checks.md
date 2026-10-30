@@ -36,8 +36,19 @@ It fails (exit 1) if any of these fails:
    tones, JSON and every test-API call and console command, against a mock
    board. Built in a scratch folder. Where there is no
    `make` or `cc`, the check exits 127: it couldn't run, no verdict.
-   The full ESP-IDF build is not part of the check: it needs
-   ESP-IDF and takes minutes ([firmware/README.md](../firmware/README.md)).
+   **When `firmware/` changed** (or with `--all`), the firmware is also
+   built for QEMU and booted there through hive-fw: `fw build firmware
+   --qemu`, then `fw qemu firmware`, which waits for the `hifi: hifi-lite on
+   …` boot line and makes `firmware/fw.json`'s `qemu.http` requests over
+   QEMU's Ethernet (`GET /api/v1/info` first, then state, volume and a 404).
+   A build or boot that fails is a fail. It takes minutes and needs ESP-IDF
+   v4.4.8 and Espressif's QEMU where fw looks (`fw doctor`: `/hive/tools/fw`,
+   shared by every check, or the agent's own). Until they are there, or with
+   no hive-fw (`$FW_BIN`, `fw` on `PATH`, `$HIVE_MODULES/hive-fw/bin/fw`),
+   the firmware is not booted and the test says so; `HWCHECK_QEMU=1` makes
+   that couldn't-run instead. A source fetch (`firmware/tools/fetch.sh`)
+   that failed on the network, or a QEMU that wouldn't start, is unverified
+   (below).
    **The firmware's pins against its board,** every run: for each tier
    whose firmware exists (`firmware/board/<fw>`), the score's firmware
    check (below), so a pin the firmware gives a job that isn't on the
@@ -77,9 +88,11 @@ fault in the environment, not a verdict on the commit.
 **Unverified is neither a pass nor a fail.** A gate that ran but couldn't
 fetch some parts' EasyEDA models (hwde's dfm exits 2 with an `unverified`
 block naming them; an older hwde exits 1 with only `cpl_fetch_failed`
-findings), is listed as unverified. If nothing else failed, the test
-prints what is unverified (the parts) and exits 127 through the shell's
-own not-found for a tool named for it (`easyeda-models`): the
+findings), and a QEMU smoke that couldn't run, are listed as unverified.
+If nothing else failed, the test prints what is unverified (the parts, or
+what the smoke lacked) and exits 127 through the shell's own not-found for
+a tool named for it (`easyeda-models`, `squeezelite-fetch`,
+`qemu-system-xtensa`, `idf.py`): the
 only 127 the Hive reads as couldn't-run, so it tests the change again
 later instead of calling it red. Any real failure beside it exits 1.
 
@@ -164,8 +177,9 @@ evaluator file, like `hwcheck.py`.
      `PIN_AMP_SDZ` on an `AMP_SDZ` net, and so on). The partitions can't
      overlap or run past the flash size the config sets, and the module on
      the board (its `-N8` in the value) has that much flash. Its suite is
-     the firmware's host tests, as in the test. The ESP-IDF build itself
-     isn't run: it needs ESP-IDF and minutes (see above).
+     the firmware's host tests, as in the test. The ESP-IDF build and the
+     QEMU boot aren't run here: they are the test's, when firmware/
+     changed (see above).
    - **`app`**: `app/build.py` packs `app/web` under its budget into a C
      table that compiles with `cc -Wall -Werror`; every file `index.html`
      loads is in the pack, with a manifest (name, start_url, icons in the
