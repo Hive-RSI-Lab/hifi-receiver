@@ -702,13 +702,6 @@
    "note": "the PD contract's 5 A through the shunt into the PVDD switch"
   },
   {
-   "net": "VBUS",
-   "from": "Q1",
-   "to": "Q3",
-   "current_a": 0.05,
-   "note": "Q3 unit 2's collector: the fast-off follower charges Q1's gate (~15 mA for ~2 ms), a signal path"
-  },
-  {
    "net": "+3V3",
    "from": "L10",
    "to": "U7",
@@ -746,6 +739,34 @@
    "to": "U16",
    "current_a": 5.0,
    "note": "and on Ultra across both zones"
+  },
+  {
+   "net": "VBUS",
+   "from": "R1",
+   "to": "Q3",
+   "current_a": 0.05,
+   "note": "Q3 unit 2's collector: the PVDD fast-off follower charges Q1's gate (~15 mA for ~2 ms), a signal path, not the PD contract's"
+  },
+  {
+   "net": "+5V",
+   "from": "L9",
+   "to": "U5",
+   "current_a": 1.1,
+   "note": "the trunk to the 3V3 buck (power_notes)"
+  },
+  {
+   "net": "+5V",
+   "from": "L9",
+   "to": "U6",
+   "current_a": 0.1,
+   "note": "LP5907 3V3A"
+  },
+  {
+   "net": "+5V",
+   "from": "L9",
+   "to": "J3",
+   "current_a": 0.15,
+   "note": "the ultra-front board over the FFC"
   }
  ]
 }
