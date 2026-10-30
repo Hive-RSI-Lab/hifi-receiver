@@ -1,0 +1,326 @@
+{
+ "domain": "PAD",
+ "board": "lite-main",
+ "findings": [
+  {
+   "id": "R4-PAD-1",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "Q12",
+    "R80",
+    "R81",
+    "Q13",
+    "Q14",
+    "Q15",
+    "R36",
+    "R38"
+   ],
+   "nets": [
+    "+5V",
+    "MUTE_DET",
+    "SUB_MUTE",
+    "SUB_L",
+    "SUB_R"
+   ],
+   "finding": "Sub-out mute trip follows Q12 Vbe x 6.45 (-13 mV/C): SUB_MUTE 1.0 V at +5V 4.86 V (-20 C, hFE 60, R tol 2 %), 4.56 (0 C), 3.94 (25 C), 3.22-3.33 (70 C); fully on (3.5 V) only at 2.94-2.97 V hot. Hot, the mute relies on the ES8388 holding LOUT2 at VMID down to AVDD ~2 V. Worst part (JSCJ 2N7002 Vth 2.5 V, Rds 7 ohm max x1.4 hot): -62 mV in a 20-80 Hz band vs -0.60 V unmuted (-20 dB; typical -6 mV, -40 dB). With round 2's premise (LOUT2 moves at +5V 3.4 V) and a slow +5V fall at 70 C: -0.57 V, mute ineffective.",
+   "evidence": "docs/review-4/sims/pad/mute/tb_trip_*.cir, tb_loss_*.cir (run.sh); JSCJ 2N7002 LCSC C8545 datasheet (Vth 1/1.6/2.5 V, Rds 1.1/7 ohm at 5 V); ES8388 DS rev 5.0 AVDD 1.7-3.6 V",
+   "reference_design": "DIY TPA3118 supply-sense mutes (pedalpcb, diyaudio 379831) use a zener/transistor sense with the same trip-vs-supply trade; a voltage detector IC is temperature-flat",
+   "fix": "R36/R38 100R -> 470R 0603 (LCSC C23179, verify; also R3-SYSTEM-7 ESD fix): worst corner -33 mV (-25 dB). Bring-up: unplug after 30 min loud (box ~60 C), scope SUB_L and +5V, record +5V where LOUT2 leaves 1.65 V. Next spin if it moves above +5V ~3 V: 4.0 V open-drain voltage detector in place of Q12/R80/R81.",
+   "margin": "normal op: mute <= 0.14 V vs Vth min 1.0 V at all corners; hot: full mute at 2.94 V vs LOUT2 hold to ~2.0 V (assumed): 0.9 V"
+  },
+  {
+   "id": "R4-PAD-4",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "C1",
+    "C3",
+    "C4",
+    "C5",
+    "Q1",
+    "C58",
+    "C59"
+   ],
+   "nets": [
+    "VBUS",
+    "PVDD"
+   ],
+   "finding": "VBUS capacitance at attach 15.8 uF nominal (~13 uF at 5 V) vs Type-C cSnkBulk 10 uF; with Q1 on, 706 uF on VBUS vs PD cSnkBulkPd 100 uF (also via Q1 body diode on negative transitions/hard reset). Lite is immune to the field failure (bulk behind a PG-gated soft-start switch) but is out of spec.",
+   "evidence": "sum of root.py values; sonocotta/esp32-audio-dock#202",
+   "reference_design": "#202's proposed fix is exactly Lite's Q1 + PG; TPS54302 table 7-2 input 10 uF + 0.1 uF",
+   "fix": "None required. Bring-up: 20 attaches each on Apple 30 W and 96/140 W and an Anker multi-port, plus a second device plugged into the multi-port while playing. Contingency: DNP C4.",
+   "margin": "13 uF vs 10 uF at attach (-30 %)"
+  },
+  {
+   "id": "R4-PAD-5",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "U7",
+    "Q13",
+    "Q15"
+   ],
+   "nets": [
+    "SUB_L",
+    "SUB_R"
+   ],
+   "finding": "squeezelite DAC_CONTROLSET (HIFI_LITE) writes LOUT2/ROUT2 = 30 (0 dB) and LOUT1/ROUT1 = 28; SUB_CODE_MAX 26 lands 2 s later in codec_apply(). A 0 dBFS sub in that window swings 1.41 Vpk, past the mute FETs' -Vth (1.0 V min): clipped negative half.",
+   "evidence": "firmware/patches/0001 DAC_CONTROLSET reg 48/49 val 30; board_lite.c hifi_bsp_route() 2000 ms; docs/review-3/sims/fix/lite_mute/tb_play_0dB_info",
+   "reference_design": "-",
+   "fix": "patches/0001 DAC_CONTROLSET HIFI_LITE: reg 48/49 val 26, reg 46/47 val 27.",
+   "margin": "2 s after codec init only"
+  },
+  {
+   "id": "R4-PAD-7",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "R3-DIGITAL-5",
+   "refs": [
+    "R30",
+    "R31",
+    "R66",
+    "R67",
+    "R68",
+    "R69",
+    "R54"
+   ],
+   "nets": [],
+   "finding": "Still open: LINE_DIVIDER 2.0 (15k/10k), HIFI_HAS_TAPS 0 with taps fitted, PIN_AMP_SDZ comment says 100k (R54 10k).",
+   "evidence": "esp/hifi_board_lite.h at HEAD",
+   "reference_design": "-",
+   "fix": "As R3-DIGITAL-5 / R3-AUDIO-5.",
+   "margin": "-"
+  },
+  {
+   "id": "R4-PAD-8",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "R3-DIGITAL-6",
+   "refs": [
+    "U6",
+    "J1"
+   ],
+   "nets": [
+    "USB_DP",
+    "USB_DM"
+   ],
+   "finding": "Still open: no ESD array on USB D+/D-.",
+   "evidence": "root.py: no USBLC6",
+   "reference_design": "core uses USBLC6-2SC6",
+   "fix": "USBLC6-2SC6 (C2687116) within 5 mm of J1.",
+   "margin": "-"
+  },
+  {
+   "id": "R4-PAD-2",
+   "board": "lite-main",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "Q12",
+    "R80",
+    "R81"
+   ],
+   "nets": [
+    "+5V",
+    "SUB_MUTE"
+   ],
+   "finding": "5 V-only port (+5V 4.2-4.7 V): sub out fully muted at 0 C (SUB_MUTE 3.4 V at 4.2 V), off at 25 C (0.11 V). Amp is off there anyway.",
+   "evidence": "docs/review-4/sims/pad/mute/tb_trip_zero, tb_trip_cold, tb_trip_room",
+   "reference_design": "-",
+   "fix": "Document; R4-PAD-1 detector contingency removes it.",
+   "margin": "25 C: 0.26 V"
+  },
+  {
+   "id": "R4-PAD-3",
+   "board": "lite-main",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "U7",
+    "Q12"
+   ],
+   "nets": [
+    "SUB_L"
+   ],
+   "finding": "Power-up not covered: mute releases at +5V ~3.9 V, the ES8388 starts seconds later; VMID ramp (tau 0.25 s) gives a 0.31 V sub-sonic bump, 16 mV in 20-80 Hz (-31 dB vs the unmuted unplug thump).",
+   "evidence": "docs/review-4/sims/pad/mute/tb_powerup.cir",
+   "reference_design": "-",
+   "fix": "Accept.",
+   "margin": "16 mV in band"
+  },
+  {
+   "id": "R4-PAD-6",
+   "board": "lite-main",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "U7",
+    "U8"
+   ],
+   "nets": [],
+   "finding": "DJ-direct is analog and bypasses hifi_gov_process(): no power/thermal governor. Bounded now by the analog caps (5.4 Vrms = 7.3 W/ch into 4 ohm, 14.6 W < 18 W thermal cap). R3-AUDIO-4's raise to 10.9 Vrms (29.7 W/ch) would exceed both thermal and contract limits ungoverned.",
+   "evidence": "hifi_main.c l.935 (governor on squeezelite samples only); board_lite.c codec_apply DJ branch",
+   "reference_design": "-",
+   "fix": "Cap DJ-direct at <= 6.0 Vrms (9 W/ch into 4 ohm) unless it gets a governor.",
+   "margin": "14.6 W vs 18 W"
+  },
+  {
+   "id": "R4-PAD-9",
+   "board": "lite-main",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "Q13",
+    "Q14",
+    "Q15"
+   ],
+   "nets": [
+    "SUB_L",
+    "SUB_R"
+   ],
+   "finding": "At SUB_CODE_MAX the sub swings -0.71 Vpk vs 2N7002 Vth min 1.0 V (25 C), ~0.82 V at 70 C: 0.11 V; sub-threshold leakage est. <= 20 uA into 100R, <= 0.3 % on the worst part hot.",
+   "evidence": "hand calc; JSCJ 2N7002 Vth min",
+   "reference_design": "-",
+   "fix": "None.",
+   "margin": "0.11 V hot"
+  }
+ ],
+ "round2_fixes_checked": [
+  {
+   "id": "R3-AUDIO-2",
+   "holds": true,
+   "how": "check_pad_nets.py (netlist, PCB pad nets, values, MUTE_RES/MUTE_S membership), BOM/CPL rows; docs/review-3/sims/fix/lite_mute re-run pass; corners in sims/pad/mute: works typical (-40 dB), weak at hot worst corner (R4-PAD-1)"
+  },
+  {
+   "id": "R3-SYSTEM-1",
+   "holds": true,
+   "how": "docs/review-3/sims/system/run_gov.sh at HEAD: Lite 60/65 W peak 0.96x/0.91x, 0 ms over"
+  },
+  {
+   "id": "R3-POWER-3",
+   "holds": true,
+   "how": "peak_frac 1.0 in hifi_gov_cfg_lite; run_gov.sh pass"
+  },
+  {
+   "id": "R3-SYSTEM-2",
+   "holds": true,
+   "how": "thermal_out_w 18 W (both channels) = 9 W/ch, tau 30 s (R3-LAYOUT-13); DJ-direct not covered (R4-PAD-6)"
+  },
+  {
+   "id": "R3-SYSTEM-5",
+   "holds": true,
+   "how": "amp_on forced off until codec_up + 2500 ms; input change holds 200 ms; fw_duties.py L4/C5 pass"
+  },
+  {
+   "id": "R3-SYSTEM-9",
+   "holds": true,
+   "how": "NVS hifi_input written in input_changed(), restored at init; fw_duties.py pass"
+  },
+  {
+   "id": "SUB_CODE_MAX (R3-AUDIO-2 firmware cap)",
+   "holds": true,
+   "how": "sub_code() clamps 26; controlset writes 30 for the first 2 s (R4-PAD-5)"
+  },
+  {
+   "id": "OTW step-down (C2)",
+   "holds": true,
+   "how": "n/a on Lite: otw = false (TPA3118 has no OTW pin)"
+  },
+  {
+   "id": "R3-DIGITAL-5",
+   "holds": false,
+   "how": "constants unchanged (R4-PAD-7)"
+  },
+  {
+   "id": "R3-DIGITAL-6",
+   "holds": false,
+   "how": "no USB ESD array (R4-PAD-8)"
+  }
+ ],
+ "field_issues": [
+  {
+   "issue": "CH224K board with 2820 uF on VBUS refused by Apple PD chargers",
+   "source": "https://github.com/sonocotta/esp32-audio-dock/issues/202",
+   "our_board": "immune",
+   "how": "bulk behind PG-gated Q1, 28 ms ramp; 13-16 uF at attach (R4-PAD-4)"
+  },
+  {
+   "issue": "CH224K trigger boards cycling during negotiation",
+   "source": "https://goughlui.com/2026/07/09/quick-review-hw-443-ch224k-based-usb-c-pd-trigger-board/",
+   "our_board": "immune",
+   "how": "CH224A VHV direct to VBUS, no CH224K VDD shunt"
+  },
+  {
+   "issue": "PD hard reset with sink bulk back-feeding VBUS",
+   "source": "USB PD tSafe0V; round 2 power",
+   "our_board": "immune",
+   "how": ">= 200 ohm source discharge reaches 0.16 V at 650 ms (round 2)"
+  },
+  {
+   "issue": "TPA3116/3118 power-off pop; supply-sense mutes",
+   "source": "TI SLOS708G 7.4; https://www.diyaudio.com/community/threads/power-on-thump-noise-shut-down-pop-up-noise-remover-circuit-for-tpa3116d2-tpa3118d2.379831/ ; https://forum.pedalpcb.com/threads/tpa3118-60w-power-amp-module.2015/page-8",
+   "our_board": "immune",
+   "how": "SDZ low within 10 ms of VBUS < 13 V/PG loss; sub out has R3-AUDIO-2 mute (R4-PAD-1)"
+  },
+  {
+   "issue": "TPA3118 pop when muting in SPW mode",
+   "source": "https://e2e.ti.com/support/audio-group/audio/f/audio-forum/618444/tpa3118d2-pop-noise-when-mute-in-spw-mode",
+   "our_board": "n/a",
+   "how": "BD mode (MODSEL=GND)"
+  },
+  {
+   "issue": "TPA3118 DC detect on DC-coupled input",
+   "source": "SLOS708G 7.3",
+   "our_board": "immune",
+   "how": "1 uF AC coupling"
+  },
+  {
+   "issue": "ESP32 GPIO36/39 glitch on ADC power-up",
+   "source": "ESP32 errata 3.11",
+   "our_board": "immune",
+   "how": "40 ms debounce"
+  }
+ ],
+ "tests_built": [
+  {
+   "path": "docs/review-4/sims/pad/check_pad_nets.py",
+   "checks": "61 netlist/PCB/firmware cross-checks (mute, PVDD switch + PG interlock, CH224A, amp control, ESP32 GPIO map vs firmware and squeezelite Kconfig, dividers, straps, auto-program)",
+   "result": "pass"
+  },
+  {
+   "path": "docs/review-4/sims/pad/mute/run.sh",
+   "checks": "15 ngspice benches: mute trip vs temp/hFE/tolerance, unplug thump at worst part/temps/fall rates/codec premises incl. 470R fix, power-up; 20-80 Hz sub band filter",
+   "result": "pass (errors 0; 5 warnings documenting R4-PAD-1/-2)"
+  }
+ ],
+ "known_unknowns": [
+  {
+   "fact": "+5V at which the ES8388 LOUT2 leaves VMID on power loss",
+   "board": "lite-main",
+   "refs": [
+    "U7",
+    "U4"
+   ],
+   "status": "unverified",
+   "source": "ES8388 DS rev 5.0 AVDD min 1.7 V suggests ~2 V",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "CH224A fallback/PG/OVP when a source drops the 20 V PDO while 706 uF holds VBUS",
+   "board": "lite-main",
+   "refs": [
+    "U1",
+    "Q1"
+   ],
+   "status": "unverified",
+   "source": "WCH CH224 DS V2.0 silent",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  }
+ ]
+}

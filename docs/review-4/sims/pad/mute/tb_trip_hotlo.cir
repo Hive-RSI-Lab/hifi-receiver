@@ -1,0 +1,22 @@
+* Lite sub mute: +5V threshold where SUB_MUTE turns the 2N7002s on, 70 C, R80/R81 tol x0.98, BF 416.4.
+* MUTE_RES held at 4.55 V (C90 charged from 5.18 V through Q11). DC sweep of +5V 5.3 -> 2.0 V.
+.param VTO=1.6 KP=0.27 TOLHI=0.98 BFQ=416.4
+.include models.inc
+.include circuit.inc
+.options TEMP=70 TNOM=25
+V5 p5 0 5
+VRES resx 0 4.55
+RRES resx res 1
+Vl lout 0 1.65
+Vr rout 0 1.65
+.dc V5 5.3 2.0 -0.005
+* +5V at which SUB_MUTE reaches 1.0 V (VTO min: the FETs begin to conduct)
+.measure dc v5_at_1v0 FIND v(p5) WHEN v(mute)=1.0 CROSS=1
+* +5V at which SUB_MUTE reaches 3.5 V (VTO max 2.5 V + 1 V: muted on any part)
+.measure dc v5_at_3v5 FIND v(p5) WHEN v(mute)=3.5 CROSS=1
+* SUB_MUTE on the 5 V-only port's lowest +5V (4.2 V: 4.5 V VBUS - 0.3 V dropout)
+.measure dc mute_at_4v2 FIND v(mute) AT=4.2
+* SUB_MUTE at the buck's low corner (5.18 V -2 %, a Wi-Fi burst dip) and nominal
+.measure dc mute_at_5v0 FIND v(mute) AT=5.0
+.measure dc mute_at_5v18 FIND v(mute) AT=5.18
+.end
