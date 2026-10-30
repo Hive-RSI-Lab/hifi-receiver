@@ -200,7 +200,7 @@ function zoneB() {
   const z = S.audio.zone_b || {};
   return h('div', {},
     h('div.row', {}, h('span.grow', {}, 'Zone B speakers'), onOff(z.on, (on) => set('zone', { zone: 'b', on }))),
-    z.on && h('div.row', {}, h('span.dim', {}, 'Level'),
+    z.on && z.volume != null && h('div.row', {}, h('span.dim', {}, 'Level'),
       h('div.grow', {}, slider({ min: 0, max: 100, value: z.volume }, (v) => set('zone', { zone: 'b', volume: v })))));
 }
 

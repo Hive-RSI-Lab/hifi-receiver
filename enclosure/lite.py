@@ -1,243 +1,72 @@
-"""The Lite enclosure: a printed base and lid around lite-main.
+"""Lite: lite-main in a two-part PETG box, built and fit-checked by hive-mech's `mech build`.
 
-    ~/venv-cad/bin/python enclosure/lite.py     writes enclosure/out/lite/*.step, *.stl
+    mech build enclosure/lite.py -o enclosure/out/lite
 
-Everything is placed from enclosure/lite-main.board.json (kicad_board.py's
-read of the board), so a moved hole or connector moves its cut-out. The frame:
-X = the board's u (left to right seen from the front), Y = 90 - v (front edge
-at Y = 0, rear edge at Y = 90), Z up from the underside of the base.
+It shares core_box.py's pieces with Plus and Ultra: the screws from below
+through the base and the board into lid pillars, round RCA holes with a port
+per barrel, binding posts on the rear wall, the light pipe. Everything is in
+mech's board frame: mm, x right along the front edge, y back (the rear panel
+is the N edge, y = 90), z up, z = 0 the board's bottom face.
 
-How it goes together (README.md): the board drops onto four standoffs, the
-four binding posts go through the rear wall and are wired to J4, the lid goes
-on, and four M3 x 12 screws from underneath pass through the base and the
-board into the lid's pillars. The screws clamp the board between standoff and
-pillar and pull the lid onto the walls; nothing else holds it.
-
-Both parts print without supports in PETG or ASA: the base on its floor, the
-lid on its top face. Holes in the walls are teardrops (pointed up) or flat
-topped rectangles short enough to bridge.
+The board is changed before mech's fit check sees it: the speaker terminal
+(J4) is internal (the posts are wired to it), the RCA jacks are cut to their
+body inside the rear wall, the IR receiver's lens is a port through the front
+wall, and each binding post's nut and lug is a box the check knows.
 """
-from __future__ import annotations
-
-import json
-import math
+import sys
 from pathlib import Path
 
-from build123d import (Align, Axis, Box, Cylinder, Location, Locations, Plane, Polygon, Pos, Rot,
-                       RectangleRounded, Solid, extrude, export_step, export_stl, fillet)
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from mech.box import block  # noqa: E402
+from mech.kicad import Port  # noqa: E402
 
-HERE = Path(__file__).resolve().parent
-BOARD = json.loads((HERE / "lite-main.board.json").read_text())
-HEIGHTS = json.loads((HERE / "heights.json").read_text())
+from core_box import GAP, T_PCB, base, light_pipe, lid, post_ports, rca_ports, tray  # noqa: E402
 
-# ---- parameters (mm) ------------------------------------------------------
-W, H = BOARD["outline"]["w"], BOARD["outline"]["h"]
-T_PCB = BOARD["thickness"]
-GAP = 0.6           # board edge to inner wall face
-WALL = 2.4          # 6 perimeters at 0.4
-FLOOR = 2.0
-STANDOFF = 5.0      # floor top to board bottom: clears 2.9 mm of RCA pins
-LID = 2.2
-R_OUT = 4.0         # outer corner radius, plan view
-Z_PB = FLOOR + STANDOFF          # board bottom
-Z_PT = Z_PB + T_PCB              # board top
-HEADROOM = 36.0     # board top to lid underside: RCA 27 mm + the binding posts above them
-Z_LID = Z_PT + HEADROOM          # lid underside = top of the walls
-X0, X1 = -GAP - WALL, W + GAP + WALL
-Y0, Y1 = -GAP - WALL, H + GAP + WALL
+BOARD = "lite-main.board.json"   # mech board ../boards/lite-main/kicad/lite-main.kicad_pcb --heights heights.json
+PRINT = {"lid": "flip", "btn_SW1": "flip", "btn_SW2": "flip", "btn_SW3": "flip"}
+FIT = {"max_recess": {"*": 3.0, "U9": 4.0}}   # U9 is seen through its window, not plugged: its lens 3.5 mm in
 
-SCREW_CLEAR = 3.4   # M3 through standoff and floor
-SCREW_HEAD = 6.0    # counterbore for an M3 socket or pan head
-HEAD_DEPTH = 3.0
-STANDOFF_OD = 7.0
-PILLAR_OD = 6.0
-PILLAR_PILOT = 2.5  # M3 thread-forming into PETG
-PILLAR_SHORT = 0.2  # pillar ends this far above the board, so the screw pulls the lid onto the walls
-
-RCA_HOLE = 12.0     # passes a plug's outer shell onto the jack's 8.3 mm barrel
-RCA_BARRELS = (6.5, 20.5)        # barrel axes above the board top (STEP model, corrected)
-USB_OPEN = (13.4, 7.4)           # passes common USB-C overmolds (<= 12.4 x 6.5)
-USB_AXIS = 1.65                  # receptacle axis above the board top (USB4105, 3.3 mm tall)
-POST_HOLE = 4.3     # M4-thread 4 mm binding posts, the common cheap kind
-POST_Z = 31.5       # above the board top: their nuts and lugs pass over the RCA bodies
-POST_U = (16.0, 35.0, 65.0, 84.0)  # u of each post; README gives which is which
-IR_WINDOW = (9.0, 8.0)           # w x h, centred on the receiver's lens
-IR_LENS_Z = 5.0
-BUTTON_W = 8.0      # flexure tongue width
-BUTTON_L = 14.0     # tongue length, tip to hinge
-BUTTON_T = 1.2      # tongue thickness (the lid's top skin)
-SLOT = 0.8
-STALK_OD = 4.0
-STALK_GAP = 0.3     # stalk tip above the switch's actuator
-LED_PIPE_OD, LED_PIPE_ID, LED_GAP = 4.6, 2.6, 0.6
+GAPS = {k: GAP["W"] for k in "WSEN"}      # 0.6 all round: nothing overhangs Lite's edges
+HEADROOM = 36.0     # board top to lid underside: RCA 27 mm, then the binding posts' nuts above them
+POST_X = (16.0, 35.0, 65.0, 84.0)         # 19 mm within a pair (dual banana plugs): L+ L-, R+ R- seen from behind
+POST_Z = T_PCB + 31.5                     # over the RCA bodies
+IR_WINDOW = (9.0, 8.0)                    # w x h round the IRM-3638T's lens
+IR_LENS_Z = T_PCB + 5.0
+LABEL = (40.0, 22.0, 0.8)                 # underside recess for a printed sticker
 
 
-def fp(ref):
-    return next(f for f in BOARD["footprints"] if f["ref"] == ref)
-
-
-def xy(u, v):
-    return u, H - v
-
-
-def height(f):
-    name = f["footprint"].split(":")[-1]
-    return HEIGHTS.get(name, HEIGHTS["default"])
-
-
-def teardrop(d, length, axis="y"):
-    """A hole along Y (through a front or rear wall) with a 45-degree point on
-    top, so it prints without support. Centred at the origin."""
-    r = d / 2
-    # the circle from 45 degrees round the bottom to 135, then the point on top
-    pts = [(r * math.cos(math.radians(a)), r * math.sin(math.radians(a))) for a in range(45, -226, -5)]
-    pts.append((0, r * math.sqrt(2)))
-    prof = Polygon(*pts, align=None)
-    return extrude(Plane.XZ * prof, amount=length / 2, both=True)
-
-
-def wall_window(w, h, length, r=1.0):
-    """A rounded rectangular hole along Y, centred at the origin."""
-    return extrude(Plane.XZ * RectangleRounded(w, h, min(r, w / 2 - 0.01, h / 2 - 0.01)), amount=length / 2, both=True)
-
-
-# ---- the base -------------------------------------------------------------
-
-def base():
-    outer = extrude(Pos((X0 + X1) / 2, (Y0 + Y1) / 2) * RectangleRounded(X1 - X0, Y1 - Y0, R_OUT), Z_LID)
-    inner = extrude(Pos(W / 2, H / 2, FLOOR) * RectangleRounded(W + 2 * GAP, H + 2 * GAP, R_OUT - WALL + 0.5), Z_LID)
-    b = outer - inner
-    # standoffs, through holes and the screw-head counterbores from below
-    for h in BOARD["holes"]:
-        x, y = xy(h["u"], h["v"])
-        b += Pos(x, y, FLOOR) * Cylinder(STANDOFF_OD / 2, STANDOFF, align=(Align.CENTER, Align.CENTER, Align.MIN))
-        b -= Pos(x, y, 0) * Cylinder(SCREW_CLEAR / 2, Z_PB, align=(Align.CENTER, Align.CENTER, Align.MIN))
-        b -= Pos(x, y, 0) * Cylinder(SCREW_HEAD / 2, HEAD_DEPTH, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    y_rear = H + GAP + WALL / 2
-    y_front = -GAP - WALL / 2
-    cut = WALL + 2
-    # rear: the two RCA pairs
-    for ref in ("J2", "J3"):
-        x, _ = xy(fp(ref)["u"], 0)
-        for zb in RCA_BARRELS:
-            # round, not a teardrop: two 12 mm holes 14 mm apart leave no room
-            # for a point, and PETG bridges the top of a 12 mm circle cleanly
-            b -= Pos(x, y_rear, Z_PT + zb) * Rot(90, 0, 0) * Cylinder(RCA_HOLE / 2, cut)
-    # rear: USB-C
-    x, _ = xy(fp("J1")["u"], 0)
-    b -= Pos(x, y_rear, Z_PT + USB_AXIS) * wall_window(*USB_OPEN, cut, r=2.0)
-    # rear: binding posts
-    for u in POST_U:
-        b -= Pos(u, y_rear, Z_PT + POST_Z) * teardrop(POST_HOLE, cut)
-    # front: the IR receiver's window
-    ir = fp("U9")
-    b -= Pos(ir["u"], y_front, Z_PT + IR_LENS_Z) * wall_window(*IR_WINDOW, cut, r=1.0)
-    # floor vents under the amplifier (U8) and its inductors
-    for x in vent_columns():
-        b -= Pos(x, H - 38.0, 0) * Box(2.0, 26.0, FLOOR * 3)
-    # underside: label recess and four rubber-foot recesses
-    b -= Pos(W / 2 - 20, H / 2 + 2, 0) * Box(40.0, 22.0, 0.8)
-    for fx, fy in ((12, 12), (W - 12, 12), (12, H - 12), (W - 12, H - 12)):
-        b -= Pos(fx, fy, 0) * Cylinder(5.5, 0.8)
-    return b
-
-
-def vent_columns():
-    u8 = fp("U8")
-    return [u8["u"] - 14 + 4 * i for i in range(8)]
-
-
-# ---- the lid --------------------------------------------------------------
-
-def lid():
-    plate = Pos(0, 0, Z_LID) * extrude(Pos((X0 + X1) / 2, (Y0 + Y1) / 2) * RectangleRounded(X1 - X0, Y1 - Y0, R_OUT), LID)
-    l = plate
-    # pillars down to the board's mounting holes
-    plen = HEADROOM - PILLAR_SHORT
-    for h in BOARD["holes"]:
-        x, y = xy(h["u"], h["v"])
-        l += Pos(x, y, Z_LID) * Cylinder(PILLAR_OD / 2, plen, align=(Align.CENTER, Align.CENTER, Align.MAX))
-        l -= Pos(x, y, Z_LID - plen) * Cylinder(PILLAR_PILOT / 2, 13.0, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    # locating tabs just inside the walls, clear of the binding posts on the rear
-    tab = 1.2
-    inset = GAP - 0.25
-    for (cx, cy, sx, sy) in ((-inset + tab / 2 - 0.0, H / 2, tab, 20), (W + inset - tab / 2, H / 2, tab, 20),
-                             (W / 4, -inset + tab / 2, 20, tab), (3 * W / 4 - 10, -inset + tab / 2, 14, tab)):
-        l += Pos(cx, cy, Z_LID) * Box(sx, sy, 3.0, align=(Align.CENTER, Align.CENTER, Align.MAX))
-    # button flexures: a tongue of the lid's top skin, hinged towards the rear
-    for ref in ("SW1", "SW2", "SW3"):
-        s = fp(ref)
-        x, y = xy(s["u"], s["v"])
-        y_tip = max(y - BUTTON_W / 2 + 0.5, -GAP + 0.6)    # stay inside the front wall
-        y_hinge = y_tip + BUTTON_L
-        cx, cy = x, (y_tip + y_hinge) / 2
-        ring = Pos(cx, cy, Z_LID - 1) * Box(BUTTON_W + 2 * SLOT, BUTTON_L + SLOT, LID + 2) \
-            - Pos(cx, cy + SLOT / 2, Z_LID - 1) * Box(BUTTON_W, BUTTON_L + SLOT, LID + 2)
-        l -= ring
-        # thin the tongue from below to BUTTON_T
-        l -= Pos(cx, cy + SLOT / 2, Z_LID) * Box(BUTTON_W, BUTTON_L + SLOT, LID - BUTTON_T, align=(Align.CENTER, Align.CENTER, Align.MIN))
-        stalk_top = Z_LID + (LID - BUTTON_T)
-        stalk_bot = Z_PT + height(s)["above"] + STALK_GAP
-        l += Pos(x, y, stalk_bot) * Cylinder(STALK_OD / 2, stalk_top - stalk_bot + 0.01, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    # status LED light pipe
-    d = fp("D2")
-    x, y = xy(d["u"], d["v"])
-    y = max(y, -GAP + LED_PIPE_OD / 2 + 0.1)
-    bot = Z_PT + height(d)["above"] + LED_GAP
-    l += Pos(x, y, bot) * Cylinder(LED_PIPE_OD / 2, Z_LID - bot + 0.01, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    l -= Pos(x, y, bot - 1) * Cylinder(LED_PIPE_ID / 2, Z_LID + LID - bot + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    # vent slots over the amplifier
-    for xv in vent_columns():
-        l -= Pos(xv, H - 38.0, Z_LID - 1) * Box(2.0, 26.0, LID + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    return l
-
-
-# ---- the board, as keep-out boxes, for the fit check and the assembly view --
-
-def board_solid():
-    s = Pos(W / 2, H / 2, Z_PB) * extrude(RectangleRounded(W, H, max(BOARD["outline"]["corner_radius"], 0.1)), T_PCB)
-    for h in BOARD["holes"]:
-        x, y = xy(h["u"], h["v"])
-        s -= Pos(x, y, Z_PB - 1) * Cylinder(h["drill"] / 2, T_PCB + 2, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    return s
-
-
-def part_boxes():
-    """(ref, solid) for every footprint: its courtyard, from the board top to
-    its height, and its through-hole pads' box from the board bottom down to
-    the pin ends."""
-    out = []
-    for f in BOARD["footprints"]:
-        if not f["courtyard"] or f["ref"].startswith("H"):
-            continue
-        u0, v0, u1, v1 = f["courtyard"]
-        hgt = height(f)
-        x0, x1 = u0, u1
-        y0, y1 = H - v1, H - v0
-        solid = Pos((x0 + x1) / 2, (y0 + y1) / 2, Z_PT) * Box(x1 - x0, y1 - y0, hgt["above"], align=(Align.CENTER, Align.CENTER, Align.MIN))
-        if hgt["below"] > 0 and f.get("tht_pads"):
-            p0, q0, p1, q1 = f["tht_pads"]
-            solid += Pos((p0 + p1) / 2, H - (q0 + q1) / 2, Z_PB) * Box(p1 - p0, q1 - q0, hgt["below"], align=(Align.CENTER, Align.CENTER, Align.MAX))
-        out.append((f["ref"], solid))
-    return out
-
-
-OUT = HERE / "out" / "lite"
-
-
-def main():
-    OUT.mkdir(parents=True, exist_ok=True)
-    parts = {"lite-base": base(), "lite-lid": lid()}
-    for name, p in parts.items():
-        export_step(p, str(OUT / f"{name}.step"))
-        # STLs in their print orientation: base on its floor, lid on its top face
-        pr = p if name == "lite-base" else Rot(180, 0, 0) * p
-        bb = pr.bounding_box()
-        pr = Pos(-bb.min.X, -bb.min.Y, -bb.min.Z) * pr
-        export_stl(pr, str(OUT / f"{name}.stl"), tolerance=0.02, angular_tolerance=0.2)
-        print(name, "volume %.1f cm3" % (p.volume / 1000), "bbox %.1f x %.1f x %.1f" % (bb.size.X, bb.size.Y, bb.size.Z))
+def build(board):
+    z_top = T_PCB + HEADROOM
+    y_wall_n = board.size[1] + GAPS["N"]
+    board.ports = [p for p in board.ports if p.ref == "J1"]   # USB-C; J4 is wired to the posts inside
+    feats = {}
+    rca_ports(board, ("J2", "J3"), feats, GAPS["N"])
+    post_ports(board, POST_X, {"A": POST_Z}, y_wall_n, feats)
+    # IR: the receiver looks forward out of a window in the front wall
+    u = board.part("U9")
+    board.ports.append(Port("U9", "S", [u.x - IR_WINDOW[0] / 2, u.x + IR_WINDOW[0] / 2,
+                                        IR_LENS_Z - IR_WINDOW[1] / 2, IR_LENS_Z + IR_WINDOW[1] / 2],
+                            u.bbox[1], 0.0, "top"))
+    t = tray(board, "lite", GAPS, z_top)
+    b = base(t, feats, ports=("J1", "U9"))
+    # vents over and under the amplifier (U8) and its inductors; the label recess underneath
+    a = board.part("U8")
+    vent = (a.x - 15, 39.0, a.x + 15, 65.0)
+    b = t.vents(b, vent, along="y", where="floor")
+    w, h, d = LABEL
+    cx, cy = board.size[0] / 2 - 20, board.size[1] / 2 - 2
+    b -= block(cx - w / 2, cy - h / 2, t.z_bottom - 1, cx + w / 2, cy + h / 2, t.z_bottom + d)
+    l = lid(t, feats)
+    l = t.vents(l, vent, along="y")
+    # status LED: a light pipe, pulled back from the front wall where the LED sits at the edge
+    d2 = board.part("D2")
+    od = 4.6
+    dy = max(0.0, -GAPS["S"] + od / 2 + 0.1 - (d2.bbox[1] + d2.bbox[3]) / 2)
+    l = light_pipe(t, l, "D2", od=od, idd=2.6, dy=dy)
+    parts = {"base": b}
+    for sw in ("SW1", "SW2", "SW3"):
+        l, btn = t.button(l, sw, d=4.6, rim=0.8)
+        parts[f"btn_{sw}"] = btn
+    parts["lid"] = l
     return parts
 
-
-if __name__ == "__main__":
-    main()

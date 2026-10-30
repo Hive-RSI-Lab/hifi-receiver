@@ -12,9 +12,12 @@
 
 #include "hifi_ir.h"
 #include "hifi_meta.h"
+#include "hifi_capture.h"
+#include "hifi_ota.h"
 #include "hifi_pd.h"
 #include "hifi_power.h"
 #include "hifi_tone.h"
+#include "hifi_update.h"
 
 #define HIFI_API_VERSION 1
 
@@ -69,6 +72,8 @@ typedef struct {
 	float eq[HIFI_EQ_BANDS];
 	int volume, max_volume;   /* hifi_vol.h */
 	bool mute;
+	int zones;                /* 2: zone B below is reported */
+	bool zone_b_on;           /* zone B plays zone A's program at its volume */
 	hifi_meta_t playing;      /* elapsed_ms as of now; state NONE: null */
 	/* remote */
 	int ir_learning;          /* an action, or -1 */
@@ -77,11 +82,13 @@ typedef struct {
 	uint32_t ir_last_code;
 	/* net, sys */
 	const char *net_mode; /* "sta" or "ap" */
+	bool eth_present, eth_up; /* a board with Ethernet; its link has an address */
 	char ssid[33];
 	char hostname[33];
 	char ip[16];        /* empty when not connected */
 	int rssi;           /* 0 when unknown */
 	uint32_t heap_free, psram_free;
+	hifi_update_status_t update; /* the app's updates; idle: not reported */
 } hifi_snapshot_t;
 
 #define HIFI_SELFTEST_MAX 16
@@ -96,6 +103,31 @@ typedef struct {
 	int n;
 	hifi_check_t c[HIFI_SELFTEST_MAX];
 } hifi_selftest_t;
+
+/* The relay link (docs/remote.md) */
+typedef struct {
+	bool configured, connected;
+	char url[96], user[48], prefix[24];
+	char dev[13];
+	int keys;                   /* trusted signing keys in this build */
+	uint32_t accepted, rejected; /* commands since boot */
+} hifi_remote_status_t;
+
+/* A Wi-Fi network a scan found */
+typedef struct {
+	char ssid[33];
+	int rssi;
+	bool secure;
+} hifi_wifi_ap_t;
+
+#define HIFI_WIFI_SCAN_MAX 20
+
+/* Which image runs, and what the last rollback was */
+typedef struct {
+	const char *slot;  /* "ota_0", "ota_1" or "recovery" */
+	const char *state; /* "valid", "pending_verify" (on trial) or "unknown" */
+	char last_from[32], last_reason[96]; /* empty: no rollback recorded */
+} hifi_ota_status_t;
 
 typedef struct {
 	void (*info)(hifi_info_t *out);
@@ -119,11 +151,35 @@ typedef struct {
 	void (*ir_learn)(int action);  /* hifi_ir_action_t */
 	void (*ir_forget)(int action); /* -1: all of them */
 	void (*selftest)(hifi_selftest_t *out);
+
+	/* Optional: NULL where the build or board can't (the call answers 404,
+	 * or 409 for capture). */
+	/* fills frames of interleaved stereo; 0, or an HTTP status with *err */
+	int (*capture)(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_info_t *info, const char **err);
+	int (*set_wifi)(const char *ssid, const char *password); /* 0: joining */
+	void (*remote_status)(hifi_remote_status_t *out);
+	int (*remote_set)(const char *url, const char *user, const char *password, const char *prefix);
+	hifi_ota_t *ota;   /* the update session, with the board's flash writes */
+	void (*ota_status)(hifi_ota_status_t *out);
+	/* the networks in range: how many it wrote, or -1 while the radio is busy */
+	int (*wifi_scan)(hifi_wifi_ap_t *aps, int max);
+	int (*wifi_forget)(void); /* back to the receiver's own network; 0 ok */
+	/* zone B's amp on or off (Ultra; core has no level of its own for it) */
+	void (*set_zone)(bool on);
+	/* the update manifest's offer: 0, or an HTTP status with *err set */
+	int (*update_check)(hifi_update_offer_t *out, const char **err);
+	/* downloads and installs an image in the background (state's "update");
+	 * sha256 NULL: the one the last check offered for that url, if any.
+	 * 0, or an HTTP status with *err set */
+	int (*update_start)(const char *url, const char *sha256, const char **err);
 } hifi_ops_t;
 
 /* Returns the HTTP status; the reply (always a JSON object) is in out. */
 int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 		    const char *body, char *out, size_t cap);
+
+/* The reply buffer a request needs: 4 KB, or more for a capture. */
+size_t hifi_api_reply_cap(const char *path, const char *body);
 
 /* Shared by /state and the console */
 void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap);

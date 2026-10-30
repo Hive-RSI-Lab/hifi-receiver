@@ -41,7 +41,9 @@ static void normal_power_up(void) {
 	o = run(100);
 	CHECK(p.state == HIFI_PWR_SOFT_START);
 	CHECK(o->pvdd_en && !o->amp_on);                   /* PVDD before the amp */
-	o = run(150);
+	o = run(350);
+	CHECK(p.state == HIFI_PWR_SOFT_START && !o->amp_on); /* PVDD still ramping */
+	o = run(100);
 	CHECK(p.state == HIFI_PWR_ON);
 	CHECK(o->pvdd_en && o->amp_on);
 
@@ -58,7 +60,7 @@ static void brownout_and_recovery(void) {
 	setup(0);
 	in.pg = true;
 	in.vbus_v = 20.0f;
-	run(500);
+	run(800);
 	CHECK(p.state == HIFI_PWR_ON);
 	in.vbus_v = 8.0f; /* charger sagging */
 	const hifi_power_out_t *o = run(10);
@@ -68,7 +70,7 @@ static void brownout_and_recovery(void) {
 	CHECK(p.state == HIFI_PWR_UNDERVOLT && !o->pvdd_en); /* waits recover_ms */
 	o = run(200);
 	CHECK(p.state == HIFI_PWR_SOFT_START && o->pvdd_en && !o->amp_on);
-	run(200);
+	run(400);
 	CHECK(p.state == HIFI_PWR_ON);
 
 	in.vbus_v = 26.0f;
@@ -82,11 +84,38 @@ static void brownout_and_recovery(void) {
 	CHECK(p.state == HIFI_PWR_WAIT_PD);
 }
 
+/* a 9 or 12 V contract can't turn lite-main's PVDD switch on fully: amp off */
+static void low_contract_keeps_amp_off(void) {
+	setup(0);
+	in.pg = true;
+	in.vbus_v = 12.0f;
+	const hifi_power_out_t *o = run(5000);
+	CHECK(!o->pvdd_en && !o->amp_on);
+	in.vbus_v = 15.0f;
+	o = run(800);
+	CHECK(p.state == HIFI_PWR_ON && o->amp_on);
+
+	/* a 15 V contract sagging under load stays on above the 13 V floor */
+	in.vbus_v = 13.8f;
+	o = run(5000);
+	CHECK(p.state == HIFI_PWR_ON && o->amp_on);
+	in.vbus_v = 12.9f;
+	o = run(10);
+	CHECK(p.state == HIFI_PWR_UNDERVOLT && !o->amp_on);
+	/* and it comes back only once VBUS is over the 14 V start floor again */
+	in.vbus_v = 13.8f;
+	o = run(3000);
+	CHECK(p.state == HIFI_PWR_UNDERVOLT && !o->pvdd_en);
+	in.vbus_v = 15.0f;
+	o = run(1100);
+	CHECK(p.state == HIFI_PWR_SOFT_START && o->pvdd_en);
+}
+
 static void pg_drop_turns_off(void) {
 	setup(0);
 	in.pg = true;
 	in.vbus_v = 20.0f;
-	run(500);
+	run(800);
 	in.pg = false;
 	const hifi_power_out_t *o = run(10);
 	CHECK(p.state == HIFI_PWR_WAIT_PD && !o->pvdd_en && !o->amp_on);
@@ -96,12 +125,12 @@ static void faults_retry_then_latch(void) {
 	setup(0);
 	in.pg = true;
 	in.vbus_v = 20.0f;
-	run(500);
+	run(800);
 	CHECK(p.out.amp_on);
 
 	in.fault = true;
 	const hifi_power_out_t *o = run(10);
-	/* inside the 50 ms blanking after enable? no: it's been on 150 ms */
+	/* inside the 50 ms blanking after enable? no: it's been on 200 ms */
 	CHECK(!o->amp_on && p.faults == 1 && !p.latched);
 	in.fault = false;
 	o = run(900);
@@ -113,7 +142,7 @@ static void faults_retry_then_latch(void) {
 	setup(100000);
 	in.pg = true;
 	in.vbus_v = 20.0f;
-	run(500);
+	run(800);
 	hifi_power_amp_enable(&p, false);
 	run(10);
 	hifi_power_amp_enable(&p, true);
@@ -145,7 +174,7 @@ static void idle_off(void) {
 	setup(0);
 	in.pg = true;
 	in.vbus_v = 20.0f;
-	run(500);
+	run(800);
 	CHECK(p.out.amp_on);
 	in.audio = false;
 	const hifi_power_out_t *o = run(p.cfg.idle_off_ms - 1000);
@@ -161,7 +190,7 @@ static void timer_wraparound(void) {
 	setup(0xFFFFFF00u); /* the ms counter wraps during power-up */
 	in.pg = true;
 	in.vbus_v = 20.0f;
-	run(500);
+	run(800);
 	CHECK(p.state == HIFI_PWR_ON && p.out.amp_on);
 }
 
@@ -169,6 +198,7 @@ int main(void) {
 	laptop_port_never_powers_amp();
 	normal_power_up();
 	brownout_and_recovery();
+	low_contract_keeps_amp_off();
 	pg_drop_turns_off();
 	faults_retry_then_latch();
 	idle_off();

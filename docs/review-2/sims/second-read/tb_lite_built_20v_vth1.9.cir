@@ -1,0 +1,19 @@
+Lite as #48 built it (R6 220k, C19 4.7u ~3u at bias): VBUS 20 V, PVDD_EN at 20 ms, 2 A amp load from 400 ms; Vth 1.9
+.include models.inc
+.param vto_p=1.9
+.param cgs=3u
+.include lite_pvdd_fix.inc
+Vsrc vsrc 0 PWL(0 20 1 20)
+V3 V3V3 0 3.3
+Vpg vpg 0 3.3
+Ven PVDD_EN 0 PWL(0 0 20m 0 20.01m 3.3)
+Iload PVDD 0 PWL(0 0 400m 0 401m 2)
+.ic v(PVDD)=0 v(PSW_G)=20 v(VBUS)=20 v(PSW_MILLER)=20
+.tran 50u 600m 0 50u uic
+.meas tran t_start when v(PVDD)=1 rise=1
+.meas tran t90 when v(PVDD)=18.0 rise=1
+.meas tran pvdd_120ms find v(PVDD) at=120m
+.meas tran vsg_final find par('v(VBUS)-v(PSW_G)') at=399m
+.meas tran vds_2a find par('v(VBUS)-v(PVDD)') at=599m
+.meas tran pfet_2a find par('(v(VBUS)-v(PVDD))*(-i(Vfetm))') at=599m
+.end
