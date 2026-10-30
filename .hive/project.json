@@ -1,4 +1,5 @@
 {
   "test": "python3 tools/hwcheck.py test",
+  "forge_tests": ["test (ubuntu-latest)"],
   "score": {"command": "python3 tools/hwcheck.py score", "direction": "lower", "tolerance": 0.1, "paths": ["tools/hwcheck.py", "tools/pieces.py", "tools/bom_estimate.py", "tools/product.json"]}
 }
