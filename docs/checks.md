@@ -98,10 +98,13 @@ the committed cache is `cpl_no_model`, a failure.
 
 **The whole product, in USD, lower is better.** The person asked for the
 whole product (`.hive/goals.md`, 10-28 16:55Z): every tier's board, plus the
-firmware, the app and the enclosures. So the score is the sum of two kinds
+firmware, the app and the enclosures. The person orders a board as soon as
+it is said to be ready (10-29 02:05Z), so the score is the sum of three kinds
 of term. Each tier counts at its unit cost above its BOM budget once its
 boards are done. Each
-piece costs a flat amount until it is there and its tests pass. What counts
+piece costs a flat amount until it is there and its tests pass. Each open
+fact that could stop a board costs a flat amount until it is verified or
+resolved. What counts
 is in [`tools/product.json`](../tools/product.json). That file is an
 evaluator file, like `hwcheck.py`.
 
@@ -138,9 +141,10 @@ evaluator file, like `hwcheck.py`.
    $129 / 4 = $32.25, Ultra $199 / 4 = $49.75. Under budget, a first spin's
    contingencies (test points, loopback taps, a spare part) cost nothing and
    cutting them gains nothing; only cost past the budget counts, cent for
-   cent. **A score of 0 means the product is complete:** every tier's
+   cent. **A score of 0 means the product is order-ready:** every tier's
    boards pass their gates, carry every needed function and sit within
-   budget, and every piece passes.
+   budget, every piece passes, and no fact that could stop a board is
+   open (3, below).
 
    The cost of a counted tier is the sum of its boards' costs. Each
    board's cost per unit at 100 boards is the sum of:
@@ -210,27 +214,37 @@ evaluator file, like `hwcheck.py`.
      numbered heading in `user-manual.md` or `quick-start.md`; and every
      numbered section of both is cited by at least one fact.
 
-The output gives each tier's cost or why it doesn't count, and each piece's
-state. The number alone is on the last line.
+3. **Each open fact that could stop a board: 100** (`open_fact`). These
+   are the facts `python3 tools/known_unknowns.py --check` lists, for every
+   tier: a row of the review's `docs/review-2/<domain>.json` marked
+   `could_stop_board` that `docs/review-2/resolutions.json` doesn't mark
+   `verified` (with its source and date) or `resolved` (fixed in the
+   design, or justified with its margin). `docs/known-unknowns.md` is the
+   page. A board can pass every gate and still rely on a pinout nobody has
+   read off its datasheet. Closing a fact lowers the score by 100, and a
+   tier isn't order-ready while one is open.
 
-**If a gate couldn't run** (hwde exits 2 or more: a broken tool, not a
-verdict), the score prints no number and exits 1. The same goes for a
-gate whose only findings are `cpl_fetch_failed`: hwde couldn't fetch the
-parts' EasyEDA models because of a rate limit or the network, which says
-nothing about the board. A board that commits its model cache
-(`parts/easyeda/`, as `lite-main` and `core` do, every part of every
-population) needs no fetch. If hwde, make or cc
-isn't there at all, it exits 127, as the test does. Neither one is a
-verdict on the commit. A gate that runs and fails (exit 1) is a verdict:
-that tier doesn't count.
+The output gives each tier's cost or why it doesn't count, each piece's
+state and the open facts. The number alone is on the last line.
 
 **Tolerance 0.1 USD**, about 1% of Lite's estimate. The cost comes only from
 committed files, so it's the same on every run. A change that costs
 10 cents or less per unit (a fix's extra capacitor) isn't reverted as a loss.
 
 **Evaluator paths:** `tools/hwcheck.py`, `tools/pieces.py`,
-`tools/bom_estimate.py` and `tools/product.json`. Changing any of them is the person's to merge, and it
+`tools/bom_estimate.py` and `tools/product.json`. The score also reads
+`tools/known_unknowns.py`'s rule for an open fact, which isn't on that list
+yet (`.hive/project.json` is the person's). Changing any of them is the person's to merge, and it
 starts a new baseline. Adding a tier's function or a piece goes in
 `product.json`.
 `docs/product.md` isn't listed, because it changes with most tasks. The
 score no longer reads it. The test holds its Boards row to `product.json`.
+
+## The hwde the gates run
+
+The Hive's own check and score run the hwde it publishes in
+`/hive/tools/hwde`, which follows the installed hive-hwde module. The forge's
+CI (`.github/workflows/ci.yml`) checks out hive-hwde's current main. Neither
+is pinned, so a new hwde check reaches every board at once: every test on
+main re-gates every board. Both print the hwde commit that ran, so a red gate
+can be traced to an hwde change.
