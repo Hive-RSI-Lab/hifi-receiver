@@ -18,7 +18,7 @@
     {"what": "Wi-Fi + Bluetooth Classic module with PSRAM", "match": "ESP32-WROVER|ESP32-PICO-(V3-02|MINI-02)", "count": 1},
     {"what": "USB serial for bring-up from a laptop", "match": "CH34[03]|CP210\\d|FT23\\d", "count": 1},
     {"what": "RCA jacks: line in and sub out", "match": "RCA|XDJK", "count": 2},
-    {"what": "speaker terminals, L and R (4 contacts)", "match": "DB128|KF301|BINDING|BANANA|SCREW TERMINAL|TERMINAL BLOCK", "pads": 4},
+    {"what": "board-mounted 4 mm binding posts or banana jacks, L and R (4 contacts)", "match": "BINDING POST|BANANA|4 ?MM (JACK|SOCKET)", "in": ["mpn", "description"], "pads": 4},
     {"what": "IR receiver", "match": "IRM-|TSOP|VS1838|INFRARED", "count": 1},
     {"what": "3 front buttons", "match": "BUTTON|TACT|TS-1187", "count": 3}
    ]
@@ -40,7 +40,7 @@
     {"what": "Wi-Fi + Bluetooth Classic module with PSRAM", "match": "ESP32-WROVER|ESP32-PICO-(V3-02|MINI-02)", "count": 1},
     {"what": "USB serial for bring-up from a laptop", "match": "CH34[03]|CP210\\d|FT23\\d", "count": 1},
     {"what": "RCA jacks: line in and sub out", "match": "RCA|XDJK", "count": 2},
-    {"what": "speaker terminals, L and R (4 contacts)", "match": "DB128|KF301|BINDING|BANANA|SCREW TERMINAL|TERMINAL BLOCK", "pads": 4},
+    {"what": "board-mounted 4 mm binding posts or banana jacks, L and R (4 contacts)", "match": "BINDING POST|BANANA|4 ?MM (JACK|SOCKET)", "in": ["mpn", "description"], "pads": 4},
     {"what": "IR receiver", "match": "IRM-|TSOP|VS1838|INFRARED", "count": 1},
     {"what": "volume knob", "match": "EC1[12]|ROTARY ENCODER", "count": 1},
     {"what": "2 buttons", "match": "BUTTON|TACT|TS-1187", "count": 2}
@@ -65,7 +65,7 @@
     {"what": "Wi-Fi + Bluetooth Classic module with PSRAM", "match": "ESP32-WROVER|ESP32-PICO-(V3-02|MINI-02)", "count": 1},
     {"what": "USB serial for bring-up from a laptop", "match": "CH34[03]|CP210\\d|FT23\\d", "count": 1},
     {"what": "RCA jacks: line in and sub out", "match": "RCA|XDJK", "count": 2},
-    {"what": "speaker terminals, zones A and B (8 contacts)", "match": "DB128|KF301|BINDING|BANANA|SCREW TERMINAL|TERMINAL BLOCK", "pads": 8},
+    {"what": "board-mounted 4 mm binding posts or banana jacks, zones A and B (8 contacts)", "match": "BINDING POST|BANANA|4 ?MM (JACK|SOCKET)", "in": ["mpn", "description"], "pads": 8},
     {"what": "FFC link between core and the front board", "match": "FFC|FPC", "count": 2},
     {"what": "colour screen connector", "match": "LCD|ST7789|TFT|DISPLAY", "count": 1, "in": ["role"]},
     {"what": "IR receiver", "match": "IRM-|TSOP|VS1838|INFRARED", "count": 1},

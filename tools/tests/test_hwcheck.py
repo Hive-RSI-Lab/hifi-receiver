@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import hwcheck  # noqa: E402
 
 SPEC = hwcheck.SPEC
+POSTS = "board-mounted 4 mm binding posts"
 
 
 def found(board, **kw):
@@ -19,7 +20,10 @@ def found(board, **kw):
 
 class Needs(unittest.TestCase):
     def check_tier(self, tier, lines):
-        return [m for m in (hwcheck.lacks(n, lines) for n in SPEC["tiers"][tier]["needs"]) if m]
+        """What the committed boards lack, less the speaker posts: until task
+        261030-140102 puts binding posts on the boards, they may lack those."""
+        return [m for m in (hwcheck.lacks(n, lines) for n in SPEC["tiers"][tier]["needs"])
+                if m and not m.startswith(POSTS)]
 
     def test_committed_boards_carry_their_tier_functions(self):
         for tier in ("lite", "plus"):
@@ -28,6 +32,22 @@ class Needs(unittest.TestCase):
                      for x in found(b["board"], **{k: v for k, v in b.items() if k != "board"})]
             if lines:
                 self.assertEqual(self.check_tier(tier, lines), [], tier)
+
+    def test_speaker_outputs_are_binding_posts(self):
+        """Screw terminals don't count as the banana outputs the brief asks
+        for, whatever the BOM line's comment says; an LCSC binding post or
+        banana jack does."""
+        def line(mpn, description, comment="SPK L banana"):
+            return {"refs": ["J6"], "pads": 4, "text": {"comment": comment, "mpn": mpn, "value": comment,
+                                                        "description": description, "role": comment}}
+        screw = [line("KF301-5.0-2P", "1x2P 5mm Screw Terminal Blocks ROHS"),
+                 line("DB128V-5.08-4P-GN-S", "16A 1x4P 5.08mm Screw Terminal Blocks ROHS")]
+        posts = [line("BP-4MM-RED", "4mm Through Hole Banana and Tip Connectors - Binding Posts ROHS")]
+        for tier in ("lite", "plus"):
+            need = next(n for n in SPEC["tiers"][tier]["needs"] if n["what"].startswith(POSTS))
+            for x in screw:
+                self.assertIsNotNone(hwcheck.lacks(need, [x]), (tier, x["text"]["mpn"]))
+            self.assertIsNone(hwcheck.lacks(need, posts), tier)
 
     def test_dropping_a_function_is_caught(self):
         if not (hwcheck.BOARDS / "lite-main" / "state.json").is_file():
