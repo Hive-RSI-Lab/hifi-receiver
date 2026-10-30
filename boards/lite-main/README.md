@@ -34,7 +34,7 @@ product.md's Boards row.
 
 | Block | Parts | Notes |
 |---|---|---|
-| USB-C + PD | J1 HRO TYPE-C-31-M-12 (20 V/5 A), U1 CH224A, D1 SMBJ20A | asks for 20 V (Rset 120k); I2C 0x22 on the codec's bus, so firmware reads the protocol status (0x09) and the PDO's max current (0x50). The CH224A has no SRCCAP registers (CH224Q only). |
+| USB-C + PD | J1 HRO TYPE-C-31-M-12 (20 V/5 A), U1 CH224A, D1 SMBJ22A | asks for 20 V (Rset 120k); I2C 0x22 on the codec's bus, so firmware reads the protocol status (0x09) and the PDO's max current (0x50). The CH224A has no SRCCAP registers (CH224Q only). |
 | PVDD switch | Q1 AO4485, Q4 MMBT3904 | on only when GPIO18 is high **and** the PD contract is good (Q4's emitter is CH224A PG); C19 holds the gate shut on VBUS steps; soft start ~28 ms, 0.41 A inrush; R16 bleeder |
 | 5 V | U2 TPS54302, L5 10 uH | TI design-example values |
 | 3.3 V | U3 SY8089 (digital), U4 LP5907 (codec analog) | |
@@ -119,9 +119,14 @@ was done about each finding is in
   the firmware can drop it before a PD renegotiation.
 - **5 V buck is a TPS54302**, not the SY8303 in the cost estimate: TI's
   datasheet design example gives every value. 5.18 V (100k/13k, Basic parts).
-- **SMBJ20A TVS** (breakdown 22.2–24.5 V), not 24 V: it clamps nearer the
-  30 V abs-max of the TPS54302 and TPA3118. A TVS can't hold a 20 V bus under
-  30 V at its full rated surge; that residual risk is noted.
+- **SMBJ22A TVS** (BORN C151920; standoff 22 V, breakdown 24.4–26.9 V,
+  clamp 35.5 V at 16.9 A). PD allows 20 V +5 %, so the rail can sit at 21 V:
+  the SMBJ20A first fitted had a 20 V standoff, under that, and hwde's USB-C
+  PD sink rule asks for working >= 22 V. A 22 V part is the lowest standoff
+  that holds 21 V; it still breaks down below the 30 V abs-max of the
+  TPS54302 and TPA3118. Same SMB footprint, pin 1 = cathode. No TVS can
+  hold a 21 V bus under 30 V at its full rated surge; that residual risk is
+  review-2 POWER-9 (PD attaches at 5 V, so real surge energy is small).
 - **TPA3118 gain 26 dB.** The ES8388's full scale (~0.9 Vrms) x 20 clips at
   20 V into 4 ohm 3.7 dB before 0 dBFS, so firmware caps the codec volume.
   20 dB would leave only 20 W.
@@ -185,7 +190,7 @@ All gates last passed on hive-hwde c23e27e (2026-10-29), after the review-2 ECO.
 
 ## Cost
 
-**$13.16 per board at 100**: parts $10.48, JLC assembly $2.06, PCB $0.62.
+**$13.17 per board at 100**: parts $10.49, JLC assembly $2.06, PCB $0.62.
 This is the project score, `python3 tools/hwcheck.py score`, priced from the
 real `fab/BOM.csv`, the board's pad counts and its outline.
 

@@ -182,29 +182,6 @@ class Facts(unittest.TestCase):
         self.assertGreater(SPEC["open_fact"], 0)
 
 
-class HwdeRef(unittest.TestCase):
-    """CI gates with tools/hwde.ref's hwde; a bump re-gates every board."""
-
-    def test_the_pin_is_a_full_commit(self):
-        self.assertRegex(hwcheck.pinned_hwde(), r"^[0-9a-f]{40}$")
-
-    def test_a_bump_regates_every_board(self):
-        self.assertIn("tools/hwde.ref", hwcheck.GATE_ALL)
-
-    def test_ci_reads_the_pin(self):
-        ci = (hwcheck.ROOT / ".github" / "workflows" / "ci.yml").read_text()
-        self.assertIn("tools/hwde.ref", ci)
-        self.assertNotRegex(ci, r"HWDE_REF: *[0-9a-f]{7,}")
-
-    def test_same_commit(self):
-        full = "482732550cf2290d26f3ae047e6f48e32cc73715"
-        self.assertTrue(hwcheck.same_commit("4827325", full))
-        self.assertTrue(hwcheck.same_commit(full, full))
-        self.assertFalse(hwcheck.same_commit("aa1ec48", full))
-        self.assertFalse(hwcheck.same_commit("48", full))
-        self.assertFalse(hwcheck.same_commit(None, full))
-
-
 class Spec(unittest.TestCase):
     def test_spec_is_whole(self):
         self.assertEqual(sorted(SPEC["tiers"]), sorted(hwcheck.TIERS))

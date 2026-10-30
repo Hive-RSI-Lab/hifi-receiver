@@ -227,31 +227,6 @@ evaluator file, like `hwcheck.py`.
 The output gives each tier's cost or why it doesn't count, each piece's
 state and the open facts. The number alone is on the last line.
 
-## The hwde CI gates with
-
-The Hive's own check and score run the hwde it publishes in
-`/hive/tools/hwde` (its commit in `/hive/tools/hwde.version`). The forge's CI
-(`.github/workflows/ci.yml`) checks out hive-hwde at the commit
-`tools/hwde.ref` names. Both print which hwde ran, and when it isn't
-the pinned one, they print the pin too. When every board passes under the
-Hive's hwde and that isn't the pin, the score says so on a line of its own:
-`hwde <commit> passes every board: bump tools/hwde.ref to it`. Make the bump
-then (the full 40-character commit, from the hive-hwde module's clone).
-Changing `tools/hwde.ref` re-gates every board, like a change to
-`hwcheck.py`, so a bump merges only once main passes under the new hwde,
-and CI never runs behind an hwde the boards already pass.
-
-**If a gate couldn't run** (hwde exits 2 or more: a broken tool, not a
-verdict), the score prints no number and exits 1. The same goes for a
-gate whose only findings are `cpl_fetch_failed`: hwde couldn't fetch the
-parts' EasyEDA models because of a rate limit or the network, which says
-nothing about the board. A board that commits its model cache
-(`parts/easyeda/`, as `lite-main` and `core` do, every part of every
-population) needs no fetch. If hwde, make or cc
-isn't there at all, it exits 127, as the test does. Neither one is a
-verdict on the commit. A gate that runs and fails (exit 1) is a verdict:
-that tier doesn't count.
-
 **Tolerance 0.1 USD**, about 1% of Lite's estimate. The cost comes only from
 committed files, so it's the same on every run. A change that costs
 10 cents or less per unit (a fix's extra capacitor) isn't reverted as a loss.
@@ -264,3 +239,12 @@ starts a new baseline. Adding a tier's function or a piece goes in
 `product.json`.
 `docs/product.md` isn't listed, because it changes with most tasks. The
 score no longer reads it. The test holds its Boards row to `product.json`.
+
+## The hwde the gates run
+
+The Hive's own check and score run the hwde it publishes in
+`/hive/tools/hwde`, which follows the installed hive-hwde module. The forge's
+CI (`.github/workflows/ci.yml`) checks out hive-hwde's current main. Neither
+is pinned, so a new hwde check reaches every board at once: every test on
+main re-gates every board. Both print the hwde commit that ran, so a red gate
+can be traced to an hwde change.

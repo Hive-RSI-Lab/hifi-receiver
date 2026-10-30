@@ -81,8 +81,6 @@ UNVERIFIED = 127
 # Software whose stdlib unittest suite (<dir>/tests/test_*.py) the test runs.
 SOFTWARE = ("tools", "bench", "app")
 QTY = SPEC["qty"]
-# The hive-hwde commit CI gates with (.github/workflows/ci.yml reads it).
-HWDE_REF = ROOT / "tools" / "hwde.ref"
 
 
 # ---- docs/product.md ------------------------------------------------------
@@ -218,15 +216,6 @@ def hwde_version(bin_: str) -> str | None:
         return None
 
 
-def pinned_hwde() -> str:
-    return HWDE_REF.read_text(encoding="utf-8").strip()
-
-
-def same_commit(a: str | None, b: str) -> bool:
-    """Two commit ids name the same commit (one may be abbreviated)."""
-    return bool(a) and len(min(a, b, key=len)) >= 7 and (a.startswith(b) or b.startswith(a))
-
-
 def unverified(rc: int, r: dict, log: str) -> str | None:
     """What a gate run left unverified, or None: the parts whose models hwde
     couldn't fetch. hwde's dfm says so as exit 2 with an `unverified` block
@@ -297,10 +286,7 @@ def run_gates(dirs: list[Path]) -> dict[Path, list[tuple[str, int]]]:
     """Each board's gate failures (see gate_board), by its folder."""
     bin_ = hwde()
     ver = hwde_version(bin_)
-    pin = pinned_hwde()
-    print(f"hwde {ver[:12] if ver else '(version unknown)'} at {bin_}"
-          + ("" if same_commit(ver, pin) else f"; CI gates with {pin[:12]} (tools/hwde.ref)"), flush=True)
-    run_gates.version = ver
+    print(f"hwde {ver[:12] if ver else '(version unknown)'} at {bin_}", flush=True)
     scratch = Path(tempfile.mkdtemp(prefix="hwcheck-"))
     try:
         (scratch / "logs").mkdir()
@@ -317,9 +303,7 @@ def run_gates(dirs: list[Path]) -> dict[Path, list[tuple[str, int]]]:
 
 
 # What always re-gates every board when it changes: the gate runner itself.
-# and the hwde CI gates with: a bump of tools/hwde.ref merges only once every
-# board passes under the new hwde.
-GATE_ALL = ("tools/hwcheck.py", "tools/hwde.ref")
+GATE_ALL = ("tools/hwcheck.py",)
 
 
 def git(*args: str) -> str | None:
@@ -612,10 +596,6 @@ def cmd_score() -> int:
         print(f"score: no number: gates couldn't run ({'; '.join(broken)})")
         return 1
     total, lines = 0.0, []
-    ver = getattr(run_gates, "version", None)
-    if have and not any(gates.values()) and ver and not same_commit(ver, pinned_hwde()):
-        lines.append(f"hwde {ver[:12]} passes every board: bump tools/hwde.ref to it, "
-                     f"so CI gates with it")
     for name, tier in tiers.items():
         unit, why = tier_cost(tier, gates)
         if unit is None:
