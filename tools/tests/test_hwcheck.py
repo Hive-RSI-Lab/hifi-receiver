@@ -154,6 +154,8 @@ class Spec(unittest.TestCase):
         self.assertEqual(sorted(SPEC["tiers"]), sorted(hwcheck.TIERS))
         for name, tier in SPEC["tiers"].items():
             self.assertTrue(tier["builds"] and tier["needs"], name)
+            # A tier's budget is a BOM cost, far below what a missing tier costs.
+            self.assertTrue(0 < tier["budget"] < SPEC["tier_not_counted"], name)
         # A missing tier outweighs any tier's real cost, so landing one is a gain.
         self.assertGreater(SPEC["tier_not_counted"], 200)
 
