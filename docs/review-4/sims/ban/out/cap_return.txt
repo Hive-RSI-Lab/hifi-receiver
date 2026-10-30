@@ -1,0 +1,22 @@
+   path: F(91,83) F(92,87) F(88,87) F(84,84) F(85,80) B(84,79) B(84,83) B(84,87) B(84,91) B(86,95) B(90,96) B(94,98) B(98,102)
+FAIL C68: GND return 58.7 mm (1 layer change(s)) to U8; forward 26.1 mm; loop ~69 mm2
+   path: F(100,83) F(100,87) F(96,87) F(92,87) F(88,87) F(85,84) F(85,81) B(84,79) B(84,83) B(84,87) B(84,91) B(86,95) B(90,96) B(94,100) B(98,104)
+FAIL C69: GND return 67.2 mm (1 layer change(s)) to U8; forward 22.3 mm; loop ~191 mm2
+   path: F(108,83) F(109,87) F(106,91) F(104,95) F(102,99)
+PASS C70: GND return 22.0 mm (0 layer change(s)) to U8; forward 23.0 mm; loop ~21 mm2
+   path: F(114,83) F(110,87) F(106,91) F(104,95) F(102,99)
+PASS C71: GND return 23.8 mm (0 layer change(s)) to U8; forward 27.8 mm; loop ~127 mm2
+--- d1543da^ (before the banana change)
+   path: F(91,79) B(89,80) B(86,81) B(86,85) B(86,89) B(86,93) B(88,96) B(92,96) B(96,100) B(100,104)
+FAIL C68: GND return 41.9 mm (1 layer change(s)) to U8; forward 29.4 mm; loop ~73 mm2
+   path: F(100,79) B(102,79) B(106,80) F(109,82) F(108,86) F(105,90) F(104,94) F(102,98)
+FAIL C69: GND return 38.2 mm (2 layer change(s)) to U8; forward 26.1 mm; loop ~152 mm2
+   path: F(108,79) F(109,83) F(108,87) F(105,91) F(104,95) F(102,99)
+PASS C70: GND return 26.0 mm (0 layer change(s)) to U8; forward 26.7 mm; loop ~22 mm2
+   path: F(117,79) F(117,83) F(115,85) F(111,85) F(107,88) F(105,92) F(103,96) F(102,100)
+FAIL C71: GND return 33.8 mm (0 layer change(s)) to U8; forward 30.9 mm; loop ~122 mm2
+--- TAP_R run under L1/L2 deleted (what-if)
+PASS C68: GND return 22.1 mm (0 layer change(s)) to U8; forward 26.1 mm; loop ~68 mm2
+PASS C69: GND return 19.4 mm (0 layer change(s)) to U8; forward 22.3 mm; loop ~41 mm2
+PASS C70: GND return 22.0 mm (0 layer change(s)) to U8; forward 23.0 mm; loop ~21 mm2
+PASS C71: GND return 23.8 mm (0 layer change(s)) to U8; forward 27.8 mm; loop ~127 mm2
