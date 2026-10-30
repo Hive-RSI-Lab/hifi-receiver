@@ -17,6 +17,7 @@
 
 typedef struct {
 	float vbus_v;   /* volts */
+	float pvdd_v;   /* PVDD after the switch; NaN: the board has no PVDD sense */
 	bool pg;        /* the PD contract is good */
 	bool fault;     /* an amp says fault */
 	float vbus_i_a; /* NaN: the board has no current sense */

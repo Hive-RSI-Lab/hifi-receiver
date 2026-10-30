@@ -1,57 +1,49 @@
 {
  "parts": [
   {
-   "lcsc": "C165948",
+   "lcsc": "C5184243",
    "refdes": [
     "J1"
    ],
-   "value": "TYPE-C-31-M-12",
-   "mpn": "TYPE-C-31-M-12",
-   "brand": "Korean Hroparts Elec",
+   "value": "USB4105-GF-A-120",
+   "mpn": "USB4105-GF-A-120",
+   "brand": "Global Connector Technology",
    "package": "SMD",
    "basic": false,
-   "stock": 292461,
-   "price": 0.1871,
+   "stock": 2416,
+   "price": 0.9171,
    "price_breaks": [
     {
      "qty": 1,
-     "price": 0.1871
+     "price": 0.9171
     },
     {
-     "qty": 50,
-     "price": 0.1478
+     "qty": 10,
+     "price": 0.7206
     },
     {
-     "qty": 150,
-     "price": 0.1284
+     "qty": 30,
+     "price": 0.624
+    },
+    {
+     "qty": 100,
+     "price": 0.5257
+    },
+    {
+     "qty": 500,
+     "price": 0.5257
     },
     {
      "qty": 1000,
-     "price": 0.1042
-    },
-    {
-     "qty": 2000,
-     "price": 0.0995
-    },
-    {
-     "qty": 5000,
-     "price": 0.0967
+     "price": 0.5257
     }
    ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2205251630_Korean-Hroparts-Elec-TYPE-C-31-M-12_C165948.pdf",
-   "description": "-30℃~+80℃ 1 10,000 cycles 16P 20V 5A 7.35mm Female Surface Mount, Right Angle Type-C SMD USB Connectors ROHS",
+   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2304251414_Global-Connector-Technology-USB4105-GF-A-120_C5184243.pdf",
+   "description": "-40℃~+85℃ 1 16P 48V 5A Black Female Type-C USB 2.0 SMD USB Connectors ROHS",
    "attributes": [
     {
      "name": "Operating Temperature",
-     "value": "-30℃~+80℃"
-    },
-    {
-     "name": "Number of Ports",
-     "value": "1"
-    },
-    {
-     "name": "Length",
-     "value": "7.35mm"
+     "value": "-40℃~+85℃"
     },
     {
      "name": "Current Rating-Power",
@@ -59,7 +51,19 @@
     },
     {
      "name": "Voltage Rating",
-     "value": "20V"
+     "value": "48V"
+    },
+    {
+     "name": "Gender",
+     "value": "Female"
+    },
+    {
+     "name": "Detection color",
+     "value": "Black"
+    },
+    {
+     "name": "Number of Ports",
+     "value": "1"
     },
     {
      "name": "Connector Type",
@@ -70,19 +74,11 @@
      "value": "16P"
     },
     {
-     "name": "Gender",
-     "value": "Female"
-    },
-    {
-     "name": "Connect-Disconnect Life",
-     "value": "10,000 cycles"
-    },
-    {
-     "name": "Mounting Type",
-     "value": "Surface Mount, Right Angle"
+     "name": "Protocol Standard",
+     "value": "USB 2.0"
     }
    ],
-   "role": "USB-C 20 V/5 A, power + CH340B data",
+   "role": "USB-C 48 V/5 A, power + CH340C data",
    "ref_prefix_hint": "J"
   },
   {
@@ -171,8 +167,6 @@
     "C22",
     "C41",
     "C44",
-    "C82",
-    "C84",
     "C50",
     "C60",
     "C61",
@@ -232,7 +226,7 @@
      "value": "X5R"
     }
    ],
-   "role": "CH224Q VHV; LDO output; EN delay; line-in coupling; speaker tap coupling; amp input coupling; amp input AC ground",
+   "role": "CH224Q VHV; LDO output; EN delay; line-in coupling; amp input coupling; amp input AC ground",
    "ref_prefix_hint": "C"
   },
   {
@@ -389,11 +383,10 @@
     "R21",
     "R24",
     "R25",
+    "R30",
     "R31",
+    "R33",
     "R34",
-    "R67",
-    "R69",
-    "R54",
     "R53",
     "R60",
     "R61",
@@ -465,7 +458,7 @@
      "value": "±100ppm/℃"
     }
    ],
-   "role": "PG pull-up; Q4 base; VBUS divider bottom (21 V -> 1.9 V); PVDD divider bottom (21 V -> 1.9 V); EN pull-up; GPIO0 pull-up (boot); Q2 base; Q3 base; line-in attenuator; speaker tap divider bottom; SDZ series: TI 10 V/ms and PVCC+0.3 V limits; FAULTZ pull-up; button pull-up; IR pull-up",
+   "role": "PG pull-up; Q4 base; VBUS divider bottom (21 V -> 1.9 V); PVDD divider bottom (21 V -> 1.9 V); EN pull-up; GPIO0 pull-up (boot); Q2 base; Q3 base; line-in attenuator; FAULTZ pull-up; button pull-up; IR pull-up",
    "ref_prefix_hint": "R"
   },
   {
@@ -650,10 +643,9 @@
     "R9",
     "R13",
     "R17",
-    "R66",
-    "R68",
     "R51",
-    "R52"
+    "R52",
+    "R54"
    ],
    "value": "100k",
    "mpn": "0603WAF1003T5E",
@@ -720,7 +712,7 @@
      "value": "±100ppm/℃"
     }
    ],
-   "role": "Q1 gate-source; PVDD off until firmware enables it; FB top: 5.18 V; VBUS divider top; PVDD divider top; speaker tap divider top; gain 26 dB master (table 1); amp off until firmware enables it",
+   "role": "Q1 gate-source; PVDD off until firmware enables it; FB top: 5.18 V; VBUS divider top; PVDD divider top; gain 26 dB master (table 1); amp off until firmware enables it; SDZ series: TI 10 V/ms and PVCC+0.3 V limits",
    "ref_prefix_hint": "R"
   },
   {
@@ -876,49 +868,51 @@
    "ref_prefix_hint": "C"
   },
   {
-   "lcsc": "C22961",
+   "lcsc": "C25819",
    "refdes": [
-    "R6"
+    "R6",
+    "R37",
+    "R39"
    ],
-   "value": "220k",
-   "mpn": "0603WAF2203T5E",
+   "value": "47k",
+   "mpn": "0603WAF4702T5E",
    "brand": "UNI-ROYAL(Uniroyal Elec)",
    "package": "0603",
    "basic": true,
-   "stock": 1159039,
-   "price": 0.0015,
+   "stock": 3299795,
+   "price": 0.0019,
    "price_breaks": [
     {
      "qty": 1,
-     "price": 0.0015
+     "price": 0.0019
     },
     {
      "qty": 1000,
-     "price": 0.0012
+     "price": 0.0015
     },
     {
      "qty": 5000,
-     "price": 0.001
+     "price": 0.0013
     },
     {
      "qty": 10000,
-     "price": 0.0009
+     "price": 0.0011
     },
     {
      "qty": 50000,
-     "price": 0.0008
+     "price": 0.001
     },
     {
      "qty": 50200,
-     "price": 0.0008
+     "price": 0.001
     }
    ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF2203T5E_C22961.pdf",
-   "description": "-55℃~+155℃ 100mW 220kΩ 75V Thick Film Resistor ±1% ±100ppm/℃ 0603 Chip Resistor - Surface Mount ROHS",
+   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF4702T5E_C25819.pdf",
+   "description": "-55℃~+155℃ 100mW 47kΩ 75V Thick Film Resistor ±1% ±100ppm/℃ 0603 Chip Resistor - Surface Mount ROHS",
    "attributes": [
     {
      "name": "Resistance",
-     "value": "220kΩ"
+     "value": "47kΩ"
     },
     {
      "name": "Operating Temperature",
@@ -945,71 +939,8 @@
      "value": "±100ppm/℃"
     }
    ],
-   "role": "Q1 gate divider: Vgs -6.3 V at 20 V",
+   "role": "Q1 gate divider: Vgs -13.6 V at 20 V; sub out bleeder",
    "ref_prefix_hint": "R"
-  },
-  {
-   "lcsc": "C19666",
-   "refdes": [
-    "C19",
-    "C32",
-    "C80"
-   ],
-   "value": "4.7uF",
-   "mpn": "CL10A475KO8NNNC",
-   "brand": "Samsung Electro-Mechanics",
-   "package": "0603",
-   "basic": true,
-   "stock": 3105979,
-   "price": 0.0169,
-   "price_breaks": [
-    {
-     "qty": 1,
-     "price": 0.0169
-    },
-    {
-     "qty": 100,
-     "price": 0.0128
-    },
-    {
-     "qty": 300,
-     "price": 0.0109
-    },
-    {
-     "qty": 1000,
-     "price": 0.0095
-    },
-    {
-     "qty": 4000,
-     "price": 0.0089
-    },
-    {
-     "qty": 8000,
-     "price": 0.0086
-    }
-   ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2304140030_Samsung-Electro-Mechanics-CL10A475KO8NNNC_C19666.pdf",
-   "description": "16V 4.7uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",
-   "attributes": [
-    {
-     "name": "Voltage Rating",
-     "value": "16V"
-    },
-    {
-     "name": "Tolerance",
-     "value": "±10%"
-    },
-    {
-     "name": "Capacitance",
-     "value": "4.7uF"
-    },
-    {
-     "name": "Temperature Coefficient",
-     "value": "X5R"
-    }
-   ],
-   "role": "Q1 gate-source hold-off (Vsg <= 6.6 V)",
-   "ref_prefix_hint": "C"
   },
   {
    "lcsc": "C20526",
@@ -1460,7 +1391,6 @@
    "refdes": [
     "C7",
     "C8",
-    "C25",
     "C12"
    ],
    "value": "22uF/25V",
@@ -1516,7 +1446,7 @@
      "value": "X5R"
     }
    ],
-   "role": "5 V output; 5 V output (review-2 POWER-10: 2 x 22 uF derate to ~22 uF); 3.3 V output",
+   "role": "5 V output; 3.3 V output",
    "ref_prefix_hint": "C"
   },
   {
@@ -1593,45 +1523,47 @@
    "ref_prefix_hint": "R"
   },
   {
-   "lcsc": "C1671",
+   "lcsc": "C14858",
    "refdes": [
-    "C9"
+    "C9",
+    "C42",
+    "C45"
    ],
-   "value": "47pF",
-   "mpn": "CL10C470JB8NNNC",
+   "value": "100pF",
+   "mpn": "CL10C101JB8NNNC",
    "brand": "Samsung Electro-Mechanics",
    "package": "0603",
    "basic": true,
-   "stock": 840548,
-   "price": 0.0074,
+   "stock": 4594438,
+   "price": 0.0087,
    "price_breaks": [
     {
      "qty": 1,
-     "price": 0.0074
+     "price": 0.0087
     },
     {
-     "qty": 1000,
-     "price": 0.006
+     "qty": 500,
+     "price": 0.0065
+    },
+    {
+     "qty": 1500,
+     "price": 0.0055
     },
     {
      "qty": 4000,
-     "price": 0.005
+     "price": 0.0048
     },
     {
-     "qty": 8000,
-     "price": 0.0046
+     "qty": 24000,
+     "price": 0.0045
     },
     {
      "qty": 48000,
-     "price": 0.0041
-    },
-    {
-     "qty": 100000,
-     "price": 0.0039
+     "price": 0.0043
     }
    ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2304140030_Samsung-Electro-Mechanics-CL10C470JB8NNNC_C1671.pdf",
-   "description": "47pF 50V C0G ±5% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",
+   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2304140030_Samsung-Electro-Mechanics-CL10C101JB8NNNC_C14858.pdf",
+   "description": "100pF 50V C0G ±5% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",
    "attributes": [
     {
      "name": "Voltage Rating",
@@ -1643,14 +1575,14 @@
     },
     {
      "name": "Capacitance",
-     "value": "47pF"
+     "value": "100pF"
     },
     {
      "name": "Temperature Coefficient",
      "value": "C0G"
     }
    ],
-   "role": "feed-forward (review-2 POWER-10: 100 pF pushed fo past 40 kHz)",
+   "role": "feed-forward; line-in RF filter",
    "ref_prefix_hint": "C"
   },
   {
@@ -2347,46 +2279,50 @@
    "ref_prefix_hint": "R"
   },
   {
-   "lcsc": "C81010",
+   "lcsc": "C84681",
    "refdes": [
     "U6"
    ],
-   "value": "CH340B",
-   "mpn": "CH340B",
+   "value": "CH340C",
+   "mpn": "CH340C",
    "brand": "WCH(Jiangsu Qin Heng)",
    "package": "SOP-16",
    "basic": false,
-   "stock": 5088,
-   "price": 0.9057,
+   "stock": 110560,
+   "price": 0.5454,
    "price_breaks": [
     {
      "qty": 1,
-     "price": 0.9057
+     "price": 0.5454
     },
     {
      "qty": 10,
-     "price": 0.7419
+     "price": 0.4553
     },
     {
      "qty": 50,
-     "price": 0.6617
+     "price": 0.3882
     },
     {
      "qty": 100,
-     "price": 0.5798
+     "price": 0.3341
     },
     {
      "qty": 500,
-     "price": 0.5323
+     "price": 0.3178
     },
     {
      "qty": 1000,
-     "price": 0.5077
+     "price": 0.3079
     }
    ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2403131142_WCH-Jiangsu-Qin-Heng-CH340B_C81010.pdf",
-   "description": "15mA 200uA 2Mbps 3.3V、5V Transceiver USB 2.0 SOP-16 USB Converters ROHS",
+   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2406191656_WCH-Jiangsu-Qin-Heng-CH340C_C84681.pdf",
+   "description": "-20℃~+70℃ 2Mbps 3.3V、5V 50uA 7mA Transceiver USB 2.0 SOP-16 USB Converters ROHS",
    "attributes": [
+    {
+     "name": "Operating Temperature",
+     "value": "-20℃~+70℃"
+    },
     {
      "name": "Data Rate",
      "value": "2Mbps"
@@ -2405,11 +2341,11 @@
     },
     {
      "name": "Current - Supply",
-     "value": "15mA"
+     "value": "7mA"
     },
     {
      "name": "Quiescent Supply Current",
-     "value": "200uA"
+     "value": "50uA"
     }
    ],
    "role": "USB-UART console + flashing",
@@ -2497,186 +2433,50 @@
    "ref_prefix_hint": "U"
   },
   {
-   "lcsc": "C22809",
+   "lcsc": "C19666",
    "refdes": [
-    "R30",
-    "R33"
+    "C32",
+    "C80"
    ],
-   "value": "15k",
-   "mpn": "0603WAF1502T5E",
-   "brand": "UNI-ROYAL(Uniroyal Elec)",
-   "package": "0603",
-   "basic": true,
-   "stock": 3656522,
-   "price": 0.0029,
-   "price_breaks": [
-    {
-     "qty": 1,
-     "price": 0.0029
-    },
-    {
-     "qty": 1000,
-     "price": 0.0022
-    },
-    {
-     "qty": 5000,
-     "price": 0.0018
-    },
-    {
-     "qty": 10000,
-     "price": 0.0017
-    },
-    {
-     "qty": 50000,
-     "price": 0.0014
-    },
-    {
-     "qty": 50200,
-     "price": 0.0014
-    }
-   ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2206010130_UNI-ROYAL-Uniroyal-Elec-0603WAF1502T5E_C22809.pdf",
-   "description": "-55℃~+155℃ 100mW 15kΩ 75V Thick Film Resistor ±1% ±100ppm/℃ 0603 Chip Resistor - Surface Mount ROHS",
-   "attributes": [
-    {
-     "name": "Resistance",
-     "value": "15kΩ"
-    },
-    {
-     "name": "Operating Temperature",
-     "value": "-55℃~+155℃"
-    },
-    {
-     "name": "Power(Watts)",
-     "value": "100mW"
-    },
-    {
-     "name": "Type",
-     "value": "Thick Film Resistor"
-    },
-    {
-     "name": "Voltage-Supply(Max)",
-     "value": "75V"
-    },
-    {
-     "name": "Tolerance",
-     "value": "±1%"
-    },
-    {
-     "name": "Temperature Coefficient",
-     "value": "±100ppm/℃"
-    }
-   ],
-   "role": "line-in attenuator",
-   "ref_prefix_hint": "R"
-  },
-  {
-   "lcsc": "C14858",
-   "refdes": [
-    "C42",
-    "C45"
-   ],
-   "value": "100pF",
-   "mpn": "CL10C101JB8NNNC",
+   "value": "4.7uF",
+   "mpn": "CL10A475KO8NNNC",
    "brand": "Samsung Electro-Mechanics",
    "package": "0603",
    "basic": true,
-   "stock": 4594438,
-   "price": 0.0087,
+   "stock": 3105979,
+   "price": 0.0169,
    "price_breaks": [
     {
      "qty": 1,
-     "price": 0.0087
+     "price": 0.0169
     },
     {
-     "qty": 500,
-     "price": 0.0065
+     "qty": 100,
+     "price": 0.0128
     },
     {
-     "qty": 1500,
-     "price": 0.0055
-    },
-    {
-     "qty": 4000,
-     "price": 0.0048
-    },
-    {
-     "qty": 24000,
-     "price": 0.0045
-    },
-    {
-     "qty": 48000,
-     "price": 0.0043
-    }
-   ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2304140030_Samsung-Electro-Mechanics-CL10C101JB8NNNC_C14858.pdf",
-   "description": "100pF 50V C0G ±5% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",
-   "attributes": [
-    {
-     "name": "Voltage Rating",
-     "value": "50V"
-    },
-    {
-     "name": "Tolerance",
-     "value": "±5%"
-    },
-    {
-     "name": "Capacitance",
-     "value": "100pF"
-    },
-    {
-     "name": "Temperature Coefficient",
-     "value": "C0G"
-    }
-   ],
-   "role": "line-in RF filter",
-   "ref_prefix_hint": "C"
-  },
-  {
-   "lcsc": "C1620",
-   "refdes": [
-    "C81",
-    "C83"
-   ],
-   "value": "470pF",
-   "mpn": "0603B471K500NT",
-   "brand": "FH (Guangdong Fenghua Advanced Tech)",
-   "package": "0603",
-   "basic": true,
-   "stock": 791988,
-   "price": 0.0058,
-   "price_breaks": [
-    {
-     "qty": 1,
-     "price": 0.0058
+     "qty": 300,
+     "price": 0.0109
     },
     {
      "qty": 1000,
-     "price": 0.0046
+     "price": 0.0095
     },
     {
      "qty": 4000,
-     "price": 0.0037
+     "price": 0.0089
     },
     {
      "qty": 8000,
-     "price": 0.0033
-    },
-    {
-     "qty": 48000,
-     "price": 0.0029
-    },
-    {
-     "qty": 100000,
-     "price": 0.0027
+     "price": 0.0086
     }
    ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2304140030_FH--Guangdong-Fenghua-Advanced-Tech-0603B471K500NT_C1620.pdf",
-   "description": "470pF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",
+   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2304140030_Samsung-Electro-Mechanics-CL10A475KO8NNNC_C19666.pdf",
+   "description": "16V 4.7uF X5R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",
    "attributes": [
     {
      "name": "Voltage Rating",
-     "value": "50V"
+     "value": "16V"
     },
     {
      "name": "Tolerance",
@@ -2684,14 +2484,14 @@
     },
     {
      "name": "Capacitance",
-     "value": "470pF"
+     "value": "4.7uF"
     },
     {
      "name": "Temperature Coefficient",
-     "value": "X7R"
+     "value": "X5R"
     }
    ],
-   "role": "speaker tap carrier filter",
+   "role": "",
    "ref_prefix_hint": "C"
   },
   {
@@ -2767,80 +2567,6 @@
     }
    ],
    "role": "sub out build-out; IR supply filter",
-   "ref_prefix_hint": "R"
-  },
-  {
-   "lcsc": "C25819",
-   "refdes": [
-    "R37",
-    "R39"
-   ],
-   "value": "47k",
-   "mpn": "0603WAF4702T5E",
-   "brand": "UNI-ROYAL(Uniroyal Elec)",
-   "package": "0603",
-   "basic": true,
-   "stock": 3299795,
-   "price": 0.0019,
-   "price_breaks": [
-    {
-     "qty": 1,
-     "price": 0.0019
-    },
-    {
-     "qty": 1000,
-     "price": 0.0015
-    },
-    {
-     "qty": 5000,
-     "price": 0.0013
-    },
-    {
-     "qty": 10000,
-     "price": 0.0011
-    },
-    {
-     "qty": 50000,
-     "price": 0.001
-    },
-    {
-     "qty": 50200,
-     "price": 0.001
-    }
-   ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2206010045_UNI-ROYAL-Uniroyal-Elec-0603WAF4702T5E_C25819.pdf",
-   "description": "-55℃~+155℃ 100mW 47kΩ 75V Thick Film Resistor ±1% ±100ppm/℃ 0603 Chip Resistor - Surface Mount ROHS",
-   "attributes": [
-    {
-     "name": "Resistance",
-     "value": "47kΩ"
-    },
-    {
-     "name": "Operating Temperature",
-     "value": "-55℃~+155℃"
-    },
-    {
-     "name": "Power(Watts)",
-     "value": "100mW"
-    },
-    {
-     "name": "Type",
-     "value": "Thick Film Resistor"
-    },
-    {
-     "name": "Voltage-Supply(Max)",
-     "value": "75V"
-    },
-    {
-     "name": "Tolerance",
-     "value": "±1%"
-    },
-    {
-     "name": "Temperature Coefficient",
-     "value": "±100ppm/℃"
-    }
-   ],
-   "role": "sub out bleeder",
    "ref_prefix_hint": "R"
   },
   {
@@ -3307,67 +3033,6 @@
    ],
    "role": "gain 26 dB master (table 1)",
    "ref_prefix_hint": "R"
-  },
-  {
-   "lcsc": "C1622",
-   "refdes": [
-    "C26"
-   ],
-   "value": "47nF",
-   "mpn": "CL10B473KB8NNNC",
-   "brand": "Samsung Electro-Mechanics",
-   "package": "0603",
-   "basic": true,
-   "stock": 952541,
-   "price": 0.0059,
-   "price_breaks": [
-    {
-     "qty": 1,
-     "price": 0.0059
-    },
-    {
-     "qty": 1000,
-     "price": 0.0044
-    },
-    {
-     "qty": 4000,
-     "price": 0.0038
-    },
-    {
-     "qty": 8000,
-     "price": 0.0033
-    },
-    {
-     "qty": 48000,
-     "price": 0.0031
-    },
-    {
-     "qty": 100000,
-     "price": 0.0029
-    }
-   ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2304140030_Samsung-Electro-Mechanics-CL10B473KB8NNNC_C1622.pdf",
-   "description": "47nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",
-   "attributes": [
-    {
-     "name": "Voltage Rating",
-     "value": "50V"
-    },
-    {
-     "name": "Tolerance",
-     "value": "±10%"
-    },
-    {
-     "name": "Capacitance",
-     "value": "47nF"
-    },
-    {
-     "name": "Temperature Coefficient",
-     "value": "X7R"
-    }
-   ],
-   "role": "SDZ slew limit (tau 0.47 ms)",
-   "ref_prefix_hint": "C"
   },
   {
    "lcsc": "C21120",

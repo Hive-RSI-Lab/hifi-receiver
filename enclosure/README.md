@@ -144,7 +144,7 @@ They are built by `plus.py` and `ultra.py`, which call `core_box.py`.
 | Outside, without knob | 127.4 x 106.0 x 39.8 mm | 127.4 x 114.4 x 49.2 mm, plus a 4.2 mm control column on the front |
 | Printed parts | base, lid, knob, 2 buttons | base, lid, knob, 3 buttons |
 | PETG if solid | about 134 g | about 147 g |
-| Fit check | `out/plus/fit.md`, 24/24 | `out/ultra/fit.md`, 31/31 |
+| Fit check | `out/plus/fit.md`, 24/24 | `out/ultra/fit.md`, 51/51, printing without support included |
 
 Each `out/<tier>/` folder holds the STLs (already in print orientation),
 `enclosure.step` (the assembly with the board as a slab, for Onshape), the
@@ -169,14 +169,19 @@ fit report and renders (`iso.png`, `top.png`, `port-<edge>.png`).
   face forward. Its J1 sits 4.1 mm in front of the core's J3, and its
   bottom edge is 4.4 mm over the floor, which leaves room for the FFC to
   turn under it. The panel has:
-  - **Screen:** a window over the LCD, active area + 1 mm a side, opening
-    at 45 degrees. The LCD's face is 2.7 mm behind the panel's outside.
+  - **Screen:** a window over the LCD, active area + 1 mm a side, its
+    sides opening at 45 degrees on a flat sill. It is a slot up to the
+    wall's top: a tab on the lid drops into it and is the window's top
+    edge (1 mm flat, then opening at 45 degrees). The LCD's face is 2.7 mm
+    behind the panel's outside.
   - **Buttons:** three plungers (SW1-3). Each has a cap through the wall
     and a flange behind it, which the board holds captive. Each prints
     standing on the flange's flat back, cap up.
   - **Control column:** a raised column on the right with a pocket for the
     EC11 body and the IR receiver. It carries the knob (on the EC11's M7
-    bushing), the IR window and the RGB LED's hole.
+    bushing, through a teardrop hole), the IR window and the RGB LED's
+    hole. The pocket opens up under the lid, and in front of the wall its
+    roof rises at 45 degrees.
   - **Mounting:** the front board screws to four bosses on the wall with
     M2.5 x 6 thread-forming screws from behind. Fit it **before** the core.
   - **Core LED:** Ultra keeps the top light pipe for the core's D3.
@@ -251,9 +256,6 @@ python3 enclosure/fit_md.py plus ultra
   holes, which Lite's has. Also in that review.
 - **Heatsink:** none any more. The TPA3220 swap (task 261029-075354) took
   the hand-fitted heatsink out of the box.
-- **Ultra's front panel:** it prints as part of the base, on its edge.
-  That makes a 47 mm bridge over the screen window. If the bridge sags,
-  split the panel off as a separate part printed face down.
 - **Unchecked dimensions:**
   - the LCD's active-area offset in its module (datasheet p.10). The
     window is centred with 1 mm a side to spare.
