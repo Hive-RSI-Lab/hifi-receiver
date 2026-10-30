@@ -1,0 +1,1556 @@
+{
+ "board": "/work/boards/lite-main/kicad/lite-main.kicad_pcb",
+ "cpl": "/work/boards/lite-main/fab/CPL.csv",
+ "n": 145,
+ "fails": [],
+ "checks": [
+  [
+   "U8",
+   "pin-name mismatch 1:MODSEL|GND; 13:AM2|GND; 14:AM1|GND; 15:AM0|GND"
+  ]
+ ],
+ "no_model": [],
+ "parts": [
+  {
+   "ref": "C1",
+   "lcsc": "C15849",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C2",
+   "lcsc": "C14663",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C3",
+   "lcsc": "C13585",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.118,
+   "pin1_err_mm": 0.118,
+   "bad": []
+  },
+  {
+   "ref": "C4",
+   "lcsc": "C29823",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.118,
+   "pin1_err_mm": 0.118,
+   "bad": []
+  },
+  {
+   "ref": "C5",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C6",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C7",
+   "lcsc": "C45783",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.05,
+   "pin1_err_mm": 0.05,
+   "bad": []
+  },
+  {
+   "ref": "C8",
+   "lcsc": "C45783",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.05,
+   "pin1_err_mm": 0.05,
+   "bad": []
+  },
+  {
+   "ref": "C9",
+   "lcsc": "C1671",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C10",
+   "lcsc": "C19702",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C11",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C12",
+   "lcsc": "C45783",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.05,
+   "pin1_err_mm": 0.05,
+   "bad": []
+  },
+  {
+   "ref": "C13",
+   "lcsc": "C19702",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C14",
+   "lcsc": "C1653",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C15",
+   "lcsc": "C15849",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C16",
+   "lcsc": "C15849",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C17",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C18",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C19",
+   "lcsc": "C19666",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C20",
+   "lcsc": "C19702",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C21",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C22",
+   "lcsc": "C15849",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C23",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C24",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C25",
+   "lcsc": "C45783",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.05,
+   "pin1_err_mm": 0.05,
+   "bad": []
+  },
+  {
+   "ref": "C26",
+   "lcsc": "C1622",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C30",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C31",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C32",
+   "lcsc": "C19666",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C33",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C34",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C35",
+   "lcsc": "C19702",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C36",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C37",
+   "lcsc": "C19702",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C38",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C39",
+   "lcsc": "C19702",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C40",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C41",
+   "lcsc": "C15849",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C42",
+   "lcsc": "C14858",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C44",
+   "lcsc": "C15849",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C45",
+   "lcsc": "C14858",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C47",
+   "lcsc": "C19702",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C48",
+   "lcsc": "C19702",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C50",
+   "lcsc": "C15849",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C51",
+   "lcsc": "C28323",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.05,
+   "pin1_err_mm": 0.05,
+   "bad": []
+  },
+  {
+   "ref": "C52",
+   "lcsc": "C28323",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.05,
+   "pin1_err_mm": 0.05,
+   "bad": []
+  },
+  {
+   "ref": "C53",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C54",
+   "lcsc": "C1588",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C55",
+   "lcsc": "C28323",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.05,
+   "pin1_err_mm": 0.05,
+   "bad": []
+  },
+  {
+   "ref": "C56",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C57",
+   "lcsc": "C1588",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C58",
+   "lcsc": "C46550472",
+   "cpl_rot": 270.0,
+   "n_pads": 2,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "C59",
+   "lcsc": "C2836441",
+   "cpl_rot": 270.0,
+   "n_pads": 2,
+   "max_err_mm": 0.004,
+   "pin1_err_mm": 0.004,
+   "bad": []
+  },
+  {
+   "ref": "C60",
+   "lcsc": "C15849",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C61",
+   "lcsc": "C15849",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C62",
+   "lcsc": "C15849",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C63",
+   "lcsc": "C15849",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C64",
+   "lcsc": "C21120",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C65",
+   "lcsc": "C21120",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C66",
+   "lcsc": "C21120",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C67",
+   "lcsc": "C21120",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C68",
+   "lcsc": "C1848",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.118,
+   "pin1_err_mm": 0.118,
+   "bad": []
+  },
+  {
+   "ref": "C69",
+   "lcsc": "C1848",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.118,
+   "pin1_err_mm": 0.118,
+   "bad": []
+  },
+  {
+   "ref": "C70",
+   "lcsc": "C1848",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.118,
+   "pin1_err_mm": 0.118,
+   "bad": []
+  },
+  {
+   "ref": "C71",
+   "lcsc": "C1848",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.118,
+   "pin1_err_mm": 0.118,
+   "bad": []
+  },
+  {
+   "ref": "C80",
+   "lcsc": "C19666",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C81",
+   "lcsc": "C1620",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C82",
+   "lcsc": "C15849",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C83",
+   "lcsc": "C1620",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "C84",
+   "lcsc": "C15849",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.075,
+   "pin1_err_mm": 0.075,
+   "bad": []
+  },
+  {
+   "ref": "D1",
+   "lcsc": "C151920",
+   "cpl_rot": 180.0,
+   "n_pads": 2,
+   "max_err_mm": 0.001,
+   "pin1_err_mm": 0.001,
+   "bad": []
+  },
+  {
+   "ref": "D2",
+   "lcsc": "C2286",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "J1",
+   "lcsc": "C165948",
+   "cpl_rot": 180.0,
+   "n_pads": 16,
+   "max_err_mm": 0.089,
+   "pin1_err_mm": 0.006,
+   "bad": []
+  },
+  {
+   "ref": "J2",
+   "lcsc": "C7527522",
+   "cpl_rot": 180.0,
+   "n_pads": 3,
+   "max_err_mm": 0.4,
+   "pin1_err_mm": 0.4,
+   "bad": []
+  },
+  {
+   "ref": "J3",
+   "lcsc": "C7527522",
+   "cpl_rot": 180.0,
+   "n_pads": 3,
+   "max_err_mm": 0.4,
+   "pin1_err_mm": 0.4,
+   "bad": []
+  },
+  {
+   "ref": "J4",
+   "lcsc": "C2915641",
+   "cpl_rot": 0.0,
+   "n_pads": 4,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "L1",
+   "lcsc": "C48391614",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "L2",
+   "lcsc": "C48391614",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "L3",
+   "lcsc": "C48391614",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "L4",
+   "lcsc": "C48391614",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "L5",
+   "lcsc": "C79272",
+   "cpl_rot": 270.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "L6",
+   "lcsc": "C305171",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "Q1",
+   "lcsc": "C5125949",
+   "cpl_rot": 270.0,
+   "n_pads": 8,
+   "max_err_mm": 0.006,
+   "pin1_err_mm": 0.006,
+   "bad": [],
+   "pin_table": [
+    "1:S=VBUS",
+    "2:S=VBUS",
+    "3:S=VBUS",
+    "4:G=/PSW_G",
+    "5:D=PVDD",
+    "6:D=PVDD",
+    "7:D=PVDD",
+    "8:D=PVDD"
+   ],
+   "pin_name_check": [],
+   "model_dot_nearest_pad": [
+    "1",
+    "1"
+   ]
+  },
+  {
+   "ref": "Q2",
+   "lcsc": "C20526",
+   "cpl_rot": 0.0,
+   "n_pads": 3,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": [],
+   "pin_table": [
+    "1:B=/Q2_B",
+    "2:E=/RTS",
+    "3:C=/ESP_EN"
+   ],
+   "pin_name_check": []
+  },
+  {
+   "ref": "Q3",
+   "lcsc": "C20526",
+   "cpl_rot": 0.0,
+   "n_pads": 3,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": [],
+   "pin_table": [
+    "1:B=/Q3_B",
+    "2:E=/DTR",
+    "3:C=/I2S_MCLK"
+   ],
+   "pin_name_check": []
+  },
+  {
+   "ref": "Q4",
+   "lcsc": "C20526",
+   "cpl_rot": 0.0,
+   "n_pads": 3,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": [],
+   "pin_table": [
+    "1:B=/PSW_B",
+    "2:E=/PD_PG",
+    "3:C=/PSW_PULL"
+   ],
+   "pin_name_check": []
+  },
+  {
+   "ref": "R1",
+   "lcsc": "C25808",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R2",
+   "lcsc": "C21189",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R3",
+   "lcsc": "C21189",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R4",
+   "lcsc": "C25804",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R5",
+   "lcsc": "C25803",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R6",
+   "lcsc": "C22961",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R7",
+   "lcsc": "C25804",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R8",
+   "lcsc": "C25803",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R9",
+   "lcsc": "C25803",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R10",
+   "lcsc": "C22797",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R11",
+   "lcsc": "C22807",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R12",
+   "lcsc": "C4216",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R13",
+   "lcsc": "C25803",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R14",
+   "lcsc": "C25804",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R15",
+   "lcsc": "C21190",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R16",
+   "lcsc": "C31850",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R17",
+   "lcsc": "C25803",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R18",
+   "lcsc": "C25804",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R20",
+   "lcsc": "C25804",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R21",
+   "lcsc": "C25804",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R22",
+   "lcsc": "C4190",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R23",
+   "lcsc": "C4190",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R24",
+   "lcsc": "C25804",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R25",
+   "lcsc": "C25804",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R30",
+   "lcsc": "C22809",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R31",
+   "lcsc": "C25804",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R33",
+   "lcsc": "C22809",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R34",
+   "lcsc": "C25804",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R36",
+   "lcsc": "C22775",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R37",
+   "lcsc": "C25819",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R38",
+   "lcsc": "C22775",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R39",
+   "lcsc": "C25819",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R50",
+   "lcsc": "C4184",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R51",
+   "lcsc": "C25803",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R52",
+   "lcsc": "C25803",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R53",
+   "lcsc": "C25804",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R54",
+   "lcsc": "C25804",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R60",
+   "lcsc": "C25804",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R61",
+   "lcsc": "C25804",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R62",
+   "lcsc": "C25804",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R63",
+   "lcsc": "C25804",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R64",
+   "lcsc": "C21190",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R65",
+   "lcsc": "C22775",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R66",
+   "lcsc": "C25803",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R67",
+   "lcsc": "C25804",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R68",
+   "lcsc": "C25803",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "R69",
+   "lcsc": "C25804",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.072,
+   "pin1_err_mm": 0.072,
+   "bad": []
+  },
+  {
+   "ref": "SW1",
+   "lcsc": "C318884",
+   "cpl_rot": 0.0,
+   "n_pads": 4,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "SW2",
+   "lcsc": "C318884",
+   "cpl_rot": 0.0,
+   "n_pads": 4,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "SW3",
+   "lcsc": "C318884",
+   "cpl_rot": 0.0,
+   "n_pads": 4,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "U1",
+   "lcsc": "C42459160",
+   "cpl_rot": 0.0,
+   "n_pads": 11,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": [],
+   "pin_table": [
+    "1:VHV=VBUS",
+    "2:CFG2/SCL=/PD_SCL",
+    "3:CFG3/SDA=/PD_SDA",
+    "4:DP=unconnected-(U1-DP-Pad4)",
+    "5:DM=unconnected-(U1-DM-Pad5)",
+    "6:CC2=/CC1",
+    "7:CC1=/CC2",
+    "8:VBUS=VBUS",
+    "9:CFG1=/PD_CFG1",
+    "10:PG=/PD_PG",
+    "11:GND=GND"
+   ],
+   "pin_name_check": [],
+   "model_dot_nearest_pad": [
+    "1"
+   ]
+  },
+  {
+   "ref": "U2",
+   "lcsc": "C311983",
+   "cpl_rot": 90.0,
+   "n_pads": 6,
+   "max_err_mm": 0.001,
+   "pin1_err_mm": 0.001,
+   "bad": [],
+   "pin_table": [
+    "1:GND=GND",
+    "2:SW=/BUCK5_SW",
+    "3:VIN=VBUS",
+    "4:FB=/BUCK5_FB",
+    "5:EN=unconnected-(U2-EN-Pad5)",
+    "6:BOOT=/BUCK5_BST"
+   ],
+   "pin_name_check": [],
+   "model_dot_nearest_pad": [
+    "1"
+   ]
+  },
+  {
+   "ref": "U3",
+   "lcsc": "C479074",
+   "cpl_rot": 0.0,
+   "n_pads": 5,
+   "max_err_mm": 0.001,
+   "pin1_err_mm": 0.001,
+   "bad": [],
+   "pin_table": [
+    "1:EN=+5V",
+    "2:GND=GND",
+    "3:LX=/BUCK3_LX",
+    "4:IN=+5V",
+    "5:FB=/BUCK3_FB"
+   ],
+   "pin_name_check": [],
+   "model_dot_nearest_pad": [
+    "1"
+   ]
+  },
+  {
+   "ref": "U4",
+   "lcsc": "C80670",
+   "cpl_rot": 0.0,
+   "n_pads": 5,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": [],
+   "pin_table": [
+    "1:IN=+5V",
+    "2:GND=GND",
+    "3:EN=+5V",
+    "4:N/C=unconnected-(U4-N{slash}C-Pad4)",
+    "5:OUT=+3V3A"
+   ],
+   "pin_name_check": []
+  },
+  {
+   "ref": "U5",
+   "lcsc": "C2973667",
+   "cpl_rot": 90.0,
+   "n_pads": 47,
+   "max_err_mm": 0.007,
+   "pin1_err_mm": 0.0,
+   "bad": [],
+   "pin_table": [
+    "1:GND=GND",
+    "2:3V3=+3V3",
+    "3:EN=/ESP_EN",
+    "4:SENSOR_VP=/BTN_VOLDN",
+    "5:SENSOR_VN=/PVDD_SENSE",
+    "6:IO34=/VBUS_SENSE",
+    "7:IO35=/I2S_DIN",
+    "8:IO32=/I2C_SCL",
+    "9:IO33=/I2C_SDA",
+    "10:IO25=/I2S_LRCK",
+    "11:IO26=/I2S_DOUT",
+    "12:IO27=/I2S_BCLK",
+    "13:IO14=/IR_IN",
+    "14:IO12=unconnected-(U5-IO12-Pad14)",
+    "15:GND=GND",
+    "16:IO13=/BTN_VOLUP",
+    "17:NC=unconnected-(U5-NC-Pad17)",
+    "18:NC=unconnected-(U5-NC-Pad18)",
+    "19:NC=unconnected-(U5-NC-Pad19)",
+    "20:NC=unconnected-(U5-NC-Pad20)",
+    "21:NC=unconnected-(U5-NC-Pad21)",
+    "22:NC=unconnected-(U5-NC-Pad22)",
+    "23:IO15=unconnected-(U5-IO15-Pad23)",
+    "24:IO2=unconnected-(U5-IO2-Pad24)",
+    "25:IO0=/I2S_MCLK",
+    "26:IO4=/PD_PG",
+    "27:NC=unconnected-(U5-NC-Pad27)",
+    "28:NC=unconnected-(U5-NC-Pad28)",
+    "29:IO5=unconnected-(U5-IO5-Pad29)",
+    "30:IO18=/PVDD_EN",
+    "31:IO19=/BTN_PLAY",
+    "32:NC=unconnected-(U5-NC-Pad32)",
+    "33:IO21=/AMP_SDZ_IO",
+    "34:RXD0=/U0RXD",
+    "35:TXD0=/U0TXD",
+    "36:IO22=/LED_DRV",
+    "37:IO23=/AMP_FAULTZ",
+    "38:GND=GND",
+    "39:GND=GND"
+   ],
+   "pin_name_check": [],
+   "model_dot_nearest_pad": [
+    "1"
+   ]
+  },
+  {
+   "ref": "U6",
+   "lcsc": "C81010",
+   "cpl_rot": 90.0,
+   "n_pads": 16,
+   "max_err_mm": 0.135,
+   "pin1_err_mm": 0.135,
+   "bad": [],
+   "pin_table": [
+    "1:GND=GND",
+    "2:TXD=/U0RXD",
+    "3:RXD=/U0TXD",
+    "4:V3=+3V3",
+    "5:UD+=/USB_DP",
+    "6:UD-=/USB_DM",
+    "7:RST#=unconnected-(U6-~{RST}-Pad7)",
+    "8:NC.=unconnected-(U6-NC.-Pad8)",
+    "9:CTS#=unconnected-(U6-~{CTS}-Pad9)",
+    "10:DSR#=unconnected-(U6-~{DSR}-Pad10)",
+    "11:RI#=unconnected-(U6-~{RI}-Pad11)",
+    "12:DCD#=unconnected-(U6-~{DCD}-Pad12)",
+    "13:DTR#=/DTR",
+    "14:RTS#=/RTS",
+    "15:TNOW=unconnected-(U6-TNOW-Pad15)",
+    "16:VCC=+3V3"
+   ],
+   "pin_name_check": [],
+   "model_dot_nearest_pad": [
+    "1",
+    "1"
+   ]
+  },
+  {
+   "ref": "U7",
+   "lcsc": "C365736",
+   "cpl_rot": 0.0,
+   "n_pads": 29,
+   "max_err_mm": 0.002,
+   "pin1_err_mm": 0.002,
+   "bad": [],
+   "pin_table": [
+    "1:MCLK=/I2S_MCLK",
+    "2:DVDD=+3V3",
+    "3:PVDD=+3V3",
+    "4:DGND=GND",
+    "5:SCLK=/I2S_BCLK",
+    "6:DSDIN=/I2S_DOUT",
+    "7:LRCK=/I2S_LRCK",
+    "8:ASDOUT=/I2S_DIN",
+    "9:NC=unconnected-(U7-NC-Pad9)",
+    "10:VREF=/CODEC_VREF",
+    "11:ROUT1=/AMP_IN_R",
+    "12:LOUT1=/AMP_IN_L",
+    "13:HPGND=GND",
+    "14:ROUT2=/SUB_R_RAW",
+    "15:LOUT2=/SUB_L_RAW",
+    "16:HPVDD=+3V3A",
+    "17:AVDD=+3V3A",
+    "18:AGND=GND",
+    "19:ADCVREF=/CODEC_DACVREF",
+    "20:VMID=/CODEC_VMID",
+    "21:RIN2=/TAP_R_C",
+    "22:LIN2=/TAP_L_C",
+    "23:RIN1=/LINEIN_R_C",
+    "24:LIN1=/LINEIN_L_C",
+    "25:NC=unconnected-(U7-NC-Pad25)",
+    "26:CE=GND",
+    "27:CDATA=/I2C_SDA",
+    "28:CCLK=/I2C_SCL",
+    "29:EP=GND"
+   ],
+   "pin_name_check": [],
+   "model_dot_nearest_pad": [
+    "1"
+   ]
+  },
+  {
+   "ref": "U8",
+   "lcsc": "C46497",
+   "cpl_rot": 0.0,
+   "n_pads": 33,
+   "max_err_mm": 0.007,
+   "pin1_err_mm": 0.007,
+   "bad": [],
+   "pin_table": [
+    ":None=",
+    "1:MODSEL=GND",
+    "2:SDZ=/AMP_SDZ",
+    "3:FAULTZ=/AMP_FAULTZ",
+    "4:RINP=/AMP_L_INP",
+    "5:RINN=/AMP_L_INN",
+    "6:PLIMIT=/AMP_GVDD",
+    "7:GVDD=/AMP_GVDD",
+    "8:GAIN/SLV=/AMP_GAIN",
+    "9:GND=GND",
+    "10:LINP=/AMP_R_INP",
+    "11:LINN=/AMP_R_INN",
+    "12:MUTE=GND",
+    "13:AM2=GND",
+    "14:AM1=GND",
+    "15:AM0=GND",
+    "16:SYNC=unconnected-(U8-SYNC-Pad16)",
+    "17:AVCC=PVDD",
+    "18:PVCC=PVDD",
+    "19:PVCC=PVDD",
+    "20:BSNL=/BS_R_N",
+    "21:OUTNL=/OUT_R_N",
+    "22:GND=GND",
+    "23:OUTPL=/OUT_R_P",
+    "24:BSPL=/BS_R_P",
+    "25:GND=GND",
+    "26:BSNR=/BS_L_N",
+    "27:OUTNR=/OUT_L_N",
+    "28:GND=GND",
+    "29:OUTPR=/OUT_L_P",
+    "30:BSPR=/BS_L_P",
+    "31:PVCC=PVDD",
+    "32:PVCC=PVDD",
+    "33:EP=GND"
+   ],
+   "pin_name_check": [
+    "1:MODSEL|GND",
+    "13:AM2|GND",
+    "14:AM1|GND",
+    "15:AM0|GND"
+   ],
+   "model_dot_nearest_pad": [
+    "1",
+    "1"
+   ]
+  },
+  {
+   "ref": "U9",
+   "lcsc": "C42421366",
+   "cpl_rot": 0.0,
+   "n_pads": 3,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": [],
+   "pin_table": [
+    "1:OUT=/IR_IN",
+    "2:GND=GND",
+    "3:VCC=/IR_VCC"
+   ],
+   "pin_name_check": []
+  }
+ ]
+}

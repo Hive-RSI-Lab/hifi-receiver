@@ -1,0 +1,392 @@
+{
+ "board": "/work/boards/ultra-front/kicad/ultra-front.kicad_pcb",
+ "cpl": "/work/boards/ultra-front/fab/CPL.csv",
+ "n": 36,
+ "fails": [],
+ "checks": [
+  [
+   "U2",
+   "model silk dot nearest pads ['4'], not 1"
+  ]
+ ],
+ "no_model": [],
+ "parts": [
+  {
+   "ref": "C1",
+   "lcsc": "C14663",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "C2",
+   "lcsc": "C15850",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "C3",
+   "lcsc": "C15850",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "C4",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "C5",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "C6",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "C7",
+   "lcsc": "C14663",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "D1",
+   "lcsc": "C273610",
+   "cpl_rot": 0.0,
+   "n_pads": 4,
+   "max_err_mm": 0.006,
+   "pin1_err_mm": 0.006,
+   "bad": [],
+   "pin_table": [
+    "1:1=+5V",
+    "2:B=/LEDB_K",
+    "3:G=/LEDG_K",
+    "4:R=/LEDR_K"
+   ],
+   "pin_name_check": [],
+   "model_dot_nearest_pad": [
+    "1"
+   ]
+  },
+  {
+   "ref": "J1",
+   "lcsc": "C2856803",
+   "cpl_rot": 0.0,
+   "n_pads": 22,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.002,
+   "bad": []
+  },
+  {
+   "ref": "J2",
+   "lcsc": "C2856829",
+   "cpl_rot": 90.0,
+   "n_pads": 14,
+   "max_err_mm": 0.005,
+   "pin1_err_mm": 0.005,
+   "bad": []
+  },
+  {
+   "ref": "Q1",
+   "lcsc": "C20917",
+   "cpl_rot": 0.0,
+   "n_pads": 3,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": [],
+   "pin_table": [
+    "1:G=/BL_GATE",
+    "2:S=GND",
+    "3:D=/BL_K"
+   ],
+   "pin_name_check": []
+  },
+  {
+   "ref": "R1",
+   "lcsc": "C25803",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R2",
+   "lcsc": "C25803",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R3",
+   "lcsc": "C25803",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R4",
+   "lcsc": "C25803",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R5",
+   "lcsc": "C25803",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R6",
+   "lcsc": "C25803",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R7",
+   "lcsc": "C25803",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R8",
+   "lcsc": "C25803",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R9",
+   "lcsc": "C25803",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R10",
+   "lcsc": "C25803",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R11",
+   "lcsc": "C25803",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R12",
+   "lcsc": "C25803",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R13",
+   "lcsc": "C25803",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R14",
+   "lcsc": "C25803",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R15",
+   "lcsc": "C25803",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R16",
+   "lcsc": "C25803",
+   "cpl_rot": 0.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R17",
+   "lcsc": "C25803",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R18",
+   "lcsc": "C25803",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "R19",
+   "lcsc": "C25803",
+   "cpl_rot": 90.0,
+   "n_pads": 2,
+   "max_err_mm": 0.003,
+   "pin1_err_mm": 0.003,
+   "bad": []
+  },
+  {
+   "ref": "SW1",
+   "lcsc": "C318884",
+   "cpl_rot": 0.0,
+   "n_pads": 4,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "SW2",
+   "lcsc": "C318884",
+   "cpl_rot": 0.0,
+   "n_pads": 4,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "SW3",
+   "lcsc": "C318884",
+   "cpl_rot": 0.0,
+   "n_pads": 4,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": 0.0,
+   "bad": []
+  },
+  {
+   "ref": "SW4",
+   "lcsc": "C361165",
+   "cpl_rot": 180.0,
+   "n_pads": 7,
+   "max_err_mm": 0.0,
+   "pin1_err_mm": null,
+   "bad": []
+  },
+  {
+   "ref": "U1",
+   "lcsc": "C22396388",
+   "cpl_rot": 0.0,
+   "n_pads": 24,
+   "max_err_mm": 0.006,
+   "pin1_err_mm": 0.005,
+   "bad": [],
+   "pin_table": [
+    "1:INT#=/FRONT_INT_N",
+    "2:A1=+3V3",
+    "3:A2=+3V3",
+    "4:P00=/ENC_A",
+    "5:P01=/ENC_B",
+    "6:P02=/ENC_SW",
+    "7:P03=/BTN1",
+    "8:P04=/BTN2",
+    "9:P05=/BTN3",
+    "10:P06=/EXP_UNUSED",
+    "11:P07=/EXP_UNUSED",
+    "12:GND=GND",
+    "13:P10=/LCD_RST",
+    "14:P11=/LED_R",
+    "15:P12=/LED_G",
+    "16:P13=/LED_B",
+    "17:P14=/EXP_UNUSED",
+    "18:P15=/EXP_UNUSED",
+    "19:P16=/EXP_UNUSED",
+    "20:P17=/EXP_UNUSED",
+    "21:A0=+3V3",
+    "22:SCL=/I2C_SCL",
+    "23:SDA=/I2C_SDA",
+    "24:VCC=+3V3"
+   ],
+   "pin_name_check": []
+  },
+  {
+   "ref": "U2",
+   "lcsc": "C91447",
+   "cpl_rot": 0.0,
+   "n_pads": 4,
+   "max_err_mm": 0.001,
+   "pin1_err_mm": 0.0,
+   "bad": [],
+   "pin_table": [
+    "1:GND=GND",
+    "2:GND=GND",
+    "3:VOUT=/IR_OUT",
+    "4:VCC=/IR_VCC"
+   ],
+   "pin_name_check": [],
+   "model_dot_nearest_pad": [
+    "4"
+   ]
+  }
+ ]
+}

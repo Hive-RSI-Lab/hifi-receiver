@@ -1,0 +1,475 @@
+{
+ "domain": "DIGITAL",
+ "findings": [
+  {
+   "id": "R3-DIGITAL-1",
+   "board": "core",
+   "severity": "major",
+   "repeat_of": "DIGITAL-1",
+   "refs": [
+    "Y2",
+    "U17",
+    "U7",
+    "R45",
+    "R60"
+   ],
+   "nets": [
+    "ETH_CLK",
+    "PHY_RST",
+    "ESP_EN"
+   ],
+   "finding": "GPIO0 strap can latch the 50 MHz RMII clock on an ESP32-internal system reset (brownout reset, RTC watchdog). EN doesn't move, so the TCA9539 keeps P05/PHY_RST high and Y2 keeps clocking GPIO0; a 0 sample leaves the chip in UART download mode until power-cycled. Firmware duty C1 (drop P05 before a software restart) is not implemented.",
+   "evidence": "ESP32 datasheet v5.3 s3 'At system reset, the latches sample...' and s4 (RWDT does system reset, runs during flash boot); IDF v4.4.8 with CONFIG_ESP32_REV_MIN=1 -> SOC_BROWNOUT_RESET_SUPPORTED=1 -> brownout reset_enabled=true (brownout.c, soc_caps.h); TCA9539 SCPS202C VPORF 0.75-1.0 V; YSO110TR enable >=70% VDD; docs/review-3/sims/digital/strap_check.py FAIL core GPIO0 sysrst; no shutdown handler in firmware/components.",
+   "reference_design": "WT32-ETH01 (GPIO0 clock in) has field reports of booting into download mode; Olimex ESP32-POE uses GPIO17 clock out (not possible with WROVER PSRAM); Espressif HDG recommends a reset supervisor on CHIP_PU for unstable supplies.",
+   "fix": "Add TLV803SDBZR (LCSC C132016, SOT-23, open-drain, 2.93 V, 200 ms) on ESP_EN: VDD=+3V3, RESET#=ESP_EN, GND; keep R30/C32 and Q4. Any dip that would brown out the ESP32 (2.43 V) pulls EN low first, resetting U17 so R45 turns Y2 off. Firmware: implement C1 with esp_register_shutdown_handler writing P05 low + 1 ms.",
+   "margin": "today none on a system reset; after the fix 0.38 V between supervisor trip (min 2.86 V) and BOD level 0 (~2.48 V max)"
+  },
+  {
+   "id": "R3-DIGITAL-2",
+   "board": "core",
+   "severity": "major",
+   "repeat_of": "new",
+   "refs": [
+    "U9"
+   ],
+   "nets": [
+    "MDIO",
+    "MDC"
+   ],
+   "finding": "LAN8720A RXER/PHYAD0 (pin 10) is unconnected, internal pull-down -> SMI address 0. squeezelite-esp32 ee1720c network_driver_LAN8720.c hard-codes phy_config.phy_addr = 1; IDF v4.4.8 lan87xx_init only auto-detects for ESP_ETH_PHY_ADDR_AUTO, so it reads 0xFFFF and fails 'wrong chip ID'. Ethernet never comes up on Plus/Ultra.",
+   "evidence": "Microchip DS00002165C pin table 'PHYAD0 VIS (PD)', s3.7.1 default 0b; squeezelite network_driver_LAN8720.c line 15; IDF v4.4.8 esp_eth_phy_lan87xx.c lines 487-499; docs/review-3/sims/digital/fw_pinmap.py FAIL.",
+   "reference_design": "WT32-ETH01 straps PHYAD0 high (addr 1, what squeezelite assumes); Olimex ESP32-POE addr 0.",
+   "fix": "Add R68 10k (C25744, 0402) U9 pin 10 -> +3V3 (VDDIO, DS Note 3-3) for address 1; also patch network_driver_LAN8720.c to phy_addr = -1 (auto) so either strap works.",
+   "margin": "fails outright today"
+  },
+  {
+   "id": "R3-DIGITAL-3",
+   "board": "ultra-front",
+   "severity": "major",
+   "repeat_of": "new",
+   "refs": [
+    "U1",
+    "J2",
+    "J1"
+   ],
+   "nets": [
+    "LCD_DC",
+    "LCD_SCLK",
+    "LCD_MOSI",
+    "EXP_INT",
+    "FRONT_INT_N"
+   ],
+   "finding": "No firmware drives Ultra's front board: DISPLAY_CONFIG/SPI_CONFIG empty for Ultra, the TCA9535 at 0x27 is never probed or read (EXP_ADDRS 0x20,0x74-77; Ultra buttons = -1), so the LCD stays blank, ENC_SW/BTN1-3 and the RGB LED are dead, and the uncleared TCA9535 INT (ENC_A/B also on its P00/P01) holds EXP_INT/GPIO39 low after the first knob turn, leaving the knob on a 10 ms poll (max ~25 detents/s).",
+   "evidence": "firmware/board/ultra/sdkconfig.defaults lines 206-207; hifi_board_core.h EXP_ADDRS; board_core.c controls() .buttons {-1,-1,-1,-1}; ultra-front.net U1 pins 1,4,5.",
+   "reference_design": "squeezelite-esp32 boards with SPI displays set display_config (e.g. SPI,driver=ST7789,...) and spi_config in their Kconfig defaults.",
+   "fix": "Firmware: set Ultra DISPLAY_CONFIG/SPI_CONFIG (clk=32, mosi=33, dc=15, cs=-1, mode=3, the panel's driver/size, backlight via expander P06); probe 0x27, configure P10-P13 as outputs, pulse LCD_RST 10 ms, read its inputs in controls() each pass (clears INT), map ENC_SW/BTN1-3.",
+   "margin": "feature absent"
+  },
+  {
+   "id": "R3-DIGITAL-4",
+   "board": "core",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "U17",
+    "Q7",
+    "R133"
+   ],
+   "nets": [
+    "TAP_SEL_IO"
+   ],
+   "finding": "Expander P17 is TAP_SEL_IO on the board, but firmware calls it LCD_CS and leaves it an input (EXP_CFG1 0xFF); duty C6 (speaker taps) not implemented.",
+   "evidence": "hifi_board_core.h comment and EXP_CFG1; core.net U17 pin 20; fw_pinmap.py FAIL.",
+   "reference_design": "n/a",
+   "fix": "Add EXP_TAP_SEL 15, EXP_CFG1 0x7F, drive it in the capture path; fix the comment.",
+   "margin": "R134 100k keeps it safely off"
+  },
+  {
+   "id": "R3-DIGITAL-5",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "R30",
+    "R31",
+    "R66",
+    "R67",
+    "R68",
+    "R69"
+   ],
+   "nets": [
+    "LINEIN_L_D",
+    "TAP_L"
+   ],
+   "finding": "Firmware constants lag the board: LINE_DIVIDER 2.0 vs R30/R31 15k/10k = 2.5; HIFI_HAS_TAPS 0 but the taps are fitted; PIN_AMP_SDZ comment says 100k (R54 is 10k).",
+   "evidence": "hifi_board_lite.h; lite-main.net; fw_pinmap.py FAIL (2).",
+   "reference_design": "n/a",
+   "fix": "LINE_DIVIDER 2.5f, HIFI_HAS_TAPS 1, fix comment.",
+   "margin": "captures 1.9 dB low on line in"
+  },
+  {
+   "id": "R3-DIGITAL-6",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "U6",
+    "J1"
+   ],
+   "nets": [
+    "USB_DP",
+    "USB_DM"
+   ],
+   "finding": "No ESD protection on USB D+/D-: CH340B pins 5/6 go straight to the USB-C. Core has USBLC6-2SC6. A dead CH340 removes the USB recovery path (OTA still works).",
+   "evidence": "lite-main.net USB_DP/USB_DM nodes; WCH CH340 DS V3D gives no ESD rating.",
+   "reference_design": "core U2 USBLC6-2SC6; most CP210x/CH340 dev boards rely on the bridge's own ESD.",
+   "fix": "Add USBLC6-2SC6 (C2687116) at J1: 1/6 USB_DP, 3/4 USB_DM, 2 GND, 5 +5V.",
+   "margin": "unknown kV rating"
+  },
+  {
+   "id": "R3-DIGITAL-7",
+   "board": "both",
+   "severity": "note",
+   "repeat_of": "DIGITAL-13",
+   "refs": [
+    "U6",
+    "U8"
+   ],
+   "nets": [],
+   "finding": "CH340B RST# (pin 7) unconnected on Lite U6 and core U8 is OK: WCH datasheet V3D pin table 'CH340B: External reset input, active low, built-in pull-up resistor'; IUP 3/70/200 uA at 3.3 V (16k-1.1M equivalent), VIL max 0.8 V; chip has its own POR (VR 2.4-2.8 V). A reset only drops the CH340's USB session, never the ESP32.",
+   "evidence": "WCH CH340 datasheet V3D pin table, s6.3, s5 'CH340B also provides an active low-level external reset input'; netlists: pin 7 unconnected, no trace.",
+   "reference_design": "WCH application circuit leaves RST# open.",
+   "fix": "None needed. Optional DNP 100 nF pin 7 to GND.",
+   "margin": "internal pull-up holds it at VCC; no trace to pick up noise"
+  },
+  {
+   "id": "R3-DIGITAL-8",
+   "board": "core",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "U8"
+   ],
+   "nets": [
+    "+3V3"
+   ],
+   "finding": "CH340B V3 pin 4 has no local decoupling cap of its own; only C33 at pin 16 on the opposite side of the SOP-16 (Lite has C24 at pin 4).",
+   "evidence": "WCH CH340 DS V3D s7: C8 0.1 uF on V3 and C9 0.1 uF on VCC, as close as possible.",
+   "reference_design": "WCH reference: separate 0.1 uF at V3 and VCC.",
+   "fix": "Add 100 nF (C1525, 0402) U8 pin 4 to GND.",
+   "margin": "works on the shared rail; thin"
+  },
+  {
+   "id": "R3-DIGITAL-9",
+   "board": "both",
+   "severity": "minor",
+   "repeat_of": "DIGITAL-18",
+   "refs": [
+    "U5",
+    "U7"
+   ],
+   "nets": [],
+   "finding": "No copper under either antenna (DIGITAL-19 holds), but copper starts 2.25 mm (Lite) and 0.85 mm (core) beside the antenna vs Espressif's 15 mm.",
+   "evidence": "hwde check_antenna on /tmp copies: antenna_side_clearance warnings only; end inside 0.64 mm (Lite), 0.0 mm (core).",
+   "reference_design": "Espressif HDG s1.4.8.",
+   "fix": "Keep round-1 disposition (RSSI check at bring-up; WROVER-IE contingency).",
+   "margin": "keepout clean; side clearance below guideline"
+  },
+  {
+   "id": "R3-DIGITAL-10",
+   "board": "ultra-front",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "U1"
+   ],
+   "nets": [
+    "FRONT_INT_N",
+    "EXP_INT",
+    "ENC_A",
+    "ENC_B"
+   ],
+   "finding": "TCA9535 has no RESET: its outputs (LCD_RST, LEDs) survive an ESP32 reset, and its INT is wired-OR onto core EXP_INT; ENC_A/B duplicated on its P00/P01 raise INT on every knob turn.",
+   "evidence": "ultra-front root.py U1_PINS; core.net J3 pin 14.",
+   "reference_design": "n/a",
+   "fix": "Firmware re-inits and reads 0x27 every control pass (see R3-DIGITAL-3); optional: drop the front's ENC_A/ENC_B to U1 P00/P01 (core reads them).",
+   "margin": "harmless once firmware reads it"
+  },
+  {
+   "id": "R3-DIGITAL-11",
+   "board": "core",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "U9",
+    "R67",
+    "R45",
+    "C47"
+   ],
+   "nets": [
+    "PHY_NRST"
+   ],
+   "finding": "LAN8720A nRST low level through R67: 50 uA typ internal PU x 10k = 0.50 V (0.61 V with the expander pin hi-Z, 12.2k) vs VILT 1.41 V typ at 3.3 V; rises 6.9 ms after OE, Y2 starts <= 3 ms, tpurstd 25 ms met.",
+   "evidence": "DS00002165C Table 5-5, Table 5-9; YSO110TR t_str 3 ms.",
+   "reference_design": "Microchip: nRST driven by MCU GPIO.",
+   "fix": "none",
+   "margin": "0.8 V at typical PU current"
+  },
+  {
+   "id": "R3-DIGITAL-12",
+   "board": "lite-main",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "U1",
+    "R2",
+    "R3"
+   ],
+   "nets": [
+    "I2C_SCL",
+    "I2C_SDA"
+   ],
+   "finding": "CH224A I2C table lists VIH max 3.3 V; the bus pulls to +3V3 = 3.33 V. The same datasheet says CFG2/CFG3 support 3.3 V or 5 V input.",
+   "evidence": "CH224 datasheet V2.0 s5.2.1, electrical table VIHI2C 1.5-3.3 V.",
+   "reference_design": "WCH reference uses MCU 3.3 V pull-ups.",
+   "fix": "none",
+   "margin": "30 mV over the table, within the stated 5 V tolerance"
+  },
+  {
+   "id": "R3-DIGITAL-13",
+   "board": "core",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "J2"
+   ],
+   "nets": [
+    "ETH_TXP",
+    "ETH_RXP"
+   ],
+   "finding": "RJ45 has integrated magnetics (1500 Vrms) but no TVS.",
+   "evidence": "core.net J2.",
+   "reference_design": "WT32-ETH01, Olimex ESP32-POE, LILYGO T-ETH: same.",
+   "fix": "none",
+   "margin": "as reference designs"
+  }
+ ],
+ "round1_fixes_checked": [
+  {
+   "id": "DIGITAL-1",
+   "holds": false,
+   "how": "POR and EN resets: yes (TCA9539 RESET=ESP_EN, R45 2.2k, YSO110TR tri-state, strap_check.py). Internal system reset (brownout reset enabled by REV_MIN=1, RWDT): no; firmware duty C1 not implemented. -> R3-DIGITAL-1"
+  },
+  {
+   "id": "DIGITAL-2",
+   "holds": true,
+   "how": "U17 is TCA9539 (no pull-ups); R40-R45 to GND on P00-P05 in core.net"
+  },
+  {
+   "id": "DIGITAL-3",
+   "holds": true,
+   "how": "board_core.c sub_start: I2S1 TX slave on GPIO2/4 with data on GPIO12"
+  },
+  {
+   "id": "DIGITAL-4",
+   "holds": true,
+   "how": "Y1 SX3M49.152 (C7431354) in blocks_audio.py/netlist"
+  },
+  {
+   "id": "DIGITAL-5",
+   "holds": true,
+   "how": "R67 10k + C47 1 uF: nRST 6.9 ms after OE vs 3 ms oscillator start"
+  },
+  {
+   "id": "DIGITAL-6",
+   "holds": true,
+   "how": "AUDIO_CONTROLS gpio36 debounce 40 ms in the patch"
+  },
+  {
+   "id": "DIGITAL-13",
+   "holds": true,
+   "how": "CH340B RST# internal pull-up per WCH V3D; pins 7/8/15 unconnected"
+  },
+  {
+   "id": "DIGITAL-14",
+   "holds": true,
+   "how": "R54 10k + C26 47 nF in root.py/netlist"
+  },
+  {
+   "id": "DIGITAL-16",
+   "holds": true,
+   "how": "R57 10k LCD_CS to GND; firmware comment stale (R3-DIGITAL-4)"
+  },
+  {
+   "id": "DIGITAL-19",
+   "holds": true,
+   "how": "hwde check_antenna on a /tmp copy: no copper under U7's antenna on any layer"
+  },
+  {
+   "id": "DIGITAL-18",
+   "holds": true,
+   "how": "justified disposition; still 2.25 mm side clearance (R3-DIGITAL-9)"
+  }
+ ],
+ "field_issues": [
+  {
+   "issue": "ESP32 Ethernet boards with RMII clock into GPIO0 boot into download mode",
+   "source": "WT32-ETH01 user reports; ESP32 datasheet v5.3 s3",
+   "our_board": "has it",
+   "how": "core, on brownout/RWDT system resets only (R3-DIGITAL-1)"
+  },
+  {
+   "issue": "squeezelite-esp32 LAN8720 driver hard-codes phy_addr 1",
+   "source": "github.com/sle118/squeezelite-esp32 components/wifi-manager/network_driver_LAN8720.c @ee1720c",
+   "our_board": "has it",
+   "how": "PHYAD0 strapped 0 (R3-DIGITAL-2)"
+  },
+  {
+   "issue": "Brownout resets on Wi-Fi TX",
+   "source": "squeezelite-esp32 / ESP32 forum reports",
+   "our_board": "immune",
+   "how": "2 A SY8089 from a 5 V buck; 22+10 uF on +3V3, 10/22 uF + 100 nF at the module"
+  },
+  {
+   "issue": "ESP32 won't boot on some chargers (slow ramp, EN early)",
+   "source": "Espressif HDG CHIP_PU RC",
+   "our_board": "immune",
+   "how": "10k/1 uF EN RC (tau 10 ms); +3V3 from soft-start bucks; PD voltage step never lowers +5V"
+  },
+  {
+   "issue": "GPIO12 high at boot selects 1.8 V flash",
+   "source": "ESP32 datasheet Table 3-1",
+   "our_board": "immune",
+   "how": "strap_check.py: GPIO12 0 on both boards"
+  },
+  {
+   "issue": "GPIO36/39 80 ns low glitch on ADC power-up",
+   "source": "ESP32 errata 3.11",
+   "our_board": "immune",
+   "how": "Lite button debounced 40 ms; core EXP_INT polled every 10 ms"
+  },
+  {
+   "issue": "ADC2 unusable with Wi-Fi",
+   "source": "ESP-IDF ADC docs",
+   "our_board": "immune",
+   "how": "ADC only on GPIO34/39 (ADC1)"
+  },
+  {
+   "issue": "LAN8720 fails to start (no clock at reset release, straps pulled by MCU)",
+   "source": "WT32-ETH01/LILYGO issues",
+   "our_board": "immune",
+   "how": "nRST 6.9 ms after OE, oscillator <=3 ms; RMII RX pins are ESP32 inputs at strap time; MODE straps PU = 111"
+  },
+  {
+   "issue": "MCLK on GPIO0 jitter / auto-program transistor on MCLK",
+   "source": "ESP32-LyraT design",
+   "our_board": "immune",
+   "how": "Lite same as LyraT; core takes no MCLK from the ESP32"
+  },
+  {
+   "issue": "USB-C data-line ESD failures",
+   "source": "general",
+   "our_board": "has it",
+   "how": "Lite has no D+/D- ESD (R3-DIGITAL-6); core has USBLC6-2SC6"
+  },
+  {
+   "issue": "RJ45 ESD",
+   "source": "general",
+   "our_board": "immune",
+   "how": "integrated magnetics, as WT32-ETH01/Olimex (note)"
+  }
+ ],
+ "tests_built": [
+  {
+   "path": "docs/review-3/sims/digital/netlib.py",
+   "checks": "KiCad .net reader helper",
+   "result": "pass"
+  },
+  {
+   "path": "docs/review-3/sims/digital/strap_check.py",
+   "checks": "ESP32 strap levels (GPIO0/2/12/15/5) at POR, EN reset and internal system reset from the netlists, incl. oscillators gated by expander pins",
+   "result": "fail"
+  },
+  {
+   "path": "docs/review-3/sims/digital/fw_pinmap.py",
+   "checks": "firmware headers + Kconfig defaults vs netlists: GPIO nets, directions, input-only, PSRAM pins, ADC1, expander bits, ES8388 address strap, divider constants, LAN8720A PHY address vs squeezelite",
+   "result": "fail"
+  },
+  {
+   "path": "docs/review-3/sims/digital/i2c_bus.py",
+   "checks": "routed I2C lengths (measured), bus C, rise time vs 300 ns, sink current, address uniqueness + their straps (Lite, Plus, Ultra with FFC)",
+   "result": "pass"
+  }
+ ],
+ "known_unknowns": [
+  {
+   "fact": "Y2 YSO110TR OE low = output tri-stated, enable >= 70% VDD, start-up 3 ms max",
+   "board": "core",
+   "refs": [
+    "Y2"
+   ],
+   "status": "verified",
+   "source": "YXC YSO110TR datasheet via LCSC C717684",
+   "date": "2026-10-30",
+   "could_stop_board": true
+  },
+  {
+   "fact": "IDF v4.4.8 with REV_MIN=1 enables the hardware brownout reset (system reset, straps re-sampled)",
+   "board": "core",
+   "refs": [
+    "U7"
+   ],
+   "status": "verified",
+   "source": "esp-idf v4.4.8 brownout.c, soc/esp32 soc_caps.h; firmware/board/*/sdkconfig.defaults",
+   "date": "2026-10-30",
+   "could_stop_board": true
+  },
+  {
+   "fact": "squeezelite-esp32 LAN8720 driver uses phy_addr = 1",
+   "board": "core",
+   "refs": [
+    "U9"
+   ],
+   "status": "verified",
+   "source": "sle118/squeezelite-esp32 @ee1720c network_driver_LAN8720.c",
+   "date": "2026-10-30",
+   "could_stop_board": true
+  },
+  {
+   "fact": "ESP32 brownout level 0 is about 2.43 V",
+   "board": "both",
+   "refs": [
+    "U5",
+    "U7"
+   ],
+   "status": "unverified",
+   "source": "ESP32 TRM brownout section (from memory, not fetched)",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "FFC length core J3 to ultra-front J1 about 150 mm (I2C capacitance estimate)",
+   "board": "ultra-front",
+   "refs": [
+    "J3",
+    "J1"
+   ],
+   "status": "unverified",
+   "source": "estimate; enclosure not drawn",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "CH340B RST# has an internal pull-up",
+   "board": "both",
+   "refs": [
+    "U6",
+    "U8"
+   ],
+   "status": "verified",
+   "source": "WCH CH340 datasheet V3D pin table, s6.3",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  }
+ ]
+}

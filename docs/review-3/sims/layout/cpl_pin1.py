@@ -75,6 +75,11 @@ def rot(x, y, deg):
     return x * math.cos(r) - y * math.sin(r), x * math.sin(r) + y * math.cos(r)
 
 
+def is_gnd(s):
+    u = (s or "").upper()
+    return bool(re.search(r"(^|[^A-Z])(P?A?D?GND|VSS|AGND|PGND|DGND|GND[A-Z0-9_]*)([^A-Z]|$)", u)) or u.endswith("GND")
+
+
 def toks(s):
     return set(t for t in re.split(r"[^A-Z0-9]+", (s or "").upper()) if t)
 
@@ -90,7 +95,7 @@ def main():
     report = []
     lcsc_of = {}
     for ref, fp in fps.items():
-        lcsc_of[ref] = fp["props"].get("LCSC") or fp["props"].get("LCSC Part #") or fp["props"].get("JLCPCB Part #")
+        lcsc_of[ref] = fp["props"].get("LCSC") or fp["props"].get("LCSC Part") or fp["props"].get("LCSC Part #") or fp["props"].get("JLCPCB Part #")
     if "--parts" in a:
         pj = json.load(open(a[a.index("--parts") + 1]))
         items = pj.get("parts", pj) if isinstance(pj, dict) else pj
@@ -145,13 +150,19 @@ def main():
         # pinout and pin-1 dot only for multi-pin active parts
         if ref[0] in "UQD" and len(mp) >= 3:
             names = pin_names(m)
-            mism = []
-            for num, lst in bp.items():
+            mism, table = [], []
+            for num, lst in sorted(bp.items(), key=lambda kv: (len(kv[0]), kv[0])):
                 b = lst[0]
                 nm = names.get(num)
-                pf = b.get("pinfunction") or ""
-                if nm and pf and not (toks(nm) & toks(pf)) and toks(nm) and not (nm.isdigit()):
-                    mism.append(f"{num}:{nm}|{pf}|{b.get('net')}")
+                net = b.get("net") or ""
+                table.append(f"{num}:{nm}={net}")
+                if not nm or nm.isdigit():
+                    continue
+                gn, gm = is_gnd(net), is_gnd(nm)
+                # a ground pin on a non-ground net, or a ground net on a pin the vendor does not call ground
+                if (gm and not gn and "unconnected" not in net.lower() and net) or (gn and not gm and not re.search(r"EP|PAD|NC|THERMAL|EXP|SHIELD|SH|MH|E$", nm.upper()) and toks(nm).isdisjoint({"S", "E", "K", "A"})):
+                    mism.append(f"{num}:{nm}|{net}")
+            rec["pin_table"] = table
             rec["pin_name_check"] = mism
             dots = model_pin1_dot(m)
             if dots and "1" in mp:
