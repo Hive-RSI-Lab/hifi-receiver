@@ -151,6 +151,10 @@ class Models(unittest.TestCase):
                 code, s = m.post("sub", {"sub": 1, "delay_ms": 3.2, "invert": True})
                 self.assertEqual(s["audio"]["sub"]["subs"][1], {"trim_db": 0.0, "delay_ms": 3.2, "invert": True})
                 self.assertEqual(m.post("zone", {"zone": "b", "on": True})[0], 200 if zones == 2 else 400)
+                # one volume for both zones on core: zone B has no level to set
+                self.assertEqual(m.post("zone", {"zone": "b", "volume": 40})[0], 400)
+                if zones == 2:
+                    self.assertIsNone(m.get("api/v1/state")["audio"]["zone_b"]["volume"])
             finally:
                 m.close()
 

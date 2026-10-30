@@ -8,6 +8,7 @@
 #include "esp_heap_caps.h"
 #include "esp_log.h"
 
+#include "hifi_esp.h"
 #include "hifi_http.h"
 #include "webapp_files.h"
 
@@ -80,6 +81,9 @@ static esp_err_t file_handler(httpd_req_t *req) {
 
 void hifi_http_start(httpd_handle_t server, const hifi_ops_t *o) {
 	ops = o;
+	/* the app's firmware upload is a raw body, too big for api_handler: first */
+	httpd_uri_t up = {.uri = "/api/v1/update/upload", .method = HTTP_POST, .handler = hifi_net_upload_handler};
+	httpd_register_uri_handler(server, &up);
 	httpd_uri_t get = {.uri = "/api/v1/*", .method = HTTP_GET, .handler = api_handler};
 	httpd_uri_t post = {.uri = "/api/v1/*", .method = HTTP_POST, .handler = api_handler};
 	httpd_register_uri_handler(server, &get);
