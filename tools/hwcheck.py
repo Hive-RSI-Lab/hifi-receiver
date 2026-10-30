@@ -6,7 +6,8 @@
                                      unit tests, the firmware's host tests, then
                                      the hwde gates of each board whose files
                                      changed since the merge base with main
-                                     (every board with --all or HWCHECK_ALL=1)
+                                     (every board on main itself, with --all
+                                     or HWCHECK_ALL=1)
     python3 tools/hwcheck.py score   the whole product, lower is better: each
                                      tier's unit cost at 100 in USD from its
                                      boards' BOMs, counted only when its boards
@@ -54,6 +55,10 @@ SPEC = json.loads((ROOT / "tools" / "product.json").read_text(encoding="utf-8"))
 BOARDS = ROOT / "boards"
 TIERS = ("lite", "plus", "ultra")
 GATES = ("erc", "drc_routed", "verify", "dfm")
+# The gates never ask a live service: dfm reads each board's committed
+# EasyEDA cache (<board>/parts/easyeda) and skips LCSC stock lookups, so a
+# rate limit or outage can't turn a check red (docs/checks.md).
+OFFLINE = {"HWDE_EASYEDA_OFFLINE": "1", "HWDE_STOCK_OFFLINE": "1"}
 # Gate findings that are hwde failing to fetch, not the board failing.
 UNRUN = ("cpl_fetch_failed",)
 # Software whose stdlib unittest suite (<dir>/tests/test_*.py) the test runs.
@@ -196,7 +201,7 @@ def gate_board(ws: Path, name: str, bin_: str, logs: Path) -> list[tuple[str, in
             rc = subprocess.run([bin_, "gate", "--gate", g, str(inp.relative_to(ws)),
                                  "--workspace", ".", "--out", str(out)], cwd=ws,
                                 stdout=f, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
-                                env=dict(os.environ, HWDE_BOARDS_ROOT=str(ws.parent))).returncode
+                                env=dict(os.environ, HWDE_BOARDS_ROOT=str(ws.parent), **OFFLINE)).returncode
         if rc == 0:
             print(f"  {g}: pass", flush=True)
             continue
@@ -249,7 +254,9 @@ def git(*args: str) -> str | None:
 def changed_boards(dirs: list[Path]) -> tuple[list[Path], str]:
     """The boards whose files differ from the merge base with main (commits,
     uncommitted edits and new files alike), and why. Every board when git
-    can't say, when the gate runner changed, or with HWCHECK_ALL=1."""
+    can't say, when the gate runner changed, when nothing differs (main
+    itself, so a hive-hwde change that breaks a board shows there), or with
+    HWCHECK_ALL=1."""
     if os.environ.get("HWCHECK_ALL"):
         return dirs, "HWCHECK_ALL is set"
     bases = [os.environ["HWCHECK_BASE"]] if os.environ.get("HWCHECK_BASE") else ["origin/main", "main"]
@@ -262,6 +269,8 @@ def changed_boards(dirs: list[Path]) -> tuple[list[Path], str]:
     if tracked is None or untracked is None:
         return dirs, "git diff failed"
     changed = {f for f in (tracked + untracked).split("\0") if f}
+    if not changed:
+        return dirs, f"nothing differs from {ref}: main itself"
     if hit := sorted(changed & set(GATE_ALL)):
         return dirs, f"{', '.join(hit)} changed"
     top = ROOT.resolve()
@@ -492,7 +501,10 @@ def cmd_score() -> int:
             unit = SPEC["tier_not_counted"]
             lines.append(f"{name}: {unit:.2f} (not counted: {'; '.join(why)})")
         else:
-            lines.append(f"{name}: {unit:.2f} USD per unit at {QTY}, every needed function on the board")
+            over = max(0.0, unit - tier["budget"])
+            lines.append(f"{name}: {over:.2f} ({unit:.2f} USD per unit at {QTY} against its "
+                         f"{tier['budget']:.2f} budget, every needed function on the board)")
+            unit = over
         total += unit
     ran = {}
     for piece in SPEC["pieces"]:

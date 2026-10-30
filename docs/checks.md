@@ -43,7 +43,9 @@ It fails (exit 1) if any of these fails:
    `$HWCHECK_BASE`): committed, edited or new. A PR that touches no board
    runs no gates; one that touches a board runs that board's alone. Every
    board is gated when `tools/hwcheck.py` itself changes, when git can't
-   find the merge base (no main ref, not a git checkout), and with
+   find the merge base (no main ref, not a git checkout), when nothing
+   differs from it (main itself: every test on main re-gates every board,
+   so a fix or a break in hive-hwde reaches all of them), and with
    `test --all` or `HWCHECK_ALL=1`. The first line under `boards/` names
    which boards it gates and why. Workers run their board's gates before
    they finish, and the score re-runs every tier's boards' gates on main
@@ -55,6 +57,13 @@ It fails (exit 1) if any of these fails:
    scratch copy of the workspace, so the checkout isn't changed. A board
    merges only once it passes all four. A half-built board stays on its
    branch.
+   The gates never call a live outside service: they run with
+   `HWDE_EASYEDA_OFFLINE=1` and `HWDE_STOCK_OFFLINE=1`, so `dfm` checks
+   each CPL rotation against the board's committed EasyEDA cache
+   (`<board>/parts/easyeda/`) and skips LCSC stock lookups. A board must
+   commit that cache with every model its CPL needs; a part missing from
+   it fails `dfm` as `cpl_no_model`. Fill it with `bom_cpl` or `cpl_verify`
+   outside the check, and use `tools/bom_stock.py` for live stock.
 
 When there are no boards yet, the test checks `docs/product.md` and passes.
 
@@ -72,12 +81,13 @@ fault in the environment, not a verdict on the commit.
 **The whole product, in USD, lower is better.** The person asked for the
 whole product (`.hive/goals.md`, 10-28 16:55Z): every tier's board, plus the
 firmware, the app and the enclosures. So the score is the sum of two kinds
-of term. Each tier counts at its unit cost once its boards are done. Each
+of term. Each tier counts at its unit cost above its BOM budget once its
+boards are done. Each
 piece costs a flat amount until it is there and its tests pass. What counts
 is in [`tools/product.json`](../tools/product.json). That file is an
 evaluator file, like `hwcheck.py`.
 
-1. **Each tier (Lite, Plus, Ultra): its unit cost at 100.** It counts only
+1. **Each tier (Lite, Plus, Ultra): its unit cost at 100 above its budget.** It counts only
    when all of these hold:
    - every board the tier is built from is under `boards/`. Lite is
      `lite-main`. Plus is `core` with its Plus population (`fab/BOM.csv`,
@@ -103,6 +113,16 @@ evaluator file, like `hwcheck.py`.
    by dropping a function the product needs, because the drop costs far
    more than the part saves. And a tier landing for the first time always
    reads as a gain.
+
+   A counted tier adds `max(0, cost - budget)`. Each tier's `budget` in
+   `product.json` is its target retail in `product.md` (without the charger)
+   over the usual 4x retail-to-BOM markup: Lite $59 / 4 = $14.75, Plus
+   $129 / 4 = $32.25, Ultra $199 / 4 = $49.75. Under budget, a first spin's
+   contingencies (test points, loopback taps, a spare part) cost nothing and
+   cutting them gains nothing; only cost past the budget counts, cent for
+   cent. **A score of 0 means the product is complete:** every tier's
+   boards pass their gates, carry every needed function and sit within
+   budget, and every piece passes.
 
    The cost of a counted tier is the sum of its boards' costs. Each
    board's cost per unit at 100 boards is the sum of:
