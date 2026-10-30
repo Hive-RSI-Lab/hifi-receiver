@@ -81,7 +81,7 @@ The first check here said that the pad-down relatives stop at 26 V. That was wro
 - **2 oz outer copper**, which TI recommends: it is about 10-15 % better, but core's fine-pitch routing was drawn to 1 oz rules.
 - **HEAD modulation** (HEAD pin to AVDD): idle loss 0.55 → 0.38 W. That is small next to the conduction loss at 1/8 power, and it would change the modulation that the audio review signed off.
 
-**Ordering:** LCSC has no TPA3220, so the order needs it bought into the JLC parts inventory first. JLC global sourcing, or a consigned reel from Mouser or DigiKey, does that. It is listed in `boards/core/fab/prebuy.csv`. This is the same step as any "thin" part in docs/bom-stock.md, and it costs about $2.10 more per amp than the TPA3221. The off-board heatsink and thermal pad (about $1.50 per amp) and their hand fitting go away.
+**Ordering:** LCSC has no TPA3220, so the order needs it bought into the JLC parts inventory first. JLC global sourcing, or a consigned reel from Mouser or DigiKey, does that. It is listed in `boards/core/fab/prebuy.csv`, and `boards/core/fab/ORDERING.md` gives the steps. This is the same step as any "thin" part in docs/bom-stock.md, and it costs about $2.10 more per amp than the TPA3221. The off-board heatsink and thermal pad (about $1.50 per amp) and their hand fitting go away.
 
 ## (3) Enclosure heat path: no longer needed
 
