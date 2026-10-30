@@ -25,7 +25,7 @@ void hifi_gov_cfg_lite(hifi_gov_cfg_t *cfg) {
 void hifi_gov_cfg_core(hifi_gov_cfg_t *cfg) {
 	hifi_gov_cfg_lite(cfg);
 	/* the ES9018K2M's OPA1678 stage gives about 1.15 Vrms at full scale
-	 * (boards/core/architecture/blocks.md B7), the TPA3221 24 dB: 1.15 x
+	 * (boards/core/architecture/blocks.md B7), the TPA3220 24 dB: 1.15 x
 	 * 15.85 x sqrt 2 = 25.8 V peak, near the 28 V rail. Not yet measured */
 	cfg->vfs_peak_v = 1.15f * 15.85f * 1.4142f;
 	cfg->swing = 0.95f;
@@ -33,6 +33,12 @@ void hifi_gov_cfg_core(hifi_gov_cfg_t *cfg) {
 	/* the ESP32, PHY, DAC, ADC and an amp idling at 28 V: an estimate for
 	 * bring-up to replace (the INA186 reads it directly) */
 	cfg->p_idle_w = 4.0f;
+	/* the TPA3220 cools into the board (no heatsink): about 26 C/W, so at
+	 * 45 C box air it holds 2.5 W (Tj 110 C, 5 K under OTW), about 12 W out
+	 * of both channels into 4 ohm, 18 W at the USB-C input
+	 * (docs/review-2/heatsink-options.md). Peaks pass; the minute doesn't */
+	cfg->thermal_out_w = 12.0f;
+	cfg->thermal_tau_s = 60.0f;
 }
 
 void hifi_gov_init(hifi_gov_t *g, const hifi_gov_cfg_t *cfg) {
@@ -83,6 +89,8 @@ void hifi_gov_process(hifi_gov_t *g, void *buf, size_t frames, int bytes_per_fra
 	float a = 1.0f - expf(-dt / c->tau_s);
 	float p_now = (channel_w(g, msl) + channel_w(g, msr)) * g->amps;
 	g->p_out_pre += a * (p_now - g->p_out_pre);
+	if (c->thermal_out_w > 0 && c->thermal_tau_s > 0)
+		g->p_out_slow += (1.0f - expf(-dt / c->thermal_tau_s)) * (p_now - g->p_out_slow);
 	g->ms_avg += a * ((msl + msr) / 2 - g->ms_avg);
 
 	/* gain^2 * p_out / eff + idle = budget */
@@ -91,6 +99,13 @@ void hifi_gov_process(hifi_gov_t *g, void *buf, size_t frames, int bytes_per_fra
 	if (g->p_out_pre > 1e-6f && avail < g->p_out_pre) {
 		target = avail > 0 ? sqrtf(avail / g->p_out_pre) : 0.0f;
 		if (target < c->min_gain) target = c->min_gain;
+	}
+	/* the amps' heat: the slow average of what they would play */
+	float cap = c->thermal_out_w * g->amps;
+	if (c->thermal_out_w > 0 && g->p_out_slow > cap) {
+		float t2 = sqrtf(cap / g->p_out_slow);
+		if (t2 < c->min_gain) t2 = c->min_gain;
+		if (t2 < target) target = t2;
 	}
 	bool limiting = target < 0.999f;
 	if (limiting && !g->limiting) g->events++;

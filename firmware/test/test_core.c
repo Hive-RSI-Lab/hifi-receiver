@@ -187,6 +187,27 @@ static void core_power_gov(void) {
 	}
 	CHECK_NEAR(hifi_gov_in_w(&g), 126, 3);
 	CHECK_NEAR(hifi_gov_gain_db(&g) - one, -3.0, 0.3);
+
+	/* the TPA3220's heat: a -6 dBFS sine (2 x 20.8 W into 4 ohm) is well
+	 * inside the 140 W supply, so it plays untouched for seconds, but the
+	 * minute's average comes down to the amp's 12 W */
+	hifi_gov_init(&g, &gc);
+	hifi_gov_set_supply(&g, 28, 140);
+	for (int i = 0; i < 2 * 480; i++) blk[i] = buf[i] / 2;
+	static int16_t half[2 * 480];
+	memcpy(half, blk, sizeof(half));
+	for (int k = 0; k < 500; k++) {
+		memcpy(blk, half, sizeof(half));
+		hifi_gov_process(&g, blk, 480, 4, 48000);
+	}
+	CHECK(!g.limiting);
+	CHECK_NEAR(hifi_gov_out_w(&g), 41.5, 2);
+	for (int k = 0; k < 30000; k++) {
+		memcpy(blk, half, sizeof(half));
+		hifi_gov_process(&g, blk, 480, 4, 48000);
+	}
+	CHECK(g.limiting);
+	CHECK_NEAR(hifi_gov_out_w(&g), 12, 1);
 }
 
 static void manifest(void) {

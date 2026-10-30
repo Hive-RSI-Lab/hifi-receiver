@@ -1024,6 +1024,7 @@
   {
    "refdes": [
     "R7",
+    "R404",
     "R10",
     "R11",
     "R12",
@@ -1047,6 +1048,7 @@
    ],
    "refdes_class": {
     "R7": "smt_placed",
+    "R404": "smt_placed",
     "R10": "smt_placed",
     "R11": "smt_placed",
     "R12": "smt_placed",
@@ -1107,6 +1109,50 @@
   },
   {
    "refdes": [
+    "D5"
+   ],
+   "refdes_class": {
+    "D5": "smt_placed"
+   },
+   "lcsc": "C99382",
+   "mpn": "BAS16L",
+   "value": "BAS16L",
+   "package": "SOD-882_L1.0-W0.6-RD",
+   "block": "power_in",
+   "basic": false,
+   "role": "Q1 fast-off: blocks the follower's base-emitter reverse bias while Q2 is on",
+   "price": 0.0399,
+   "price_breaks": [
+    {
+     "qty": 1,
+     "price": 0.0399
+    },
+    {
+     "qty": 200,
+     "price": 0.0309
+    },
+    {
+     "qty": 600,
+     "price": 0.0258
+    },
+    {
+     "qty": 2000,
+     "price": 0.0228
+    },
+    {
+     "qty": 10000,
+     "price": 0.02
+    },
+    {
+     "qty": 20000,
+     "price": 0.0187
+    }
+   ],
+   "stock": 66192,
+   "description": "1.25V@150mA 100V 215mA 250mW 4A 4ns 500nA@80V Independent DFN1006-2 Switching Diodes ROHS"
+  },
+  {
+   "refdes": [
     "D2"
    ],
    "refdes_class": {
@@ -1118,7 +1164,7 @@
    "package": "SOD-123_L2.7-W1.6-LS3.7-RD",
    "block": "power_in",
    "basic": false,
-   "role": "33 V zener: gross-overvoltage trip, ~32-36 V (TPA3221 abs max 37 V)",
+   "role": "33 V zener: gross-overvoltage trip, ~32-36 V (TPA3220 abs max 37 V)",
    "price": 0.0169,
    "price_breaks": [
     {
@@ -1151,55 +1197,47 @@
   },
   {
    "refdes": [
-    "Q3",
-    "Q4",
-    "Q5",
-    "Q6",
-    "Q7"
+    "Q3"
    ],
    "refdes_class": {
-    "Q3": "smt_placed",
-    "Q4": "smt_placed",
-    "Q5": "smt_placed",
-    "Q6": "smt_placed",
-    "Q7": "smt_placed"
+    "Q3": "smt_placed"
    },
-   "lcsc": "C2146",
-   "mpn": "S8050",
-   "value": "S8050",
-   "package": "SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR",
+   "lcsc": "C83572",
+   "mpn": "MMDT3904",
+   "value": "MMDT3904",
+   "package": "SOT-363_L2.0-W1.3-P0.65-LS2.1-TL",
    "block": "power_in",
-   "basic": true,
-   "role": "pulls PVDD enable low above ~31 V",
-   "price": 0.0142,
+   "basic": false,
+   "role": "unit 1 pulls PVDD enable low above ~31 V; unit 2 pulls Q1's gate to VBUS when Q2 is off",
+   "price": 0.0586,
    "price_breaks": [
     {
      "qty": 1,
-     "price": 0.0142
+     "price": 0.0586
     },
     {
-     "qty": 500,
-     "price": 0.0109
+     "qty": 100,
+     "price": 0.0468
+    },
+    {
+     "qty": 300,
+     "price": 0.041
     },
     {
      "qty": 3000,
-     "price": 0.0095
+     "price": 0.0322
     },
     {
      "qty": 6000,
-     "price": 0.0084
+     "price": 0.0286
     },
     {
-     "qty": 24000,
-     "price": 0.008
-    },
-    {
-     "qty": 51000,
-     "price": 0.0077
+     "qty": 9000,
+     "price": 0.0269
     }
    ],
-   "stock": 1402530,
-   "description": "-55℃~+150℃ 1 NPN 100nA 150MHz 200 25V 300mW 500mA 5V 600mV NPN SOT-23 Bipolar (BJT) ROHS"
+   "stock": 31272,
+   "description": "-55℃~+150℃ 100 2 NPN 200mA 200mV 200mW 300MHz 40V 50nA 6V NPN SOT-363 Bipolar (BJT) ROHS"
   },
   {
    "refdes": [
@@ -1978,6 +2016,56 @@
    ],
    "stock": 5064,
    "description": "15mA 200uA 2Mbps 3.3V、5V Transceiver USB 2.0 SOP-16 USB Converters ROHS"
+  },
+  {
+   "refdes": [
+    "Q4",
+    "Q5",
+    "Q6",
+    "Q7"
+   ],
+   "refdes_class": {
+    "Q4": "smt_placed",
+    "Q5": "smt_placed",
+    "Q6": "smt_placed",
+    "Q7": "smt_placed"
+   },
+   "lcsc": "C2146",
+   "mpn": "S8050",
+   "value": "S8050",
+   "package": "SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR",
+   "block": "mcu",
+   "basic": true,
+   "role": "auto-reset: EN",
+   "price": 0.0142,
+   "price_breaks": [
+    {
+     "qty": 1,
+     "price": 0.0142
+    },
+    {
+     "qty": 500,
+     "price": 0.0109
+    },
+    {
+     "qty": 3000,
+     "price": 0.0095
+    },
+    {
+     "qty": 6000,
+     "price": 0.0084
+    },
+    {
+     "qty": 24000,
+     "price": 0.008
+    },
+    {
+     "qty": 51000,
+     "price": 0.0077
+    }
+   ],
+   "stock": 1402530,
+   "description": "-55℃~+150℃ 1 NPN 100nA 150MHz 200 25V 300mW 500mA 5V 600mV NPN SOT-23 Bipolar (BJT) ROHS"
   },
   {
    "refdes": [

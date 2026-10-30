@@ -35,15 +35,17 @@ void hifi_power_cfg_lite(hifi_power_cfg_t *cfg) {
 
 void hifi_power_cfg_core(hifi_power_cfg_t *cfg) {
 	hifi_power_cfg_lite(cfg);
-	/* TPA3221: 7-30 V recommended (37 V absolute). core's firmware asks the
+	/* TPA3220: 7-32 V recommended (37 V absolute). core's firmware asks the
 	 * CH224Q for 28 V (EPR) or 20 V and takes VBUS to be that once PG is
 	 * good: the board has no VBUS divider to read. The floor keeps 9 and
 	 * 12 V contracts out (too little for 4 ohm speakers at volume) */
 	cfg->v_start = 14.0f;
 	cfg->v_min = 13.0f;
 	cfg->v_max = 30.0f;
-	/* PVDD ramps at about 2 V/ms (C9 on Q1's gate), 28 V in 15 ms; the amps
-	 * come out of reset well after it, and after the 940 uF bulk is charged */
+	/* PVDD ramps through C4 on Q1's gate-drain: 10-90 % in ~47 ms at 28 V
+	 * (hwde sim_inrush, fw_on); the amps come out of reset after it, once
+	 * the 940 uF bulk is charged. Q1's gate sits at VBUS/2 (R4/R5), 7 V at
+	 * the 14 V start floor */
 	cfg->soft_start_ms = 100;
 }
 
