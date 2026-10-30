@@ -34,7 +34,7 @@ import math
 from dataclasses import dataclass
 from pathlib import Path
 
-from build123d import Box, Cylinder, Pos, Polygon, Rectangle, Rot, Plane, extrude
+from build123d import Box, Cylinder, Pos, Rectangle, Rot, Plane, extrude
 
 from mech.box import Tray, block, cylinder, rounded
 from mech.kicad import Board, Part, Port, load
@@ -184,6 +184,8 @@ def prepare(board: Board, variant: str, y_wall_n: float) -> dict:
 
     # Heatsink room over each fitted TPA3221's top slug: the free area round it, up to the lid.
     room = {"U15": (2.0, 52.5, 21.0, 64.5), "U16": (35.4, 52.5, 53.4, 64.5)}
+    # floor vents under both amps' places, fitted or not (PR #68 fits both on Plus too)
+    feats["amp_floor"] = list(room.values())
     for ref, (x0, y0, x1, y1) in room.items():
         if ref in gone:
             continue
@@ -230,7 +232,8 @@ def base(t: CoreTray, feats: dict, ports=("J1", "J2", "U19")):
         b -= teardrop_y(x, yn, z, RCA_HOLE, cut, cap=RCA_CAP)
     for _, x, z in feats.get("posts", []):
         b -= teardrop_y(x, yn, z, POST_HOLE, cut)
-    for _, hx0, hy0, hx1, hy1, _ in feats.get("heatsinks", []):
+    under = feats.get("amp_floor", [h[1:5] for h in feats.get("heatsinks", [])])
+    for hx0, hy0, hx1, hy1 in under:
         b = t.vents(b, (hx0 + 1, hy0 - 2, hx1 - 1, hy1 + 2), along="y", where="floor")
     if "vents" in feats:
         b = cut_vents(b, feats["vents"]["wall"], rounded_ends=False)
@@ -459,8 +462,9 @@ LCD = (25.45, 1.9, 77.25, 38.1, 2.05)        # module outline on the front board
 LCD_ACTIVE = (40.8, 30.6)                    # centred in the module; datasheet p.10 offset unchecked, +1 mm each side
 PLINTH = (89.8, 110.0)                       # front-board X of the thick right column: knob, IR, LED
 POCKET = (91.8, 108.0, 0.6, 39.0, 7.2)       # X0 X1 Y0 Y1 and depth from the board face, for the EC11 body and IR
-POCKET_ROOF = 37.6                           # front-board Y where the pocket's sloped roof starts
 PLINTH_T = 2.0
+POCKET_LAND = 1.0                            # the plinth's top over the pocket's sloped roof
+TAB_GAP, TAB_FLAT = 0.2, 1.0                 # the lid's LCD tab: a side's gap in the slot, its flat edge
 FB_SCREW_PILOT, FB_BOSS = 2.1, 5.5           # M2.5 x 6 thread-forming, from behind the board
 BTN_CAP, BTN_HOLE, BTN_FLANGE = 6.0, 6.6, 8.5
 FKNOB_D, FKNOB_H, FKNOB_LIFT = 22.0, 15.0, 1.0
@@ -499,29 +503,29 @@ def ultra_front_panel(t: CoreTray, b, front: Board):
     """The front wall's features for ultra-front, cut into (and added to) the base."""
     yi, yo = FB_WALL_IN, FB_WALL_IN - WALL
     zb, zt = t.z_bottom, t.z_top
+    cx, cz, aw, ah = lcd_window()
     # the thick right column, and its pocket for the EC11 body and the IR receiver
     px0, px1 = FB_X + PLINTH[0], FB_X + PLINTH[1]
     kx0, kx1, kY0, kY1, kd = POCKET
     y_pocket = FB_FACE - kd
     b += block(px0, y_pocket - PLINTH_T, zb, px1, yo + 0.01, zt)
-    # the pocket's roof: flat at kY1 it was a 4.6 mm ledge printed in air, so it rises at 45 degrees
-    # from POCKET_ROOF at the front (U2, the tallest part under it, ends at Y 36.5) and is open to
-    # the lid behind the wall's outer face
-    b -= block(FB_X + kx0, y_pocket, FB_ZB + kY0, FB_X + kx1, yi + 0.01, FB_ZB + POCKET_ROOF)
-    zr = FB_ZB + POCKET_ROOF
-    roof = Polygon((y_pocket, zr), (yi + 0.01, zr), (yi + 0.01, zt + 0.01),
-                   (y_pocket + zt + 0.01 - zr, zt + 0.01), align=None)
-    b -= extrude(Plane(origin=(FB_X + kx0, 0, 0), x_dir=(0, 1, 0), z_dir=(1, 0, 0)) * roof,
-                 amount=kx1 - kx0)
+    b -= block(FB_X + kx0, y_pocket, FB_ZB + kY0, FB_X + kx1, yi + 0.01, FB_ZB + kY1)
+    # the pocket runs up to the wall's top inside the lid's outline (the lid roofs it), and in front
+    # of that its roof rises 45 degrees from the pocket's front to POCKET_LAND under the top: no ledge
+    # held from one side, and no sliver where the slope would meet the top
+    b -= block(FB_X + kx0, yo, FB_ZB + kY0, FB_X + kx1, yi + 0.01, zt + 0.01)
+    rise, z_land = yo - y_pocket, zt - POCKET_LAND
+    b += block(FB_X + kx0, y_pocket - 0.01, z_land - rise, FB_X + kx1, yo, FB_ZB + kY1 + 0.01)
+    slope = Pos(FB_X + (kx0 + kx1) / 2, yo, z_land - 2 * rise) * Rot(45, 0, 0) * \
+        Box(kx1 - kx0, 2 * rise * math.sqrt(2), 2 * rise * math.sqrt(2))
+    b -= slope & block(FB_X + kx0, y_pocket, FB_ZB + kY0, FB_X + kx1, yo + 0.01, z_land)
     y_out_plinth = y_pocket - PLINTH_T
-    # LCD window: active area + 1 mm a side at the inside, its sides opening 45 degrees outward.
-    # Top and bottom stay flat: a 45-degree flare there leaves a knife edge along the inside face
-    # (thinner than two nozzle widths), and a flat top would be a 43 mm bridge. So the wall over
-    # the window is a tab on the lid (lcd_lintel), printed on its back, and the base is open above.
-    cx, cz, aw, ah = lcd_window()
+    # LCD window: active area + 1 mm a side at the inside, its sides opening 45 degrees outward, on a
+    # flat sill. Over 43 mm no roof prints (a bridge too long, and a sloped roof's first layers start
+    # in mid-air), so the window runs up through the wall's top and the lid's tab (lcd_tab) closes it.
     win = Pos(cx, yi + 0.01, cz) * extrude(Plane.XZ * Rectangle(aw, ah), amount=WALL + 0.02, taper=-45)
-    b -= win & block(cx - aw, yo - 1, cz - ah / 2, cx + aw, yi + 1, cz + ah / 2)
-    b -= block(cx - aw / 2 - WALL, yo - 1, cz + ah / 2, cx + aw / 2 + WALL, yi + 0.01, zt + 0.01)
+    b -= win & block(cx - aw, yo - 1, cz - ah / 2, cx + aw, yi + 1, zt)
+    b -= block(cx - aw / 2 - WALL - 0.05, yo - 1, cz + ah / 2, cx + aw / 2 + WALL + 0.05, yi + 1, zt + 1)
     # three buttons: holes for the plungers' caps
     for ref in ("SW1", "SW2", "SW3"):
         p = front.part(ref)
@@ -530,7 +534,7 @@ def ultra_front_panel(t: CoreTray, b, front: Board):
     # knob: a hole for the EC11's M7 bushing; IR window; LED hole
     e = front.part("SW4")
     x, _, z = fb_point(e.x, e.y, 0)
-    b -= teardrop_y(x, y_pocket, z, 7.6, 2 * PLINTH_T + 2)   # over 7 mm a round hole's top sags
+    b -= teardrop_y(x, y_pocket, z, 7.6, 2 * PLINTH_T + 2)   # 7.6 mm is too wide to print round
     u = front.part("U2")
     ux, _, uz = fb_point((u.bbox[0] + u.bbox[2]) / 2, (u.bbox[1] + u.bbox[3]) / 2, 0)
     b -= block(ux - 4.5, y_out_plinth - 1, uz - 3.0, ux + 4.5, y_pocket + 0.01, uz + 3.0)
@@ -551,17 +555,23 @@ def ultra_front_panel(t: CoreTray, b, front: Board):
 
 
 def lcd_window():
-    """The LCD window's centre (x, z) and size (w, h) at the front wall's inside face."""
+    """The LCD window's centre (x, z) and its size at the front wall's inner face."""
     X0, Y0, X1, Y1, _ = LCD
     return FB_X + (X0 + X1) / 2, FB_ZB + (Y0 + Y1) / 2, LCD_ACTIVE[0] + 2, LCD_ACTIVE[1] + 2
 
 
-def lcd_lintel(t: CoreTray, l, gap=0.2):
-    """The front wall over the LCD window, hung from the lid into the base's notch: its flat
-    underside is the window's top, and it prints on the lid's back."""
+def lcd_tab(l, z_top):
+    """The lid's tab down into the LCD window's slot, over the screen: the window's top edge. It prints
+    standing up from the lid; its edge over the screen has a 1 mm flat at the inside, then opens
+    45 degrees outward."""
     cx, cz, aw, ah = lcd_window()
     yi, yo = FB_WALL_IN, FB_WALL_IN - WALL
-    return l + block(cx - aw / 2 - WALL + gap, yo, cz + ah / 2 + 0.1, cx + aw / 2 + WALL - gap, yi, t.z_top + 0.01)
+    w = aw / 2 + WALL - TAB_GAP
+    z0 = cz + ah / 2
+    tab = block(cx - w, yo, z0, cx + w, yi - 0.05, z_top + 0.01)
+    flare = yi - TAB_FLAT - yo
+    tab -= Pos(cx, yo, z0) * Rot(45, 0, 0) * Box(2 * w + 2, flare * math.sqrt(2), flare * math.sqrt(2))
+    return l + tab
 
 
 def ultra_buttons(front: Board) -> dict:
@@ -617,7 +627,7 @@ def build_ultra(board: Board) -> dict:
     l = lid(t, feats)
     # no lip along the front wall: the front board, its top bosses and the LCD stand there
     l -= block(t.inner[0] - 0.1, t.inner[1] - 0.1, z_top - t.lip[0] - 1, t.inner[2] + 0.1, FB_BACK + 0.5, z_top)
-    l = lcd_lintel(t, l)
+    l = lcd_tab(l, z_top)
     l = light_pipe(t, l, "D3", dy=0.4)          # the core's status LED, seen from the top as on Plus
     parts = {"base": b}
     parts.update(ultra_buttons(front))

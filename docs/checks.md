@@ -35,8 +35,15 @@ It fails (exit 1) if any of these fails:
    ASan/UBSan, no ESP-IDF): the power sequencer, governor, PD decode, test
    tones, JSON and every test-API call and console command, against a mock
    board. Built in a scratch folder. Where there is no
-   `make` or `cc`, the check exits 127: it couldn't run, no verdict. The full ESP-IDF build is not part of the check: it needs
-   ESP-IDF v4.4.8 and takes minutes ([firmware/README.md](../firmware/README.md)).
+   `make` or `cc`, the check exits 127: it couldn't run, no verdict.
+   The full ESP-IDF build is not part of the check: it needs
+   ESP-IDF and takes minutes ([firmware/README.md](../firmware/README.md)).
+   **The firmware's pins against its board,** every run: for each tier
+   whose firmware exists (`firmware/board/<fw>`), the score's firmware
+   check (below), so a pin the firmware gives a job that isn't on the
+   board's ESP32 net for it (Lite's `ADC_PVDD` on GPIO39 is `PVDD_SENSE`)
+   fails the test, not only the score. A tier with no firmware yet is left
+   to the score.
 4. **The hwde gates of each board that changed.** A workspace under
    `boards/` (a folder with a `state.json`) is gated only when a file in it
    differs from the merge base with main (`origin/main`, else `main`, or
@@ -75,6 +82,17 @@ path a check sandbox has), `hwde` on `PATH`, then
 found, the script prints every place it looked, then runs `sh -c hwde`. The shell prints its own
 `hwde: not found` and exits 127. The Hive reads that as "couldn't run": a
 fault in the environment, not a verdict on the commit.
+
+**Unverified is neither a pass nor a fail.** A gate that ran but couldn't
+fetch some parts' EasyEDA models (hwde's dfm exits 2 with an `unverified`
+block naming them; an older hwde exits 1 with only `cpl_fetch_failed`
+findings), is listed as unverified. If nothing else failed, the test
+prints what is unverified (the parts) and exits 127 through the shell's
+own not-found for a tool named for it (`easyeda-models`): the
+only 127 the Hive reads as couldn't-run, so it tests the change again
+later instead of calling it red. Any real failure beside it exits 1. With the gates
+offline (above), that is an hwde that fetches anyway; a model missing from
+the committed cache is `cpl_no_model`, a failure.
 
 ## The score
 
@@ -200,7 +218,8 @@ verdict), the score prints no number and exits 1. The same goes for a
 gate whose only findings are `cpl_fetch_failed`: hwde couldn't fetch the
 parts' EasyEDA models because of a rate limit or the network, which says
 nothing about the board. A board that commits its model cache
-(`parts/easyeda/`, as `lite-main` and `core` do) needs no fetch. If hwde, make or cc
+(`parts/easyeda/`, as `lite-main` and `core` do, every part of every
+population) needs no fetch. If hwde, make or cc
 isn't there at all, it exits 127, as the test does. Neither one is a
 verdict on the commit. A gate that runs and fails (exit 1) is a verdict:
 that tier doesn't count.

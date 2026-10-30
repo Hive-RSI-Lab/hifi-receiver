@@ -144,22 +144,7 @@ They are built by `plus.py` and `ultra.py`, which call `core_box.py`.
 | Outside, without knob | 132.4 x 112.4 x 39.8 mm | 135.4 x 114.4 x 49.2 mm, plus a 4.2 mm control column on the front |
 | Printed parts | base, lid, knob, 2 buttons | base, lid, knob, 3 buttons |
 | PETG if solid | about 134 g | about 146 g |
-| Fit check | `out/plus/fit.md`, 40/40 | `out/ultra/fit.md`, 50/50 |
-
-The fit checks now include hive-mech's print checks (overhang, bridge,
-thin wall). Ultra failed three of them as it was on main. Each is fixed:
-
-- **Knob's bushing hole:** 7.6 mm, over the 7 mm a round hole prints
-  unsupported, so it is now a teardrop.
-- **Pocket roof:** the control column's pocket had a flat roof, a 4.6 mm
-  ledge printed in air. It now rises at 45 degrees from front-board Y 37.6,
-  over the IR receiver's top at 36.5, and is open to the lid behind the
-  wall.
-- **Screen window's edges:** a 45-degree flare at its top and bottom left a
-  knife edge along the inside face. The window now flares only at the
-  sides, and its bottom is flat. Its top is flat too, the underside of a
-  lintel on the lid that drops into a notch in the base's front wall, so
-  there is no 43 mm bridge.
+| Fit check | `out/plus/fit.md`, 40/40 | `out/ultra/fit.md`, 50/50, printing without support included |
 
 Each `out/<tier>/` folder holds the STLs (already in print orientation),
 `enclosure.step` (the assembly with the board as a slab, for Onshape), the
@@ -196,16 +181,18 @@ fit report and renders (`iso.png`, `top.png`, `port-<edge>.png`).
   bottom edge is 4.4 mm over the floor, which leaves room for the FFC to
   turn under it. The panel has:
   - **Screen:** a window over the LCD, active area + 1 mm a side, its
-    sides opening at 45 degrees. The wall over it is a lintel on the lid
-    (`lcd_lintel`), so the base's front wall is open above the window
-    until the lid goes on. The LCD's face is 2.7 mm behind the panel's
-    outside.
+    sides opening at 45 degrees on a flat sill. It is a slot up to the
+    wall's top: a tab on the lid drops into it and is the window's top
+    edge (1 mm flat, then opening at 45 degrees). The LCD's face is 2.7 mm
+    behind the panel's outside.
   - **Buttons:** three plungers (SW1-3). Each has a cap through the wall
     and a flange behind it, which the board holds captive. Each prints
     standing on the flange's flat back, cap up.
   - **Control column:** a raised column on the right with a pocket for the
     EC11 body and the IR receiver. It carries the knob (on the EC11's M7
-    bushing), the IR window and the RGB LED's hole.
+    bushing, through a teardrop hole), the IR window and the RGB LED's
+    hole. The pocket opens up under the lid, and in front of the wall its
+    roof rises at 45 degrees.
   - **Mounting:** the front board screws to four bosses on the wall with
     M2.5 x 6 thread-forming screws from behind. Fit it **before** the core.
   - **Core LED:** Ultra keeps the top light pipe for the core's D3.
@@ -314,9 +301,6 @@ python3 enclosure/fit_md.py plus ultra
   stuck on with tape. 19 x 12 mm is the room there is before the output
   inductors. That is enough for music (about 3 W) but not for long
   full-power sine tests.
-- **Ultra's front panel:** it prints as part of the base, on its edge.
-  The screen window has no bridge (its top is the lid's lintel), so the
-  panel prints without supports.
 - **Unchecked dimensions:**
   - the LCD's active-area offset in its module (datasheet p.10). The
     window is centred with 1 mm a side to spare.

@@ -295,7 +295,7 @@
   {
    "name": "bridge_base",
    "ok": true,
-   "flat_faces": 57,
+   "flat_faces": 55,
    "worst_bridge_mm": 12.01,
    "worst_ledge_mm": 0.11,
    "max_bridge_mm": 15.0,
@@ -454,8 +454,8 @@
   },
   "lid": {
    "volume_cm3": 35.5,
-   "solid_petg_g": 45.1
+   "solid_petg_g": 45.0
   }
  },
- "build_s": 13.4
+ "build_s": 10.8
 }
