@@ -28,9 +28,11 @@ void hifi_gov_cfg_lite(hifi_gov_cfg_t *cfg) {
 		 * (review-3 R3-POWER-3, docs/review-3/sims/power/charger_peak.py) */
 		.peak_frac = 1.0f,
 		.peak_hold_s = 0.5f,
-		/* the TPA3118 in the Lite box: 13 W a channel over 30 s into 4 ohm
-		 * (review-2 THERMAL-3, firmware requirement L1) */
-		.thermal_out_w = 26.0f,
+		/* the TPA3118 in the Lite box: 9 W a channel over 30 s into 4 ohm.
+		 * Requirement L1's 13 W (review-2 THERMAL-3) puts Tj at 126-149 C in
+		 * a warm box, at the 150 C latch; 9 W is the review's figure (review-3
+		 * R3-LAYOUT-13, docs/review-3/sims/layout/thermal_calc.py) */
+		.thermal_out_w = 18.0f,
 		.thermal_tau_s = 30.0f,
 	};
 }

@@ -1,0 +1,13 @@
+* Lite sub-out mute off while playing at the firmware cap, -6 dB (0.71 Vpk at 40 Hz) through the
+* coupling cap; the mute must take nothing from the signal. VTO min 1.0 V.
+.param VTO=1.0
+.include models.inc
+.include circuit.inc
+V5 p5 0 5
+Vl lout 0 SIN(1.65 0.72 40)
+Vr rout 0 SIN(1.65 0.72 40 0 0 180)
+.tran 50u 2 1 50u
+.measure tran subl_pk MAX v(subl)
+.measure tran subl_min MIN v(subl)
+.measure tran mute_v MAX v(mute)
+.end

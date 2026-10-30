@@ -1,10 +1,10 @@
 /*
  * R3-SYSTEM-2: does Lite's governor hold firmware duty L1 (THERMAL-3:
- * 30 s RMS output <= 13 W per channel into 4 ohm, or the TPA3118 reaches its
+ * 30 s RMS output <= 9 W per channel into 4 ohm, or the TPA3118 reaches its
  * latched 150 C shutdown in the box)?  Links the real hifi_gov.c with Lite's
  * config on a 20 V / 5 A (100 W) charger, so the supply limit doesn't act,
  * and plays a 1 kHz sine at -3 dBFS (loud, compressed music's RMS) for 180 s.
- * FAIL when the last 30 s mean exceeds 13 W per channel (+2 %); the highest
+ * FAIL when the last 30 s mean exceeds 9 W per channel (+2 %); the highest
  * 30 s window mean over the run is printed too (the governor's 30 s
  * exponential average lets the first half-minute through).
  *   cc -I firmware/components/hifi/core thermal_lite.c .../hifi_gov.c -lm
@@ -39,7 +39,7 @@ int main(void) {
 	}
 	double w = acc / cnt;
 	(void) win;
-	int ok = w <= 13.0 * 1.02;
+	int ok = w <= 9.0 * 1.02;
 	printf("Lite, -3 dBFS 180 s, 4 ohm: thermal_out_w %.1f W, gain %.2f dB, last 30 s %.1f W per channel, "
 	       "highest 30 s window %.1f W, vs L1 13 W: %s\n", cfg.thermal_out_w, hifi_gov_gain_db(&g), w, wmax,
 	       ok ? "PASS" : "FAIL");

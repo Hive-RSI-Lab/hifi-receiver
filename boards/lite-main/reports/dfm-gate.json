@@ -4,7 +4,7 @@
   "phase": "P9",
   "tool": "dfm",
   "input": "kicad/lite-main.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:5419edc852a8e932dd3ed2f0db6dbace1740e92fc2934672027706135a87b8d2",
+  "input_digest": "sexpr_no_uuid:016efa738b909474061cab5591cf868659f29207d4c2d5d002e3e78ff25bda13",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -35,11 +35,11 @@
       "layer": "F.Silkscreen",
       "net": null,
       "refs": [],
-      "msg": "255 silk strokes below JLC minimum width 0.15 mm (narrowest 0.0600 mm) on F.Silkscreen",
+      "msg": "263 silk strokes below JLC minimum width 0.15 mm (narrowest 0.0600 mm) on F.Silkscreen",
       "source": "check.dfm",
       "items": [
         {
-          "msg": "255 silk strokes below JLC minimum width 0.15 mm (narrowest 0.0600 mm) on F.Silkscreen",
+          "msg": "263 silk strokes below JLC minimum width 0.15 mm (narrowest 0.0600 mm) on F.Silkscreen",
           "pos": [
             56.865,
             89.313
@@ -49,7 +49,7 @@
       "kind": "dfm_silk_width",
       "width_mm": 0.06,
       "min_mm": 0.15,
-      "count": 255
+      "count": 263
     },
     {
       "check": "dfm",
@@ -97,6 +97,7 @@
     "required": [
       "copper",
       "copper_to_edge",
+      "zone_fill",
       "drill",
       "hole_to_edge",
       "silk",
@@ -110,6 +111,7 @@
     "ran": [
       "copper",
       "copper_to_edge",
+      "zone_fill",
       "drill",
       "hole_to_edge",
       "silk",
@@ -122,6 +124,7 @@
     "passed": [
       "copper",
       "copper_to_edge",
+      "zone_fill",
       "drill",
       "hole_to_edge",
       "silk",
@@ -144,10 +147,10 @@
     "workspace": ".",
     "gate": "dfm",
     "status": "pass",
-    "attempts": 6,
+    "attempts": 7,
     "inputs": {
-      "pcb": "sexpr_no_uuid:5419edc852a8e932dd3ed2f0db6dbace1740e92fc2934672027706135a87b8d2",
-      "sch": "sexpr_no_uuid:86c108d8ce337a9586b0da24a0b9038038ab75136dcd0661e2bfdaf1a16fe5e3",
+      "pcb": "sexpr_no_uuid:016efa738b909474061cab5591cf868659f29207d4c2d5d002e3e78ff25bda13",
+      "sch": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
       "parts": null
     }
   }

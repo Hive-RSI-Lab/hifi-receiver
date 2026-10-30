@@ -4,21 +4,21 @@
  "workspace_schema": 2,
  "workspace": "boards/lite-main",
  "created": "2026-10-28T11:00:21",
- "updated": "2026-10-30T05:43:32",
+ "updated": "2026-10-30T17:24:27",
  "phase": "P9",
  "gates": {
   "erc": {
    "phase": "P4",
    "status": "pass",
-   "attempts": 12,
+   "attempts": 16,
    "last": {
-    "ts": "2026-10-29T01:26:57",
+    "ts": "2026-10-30T17:00:30",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
     "inputs": {
-     "sch": "sexpr_no_uuid:d4eba34366f6cc6f8a0a5733603d4935ad63fd423df854aac0bce704d95048e2",
-     "pro": "json_canonical:6d0de1152d76259e8cf3cd06513cbd1e922a675949c20612c642e5014f5a0329"
+     "sch": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
+     "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d"
     }
    },
    "history": [
@@ -140,6 +140,46 @@
      "inputs": {
       "sch": "sexpr_no_uuid:d4eba34366f6cc6f8a0a5733603d4935ad63fd423df854aac0bce704d95048e2",
       "pro": "json_canonical:6d0de1152d76259e8cf3cd06513cbd1e922a675949c20612c642e5014f5a0329"
+     }
+    },
+    {
+     "ts": "2026-10-30T16:50:04",
+     "status": "fail",
+     "failing_count": 1,
+     "total": 1,
+     "inputs": {
+      "sch": "sexpr_no_uuid:fae75eeb42e163bd8b0397a8de6300fd5349d3a07832fe11fdefe060f9dc70f9",
+      "pro": "json_canonical:6d0de1152d76259e8cf3cd06513cbd1e922a675949c20612c642e5014f5a0329"
+     }
+    },
+    {
+     "ts": "2026-10-30T16:52:13",
+     "status": "fail",
+     "failing_count": 1,
+     "total": 1,
+     "inputs": {
+      "sch": "sexpr_no_uuid:fae75eeb42e163bd8b0397a8de6300fd5349d3a07832fe11fdefe060f9dc70f9",
+      "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d"
+     }
+    },
+    {
+     "ts": "2026-10-30T16:52:45",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "sch": "sexpr_no_uuid:f69288696e1e374cf43209521aacb6807e2f080edaf2b521b4dcd036d922f8f5",
+      "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d"
+     }
+    },
+    {
+     "ts": "2026-10-30T17:00:30",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "sch": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
+      "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d"
      }
     }
    ]
@@ -406,15 +446,15 @@
   "drc_routed": {
    "phase": "P7",
    "status": "pass",
-   "attempts": 162,
+   "attempts": 163,
    "last": {
-    "ts": "2026-10-30T04:11:43",
+    "ts": "2026-10-30T17:17:07",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
     "inputs": {
-     "pcb": "sexpr_no_uuid:a6939851d23f1dfc3dc1af4577df5cb85c3ac8db585c27cb403ec14279ad7b00",
-     "sch": "sexpr_no_uuid:d4eba34366f6cc6f8a0a5733603d4935ad63fd423df854aac0bce704d95048e2",
+     "pcb": "sexpr_no_uuid:016efa738b909474061cab5591cf868659f29207d4c2d5d002e3e78ff25bda13",
+     "sch": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
      "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d",
      "dru": "text_eol:1c2c46730fe53045a7b7ec69777530c5426c64527d6d603afc5cb0aa57649014"
     }
@@ -2363,6 +2403,18 @@
       "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d",
       "dru": "text_eol:1c2c46730fe53045a7b7ec69777530c5426c64527d6d603afc5cb0aa57649014"
      }
+    },
+    {
+     "ts": "2026-10-30T17:17:07",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:016efa738b909474061cab5591cf868659f29207d4c2d5d002e3e78ff25bda13",
+      "sch": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
+      "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d",
+      "dru": "text_eol:1c2c46730fe53045a7b7ec69777530c5426c64527d6d603afc5cb0aa57649014"
+     }
     }
    ]
   },
@@ -2472,15 +2524,15 @@
   "dfm": {
    "phase": "P9",
    "status": "pass",
-   "attempts": 6,
+   "attempts": 7,
    "last": {
-    "ts": "2026-10-30T05:43:32",
+    "ts": "2026-10-30T17:24:27",
     "status": "pass",
     "failing_count": 0,
     "total": 3,
     "inputs": {
-     "pcb": "sexpr_no_uuid:5419edc852a8e932dd3ed2f0db6dbace1740e92fc2934672027706135a87b8d2",
-     "sch": "sexpr_no_uuid:86c108d8ce337a9586b0da24a0b9038038ab75136dcd0661e2bfdaf1a16fe5e3",
+     "pcb": "sexpr_no_uuid:016efa738b909474061cab5591cf868659f29207d4c2d5d002e3e78ff25bda13",
+     "sch": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
      "parts": null
     }
    },
@@ -2550,6 +2602,17 @@
       "sch": "sexpr_no_uuid:86c108d8ce337a9586b0da24a0b9038038ab75136dcd0661e2bfdaf1a16fe5e3",
       "parts": null
      }
+    },
+    {
+     "ts": "2026-10-30T17:24:27",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 3,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:016efa738b909474061cab5591cf868659f29207d4c2d5d002e3e78ff25bda13",
+      "sch": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
+      "parts": null
+     }
     }
    ]
   }
@@ -2559,20 +2622,20 @@
   "sch": {
    "path": "kicad/lite-main.kicad_sch",
    "kind": "sch",
-   "sha256": "sexpr_no_uuid:86c108d8ce337a9586b0da24a0b9038038ab75136dcd0661e2bfdaf1a16fe5e3",
-   "hashed": "2026-10-30T05:43:32"
+   "sha256": "sexpr_no_uuid:fc936c3aa83cb01849c072ab8cc5d60814bf70d3e358e44939eaaaccd38ebe05",
+   "hashed": "2026-10-30T17:24:27"
   },
   "pro": {
    "path": "kicad/lite-main.kicad_pro",
    "kind": "pro",
    "sha256": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d",
-   "hashed": "2026-10-30T04:11:43"
+   "hashed": "2026-10-30T17:17:07"
   },
   "pcb": {
    "path": "kicad/lite-main.kicad_pcb",
    "kind": "pcb",
-   "sha256": "sexpr_no_uuid:5419edc852a8e932dd3ed2f0db6dbace1740e92fc2934672027706135a87b8d2",
-   "hashed": "2026-10-30T05:43:32"
+   "sha256": "sexpr_no_uuid:016efa738b909474061cab5591cf868659f29207d4c2d5d002e3e78ff25bda13",
+   "hashed": "2026-10-30T17:24:27"
   },
   "constraints": {
    "path": "kicad/constraints.json",
@@ -2596,7 +2659,7 @@
    "path": "kicad/lite-main.kicad_dru",
    "kind": "dru",
    "sha256": "text_eol:1c2c46730fe53045a7b7ec69777530c5426c64527d6d603afc5cb0aa57649014",
-   "hashed": "2026-10-30T04:11:43"
+   "hashed": "2026-10-30T17:17:07"
   },
   "waivers": {
    "path": "reports/verify-waivers.json",
@@ -2608,7 +2671,7 @@
    "path": "kicad/parts.json",
    "kind": "parts",
    "sha256": null,
-   "hashed": "2026-10-30T05:43:32"
+   "hashed": "2026-10-30T17:24:27"
   }
  },
  "open_issues": [],
@@ -4639,6 +4702,54 @@
    "gate": "dfm",
    "status": "pass",
    "attempt": 6,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-30T16:50:04",
+   "event": "gate",
+   "gate": "erc",
+   "status": "fail",
+   "attempt": 13,
+   "failing_count": 1
+  },
+  {
+   "ts": "2026-10-30T16:52:13",
+   "event": "gate",
+   "gate": "erc",
+   "status": "fail",
+   "attempt": 14,
+   "failing_count": 1
+  },
+  {
+   "ts": "2026-10-30T16:52:45",
+   "event": "gate",
+   "gate": "erc",
+   "status": "pass",
+   "attempt": 15,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-30T17:00:30",
+   "event": "gate",
+   "gate": "erc",
+   "status": "pass",
+   "attempt": 16,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-30T17:17:07",
+   "event": "gate",
+   "gate": "drc_routed",
+   "status": "pass",
+   "attempt": 163,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-30T17:24:27",
+   "event": "gate",
+   "gate": "dfm",
+   "status": "pass",
+   "attempt": 7,
    "failing_count": 0
   }
  ]

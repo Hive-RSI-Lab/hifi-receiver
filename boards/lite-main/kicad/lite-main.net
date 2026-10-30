@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/work/boards/lite-main/kicad/lite-main.kicad_sch")
-		(date "2026-10-29T01:27:08")
+		(date "2026-10-30T17:00:55")
 		(tool "Eeschema 10.0.6")
 		(sheet
 			(number "1")
@@ -4243,6 +4243,66 @@
 			)
 		)
 		(comp
+			(ref "C90")
+			(value "22uF")
+			(footprint "Capacitor_SMD:C_0805_2012Metric")
+			(fields
+				(field
+					(name "LCSC") "C45783")
+				(field
+					(name "Footprint") "Capacitor_SMD:C_0805_2012Metric")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "Device")
+				(part "C")
+				(description "Unpolarized capacitor")
+			)
+			(property
+				(name "LCSC")
+				(value "C45783")
+			)
+			(property
+				(name "Sheetname")
+				(value "lite-main")
+			)
+			(property
+				(name "Sheetfile")
+				(value "lite-main.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "cap capacitor")
+			)
+			(property
+				(name "ki_fp_filters")
+				(value "C_*")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "8da2a30e-2ab8-5adf-9b46-7e7cf1488e05")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
 			(ref "D1")
 			(value "SMBJ22A")
 			(footprint "aiee:SMB_L4.6-W3.6-LS5.3-RD")
@@ -5186,6 +5246,301 @@
 				(tstamps "/")
 			)
 			(tstamps "5ff12b65-1fc2-4b8b-8db0-6dd210b5647b")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "3")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "Q11")
+			(value "MMBT3904")
+			(footprint "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR")
+			(fields
+				(field
+					(name "LCSC") "C20526")
+				(field
+					(name "Footprint") "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "MMBT3904-C20526")
+				(description "MMBT3904 1AM 100-300")
+			)
+			(property
+				(name "LCSC")
+				(value "C20526")
+			)
+			(property
+				(name "Sheetname")
+				(value "lite-main")
+			)
+			(property
+				(name "Sheetfile")
+				(value "lite-main.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "Bipolar Transistors - BJT")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "117d7716-ef22-5a8f-b9b6-289d1ba2e057")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "3")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "Q12")
+			(value "MMBT3904")
+			(footprint "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR")
+			(fields
+				(field
+					(name "LCSC") "C20526")
+				(field
+					(name "Footprint") "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "MMBT3904-C20526")
+				(description "MMBT3904 1AM 100-300")
+			)
+			(property
+				(name "LCSC")
+				(value "C20526")
+			)
+			(property
+				(name "Sheetname")
+				(value "lite-main")
+			)
+			(property
+				(name "Sheetfile")
+				(value "lite-main.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "Bipolar Transistors - BJT")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "0adfcf88-cf67-5c97-9959-2b5fbaba91e8")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "3")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "Q13")
+			(value "2N7002")
+			(footprint "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR")
+			(fields
+				(field
+					(name "LCSC") "C8545")
+				(field
+					(name "Footprint") "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "2N7002")
+				(description "2N7002 7002")
+			)
+			(property
+				(name "LCSC")
+				(value "C8545")
+			)
+			(property
+				(name "Sheetname")
+				(value "lite-main")
+			)
+			(property
+				(name "Sheetfile")
+				(value "lite-main.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "MOSFETs")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "8b68654a-61a3-53c5-b63c-697a6673bf7d")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "3")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "Q14")
+			(value "2N7002")
+			(footprint "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR")
+			(fields
+				(field
+					(name "LCSC") "C8545")
+				(field
+					(name "Footprint") "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "2N7002")
+				(description "2N7002 7002")
+			)
+			(property
+				(name "LCSC")
+				(value "C8545")
+			)
+			(property
+				(name "Sheetname")
+				(value "lite-main")
+			)
+			(property
+				(name "Sheetfile")
+				(value "lite-main.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "MOSFETs")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "6f5c1b9e-d201-54b0-bdf5-453d227ec92f")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "3")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "Q15")
+			(value "2N7002")
+			(footprint "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR")
+			(fields
+				(field
+					(name "LCSC") "C8545")
+				(field
+					(name "Footprint") "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "2N7002")
+				(description "2N7002 7002")
+			)
+			(property
+				(name "LCSC")
+				(value "C8545")
+			)
+			(property
+				(name "Sheetname")
+				(value "lite-main")
+			)
+			(property
+				(name "Sheetfile")
+				(value "lite-main.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "MOSFETs")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "e305de56-4580-541a-ac94-f757f7af39f5")
 			(units
 				(unit
 					(name "A")
@@ -8024,6 +8379,186 @@
 			)
 		)
 		(comp
+			(ref "R80")
+			(value "120k")
+			(footprint "Resistor_SMD:R_0603_1608Metric")
+			(fields
+				(field
+					(name "LCSC") "C25808")
+				(field
+					(name "Footprint") "Resistor_SMD:R_0603_1608Metric")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "Device")
+				(part "R")
+				(description "Resistor")
+			)
+			(property
+				(name "LCSC")
+				(value "C25808")
+			)
+			(property
+				(name "Sheetname")
+				(value "lite-main")
+			)
+			(property
+				(name "Sheetfile")
+				(value "lite-main.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "R res resistor")
+			)
+			(property
+				(name "ki_fp_filters")
+				(value "R_*")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "829ac885-c675-5288-961e-e448a24adda9")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "R81")
+			(value "22k")
+			(footprint "Resistor_SMD:R_0603_1608Metric")
+			(fields
+				(field
+					(name "LCSC") "C31850")
+				(field
+					(name "Footprint") "Resistor_SMD:R_0603_1608Metric")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "Device")
+				(part "R")
+				(description "Resistor")
+			)
+			(property
+				(name "LCSC")
+				(value "C31850")
+			)
+			(property
+				(name "Sheetname")
+				(value "lite-main")
+			)
+			(property
+				(name "Sheetfile")
+				(value "lite-main.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "R res resistor")
+			)
+			(property
+				(name "ki_fp_filters")
+				(value "R_*")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "080f40db-0e96-57e9-86e0-82a49f1aa085")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "R82")
+			(value "47k")
+			(footprint "Resistor_SMD:R_0603_1608Metric")
+			(fields
+				(field
+					(name "LCSC") "C25819")
+				(field
+					(name "Footprint") "Resistor_SMD:R_0603_1608Metric")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "Device")
+				(part "R")
+				(description "Resistor")
+			)
+			(property
+				(name "LCSC")
+				(value "C25819")
+			)
+			(property
+				(name "Sheetname")
+				(value "lite-main")
+			)
+			(property
+				(name "Sheetfile")
+				(value "lite-main.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "R res resistor")
+			)
+			(property
+				(name "ki_fp_filters")
+				(value "R_*")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "6b60e45a-f9d5-5268-9e01-33d6e3fb8ae0")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
 			(ref "SW1")
 			(value "TS-1187A")
 			(footprint "aiee:SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5")
@@ -9156,6 +9691,47 @@
 				(pin
 					(num "2")
 					(name "")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "aiee")
+			(part "2N7002")
+			(description "2N7002 7002")
+			(docs "https://lcsc.com/product-detail/MOSFET_2N7002-7002_C8545.html")
+			(fields
+				(field
+					(name "Reference") "Q")
+				(field
+					(name "Value") "2N7002")
+				(field
+					(name "Footprint") "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR")
+				(field
+					(name "Datasheet") "https://lcsc.com/product-detail/MOSFET_2N7002-7002_C8545.html")
+				(field
+					(name "Description") "2N7002 7002")
+				(field
+					(name "Manufacturer") "CJ(江苏长电/长晶)")
+				(field
+					(name "MPN") "2N7002")
+				(field
+					(name "LCSC Part") "C8545")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "G")
+					(type "passive")
+				)
+				(pin
+					(num "2")
+					(name "S")
+					(type "passive")
+				)
+				(pin
+					(num "3")
+					(name "D")
 					(type "passive")
 				)
 			)
@@ -10927,7 +11503,7 @@
 		(net
 			(code "3")
 			(name "+5V")
-			(class "Default")
+			(class "Pwr_0p4mm")
 			(node
 				(ref "C10")
 				(pin "1")
@@ -10967,6 +11543,23 @@
 				(ref "L5")
 				(pin "2")
 				(pinfunction "2_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q11")
+				(pin "1")
+				(pinfunction "B_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q11")
+				(pin "3")
+				(pinfunction "C_3")
+				(pintype "passive")
+			)
+			(node
+				(ref "R80")
+				(pin "1")
 				(pintype "passive")
 			)
 			(node
@@ -11384,7 +11977,7 @@
 		(net
 			(code "23")
 			(name "/BUCK3_LX")
-			(class "Default")
+			(class "Pwr_0p5mm")
 			(node
 				(ref "L6")
 				(pin "1")
@@ -11443,7 +12036,7 @@
 		(net
 			(code "26")
 			(name "/BUCK5_SW")
-			(class "Default")
+			(class "Pwr_0p4mm")
 			(node
 				(ref "C6")
 				(pin "2")
@@ -11949,8 +12542,73 @@
 		)
 		(net
 			(code "51")
-			(name "/OUT_L_N")
+			(name "/MUTE_DET")
 			(class "Default")
+			(node
+				(ref "Q12")
+				(pin "1")
+				(pinfunction "B_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R80")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R81")
+				(pin "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "52")
+			(name "/MUTE_RES")
+			(class "Default")
+			(node
+				(ref "C90")
+				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q11")
+				(pin "2")
+				(pinfunction "E_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R82")
+				(pin "1")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "53")
+			(name "/MUTE_S")
+			(class "Default")
+			(node
+				(ref "Q13")
+				(pin "2")
+				(pinfunction "S_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q14")
+				(pin "2")
+				(pinfunction "S_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q15")
+				(pin "2")
+				(pinfunction "S_2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "54")
+			(name "/OUT_L_N")
+			(class "Pwr_0p3083mm")
 			(node
 				(ref "C65")
 				(pin "2")
@@ -11970,9 +12628,9 @@
 			)
 		)
 		(net
-			(code "52")
+			(code "55")
 			(name "/OUT_L_P")
-			(class "Default")
+			(class "Pwr_0p3083mm")
 			(node
 				(ref "C64")
 				(pin "2")
@@ -11992,9 +12650,9 @@
 			)
 		)
 		(net
-			(code "53")
+			(code "56")
 			(name "/OUT_R_N")
-			(class "Default")
+			(class "Pwr_0p3083mm")
 			(node
 				(ref "C67")
 				(pin "2")
@@ -12014,9 +12672,9 @@
 			)
 		)
 		(net
-			(code "54")
+			(code "57")
 			(name "/OUT_R_P")
-			(class "Default")
+			(class "Pwr_0p3083mm")
 			(node
 				(ref "C66")
 				(pin "2")
@@ -12036,7 +12694,7 @@
 			)
 		)
 		(net
-			(code "55")
+			(code "58")
 			(name "/PD_CFG1")
 			(class "Default")
 			(node
@@ -12052,7 +12710,7 @@
 			)
 		)
 		(net
-			(code "56")
+			(code "59")
 			(name "/PD_PG")
 			(class "Default")
 			(node
@@ -12080,7 +12738,7 @@
 			)
 		)
 		(net
-			(code "57")
+			(code "60")
 			(name "/PD_SCL")
 			(class "Default")
 			(node
@@ -12096,7 +12754,7 @@
 			)
 		)
 		(net
-			(code "58")
+			(code "61")
 			(name "/PD_SDA")
 			(class "Default")
 			(node
@@ -12112,7 +12770,7 @@
 			)
 		)
 		(net
-			(code "59")
+			(code "62")
 			(name "/PSW_B")
 			(class "Default")
 			(node
@@ -12128,7 +12786,7 @@
 			)
 		)
 		(net
-			(code "60")
+			(code "63")
 			(name "/PSW_G")
 			(class "Default")
 			(node
@@ -12159,7 +12817,7 @@
 			)
 		)
 		(net
-			(code "61")
+			(code "64")
 			(name "/PSW_MILLER")
 			(class "Default")
 			(node
@@ -12174,7 +12832,7 @@
 			)
 		)
 		(net
-			(code "62")
+			(code "65")
 			(name "/PSW_PULL")
 			(class "Default")
 			(node
@@ -12190,7 +12848,7 @@
 			)
 		)
 		(net
-			(code "63")
+			(code "66")
 			(name "/PVDD_EN")
 			(class "Default")
 			(node
@@ -12211,7 +12869,7 @@
 			)
 		)
 		(net
-			(code "64")
+			(code "67")
 			(name "/PVDD_SENSE")
 			(class "Default")
 			(node
@@ -12237,7 +12895,7 @@
 			)
 		)
 		(net
-			(code "65")
+			(code "68")
 			(name "/Q2_B")
 			(class "Default")
 			(node
@@ -12253,7 +12911,7 @@
 			)
 		)
 		(net
-			(code "66")
+			(code "69")
 			(name "/Q3_B")
 			(class "Default")
 			(node
@@ -12269,7 +12927,7 @@
 			)
 		)
 		(net
-			(code "67")
+			(code "70")
 			(name "/RTS")
 			(class "Default")
 			(node
@@ -12291,9 +12949,9 @@
 			)
 		)
 		(net
-			(code "68")
+			(code "71")
 			(name "/SPK_L_N")
-			(class "Default")
+			(class "Pwr_1p2109mm")
 			(node
 				(ref "C69")
 				(pin "1")
@@ -12313,9 +12971,9 @@
 			)
 		)
 		(net
-			(code "69")
+			(code "72")
 			(name "/SPK_L_P")
-			(class "Default")
+			(class "Pwr_1p2109mm")
 			(node
 				(ref "C68")
 				(pin "1")
@@ -12340,9 +12998,9 @@
 			)
 		)
 		(net
-			(code "70")
+			(code "73")
 			(name "/SPK_R_N")
-			(class "Default")
+			(class "Pwr_1p2109mm")
 			(node
 				(ref "C71")
 				(pin "1")
@@ -12362,9 +13020,9 @@
 			)
 		)
 		(net
-			(code "71")
+			(code "74")
 			(name "/SPK_R_P")
-			(class "Default")
+			(class "Pwr_1p2109mm")
 			(node
 				(ref "C70")
 				(pin "1")
@@ -12389,13 +13047,19 @@
 			)
 		)
 		(net
-			(code "72")
+			(code "75")
 			(name "/SUB_L")
 			(class "Default")
 			(node
 				(ref "J3")
 				(pin "1")
 				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q13")
+				(pin "3")
+				(pinfunction "D_3")
 				(pintype "passive")
 			)
 			(node
@@ -12410,7 +13074,7 @@
 			)
 		)
 		(net
-			(code "73")
+			(code "76")
 			(name "/SUB_L_AC")
 			(class "Default")
 			(node
@@ -12425,7 +13089,7 @@
 			)
 		)
 		(net
-			(code "74")
+			(code "77")
 			(name "/SUB_L_RAW")
 			(class "Default")
 			(node
@@ -12441,13 +13105,53 @@
 			)
 		)
 		(net
-			(code "75")
+			(code "78")
+			(name "/SUB_MUTE")
+			(class "Default")
+			(node
+				(ref "Q12")
+				(pin "3")
+				(pinfunction "C_3")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q13")
+				(pin "1")
+				(pinfunction "G_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q14")
+				(pin "1")
+				(pinfunction "G_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q15")
+				(pin "1")
+				(pinfunction "G_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "R82")
+				(pin "2")
+				(pintype "passive")
+			)
+		)
+		(net
+			(code "79")
 			(name "/SUB_R")
 			(class "Default")
 			(node
 				(ref "J3")
 				(pin "3")
 				(pinfunction "3_3")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q15")
+				(pin "3")
+				(pinfunction "D_3")
 				(pintype "passive")
 			)
 			(node
@@ -12462,7 +13166,7 @@
 			)
 		)
 		(net
-			(code "76")
+			(code "80")
 			(name "/SUB_R_AC")
 			(class "Default")
 			(node
@@ -12477,7 +13181,7 @@
 			)
 		)
 		(net
-			(code "77")
+			(code "81")
 			(name "/SUB_R_RAW")
 			(class "Default")
 			(node
@@ -12493,7 +13197,7 @@
 			)
 		)
 		(net
-			(code "78")
+			(code "82")
 			(name "/TAP_L")
 			(class "Default")
 			(node
@@ -12518,7 +13222,7 @@
 			)
 		)
 		(net
-			(code "79")
+			(code "83")
 			(name "/TAP_L_C")
 			(class "Default")
 			(node
@@ -12534,7 +13238,7 @@
 			)
 		)
 		(net
-			(code "80")
+			(code "84")
 			(name "/TAP_R")
 			(class "Default")
 			(node
@@ -12559,7 +13263,7 @@
 			)
 		)
 		(net
-			(code "81")
+			(code "85")
 			(name "/TAP_R_C")
 			(class "Default")
 			(node
@@ -12575,7 +13279,7 @@
 			)
 		)
 		(net
-			(code "82")
+			(code "86")
 			(name "/U0RXD")
 			(class "Default")
 			(node
@@ -12592,7 +13296,7 @@
 			)
 		)
 		(net
-			(code "83")
+			(code "87")
 			(name "/U0TXD")
 			(class "Default")
 			(node
@@ -12609,7 +13313,7 @@
 			)
 		)
 		(net
-			(code "84")
+			(code "88")
 			(name "/USB_DM")
 			(class "Default")
 			(node
@@ -12632,7 +13336,7 @@
 			)
 		)
 		(net
-			(code "85")
+			(code "89")
 			(name "/USB_DP")
 			(class "Default")
 			(node
@@ -12655,7 +13359,7 @@
 			)
 		)
 		(net
-			(code "86")
+			(code "90")
 			(name "/VBUS_SENSE")
 			(class "Default")
 			(node
@@ -12681,7 +13385,7 @@
 			)
 		)
 		(net
-			(code "87")
+			(code "91")
 			(name "GND")
 			(class "Default")
 			(node
@@ -12952,6 +13656,11 @@
 				(pintype "passive")
 			)
 			(node
+				(ref "C90")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
 				(ref "D1")
 				(pin "2")
 				(pinfunction "A_2")
@@ -13009,6 +13718,18 @@
 				(ref "J3")
 				(pin "2")
 				(pinfunction "2_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q12")
+				(pin "2")
+				(pinfunction "E_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "Q14")
+				(pin "3")
+				(pinfunction "D_3")
 				(pintype "passive")
 			)
 			(node
@@ -13083,6 +13804,11 @@
 			)
 			(node
 				(ref "R8")
+				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "R81")
 				(pin "2")
 				(pintype "passive")
 			)
@@ -13274,9 +14000,9 @@
 			)
 		)
 		(net
-			(code "88")
+			(code "92")
 			(name "PVDD")
-			(class "Default")
+			(class "Pwr_0p2949mm")
 			(node
 				(ref "C2")
 				(pin "2")
@@ -13395,7 +14121,7 @@
 			)
 		)
 		(net
-			(code "89")
+			(code "93")
 			(name "VBUS")
 			(class "Default")
 			(node
@@ -13489,7 +14215,7 @@
 			)
 		)
 		(net
-			(code "90")
+			(code "94")
 			(name "unconnected-(J1-SBU1-PadA8)")
 			(class "Default")
 			(node
@@ -13500,7 +14226,7 @@
 			)
 		)
 		(net
-			(code "91")
+			(code "95")
 			(name "unconnected-(J1-SBU2-PadB8)")
 			(class "Default")
 			(node
@@ -13511,7 +14237,7 @@
 			)
 		)
 		(net
-			(code "92")
+			(code "96")
 			(name "unconnected-(U1-DM-Pad5)")
 			(class "Default")
 			(node
@@ -13522,7 +14248,7 @@
 			)
 		)
 		(net
-			(code "93")
+			(code "97")
 			(name "unconnected-(U1-DP-Pad4)")
 			(class "Default")
 			(node
@@ -13533,7 +14259,7 @@
 			)
 		)
 		(net
-			(code "94")
+			(code "98")
 			(name "unconnected-(U2-EN-Pad5)")
 			(class "Default")
 			(node
@@ -13544,7 +14270,7 @@
 			)
 		)
 		(net
-			(code "95")
+			(code "99")
 			(name "unconnected-(U4-N{slash}C-Pad4)")
 			(class "Default")
 			(node
@@ -13555,7 +14281,7 @@
 			)
 		)
 		(net
-			(code "96")
+			(code "100")
 			(name "unconnected-(U5-IO2-Pad24)")
 			(class "Default")
 			(node
@@ -13566,7 +14292,7 @@
 			)
 		)
 		(net
-			(code "97")
+			(code "101")
 			(name "unconnected-(U5-IO5-Pad29)")
 			(class "Default")
 			(node
@@ -13577,7 +14303,7 @@
 			)
 		)
 		(net
-			(code "98")
+			(code "102")
 			(name "unconnected-(U5-IO12-Pad14)")
 			(class "Default")
 			(node
@@ -13588,7 +14314,7 @@
 			)
 		)
 		(net
-			(code "99")
+			(code "103")
 			(name "unconnected-(U5-IO15-Pad23)")
 			(class "Default")
 			(node
@@ -13599,7 +14325,7 @@
 			)
 		)
 		(net
-			(code "100")
+			(code "104")
 			(name "unconnected-(U5-NC-Pad17)")
 			(class "Default")
 			(node
@@ -13610,7 +14336,7 @@
 			)
 		)
 		(net
-			(code "101")
+			(code "105")
 			(name "unconnected-(U5-NC-Pad18)")
 			(class "Default")
 			(node
@@ -13621,7 +14347,7 @@
 			)
 		)
 		(net
-			(code "102")
+			(code "106")
 			(name "unconnected-(U5-NC-Pad19)")
 			(class "Default")
 			(node
@@ -13632,7 +14358,7 @@
 			)
 		)
 		(net
-			(code "103")
+			(code "107")
 			(name "unconnected-(U5-NC-Pad20)")
 			(class "Default")
 			(node
@@ -13643,7 +14369,7 @@
 			)
 		)
 		(net
-			(code "104")
+			(code "108")
 			(name "unconnected-(U5-NC-Pad21)")
 			(class "Default")
 			(node
@@ -13654,7 +14380,7 @@
 			)
 		)
 		(net
-			(code "105")
+			(code "109")
 			(name "unconnected-(U5-NC-Pad22)")
 			(class "Default")
 			(node
@@ -13665,7 +14391,7 @@
 			)
 		)
 		(net
-			(code "106")
+			(code "110")
 			(name "unconnected-(U5-NC-Pad27)")
 			(class "Default")
 			(node
@@ -13676,7 +14402,7 @@
 			)
 		)
 		(net
-			(code "107")
+			(code "111")
 			(name "unconnected-(U5-NC-Pad28)")
 			(class "Default")
 			(node
@@ -13687,7 +14413,7 @@
 			)
 		)
 		(net
-			(code "108")
+			(code "112")
 			(name "unconnected-(U5-NC-Pad32)")
 			(class "Default")
 			(node
@@ -13698,7 +14424,7 @@
 			)
 		)
 		(net
-			(code "109")
+			(code "113")
 			(name "unconnected-(U6-NC.-Pad8)")
 			(class "Default")
 			(node
@@ -13709,7 +14435,7 @@
 			)
 		)
 		(net
-			(code "110")
+			(code "114")
 			(name "unconnected-(U6-TNOW-Pad15)")
 			(class "Default")
 			(node
@@ -13720,7 +14446,7 @@
 			)
 		)
 		(net
-			(code "111")
+			(code "115")
 			(name "unconnected-(U6-~{CTS}-Pad9)")
 			(class "Default")
 			(node
@@ -13731,7 +14457,7 @@
 			)
 		)
 		(net
-			(code "112")
+			(code "116")
 			(name "unconnected-(U6-~{DCD}-Pad12)")
 			(class "Default")
 			(node
@@ -13742,7 +14468,7 @@
 			)
 		)
 		(net
-			(code "113")
+			(code "117")
 			(name "unconnected-(U6-~{DSR}-Pad10)")
 			(class "Default")
 			(node
@@ -13753,7 +14479,7 @@
 			)
 		)
 		(net
-			(code "114")
+			(code "118")
 			(name "unconnected-(U6-~{RI}-Pad11)")
 			(class "Default")
 			(node
@@ -13764,7 +14490,7 @@
 			)
 		)
 		(net
-			(code "115")
+			(code "119")
 			(name "unconnected-(U6-~{RST}-Pad7)")
 			(class "Default")
 			(node
@@ -13775,7 +14501,7 @@
 			)
 		)
 		(net
-			(code "116")
+			(code "120")
 			(name "unconnected-(U7-NC-Pad9)")
 			(class "Default")
 			(node
@@ -13786,7 +14512,7 @@
 			)
 		)
 		(net
-			(code "117")
+			(code "121")
 			(name "unconnected-(U7-NC-Pad25)")
 			(class "Default")
 			(node
@@ -13797,7 +14523,7 @@
 			)
 		)
 		(net
-			(code "118")
+			(code "122")
 			(name "unconnected-(U8-SYNC-Pad16)")
 			(class "Default")
 			(node

@@ -81,6 +81,79 @@
    "hide": true
   },
   {
+   "op": "silk_clear",
+   "ref": "Q11",
+   "layer": "F.SilkS"
+  },
+  {
+   "op": "silk_clear",
+   "ref": "Q12",
+   "layer": "F.SilkS"
+  },
+  {
+   "op": "silk_clear",
+   "ref": "Q13",
+   "layer": "F.SilkS"
+  },
+  {
+   "op": "silk_clear",
+   "ref": "Q14",
+   "layer": "F.SilkS"
+  },
+  {
+   "op": "silk_clear",
+   "ref": "Q15",
+   "layer": "F.SilkS"
+  },
+  {
+   "op": "set_text",
+   "ref": "Q13",
+   "field": "reference",
+   "hide": true
+  },
+  {
+   "op": "set_text",
+   "ref": "Q15",
+   "field": "reference",
+   "hide": true
+  },
+  {
+   "op": "set_text",
+   "ref": "R82",
+   "field": "reference",
+   "hide": true
+  },
+  {
+   "op": "set_text",
+   "ref": "R39",
+   "field": "reference",
+   "hide": true
+  },
+  {
+   "op": "set_text",
+   "ref": "C9",
+   "field": "reference",
+   "hide": true
+  },
+  {
+   "op": "set_text",
+   "ref": "C33",
+   "field": "reference",
+   "hide": true
+  },
+  {
+   "op": "set_text",
+   "ref": "R38",
+   "field": "reference",
+   "hide": true
+  },
+  {
+   "op": "set_text",
+   "ref": "C32",
+   "field": "reference",
+   "hide": true
+  },
+  {
    "op": "add_text",
    "text": "+",
    "x": 83.865,

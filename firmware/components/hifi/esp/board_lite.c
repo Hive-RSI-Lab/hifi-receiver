@@ -72,9 +72,15 @@ void hifi_bsp_power_out(const hifi_power_out_t *o) {
 
 /* ------------------------------------------------------------------ codec */
 
+/* LOUT2/ROUT2 volume code, 1.5 dB a step, 30 = 0 dB. At most 26 (-6 dB):
+ * the sub mute's 2N7002s (Q13-Q15) are off with their gates near 0 V, so
+ * the sub line's negative swing has to stay above -Vth(min) 1.0 V; -6 dB is
+ * 0.71 V peak at 0 dBFS (docs/review-3/sims/fix/lite_mute/tb_play_cap) */
+#define SUB_CODE_MAX 26
+
 static int sub_code(float db) {
 	int code = (int) lrintf(30 + db / 1.5f);
-	return code < 0 ? 0 : code > 33 ? 33 : code;
+	return code < 0 ? 0 : code > SUB_CODE_MAX ? SUB_CODE_MAX : code;
 }
 
 float hifi_bsp_sub_db(float db) { return (sub_code(db) - 30) * 1.5f; }
