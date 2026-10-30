@@ -15,12 +15,13 @@ concurrency:
 permissions:
   contents: read
 env:
-  # The tools the Hive's own check uses (/hive/tools): KiCad 10.0.6 as an AppDir, and the
-  # hive-hwde version published there (hwde.version), from their public repositories.
+  # The tools the Hive's own check uses (/hive/tools): KiCad 10.0.6 as an AppDir, and hive-hwde
+  # at its current main, from their public repositories. hwde isn't pinned: /hive/tools/hwde
+  # follows the installed module (hive-hwde e8751a80), so CI gates the boards with the same
+  # current hwde rather than an old commit (issue #107; it was aa1ec48).
   KICAD_VERSION: 10.0.6
   KICAD_APPIMAGE: https://github.com/pkgforge-dev/KiCad-AppImage/releases/download/10.0.6-2%402026-10-01_1790876568/KiCad-10.0.6-2-anylinux-x86_64.AppImage
   HWDE_REPO: Hive-RSI-Lab/hive-hwde
-  HWDE_REF: aa1ec482abff9ce266601ec858e69f59e4e3010a
 jobs:
   # The Hive reads this job's check as "test (ubuntu-latest)"; keep it unnamed.
   test:
@@ -38,9 +39,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: ${{ env.HWDE_REPO }}
-          ref: ${{ env.HWDE_REF }}
           path: .ci/hive-hwde
           persist-credentials: false
+      - name: hive-hwde commit
+        run: echo "hive-hwde $(git -C .ci/hive-hwde rev-parse --short HEAD) ($(cat .ci/hive-hwde/VERSION 2>/dev/null))"
       - uses: astral-sh/setup-uv@v6
       - name: xvfb (KiCad's SWIG paths need a display)
         run: sudo apt-get install -y xvfb

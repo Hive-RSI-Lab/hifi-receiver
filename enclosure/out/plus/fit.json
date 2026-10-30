@@ -124,8 +124,8 @@
    "edge": "S",
    "kind": "generic",
    "blocked_mm3": 0,
-   "recess_mm": 4.5,
-   "max_recess_mm": 5.0
+   "recess_mm": 9.9,
+   "max_recess_mm": 11.0
   },
   {
    "name": "hole_H3",
@@ -151,8 +151,8 @@
    "name": "bed_base",
    "ok": true,
    "size_mm": [
-    127.4,
-    106.0,
+    132.4,
+    112.4,
     37.6
    ],
    "bed_mm": [
@@ -207,8 +207,8 @@
    "name": "bed_lid",
    "ok": true,
    "size_mm": [
-    127.4,
-    106.0,
+    132.4,
+    112.4,
     31.0
    ],
    "bed_mm": [
@@ -216,6 +216,121 @@
     220.0,
     250.0
    ]
+  },
+  {
+   "name": "overhang_base",
+   "ok": true,
+   "steep_mm2": 0,
+   "faces": [],
+   "max_deg": 45.0
+  },
+  {
+   "name": "bridge_base",
+   "ok": true,
+   "flat_faces": 80,
+   "worst_bridge_mm": 12.01,
+   "worst_ledge_mm": 0.11,
+   "max_bridge_mm": 15.0,
+   "max_ledge_mm": 1.0,
+   "unsupported": []
+  },
+  {
+   "name": "wall_base",
+   "ok": true,
+   "min_wall_mm": 0.8,
+   "thin": []
+  },
+  {
+   "name": "overhang_btn_SW2",
+   "ok": true,
+   "steep_mm2": 0,
+   "faces": [],
+   "max_deg": 45.0
+  },
+  {
+   "name": "bridge_btn_SW2",
+   "ok": true,
+   "flat_faces": 0,
+   "worst_bridge_mm": 0.0,
+   "worst_ledge_mm": 0.0,
+   "max_bridge_mm": 15.0,
+   "max_ledge_mm": 1.0,
+   "unsupported": []
+  },
+  {
+   "name": "wall_btn_SW2",
+   "ok": true,
+   "min_wall_mm": 0.8,
+   "thin": []
+  },
+  {
+   "name": "overhang_btn_SW3",
+   "ok": true,
+   "steep_mm2": 0,
+   "faces": [],
+   "max_deg": 45.0
+  },
+  {
+   "name": "bridge_btn_SW3",
+   "ok": true,
+   "flat_faces": 0,
+   "worst_bridge_mm": 0.0,
+   "worst_ledge_mm": 0.0,
+   "max_bridge_mm": 15.0,
+   "max_ledge_mm": 1.0,
+   "unsupported": []
+  },
+  {
+   "name": "wall_btn_SW3",
+   "ok": true,
+   "min_wall_mm": 0.8,
+   "thin": []
+  },
+  {
+   "name": "overhang_knob",
+   "ok": true,
+   "steep_mm2": 0,
+   "faces": [],
+   "max_deg": 45.0
+  },
+  {
+   "name": "bridge_knob",
+   "ok": true,
+   "flat_faces": 0,
+   "worst_bridge_mm": 0.0,
+   "worst_ledge_mm": 0.0,
+   "max_bridge_mm": 15.0,
+   "max_ledge_mm": 1.0,
+   "unsupported": []
+  },
+  {
+   "name": "wall_knob",
+   "ok": true,
+   "min_wall_mm": 0.8,
+   "thin": []
+  },
+  {
+   "name": "overhang_lid",
+   "ok": true,
+   "steep_mm2": 0,
+   "faces": [],
+   "max_deg": 45.0
+  },
+  {
+   "name": "bridge_lid",
+   "ok": true,
+   "flat_faces": 0,
+   "worst_bridge_mm": 0.0,
+   "worst_ledge_mm": 0.0,
+   "max_bridge_mm": 15.0,
+   "max_ledge_mm": 1.0,
+   "unsupported": []
+  },
+  {
+   "name": "wall_lid",
+   "ok": true,
+   "min_wall_mm": 0.8,
+   "thin": []
   }
  ],
  "top_access": [
@@ -253,8 +368,8 @@
  ],
  "material": {
   "base": {
-   "volume_cm3": 63.2,
-   "solid_petg_g": 80.2
+   "volume_cm3": 63.4,
+   "solid_petg_g": 80.6
   },
   "btn_SW2": {
    "volume_cm3": 0.3,
@@ -269,9 +384,9 @@
    "solid_petg_g": 10.7
   },
   "lid": {
-   "volume_cm3": 33.1,
-   "solid_petg_g": 42.0
+   "volume_cm3": 33.0,
+   "solid_petg_g": 41.9
   }
  },
- "build_s": 16.0
+ "build_s": 9.8
 }

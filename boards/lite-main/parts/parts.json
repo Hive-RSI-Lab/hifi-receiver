@@ -469,49 +469,49 @@
    "ref_prefix_hint": "R"
   },
   {
-   "lcsc": "C364296",
+   "lcsc": "C151920",
    "refdes": [
     "D1"
    ],
-   "value": "SMBJ20A",
-   "mpn": "SMBJ20A",
-   "brand": "MDD(Microdiode Semiconductor)",
+   "value": "SMBJ22A",
+   "mpn": "SMBJ22A",
+   "brand": "BORN",
    "package": "DO-214AA(SMB)",
    "basic": false,
-   "stock": 184614,
-   "price": 0.0565,
+   "stock": 8290,
+   "price": 0.0686,
    "price_breaks": [
     {
      "qty": 1,
-     "price": 0.0565
+     "price": 0.0686
     },
     {
      "qty": 100,
-     "price": 0.0467
+     "price": 0.0551
     },
     {
      "qty": 300,
-     "price": 0.0418
+     "price": 0.0484
     },
     {
      "qty": 3000,
-     "price": 0.0312
+     "price": 0.0409
     },
     {
      "qty": 6000,
-     "price": 0.0282
+     "price": 0.0369
     },
     {
      "qty": 9000,
-     "price": 0.0267
+     "price": 0.035
     }
    ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2407291901_MDD-Microdiode-Semiconductor-SMBJ20A_C364296.pdf",
-   "description": "-65℃~+150℃ 18.6A 1uA 20V 24.5V 32.4V 600W TVS Unidirectional DO-214AA(SMB) ESD and Surge Protection (TVS/ESD) ROHS",
+   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2304140030_BORN-SMBJ22A_C151920.pdf",
+   "description": "16.9A@10/1000us 1uA 22V 26.9V 35.5V 600W@10/1000us TVS Unidirectional DO-214AA(SMB) ESD and Surge Protection (TVS/ESD) ROHS",
    "attributes": [
     {
      "name": "Operating Temperature",
-     "value": "-65℃~+150℃"
+     "value": "-55℃~+150℃"
     },
     {
      "name": "Type",
@@ -527,30 +527,30 @@
     },
     {
      "name": "Clamping Voltage",
-     "value": "32.4V"
+     "value": "35.5V"
     },
     {
      "name": "Polarity",
      "value": "Unidirectional"
     },
     {
-     "name": "Voltage - Breakdown",
-     "value": "24.5V"
+     "name": "Peak Pulse Current (Ipp)",
+     "value": "16.9A@10/1000us"
     },
     {
-     "name": "Peak Pulse Current (Ipp)",
-     "value": "18.6A"
+     "name": "Voltage - Breakdown",
+     "value": "26.9V"
     },
     {
      "name": "Reverse Stand-Off Voltage (Vrwm)",
-     "value": "20V"
+     "value": "22V"
     },
     {
      "name": "Reverse Leakage Current (Ir)",
      "value": "1uA"
     }
    ],
-   "role": "VBUS TVS 20 V standoff",
+   "role": "VBUS TVS 22 V standoff",
    "ref_prefix_hint": "D"
   },
   {
