@@ -52,6 +52,7 @@ void hifi_bsp_power_in(uint32_t now, hifi_bsp_power_t *p) {
 	p->pg = gpio_get_level(PIN_PD_PG) == 0;
 	p->fault = gpio_get_level(PIN_AMP_FAULTZ) == 0;
 	p->vbus_i_a = NAN;
+	p->otw = false; /* the TPA3118 has no warning pin, only FAULTZ */
 	/* the PD sink's registers every 500 ms */
 	p->pd_read = now - last_pd >= 500;
 	if (p->pd_read) {

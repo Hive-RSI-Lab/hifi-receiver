@@ -75,6 +75,13 @@ static hifi_input_t input = HIFI_INPUT_STREAM;
 static bool sub_on = true;
 static float sub_db = 0;
 static volatile bool codec_dirty = true; /* re-apply input/sub to the codec */
+/* the amps stay in shutdown until then: across an input change (the analog
+ * switch moves only with them off, firmware requirement C5) and for 2.5 s
+ * after the codec first takes its routing, so its VMID has settled before
+ * the amp hears it (L4); review-3 R3-SYSTEM-5 */
+static volatile uint32_t amp_hold_until, route_at;
+static bool codec_up;
+static uint32_t otw_ms, otw_clear_ms; /* the OTW step-down (C2) */
 static volatile uint32_t selftest_hold_until; /* keeps the amp awake for the self-test */
 static volatile bool capture_busy;   /* the codec's ADC is ours until the capture ends */
 
@@ -152,14 +159,20 @@ static void power_task(void *arg) {
 		hifi_bsp_power_in(now, &bp);
 
 		/* the routing: re-applied once the board's parts take it, and on request */
-		if (codec_dirty && !capture_busy) {
+		if (codec_dirty && !capture_busy && (int32_t) (now - route_at) >= 0) {
 			LOCK();
 			hifi_input_t in = input;
 			bool on = sub_on;
 			float db = sub_db;
 			hifi_vol_t v = vol;
 			UNLOCK();
-			if (hifi_bsp_route(in, on, db, &v, now)) codec_dirty = false;
+			if (hifi_bsp_route(in, on, db, &v, now)) {
+				codec_dirty = false;
+				if (!codec_up) {
+					codec_up = true;
+					amp_hold_until = now + 2500;
+				}
+			}
 		}
 
 		LOCK();
@@ -174,6 +187,19 @@ static void power_task(void *arg) {
 			hifi_contract_from(bp.sink_ok, bp.sink_ok ? bp.pd_status : 0, bp.pd_current, bp.vbus_v, &contract);
 			/* until PG, assume no more than a USB 2.0 port */
 			hifi_gov_set_supply(&gov, contract.v, pg ? contract.w : 2.5f);
+		}
+		/* an amp that warns it is hot: -3 dB every 2 s while it does, back up
+		 * 1 dB every 10 s once it has been clear for 10 s (requirement C2) */
+		if (bp.otw) {
+			otw_clear_ms = now;
+			if (now - otw_ms >= 2000) {
+				otw_ms = now;
+				gov.trim = fmaxf(gov.trim * 0.708f, 0.25f);
+				ESP_LOGW(TAG, "amp too hot: gain ceiling %.1f dB", 20 * log10f(gov.trim));
+			}
+		} else if (gov.trim < 1.0f && now - otw_clear_ms >= 10000 && now - otw_ms >= 10000) {
+			otw_ms = now;
+			gov.trim = fminf(gov.trim * 1.122f, 1.0f);
 		}
 		hifi_power_in_t in = {
 			.now_ms = now, .vbus_v = bp.vbus_v, .pvdd_v = bp.pvdd_v, .pg = bp.pg, .fault = bp.fault,
@@ -190,6 +216,7 @@ static void power_task(void *arg) {
 			ESP_LOGI(TAG, "power %s -> %s (VBUS %.2f V, PVDD %.2f V, PG %d)", hifi_power_state_name(before),
 				 hifi_power_state_name(power.state), bp.vbus_v, bp.pvdd_v, bp.pg);
 		UNLOCK();
+		if (!codec_up || (int32_t) (amp_hold_until - now) > 0) o.amp_on = false;
 		hifi_bsp_power_out(&o);
 		if (save_vol) {
 			char sv[8];
@@ -242,11 +269,22 @@ static bool volume_is_local(void) {
 	return direct || s == 0;
 }
 
+/* A new input: the amps go to shutdown, the routing moves 30 ms later and
+ * they come back 200 ms after the change; the choice survives a reboot */
+static void input_changed(hifi_input_t in) {
+	uint32_t now = now_ms();
+	amp_hold_until = now + 200;
+	route_at = now + 30;
+	codec_dirty = true;
+	config_set_value(NVS_TYPE_STR, "hifi_input", in == HIFI_INPUT_DJ_DIRECT ? "dj" : "stream");
+}
+
 static void toggle_input(void) {
 	LOCK();
 	input = input == HIFI_INPUT_DJ_DIRECT ? HIFI_INPUT_STREAM : HIFI_INPUT_DJ_DIRECT;
+	hifi_input_t in = input;
 	UNLOCK();
-	codec_dirty = true;
+	input_changed(in);
 	apply_volume();
 }
 
@@ -532,9 +570,11 @@ static void op_amp_reset(void) {
 
 static int op_set_input(hifi_input_t in) {
 	LOCK();
+	bool changed = input != in;
 	input = in;
 	UNLOCK();
-	codec_dirty = true;
+	if (changed) input_changed(in);
+	else codec_dirty = true;
 	return 0;
 }
 
@@ -920,6 +960,9 @@ static bool hifi_init(void) {
 	s = config_alloc_get_str("hifi_max_vol", NULL, "100");
 	hifi_vol_init(&vol, sv ? atoi(sv) : 30, s ? atoi(s) : 100);
 	free(sv);
+	free(s);
+	s = config_alloc_get_str("hifi_input", NULL, "stream");
+	input = s && !strcmp(s, "dj") ? HIFI_INPUT_DJ_DIRECT : HIFI_INPUT_STREAM;
 	free(s);
 	hifi_meta_init(&meta);
 	hifi_ir_init(&ir);

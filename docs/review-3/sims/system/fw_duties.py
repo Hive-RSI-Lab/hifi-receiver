@@ -38,10 +38,10 @@ checks = [
     ("L4 amp waits for the codec (AUDIO-17): power sequencer or amp enable gated on codec/VMID ready",
      bool(re.search(r"codec_(ready|ok|up)|vmid", pwr + func(main, "power_task") + func(lite, "hifi_bsp_power_out"), re.I))),
     ("C5 DJ_DIRECT change holds both amps in reset (AUDIO-9)",
-     "EXP_AMP_A_RST" in route_core or "resync" in route_core),
+     "EXP_AMP_A_RST" in route_core or "resync" in route_core or "amp_hold_until" in main),
     ("C1 PHY_RST (P05) low before a software restart (DIGITAL-1)",
      "esp_register_shutdown_handler" in core or bool(re.search(r"EXP_PHY_RST\s*,\s*false", core))),
-    ("C2 OTW_CLIP acted on outside the self-test (-3 dB every 2 s)", bool(otw_uses)),
+    ("C2 OTW_CLIP acted on outside the self-test (-3 dB every 2 s)", (bool(otw_uses) or "p->otw" in core) and "bp.otw" in main),
     ("input (DJ direct) survives a power blip: saved to NVS", bool(re.search(r'"hifi_input"', main))),
 ]
 bad = 0

@@ -20,6 +20,7 @@ typedef struct {
 	float pvdd_v;   /* PVDD after the switch; NaN: the board has no PVDD sense */
 	bool pg;        /* the PD contract is good */
 	bool fault;     /* an amp says fault */
+	bool otw;       /* an amp warns it is hot (core's OTW_CLIP); false where none */
 	float vbus_i_a; /* NaN: the board has no current sense */
 	/* the PD sink's registers, when this call read them (every 500 ms) */
 	bool pd_read, sink_ok;

@@ -14,12 +14,14 @@ static int16_t buf[2 * BLOCK];
 static double play(hifi_gov_t *g, const hifi_tone_params_t *p, float seconds) {
 	hifi_tone_t t;
 	hifi_tone_params_t q = *p;
-	q.duration_s = seconds;
+	/* render past `seconds` and stop there, so the tone's fade-out isn't in
+	 * the governor's 50 ms window when the caller reads it */
+	q.duration_s = seconds + 1;
 	hifi_tone_start(&t, &q, RATE);
 	double acc = 0;
-	size_t n_acc = 0, total = 0, last = (size_t) ((seconds - 1) * RATE);
+	size_t n_acc = 0, total = 0, last = (size_t) ((seconds - 1) * RATE), end = (size_t) (seconds * RATE);
 	size_t n;
-	while ((n = hifi_tone_render(&t, buf, BLOCK)) > 0) {
+	while (total < end && (n = hifi_tone_render(&t, buf, BLOCK)) > 0) {
 		hifi_gov_process(g, buf, n, 4, RATE);
 		for (size_t i = 0; i < n; i++, total++) {
 			if (total >= last) {
@@ -177,6 +179,48 @@ static void governor(void) {
 	play(&g, &p, 6);
 	double clip_w = 2 * (0.953 * 9) * (0.953 * 9) / 8;
 	CHECK_NEAR(hifi_gov_out_w(&g), clip_w, 0.3);
+
+	/* a program louder than the rail: on 15 V / 45 W, 0 dBFS asks for
+	 * 80.8 W but the rail clips at 2 x 25.5 W. The gain has to come from
+	 * what the program asks for, so the peaks leave the clip and the
+	 * input meets the contract (review-3 R3-SYSTEM-1) */
+	hifi_gov_init(&g, &cfg);
+	hifi_gov_set_supply(&g, 15, 45);
+	play(&g, &p, 6);
+	CHECK(g.limiting);
+	CHECK(g.gain * cfg.vfs_peak_v <= cfg.swing * 15);
+	CHECK_NEAR(hifi_gov_in_w(&g), 0.9 * 45, 0.6);
+
+	/* a 45 Hz bass tone on a 20 V / 65 W charger: each block's input stays
+	 * at or under the contract, not only the average (R3-POWER-3) */
+	hifi_gov_init(&g, &cfg);
+	hifi_gov_set_supply(&g, 20, 65);
+	{
+		hifi_tone_t t;
+		hifi_tone_params_t b = {.type = HIFI_TONE_SINE, .freq_hz = 45, .level_dbfs = 0, .duration_s = 7};
+		hifi_tone_start(&t, &b, RATE);
+		double worst = 0;
+		size_t n, total = 0;
+		while (total < 6 * RATE && (n = hifi_tone_render(&t, buf, BLOCK)) > 0) {
+			hifi_gov_process(&g, buf, n, 4, RATE);
+			double ms = 0;
+			for (size_t i = 0; i < n; i++) ms += (buf[2 * i] / 32768.0) * (buf[2 * i] / 32768.0);
+			double in = 2 * (ms / n) * cfg.vfs_peak_v * cfg.vfs_peak_v / cfg.r_load / cfg.efficiency + cfg.p_idle_w;
+			if (total >= RATE && in > worst) worst = in;
+			total += n;
+		}
+		CHECK(worst <= 65 * 1.02);
+		CHECK(worst > 65 * 0.8);
+	}
+
+	/* an outside ceiling (an amp's OTW) caps the gain on a quiet program */
+	hifi_gov_init(&g, &cfg);
+	hifi_gov_set_supply(&g, 20, 1000);
+	g.trim = 0.5f;
+	p.level_dbfs = -20;
+	play(&g, &p, 2);
+	CHECK_NEAR(hifi_gov_gain_db(&g), -6.02, 0.1);
+	p.level_dbfs = 0;
 
 	/* before a contract is known (5 V, 2.5 W): almost everything is limited,
 	 * but never below min_gain */
