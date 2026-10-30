@@ -8,8 +8,8 @@
  {
   "measure": "pfet_pk",
   "severity": "error",
-  "msg": "FET peak under ~20 W (100 ms SOA)",
-  "max": 20
+  "msg": "FET peak <= 10 W: hwde soa_check Tj < 110 C at 50 C ambient (14.7 W -> 135 C)",
+  "max": 10
  },
  {
   "measure": "efet",

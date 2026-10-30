@@ -150,7 +150,7 @@ for v in (28, 20, 15):
           ".tran 50u 800m 0 50u uic",
           fm("20m", "800m") + [f".meas tran t90 when v(PVDD)={0.9*v} rise=1", f".meas tran t10 when v(PVDD)={0.1*v} rise=1",
                                ".meas tran vsg_end find par('v(VBUS)-v(PVDD_G)') at=790m"],
-          [b("ifet_pk", hi=2.0, msg="inrush"), b("pfet_pk", hi=20, msg="FET peak under ~20 W (100 ms SOA)"),
+          [b("ifet_pk", hi=2.0, msg="inrush"), b("pfet_pk", hi=10, msg="FET peak <= 10 W: hwde soa_check Tj < 110 C at 50 C ambient (14.7 W -> 135 C)"),
            b("efet", hi=0.6, msg="FET energy"),
            b("t90", hi=0.12, msg="PVDD at 90 % (t from 0; PVDD_EN at 20 ms) before firmware soft_start_ms = 100 ms releases the amps"),
            b("vsg_end", lo=4.5, msg="gate drive")])

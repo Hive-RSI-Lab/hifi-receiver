@@ -1,0 +1,25 @@
+run: cd docs/review-3/sims/power/pvdd && $HWDE_PY $HWDE_SKILL/scripts/sim_run.py --dir . (cwd must be this dir: models.inc is included relatively)
+core_epr_step_20to28_on        violations {'isrc_step': 26.5925, 'pfet_step': 11.2681}
+core_fw_on_15v                 violations {'ifet_pk': 0.3234, 'pfet_pk': 3.285, 'efet': 0.1581, 'isrc_pk': 0.4232, 't90': 0.2163, 't10': 0.1603, 'vsg_end': 5.9468}
+core_fw_on_20v                 violations {'ifet_pk': 0.4685, 'pfet_pk': 6.6934, 'efet': 0.2808, 'isrc_pk': 0.6016, 't90': 0.1751, 't10': 0.1247, 'vsg_end': 7.9534}
+core_fw_on_28v                 violations {'ifet_pk': 0.7011, 'pfet_pk': 14.8026, 'efet': 0.55, 'isrc_pk': 0.8874, 't90': 0.1419, 't10': 0.0956, 'vsg_end': 11.1604}
+core_fw_on_28v_FIX             pass       {'ifet_pk': 0.3552, 'pfet_pk': 7.6666, 'efet': 0.5528, 'isrc_pk': 0.5418, 't90': 0.2643, 't10': 0.1731, 'vsg_end': 9.4593}
+core_hardreset_pvdd_on         pass       {'vbus_650': 0.16, 'pvdd_650': 0.6796, 'ifet_rev': 0.3404}
+core_hotplug_28v               pass       {'vbus_pk': 43.6232, 'vpd_pk': 28.76}
+core_hotplug_5v                pass       {'vbus_pk': 8.9139, 'vpd_pk': 5.4096, 'vsg_max': 0.4691, 'pvdd_max': 0.0159}
+core_pdstep_5to28_fwoff        pass       {'ifet_pk': 0.0487, 'pfet_pk': 0.2435, 'efet': 0.0, 'isrc_pk': 0.2967, 'vsg_max': 1.2077, 'pvdd_max': 0.0017}
+core_pdstep_5to28_fwoff_FIX    pass       {'ifet_pk': 0.0487, 'pfet_pk': 0.2435, 'efet': 0.0, 'isrc_pk': 0.2996, 'vsg_max': 1.1493, 'pvdd_max': 0.0035}
+lite_fw_on_15v                 pass       {'ifet_pk': 0.2638, 'pfet_pk': 2.5426, 'efet': 0.0776, 'isrc_pk': 0.3263, 't90': 0.127, 'vsg_end': 4.6681}
+lite_fw_on_20v                 pass       {'ifet_pk': 0.4124, 'pfet_pk': 5.6142, 'efet': 0.1378, 'isrc_pk': 0.4957, 't90': 0.095, 'vsg_end': 6.2286}
+lite_hardreset_pvdd_on         pass       {'vbus_650': -0.0, 'pvdd_650': 0.2042, 'ifet_rev': 0.1824}
+lite_hotplug_20v               violations {'vbus_pk': 32.1864, 'vsg_max': 0.799, 'pvdd_max': 0.0028}
+lite_hotplug_5v                pass       {'vbus_pk': 9.0149, 'vsg_max': 0.2002, 'pvdd_max': 0.0007}
+lite_pdstep_5to20_fwoff        pass       {'ifet_pk': 0.0487, 'pfet_pk': 0.2436, 'efet': 0.0, 'isrc_pk': 0.3627, 'vsg_max': 0.7897, 'pvdd_max': 0.0028}
+   warning core_epr_step_20to28_on.cir core_epr_step_20to28_on.cir: isrc_step = 26.5925 outside <= 6 - the source must deliver this during its own slew; an ideal source here (a real one current-limit
+   error core_fw_on_15v.cir core_fw_on_15v.cir: t90 = 0.21627 outside <= 0.12 - PVDD at 90 % (t from 0; PVDD_EN at 20 ms) before firmware soft_start_ms = 100 ms releases the amps
+   error core_fw_on_20v.cir core_fw_on_20v.cir: t90 = 0.175117 outside <= 0.12 - PVDD at 90 % (t from 0; PVDD_EN at 20 ms) before firmware soft_start_ms = 100 ms releases the amps
+   error core_fw_on_28v.cir core_fw_on_28v.cir: t90 = 0.14195 outside <= 0.12 - PVDD at 90 % (t from 0; PVDD_EN at 20 ms) before firmware soft_start_ms = 100 ms releases the amps
+   warning lite_hotplug_20v.cir lite_hotplug_20v.cir: vbus_pk = 32.1864 outside <= 30 - TPS54302 VIN / TPA3118 abs max 30 V
+(after the run: core_fw_on_*v pfet_pk bound tightened 20 -> 10 W, so core_fw_on_28v (14.8 W) now also fails on pfet_pk;
+ hwde soa_check --hotswap --fet AO4485 --c 1410u --v 28 --t-ramp 75m: Tj 125 C at 40 C ambient, 135 C at 50 C;
+ FIX (C4 200n, C8 ~4 uF) t-ramp ~150 ms: 96 C at 50 C ambient)
