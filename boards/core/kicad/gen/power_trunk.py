@@ -36,6 +36,7 @@ vias must all land in one such piece. On this board that took:
     pad, and the strip below Q1 that necked to 1.15 mm goes with its three
     vias (overrides for the patches at R1's output and Q1's drain:
     constraints.json);
+  - two of +5V's six layer changes get a second via (no room at the others);
   - R18's VBUS_IN tap via moves off the plane (an In2 rule area, RULE_AREA)
     and B.Cu ties it to J1's B4 VBUS pin;
   - C15's GND via goes: it split VBUS's only way into the corner above C11.
@@ -210,6 +211,16 @@ EDITS = [{"op": "remove", "uuid": u} for u in (
     # three more plane vias in each PVDD finger (power_zones.py VIAS_PVDD)
     {"op": "add_via", "at": [x, y], "size": 0.6, "drill": 0.3, "net": "PVDD"}
     for x in (43.437, 48.387, 76.337, 81.287) for y in (151.597, 152.397, 153.197)
+] + [
+    # +5V layer changes get a second via where the board has room: U4's feed
+    # going under the VBUS plane (53.89, 177.65) and the J3 branch (52.14,
+    # 213.21); the other four sit in fan-outs with no spot clear of other nets
+    {"op": "add_via", "at": [54.494, 178.253], "size": 0.6, "drill": 0.3, "net": "+5V"},
+    {"op": "add_via", "at": [52.738, 212.606], "size": 0.6, "drill": 0.3, "net": "+5V"},
+] + [
+    {"op": "add_track", "start": a, "end": b, "width": 0.355, "layer": layer, "net": "+5V"}
+    for layer in ("F.Cu", "B.Cu")
+    for a, b in (([54.494, 178.253], [53.893, 177.652]), ([52.738, 212.606], [52.137, 213.207]))
 ]
 
 
