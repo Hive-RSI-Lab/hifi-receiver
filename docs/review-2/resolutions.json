@@ -92,19 +92,39 @@
   "how": "hwde dfm gate's cpl_verify against each part's LCSC/EasyEDA model passes on both boards after the swaps (2026-10-29): Lite J1 C165948, U6 C81010; core J1 C7095263, U8 C81010, U17 C131972, U18 C42421366, Y1 C7431354."
  },
  "dfm:16": {
-  "status": "open-ultra",
-  "how": "TOSLINK (Ultra only, not fitted on Plus): port direction and NC-row side still to confirm against Everlight's drawing before an Ultra order."
+  "status": "verified",
+  "how": "Everlight PLR237/T8BK DPL-0000262/263 Rev.1 (everlighteurope.com, fetched 2026-10-30) p5 (third-angle views: the top view above, the port at the left of the right view): the posts are 5.88 from the port face, then 2.61 to the NC row and 2.63 to the signal row. On core U19 (rot 180) the port faces the top edge (the rear panel), the post holes and NC row sit between it and the signal row, and the port face lands at y 121.397, 0.70 mm inside the edge, as enclosure/core.board.json has it."
  },
  "parts:51": {
-  "status": "open-ultra",
-  "how": "TOSLINK pad 1 vs Everlight pin 1 (Ultra only): confirm before an Ultra order."
+  "status": "verified",
+  "how": "Everlight PLR237/T8BK DPL-0000262/263 Rev.1 (everlighteurope.com, fetched 2026-10-30) p5 bottom view, port at the top: 3-2-1 left to right, so facing the port pin 1 (Vout) is on the right. On the board, port up, that is the left-hand pad (x 137.447), footprint pad 3 = /OPT_SPDIF; the right-hand pad (x 142.527), footprint pad 1 = OPT_VCC, sits under Everlight pin 3 (Vcc). The symbol's numbering is the reverse of Everlight's, and so is the footprint's: the copper is right."
  },
  "parts:52": {
-  "status": "open-ultra",
-  "how": "The T8BK's post holes are now in the footprint; its 0.80 mm pins sit in 0.914 mm holes. Confirm the front offset (5.88 vs 6.14 mm) with the Ultra enclosure before an Ultra order."
+  "status": "resolved",
+  "how": "The library footprint had the T8BK's two 1.70 mm post holes, but the routed board still carried the old T10BK copy without them (0 NPTH on U19 in core.kicad_pcb). kicad/gen/u19_posts.py (2026-10-30) adds them as NPTH 1.70 at (+-2.80, +3.92) per Everlight PLR237/T8BK DPL-0000262/263 Rev.1 (everlighteurope.com, fetched 2026-10-30) p5, moves the GND via that sat in one, and refills the zones; DRC 0. The front offset is the T8BK's: 5.88 from the posts puts the port face at local +9.80, the courtyard's edge, and enclosure/core.board.json already places it there."
  },
  "parts:64": {
-  "status": "open-ultra",
-  "how": "FFC contact side/cable type depends on the ultra-front board (Ultra only)."
+  "status": "resolved",
+  "how": "boards/ultra-front (on main 2026-10-30) has the same FPC-05F-20PH20 (C2856803) as its J1, at rotation 0, pin N on the same signal as core J3 pin N (checked pad by pad in both .kicad_pcb). In the Ultra box J3 (core x 20) and J1 (front-board X 14 + 6) line up, and the cable leaves J3 forward, turns down, runs forward under the front board and up into J1: three bends about the same axis keep the conductor order and turn the contact face from J3's side to the side away from J1's contacts. With the same part at both ends that holds whichever side the part's contacts are on, so the cable is a 20-pin 0.5 mm type B (opposite-side contacts), pin N to pin N, as enclosure/README.md and boards/ultra-front/README.md say."
+ },
+ "dfm:7": {
+  "status": "verified",
+  "how": "GCT USB4085 drawing rev B (gct.co/files/drawings/usb4085.pdf, fetched 2026-10-30) sheet 2 against core.kicad_pcb J1, pad by pad: A row A1 A4..A9 A12 and B row B12 B9..B4 B1 (B12 under A1) 1.35 apart at 0.85 pitch, within 0.005 mm of the drawing; shell slots 0.6x2.1 / 0.6x1.4 in 0.9x2.4 / 0.9x1.7 at +-4.325, the long pair 0.98 from the A row and the short pair 3.38 behind it; the board edge (x 34.587) sits exactly 1.74 mm from the short pair's centres (x 36.327), as drawn. Not mirrored: A1 left with the mouth down, as the drawing's component-side view. Nets as sheet 1: VBUS A4 A9 B4 B9, GND A1 A12 B1 B12 and shell, CC1 A5, CC2 B5, D+ A6 B6, D- A7 B7, SBU open. Only the pads differ, 0.70 for 0.65, on purpose (DFM-6)."
+ },
+ "power:26": {
+  "status": "verified",
+  "how": "GCT USB4085 drawing rev B (gct.co/files/drawings/usb4085.pdf, fetched 2026-10-30) sheet 1: 48 V DC, 5.00 A collectively for the VBUS pins, 6.25 A for GND, 1.25 A for A5/B5, 240 W. At 28 V / 5 A: 42 % voltage margin, 0 % current margin at the full 5 A PD contract (the governor holds about 1.1 A average)."
+ },
+ "digital:30": {
+  "status": "verified",
+  "how": "boards/ultra-front/README.md: the panel carries one TCA9535 (0x27) for the knob, buttons, LCD reset and RGB LED, its own IR receiver on IR_OUT (10 k pull-up there), INT open-drain with a 10 k pull-up there, ENC_A/B with 10 k + 10 nF; I2C pull-ups are on the core."
+ },
+ "digital:36": {
+  "status": "verified",
+  "how": "boards/ultra-front/README.md: one I2C device on the panel (TCA9535 at 0x27), no pull-ups there (the core's), over a 30-50 mm FFC: a few pF added to the bus."
+ },
+ "digital:38": {
+  "status": "verified",
+  "how": "Everlight PLR237/T8BK DPL-0000262/263 Rev.1 (everlighteurope.com, fetched 2026-10-30) p1-2: operates at 2.4-5.5 V, recommended Vcc 3.0-5.5 V, TTL-compatible output (Vout max Vcc+0.3), so at OPT_VCC = 3.3 V the output swings to 3.3 V into the ES9018K2M GPIO; 10 % margin at the 3.0 V floor."
  }
 }

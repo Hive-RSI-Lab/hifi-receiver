@@ -96,7 +96,7 @@ pin-to-pad) read this board from its KiCad files and the vendor datasheets:
 | POWER-1 (blocker): the 5 A path ran through 0.25 mm tracks and 1-3 vias | SMD USB4105, few vias | through-hole USB4085 (power pins solid into the In2 VBUS_IN plane), copper patches with 8 vias at R1's input, 10 from R1's output to Q1's source, 8 at Q1's drain; 3-4 per TPA3221 PVDD pin group |
 | THERMAL-1/DFM-3 (blocker): TPA3221 is pad-up with no heatsink | none | a heatsink pressed onto each TPA3221 from the lid (thermal pad under it), and a firmware power governor (`docs/review-2/firmware-requirements.md` C2/C3); no room for clip holes beside the chip without moving its PVDD decouplers |
 | DFM-1 (blocker): RCA J4/J5 had no holes for the jack's snap-in legs | none | Lite's footprint: 2.0 x 3.0 leg holes, signal pins as slots that fit either reading of the drawing |
-| PARTS-7/DFM-12 (blocker, Ultra): TOSLINK T8BK on a T10BK footprint | no post holes | the T8BK's two 1.70 mm post holes added |
+| PARTS-7/DFM-12 (blocker, Ultra): TOSLINK T8BK on a T10BK footprint | no post holes | the T8BK's two 1.70 mm post holes (NPTH, `kicad/gen/u19_posts.py`; until 2026-10-30 they were only in the library copy, not on the board) |
 | DIGITAL-19 (major): copper under the Wi-Fi antenna on all 4 layers | GND/+3V3 pours, two tracks | `ANT_KEEPOUT` rule area x 148.9-154.64, y 189.6-213.5 on every layer; I2S_DIN and RMII_TXD1 rerouted |
 | POWER-2 (major): Q1 turn-on outside its SOA | R4/R5 100k, C8 1 uF | 470k/470k, 2.2 uF/50 V |
 | POWER-6 (major): no hardware PVDD cut when the PD contract is lost | Q2 source on GND | Q2 source on CH224Q PG (+ R20 10k pull-up), as on Lite |
@@ -158,6 +158,9 @@ These are the decisions that differ from, or add to, docs/product.md.
   spare.
 - **FFC pinout:** the ultra-front board's map. It needs SPI, I2C and an
   interrupt line, and the front board carries its own expander.
+  J3 and ultra-front's J1 are the same socket at rotation 0, pin N on the
+  same signal at both ends: the cable is 20-pin 0.5 mm **type B**, pin N to
+  pin N (`docs/review-2/resolutions.json` parts:64).
 
 ## Rebuild and re-check
 
