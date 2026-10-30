@@ -1,0 +1,3 @@
+- P3 parts: 18 BOM lines, 34 refs, all LCSC (parts/parts.json via kicad/gen/parts_build.py). Basic: passives, SW1-3, Q1. Extended: J1, J2, U1, U2, SW4, D1.
+- Library: lib_pull (EasyEDA) for connectors/ICs/switches/LED/FET and R0603/C0603/C0805; two passive pulls hit the EasyEDA rate limit, passives use Device:R/C with the pulled footprints.
+- Library repairs (board-local, filed to hive-hwde): courtyards grown to pads + 0.25 mm (fix_courtyards.py, 11 footprints); pin electrical types (pin_types.py, 98 pins).

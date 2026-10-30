@@ -1,0 +1,2 @@
+- P1 research: inline, no agents. Datasheets read: HS20HS072RX LCD (12-pin 0.5 mm tail, pinout section 6, outline p.10: tail 20.7 mm, pin 1 at top), IRM-H638T (47-220R + >=2.2 uF filter), TS-1187A (A-B / C-D contact pairs), TJ-S1615 RGB (pin 1 common anode), TCA9535 (UMW), EC11.
+- LCD is a hand-fit part (iron-soldered/ZIF tail), so the board carries a 12-pin ZIF socket and the panel is plugged in at final assembly.

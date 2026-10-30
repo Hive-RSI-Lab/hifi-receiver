@@ -1,0 +1,4 @@
+- P6 placement: manual op list (anneal/placement.ops.json; silk hiding in anneal/silk.ops.json). The panel is mechanical: LCD area u 24.5-77.5 mm and the tail (6.5 mm into J2, ~20.5 mm wide for 10 mm at the panel) kept part-free by keepouts.
+- Left: J2 (LCD socket at u 3.3, mouth +x), U1 at the top, backlight parts below the tail and right of J1, J1 at the bottom edge. Right: 3 buttons in a column, EC11 knob, IR at top, LED below the knob.
+- Re-placed after board review 1 (J2 was 3.1 mm too close to the panel; 8 parts sat under the wide tail).
+- place gate: pass. J2 is declared in placement.mates (onboard_flex, corridor = the tail outline), so no waivers (the first version had two).

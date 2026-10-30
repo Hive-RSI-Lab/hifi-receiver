@@ -233,15 +233,15 @@ LCSC (470 µF 10x20, KF301), the boards' own `lib/aiee.3dshapes` models
 ```sh
 M=$HIVE_MODULES/hive-mech/bin/mech           # builds its venv in ~/.cache/mech on first use
 $M board boards/core/kicad/core.kicad_pcb --heights enclosure/heights.json -o enclosure/core.board.json
-$M board <ultra-front checkout>/boards/ultra-front/kicad/ultra-front.kicad_pcb \
+$M board boards/ultra-front/kicad/ultra-front.kicad_pcb \
    --heights enclosure/heights.json -o enclosure/ultra-front.board.json
 $M build enclosure/plus.py  -o enclosure/out/plus     # exit 1 on a fit failure
 $M build enclosure/ultra.py -o enclosure/out/ultra
 python3 enclosure/fit_md.py plus ultra
 ```
 
-`ultra-front.board.json` is read from the ultra-front task's branch
-(70a0533, PR #10). It isn't on main yet. Re-read it when that board lands.
+`ultra-front.board.json` was read from the ultra-front task's branch (PR #10)
+and re-read on its merge with main: the board as landed gives the same file.
 
 ### Open points (Plus/Ultra)
 

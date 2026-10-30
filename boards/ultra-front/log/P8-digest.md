@@ -1,0 +1,4 @@
+- P8 verify gate: PASS, 0 failing / 19 (2 J2 mating waived pending the person; 9 needless-jog and 8 no-extraction warnings).
+- Fresh verify-reviewer 1: 2 errors (LCD tail seating 3 mm off; parts under the wide tail) -> re-placed and re-routed.
+- Fresh verify-reviewer 2: 0 errors; tail seats within 0.08 mm of J2's stop; no part under tail or panel. Its warnings: README stale (fixed), B.Cu pour islands (fixed by the F.Cu pour, plane_repair one group), R10 silk at edge (hidden), SPI return path and CPL rotations (documented).
+- sim gate not run: no analog block with a bench worth simulating (decision).

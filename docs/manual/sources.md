@@ -52,7 +52,7 @@ enclosure on main at 18ceb29.
 | Lite top: vol−, vol+, ▶ left to right along the front edge; status light pipe to their left; IR window front, bottom right | `enclosure/README.md` | source |
 | Lite status LED is one red LED (D2) | `boards/lite-main/README.md` | source |
 | Lite case 106 × 96 × 46.8 mm, PETG/ASA; no moulded labels yet (sticker) | `enclosure/README.md` | source |
-| Ultra front: screen, knob (EC11, no detents), 3 buttons, IR, RGB status LED | boards/ultra-front/README.md on PR #10's branch (task 261028-145644-e1975aa761), not on main yet | proposed until PR #10 lands |
+| Ultra front: screen, knob (EC11, no detents), 3 buttons, IR, RGB status LED | `boards/ultra-front/README.md` | source |
 | Plus control: knob, 2 buttons, IR, status LED; SUB1/SUB2; screw speaker terminals | `boards/core/README.md` | source |
 | Plus and Ultra rear panels, size, terminals | their enclosures | TBD |
 | Ventilation clearance: 5 cm above and behind | the manual | proposed |
