@@ -7,6 +7,12 @@
    "overlap_mm3": 0
   },
   {
+   "name": "lid_covers",
+   "ok": true,
+   "open_mm2": 0.0,
+   "where": []
+  },
+  {
    "name": "parts_apart",
    "ok": true,
    "clashes": []
@@ -15,6 +21,12 @@
    "name": "parts_clear",
    "ok": true,
    "hits": []
+  },
+  {
+   "name": "added_parts_clear",
+   "ok": true,
+   "added": 6,
+   "clashes": []
   },
   {
    "name": "port_J1",
@@ -241,8 +253,8 @@
  ],
  "material": {
   "base": {
-   "volume_cm3": 63.1,
-   "solid_petg_g": 80.1
+   "volume_cm3": 63.2,
+   "solid_petg_g": 80.2
   },
   "btn_SW2": {
    "volume_cm3": 0.3,
@@ -261,5 +273,5 @@
    "solid_petg_g": 42.0
   }
  },
- "build_s": 0.8
+ "build_s": 16.0
 }
