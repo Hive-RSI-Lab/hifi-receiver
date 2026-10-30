@@ -26,7 +26,7 @@ and the one step that has to happen before the assembly order can go in.
        it into your inventory.
      - **Consigned parts:** buy from Mouser or DigiKey yourself and ship
        the reel or cut tape to JLC as consigned parts for your account.
-   - Quantity: 1 per Plus board, 2 per Ultra board, plus JLC's attrition
+   - Quantity: 2 per board (Plus fits zone B too), plus JLC's attrition
      (2-3 extra). `prebuy.csv` (Plus) and `ultra/prebuy.csv` (Ultra) list
      it with the build's quantity.
    - Wait until the parts show as **in stock in your inventory**. JLC's BOM
@@ -47,7 +47,7 @@ and the one step that has to happen before the assembly order can go in.
     needed: the paste is cut to 63 % in 4 windows to allow for the solder
     that wicks into them.
 - **Assembly, top side only:**
-  - Plus: `BOM.csv` and `CPL.csv`. U16 and zone B are not fitted.
+  - Plus: `BOM.csv` and `CPL.csv`. Zone B (U16) is fitted too: Plus plays L on zone A and R on zone B.
   - Ultra: `ultra/BOM.csv` and `ultra/CPL.csv`, with the same Gerbers.
 - **Not on the board:** the binding posts, the remote, Ultra's front board
   and its FFC. They are in `docs/bom-estimate.csv`. No heatsink is needed.

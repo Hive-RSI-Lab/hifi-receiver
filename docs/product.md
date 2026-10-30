@@ -17,8 +17,10 @@ and say why.
 |---|---|---|---|
 | Who it is for | the cheapest way to stream to a pair of speakers | the person's own system: Viennas driven hard, two subs, FLX4 | a WiiM-Ultra-like box with a screen and a second speaker zone |
 | Power in | USB-C PD 20 V (65–100 W charger) | USB-C PD 28 V EPR (140 W charger) | USB-C PD 28 V EPR (140 W charger) |
-| Amplifier | TPA3118D2, 2 ch | TPA3220 (pad-down TPA3221), 2 ch | 2 × TPA3220: zone A + zone B, 4 ch |
+| Amplifier | TPA3118D2, 2 ch | 2 × TPA3220 (pad-down TPA3221), one channel each | 2 × TPA3220: zone A + zone B, 4 ch |
 | Power per channel, 4 Ω, 1% THD | **43 W** | **77 W** | **77 W** (the 140 W is shared across 4 ch) |
+| Loud music it holds, 4 Ω, 60 s average (peaks at the line above) | – | **2 × 4.9 W** (15 dB crest at clipping) in the box as drawn; **2 × 9.7 W** (12 dB crest) once the box has ~1500 mm² vents | 2 × 4 W with one zone, 2 × 3 W per zone with both, as drawn |
+| Continuous sine it holds, 4 Ω | – | 2 × 5 W (the governor's 10 W) | 2 × 4 W, or 2 × 3 W per zone (the governor's 8 W / 12 W) |
 | DAC | ES8388 codec (≈96 dB) | **ES9018K2M Sabre** mains + PCM5102A subs | same as Plus |
 | Sub outputs (RCA) | 2, full range (sub's own crossover) | 2, bass-managed (crossover, level, delay, phase) | same as Plus |
 | RCA line in (FLX4) | yes, with an analog zero-latency bypass | yes, ADC + analog "DJ direct" switch | yes + optical (TOSLINK) in |
@@ -27,7 +29,7 @@ and say why.
 | Streaming | Spotify Connect, AirPlay 1, Bluetooth, Lyrion (LMS) | same | same |
 | Control | web app, 3 buttons, IR (bring your own remote) | web app, knob + 2 buttons, IR remote in box | web app, 2" colour screen, knob + 3 buttons, IR remote |
 | Boards | 1: `lite-main` (2-layer) | 1: `core` (4-layer) | 2: `core` fully populated + `ultra-front` |
-| Unit cost at 100, board + assembly + PCB | **$14.9** incl. binding posts (board alone $13.1 per `tools/hwcheck.py cost`) | **$29.0** (TPA3220 pad-down amp, no heatsink; `core` board alone $29.8 per `tools/hwcheck.py cost`) | **$40.0** |
+| Unit cost at 100, board + assembly + PCB | **$14.9** incl. binding posts (board alone $13.1 per `tools/hwcheck.py cost`) | **$34.3** (two TPA3220s, one channel each, no heatsink; `core` board alone $35.4 per `tools/hwcheck.py cost`) | **$40.0** |
 | Target retail (charger not included / with charger) | **$59 / $79** | **$129 / $159** | **$199 / $229** |
 | Build order | **first** | second | third |
 
@@ -177,13 +179,21 @@ The rule that makes it safe: **a firmware power governor.**
   ([heatsink-options.md](review-2/heatsink-options.md), issue #47). Its pad
   is soldered to the GND planes through 15 vias, and the board is the
   heatsink: about 26 °C/W.
-  - **Music:** at 1/8 power, 8 Ω, it dissipates 1.5 W, for Tj ≈ 84 °C in a
-    45 °C box. Pass.
-  - **4 Ω, driven hard:** 1/8 power into 4 Ω is 3.5 W, which is over what the
-    board sheds. The firmware governor holds the 60 s average to 8 W out
-    (about 1.9 W in the chip, 13 W at the USB-C input), because the Plus box
-    as drawn runs its air at about 60 °C. Peaks reach 77 W. Bigger box vents
-    would raise this to about 11 W.
+  - **What loud music costs the chip.** Music peaks at the 77 W clip level
+    and averages 12–15 dB below it: 2 × 9.7 W at a 12 dB crest, 2 × 4.9 W at
+    15 dB. On one chip that is 3.5 W or 2.2 W. hwde's check_thermal puts the
+    Plus box as drawn at 65–80 °C inside, which gives Tj 117–175 °C: one
+    pad-down chip can't play loud 4 Ω music for long.
+  - **So Plus fits both TPA3220s**, zone A playing L and zone B playing R,
+    one channel per chip at 1.3–2.0 W each. That holds 15 dB-crest music at
+    clipping (Tj 96–104 °C) in the box as drawn. With ~1500 mm² of inlet,
+    riser and outlet it holds 12 dB-crest music, 2 × 9.7 W (Tj 100–110 °C).
+    It costs $5.40 per Plus board and no hand step.
+  - **What the governor caps** (firmware `hifi_gov`, 60 s average of the
+    speaker power): Plus 10 W across both channels in the box as drawn
+    (19 W with the vents). Ultra 8 W with one zone, 12 W with both. Peaks
+    pass untouched. Into 8 Ω the chips run cooler, and the same caps leave
+    more margin.
   - **Continuous sine at full power:** a firmware limit, with or without a
     heatsink (review-2 thermal.md 1.6).
   - **Protection:** the governor and the chip's own over-temperature warning
@@ -298,12 +308,12 @@ Per unit, from [`bom-estimate.csv`](bom-estimate.csv)
 
 | | Lite ×10 | Lite ×100 | Plus ×10 | Plus ×100 | Ultra ×10 | Ultra ×100 |
 |---|---|---|---|---|---|---|
-| Parts on the board | $13.04 | $11.40 | $27.65 | $22.66 | $39.05 | $32.09 |
-| JLC assembly (setup, stencil, $3 per unique extended part, joints) | $8.24 | $1.67 | $11.95 | $3.22 | $14.98 | $4.00 |
+| Parts on the board | $13.04 | $11.40 | $33.72 | $27.63 | $39.05 | $32.09 |
+| JLC assembly (setup, stencil, $3 per unique extended part, joints) | $8.24 | $1.67 | $12.27 | $3.54 | $14.98 | $4.00 |
 | PCB (hwde price points × 2.5 calibration) | $0.50 | $0.62 | $2.97 | $2.31 | $3.47 | $2.93 |
 | Off-board (Lite: binding posts; Plus/Ultra: remote, FFC cable) | $1.60 | $1.20 | $1.20 | $0.80 | $1.40 | $0.95 |
-| **Per unit** | **$23.38** | **$14.90** | **$43.77** | **$28.99** | **$58.90** | **$39.96** |
-| Unique extended parts / SMT joints / THT joints | 19 / 452 / 10 | | 27 / 695 / 62 | | 30 / 910 / 71 | |
+| **Per unit** | **$23.38** | **$14.90** | **$50.16** | **$34.28** | **$58.90** | **$39.96** |
+| Unique extended parts / SMT joints / THT joints | 19 / 452 / 10 | | 27 / 860 / 64 | | 30 / 910 / 71 | |
 
 **Basic vs extended:** nearly every IC is an **extended** part, $3 per unique
 part per order. That is why the per-unit cost falls so far from ×10 to ×100.
@@ -424,7 +434,7 @@ units the Hive builds for the person need none of it.
     TPA3221 (zone A) with a second TPA3221 footprint (zone B), the optical
     footprint, an FFC connector to a front board, and the knob/IR footprints
     on its front edge.
-  - **Plus vs Ultra:** Plus leaves zone B, optical and the FFC unpopulated.
+  - **Plus vs Ultra:** Plus leaves optical and the FFC unpopulated. It fits zone B, playing R on it and L on zone A.
     Ultra leaves the knob/IR footprints unpopulated, because the front board
     carries them.
   - **Why 4 layers:** for Ethernet RMII, 5 A at 28 V and two class-D stages

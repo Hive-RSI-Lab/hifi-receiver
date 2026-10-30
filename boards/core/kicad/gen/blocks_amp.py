@@ -91,7 +91,10 @@ def zone(z: str, base: int, ultra: bool):
 
 
 zone("A", 200, ultra=False)
-zone("B", 300, ultra=True)
+# Zone B is fitted on Plus too: Plus plays L on zone A and R on zone B, one
+# channel per TPA3220, so each chip carries half the heat (docs/review-2/
+# heatsink-options.md: one pad-down chip can't hold loud music at 4 ohm)
+zone("B", 300, ultra=False)
 
 # ------------------------------------------------------------ B12 UI
 sheet("ui")

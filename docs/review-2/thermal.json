@@ -597,7 +597,7 @@
    "date": "2026-10-29"
   },
   {
-   "fact": "On core (1 oz / 0.5 oz) the TPA3220's RthetaJA is about 26 C/W; in the Plus box as drawn (air ~60 C at 30 C room, hwde check_thermal) the chip holds ~1.9 W at Tj 110 C, so 1/8 power into 4 ohm (3.5 W) needs the C2 governor (8 W out, ~13 W in, 60 s)",
+   "fact": "On core (1 oz / 0.5 oz) the TPA3220's RthetaJA is about 26 C/W; in the Plus box as drawn (air ~65-70 C at 25-30 C room, hwde check_thermal) one chip can't hold loud 4 ohm music (12-15 dB crest at clipping: 117-175 C), so Plus fits both chips, one channel each (1.3 W each, ~100 C), with the C2 governor at 10 W over 60 s",
    "board": "core",
    "refs": [
     "U15",

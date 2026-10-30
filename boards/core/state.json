@@ -4,15 +4,15 @@
  "workspace_schema": 2,
  "workspace": "/work/boards/core",
  "created": "2026-10-28T11:07:23",
- "updated": "2026-10-29T23:53:12",
+ "updated": "2026-10-30T03:40:45",
  "phase": "P9",
  "gates": {
   "erc": {
    "phase": "P4",
    "status": "pass",
-   "attempts": 19,
+   "attempts": 20,
    "last": {
-    "ts": "2026-10-29T23:53:12",
+    "ts": "2026-10-30T03:40:45",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
@@ -204,6 +204,16 @@
     },
     {
      "ts": "2026-10-29T23:53:12",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
+      "pro": "json_canonical:ade210d648016346219e733a80aa291be83b7604227024277df89bb7b23acc28"
+     }
+    },
+    {
+     "ts": "2026-10-30T03:40:45",
      "status": "pass",
      "failing_count": 0,
      "total": 0,
@@ -4934,13 +4944,13 @@
    "path": "kicad/core.kicad_sch",
    "kind": "sch",
    "sha256": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
-   "hashed": "2026-10-29T23:53:12"
+   "hashed": "2026-10-30T03:40:45"
   },
   "pro": {
    "path": "kicad/core.kicad_pro",
    "kind": "pro",
    "sha256": "json_canonical:ade210d648016346219e733a80aa291be83b7604227024277df89bb7b23acc28",
-   "hashed": "2026-10-29T23:53:12"
+   "hashed": "2026-10-30T03:40:45"
   },
   "pcb": {
    "path": "kicad/core.kicad_pcb",
@@ -8302,6 +8312,14 @@
    "gate": "erc",
    "status": "pass",
    "attempt": 19,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-30T03:40:45",
+   "event": "gate",
+   "gate": "erc",
+   "status": "pass",
+   "attempt": 20,
    "failing_count": 0
   }
  ]

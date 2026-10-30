@@ -70,12 +70,55 @@ The first check here said that the pad-down relatives stop at 26 V. That was wro
   - Ultra, with both amps, reaches about 70 C: within 10 K of Tg.
   - If inlet, riser and outlet were each about 1500 mm², the Plus air would drop to about 45-49 C and the chip limit would rise to 2.4-2.8 W. That needs much bigger slots plus a clear riser past the board. It is a job for the enclosure task, and I've told its worker.
 
-**Governor (firmware-requirements C2, now in `hifi_gov`):**
-- **Plus:** the 60 s average speaker power is held to **8 W** of both channels (`thermal_out_w`). That is the chip's 1.9 W in the box as drawn, at 30 C room: about **13 W at the USB-C input** (0.47 A at 28 V).
-- **Ultra:** **12 W** in total with both amps (`thermal_out2_w`), about 1.5 W per chip, about 20 W in.
-- **Once the box gets the bigger vents:** these can rise to 11 W and 18 W.
-- **Unchanged:** the 1 s supply budget (90 % of the contract), the OTW back-off (-3 dB every 2 s) and the FAULT/RESET retry.
-- **Bring-up C3** measures the real board and box, and sets these limits from the measurement.
+### Loud music, not sine: what one chip can't hold, and the split that does
+
+The person asked for "really high output power to be able to drive the speakers really hard". So the size of the job is music at the clip level:
+- **Peaks:** 77 W per channel, 4 ohm.
+- **Average:** 12-15 dB below the peaks (crest factor). That is 2 x 9.7 W at 12 dB and 2 x 4.9 W at 15 dB.
+- **Chip loss:** the same as a sine of that average, since class-D loss follows the rms current.
+  - One chip, both channels: 3.5 W at 12 dB, 2.2 W at 15 dB.
+  - One channel per chip: 2.0 W and 1.3 W, idle included.
+
+hwde check_thermal (branch 261029-050245), enclosure model on, board as drawn:
+- **Box:** 127 x 106 x 40 mm, PETG.
+- **Other heat:** 2.5 W for the rest of core, plus the output filters at that power.
+- **Board:** EP via array into the In1 GND plane and the B.Cu pour. 23.5 C/W is the datasheet figure, 26 C/W the board-derated one.
+
+| Music at clip | Vents | Amps | Room | Box air | Tj 23.5 / 26 C/W |
+|---|---|---|---|---|---|
+| 15 dB crest | as drawn | one chip | 25 / 30 C | 66 / 71 C | 117-128 C |
+| 15 dB crest | as drawn | **two chips, one channel each** | 25 / 30 C | 65 / 70 C | **96-104 C** |
+| 15 dB crest | 1500 mm2 each | one chip | 25 / 30 C | 47 / 52 C | 98-109 C |
+| 15 dB crest | 1500 mm2 each | two chips | 25 / 30 C | 48 / 53 C | 79-87 C |
+| 12 dB crest | as drawn | one chip | 25 / 30 C | 79 / 84 C | 161-175 C |
+| 12 dB crest | as drawn | two chips | 25 / 30 C | 76 / 81 C | 122-132 C |
+| 12 dB crest | 1500 mm2 each | one chip | 25 / 30 C | 53 / 58 C | 135-149 C |
+| 12 dB crest | 1500 mm2 each | **two chips** | 25 / 30 C | 54 / 59 C | **100-110 C** |
+| 12 dB crest | 3000 mm2 each | two chips | 25 / 30 C | 46 / 51 C | 92-102 C |
+
+**What this shows:**
+- **One pad-down chip can't play loud 4 ohm music for long**, whatever the vents.
+- **The box air is half the problem.** Box air comes from the box's walls and its vent path. A heatsink inside the box, or a spreader clamped under the board, still dumps its heat into that air. Only a metal floor open to the room would get heat out another way, and that is a bought part the person fits.
+- **The other half is per-chip loss**, which a second chip halves.
+
+**Taken: Plus fits zone B too and splits the pair.**
+- **Wiring:** L plays on zone A (J6), R on zone B (J11).
+- **Copper:** none changes. Zone B is the Ultra copper already on the board, and the firmware runs both amps (`HIFI_SPLIT`).
+- **Cost:** about $5.40 per Plus board, a second TPA3220 plus zone B's filter and bulk parts. Plus goes from $29.9 to $35.4 (board, at 100), over its $32.25 tier budget.
+- **What it holds:** 15 dB-crest music at clipping in the box as drawn, and 12 dB-crest music (2 x 9.7 W average, 77 W peaks) once the box has ~1500 mm2 of inlet, riser and outlet.
+- **No hand step:** the enclosure's binding posts are wired to the board's terminals today, and R now goes to J11.
+
+**Not taken:**
+- **PBTL**, the two chips paralleled on one channel: it needs output copper paralleled before or after the filter, so it is a re-layout.
+- **A different amp:** TPA3250/3244 are pad-down too, at the same thermal story and $4.4-4.9 with 23-99 in stock.
+- **A floor spreader**, for the box-air reason above.
+
+**Governor (firmware-requirements C2, `hifi_gov`, 60 s average of speaker power):**
+- **Plus:** 10 W across both channels in the box as drawn, which holds Tj near 104 C at 30 C room. It is 19 W with the vents.
+- **Ultra:** 8 W with one zone, 12 W with both, two channels per chip.
+- **Peaks** are untouched: the 1 s supply budget and 77 W per channel.
+- **Behind it:** the OTW back-off and the FAULT retry.
+- **Bring-up C3** measures the board and box and sets these from the measurement.
 
 **Levers not taken:**
 - **2 oz outer copper**, which TI recommends: it is about 10-15 % better, but core's fine-pitch routing was drawn to 1 oz rules.

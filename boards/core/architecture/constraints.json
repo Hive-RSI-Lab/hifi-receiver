@@ -196,15 +196,26 @@
    "dt_c": 40
   },
   {
-   "ref": "U15",
-   "power_w": 1.9,
    "net": "GND",
    "tj_max_c": 110,
+   "dt_c": 50,
    "theta_ja_c_w": 23.5,
    "theta_source": "TI SLASEN3B 7.4: TPA3220 DDW on a JEDEC 2s2p board, thermal pad soldered. Core's 1 oz / 0.5 oz board is ~10 % worse (26 C/W; task 261029-075354)",
-   "power_max_w": 19.0,
-   "governor": "firmware hifi_gov thermal_out_w: 8 W of speaker power over 60 s with one amp (about 13 W at the USB-C input), 12 W with both of Ultra's (firmware-requirements C2). power_w is that governed chip loss in the Plus box as drawn at 30 C room; power_max_w the supply-limited sine (140 W in, ~113 W out)",
-   "dt_c": 50
+   "power_w": 1.3,
+   "power_max_w": 10.0,
+   "governor": "firmware hifi_gov thermal_out_w 10 W over 60 s on Plus (HIFI_SPLIT: one channel per chip, ~1.3 W each), 8 W / 12 W on Ultra (firmware-requirements C2); power_max_w is one channel's share of the supply-limited sine (140 W in)",
+   "ref": "U15"
+  },
+  {
+   "net": "GND",
+   "tj_max_c": 110,
+   "dt_c": 50,
+   "theta_ja_c_w": 23.5,
+   "theta_source": "TI SLASEN3B 7.4: TPA3220 DDW on a JEDEC 2s2p board, thermal pad soldered. Core's 1 oz / 0.5 oz board is ~10 % worse (26 C/W; task 261029-075354)",
+   "power_w": 1.3,
+   "power_max_w": 10.0,
+   "governor": "firmware hifi_gov thermal_out_w 10 W over 60 s on Plus (HIFI_SPLIT: one channel per chip, ~1.3 W each), 8 W / 12 W on Ultra (firmware-requirements C2); power_max_w is one channel's share of the supply-limited sine (140 W in)",
+   "ref": "U16"
   }
  ],
  "placement": {
@@ -494,13 +505,13 @@
   "wall_mm": 2.4,
   "material": "PETG",
   "room_c": 30,
-  "other_w": 2.5,
-  "inlet_mm2": 128,
+  "other_w": 3.5,
+  "inlet_mm2": 256,
   "riser_mm2": 300,
-  "outlet_mm2": 160,
+  "outlet_mm2": 320,
   "stack_mm": 40,
   "floor": "feet",
-  "note": "Plus box (enclosure/core_box.py via hive-mech): 4 floor slots 2 x 16 mm under U15, 5 lid slots over it, the board's 0.6-2 mm edge gaps as the riser. other_w: the rest of core (~2 W) + output filter and bulk-cap losses at the governed level (~1 W)"
+  "note": "Plus box (enclosure/core_box.py via hive-mech) with U16 fitted: floor slots under U15 and U16 (2 x 4 x 2 x 16 mm), lid slots over them (2 x 5), the board's 0.6-2 mm edge gaps as the riser. other_w: the rest of core (~2.5 W) plus the output filters and bulk caps at the governed level (~1 W)"
  },
  "ripple": [
   {
