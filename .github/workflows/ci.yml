@@ -50,10 +50,17 @@ jobs:
           path: ${{ runner.temp }}/tools/kicad-${{ env.KICAD_VERSION }}
           key: kicad-${{ env.KICAD_APPIMAGE }}
       - name: KiCad ${{ env.KICAD_VERSION }} as an AppDir
-        if: steps.kicad.outputs.cache-hit != 'true'
+        # Not keyed on cache-hit alone: a hit that restored no AppRun (an empty or
+        # partial cache entry) left hwde with no kicad-cli on PR #76's runs.
         shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/tools" && cd "$RUNNER_TEMP/tools"
+          if [ -x "kicad-$KICAD_VERSION/AppRun" ]; then
+            echo "KiCad $KICAD_VERSION AppDir restored (cache hit: ${{ steps.kicad.outputs.cache-hit }})"
+            exit 0
+          fi
+          echo "no kicad-$KICAD_VERSION/AppRun (cache hit: ${{ steps.kicad.outputs.cache-hit }}): extracting"
+          rm -rf "kicad-$KICAD_VERSION"
           curl -fsSL -o kicad.AppImage "$KICAD_APPIMAGE"
           chmod +x kicad.AppImage
           ./kicad.AppImage --appimage-extract >/dev/null
@@ -63,6 +70,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
+          echo "KiCad for hwde: $(ls -d "$HIVE_TOOLS"/kicad-10.* 2>/dev/null || echo none in "$HIVE_TOOLS")"
           python3 tools/hwcheck.py test 2>&1 | tee "$RUNNER_TEMP/test.log"
         env:
           HIVE_TOOLS: ${{ runner.temp }}/tools
