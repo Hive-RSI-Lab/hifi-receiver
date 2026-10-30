@@ -190,7 +190,7 @@ All gates last passed on hive-hwde c23e27e (2026-10-29), after the review-2 ECO.
 
 ## Cost
 
-**$13.16 per board at 100**: parts $10.48, JLC assembly $2.06, PCB $0.62.
+**$13.17 per board at 100**: parts $10.49, JLC assembly $2.06, PCB $0.62.
 This is the project score, `python3 tools/hwcheck.py score`, priced from the
 real `fab/BOM.csv`, the board's pad counts and its outline.
 
