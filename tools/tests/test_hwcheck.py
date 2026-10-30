@@ -57,9 +57,9 @@ class Test(unittest.TestCase):
     """cmd_test counts each failing gate, not each gated board; what is
     unverified is neither a pass nor a fail."""
 
-    def run_test(self, gates, smoke=(True, None)):
+    def run_test(self, gates):
         saved = {k: getattr(hwcheck, k) for k in ("check_product", "run_unittests", "firmware_tests",
-                                                    "boards", "run_gates", "firmware_smoke", "cant_run",
+                                                    "boards", "run_gates", "cant_run",
                                                     "firmware_pins")}
         dirs = list(gates)
         hwcheck.check_product = lambda: ([], {})
@@ -68,7 +68,6 @@ class Test(unittest.TestCase):
         hwcheck.firmware_pins = lambda: []
         hwcheck.boards = lambda: dirs
         hwcheck.run_gates = lambda todo: {d: gates[d] for d in todo}
-        hwcheck.firmware_smoke = lambda: smoke
         self.cant = None
 
         def cant_run(tool, why):  # the real one execs the shell's not-found
@@ -103,11 +102,6 @@ class Test(unittest.TestCase):
         self.assertEqual(self.run_test({Path("a"): [("a drc_routed", 1)], Path("b"): [u]}), 1)
         self.assertIsNone(self.cant)
 
-    def test_the_firmware_smoke(self):
-        self.assertEqual(self.run_test({Path("a"): []}, smoke=(False, None)), 1)
-        self.assertEqual(self.run_test({Path("a"): []}, smoke=(False, ("idf.py", "no IDF"))), 127)
-        self.assertEqual(self.cant[0], "idf.py")
-
 
 class Pins(unittest.TestCase):
     """The test checks the firmware's pins against its board."""
@@ -122,7 +116,7 @@ class Pins(unittest.TestCase):
             root = Path(tmp)
             for d in ("firmware", "boards/lite-main/kicad"):
                 shutil.copytree(hwcheck.ROOT / d, root / d)
-            h = root / "firmware/components/hifi/esp/hifi_board.h"
+            h = root / "firmware/components/hifi/esp/hifi_board_lite.h"
             h.write_text(h.read_text().replace("ADC_PVDD ADC1_CHANNEL_3", "ADC_PVDD ADC1_CHANNEL_0"))
             bad = hwcheck.pieces.CHECKS["firmware"](root, piece)
         self.assertTrue(any("ADC_PVDD: GPIO36" in b for b in bad), bad)

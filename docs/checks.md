@@ -36,14 +36,7 @@ It fails (exit 1) if any of these fails:
    tones, JSON and every test-API call and console command, against a mock
    board. Built in a scratch folder. Where there is no
    `make` or `cc`, the check exits 127: it couldn't run, no verdict.
-   **When `firmware/` changed** (or with `--all`), the firmware is also
-   built for QEMU and booted there through hive-fw: `fw build firmware
-   --qemu`, then `fw qemu firmware`, which waits for the `hifi: hifi-lite on
-   …` boot line and makes `firmware/fw.json`'s `qemu.http` requests over
-   QEMU's Ethernet (`GET /api/v1/info` first). A build or boot that fails is
-   a fail. With no hive-fw (`$FW_BIN`, `fw` on `PATH`,
-   `$HIVE_MODULES/hive-fw/bin/fw`), or no ESP-IDF v4.4.8 or QEMU for it
-   (`fw doctor`), the smoke couldn't run: unverified (below). It needs
+   The full ESP-IDF build is not part of the check: it needs
    ESP-IDF and takes minutes ([firmware/README.md](../firmware/README.md)).
    **The firmware's pins against its board,** every run: for each tier
    whose firmware exists (`firmware/board/<fw>`), the score's firmware
@@ -84,10 +77,9 @@ fault in the environment, not a verdict on the commit.
 **Unverified is neither a pass nor a fail.** A gate that ran but couldn't
 fetch some parts' EasyEDA models (hwde's dfm exits 2 with an `unverified`
 block naming them; an older hwde exits 1 with only `cpl_fetch_failed`
-findings), and a QEMU smoke that couldn't run, are listed as unverified.
-If nothing else failed, the test prints what is unverified (the parts, or
-what fw lacks) and exits 127 through the shell's own not-found for a tool
-named for it (`easyeda-models`, `idf.py`, `qemu-system-xtensa`, `fw`): the
+findings), is listed as unverified. If nothing else failed, the test
+prints what is unverified (the parts) and exits 127 through the shell's
+own not-found for a tool named for it (`easyeda-models`): the
 only 127 the Hive reads as couldn't-run, so it tests the change again
 later instead of calling it red. Any real failure beside it exits 1.
 

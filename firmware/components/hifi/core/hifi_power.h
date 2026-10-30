@@ -90,6 +90,7 @@ typedef struct {
 
 /* lite-main: 14-25 V to start, 13-25 V to run, PVDD confirmed on GPIO39 */
 void hifi_power_cfg_lite(hifi_power_cfg_t *cfg);
+void hifi_power_cfg_core(hifi_power_cfg_t *cfg);
 void hifi_power_init(hifi_power_t *p, const hifi_power_cfg_t *cfg, uint32_t now_ms);
 const hifi_power_out_t *hifi_power_step(hifi_power_t *p, const hifi_power_in_t *in);
 void hifi_power_amp_enable(hifi_power_t *p, bool enable);

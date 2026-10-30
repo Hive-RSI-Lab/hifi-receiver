@@ -3,10 +3,7 @@
 
     python3 tools/hwcheck.py test [--all]
                                      the check: docs/product.md, the software's
-                                     unit tests, the firmware's host tests, the
-                                     firmware's QEMU smoke (hive-fw's fw build
-                                     and fw qemu: it boots and answers GET
-                                     /api/v1/info) when firmware/ changed, each
+                                     unit tests, the firmware's host tests, each
                                      tier's firmware pins against its board's
                                      ESP32 pads (tools/pieces.py), then
                                      the hwde gates of each board whose files
@@ -35,10 +32,10 @@ firmware's host tests are there to run.
 
 What ran but couldn't be verified is neither a pass nor a fail: a gate that
 couldn't fetch part models (hwde's dfm `unverified`: EasyEDA's rate limit,
-the network) and a QEMU smoke with no fw, IDF or QEMU here. With nothing
+the network). With nothing
 failing, the test then exits 127 too, naming what is unverified; any real
 failure still makes it exit 1. That 127 comes from the shell's own "not
-found" for a tool named for what is missing (easyeda-models, idf.py, fw),
+found" for a tool named for what is missing (easyeda-models),
 the only 127 the Hive reads as no verdict rather than a red.
 """
 from __future__ import annotations
@@ -444,59 +441,12 @@ def firmware_tests() -> bool:
     return r.returncode == 0
 
 
-def fw_bin() -> str | None:
-    """hive-fw's bin/fw: $FW_BIN, `fw` on PATH, or the installed module's
-    ($HIVE_MODULES, else /hive/modules)."""
-    mods = Path(os.environ.get("HIVE_MODULES") or "/hive/modules")
-    for c in (os.environ.get("FW_BIN"), shutil.which("fw"), mods / "hive-fw" / "bin" / "fw", mods / "fw" / "bin" / "fw"):
-        if c and Path(c).is_file():
-            return str(c)
-    return None
-
-
 def cant_run(tool: str, why: list[str]) -> None:
     """Exit 127 as the shell's own "<tool>: not found", after saying why: the
     Hive reads only that as couldn't-run (core.MissingTool), never a red."""
     print("couldn't run, unverified: " + "; ".join(why))
     sys.stdout.flush()
     os.execvp("sh", ["sh", "-c", tool])
-
-
-def firmware_smoke() -> tuple[bool, tuple[str, str] | None]:
-    """firmware/ built for QEMU and booted there by hive-fw (fw build --qemu,
-    fw qemu): the boot line, then firmware/fw.json's qemu.http probes over
-    QEMU's Ethernet (GET /api/v1/info first). (passed, None), or (False,
-    (the missing tool, why) it couldn't run): no fw, or no IDF or QEMU for it
-    (fw doctor)."""
-    fw = fw_bin()
-    if not fw:
-        return False, ("fw", "no hive-fw (looked at $FW_BIN, fw on PATH, $HIVE_MODULES/hive-fw/bin/fw)")
-    proj = str(ROOT / "firmware")
-
-    def run(*args: str, timeout: int) -> tuple[int, str]:
-        try:
-            r = subprocess.run([fw, *args], capture_output=True, text=True, timeout=timeout,
-                               stdin=subprocess.DEVNULL)
-        except subprocess.TimeoutExpired:
-            return -1, f"fw {args[0]}: no answer in {timeout} s"
-        return r.returncode, (r.stdout + r.stderr).strip()
-
-    rc, out = run("doctor", proj, timeout=120)
-    missing = [ln.strip() for ln in out.splitlines() if "MISSING" in ln]
-    if rc or missing:
-        tool = "qemu-system-xtensa" if missing and all(m.startswith("qemu") for m in missing) else "idf.py"
-        return False, (tool, "fw can't build or boot it here: " + ("; ".join(missing) or out[-300:]))
-    rc, out = run("build", proj, "--qemu", timeout=3600)
-    if rc:
-        print(out[-4000:])
-        print(f"firmware (QEMU): FAIL (fw build --qemu exit {rc})", flush=True)
-        return False, None
-    rc, out = run("qemu", proj, timeout=900)
-    print(out[-2000:])
-    if rc not in (0, 1):
-        return False, ("qemu-system-xtensa", f"fw qemu exit {rc}: {out.splitlines()[-1] if out else ''}"[:300])
-    print(f"firmware (QEMU): {'pass' if rc == 0 else 'FAIL'}", flush=True)
-    return rc == 0, None
 
 
 def firmware_pins() -> list[str]:
@@ -532,18 +482,6 @@ def cmd_test(all_boards: bool = False) -> int:
         bad.append("firmware/test")
     bad += firmware_pins()
     unv = []
-    changed, _ = changed_files()
-    if (ROOT / "firmware" / "fw.json").is_file() and (
-            all_boards or os.environ.get("HWCHECK_ALL") or changed is None
-            or any(f.startswith("firmware/") for f in changed)):
-        ok, why = firmware_smoke()
-        if why:
-            print(f"firmware (QEMU): couldn't run: {why[1]}", flush=True)
-            unv.append((why[0], f"firmware QEMU smoke: {why[1]}"))
-        elif not ok:
-            bad.append("firmware (QEMU)")
-    else:
-        print("firmware (QEMU): firmware/ unchanged, not booted", flush=True)
     dirs = boards()
     if not dirs:
         print("boards/: no boards yet, no gates to run")

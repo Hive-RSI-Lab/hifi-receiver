@@ -20,14 +20,7 @@ void hifi_ota_abort(hifi_ota_t *o) {
 	o->active = false;
 }
 
-int hifi_ota_begin(hifi_ota_t *o, size_t size, const char *sha_hex, const char *version, const char **err) {
-	uint8_t sha[32];
-	if (!sha_hex || strlen(sha_hex) != 64) return *err = "sha256 must be 64 hex digits", 400;
-	for (int i = 0; i < 32; i++) {
-		int hi = hexval(sha_hex[2 * i]), lo = hexval(sha_hex[2 * i + 1]);
-		if (hi < 0 || lo < 0) return *err = "sha256 must be 64 hex digits", 400;
-		sha[i] = (uint8_t) (hi << 4 | lo);
-	}
+static int begin(hifi_ota_t *o, size_t size, const uint8_t *sha, const char *version, const char **err) {
 	if (size < 1024) return *err = "size is too small for an app image", 400;
 	if (o->io->slot_size && size > o->io->slot_size) return *err = "image is larger than the app slot", 400;
 	hifi_ota_abort(o);
@@ -38,10 +31,26 @@ int hifi_ota_begin(hifi_ota_t *o, size_t size, const char *sha_hex, const char *
 	o->size = size;
 	o->written = 0;
 	o->slot = slot;
-	memcpy(o->sha, sha, 32);
+	o->check_sha = sha != NULL;
+	if (sha) memcpy(o->sha, sha, 32);
 	snprintf(o->version, sizeof(o->version), "%s", version ? version : "");
 	hifi_sha256_init(&o->h);
 	return 200;
+}
+
+int hifi_ota_begin(hifi_ota_t *o, size_t size, const char *sha_hex, const char *version, const char **err) {
+	uint8_t sha[32];
+	if (!sha_hex || strlen(sha_hex) != 64) return *err = "sha256 must be 64 hex digits", 400;
+	for (int i = 0; i < 32; i++) {
+		int hi = hexval(sha_hex[2 * i]), lo = hexval(sha_hex[2 * i + 1]);
+		if (hi < 0 || lo < 0) return *err = "sha256 must be 64 hex digits", 400;
+		sha[i] = (uint8_t) (hi << 4 | lo);
+	}
+	return begin(o, size, sha, version, err);
+}
+
+int hifi_ota_begin_local(hifi_ota_t *o, size_t size, const char *version, const char **err) {
+	return begin(o, size, NULL, version, err);
 }
 
 int hifi_ota_chunk(hifi_ota_t *o, size_t off, const uint8_t *d, size_t n, const char **err) {
@@ -67,7 +76,7 @@ int hifi_ota_finish(hifi_ota_t *o, const char **err) {
 	if (o->written != o->size) return *err = "image incomplete", 409;
 	uint8_t got[32];
 	hifi_sha256_final(&o->h, got);
-	if (memcmp(got, o->sha, 32)) {
+	if (o->check_sha && memcmp(got, o->sha, 32)) {
 		hifi_ota_abort(o);
 		return *err = "sha256 mismatch", 400;
 	}
