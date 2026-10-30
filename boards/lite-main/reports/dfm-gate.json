@@ -4,7 +4,7 @@
   "phase": "P9",
   "tool": "dfm",
   "input": "kicad/lite-main.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:5419edc852a8e932dd3ed2f0db6dbace1740e92fc2934672027706135a87b8d2",
+  "input_digest": "sexpr_no_uuid:e362082dd886d388d2517915524eb8edd27570afc561f8ad59f62abd793c3e9f",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -97,6 +97,7 @@
     "required": [
       "copper",
       "copper_to_edge",
+      "zone_fill",
       "drill",
       "hole_to_edge",
       "silk",
@@ -110,6 +111,7 @@
     "ran": [
       "copper",
       "copper_to_edge",
+      "zone_fill",
       "drill",
       "hole_to_edge",
       "silk",
@@ -122,6 +124,7 @@
     "passed": [
       "copper",
       "copper_to_edge",
+      "zone_fill",
       "drill",
       "hole_to_edge",
       "silk",
@@ -144,10 +147,10 @@
     "workspace": ".",
     "gate": "dfm",
     "status": "pass",
-    "attempts": 6,
+    "attempts": 7,
     "inputs": {
-      "pcb": "sexpr_no_uuid:5419edc852a8e932dd3ed2f0db6dbace1740e92fc2934672027706135a87b8d2",
-      "sch": "sexpr_no_uuid:86c108d8ce337a9586b0da24a0b9038038ab75136dcd0661e2bfdaf1a16fe5e3",
+      "pcb": "sexpr_no_uuid:e362082dd886d388d2517915524eb8edd27570afc561f8ad59f62abd793c3e9f",
+      "sch": "sexpr_no_uuid:c71ef75501c52f58bd0870cc61131c8ac8b691f21243facb1eee816f0baa4614",
       "parts": null
     }
   }

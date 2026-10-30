@@ -50,7 +50,8 @@ ES8388,U7,1,QFN-28_L4.0-W4.0-P0.45-BL-EP,ES8388,C365736,smt_placed,
 TPA3118D2,U8,1,HTSSOP-32_L11.0-W6.1-P0.65-LS8.1-BL-EP,TPA3118D2DAPR,C46497,smt_placed,
 RCA line in,J2,1,CONN-TH_XDJK-0271-1650,XDJK-0271-1650,C7527522,tht,Through-hole - JLC THT assembly (or hand-solder after reflow); not on the SMT line.
 RCA sub out,J3,1,CONN-TH_XDJK-0271-1650,XDJK-0271-1650,C7527522,tht,Through-hole - JLC THT assembly (or hand-solder after reflow); not on the SMT line.
-DB128V-5.08-4P,J4,1,CONN-TH_4P-P5.08_DIBO_DB128V-5.08,DB128V-5.08-4P-GN-S,C2915641,tht,Through-hole - JLC THT assembly (or hand-solder after reflow); not on the SMT line.
+24.243 red,"J4,J6",2,CONN-TH_24.243.1_RED,24.243.1,C7437321,tht,Through-hole - JLC THT assembly (or hand-solder after reflow); not on the SMT line.
+24.243 black,"J5,J7",2,CONN-TH_24.243.2,24.243.2,C7437322,tht,Through-hole - JLC THT assembly (or hand-solder after reflow); not on the SMT line.
 10uH 8A,"L1,L2,L3,L4",4,IND-SMD_L8.0-W8.0_XR0850,XR0850-100M,C48391614,tht,Through-hole - JLC THT assembly (or hand-solder after reflow); not on the SMT line.
 IRM-3638T,U9,1,OPTO-TH_IRM-3638T,IRM-3638T,C42421366,tht,Through-hole - JLC THT assembly (or hand-solder after reflow); not on the SMT line.
 ,"H1,H2,H3,H4",4,,,,board_feature,Realised in copper - nothing to buy or place.

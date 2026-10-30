@@ -1,79 +1,17 @@
 {
  "script": "silk_place",
- "status": "violations",
+ "status": "pass",
  "board": "lite-main.kicad_pcb",
  "counts": {
-  "total": 1,
-  "by_severity": {
-   "warning": 1
-  },
-  "by_source": {
-   "silk_place": 1
-  }
+  "total": 0,
+  "by_severity": {},
+  "by_source": {}
  },
- "violations": [
-  {
-   "check": "silk_place",
-   "severity": "warning",
-   "pos": null,
-   "layer": null,
-   "net": null,
-   "refs": [
-    "R7"
-   ],
-   "msg": "R7: unplaceable - none of 1 collision-free spots passes check_silk; the closest is 3.06 mm beyond its own pads and 0.00 mm from C3 (silk_misattributed); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
-   "source": "silk_place",
-   "items": [
-    {
-     "msg": "R7: unplaceable - none of 1 collision-free spots passes check_silk; the closest is 3.06 mm beyond its own pads and 0.00 mm from C3 (silk_misattributed); label left where it is. Fix: hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
-     "pos": null
-    }
-   ],
-   "kind": "silk_residual",
-   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
-   "fix_ops": {
-    "shrink": {
-     "op": "set_text",
-     "ref": "R7",
-     "field": "reference",
-     "size": 0.8
-    },
-    "hide": {
-     "op": "set_text",
-     "ref": "R7",
-     "field": "reference",
-     "hide": true
-    }
-   }
-  }
- ],
- "targets": 141,
- "moved": 44,
- "residual": [
-  {
-   "ref": "R7",
-   "reason": "none of 1 collision-free spots passes check_silk; the closest is 3.06 mm beyond its own pads and 0.00 mm from C3 (silk_misattributed)",
-   "unplaceable": true,
-   "suggest": "hide this reference on silk and keep it on the fab layer for assembly, or shrink the refdes text to 0.8 mm (check_silk's legibility floor) and re-run - fix_ops holds both as place_edit set_text ops",
-   "fix_ops": {
-    "shrink": {
-     "op": "set_text",
-     "ref": "R7",
-     "field": "reference",
-     "size": 0.8
-    },
-    "hide": {
-     "op": "set_text",
-     "ref": "R7",
-     "field": "reference",
-     "hide": true
-    }
-   }
-  }
- ],
- "unplaceable": [
-  "R7"
- ],
+ "violations": [],
+ "targets": 143,
+ "moved": 19,
+ "residual": [],
+ "unplaceable": [],
  "skipped": [
   {
    "ref": "C38",
@@ -104,6 +42,10 @@
    "reason": "hidden"
   },
   {
+   "ref": "R7",
+   "reason": "hidden"
+  },
+  {
    "ref": "U2",
    "reason": "hidden"
   }
@@ -121,7 +63,7 @@
   },
   {
    "ref": "J3",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 1.2
   },
@@ -133,14 +75,14 @@
   },
   {
    "ref": "U1",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
   },
   {
    "ref": "C3",
    "moved": true,
-   "clearance_mm": 0.255,
+   "clearance_mm": 0.262,
    "beyond_extent_mm": 0.35
   },
   {
@@ -150,6 +92,12 @@
    "beyond_extent_mm": 1.375
   },
   {
+   "ref": "J4",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 5.775
+  },
+  {
    "ref": "U7",
    "moved": false,
    "clearance_mm": 0.3,
@@ -157,45 +105,39 @@
   },
   {
    "ref": "C44",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "C68",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
-  },
-  {
    "ref": "C81",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.237,
    "beyond_extent_mm": 0.355
   },
   {
    "ref": "C82",
    "moved": true,
-   "clearance_mm": 0.113,
+   "clearance_mm": 0.26,
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "Q4",
+   "ref": "L3",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 2.125
+  },
+  {
+   "ref": "L5",
    "moved": true,
-   "clearance_mm": 0.025,
-   "beyond_extent_mm": 1.7941
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 1.09
   },
   {
    "ref": "R3",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "C19",
    "moved": true,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.605
+   "beyond_extent_mm": 0.355
   },
   {
    "ref": "C45",
@@ -204,20 +146,26 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "D1",
+   "ref": "L1",
    "moved": false,
-   "clearance_mm": 0.185,
-   "beyond_extent_mm": 1.1333
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 2.125
   },
   {
-   "ref": "L5",
+   "ref": "L2",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 2.125
+  },
+  {
+   "ref": "Q4",
    "moved": true,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 1.1766
+   "beyond_extent_mm": 0.35
   },
   {
    "ref": "R33",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
@@ -229,15 +177,21 @@
   },
   {
    "ref": "R38",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
    "ref": "R67",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.605
+  },
+  {
+   "ref": "C19",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
   },
   {
    "ref": "C37",
@@ -252,16 +206,10 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "L2",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 2.125
-  },
-  {
-   "ref": "L3",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 2.125
+   "ref": "D1",
+   "moved": false,
+   "clearance_mm": 0.185,
+   "beyond_extent_mm": 1.1333
   },
   {
    "ref": "L6",
@@ -277,19 +225,19 @@
   },
   {
    "ref": "R39",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.605
   },
   {
    "ref": "R66",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
    "ref": "R9",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.248,
    "beyond_extent_mm": 0.355
   },
@@ -301,13 +249,13 @@
   },
   {
    "ref": "C39",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.26,
    "beyond_extent_mm": 0.355
   },
   {
    "ref": "C5",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
@@ -319,43 +267,43 @@
   },
   {
    "ref": "C61",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "C84",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.605
-  },
-  {
-   "ref": "J2",
+   "ref": "C70",
    "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
   },
   {
-   "ref": "L1",
-   "moved": true,
+   "ref": "C8",
+   "moved": false,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 2.125
+   "beyond_extent_mm": 0.35
+  },
+  {
+   "ref": "C84",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.605
+  },
+  {
+   "ref": "J2",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.35
   },
   {
    "ref": "R50",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "C2",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
    "ref": "C26",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 1.105
   },
@@ -373,33 +321,45 @@
   },
   {
    "ref": "C41",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "C8",
+   "ref": "C68",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
   },
   {
-   "ref": "C83",
+   "ref": "C69",
    "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.35
+  },
+  {
+   "ref": "C83",
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.605
   },
   {
    "ref": "C9",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 1.6084
   },
   {
    "ref": "J1",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.37
+  },
+  {
+   "ref": "J5",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 5.775
   },
   {
    "ref": "R10",
@@ -417,6 +377,12 @@
    "ref": "R31",
    "moved": false,
    "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "R5",
+   "moved": true,
+   "clearance_mm": 0.037,
    "beyond_extent_mm": 0.355
   },
   {
@@ -439,7 +405,7 @@
   },
   {
    "ref": "R69",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.605
   },
@@ -456,6 +422,12 @@
    "beyond_extent_mm": 0.355
   },
   {
+   "ref": "C2",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
    "ref": "C33",
    "moved": false,
    "clearance_mm": 0.3,
@@ -463,7 +435,7 @@
   },
   {
    "ref": "C42",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
@@ -481,8 +453,8 @@
   },
   {
    "ref": "C53",
-   "moved": true,
-   "clearance_mm": 0.24,
+   "moved": false,
+   "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
@@ -493,15 +465,15 @@
   },
   {
    "ref": "C64",
-   "moved": false,
+   "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "C69",
-   "moved": false,
+   "ref": "C67",
+   "moved": true,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
+   "beyond_extent_mm": 0.3992
   },
   {
    "ref": "C7",
@@ -510,10 +482,10 @@
    "beyond_extent_mm": 0.35
   },
   {
-   "ref": "C70",
-   "moved": true,
+   "ref": "L4",
+   "moved": false,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
+   "beyond_extent_mm": 2.125
   },
   {
    "ref": "R11",
@@ -523,7 +495,7 @@
   },
   {
    "ref": "R36",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
@@ -534,14 +506,14 @@
    "beyond_extent_mm": 0.605
   },
   {
-   "ref": "R5",
-   "moved": false,
+   "ref": "R6",
+   "moved": true,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 2.855
+   "beyond_extent_mm": 0.355
   },
   {
-   "ref": "R6",
-   "moved": false,
+   "ref": "R68",
+   "moved": true,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.605
   },
@@ -565,7 +537,13 @@
   },
   {
    "ref": "C12",
-   "moved": true,
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.35
+  },
+  {
+   "ref": "C25",
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
   },
@@ -589,19 +567,19 @@
   },
   {
    "ref": "C52",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
   },
   {
    "ref": "C54",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
   {
    "ref": "C56",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
@@ -625,9 +603,9 @@
   },
   {
    "ref": "C65",
-   "moved": false,
+   "moved": true,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
+   "beyond_extent_mm": 0.605
   },
   {
    "ref": "C66",
@@ -636,16 +614,10 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "C67",
-   "moved": false,
+   "ref": "C71",
+   "moved": true,
    "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "C80",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
+   "beyond_extent_mm": 0.35
   },
   {
    "ref": "Q1",
@@ -667,7 +639,7 @@
   },
   {
    "ref": "R14",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
   },
@@ -732,20 +704,14 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "C25",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
-  },
-  {
    "ref": "C51",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
   },
   {
    "ref": "C55",
-   "moved": true,
+   "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
   },
@@ -754,6 +720,18 @@
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "C80",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "J6",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 5.775
   },
   {
    "ref": "R13",
@@ -798,22 +776,10 @@
    "beyond_extent_mm": 0.355
   },
   {
-   "ref": "R68",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
    "ref": "U6",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.35
-  },
-  {
-   "ref": "U9",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.36
   },
   {
    "ref": "C14",
@@ -832,24 +798,6 @@
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "C71",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.35
-  },
-  {
-   "ref": "J4",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.5324
-  },
-  {
-   "ref": "L4",
-   "moved": true,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 2.125
   },
   {
    "ref": "Q3",
@@ -882,6 +830,12 @@
    "beyond_extent_mm": 0.3742
   },
   {
+   "ref": "U9",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.36
+  },
+  {
    "ref": "C30",
    "moved": false,
    "clearance_mm": 0.3,
@@ -894,6 +848,12 @@
    "beyond_extent_mm": 0.355
   },
   {
+   "ref": "J7",
+   "moved": true,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 5.775
+  },
+  {
    "ref": "R21",
    "moved": false,
    "clearance_mm": 0.3,
@@ -901,12 +861,6 @@
   },
   {
    "ref": "R62",
-   "moved": false,
-   "clearance_mm": 0.3,
-   "beyond_extent_mm": 0.355
-  },
-  {
-   "ref": "R65",
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
@@ -952,12 +906,18 @@
    "moved": false,
    "clearance_mm": 0.3,
    "beyond_extent_mm": 0.355
+  },
+  {
+   "ref": "R65",
+   "moved": false,
+   "clearance_mm": 0.3,
+   "beyond_extent_mm": 0.355
   }
  ],
  "applied": true,
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-29T05:30:50+00:00",
+ "generated_at": "2026-10-30T20:46:15+00:00",
  "input": "kicad/lite-main.kicad_pcb",
- "input_digest": "sexpr_no_uuid:96781528f98aaebf6d68d06910927755e35ee04d045a7d74ea2b326e6341b304"
+ "input_digest": "sexpr_no_uuid:a9afd935a4e8f6e2a076c320022757beb357387d1c210c165bec39bdd05056d7"
 }
