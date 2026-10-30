@@ -235,8 +235,9 @@ same interface as Lite's (`esp/hifi_bsp.h`); the pins are in
   bits 7:6), since squeezelite's 16-bit build clocks 16-bit words and the
   Sabre resets expecting 32.
 - **Power:** the same sequencer with core's numbers (`hifi_power_cfg_core`):
-  start at 14 V, run 13–30 V (the TPA3221's range), 100 ms soft start
-  (PVDD ramps in about 15 ms). The board has no VBUS divider, so VBUS is
+  start at 14 V, run 13–30 V (inside the TPA3220's 7–32 V), 100 ms soft start
+  (PVDD ramps 10–90 % in about 47 ms). At 14 V, Q1's gate sees VBUS/2 = 7 V,
+  so core doesn't need Lite's 15 V contract floor for its switch to turn on. The board has no VBUS divider, so VBUS is
   taken from the contract: 28 V in EPR, 20 V in another PD contract, 5 V
   without one. A charger whose highest voltage is under 20 V would read as
   20 V here; bring-up should check what the CH224Q does then.
@@ -245,6 +246,13 @@ same interface as Lite's (`esp/hifi_bsp.h`); the pins are in
   reset in the same write, so turning zone B on or off puts both in reset
   for one 10 ms step. The governor counts twice the amps while zone B
   plays.
+- **Amp heat** (`thermal_out_w`, `thermal_out2_w`): the TPA3220s have no
+  heatsink and cool into the board and the vented box. Plus runs both
+  (`HIFI_SPLIT`: L on zone A, R on zone B, one channel per chip), and its
+  governor holds the 60 s average speaker power to 19 W, 9.6 W per channel
+  into 4 ohm. Ultra holds 9 W with one zone and 17 W with both. Peaks
+  still reach 77 W per channel. The OTW back-off and FAULT retry in
+  `docs/review-2/firmware-requirements.md` C2 sit behind it.
 - **Knob and buttons** (`core/hifi_exp.c`, host-tested): the knob is the
   volume, 2 a click; while a source streams, each click goes to it as the
   buttons do on Lite. Knob push: play/pause (hold: power). Button 1: source

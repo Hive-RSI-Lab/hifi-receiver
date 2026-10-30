@@ -917,6 +917,42 @@
    "source": "far-end board not in repo",
    "could_stop_board": true,
    "date": "2026-10-28"
+  },
+  {
+   "fact": "Correction: a pad-down TPA3221 exists at 28 V. heatsink-options.md's first pass said the pad-down relatives stop at 26 V (TPA3116/3118). TI's TPA3220 is the TPA3221 with its pad on the bottom, rated 7-32 V (37 V abs), 89 W into 4 ohm at 1 %",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "verified",
+   "source": "TI SLASEN3B rev B (Aug 2018) sec 1, 5 (device comparison: TPA3221, top pad, pin-compatible Y), 7.1, 7.3, 7.6",
+   "could_stop_board": false,
+   "date": "2026-10-29"
+  },
+  {
+   "fact": "TPA3220DDW pins 1-44 match the TPA3221DDV's one for one; the bottom PowerPAD is GND (pad 45 on the EP land, DDW0044D 7.3 x 4.43 mm)",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "verified",
+   "source": "TI SLASEN3B pin table p3-4 vs SLASEE9C table 5-1; DDW0044D example board layout p42; EasyEDA C2879306 model EP 4.43 x 7.30",
+   "could_stop_board": true,
+   "date": "2026-10-29"
+  },
+  {
+   "fact": "TPA3220DDWR (C2879306) stock on 2026-10-29: LCSC 0, JLC 0 (free -2); Mouser 595-TPA3220DDWR 6,566 ($3.74 at 100); DigiKey 296-51851-1-ND 2,032. Needs a pre-buy into the JLC inventory (fab/ORDERING.md)",
+   "board": "core",
+   "refs": [
+    "U15",
+    "U16"
+   ],
+   "status": "verified",
+   "source": "JLC selectSmtComponentList and LCSC product detail APIs, Octopart listing, 2026-10-29",
+   "could_stop_board": true,
+   "date": "2026-10-29"
   }
  ],
  "tools_wanted": [

@@ -163,7 +163,7 @@ evaluator file, like `hwcheck.py`.
      Edge.Cuts outline's bounding box past 100 × 100 mm, times its 2.5
      calibration, and spread over 100 boards.
 
-   Off-board items (heatsinks, the remote, the LCD panel, binding posts) and
+   Off-board items (the remote, the LCD panel, binding posts) and
    the charger aren't on a board's BOM, so they aren't in the score.
    `product.md`'s estimate counts them.
 
