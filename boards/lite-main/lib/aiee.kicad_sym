@@ -3042,7 +3042,7 @@
     )
   )
 
-  (symbol "SMBJ20A_C364296"
+  (symbol "SMBJ22A_C151920"
     (in_bom yes)
     (on_board yes)
     (property
@@ -3054,7 +3054,7 @@
     )
     (property
       "Value"
-      "SMBJ20A_C364296"
+      "SMBJ22A_C151920"
       (id 1)
       (at 0 -5.08 0)
       (effects (font (size 1.27 1.27) ) )
@@ -3068,28 +3068,28 @@
     )
     (property
       "Datasheet"
-      "https://lcsc.com/product-detail/Others_MDD-Jiangsu-Yutai-Elec-SMBJ20A_C364296.html"
+      "https://www.lcsc.com/product-detail/esd-and-surge-protection-tvs-esd_born-smbj22a_C151920.html"
       (id 3)
       (at 0 -10.16 0)
       (effects (font (size 1.27 1.27) ) hide)
     )
     (property
       "Manufacturer"
-      "MDD(辰达半导体)"
+      "BORN"
       (id 4)
       (at 0 -12.70 0)
       (effects (font (size 1.27 1.27) ) hide)
     )
     (property
       "MPN"
-      "SMBJ20A"
+      "SMBJ22A"
       (id 5)
       (at 0 -15.24 0)
       (effects (font (size 1.27 1.27) ) hide)
     )
     (property
       "LCSC Part"
-      "C364296"
+      "C151920"
       (id 6)
       (at 0 -17.78 0)
       (effects (font (size 1.27 1.27) ) hide)
@@ -3101,7 +3101,7 @@
       (at 0 -20.32 0)
       (effects (font (size 1.27 1.27) ) hide)
     )
-    (symbol "SMBJ20A_C364296_0_1"
+    (symbol "SMBJ22A_C151920_0_1"
       (polyline
         (pts
           (xy 1.27 1.52) (xy -1.27 -0.00) (xy 1.27 -1.78) (xy 1.27 1.52)
