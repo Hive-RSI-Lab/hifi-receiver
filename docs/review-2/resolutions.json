@@ -92,19 +92,31 @@
   "how": "hwde dfm gate's cpl_verify against each part's LCSC/EasyEDA model passes on both boards after the swaps (2026-10-29): Lite J1 C165948, U6 C81010; core J1 C7095263, U8 C81010, U17 C131972, U18 C42421366, Y1 C7431354."
  },
  "dfm:16": {
-  "status": "open-ultra",
-  "how": "TOSLINK (Ultra only, not fitted on Plus): port direction and NC-row side still to confirm against Everlight's drawing before an Ultra order."
+  "status": "verified",
+  "how": "Everlight PLR237/T8BK DPL-0000263 Rev.1 (2021-03-09) p5, fetched from DigiKey 2026-10-30: the side view puts the 1.70 mm locating posts 5.88 behind the port face, the NC pins 2.61 further back and the signal row 2.525 behind those, and the bottom view (port at the top) reads 3-2-1 left to right. On the board U19 (rot 180) has its posts at y 127.28, NC row 129.89 and signal row 132.51, so the port faces the N (rear) edge at y 120.70 and the NC row is nearer the port than the signal row, as drawn."
  },
  "parts:51": {
-  "status": "open-ultra",
-  "how": "TOSLINK pad 1 vs Everlight pin 1 (Ultra only): confirm before an Ultra order."
+  "status": "verified",
+  "how": "Everlight PLR237/T8BK DPL-0000263 Rev.1 (2021-03-09) p5, fetched from DigiKey 2026-10-30: pin 1 Vout, 2 GND, 3 Vcc; bottom view with the port at the top reads 3-2-1 left to right, so seen from above with the port pointing away pin 1 (Vout) is on the left. On the board (port toward the top of a KiCad top view) the left pad, footprint pad 3 at x 137.45, carries /OPT_SPDIF, and the right pad, footprint pad 1 at x 142.53, carries /linein/OPT_VCC. The EasyEDA T10BK footprint numbers pads opposite to Everlight's T8BK but the copper puts Vout and Vcc under the right leads."
  },
  "parts:52": {
-  "status": "open-ultra",
-  "how": "The T8BK's post holes are now in the footprint; its 0.80 mm pins sit in 0.914 mm holes. Confirm the front offset (5.88 vs 6.14 mm) with the Ultra enclosure before an Ultra order."
+  "status": "resolved",
+  "how": "Everlight PLR237/T8BK DPL-0000263 Rev.1 (2021-03-09) p5, fetched from DigiKey 2026-10-30: PCB layout 3 x 0.80 holes at 2.54, 2 x 1.10 NC holes 5.08 apart 2.63 forward, 2 x 1.70 post holes 5.60 apart 2.61 further. The library footprint had the posts but the routed board's U19 never got them (the 1.70 tool in core.drl was only J1's slots): added on 2026-10-30 as NPTH at (137.187, 127.277) and (142.787, 127.277), with the GND stitch via at 137.087/127.197 removed; zones refilled, KiCad DRC 0 violations / 0 unconnected, Gerbers and drill re-exported. Signal 0.914 / NC 1.10 holes take the 0.50 mm square pins. Fit: the T8BK face is 5.88+2.61+2.525 = 11.0 mm ahead of the signal row (11.1 by the layout dims), the box models it at 11.11 (courtyard), so the real face is at most 0.1 mm further back: recess 3.7-3.8 against the 4.0 limit (enclosure/out/ultra/fit.md port_U19), body 9.7 wide, 10.0 tall, port axis 4.35 over the board."
  },
  "parts:64": {
-  "status": "open-ultra",
-  "how": "FFC contact side/cable type depends on the ultra-front board (Ultra only)."
+  "status": "verified",
+  "how": "core J3 and ultra-front J1 are the same part, FPC-05F-20PH20 (C2856803), both at rotation 0 with the mouth on local +y; core.net J3 and ultra-front.net J1 carry the same net on every pin 1-20 (names differ only: FFC_SCK/LCD_SCK, EXP_INT/FRONT_INT_N, IR_IN/IR_OUT, LCD_BL/LCD_BL_PWM). In the Ultra box (enclosure/core_box.py FB_X/FB_BACK/FB_ZB) J1 sits straight in front of J3 at core x 20, mouth down, so the cable runs in one plane and pin N meets pin N. Following the contact face through the cable's three bends (forward off J3, down, forward under the front board, up into J1) turns it from facing J3's board to facing away from J1's board, so the far end needs its contacts on the other side: a type-B (opposite-side) 20-pin 0.5 mm cable, 30-50 mm, as enclosure/README.md says. This holds whether the socket is top- or bottom-contact (the unreadable LCSC PDF), since both ends are the same part."
+ },
+ "dfm:7": {
+  "status": "verified",
+  "how": "GCT USB4085 drawing rev B (28/02/23) sheet 2 'Recommended PCB Layout, as viewed from component side', fetched from gct.co 2026-10-30: pins at 0.85 pitch, A1..A12 x -2.975..+2.975 and B12..B1 the same; B row 1.35 behind A; front shell slots (2.40/2.10 x 0.90/0.60) 0.98 behind A and 0.37 ahead of B, 8.65 apart; rear slots (1.70/1.40 x 0.90/0.60) 3.38 behind the front slots; rear slot centres 1.74 inside the PCB edge. The board's J1 (USC-C-SMD_USB4085-GF-A) matches to 0.005 mm: A -2.18, B -0.83, front slots -1.20, rear +2.18, x +-4.33, rear slots drilled at x 36.327 = edge 34.587 + 1.74. A1 on the left with the mouth toward the viewer, as GCT. Pin nets match GCT's signal table (A1/A12/B1/B12/shell GND, A4/A9/B4/B9 VBUS_IN, A5 CC1, B5 CC2, A6/B6 D+, A7/B7 D-, A8/B8 open). Pads are 0.70 on 0.40 drills against GCT's 0.65 (DFM-6's choice for annulus; 0.15 mm between pads); order remark asks for hand/selective solder and bridge inspection."
+ },
+ "power:26": {
+  "status": "verified",
+  "how": "GCT USB4085 drawing rev B (28/02/23) sheet 1 specifications, fetched from gct.co 2026-10-30: 5.00 A collectively for VBUS pins, 6.25 A for GND pins, 48 V DC, 240 W; all 16 contacts and 4 shell legs are through-hole (Dip Type)."
+ },
+ "digital:30": {
+  "status": "verified",
+  "how": "ultra-front is in the repo (boards/ultra-front, README pin table, ultra-front.net): IR_OUT and FRONT_INT_N have 10k pull-ups there, ENC_A/B 10k + 10 nF there, and the front expander is a TCA9535 at 0x27 (clear of 0x10, 0x22/0x23, 0x48, the TCA9539). On Ultra core's own R36/R58/R52/R53 10k and C37/C38 10 nF stay fitted, so each line sees 5k and ENC_A/B 20 nF (same 100 us RC); INT is a wired-OR of two open-drain outputs. Front I2C has no pull-ups (core's)."
  }
 }

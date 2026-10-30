@@ -26,3 +26,10 @@ Both are invisible to ERC.
 ## 2026-10-28 [P9][dfm] run dfm before calling copper done
 Three sub-0.1 mm gaps on DRC-clean copper showed up only on the exported
 Gerbers.
+
+## 2026-10-30 [ECO][footprints] a library footprint fix doesn't reach a placed board
+review-2 added the T8BK's two 1.70 mm post holes to `lib/aiee.pretty`'s
+PLR237 footprint and marked DFM-12 fixed, but U19 on the routed
+`core.kicad_pcb` kept its old copy: the fab drill had no post holes. After
+editing a footprint, diff the board's instance (or grep the `.drl` for the
+new tool) before calling it fixed.
