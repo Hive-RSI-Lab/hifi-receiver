@@ -1,0 +1,20 @@
+[
+ {
+  "measure": "pfet_pk",
+  "severity": "error",
+  "msg": "FET peak power: soa_check Tj < 110 C at 50 C ambient",
+  "max": 9
+ },
+ {
+  "measure": "t90",
+  "severity": "error",
+  "msg": "PVDD at 90 % inside a 500 ms firmware soft start",
+  "max": 0.5
+ },
+ {
+  "measure": "vsg_end",
+  "severity": "error",
+  "msg": "gate drive",
+  "min": 4.5
+ }
+]

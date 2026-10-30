@@ -52,5 +52,6 @@ Ven PVDD_EN 0 PWL(0 0 20m 0 20.01m 3.3)
 .meas tran efet integ par('(v(VBUS)-v(PVDD))*(-i(Vfetm))') from=20m to=800m
 .meas tran isrc_pk max i(Lcab) from=20m to=800m
 .meas tran t90 when v(PVDD)=25.2 rise=1
+.meas tran t10 when v(PVDD)=2.8000000000000003 rise=1
 .meas tran vsg_end find par('v(VBUS)-v(PVDD_G)') at=790m
 .end

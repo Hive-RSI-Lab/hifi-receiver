@@ -19,8 +19,8 @@
  },
  {
   "measure": "t90",
-  "severity": "warning",
-  "msg": "PVDD at 90 % before firmware's soft_start_ms = 100 ms releases the amps",
+  "severity": "error",
+  "msg": "PVDD at 90 % (t from 0; PVDD_EN at 20 ms) before firmware soft_start_ms = 100 ms releases the amps",
   "max": 0.12
  },
  {

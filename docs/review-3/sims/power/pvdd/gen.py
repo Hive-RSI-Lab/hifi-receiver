@@ -196,3 +196,21 @@ for brd, inc, p, gate in (("lite", LITE, dict(lite_p, ramp="1G"), "PSW_G"), ("co
            ".meas tran ifet_rev max par('i(Vfetm)') from=10m to=1"],
           [b("vbus_650", hi=0.8, msg="USB PD tSafe0V/vSafe0V: VBUS back-fed from PVDD bulk via Q1 body diode", sev="warning")])
 print("written")
+
+# ---- proposed fix for R3-POWER core turn-on (C4 2 x 100n, C8 4.7u/50V): same benches
+CORE_FIX = CORE.replace("C4 PVDD_G PVDD 100n", "C4 PVDD_G PVDD 200n").replace("C8 VBUS PVDD_G 1.8u", "C8 VBUS PVDD_G 3.8u")
+bench("core_fw_on_28v_FIX", "core FIX (C4 200n, C8 4.7u): VBUS 28 V, PVDD_EN at 20 ms",
+      CORE_FIX, core_p,
+      "Vsrc vsrc 0 28\nVpg vpg 0 3\nVen PVDD_EN 0 PWL(0 0 20m 0 20.01m 3.3)\n.ic v(PVDD)=0 v(PVDD_G)=28 v(VBUS)=28 v(VBUS_IN)=28 v(VBUS_PD)=28",
+      ".tran 50u 1.2 0 50u uic",
+      fm("20m", "1.2") + [".meas tran t90 when v(PVDD)=25.2 rise=1", ".meas tran t10 when v(PVDD)=2.8 rise=1",
+                          ".meas tran vsg_end find par('v(VBUS)-v(PVDD_G)') at=1.19"],
+      [b("pfet_pk", hi=9, msg="FET peak power: soa_check Tj < 110 C at 50 C ambient"),
+       b("t90", hi=0.5, msg="PVDD at 90 % inside a 500 ms firmware soft start"), b("vsg_end", lo=4.5, msg="gate drive")])
+bench("core_pdstep_5to28_fwoff_FIX", "core FIX: 5->28 V at 30 V/ms, PVDD_EN low: Q1 stays off",
+      CORE_FIX, core_p,
+      "Vsrc vsrc 0 PWL(0 5 10m 5 10.77m 28 300m 28)\nVpg vpg 0 0\nVen PVDD_EN 0 0\n.ic v(PVDD)=0 v(PVDD_G)=5 v(VBUS)=5 v(VBUS_IN)=5 v(VBUS_PD)=5",
+      ".tran 5u 300m 0 5u uic",
+      fm("0", "300m") + [".meas tran vsg_max max par('v(VBUS)-v(PVDD_G)') from=0 to=300m",
+                         ".meas tran pvdd_max max v(PVDD) from=0 to=300m"],
+      [b("vsg_max", hi=1.5, msg="Vsg under 1.7 V min Vth"), b("pvdd_max", hi=1.0, msg="PVDD stays off")])

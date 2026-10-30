@@ -1,0 +1,413 @@
+{
+ "domain": "AUDIO",
+ "findings": [
+  {
+   "id": "R3-AUDIO-1",
+   "board": "core",
+   "severity": "major",
+   "repeat_of": "new",
+   "refs": [
+    "R90",
+    "R91",
+    "C64",
+    "U11",
+    "C219",
+    "C221",
+    "C317",
+    "C319"
+   ],
+   "nets": [
+    "VREF",
+    "+5VA",
+    "MAIN_L",
+    "MAIN_R"
+   ],
+   "finding": "VREF = +5VA/2 through 470R/470R + 10 uF (68 Hz corner) reaches MAIN at gain 1 in the difference stage, then the TPA3220 at 24 dB; +5V dips from Wi-Fi bursts become speaker ticks; shared VREF also limits L/R separation to 47.6 dB at 1 kHz, 29.7 dB at 100 Hz.",
+   "evidence": "sims/audio/tb_vref_dip_asbuilt.cir: 10 mV 1 ms dip on +5V -> 27.0 mVpp at speaker (bound 2 mVpp, fail); tb_vref_xtalk_asbuilt: sep 47.6 dB @1k, 29.7 dB @100 Hz; check_audio_nets.py FAIL 'VREF corner 67.7 Hz'",
+   "reference_design": "TI single-supply op-amp practice and K2M I/V boards decouple/buffer the mid-rail reference far below the audio band",
+   "fix": "C64 10 uF -> 100 uF 6.3 V X5R 1206 (LCSC C15008, basic; verify stock): 3.5 mVpp tick, separation 67.6/47.6 dB, DJ-direct 0.09 mVpp. Optional: C219/C221/C317/C319 low end to VREF (DAC path 0 mVpp in sim; DJ-direct 3.4 mVpp).",
+   "margin": "as built 13x over the 2 mVpp bound per 10 mV dip; scales 2.7 mVpp per mV"
+  },
+  {
+   "id": "R3-AUDIO-2",
+   "board": "lite-main",
+   "severity": "major",
+   "repeat_of": "new",
+   "refs": [
+    "C47",
+    "C48",
+    "R36",
+    "R37",
+    "R38",
+    "R39",
+    "U7"
+   ],
+   "nets": [
+    "SUB_L",
+    "SUB_R",
+    "SUB_L_RAW",
+    "SUB_R_RAW"
+   ],
+   "finding": "ES8388 LOUT2/ROUT2 sit at VMID 1.65 V; C47/C48 10 uF couple them to the sub RCA with no mute. On power loss the 1.65 V collapses in ~2 ms and the step reaches the (separately powered) subwoofer: full-scale thump at every unplug.",
+   "evidence": "sims/audio/tb_lite_sub_thump_asbuilt.cir: -1.61 V at a 10k sub input (bound 0.14 V, fail) vs 1.41 Vpk 0 dBFS; check_audio_nets.py FAIL 'no mute on SUB_L/SUB_R'",
+   "reference_design": "ESP32-LyraT drives LOUT2/ROUT2 only into an on-board PA powered with the codec; line outs to external amplifiers carry a mute",
+   "fix": "Power-fail mute: 2x MMBT3904 (C20526) inverted mode on SUB_L/SUB_R (C to GND, E to SUB_x, 10k base) driven by MMBT3906 (C2910, verify) from a 47 uF reservoir charged via 1N4148W (C81598, verify) from +5V, base 10k to +5V, 100k collector pull-down: mutes at +5V < ~4.0 V, before LP5907 drops out at ~3.35 V. Sim tb_lite_sub_thump_fix_mute: 35 mV.",
+   "margin": "as built 11.5x over bound; fix 0.25x"
+  },
+  {
+   "id": "R3-AUDIO-3",
+   "board": "core",
+   "severity": "major",
+   "repeat_of": "new",
+   "refs": [
+    "U13",
+    "U12",
+    "U14"
+   ],
+   "nets": [
+    "I2S_DIN",
+    "I2S_BCK",
+    "SUB1_OUT",
+    "SUB2_OUT"
+   ],
+   "finding": "In DJ-direct (FLX4) the core's sub outputs are silent: the PCM5102A gets only squeezelite's mains sum (board_core.c hifi_bsp_audio) and the ES7243E is never configured (HIFI_HAS_CAPTURE 0). With 16-bit I2S BCLK is 32 fs, below the ES7243E's 64 fs minimum, so its init must use MCLK_SEL=BCLK and MULT_PRE x8.",
+   "evidence": "firmware/components/hifi/esp/board_core.c lines 106-123, 210-288; hifi_board_core.h HIFI_HAS_CAPTURE 0; ES7243E rev 5.0 sec. 3 and reg 0x02/0x04; PCM5102A SLAS859C table 11 (32 fs ok)",
+   "reference_design": "firmware-requirements C5 already assumes an ADC->sub path in DJ mode",
+   "fix": "Firmware: ES7243E init (REG02 MCLK_SEL=1, REG04 MULT_PRE=3, slave I2S 16-bit), I2S0 RX on GPIO36, route ADC to the sub DSP path in DJ-direct (inverted per C5). No board change.",
+   "margin": "functional gap: 0 output on the subs in DJ-direct"
+  },
+  {
+   "id": "R3-AUDIO-4",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "U7",
+    "U8"
+   ],
+   "nets": [
+    "AMP_IN_L",
+    "AMP_IN_R"
+   ],
+   "finding": "The round-1 AUDIO-6 caps (LI2LOVOL -3 dB, LOUT1 -4.5 dB) plus AUDIO-7's 15k/10k divider limit Lite DJ-direct to 5.4 Vrms (~5 W/6 ohm), 7.8 dB under clip.",
+   "evidence": "check_audio_nets.py: FLX4 2.1 Vrms -> 0.646 Vrms at LIN1 (Rin 20k, ES8388 ds 8.3) -> 5.4 Vrms vs 13.4 Vrms clip; ES8388 reg 39 table",
+   "reference_design": "n/a",
+   "fix": "Firmware, DJ-direct only: LI2LOVOL 0 dB (bits 5:3=010), LOUT1/ROUT1 code 29 (-1.5 dB): 10.9 Vrms, 1.8 dB under clip at 2.1 Vrms.",
+   "margin": "7.8 dB lost"
+  },
+  {
+   "id": "R3-AUDIO-5",
+   "board": "lite-main",
+   "severity": "minor",
+   "repeat_of": "AUDIO-13",
+   "refs": [],
+   "nets": [
+    "LINEIN_L",
+    "TAP_L"
+   ],
+   "finding": "Lite firmware scale constants stale: LINE_DIVIDER 2.0 (loaded 3.25), TAP_DIVIDER 11 (loaded 16.0), HIFI_HAS_TAPS 0 though the taps are fitted, ADC FS 0.9 Vrms (datasheet 1.0 Vrms). Requirements L6/L7 not done.",
+   "evidence": "firmware/components/hifi/esp/hifi_board_lite.h; check_audio_nets.py prints the loaded ratios",
+   "reference_design": "n/a",
+   "fix": "Update the constants (3.25, 16.0, 1.41 Vpk), default HIFI_HAS_TAPS 1.",
+   "margin": "captures off by 3-4 dB"
+  },
+  {
+   "id": "R3-AUDIO-6",
+   "board": "core",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "J5",
+    "R100",
+    "R110"
+   ],
+   "nets": [
+    "LIN_L",
+    "LIN_R"
+   ],
+   "finding": "No RF shunt at the core RCA line-in (Lite has C42/C45 100 pF): the cable picks up the ESP32's +20 dBm 2.4 GHz and the U20/U14/ES7243E/TPA3220 inputs rectify it (TDMA-style buzz).",
+   "evidence": "check_audio_nets.py WARN; blocks_audio.py B9",
+   "reference_design": "Lite C42/C45 100 pF at the RCA",
+   "fix": "100 pF C0G 0402 (LCSC C1546) LIN_L/LIN_R to GND at J5; optional 1 nF at LDIV_x (68 kHz).",
+   "margin": "none fitted"
+  },
+  {
+   "id": "R3-AUDIO-7",
+   "board": "both",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "J2",
+    "J3",
+    "J4",
+    "J5",
+    "U13"
+   ],
+   "nets": [
+    "GND"
+   ],
+   "finding": "RCA sleeves are hard on board GND; with an earthed laptop (FLX4) and an earthed sub, the board closes an earth loop: 10 mV earth difference -> ~1 mV across the FLX4 cable shield (-66 dB re 2 Vrms), ~6 mV hum at the speaker in core DJ-direct. Class-II chargers and subs (the common case) give uV only.",
+   "evidence": "calc: I = 10 mV/~1 ohm loop, 0.1 ohm shield; DJ gain 0.37 x 15.85",
+   "reference_design": "pseudo-differential (ground-sensing) unbalanced inputs per common pro-audio practice",
+   "fix": "Core contingency: C102/C112 (AINxN) to a J5-sleeve sense net through a mirrored 4.7k/4.7k, plus a 0603 lift footprint J5 sleeve to GND (fit 0R, option 10R). Lite: document; recommend a USB isolator for the FLX4.",
+   "margin": "conditional"
+  },
+  {
+   "id": "R3-AUDIO-8",
+   "board": "core",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "C68",
+    "C69",
+    "C70",
+    "U12"
+   ],
+   "nets": [
+    "+3V3A"
+   ],
+   "finding": "PCM5102A CPVDD/AVDD/DVDD have 1 uF each vs TI's 10 uF + 0.1 uF; the charge pump shares +3V3A with the ES9018K2M AVCC (whose output scales with AVCC).",
+   "evidence": "TI SLAS859C fig. 10.1.1; check_audio_nets.py WARN; core +3V3A total 6.3 uF of the LP5907's 10 uF max",
+   "reference_design": "TI typical application 10 uF + 0.1 uF per supply",
+   "fix": "Add 100 nF 0402 at C68/C69; option: CPVDD from +3V3 via 0603 ferrite + 10 uF (off the LP5907).",
+   "margin": "decoupling 10x under the reference"
+  },
+  {
+   "id": "R3-AUDIO-9",
+   "board": "core",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "U12",
+    "U17"
+   ],
+   "nets": [
+    "DAC_EN"
+   ],
+   "finding": "PCM5102A XSMT = DAC_EN follows +3V3 down on power loss; TI recommends XSMT watch the pre-regulated rail so the mute starts before the LDO rail goes.",
+   "evidence": "TI SLAS859C 11.2.2, fig. 38",
+   "reference_design": "XSMT divider from the SMPS rail",
+   "fix": "Optional: 100k/47k from +5V to XSMT OR-ed with DAC_EN via BAT54; else accept (ground-centred output, 'some pop').",
+   "margin": "pop, not a thump"
+  },
+  {
+   "id": "R3-AUDIO-10",
+   "board": "core",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "U17",
+    "U10"
+   ],
+   "nets": [
+    "DAC_EN",
+    "ESP_EN"
+   ],
+   "finding": "An EN reset drives K2M RESETB low and its outputs hard to ground: 1.65 V CM step x ~1.3 % CM gain ~ 21 mV at MAIN, ~0.3 V at the speaker during the amps' 20 ms ramp-down. A panic/WDT reboot doesn't reset the TCA9539.",
+   "evidence": "ES9018K2M v3.7 pin table 'Driven to ground'; difference-amp CM gain for 1 % resistors",
+   "reference_design": "ESS standby sequence: soft_start=0 then RESETB",
+   "fix": "Firmware: before an intentional DAC_EN low, reg 14 soft_start=0 and amps in reset.",
+   "margin": "small pop"
+  },
+  {
+   "id": "R3-AUDIO-11",
+   "board": "core",
+   "severity": "note",
+   "repeat_of": "AUDIO-13",
+   "refs": [
+    "R130",
+    "R131",
+    "R132",
+    "R149"
+   ],
+   "nets": [
+    "TAP_L"
+   ],
+   "finding": "Loaded tap ratio from board values 0.0265 vs firmware requirement C6's 0.0276 (4 %).",
+   "evidence": "check_audio_nets.py",
+   "reference_design": "n/a",
+   "fix": "Calibrate at bring-up (C6).",
+   "margin": "4 %"
+  },
+  {
+   "id": "R3-AUDIO-12",
+   "board": "both",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "U11",
+    "U15",
+    "U7",
+    "U8"
+   ],
+   "nets": [
+    "MAIN_L",
+    "AMP_IN_L"
+   ],
+   "finding": "Level budget passes: core 0 dBFS 15.8 Vrms (22.4 Vpk) vs 26.5 Vpk clip; OPA1678 out 1.03..3.86 V vs 0.8..4.3 V; + input 2.68 V vs 3.10 V; FLX4 2.1 Vrms -> core ADC -2.1 dBFS, DJ 11.6 Vrms; Lite LIN1 -3.8 dBFS, DAC path 11.9 vs 13.4 Vrms.",
+   "evidence": "check_audio_nets.py",
+   "reference_design": "ES9018K2M v3.7 p.31; OPA1678 6.5; TPA3220 SLASEN3B tables 2/3",
+   "fix": "none",
+   "margin": "1.4 dB core, 1.0 dB Lite"
+  }
+ ],
+ "round1_fixes_checked": [
+  {
+   "id": "AUDIO-1",
+   "holds": true,
+   "how": "PCB R73/R75/R81/R83 = 1.3k; check_audio_nets.py margins 0.23 V out, 0.42 V CM"
+  },
+  {
+   "id": "AUDIO-2",
+   "holds": true,
+   "how": "U20 NO=LSW_x, NC=TAP_x biased 1.65 V on the PCB"
+  },
+  {
+   "id": "AUDIO-3",
+   "holds": true,
+   "how": "Q7 S8050 + R133/R134/R135 to +5VA logic"
+  },
+  {
+   "id": "AUDIO-4",
+   "holds": true,
+   "how": "Lite R54 10k, C26 47 nF on the PCB"
+  },
+  {
+   "id": "AUDIO-5",
+   "holds": true,
+   "how": "C101/C102/C111/C112 4.7 uF"
+  },
+  {
+   "id": "AUDIO-6",
+   "holds": true,
+   "how": "firmware ES8388_OUT1_FULL 27 and LIN -3 dB; but over-limits DJ-direct now (R3-AUDIO-4)"
+  },
+  {
+   "id": "AUDIO-7",
+   "holds": true,
+   "how": "R30/R33 15k on the PCB; firmware LINE_DIVIDER not updated (R3-AUDIO-5)"
+  },
+  {
+   "id": "AUDIO-10",
+   "holds": true,
+   "how": "Y1 49.152 MHz on the PCB"
+  },
+  {
+   "id": "AUDIO-13",
+   "holds": false,
+   "how": "firmware TAP_DIVIDER still 11, HIFI_HAS_TAPS 0 (L6 not done)"
+  },
+  {
+   "id": "AUDIO-8",
+   "holds": false,
+   "how": "ADC->sub path does not exist in firmware (R3-AUDIO-3)"
+  },
+  {
+   "id": "AUDIO-17",
+   "holds": true,
+   "how": "firmware SDZ sequencing is in place; does not cover the sub out (R3-AUDIO-2)"
+  }
+ ],
+ "field_issues": [
+  {
+   "issue": "ESP32 Wi-Fi current spikes -> ticking/noise in audio",
+   "source": "https://www.esp32.com/viewtopic.php?t=9613 ; https://github.com/sle118/squeezelite-esp32/issues/152",
+   "our_board": "has it",
+   "how": "core via VREF (R3-AUDIO-1); Lite immune (VMID internal, LP5907)"
+  },
+  {
+   "issue": "DJ controller (FLX4) hum with laptop charging / ground loop",
+   "source": "https://community.pioneerdj.com/hc/en-us/community/posts/22978284154649 ; https://fs-elec.com/fix-laptop-charger-audio-noise-dj-live-setup/",
+   "our_board": "has it",
+   "how": "earth-loop case only, R3-AUDIO-7; charger noise inside the FLX4 is n/a"
+  },
+  {
+   "issue": "ES8388 pops from the ESP-ADF driver sequence",
+   "source": "https://carlosderseher.github.io/snapclient/",
+   "our_board": "has it",
+   "how": "power-loss sub thump R3-AUDIO-2; power-on order is firmware L4"
+  },
+  {
+   "issue": "PCM5102A pop on power down / clock loss",
+   "source": "TI SLAS859C 11.2",
+   "our_board": "immune",
+   "how": "ground-centred, clock-halt mute; XSMT improvement R3-AUDIO-9"
+  },
+  {
+   "issue": "ES9018K2M internal DVDD at high MCLK",
+   "source": "ES9018K2M datasheet v3.7 p.7, p.31 note 2",
+   "our_board": "immune",
+   "how": "49.152 MHz, 4.7 uF DVDD"
+  },
+  {
+   "issue": "RF rectification on unbalanced RCA inputs",
+   "source": "EMC practice",
+   "our_board": "has it",
+   "how": "core no shunt, R3-AUDIO-6; Lite 100 pF"
+  }
+ ],
+ "tests_built": [
+  {
+   "path": "docs/review-3/sims/audio/check_audio_nets.py",
+   "checks": "PCB values and connections of the chain, round-1 fixes, level budget, VREF corner, Lite sub mute, LP5907 Cout, PCM5102A decoupling, RF shunt",
+   "result": "fail"
+  },
+  {
+   "path": "docs/review-3/sims/audio/gen_vref.py + tb_vref_dip_*.cir, tb_vref_xtalk_*.cir, tb_vref_dip_dj_*.cir",
+   "checks": "speaker tick from a 10 mV +5V dip (<=2 mVpp), L/R separation at the speaker, as built and fix variants",
+   "result": "fail"
+  },
+  {
+   "path": "docs/review-3/sims/audio/tb_lite_sub_thump_asbuilt.cir, tb_lite_sub_thump_fix_mute.cir",
+   "checks": "sub-input step on power loss <= 0.14 V",
+   "result": "fail"
+  }
+ ],
+ "known_unknowns": [
+  {
+   "fact": "+5V dip amplitude under Wi-Fi bursts (SY8303), drives R3-AUDIO-1's tick",
+   "board": "core",
+   "refs": [
+    "U4",
+    "C64"
+   ],
+   "status": "unverified",
+   "source": "assumed 10 mV; sim scales linearly",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "ES8388 LOUT2 state when disabled at power-up (power-on thump)",
+   "board": "lite-main",
+   "refs": [
+    "U7",
+    "C47"
+   ],
+   "status": "unverified",
+   "source": "ES8388 rev 5.0 is silent on it",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "FLX4 master-out maximum 2.0-2.1 Vrms",
+   "board": "both",
+   "refs": [
+    "J2",
+    "J5"
+   ],
+   "status": "unverified",
+   "source": "round-1 assumption",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  },
+  {
+   "fact": "LCSC numbers C15008 (100 uF 1206), C2910 (MMBT3906), C81598 (1N4148W), C1546 (100 pF 0402) stock and basic status",
+   "board": "both",
+   "refs": [],
+   "status": "unverified",
+   "source": "reviewer memory, not checked against JLC today",
+   "date": "2026-10-30",
+   "could_stop_board": false
+  }
+ ]
+}
