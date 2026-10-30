@@ -24,7 +24,7 @@ vias must all land in one such piece. On this board that took:
   - the PVDD via at (52.36, 163.0) and its In2/B.Cu stubs go: they only
     doubled C207's and (55.56, 165.9)'s own plane vias, and boxed in by
     AMP_FAULT/AMP_OTW it had no room;
-  - the VBUS via under Q1's drain strip (59.69, 168.02) moves 0.42 mm up so
+  - the VBUS via under Q1's drain strip (59.69, 168.02) moves 0.38 mm up so
     the strip passes it 3.5 mm wide;
   - C10.2's GND via moves left/up off VBUS's way into that corner, tied back
     to its pad by a short F.Cu track;
@@ -117,10 +117,10 @@ EDITS = [{"op": "remove", "uuid": u} for u in (
     "f28a1979-65ab-4478-a1d4-c210436830e7", "e4e89ae0-9a5d-4e31-8eb9-cfbb93f52041",
     # C10.2's GND via, re-laid at (66.95, 174.0)
     "e5dc2aa1-806c-4e9a-8736-f7f5858a7e86")] + [
-    {"op": "add_via", "at": [59.6891, 167.6], "size": 0.7, "drill": 0.3, "net": "VBUS"},
-    {"op": "add_track", "start": [59.8792, 167.8275], "end": [59.6891, 167.6], "width": 0.25,
+    {"op": "add_via", "at": [59.6891, 167.6374], "size": 0.7, "drill": 0.3, "net": "VBUS"},
+    {"op": "add_track", "start": [59.8792, 167.8275], "end": [59.6891, 167.6374], "width": 0.25,
      "layer": "F.Cu", "net": "VBUS"},
-    {"op": "add_track", "start": [59.6891, 168.0176], "end": [59.6891, 167.6], "width": 0.25,
+    {"op": "add_track", "start": [59.6891, 168.0176], "end": [59.6891, 167.6374], "width": 0.25,
      "layer": "B.Cu", "net": "VBUS"},
     {"op": "add_via", "at": [66.95, 174.0], "size": 0.6, "drill": 0.3, "net": "GND"},
     {"op": "add_track", "start": [66.95, 174.0], "end": [67.7, 174.0], "width": 0.4,
@@ -135,13 +135,15 @@ EDITS = [{"op": "remove", "uuid": u} for u in (
     {"op": "add_via", "at": [53.3931, 176.9522], "size": 0.6, "drill": 0.3, "net": "+5V"},
     {"op": "add_track", "start": [53.3931, 176.9522], "end": [53.3931, 177.6522],
      "width": 0.355, "layer": "F.Cu", "net": "+5V"},
-    {"op": "add_track", "start": [53.3931, 176.9522], "end": [53.8931, 177.6522],
+    {"op": "add_track", "start": [53.3931, 176.9522], "end": [53.3931, 177.1522],
+     "width": 0.355, "layer": "B.Cu", "net": "+5V"},
+    {"op": "add_track", "start": [53.3931, 177.1522], "end": [53.8931, 177.6522],
      "width": 0.355, "layer": "B.Cu", "net": "+5V"},
     {"op": "add_via", "at": [48.637, 187.307], "size": 0.6, "drill": 0.3, "net": "+5V"},
-    {"op": "add_track", "start": [48.637, 187.307], "end": [49.137, 188.007],
-     "width": 0.355, "layer": "F.Cu", "net": "+5V"},
-    {"op": "add_track", "start": [48.637, 187.307], "end": [49.137, 188.007],
-     "width": 0.355, "layer": "B.Cu", "net": "+5V"},
+] + [
+    {"op": "add_track", "start": a, "end": b, "width": 0.355, "layer": layer, "net": "+5V"}
+    for layer in ("F.Cu", "B.Cu")
+    for a, b in (([48.637, 187.307], [48.637, 187.507]), ([48.637, 187.507], [49.137, 188.007]))
 ]
 
 
