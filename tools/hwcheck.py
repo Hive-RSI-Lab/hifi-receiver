@@ -17,7 +17,10 @@
                                      tools/product.json names (else a flat
                                      1000), plus 100 for each piece (firmware,
                                      app, bench, enclosures, manual) whose check
-                                     (tools/pieces.py) doesn't pass
+                                     (tools/pieces.py) doesn't pass, plus 100
+                                     for each open fact that could stop a
+                                     board (tools/known_unknowns.py --check):
+                                     0 means order-ready
     python3 tools/hwcheck.py cost [BOARD ...]   the cost alone, no gates
 
 docs/checks.md says what each part checks and how the score is worked out.
@@ -55,6 +58,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.dont_write_bytecode = True  # no tools/__pycache__ in the checkout
 sys.path.insert(0, str(ROOT / "tools"))
 import bom_estimate as est  # noqa: E402  (one cost model for estimate and board)
+import known_unknowns  # noqa: E402  (the facts the boards rely on)
 import pieces  # noqa: E402  (what lets each piece count)
 from pieces import need_tool  # noqa: E402
 
@@ -77,6 +81,8 @@ UNVERIFIED = 127
 # Software whose stdlib unittest suite (<dir>/tests/test_*.py) the test runs.
 SOFTWARE = ("tools", "bench", "app")
 QTY = SPEC["qty"]
+# The hive-hwde commit CI gates with (.github/workflows/ci.yml reads it).
+HWDE_REF = ROOT / "tools" / "hwde.ref"
 
 
 # ---- docs/product.md ------------------------------------------------------
@@ -199,6 +205,28 @@ def hwde() -> str:
     os.execvp("sh", ["sh", "-c", "hwde"])
 
 
+def hwde_version(bin_: str) -> str | None:
+    """The hive-hwde commit bin_ belongs to: a git checkout's HEAD (CI's),
+    else the VERSION file the Hive's published copy carries."""
+    top = Path(bin_).resolve().parent.parent
+    r = subprocess.run(["git", "-C", str(top), "rev-parse", "HEAD"], capture_output=True, text=True)
+    if r.returncode == 0 and (top / ".git").exists():
+        return r.stdout.strip()
+    try:
+        return (top / "VERSION").read_text().strip() or None
+    except OSError:
+        return None
+
+
+def pinned_hwde() -> str:
+    return HWDE_REF.read_text(encoding="utf-8").strip()
+
+
+def same_commit(a: str | None, b: str) -> bool:
+    """Two commit ids name the same commit (one may be abbreviated)."""
+    return bool(a) and len(min(a, b, key=len)) >= 7 and (a.startswith(b) or b.startswith(a))
+
+
 def unverified(rc: int, r: dict, log: str) -> str | None:
     """What a gate run left unverified, or None: the parts whose models hwde
     couldn't fetch. hwde's dfm says so as exit 2 with an `unverified` block
@@ -268,6 +296,11 @@ def gate_board(ws: Path, name: str, bin_: str, logs: Path) -> list[tuple[str, in
 def run_gates(dirs: list[Path]) -> dict[Path, list[tuple[str, int]]]:
     """Each board's gate failures (see gate_board), by its folder."""
     bin_ = hwde()
+    ver = hwde_version(bin_)
+    pin = pinned_hwde()
+    print(f"hwde {ver[:12] if ver else '(version unknown)'} at {bin_}"
+          + ("" if same_commit(ver, pin) else f"; CI gates with {pin[:12]} (tools/hwde.ref)"), flush=True)
+    run_gates.version = ver
     scratch = Path(tempfile.mkdtemp(prefix="hwcheck-"))
     try:
         (scratch / "logs").mkdir()
@@ -284,7 +317,9 @@ def run_gates(dirs: list[Path]) -> dict[Path, list[tuple[str, int]]]:
 
 
 # What always re-gates every board when it changes: the gate runner itself.
-GATE_ALL = ("tools/hwcheck.py",)
+# and the hwde CI gates with: a bump of tools/hwde.ref merges only once every
+# board passes under the new hwde.
+GATE_ALL = ("tools/hwcheck.py", "tools/hwde.ref")
 
 
 def git(*args: str) -> str | None:
@@ -560,6 +595,13 @@ def piece_missing(piece: dict, ran: dict) -> str | None:
     return None
 
 
+def open_facts() -> list[str]:
+    """The facts that could stop a board and are neither verified nor
+    resolved (tools/known_unknowns.py --check, every tier)."""
+    return [f"{key} [{k.get('board')}]" for key, _, k, status, _ in known_unknowns.rows()
+            if known_unknowns.is_open(k, status)]
+
+
 def cmd_score() -> int:
     tiers = SPEC["tiers"]
     want = sorted({b["board"] for t in tiers.values() for b in t["builds"]})
@@ -570,6 +612,10 @@ def cmd_score() -> int:
         print(f"score: no number: gates couldn't run ({'; '.join(broken)})")
         return 1
     total, lines = 0.0, []
+    ver = getattr(run_gates, "version", None)
+    if have and not any(gates.values()) and ver and not same_commit(ver, pinned_hwde()):
+        lines.append(f"hwde {ver[:12]} passes every board: bump tools/hwde.ref to it, "
+                     f"so CI gates with it")
     for name, tier in tiers.items():
         unit, why = tier_cost(tier, gates)
         if unit is None:
@@ -589,6 +635,10 @@ def cmd_score() -> int:
             lines.append(f"{piece['name']}: {SPEC['piece_missing']:.2f} (doesn't count yet: {why})")
         else:
             lines.append(f"{piece['name']}: 0 (its check and tests pass)")
+    facts = open_facts()
+    total += len(facts) * SPEC["open_fact"]
+    lines.append(f"open facts that could stop a board: {len(facts) * SPEC['open_fact']:.2f}"
+                 + (f" ({len(facts)}: {', '.join(facts)}; tools/known_unknowns.py --check)" if facts else ""))
     print("\n".join(lines))
     print(f"{total:.2f}")
     return 0

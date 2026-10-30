@@ -3,6 +3,8 @@
  "qty": 100,
  "tier_not_counted": 1000,
  "piece_missing": 100,
+ "open_fact": 100,
+ "open_fact_about": "Each fact a board relies on that could stop it working and is neither verified nor resolved (tools/known_unknowns.py --check, docs/known-unknowns.md) adds open_fact, so a score of 0 means order-ready.",
  "budget_about": "Each tier's BOM budget per unit at 100: docs/product.md's target retail without the charger over the usual 4x retail-to-BOM markup ($59, $129, $199 / 4). The score counts only a counted tier's cost above it.",
  "tiers": {
   "lite": {

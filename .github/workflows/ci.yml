@@ -15,12 +15,13 @@ concurrency:
 permissions:
   contents: read
 env:
-  # The tools the Hive's own check uses (/hive/tools): KiCad 10.0.6 as an AppDir, and the
-  # hive-hwde version published there (hwde.version), from their public repositories.
+  # The tools the Hive's own check uses (/hive/tools): KiCad 10.0.6 as an AppDir, and
+  # hive-hwde at the commit tools/hwde.ref names, from their public repositories. Bump
+  # tools/hwde.ref to the hwde the Hive runs (/hive/tools/hwde.version) once main passes
+  # under it: changing it re-gates every board, so the bump merges only then.
   KICAD_VERSION: 10.0.6
   KICAD_APPIMAGE: https://github.com/pkgforge-dev/KiCad-AppImage/releases/download/10.0.6-2%402026-10-01_1790876568/KiCad-10.0.6-2-anylinux-x86_64.AppImage
   HWDE_REPO: Hive-RSI-Lab/hive-hwde
-  HWDE_REF: aa1ec482abff9ce266601ec858e69f59e4e3010a
 jobs:
   # The Hive reads this job's check as "test (ubuntu-latest)"; keep it unnamed.
   test:
@@ -35,6 +36,9 @@ jobs:
           persist-credentials: false
           # The test gates the boards changed since its merge base with origin/main.
           fetch-depth: 0
+      - name: the hwde to gate with (tools/hwde.ref)
+        shell: bash
+        run: echo "HWDE_REF=$(tr -d '[:space:]' < tools/hwde.ref)" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
           repository: ${{ env.HWDE_REPO }}
