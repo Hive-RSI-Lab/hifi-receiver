@@ -88,7 +88,8 @@ lite-board,bootstrap,C21120,CL10B224KA8NNNC,basic,0.0093,0.0093,2,smt,4,0,0,"boa
 lite-board,output filter,C48391614,XR0850-100M,extended,0.1921,0.1509,2,smt,4,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
 lite-board,output filter,C1848,CL31B105KBHNNNE,basic,0.0621,0.0502,2,smt,4,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
 lite-board,line in L/R (FLX4),C7527522,XDJK-0271-1650,extended,0.2583,0.2023,3,tht,2,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
-lite-board,speaker terminal L+ L- R+ R-,C2915641,DB128V-5.08-4P-GN-S,extended,0.4213,0.3392,4,tht,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,4 mm banana socket red (speaker +; board-mounted),C7437321,24.243.1,extended,0.4179,0.3311,2,tht,2,0,0,"boards/lite-main parts.json, LCSC live 2026-10-30"
+lite-board,4 mm banana socket black (speaker -; board-mounted),C7437322,24.243.2,extended,0.4179,0.3311,2,tht,2,0,0,"boards/lite-main parts.json, LCSC live 2026-10-30"
 lite-board,button,C318884,TS-1187A-B-A-B,basic,0.0207,0.0207,4,smt,3,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
 lite-board,IR receiver 38 kHz,C91447,IRM-H638T/TR2,extended,0.2599,0.1989,4,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
 lite-board,status LED,C2286,KT-0603R,basic,0.0077,0.0077,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
@@ -97,4 +98,4 @@ lite-board,5 V buck feed-forward 47 pF,C1671,CL10C470JB8NNNC,basic,0.0074,0.0074
 lite-board,line-in attenuator 15k,C22809,0603WAF1502T5E,basic,0.0029,0.0029,2,smt,2,0,0,"boards/lite-main parts.json, LCSC 2026-10-29 (review-2)"
 lite-board,speaker tap carrier filter,C1620,0603B471K500NT,basic,0.0058,0.0058,2,smt,2,0,0,"boards/lite-main parts.json, LCSC 2026-10-29 (review-2)"
 lite-board,amp SDZ slew limit,C1622,CL10B473KB8NNNC,basic,0.0059,0.0059,2,smt,1,0,0,"boards/lite-main parts.json, LCSC 2026-10-29 (review-2)"
-offboard,4 mm binding post (speaker; wired to the board's screw terminal),,(not on LCSC),offboard,0.40,0.30,0,hand,4,0,0,estimate AliExpress-class; Lite only (GC4010-F has no PCB footprint)
+offboard,4 mm binding post (speaker; wired to the board's screw terminal),,(not on LCSC),offboard,0.40,0.30,0,hand,0,0,0,estimate AliExpress-class; none now: Lite has board-mounted sockets (J4-J7)

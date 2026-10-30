@@ -18,8 +18,10 @@ a DJ deck.
 
 - Connect **Left** to the left speaker and **Right** to the right speaker.
 - Red (**+**) goes to red, and black (**−**) goes to black.
-- Use 4 mm banana plugs (single or dual), spades, or bare wire under the
-  binding post's nut.
+- **Lite:** push a 4 mm banana plug into each socket (single plugs: the
+  sockets are too close for a dual plug).
+- **Plus, Ultra:** use 4 mm banana plugs (single or dual), spades, or bare
+  wire under the binding post's nut.
 - No stray strand may touch the other terminal or the case.
 - Use **one speaker per terminal pair, 4 Ω or more.** Never wire two speakers
   to the same terminals.

@@ -16,16 +16,20 @@ product.md's Boards row.
 
 ## What it is
 
-- **Board:** 2 layers, 1.6 mm FR-4, 1 oz, HASL, 100 x 90 mm, four M3 plated
-  holes, 2 mm corners. 145 parts, all on the top side. 141 are SMT; 4 are
-  through-hole (J2, J3, J4 and U9). The 4 mounting holes are not BOM parts.
+- **Board:** 2 layers, 1.6 mm FR-4, 1 oz, HASL, 118 x 90 mm, four M3 plated
+  holes, 2 mm corners. 148 parts, all on the top side. 141 are SMT; 7 are
+  through-hole (J2, J3, J4-J7 and U9). The 4 mounting holes are not BOM parts.
   JLC assembly with LCSC part numbers.
 - **Rear edge, left to right:**
   - **J2:** RCA line in (FLX4). Top jack white = L, bottom red = R.
   - **J3:** RCA sub out L/R.
   - **J1:** USB-C.
-  - **J4:** speaker terminal, L+ L- R+ R-. The enclosure's 4 mm binding posts
-    are wired to it.
+  - **J4-J7:** the speaker outputs, four 4 mm banana sockets (Amass 24.243,
+    right-angle PCB mount, 24 A, red C7437321 / black C7437322; JLC fits
+    them): J4 L+, J5 L-, J6 R+, J7 R-, at 11 mm pitch. Their square noses
+    reach 2.65 mm past the rear edge into the enclosure's rear wall, bore
+    axis 7.5 mm over the board. Nothing is wired by hand. Single banana plugs;
+    the 11 mm pitch is too close for a dual (19 mm) plug.
 - **Front edge:** SW1 vol-, SW2 vol+, SW3 play/source (hold = BT pairing),
   the IR receiver U9 (an IRM-3638T standing at the edge with its lens facing
   forward through the front wall) and a red status LED D2.
@@ -107,10 +111,16 @@ was done about each finding is in
 - **The CC lines are crossed on purpose.** The CH224 treats CC1/CC2 alike, so
   J1's B5 goes to U1 pin 7 and A5 to pin 6. That way neither crosses the
   other or the D+/D- escape.
-- **Speaker terminal instead of banana sockets on the board.** The GC4010-F has
-  no PCB footprint anywhere (EasyEDA has no data) and is an RC bullet
-  connector. A 16 A 5.08 mm screw terminal (DB128V) takes 4 mm-binding-post
-  wires from the rear panel. product.md open item 4 is now settled.
+- **Banana sockets on the board, not binding posts wired to a terminal**
+  (task 261030-140102: the person orders, plugs in and does nothing else).
+  Amass 24.243 is the only board-mount 4 mm socket JLC stocks (GC4010-F is a
+  panel bullet connector). Four at 10.1 mm wide didn't fit the 100 mm edge
+  beside USB-C and the RCA jacks, so the board grew to 118 mm east; H2 moved
+  under the sockets to (114.45, 27). The L row moved 2.2 mm toward U8, and
+  the 1 uF output caps (C68-C71) and R68 sit between the sockets' backs and
+  the inductors. `kicad/gen/banana_route.py` is the speaker copper: L+ and R+
+  on F.Cu, L- and R- through seven vias each (3.5 A) on B.Cu under the
+  sockets. Both pins of each socket are its contact and carry the current.
 - **Amp channels swapped at the chip.** The TPA3118's "right" channel drives
   the left speaker, so its output row runs L+ L- R+ R- straight into the
   terminal with no crossing. Nets are named by speaker channel.
@@ -139,13 +149,14 @@ was done about each finding is in
 - **Amp OUT runs (pin to inductor) are 0.31 mm minimum** at the HTSSOP pins
   (0.65 mm pitch, 0.34 mm pins), sized for 1.0 A rms / 30 C. That is music at
   full power with a 9 dB crest factor. They are under 15 mm long. The
-  inductor-to-terminal runs are 1.21 mm (3.5 A, 30 C).
+  inductor-to-socket runs are 1.25 mm (3.5 A, 30 C).
 - **USB is not impedance-controlled.** Full speed, 12 Mb/s; a 90 ohm pair on
   1.6 mm 2-layer would be 1.1 mm wide.
 - **No USB ESD array** on the cost-first tier: the CH340B and CH224A have
   their own. Plus/Ultra should add a USBLC6-2SC6.
-- **Board 100 x 90 mm**, not the ~100 x 80 product.md estimated: 80 left no
-  room for the PVDD switch between USB-C and the amp.
+- **Board 118 x 90 mm**, not the ~100 x 80 product.md estimated: 80 left no
+  room for the PVDD switch between USB-C and the amp, and the banana sockets
+  took 18 mm more.
 - **Red LED (Basic part) at 1.3 mm.** The white one the first schematic had ran
   at 0.2-0.6 mA, too dim.
 - **IR on GPIO14**, not 39: GPIO36/39 glitch with ADC/Wi-Fi (errata 3.11).
@@ -190,13 +201,13 @@ All gates last passed on hive-hwde c23e27e (2026-10-29), after the review-2 ECO.
 
 ## Cost
 
-**$13.17 per board at 100**: parts $10.49, JLC assembly $2.06, PCB $0.62.
+**$14.54 per board at 100**: parts $11.72, JLC assembly $2.16, PCB $0.66.
 This is the project score, `python3 tools/hwcheck.py score`, priced from the
 real `fab/BOM.csv`, the board's pad counts and its outline.
 
-Adding the four binding posts the enclosure carries (~$1.20) makes about
-$14.3 per unit. `python3 tools/bom_estimate.py` gives $14.37 at 100 and
-$22.90 at 10.
+That is the whole unit's electronics: the speaker sockets are on the board,
+so nothing is bought or wired off it. `python3 tools/bom_estimate.py` gives
+$14.79 at 100 and $23.41 at 10.
 
 - **Parts:** 48 distinct; 29 JLC Basic, 19 Extended. Extended parts cost $3
   each per order and may need pre-buying: see `fab/prebuy.csv`.
@@ -281,8 +292,10 @@ The bench scripts (plan item 9) will automate this.
    - The board edge sits at the footprint silk's face line.
    - The EasyEDA 3D model sits 13.5 mm low and 6 mm inboard (found by the
      enclosure worker); only renders are affected.
-3. **Speaker terminal wire entry:** which side J4's wires enter on is not
-   confirmed from a drawing. The enclosure takes them from the top/rear.
+3. **Banana socket nose:** the 6 mm square nose and its 2.5 mm reach come
+   from the EasyEDA 3D model and footprint (the datasheet drawing gives 24 mm
+   overall, 15.7 mm pin pitch, Ø4 bore, no nose width). The rear wall's hole
+   is 6.8 mm square; check a real socket against it before printing.
 4. **CH224A I2C pull-ups:** if bring-up measures CFG2/CFG3 idling above 3.6 V,
    depopulate R2/R3. The I2C readout is then lost, and VBUS sense still works.
 5. **USB ESD:** none on this tier (decision above). Plus/Ultra should add a
