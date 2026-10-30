@@ -121,11 +121,11 @@ which averages about 1/8 of its peaks, never reaches it. The host tests check
 both.
 
 **Not covered:** DJ direct is analog (line in → codec mixer → amp), so the
-governor can't see it. The codec's −3 dB cap and the line in's −6 dB
-attenuator limit it; a DJ deck at full level into 4 Ω could still trip a
-65 W charger. Plus/Ultra read the input current from an INA186 (shown in
-`/state`, not yet fed back into the governor); their DJ direct bypasses
-the DAC too, so the governor can't act on it there either.
+governor can't see it. On Lite, the codec's −3 dB cap and the line in's
+−6 dB attenuator limit it; a DJ deck at full level into 4 Ω could still
+trip a 65 W charger. Plus/Ultra have a governed **line in** (the ES7243E,
+then the DSP: the governor sees it) and guard their DJ direct instead: when
+the amps would overheat, DJ direct hands over to the line in (below).
 
 ### Numbers to calibrate at bring-up
 
@@ -261,8 +261,8 @@ same interface as Lite's (`esp/hifi_bsp.h`); the pins are in
   buttons do on Lite. Knob push: play/pause (hold: power). Button 1: source
   (hold: mute). Button 2: next (hold: previous). The product page's
   "preset" button needs presets, which don't exist yet. Ultra reads the
-  knob on the core's expander through the FFC; its front-board buttons
-  and screen are not built yet (below).
+  knob on the core's expander through the FFC, and its buttons on the
+  front board (below).
 - **LED:** on with a network, a slow blink without one (setup), a fast
   blink with the amps latched off by faults.
 - **Subs:** I2S1 runs as a slave on I2S0's clocks (the GPIO matrix routes
@@ -271,10 +271,89 @@ same interface as Lite's (`esp/hifi_bsp.h`); the pins are in
   GPIO2, because that setup turns the pins' inputs off. Each output block, after
   the equalizer and the governor, goes to it as the mono sum of the mains
   at the sub level (−40 to 0 dB), full range: the subs' own crossover does
-  the rest, as on Lite. Nothing waits on it: if its DMA is full, the block
-  is dropped.
-- **DJ direct** is the TS5A23157 in front of the amps: the line in goes to
-  them directly, with no volume, governor or sub.
+  the rest, as on Lite. Its DMA is as deep as I2S0's (12 × 256 frames),
+  starts full of silence, and each block waits for room as I2S0's does,
+  so both queues hold the same block and the subs play with the mains.
+  (Before, its 43 ms queue next to I2S0's 128 ms let the subs run up to
+  ~0.1 s ahead.) A block that finds no room in 60 ms is dropped, so a stuck
+  I2S1 can't hold up the mains.
+- **32-bit I2S slots:** core's `DAC_CONFIG` has `bits=32` (our patch to
+  `output_i2s.c`): squeezelite's 16-bit samples go out in 32-bit slots,
+  BCLK 64 fs, because the ES7243E takes its master clock from BCLK and has
+  no setting below 64 fs (review-3 R3-AUDIO-3: at 32 fs the subs were
+  silent with the FLX4). The buffers are halved to stay under 4092 bytes:
+  64 ms of DMA, about what upstream's S/PDIF mode runs. The ES9018K2M is
+  set to 32-bit words (its reset value) and the PCM5102A detects 64 fs.
+
+### The line in (Plus and Ultra)
+
+The RCA line in is halved on the board to ~1 Vrms and goes both to the
+TS5A23157 (DJ direct) and to the ES7243E ADC on I2S0's input (GPIO36). The
+ADC's set-up (`board_core.c` `ADC_INIT`) is Everest's own Linux driver's
+for an I2S slave with MCLK from BCLK at 64 fs (reg 0x02 bit 7; reg 0x04
+premultiplier ×8), 32-bit words, PGA on at 0 dB; it answers at 0x10 or
+0x14 (AD2 shares SDOUT), and the firmware tries both. TAP_SEL (P17) is
+driven low so the ADC hears the line in, not the speaker taps.
+
+Three inputs, in the Input button's order:
+
+| `input` | The mains | The subs | Volume, EQ, governor | Delay |
+|---|---|---|---|---|
+| `stream` | squeezelite's sources through the Sabre | the mains' sum | yes | the source's |
+| `line` | the ADC through squeezelite's output (a source, as the test tones are) and the Sabre | the mains' sum | yes, and the governor's thermal limit | ~0.1 s (squeezelite's 64 ms DMA and its 2048-frame blocks) |
+| `dj_direct` | the line in straight to the amps (analog) | the ADC's samples, inverted (C5), straight to I2S1 through a ~5 ms queue | sub level only | none on the mains; ~10 ms on the subs |
+
+- **The line in as a source** (`hifi_main.c` `line_main`, the patch's
+  `hifi_line_start`): 128-frame reads from I2S0's RX go into squeezelite's
+  output buffer, at most 20 ms ahead of it; the ADC and the DAC share
+  I2S0's clock, so it holds there, and a hiccup is cut back rather than
+  played late from then on. A stream or a test tone that starts takes the
+  output; the line in comes back when it stops. Volume up/down then work
+  on the receiver's own volume.
+- **DJ direct's subs:** I2S1 is reinstalled with 4 × 64 frames for DJ
+  direct and fed the ADC's samples from the same task, so the subs follow
+  the analog mains by about 10 ms (about 3 m of distance), not squeezelite's
+  0.1 s. The same samples also go to squeezelite's output at unity, which
+  keeps I2S0's clock (the ADC's) running; the amps don't hear that copy.
+- **DJ direct's guard** (`core/hifi_line.c`, host-tested; review-3
+  R3-SYSTEM-4): the governor can't turn the analog path down, so a guard
+  watches it. It averages the input power over 60 s, the larger of the
+  INA186's ISENSE × VBUS and an estimate from the ADC's copy (scaled as
+  the governor scales the DAC's samples), against the amps' thermal budget
+  as input power (the governor's thermal cap / 0.88 + 4 W idle: Ultra one
+  zone 14.2 W, both 23.3 W, Plus 25.6 W). It also trips on OTW_CLIP low
+  for 200 ms. Then the input moves to `line`, through the governor, with
+  the amps held in reset across the switch as any input change does; the
+  choice in flash stays DJ direct, so a reboot brings it back. `/state`
+  `audio.dj_guard` shows `in_w`, `limit_w` and what last `tripped` it.
+  The FLX4 at full level on Ultra (≈8 W/ch of DJ program, 1.8× the
+  budget) trips it inside a minute, before the chips reach OTE; on Plus
+  the same program is 0.7× and plays on.
+
+### Ultra's front board
+
+- **Its TCA9535 at 0x27** shares the I2C bus and, wired-OR, the core
+  expander's INT on GPIO39. The controls task reads it with the core's
+  every time (INT or 10 ms), which clears its INT; before, nothing read it,
+  so the first knob turn latched GPIO39 low for good (R3-DIGITAL-3).
+- **Buttons:** knob push play/pause (hold: standby), BTN1 input (hold:
+  mute), BTN2 previous, BTN3 next. The knob itself is read on the core's
+  expander as on Plus.
+- **RGB LED:** green when ready, blue blinking with no network (setup),
+  red blinking with the amps latched off by faults. Red off is an input,
+  not a high output, since 1.7 V could just light it (ultra-front B8).
+- **The LCD** is squeezelite's own display (now playing from every
+  source): `SPI_CONFIG data=33,clk=32,dc=15`, `DISPLAY_CONFIG
+  SPI,driver=ST7789,width=320,height=240,cs=-1,mode=3,speed=20000000,rotate`
+  (CS is tied low on the core, R57, so SPI mode 3). The patch calls
+  `hifi_display_reset()` at the top of `display_init`, which pulses
+  LCD_RST (the front's P10) low for 10 ms and waits 120 ms: the ST7789
+  driver sends no software reset, and an ESP32 restart doesn't reset the
+  front's expander. Both strings are in NVS (`spi_config`,
+  `display_config`), so a panel that comes up mirrored or rotated is
+  fixed remotely by adding `HFlip`/`VFlip` or dropping `rotate`.
+- **Backlight** (core expander P06): on while something plays and for a
+  minute after a control is touched (and the first minute after boot).
 
 ## Network, app and console
 
@@ -362,14 +441,20 @@ in the Plus firmware task.
 - **Unchecked until a board:** volume, now playing and the remote. That
   means the ES8388 LOUT1/ROUT1 volume and mute in DJ direct, which phones
   send AVRCP metadata, and NEC decoding of real remotes on GPIO14.
-- **Not built yet:** LMS's track text (see above). On Plus/Ultra: line-in
-  capture from the ES7243E and the loopback taps (`capture` answers 404:
-  the ADC's registers aren't set up), a crossover and per-sub delay for
-  the subs, Ultra's optical input (the ES9018K2M's S/PDIF select), and
-  Ultra's front board (its TCA9535 buttons, the LCD), whose pin map
-  (`boards/ultra-front`) isn't on main yet.
-- **Plus/Ultra, unchecked until a board:** the ES9018K2M's 16-bit word
-  length at 32 BCLK per frame; I2S1 as a slave on I2S0's pins (the
+- **Not built yet:** LMS's track text (see above). On Plus/Ultra: the
+  API's `capture` from the ES7243E and the loopback taps (`capture`
+  answers 404; the ADC plays the line in, and TAP_SEL stays on the line),
+  a crossover and per-sub delay for the subs, Ultra's optical input (the
+  ES9018K2M's S/PDIF select), and a screen of our own on Ultra beyond
+  squeezelite's now-playing (the charger's power, the input).
+- **Plus/Ultra, unchecked until a board:** the ES7243E's set-up at 64 fs
+  with MCLK from BCLK (the first thing bring-up checks: `selftest`
+  `adc_i2c`, then the line in's `audio.level_dbfs` with a source plugged
+  in), its left/right order in the 32-bit RX words, and the ADC's full
+  scale against the halved line (~1 Vrms; a 2.1 Vrms deck may clip it
+  slightly); the line in's real delay; the LCD's orientation and colour
+  order; the ES9018K2M's 32-bit word length at 64 BCLK per frame; I2S1 as
+  a slave on I2S0's pins, reinstalled for DJ direct (the
   architecture's assumption: blocks.md; QEMU has no I2S, so neither
   squeezelite's I2S0 nor the sub's I2S1 starts there); the CH224Q's answer to a voltage
   request; the knob's direction (swap `enc_a`/`enc_b` in `board_core.c`

@@ -24,6 +24,7 @@ void hifi_i2c_ensure(void);       /* installs the I2C driver if squeezelite hasn
 void hifi_main_action(int action); /* a hifi_ir_action_t, from a button */
 void hifi_main_knob(int detents);
 bool hifi_main_amp_latched(void);
+bool hifi_main_audio_active(void); /* something plays above about -77 dBFS */
 void hifi_main_gov_amps(int n);    /* stereo amps playing: 2 with Ultra's zone B */
 /* The address the box is reached at: the active network interface's (Wi-Fi
  * station or Ethernet; never the setup access point's). False, and ip "",

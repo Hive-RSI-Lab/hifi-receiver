@@ -60,7 +60,8 @@
 
 /* the I2C parts */
 #define ES9018_ADDR 0x48 /* Sabre ES9018K2M, the mains DAC */
-#define ES7243_ADDR 0x10 /* ES7243E, the line-in ADC */
+#define ES7243_ADDR 0x10 /* ES7243E, the line-in ADC: 0010 AD2 AD1 AD0, AD0/AD1 low; */
+#define ES7243_ADDR_ALT 0x14 /* AD2 shares SDOUT, so the firmware tries both (known-unknowns parts:28) */
 /* TCA9555 at 0x20 on the board as drawn; the first-spin review swaps in a
  * TCA9539 (same registers, a reset pin), whose address is 0x74-0x77.
  * The firmware takes the first that answers. */
@@ -86,13 +87,33 @@
 #define EXP_ENC_SW 12     /* Plus: the knob's push */
 #define EXP_BTN_1 13      /* Plus: source */
 #define EXP_BTN_2 14      /* Plus: next */
-#define EXP_TAP_SEL 15    /* P17 (TAP_SEL_IO): the ADC's tap/line-in select through Q7 (review-2
-                          * AUDIO-3, DIGITAL-16); left an input, Q7's base pull-down keeps
-                          * the ADC on the RCA line in */
+#define EXP_TAP_SEL 15    /* P17 (TAP_SEL_IO), an output: low (the default, as Q7's base
+                          * pull-down holds it) puts the ADC on the RCA line in, high on the
+                          * speaker taps (C6; review-3 R3-DIGITAL-4) */
+#define EXP_REG_OUT1 0x03
 #define EXP_CFG0 0x00
-#define EXP_CFG1 0xFF
+#define EXP_CFG1 0x7F
+
+/* Ultra's front board (boards/ultra-front): a TCA9535 at 0x27 on the same
+ * I2C, its INT wired-OR onto EXP_INT, so every interrupt reads it too */
+#define FRONT_ADDR 0x27
+#define FRONT_ENC_SW 2    /* P02; P00/P01 are the knob, which core's own P12/P13 read */
+#define FRONT_BTN_1 3     /* P03..P05, low = pressed (10k pull-ups) */
+#define FRONT_LCD_RST 8   /* P10, high runs the panel (R8 pulls it up) */
+#define FRONT_LED_R 9     /* P11..P13, the RGB LED's cathodes, low = lit; red off is an */
+#define FRONT_LED_G 10    /* input, since 1.7 V could just light it (blocks.md B8) */
+#define FRONT_LED_B 11
+#define FRONT_DIM_MS 60000 /* the backlight goes off this long after a touch, when nothing plays */
 
 #define TONE_RATE 48000
 
+/* the line in: core's I2S0 runs 32-bit slots (DAC_CONFIG bits=32 in the
+ * patch), so BCLK is 64 fs, the least the ES7243E takes as its clock */
+#define LINE_SLOT_BITS 32
+#define SUB_DMA_LEN 256   /* frames per buffer: matches I2S0's, so the subs line up with the mains */
+#define SUB_DMA_COUNT 12
+#define SUB_DIRECT_DMA_LEN 64 /* DJ direct: ~5 ms of buffer, so the subs follow the analog mains */
+#define SUB_DIRECT_DMA_COUNT 4
+
 /* what this board's firmware does besides the shared parts */
-#define HIFI_HAS_CAPTURE 0 /* the ES7243E's registers aren't set up yet */
+#define HIFI_HAS_CAPTURE 0 /* the API's capture is the ES8388's; core's ADC plays the line in instead */

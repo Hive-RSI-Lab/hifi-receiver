@@ -121,7 +121,7 @@ def core_extra(comps, nets, pn, at):
             'EXP_PVDD_EN': 'PVDD_EN', 'EXP_DAC_EN': 'DAC_EN', 'EXP_PHY_RST': 'PHY_RST',
             'EXP_LCD_BL': 'LCD_BL', 'EXP_LED': 'LED_STATUS', 'EXP_AMP_FAULT': 'AMP_FAULT',
             'EXP_AMP_OTW': 'AMP_OTW', 'EXP_ENC_A': 'ENC_A', 'EXP_ENC_B': 'ENC_B',
-            'EXP_ENC_SW': 'ENC_SW', 'EXP_BTN_1': 'BTN_1', 'EXP_BTN_2': 'BTN_2'}
+            'EXP_ENC_SW': 'ENC_SW', 'EXP_BTN_1': 'BTN_1', 'EXP_BTN_2': 'BTN_2', 'EXP_TAP_SEL': 'TAP_SEL_IO'}
     tca_pin = {b: str(4 + b) if b < 8 else str(13 + b - 8) for b in range(16)}  # P00..P07 = 4..11, P10..P17 = 13..20
     used = set()
     for k, net in bits.items():
@@ -151,6 +151,14 @@ def core_extra(comps, nets, pn, at):
         if m:
             want = int(m.group(1))
     chk(want in (-1, phyad), f"core LAN8720A PHYAD0 strap -> address {phyad} (pin 10 net {strap}); squeezelite queries address {want}")
+
+# Ultra's LCD on the core's ESP32 (through J3 to the front board): squeezelite's SPI_CONFIG
+ucfg = open(f"{FW}/board/ultra/sdkconfig.defaults").read()
+spi = re.search(r'^CONFIG_SPI_CONFIG="([^"]*)"', ucfg, re.M).group(1)
+spi = dict(kv.split('=') for kv in spi.split(',') if '=' in kv)
+core_out += [(int(spi.get('data', spi.get('mosi', -1))), 'LCD_MOSI', 'out'), (int(spi.get('clk', -1)), 'LCD_SCLK', 'out'),
+             (int(spi.get('dc', -1)), 'LCD_DC', 'out')]
+chk(int(C['EXP_CFG1'], 16) >> 7 & 1 == 0, "core expander P17 (TAP_SEL) is an output (C6)")
 
 board('core', f"{ROOT}/boards/core/kicad/core.net", 'U7', C, 'HIFI_PLUS', core_out, core_in, core_extra)
 print(f"\n{len(fails)} mismatch(es)")

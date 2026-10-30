@@ -44,6 +44,26 @@ checks = [
     ("C2 OTW_CLIP acted on outside the self-test (-3 dB every 2 s)", (bool(otw_uses) or "p->otw" in core) and "bp.otw" in main),
     ("input (DJ direct) survives a power blip: saved to NVS", bool(re.search(r'"hifi_input"', main))),
 ]
+# review-3 R3-AUDIO-3 / R3-SYSTEM-4 / R3-DIGITAL-3 (task 261030-215602)
+patch = "".join(p.read_text() for p in sorted((R / "firmware/patches").glob("*.patch")))
+ultra_cfg = (R / "firmware/board/ultra/sdkconfig.defaults").read_text()
+line_main = func(main, "line_main")
+checks += [
+    ("A3 core I2S0 runs 64 fs (32-bit slots), the least the ES7243E clocks from BCLK: DAC_CONFIG bits=32",
+     bool(re.search(r'default "model=I2S,[^"]*bits=32" if HIFI_PLUS', patch)) and '"bits"' in patch),
+    ("A3 ES7243E set up: MCLK from BCLK (reg 0x02 bit 7), x8 premultiplier (reg 0x04 = 3)",
+     bool(re.search(r"\{0x02,\s*0x80\}", core)) and bool(re.search(r"\{0x04,\s*0x03\}", core))),
+    ("A3 line in plays through squeezelite's output (volume, EQ, governor, subs): hifi_line_start",
+     "hifi_line_start(" in line_main and "hifi_sink_write(" in line_main and "DECODE_HIFI_LINE" in patch),
+    ("A3/C5 DJ direct feeds the subs from the ADC, inverted", "hifi_bsp_sub_write(" in line_main
+     and bool(re.search(r"hifi_bsp_line_read\([^)]*\bdj\b", line_main))),
+    ("S4 DJ direct hands over to the governed line in on power or OTW", "hifi_djg_step(" in main
+     and bool(re.search(r"dj_trip\)\s*input_changed\(HIFI_INPUT_LINE", main))),
+    ("D3 Ultra's LCD configured (DISPLAY_CONFIG, SPI_CONFIG)", bool(re.search(r'CONFIG_DISPLAY_CONFIG="SPI,driver=ST7789', ultra_cfg))
+     and bool(re.search(r'CONFIG_SPI_CONFIG="[^"]*clk=32', ultra_cfg))),
+    ("D3 Ultra's front TCA9535 (0x27) read with the core's, so its INT clears", "front_read(" in func(core, "controls")),
+    ("D3 LCD_RST pulsed before the panel's set-up", "hifi_display_reset" in patch and "void hifi_display_reset(void)" in core),
+]
 bad = 0
 for name, ok in checks:
     print(("PASS " if ok else "FAIL ") + name)

@@ -58,3 +58,18 @@ void hifi_bsp_set_zone(bool on);
 /* An output block (hifi_dsp_process), after the governor: the core board
  * sends its sub DAC the sum of it. */
 void hifi_bsp_audio(const uint8_t *buf, uint32_t frames, int bytes_per_frame);
+
+/*
+ * The line in through an ADC (core: the ES7243E on I2S0's input; boards
+ * whose caps say line). hifi_main.c plays it through squeezelite's output,
+ * which runs I2S0, so the ADC has its clock.
+ */
+/* Sets the ADC up; once I2S0 runs. False: there is none, or it didn't answer */
+bool hifi_bsp_line_start(void);
+/* Up to `frames` (128 at most) of the ADC's samples as 16-bit stereo,
+ * inverted when asked (C5); 0 when none came within wait_ms */
+int hifi_bsp_line_read(int16_t *buf, int frames, bool invert, uint32_t wait_ms);
+/* DJ direct: the subs take the ADC's samples (hifi_bsp_sub_write) with a
+ * few ms of delay, not squeezelite's output with its DMA's */
+void hifi_bsp_sub_direct(bool on);
+void hifi_bsp_sub_write(const int16_t *buf, int frames);

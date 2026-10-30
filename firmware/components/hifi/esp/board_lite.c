@@ -165,3 +165,9 @@ bool hifi_bsp_parts_ok(void) {
 void hifi_bsp_set_zone(bool on) {}
 
 void hifi_bsp_audio(const uint8_t *buf, uint32_t frames, int bytes_per_frame) {}
+
+/* Lite's DJ direct is the ES8388's analog bypass: no line in through the DSP */
+bool hifi_bsp_line_start(void) { return false; }
+int hifi_bsp_line_read(int16_t *buf, int frames, bool invert, uint32_t wait_ms) { return 0; }
+void hifi_bsp_sub_direct(bool on) {}
+void hifi_bsp_sub_write(const int16_t *buf, int frames) {}

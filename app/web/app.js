@@ -20,7 +20,7 @@ const INPUT_NOTES = {
   stream: 'Plays what you send from Spotify, AirPlay, Bluetooth or Lyrion.',
   dj_direct: 'The RCA line in goes straight to the amplifier with no delay, for DJ decks and turntables. ' +
     'Streaming, EQ and the sub settings do not apply.',
-  line: 'The RCA line in through the digital path, so EQ and the sub settings apply. Adds a few milliseconds of delay.',
+  line: 'The RCA line in through the digital path, so the volume, EQ and the sub settings apply. Adds about 0.1 s of delay.',
   optical: 'The optical (TOSLINK) input, through EQ and the sub settings.',
 };
 const IR_ACTIONS = { volup: 'Volume up', voldown: 'Volume down', mute: 'Mute', toggle: 'Play / pause',
