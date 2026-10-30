@@ -913,10 +913,12 @@ static bool netif_ip(esp_netif_t *n, esp_netif_ip_info_t *ip) {
 }
 
 bool hifi_net_ip(char *buf, size_t n) {
-	/* the default route's interface first, then any other that is up: on
-	 * Ethernet (Plus/Ultra, QEMU's open_eth) WIFI_STA_DEF has no address */
+	/* the Wi-Fi station first, then Ethernet, then any other that is up: on
+	 * Ethernet (Plus/Ultra, QEMU's open_eth) WIFI_STA_DEF has no address.
+	 * (ESP-IDF v4.4 has no esp_netif_get_default_netif) */
 	esp_netif_ip_info_t ip = {0};
-	bool ok = netif_ip(esp_netif_get_default_netif(), &ip);
+	bool ok = netif_ip(esp_netif_get_handle_from_ifkey("WIFI_STA_DEF"), &ip) ||
+		  netif_ip(esp_netif_get_handle_from_ifkey("ETH_DEF"), &ip);
 	for (esp_netif_t *i = esp_netif_next(NULL); !ok && i; i = esp_netif_next(i)) ok = netif_ip(i, &ip);
 	if (buf && n) {
 		if (ok) snprintf(buf, n, IPSTR, IP2STR(&ip.ip));

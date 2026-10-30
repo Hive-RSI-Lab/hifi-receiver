@@ -3,7 +3,7 @@
 # host-tested (firmware/test); esp/ ties it to ESP-IDF and squeezelite-esp32.
 set(srcs
 	core/hifi_api.c core/hifi_b64.c core/hifi_boot.c core/hifi_capture.c core/hifi_exp.c
-	core/hifi_gov.c core/hifi_ir.c core/hifi_json.c core/hifi_meta.c core/hifi_ota.c core/hifi_pd.c
+	core/hifi_gov.c core/hifi_ir.c core/hifi_json.c core/hifi_line.c core/hifi_meta.c core/hifi_ota.c core/hifi_pd.c
 	core/hifi_power.c core/hifi_remote.c core/hifi_sha256.c core/hifi_tone.c core/hifi_update.c
 	core/hifi_vol.c esp/hifi_main.c esp/hifi_http.c esp/hifi_net.c esp/hifi_relay.c)
 

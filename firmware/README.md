@@ -115,6 +115,15 @@ build with ESP-IDF v4.4.8, `squeezelite.bin` 2.81 MB of its 3.06 MB slot
 `hifi_ir_learn`, `hifi_remote_status` and `hifi_ota_status` all link. Still
 no boot.
 
+**Line in, DJ direct's subs and guard, Ultra's front board (2026-10-30,
+task 261030-215602):** Lite, Plus and Ultra all build with ESP-IDF v4.4.8
+(`fw setup`): Lite's `squeezelite.bin` 2.82 MB and `recovery.bin` 1.57 MB,
+Plus's and Ultra's 2.83 MB and 1.59 MB, of 3.06 / 1.75 MB. Main hadn't
+built since f8e719b: `hifi_net_ip` called `esp_netif_get_default_netif`,
+which v4.4 doesn't have; it now looks at the station, then Ethernet. Not
+booted: QEMU has no I2S or I2C parts, so the ADC, the sub DAC and the
+front board need a board.
+
 `export.sh` refuses to run when the tools the steps above skip (gdb,
 openocd, the S2/S3/RISC-V compilers) are missing. To build without
 installing them, put on `PATH` by hand:
