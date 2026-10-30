@@ -62,7 +62,8 @@ jobs:
   # unchanged, with the test's tools, so the numbers match the Hive's own. A red here is no red
   # on main: the Hive then scores on its own machine.
   score:
-    if: github.event_name == 'push'
+    # On a dispatch too, so it can be tried on a branch; the Hive reads only main's.
+    if: github.event_name != 'pull_request'
     continue-on-error: true
     runs-on: ubuntu-latest
     timeout-minutes: 60

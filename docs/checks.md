@@ -257,7 +257,7 @@ can be traced to an hwde change.
 
 ## The score on the forge
 
-On every push to main, CI's `score` job runs `.hive/project.json`'s score
+On every push to main (and on a dispatch), CI's `score` job runs `.hive/project.json`'s score
 command, unchanged, with the same KiCad and hwde as the test (both jobs set
 them up through `.github/actions/tools`). Its last line is
 `hive-score: <number>`, and the Hive reads main's score from it instead of
