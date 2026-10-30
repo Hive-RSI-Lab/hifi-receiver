@@ -13,7 +13,9 @@ What mech's Tray gives and what this adds:
 - **Here:** per-side gaps (the ESP32 antenna overhangs the E edge 1.5 mm,
   Ultra's front board stands in front of the S edge), screws from below
   into lid pillars (as on Lite), round RCA holes with one port per barrel,
-  binding posts on the rear wall, heatsink room over each TPA3221, a long
+  binding posts on the rear wall, heatsink room over each TPA3221, a
+  chimney through the box (`vent_plan`: low inlets, a riser past the
+  board's S and E edges, a lid grille over the amps), a long
   knob for the core's vertical EC11 (Plus) and Ultra's front panel around
   `ultra-front`.
 
@@ -68,6 +70,17 @@ POST_DEPTH = 10.0   # shank, nut and lug inside the wall
 POST_X = (11.2, 30.2, 41.4, 60.4)  # 19 mm within a pair (dual banana plugs); between H1's pillar and J4
 FOOT_D, FOOT_DEPTH = 11.0, 0.8
 
+# The chimney (docs/review-2/thermal.md 6.2, task 261030-074523): air comes in low, rises past the
+# board's edges and leaves through the lid. Each stage is ~1500 mm2 open.
+RISER = {"plus": {"S": 7.0, "E": 7.0}, "ultra": {"E": 10.0}}   # board edge to inner wall; Ultra's S is
+                                                                # the gap behind its front board
+SLOT, PITCH = 2.0, 4.0                    # every vent: 2 mm slots (two nozzle widths of web each side)
+INLET_Z = {"plus": (-4.5, 6.0), "ultra": (-4.5, 10.5)}  # low wall slots: 0.5 over the floor to 4.4
+                                                        # (Ultra 8.9, two walls only) over the board top
+INLET_WALLS = {"plus": ("S", "E", "W"), "ultra": ("E", "W")}   # Ultra's S wall is the front panel
+W_INLET_Y = (50.0, 90.0)                  # the W wall clear of USB-C (J1), RJ45 (J2) and H3's foot
+GRILLE = (2.0, 46.0, 70.0, 88.0)          # lid slots over both amps, their inductors and terminals
+
 T_PCB = 1.6
 RCA_TOP = T_PCB + 27.0
 
@@ -101,6 +114,7 @@ class CoreTray(Tray):
     """mech's Tray (box-shaped: its plan follows `inner`) with a gap per side and a fixed cavity top."""
     gaps: dict = None
     ztop: float = 30.6
+    foot_in: float = 9.0       # rubber feet's centres in from the outer corners (feet() may move one)
 
     @property
     def inner(self):
@@ -170,6 +184,8 @@ def prepare(board: Board, variant: str, y_wall_n: float) -> dict:
 
     # Heatsink room over each fitted TPA3221's top slug: the free area round it, up to the lid.
     room = {"U15": (2.0, 52.5, 21.0, 64.5), "U16": (35.4, 52.5, 53.4, 64.5)}
+    # floor vents under both amps' places, fitted or not (PR #68 fits both on Plus too)
+    feats["amp_floor"] = list(room.values())
     for ref, (x0, y0, x1, y1) in room.items():
         if ref in gone:
             continue
@@ -207,7 +223,7 @@ def base(t: CoreTray, feats: dict, ports=("J1", "J2", "U19")):
         b -= cylinder(h.x, h.y, t.z_bottom - 1, 1.0, SCREW_CLEAR)
         b -= cylinder(h.x, h.y, t.z_bottom - 1, t.z_bottom + HEAD_DEPTH, SCREW_HEAD)
     # feet recesses
-    for fx, fy in ((x0 + 9, y0 + 9), (x1 - 9, y0 + 9), (x0 + 9, y1 - 9), (x1 - 9, y1 - 9)):
+    for fx, fy in feet(t):
         b -= cylinder(fx, fy, t.z_bottom - 1, t.z_bottom + FOOT_DEPTH, FOOT_D)
     b = t.cut_ports(b, refs=list(ports))
     cut = t.wall + 2
@@ -216,8 +232,12 @@ def base(t: CoreTray, feats: dict, ports=("J1", "J2", "U19")):
         b -= teardrop_y(x, yn, z, RCA_HOLE, cut, cap=RCA_CAP)
     for _, x, z in feats.get("posts", []):
         b -= teardrop_y(x, yn, z, POST_HOLE, cut)
-    for _, hx0, hy0, hx1, hy1, _ in feats.get("heatsinks", []):
+    under = feats.get("amp_floor", [h[1:5] for h in feats.get("heatsinks", [])])
+    for hx0, hy0, hx1, hy1 in under:
         b = t.vents(b, (hx0 + 1, hy0 - 2, hx1 - 1, hy1 + 2), along="y", where="floor")
+    if "vents" in feats:
+        b = cut_vents(b, feats["vents"]["wall"], rounded_ends=False)
+        b = cut_vents(b, feats["vents"]["floor"])
     return b
 
 
@@ -227,6 +247,8 @@ def lid(t: CoreTray, feats: dict):
     for h in t.board.holes:
         l += cylinder(h.x, h.y, T_PCB + PILLAR_SHORT, t.z_top + 0.01, PILLAR_OD)
         l -= cylinder(h.x, h.y, T_PCB, t.z_top + LID - 0.8, PILLAR_PILOT)
+    if "vents" in feats:                 # the grille covers the amps
+        return cut_vents(l, feats["vents"]["lid"])
     for _, hx0, hy0, hx1, hy1, _ in feats.get("heatsinks", []):
         l = t.vents(l, (hx0, hy0 - 2, hx1, hy1 + 2), along="y")
     return l
@@ -245,6 +267,117 @@ def button(t: CoreTray, lid_part, ref, d=4.6, rim=0.8, flange=1.5):
 def tray(board: Board, variant: str, gaps: dict, z_top: float) -> CoreTray:
     return CoreTray(board, wall=WALL, floor=FLOOR, lid_t=LID, gap=GAP["W"], standoff=STANDOFF,
                     boss_d=STANDOFF_OD, gaps=gaps, ztop=z_top, shape="box")
+
+
+# --- the chimney ---------------------------------------------------------------
+
+def starts(a0, a1, slot=SLOT, pitch=PITCH):
+    """Where slots `slot` wide every `pitch` start, as many as fit from a0 to a1."""
+    out, a = [], a0
+    while a + slot <= a1 + 1e-6:
+        out.append(a)
+        a += pitch
+    return out
+
+
+def feet(t: CoreTray):
+    """The rubber feet's centres, foot_in from each outer corner. A foot whose recess would leave a
+    web under 1 mm to a screw's counterbore moves diagonally until it clears it or runs into it:
+    Ultra's 10 mm E riser put two of them 0.3 mm from H1's and H2's."""
+    x0, y0, x1, y1 = t.outer
+    reach = (SCREW_HEAD + FOOT_D) / 2
+    out = []
+    for cx, cy, sx, sy in ((x0, y0, 1, 1), (x1, y0, -1, 1), (x0, y1, 1, -1), (x1, y1, -1, -1)):
+        for f in (t.foot_in, t.foot_in - 1, t.foot_in - 2, t.foot_in - 3, t.foot_in + 1, t.foot_in + 2):
+            fx, fy = cx + sx * f, cy + sy * f
+            webs = [math.hypot(fx - h.x, fy - h.y) - reach for h in t.board.holes]
+            if all(w >= 1.0 or w <= 0.0 for w in webs):
+                break
+        out.append((fx, fy))
+    return out
+
+
+def vent_plan(t: CoreTray, variant: str) -> dict:
+    """The box's through-flow vents as (x0, y0, z0, x1, y1, z1) boxes, and their open areas in mm2:
+    inlet (low wall slots and floor slots beside the board), riser (the strips between the board's
+    S and E edges and the walls, less whatever stands in them) and outlet (lid slots)."""
+    ix0, iy0, ix1, iy1 = t.inner
+    ox0, oy0, ox1, oy1 = t.outer
+    w, h = t.board.size
+    z0, z1 = INLET_Z[variant]
+    lh, lt, lg = t.lip
+    s0 = iy0 if variant == "plus" else FB_BACK   # Ultra: the strip behind its front board
+    plan = {"wall": [], "floor": [], "lid": []}
+    walls = INLET_WALLS[variant]
+    if "S" in walls:                      # skip the IR window's span
+        u = t.board.part("U18")
+        for x in starts(ix0 + 3, ix1 - 3):
+            if not (u.bbox[0] - 3 < x + SLOT and x < u.bbox[2] + 3):
+                plan["wall"].append((x, oy0 - 1, z0, x + SLOT, iy0 + 1, z1))
+    if "E" in walls:
+        for y in starts(max(iy0, -4.0), iy1 - 3):
+            plan["wall"].append((ix1 - 1, y, z0, ox1 + 1, y + SLOT, z1))
+    if "W" in walls:
+        for y in starts(*W_INLET_Y):
+            plan["wall"].append((ox0 - 1, y, z0, ix0 + 1, y + SLOT, z1))
+    # floor slots in the riser strips, clear of the rubber feet
+    fr = FOOT_D / 2 + 1.0
+    def off_feet(x0, y0, x1, y1):
+        return all(not (x0 - fr < fx < x1 + fr and y0 - fr < fy < y1 + fr) for fx, fy in feet(t))
+    zf0, zf1 = t.z_bottom - 1, t.z_floor + 0.01
+    if s0 < -3.0:                         # S strip
+        for x in starts(ix0 + 3, ix1 - 3):
+            r = (x, s0 + 0.4, x + SLOT, -0.6)
+            if off_feet(*r):
+                plan["floor"].append((r[0], r[1], zf0, r[2], r[3], zf1))
+    for y in starts(iy0 + 3, iy1 - 3):    # E strip
+        r = (w + 1.5, y, ix1 - 0.8, y + SLOT)   # 1.1 mm clear of the E holes' feet
+        if r[2] - r[0] >= SLOT and off_feet(*r):
+            plan["floor"].append((r[0], r[1], zf0, r[2], r[3], zf1))
+    # lid: the grille over the amps, and slots over the E strip inside the lip
+    zl0, zl1 = t.z_top - 0.01, t.z_top + t.lid_t + 1
+    gx0, gy0, gx1, gy1 = GRILLE
+    for x in starts(gx0, gx1):
+        plan["lid"].append((x, gy0, zl0, x + SLOT, gy1, zl1))
+    ex0, ex1 = w + 0.5, ix1 - lg - lt - 0.6
+    for y in starts(4.0, h - 4.0):
+        plan["lid"].append((ex0, y, zl0, ex1, y + SLOT, zl1))
+
+    def open_mm2(cuts, a, b):           # a slot's rounded ends (lid, floor) take (4 - pi) r^2
+        return sum((c[a + 3] - c[a]) * (c[b + 3] - c[b]) for c in cuts)
+    end = (4 - math.pi) * (SLOT / 2) ** 2
+    plan["inlet_mm2"] = (SLOT * (z1 - z0) * len(plan["wall"])
+                         + open_mm2(plan["floor"], 0, 1) - end * len(plan["floor"]))
+    plan["outlet_mm2"] = open_mm2(plan["lid"], 0, 1) - end * len(plan["lid"])
+    plan["riser_mm2"] = riser_mm2(t, s0)
+    plan["stack_mm"] = t.z_top + t.lid_t - (z0 + z1) / 2
+    return plan
+
+
+def riser_mm2(t: CoreTray, s0: float, step=0.1) -> float:
+    """Open plan area between the board's S edge and s0 (the wall, or Ultra's front board) and
+    between its E edge and the wall, at the board's level: the strips less every part's footprint
+    standing in them (the ESP32's antenna, the front board's leads)."""
+    ix0, iy0, ix1, iy1 = t.inner
+    w, h = t.board.size
+    strips = [(ix0, s0, ix1, 0.0), (w, 0.0, ix1, iy1)]
+    boxes = [p.bbox for p in t.board.parts if p.z[1] > -0.5 and p.z[0] < T_PCB + 0.5]
+    n = 0
+    for sx0, sy0, sx1, sy1 in strips:
+        if sx1 - sx0 < step or sy1 - sy0 < step:
+            continue
+        xs = [sx0 + (i + 0.5) * step for i in range(int((sx1 - sx0) / step))]
+        ys = [sy0 + (j + 0.5) * step for j in range(int((sy1 - sy0) / step))]
+        for x in xs:
+            hit = [b for b in boxes if b[0] <= x <= b[2]]
+            n += sum(1 for y in ys if not any(b[1] <= y <= b[3] for b in hit))
+    return n * step * step
+
+
+def cut_vents(part, cuts, rounded_ends=True):
+    for x0, y0, z0, x1, y1, z1 in cuts:
+        part -= rounded(x0, y0, x1, y1, z0, z1, SLOT / 2 - 0.01) if rounded_ends else block(x0, y0, z0, x1, y1, z1)
+    return part
 
 
 # --- Plus: knob and buttons through the lid, IR and LED on the core ---------------
@@ -286,7 +419,7 @@ def light_pipe(t: CoreTray, lid_part, ref, od=3.6, idd=2.0, gap=0.6, dy=0.0):
 
 def build_plus(board: Board) -> dict:
     z_top = RCA_TOP + TOP_CLEAR
-    gaps = dict(GAP)
+    gaps = dict(GAP, **RISER["plus"])
     y_wall_n = board.size[1] + gaps["N"]
     feats = prepare(board, "plus", y_wall_n)
     add_heatsinks(board, feats, z_top)
@@ -300,6 +433,7 @@ def build_plus(board: Board) -> dict:
     board.parts.append(box_part("SW1_bushing", e.x - 3.5, e.y - 3.5, T_PCB + ht, e.x + 3.5, e.y + 3.5,
                                 T_PCB + EC11_BUSHING, "EC11 M7 bushing"))
     t = tray(board, "plus", gaps, z_top)
+    feats["vents"] = vent_plan(t, "plus")
     b = base(t, feats)
     b = t.cut_ports(b, refs=["U18"])
     l = lid(t, feats)
@@ -469,7 +603,7 @@ def ultra_knob(front: Board, y_out):
 
 
 def build_ultra(board: Board) -> dict:
-    gaps = dict(GAP, S=-FB_WALL_IN)
+    gaps = dict(GAP, S=-FB_WALL_IN, **RISER["ultra"])
     z_top = Z_TOP_ULTRA
     y_wall_n = board.size[1] + gaps["N"]
     feats = prepare(board, "ultra", y_wall_n)
@@ -487,6 +621,7 @@ def build_ultra(board: Board) -> dict:
     board.ports.append(Port("F_U2", "S", [ux - 3.5, ux + 3.5, uz - 2.0, uz + 2.0],
                             FB_FACE - (u.z[1] - T_PCB), 0.0, "top"))
     t = tray(board, "ultra", gaps, z_top)
+    feats["vents"] = vent_plan(t, "ultra")
     b = base(t, feats)
     b, y_out = ultra_front_panel(t, b, front)
     l = lid(t, feats)

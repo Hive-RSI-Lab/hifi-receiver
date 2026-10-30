@@ -27,7 +27,7 @@ and say why.
 | Streaming | Spotify Connect, AirPlay 1, Bluetooth, Lyrion (LMS) | same | same |
 | Control | web app, 3 buttons, IR (bring your own remote) | web app, knob + 2 buttons, IR remote in box | web app, 2" colour screen, knob + 3 buttons, IR remote |
 | Boards | 1: `lite-main` (2-layer) | 1: `core` (4-layer) | 2: `core` fully populated + `ultra-front` |
-| Unit cost at 100, board + assembly + PCB | **$14.9** incl. binding posts (board alone $13.2 per `tools/hwcheck.py cost`; first-spin review fixes, CH340B and loopback taps included) | **$27.5** (review-2: through-hole USB-C, CH340B, TCA9539, self-measurement) | **$37.0** |
+| Unit cost at 100, board + assembly + PCB | **$14.9** incl. binding posts (board alone $13.2 per `tools/hwcheck.py cost`; first-spin review fixes, CH340B and loopback taps included) | **$27.5** (review-2: through-hole USB-C, CH340B, TCA9539, self-measurement) | **$37.9** (`tools/bom_estimate.py`, with the ultra-front parts; ultra-front alone $3.74 per `tools/hwcheck.py cost ultra-front`, plus the $2.43 LCD) |
 | Target retail (charger not included / with charger) | **$59 / $79** | **$129 / $159** | **$199 / $229** |
 | Build order | **first** | second | third |
 
@@ -287,12 +287,12 @@ Per unit, from [`bom-estimate.csv`](bom-estimate.csv)
 
 | | Lite ×10 | Lite ×100 | Plus ×10 | Plus ×100 | Ultra ×10 | Ultra ×100 |
 |---|---|---|---|---|---|---|
-| Parts on the board | $11.74 | $9.99 | $22.70 | $18.57 | $31.70 | $25.91 |
-| JLC assembly (setup, stencil, $3 per unique extended part, joints) | $7.68 | $1.65 | $11.17 | $2.71 | $14.19 | $3.48 |
+| Parts on the board | $11.74 | $9.99 | $22.70 | $18.57 | $32.55 | $26.63 |
+| JLC assembly (setup, stencil, $3 per unique extended part, joints) | $7.68 | $1.65 | $11.17 | $2.71 | $15.17 | $3.65 |
 | PCB (hwde price points × 2.5 calibration) | $0.50 | $0.62 | $2.97 | $2.31 | $3.47 | $2.93 |
 | Off-board (heatsink, remote, FFC cable) | – | – | $2.10 | $1.40 | $3.20 | $2.15 |
-| **Per unit** | **$19.92** | **$12.26** | **$38.95** | **$24.99** | **$52.56** | **$34.47** |
-| Unique extended parts / SMT joints / THT joints | 17 / 394 / 18 | | 26 / 646 / 39 | | 29 / 861 / 48 | |
+| **Per unit** | **$19.92** | **$12.26** | **$38.95** | **$24.99** | **$54.39** | **$35.36** |
+| Unique extended parts / SMT joints / THT joints | 17 / 394 / 18 | | 26 / 646 / 39 | | 32 / 906 / 48 | |
 
 **Basic vs extended:** nearly every IC is an **extended** part, $3 per unique
 part per order. That is why the per-unit cost falls so far from ×10 to ×100.
@@ -420,10 +420,21 @@ units the Hive builds for the person need none of it.
     beside a 127 dB DAC.
   - **Why one layout:** one layout, one bring-up and one firmware board file
     serve two tiers.
-- **`ultra-front`: Ultra only, a 2-layer board** of about 100 × 40 mm with the
-  LCD, knob, 3 buttons, IR and a status LED, on a 20-pin 0.5 mm FFC. Ultra's
+- **`ultra-front`: Ultra only, a 2-layer board** of 110 × 40 mm with the
+  LCD, knob, 3 buttons, IR and an RGB status LED, on a 20-pin 0.5 mm FFC. Ultra's
   front panel is what makes it feel finished, and keeping it off the core
   stops the core from depending on the enclosure.
+  - **Built:** [`boards/ultra-front/`](../boards/ultra-front/README.md), with
+    its FFC pinout and the reasons for each choice.
+  - **Fewer core GPIOs:** a TCA9535 I²C expander on the front board reads the
+    knob and buttons, and drives the LED and the LCD reset. So the core gives
+    it only SPI (4 pins), backlight PWM, an interrupt and the IR line, plus
+    the shared I²C. The knob's A/B lines are also brought out, for the core
+    to use if it has 2 pins spare.
+  - **The LCD is plugged in by hand:** JLC can't place it. The panel's
+    12-pin tail goes into a socket on the board at final assembly.
+  - **Why 110 mm, not 100:** the 51.8 mm panel, its 20.7 mm tail and the knob
+    column don't fit in 100 mm.
 
 ### Which tier is built first, and why
 
@@ -461,11 +472,13 @@ The brief asks for a 3D-printable enclosure made in Onshape.
   - a printer or JLC's 3D-printing service. Ordering is the person's money.
 - **Material:** **PETG or ASA, not PLA,** because the TPA3221 heatsink can
   reach 60–80 °C and PLA softens at about 55 °C.
-- **Plus/Ultra lid:** vent slots over the heatsink.
+- **Plus/Ultra vents:** a chimney through the box, about 1500 mm² open at
+  each stage: low wall and floor slots, a riser past the board's edges and
+  a lid grille over the amps ([`enclosure/README.md`](../enclosure/README.md#what-is-where-board-frame-n--rear-s--front-w--left-seen-from-the-front)).
 - **Fallback without Onshape:** the enclosure task can model it in
   CadQuery/OpenSCAD inside the Hive and export STL/STEP, so nothing waits on
   access.
-- **Plus and Ultra: done in code** ([`enclosure/`](../enclosure/README.md#plus-and-ultra)), fitted to the routed `core` and, for Ultra, `ultra-front`: about 134 g and 147 g of PETG. Ultra needs a 20-pin 0.5 mm type-B FFC, 30-50 mm.
+- **Plus and Ultra: done in code** ([`enclosure/`](../enclosure/README.md#plus-and-ultra)), fitted to the routed `core` and, for Ultra, `ultra-front`: about 134 g and 146 g of PETG. Ultra needs a 20-pin 0.5 mm type-B FFC, 30-50 mm.
 - **Lite: done in code.** It is a build123d model in
   [`enclosure/`](../enclosure/README.md), 106 x 96 x 47 mm. It is fitted to
   `lite-main`'s KiCad file and fit-checked against it, and exported as STEP

@@ -1,0 +1,4 @@
+- P2 architecture: one sheet, 8 blocks (architecture/blocks.md). TCA9535 @0x27 does encoder/buttons/LED/LCD reset to save ESP32 GPIOs; SPI, BL PWM, INT, IR and ENC_A/B reach J1.
+- Power: +3V3 ~30 mA, +5V ~70 mA from core; no regulators. Backlight 49-59 mA via 2x75R + AO3400A.
+- Stackup JLC2313_1.6 2L. Outline 110 x 40 mm (product.md said about 100 x 40: the 51.8 mm LCD, its 20.7 mm tail and the knob column need 110).
+- Coverage: 4 slots, all gap (no checklists for led-indicator/load-switch, no extraction JSON for 2 ICs); research not launched (decision).

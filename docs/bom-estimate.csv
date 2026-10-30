@@ -34,7 +34,11 @@ network,RJ45 with magnetics,C12074,HR911105A,extended,1.456,1.020,12,tht,0,1,1,L
 controls,Rotary encoder with push,C361165,EC11E1834403,extended,1.474,1.395,7,tht,0,1,1,LCSC live 2026-10-28
 ultra,2.0 in 320x240 IPS LCD (ST7789 SPI),C5329582,HS20HS072RX,extended,3.049,2.411,0,hand,0,0,1,LCSC live 2026-10-28
 ultra,Optical (TOSLINK) receiver,C17223620,PLR237/T8BK,extended,1.399,1.248,3,tht,0,0,1,LCSC live 2026-10-28 (stock 240)
-ultra,FFC connector 20P 0.5 mm (core<->front board),C262667,AFC01-S20FCA-00,extended,0.100,0.081,22,smt,0,0,2,LCSC live 2026-10-28
+ultra,FFC connector 20P 0.5 mm (core<->front board),C2856803,FPC-05F-20PH20,extended,0.105,0.090,22,smt,0,0,2,LCSC live 2026-10-28 (ultra-front BOM)
+ultra,FPC connector 12P 0.5 mm dual contact (LCD tail),C2856829,FPC-05FB-12PH20,extended,0.162,0.140,14,smt,0,0,1,LCSC live 2026-10-28 (ultra-front BOM)
+ultra,I2C GPIO expander 16-bit (front panel),C22396388,TCA9535PWR(UMW),extended,0.495,0.420,24,smt,0,0,1,LCSC live 2026-10-28 (ultra-front BOM)
+ultra,RGB status LED common anode,C273610,TJ-S1615SW6TGLCCYRGB-A5,extended,0.099,0.080,4,smt,0,0,1,LCSC live 2026-10-28 (ultra-front BOM)
+ultra,Backlight switch N-MOSFET,C20917,AO3400A,basic,0.089,0.070,3,smt,0,0,1,LCSC live 2026-10-28 (ultra-front BOM)
 misc,Small passives (R/C 0402-0805 basic; per-tier count in qty columns) (+18 for the review-2 taps and bias),,(estimate),basic,0.004,0.003,2,smt,0,168,218,estimate: JLC basic R/C 0.001-0.01 each
 misc,Buck inductors + 10 uF/22 uF bulk MLCC + ferrites (lump),,(estimate),basic,0.40,0.30,20,smt,0,1,1,estimate
 misc,Status LEDs 0603,,(estimate),basic,0.010,0.010,2,smt,0,2,3,estimate
@@ -47,7 +51,7 @@ lite-board,CH224Q VHV,C15849,CL10A105KB8NNNC,basic,0.0146,0.0146,2,smt,13,0,0,"b
 lite-board,CH224Q Rset: 20 V (table 5-1),C25808,0603WAF1203T5E,basic,0.0015,0.0015,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
 lite-board,link: CH224Q I2C onto the codec bus (depopulate if its pull-up exceeds,C21189,0603WAF0000T5E,basic,0.0022,0.0022,2,smt,2,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
 lite-board,PG pull-up,C25804,0603WAF1002T5E,basic,0.0018,0.0018,2,smt,17,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
-lite-board,VBUS TVS 20 V standoff,C364296,SMBJ20A,extended,0.0565,0.0467,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
+lite-board,VBUS TVS 22 V standoff,C151920,SMBJ22A,extended,0.0686,0.0551,2,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-30"
 lite-board,PVDD high-side switch,C5125949,AO4485,extended,0.1820,0.1422,8,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
 lite-board,Q1 gate-source,C25803,0603WAF1003T5E,basic,0.0031,0.0031,2,smt,8,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
 lite-board,Q1 Miller cap series,C21190,0603WAF1001T5E,basic,0.0017,0.0017,2,smt,2,0,0,"boards/lite parts.json, LCSC live 2026-10-28"

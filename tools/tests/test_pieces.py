@@ -202,6 +202,7 @@ class Enclosure(Base):
 class Manual(Base):
     dirs = ("docs/manual", "docs/product.md", "docs/app.md", "docs/bench.md", "docs/firmware.md",
             "docs/test-api.md", "enclosure/README.md", "boards/lite-main/README.md", "boards/core/README.md",
+            "boards/ultra-front/README.md",
             "firmware/board", "firmware/patches", "firmware/upstream.lock", "firmware/components",
             "app/web/app.js", "bench/README.md")
 
