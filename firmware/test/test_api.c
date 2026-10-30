@@ -22,6 +22,9 @@ static struct {
 	hifi_meta_t playing;
 	int ir_learning, ir_forgot;
 	bool ir_learned[HIFI_IR_N];
+	bool core;        /* answer as Plus: the line in through the ADC */
+	bool dj_guard;
+	const char *dj_tripped;
 } m;
 
 static void m_info(hifi_info_t *i) {
@@ -34,7 +37,7 @@ static void m_info(hifi_info_t *i) {
 	i->flash_mb = 8;
 	i->psram_mb = 8;
 	snprintf(i->name, sizeof(i->name), "%s", m.name[0] ? m.name : "Living room");
-	i->caps = (hifi_caps_t) {.dj_direct = true, .eq_min_db = -12, .eq_max_db = 12, .sub_count = 2,
+	i->caps = (hifi_caps_t) {.dj_direct = true, .line = m.core, .eq_min_db = -12, .eq_max_db = 12, .sub_count = 2,
 				 .zones = 1, .pdo_v_max = 20};
 }
 
@@ -55,6 +58,10 @@ static void m_snapshot(hifi_snapshot_t *s) {
 	s->gov_gain_db = 0;
 	s->source = "lms";
 	s->input = m.input;
+	s->dj_guard = m.dj_guard;
+	s->dj_guard_w = 12.34f;
+	s->dj_guard_limit_w = 14.2f;
+	s->dj_guard_tripped = m.dj_tripped;
 	s->level_dbfs = -23.4f;
 	s->sub_on = m.sub_on != 0;
 	s->sub_db = m.sub_db;
@@ -221,6 +228,26 @@ static void amp_input_sub_control(void) {
 	CHECK(m.input == HIFI_INPUT_DJ_DIRECT);
 	CHECK_STR(out, "{\"ok\":true,\"input\":\"dj_direct\"}");
 	CHECK(call("POST", "/api/v1/input", "{\"input\":\"phono\"}") == 400);
+	/* the governed line in is the core board's: Lite has no ADC path for it */
+	CHECK(call("POST", "/api/v1/input", "{\"input\":\"line\"}") == 409);
+	CHECK(m.input == HIFI_INPUT_DJ_DIRECT);
+	m.core = true;
+	CHECK(call("GET", "/api/v1/info", NULL) == 200);
+	CHECK_HAS(out, "\"line_modes\":[\"dj_direct\",\"line\"]");
+	CHECK(call("POST", "/api/v1/input", "{\"input\":\"line\"}") == 200);
+	CHECK(m.input == HIFI_INPUT_LINE);
+	CHECK_STR(out, "{\"ok\":true,\"input\":\"line\"}");
+	CHECK(call("GET", "/api/v1/state", NULL) == 200);
+	CHECK_HAS(out, "\"input\":\"line\",\"tone\":");
+	m.dj_guard = true;
+	m.dj_tripped = "otw";
+	CHECK(call("GET", "/api/v1/state", NULL) == 200);
+	CHECK_HAS(out, "\"input\":\"line\",\"dj_guard\":{\"in_w\":12.3,\"limit_w\":14.2,\"tripped\":\"otw\"},\"tone\":");
+	m.dj_tripped = NULL;
+	CHECK(call("GET", "/api/v1/state", NULL) == 200);
+	CHECK_HAS(out, "\"tripped\":null}");
+	m.core = m.dj_guard = false;
+	m.input = HIFI_INPUT_DJ_DIRECT;
 
 	CHECK(call("POST", "/api/v1/sub", "{\"level_db\":6}") == 200);
 	CHECK_HAS(out, "\"sub\":{\"on\":false,\"level_db\":4.5}"); /* what the codec could do */
@@ -355,6 +382,7 @@ static void console(void) {
 	CHECK(CLI("amp", "reset"));
 	CHECK_STR(body, "{\"reset\":true}");
 	CHECK(CLI("input", "dj_direct"));
+	CHECK(CLI("input", "line"));
 	CHECK(CLI("sub", "-6"));
 	CHECK_STR(body, "{\"level_db\":-6}");
 	CHECK(CLI("control", "volup"));

@@ -43,6 +43,7 @@
 #include "hifi_http.h"
 #include "hifi_ir.h"
 #include "hifi_json.h"
+#include "hifi_line.h"
 #include "hifi_meta.h"
 #include "hifi_pd.h"
 #include "hifi_power.h"
@@ -56,6 +57,7 @@ extern void hifi_sink_start(uint32_t rate) __attribute__((weak));
 extern uint32_t hifi_sink_write(const uint8_t *data, uint32_t len) __attribute__((weak));
 extern void hifi_sink_stop(void) __attribute__((weak));
 extern uint32_t hifi_sink_queued_ms(void) __attribute__((weak));
+extern void hifi_line_start(uint32_t rate, bool unity) __attribute__((weak));
 extern int hifi_sink_source(void) __attribute__((weak));
 extern void equalizer_set_gain(int8_t *gain) __attribute__((weak));
 extern int set_squeezelite_player_name(FILE *f, const char *name) __attribute__((weak));
@@ -75,6 +77,13 @@ static hifi_input_t input = HIFI_INPUT_STREAM;
 static bool sub_on = true;
 static float sub_db = 0;
 static volatile bool codec_dirty = true; /* re-apply input/sub to the codec */
+/* the amps stay in shutdown until then: across an input change (the analog
+ * switch moves only with them off, firmware requirement C5) and for 2.5 s
+ * after the codec first takes its routing, so its VMID has settled before
+ * the amp hears it (L4); review-3 R3-SYSTEM-5 */
+static volatile uint32_t amp_hold_until, route_at;
+static bool codec_up;
+static uint32_t otw_ms, otw_clear_ms; /* the OTW step-down (C2) */
 static volatile uint32_t selftest_hold_until; /* keeps the amp awake for the self-test */
 static volatile bool capture_busy;   /* the codec's ADC is ours until the capture ends */
 
@@ -85,6 +94,14 @@ static hifi_meta_t meta;
 static hifi_ir_t ir;
 
 static volatile bool audio_active;   /* set by the audio thread */
+
+/* the line in through the ADC (boards whose caps say line: core) */
+#define LINE_RATE 48000
+#define LINE_BLOCK 128      /* frames a read: 2.7 ms */
+#define LINE_QUEUE_MS 20    /* ahead of squeezelite's output at most; more is dropped */
+static bool board_line;
+static volatile bool line_unity;     /* the line sink plays at unity (DJ direct) */
+static hifi_djg_t djg;               /* DJ direct's thermal guard */
 
 /* the tone player */
 static TaskHandle_t tone_task;
@@ -141,6 +158,8 @@ void hifi_i2c_ensure(void) {
 	ESP_LOGW(TAG, "codec driver didn't start; installed I2C %d ourselves", I2C_PORT);
 }
 
+static void input_changed(hifi_input_t in, bool save);
+
 /* ------------------------------------------------------------------ power task */
 
 static void power_task(void *arg) {
@@ -152,14 +171,20 @@ static void power_task(void *arg) {
 		hifi_bsp_power_in(now, &bp);
 
 		/* the routing: re-applied once the board's parts take it, and on request */
-		if (codec_dirty && !capture_busy) {
+		if (codec_dirty && !capture_busy && (int32_t) (now - route_at) >= 0) {
 			LOCK();
 			hifi_input_t in = input;
 			bool on = sub_on;
 			float db = sub_db;
 			hifi_vol_t v = vol;
 			UNLOCK();
-			if (hifi_bsp_route(in, on, db, &v, now)) codec_dirty = false;
+			if (hifi_bsp_route(in, on, db, &v, now)) {
+				codec_dirty = false;
+				if (!codec_up) {
+					codec_up = true;
+					amp_hold_until = now + 2500;
+				}
+			}
 		}
 
 		LOCK();
@@ -174,6 +199,32 @@ static void power_task(void *arg) {
 			hifi_contract_from(bp.sink_ok, bp.sink_ok ? bp.pd_status : 0, bp.pd_current, bp.vbus_v, &contract);
 			/* until PG, assume no more than a USB 2.0 port */
 			hifi_gov_set_supply(&gov, contract.v, pg ? contract.w : 2.5f);
+		}
+		/* an amp that warns it is hot: -3 dB every 2 s while it does, back up
+		 * 1 dB every 10 s once it has been clear for 10 s (requirement C2) */
+		if (bp.otw) {
+			otw_clear_ms = now;
+			if (now - otw_ms >= 2000) {
+				otw_ms = now;
+				gov.trim = fmaxf(gov.trim * 0.708f, 0.25f);
+				ESP_LOGW(TAG, "amp too hot: gain ceiling %.1f dB", 20 * log10f(gov.trim));
+			}
+		} else if (gov.trim < 1.0f && now - otw_clear_ms >= 10000 && now - otw_ms >= 10000) {
+			otw_ms = now;
+			gov.trim = fminf(gov.trim * 1.122f, 1.0f);
+		}
+		/* DJ direct is analog, out of the governor's reach: when the amps
+		 * get too hot for it, the governed line in takes over (R3-SYSTEM-4) */
+		const char *dj_trip = NULL;
+		if (board_line && input == HIFI_INPUT_DJ_DIRECT && power.out.amp_on) {
+			float meas = isnan(bp.vbus_i_a) ? NAN : bp.vbus_i_a * bp.vbus_v;
+			dj_trip = hifi_djg_step(&djg, now, 0.01f, meas, bp.otw, hifi_djg_limit_w(&gov.cfg, gov.amps));
+			if (dj_trip) {
+				ESP_LOGW(TAG, "DJ direct: %s (%.1f W of %.1f W): the line in goes through the governor now",
+					 !strcmp(dj_trip, "otw") ? "the amps warn they are hot" : "over the amps' thermal budget",
+					 hifi_djg_in_w(&djg), hifi_djg_limit_w(&gov.cfg, gov.amps));
+				input = HIFI_INPUT_LINE;
+			}
 		}
 		hifi_power_in_t in = {
 			.now_ms = now, .vbus_v = bp.vbus_v, .pvdd_v = bp.pvdd_v, .pg = bp.pg, .fault = bp.fault,
@@ -190,6 +241,8 @@ static void power_task(void *arg) {
 			ESP_LOGI(TAG, "power %s -> %s (VBUS %.2f V, PVDD %.2f V, PG %d)", hifi_power_state_name(before),
 				 hifi_power_state_name(power.state), bp.vbus_v, bp.pvdd_v, bp.pg);
 		UNLOCK();
+		if (dj_trip) input_changed(HIFI_INPUT_LINE, false); /* until it is chosen again */
+		if (!codec_up || (int32_t) (amp_hold_until - now) > 0) o.amp_on = false;
 		hifi_bsp_power_out(&o);
 		if (save_vol) {
 			char sv[8];
@@ -202,6 +255,8 @@ static void power_task(void *arg) {
 }
 
 bool hifi_main_amp_latched(void) { return power.latched; }
+
+bool hifi_main_audio_active(void) { return audio_active || tone_active; }
 
 void hifi_main_gov_amps(int n) { gov.amps = n; }
 
@@ -217,7 +272,7 @@ static void apply_volume(void) {
 	vol_changed_ms = now_ms();
 	UNLOCK();
 	if (direct) codec_dirty = true;
-	if (hifi_output_gain && !tone_active) hifi_output_gain(g, g);
+	if (hifi_output_gain && !tone_active && !line_unity) hifi_output_gain(g, g);
 }
 
 /* A source set its volume (set_volume in squeezelite). */
@@ -230,23 +285,43 @@ bool hifi_volume_hook(unsigned *left, unsigned *right) {
 	vol_changed_ms = now_ms();
 	UNLOCK();
 	*left = *right = g;
-	return !tone_active; /* a test signal plays at unity; the volume comes back after */
+	return !tone_active && !line_unity; /* a test signal (and DJ direct's line copy) plays at unity;
+					      * the volume comes back after */
 }
 
-/* volume up/down here rather than at the source: nothing streams, or DJ direct */
+/* volume up/down here rather than at the source: nothing streams, the line
+ * in (which plays at this volume), or DJ direct */
 static bool volume_is_local(void) {
 	LOCK();
-	bool direct = input == HIFI_INPUT_DJ_DIRECT;
+	bool here = input == HIFI_INPUT_DJ_DIRECT || input == HIFI_INPUT_LINE;
 	UNLOCK();
 	int s = hifi_sink_source ? hifi_sink_source() : 0;
-	return direct || s == 0;
+	return here || s == 0 || s == 6;
 }
 
+/* A new input: the amps go to shutdown, the routing moves 30 ms later and
+ * they come back 200 ms after the change; the choice survives a reboot
+ * (not the guard's move off DJ direct, so a reboot brings back what was
+ * chosen) */
+static void input_changed(hifi_input_t in, bool save) {
+	uint32_t now = now_ms();
+	amp_hold_until = now + 200;
+	route_at = now + 30;
+	codec_dirty = true;
+	if (in == HIFI_INPUT_DJ_DIRECT) hifi_djg_reset(&djg);
+	if (save) config_set_value(NVS_TYPE_STR, "hifi_input", in == HIFI_INPUT_DJ_DIRECT ? "dj" : hifi_input_name(in));
+}
+
+/* The Input button: streaming, then (where the board has it) the governed
+ * line in, then DJ direct */
 static void toggle_input(void) {
 	LOCK();
-	input = input == HIFI_INPUT_DJ_DIRECT ? HIFI_INPUT_STREAM : HIFI_INPUT_DJ_DIRECT;
+	if (input == HIFI_INPUT_STREAM) input = board_line ? HIFI_INPUT_LINE : HIFI_INPUT_DJ_DIRECT;
+	else if (input == HIFI_INPUT_LINE) input = HIFI_INPUT_DJ_DIRECT;
+	else input = HIFI_INPUT_STREAM;
+	hifi_input_t in = input;
 	UNLOCK();
-	codec_dirty = true;
+	input_changed(in, true);
 	apply_volume();
 }
 
@@ -391,6 +466,73 @@ static void tone_main(void *arg) {
 	}
 }
 
+/* ------------------------------------------------------------------ the line in */
+
+/*
+ * The line in through the ADC, for the governed line in and for DJ direct.
+ *
+ * Line in: the ADC's samples go into squeezelite's output as a source, as
+ * the test tones do, so they get the volume, the EQ, the governor (and its
+ * thermal limit) and the subs, as a stream does; behind squeezelite's DMA,
+ * about 0.1 s late. A stream or a tone that starts takes the output; the
+ * line in comes back when it stops.
+ *
+ * DJ direct: the mains are analog, so the same samples (inverted, C5) go
+ * to the subs straight, a few ms late, and to the guard's estimate. They go
+ * on into squeezelite's output too, at unity, which keeps I2S0 and the
+ * ADC's clock running; the amps don't hear that copy.
+ */
+static void line_main(void *arg) {
+	static int16_t buf[2 * LINE_BLOCK];
+	bool owns = false, owned_dj = false, adc = false, direct = false;
+	for (;;) {
+		hifi_input_t in = input;
+		bool dj = in == HIFI_INPUT_DJ_DIRECT;
+		bool want = (in == HIFI_INPUT_LINE || dj) && codec_up;
+		if ((want && dj) != direct) {
+			direct = want && dj;
+			hifi_bsp_sub_direct(direct);
+		}
+		int src = hifi_sink_source ? hifi_sink_source() : 0;
+		if (owns && src != 6) owns = false; /* a tone or a stream took the output */
+		if (!want && owns) {
+			hifi_sink_stop();
+			owns = false;
+		}
+		if (want && ((!owns && src == 0 && !tone_active) || (owns && owned_dj != dj))) {
+			hifi_line_start(LINE_RATE, dj);
+			owns = true;
+			owned_dj = dj;
+		}
+		/* unity only while DJ direct's copy holds the output: whatever plays
+		 * otherwise gets the volume */
+		if ((owns && dj) != line_unity) {
+			line_unity = owns && dj;
+			apply_volume();
+		}
+		if (!want) {
+			vTaskDelay(pdMS_TO_TICKS(50));
+			continue;
+		}
+		/* the ADC takes its clock from I2S0's BCLK, which runs once
+		 * something plays: the line in's own output, a stream or a tone */
+		if (!adc && src != 0) adc = hifi_bsp_line_start();
+		if (!adc) {
+			vTaskDelay(pdMS_TO_TICKS(500));
+			continue;
+		}
+		int n = hifi_bsp_line_read(buf, LINE_BLOCK, dj, 50);
+		if (n <= 0) continue;
+		if (dj) {
+			hifi_bsp_sub_write(buf, n);
+			hifi_djg_audio(&djg, hifi_line_block_w(&gov.cfg, buf, n, gov.amps), (float) n / LINE_RATE);
+		}
+		/* the ADC and the DAC share I2S0's clock, so the queue holds; after a
+		 * hiccup it is cut back rather than playing later from then on */
+		if (owns && hifi_sink_queued_ms() <= LINE_QUEUE_MS) hifi_sink_write((const uint8_t *) buf, n * 4);
+	}
+}
+
 /* ------------------------------------------------------------------ ops */
 
 static void op_info(hifi_info_t *i) {
@@ -413,9 +555,9 @@ static void op_info(hifi_info_t *i) {
 }
 
 static const char *source_name(void) {
-	static const char *names[] = {"idle", "lms", "bt", "airplay", "spotify", "test"};
+	static const char *names[] = {"idle", "lms", "bt", "airplay", "spotify", "test", "line"};
 	int s = hifi_sink_source ? hifi_sink_source() : 0;
-	return s >= 0 && s <= 5 ? names[s] : "idle";
+	return s >= 0 && s <= 6 ? names[s] : "idle";
 }
 
 static void read_eq(float eq[HIFI_EQ_BANDS]) {
@@ -441,6 +583,10 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	s->amp_latched = power.latched;
 	s->amp_faults = power.faults;
 	s->input = input;
+	s->dj_guard = board_line;
+	s->dj_guard_w = hifi_djg_in_w(&djg);
+	s->dj_guard_limit_w = hifi_djg_limit_w(&gov.cfg, gov.amps);
+	s->dj_guard_tripped = djg.tripped;
 	s->sub_on = sub_on;
 	s->sub_db = hifi_bsp_sub_db(sub_db);
 	s->vbus_i_a = vbus_i_a;
@@ -531,10 +677,13 @@ static void op_amp_reset(void) {
 }
 
 static int op_set_input(hifi_input_t in) {
+	if (in == HIFI_INPUT_LINE && !board_line) return 1;
 	LOCK();
+	bool changed = input != in;
 	input = in;
 	UNLOCK();
-	codec_dirty = true;
+	if (changed) input_changed(in, true);
+	else codec_dirty = true;
 	return 0;
 }
 
@@ -687,8 +836,7 @@ static void op_ir_forget(int a) {
 
 #if HIFI_HAS_CAPTURE
 static bool has_taps(void) {
-	if (HIFI_HAS_TAPS) return true;
-	char *s = config_alloc_get_str("hifi_taps", NULL, "0");
+	char *s = config_alloc_get_str("hifi_taps", NULL, HIFI_HAS_TAPS ? "1" : "0");
 	bool on = s && !strcmp(s, "1");
 	free(s);
 	return on;
@@ -921,6 +1069,18 @@ static bool hifi_init(void) {
 	hifi_vol_init(&vol, sv ? atoi(sv) : 30, s ? atoi(s) : 100);
 	free(sv);
 	free(s);
+	hifi_info_t bi;
+	memset(&bi, 0, sizeof(bi));
+	hifi_bsp_info(&bi);
+	board_line = bi.caps.line && hifi_line_start;
+	hifi_djg_cfg_t dc;
+	hifi_djg_cfg_default(&dc, &gc);
+	hifi_djg_init(&djg, &dc);
+	s = config_alloc_get_str("hifi_input", NULL, "stream");
+	if (s && !strcmp(s, "dj")) input = HIFI_INPUT_DJ_DIRECT;
+	else if (s && !strcmp(s, "line") && board_line) input = HIFI_INPUT_LINE;
+	else input = HIFI_INPUT_STREAM;
+	free(s);
 	hifi_meta_init(&meta);
 	hifi_ir_init(&ir);
 	s = config_alloc_get_str("hifi_ir", NULL, "");
@@ -929,6 +1089,7 @@ static bool hifi_init(void) {
 
 	xTaskCreatePinnedToCore(power_task, "hifi_power", 3072, NULL, ESP_TASK_PRIO_MIN + 3, NULL, 0);
 	if (hifi_sink_start) xTaskCreatePinnedToCore(tone_main, "hifi_tone", 4096, NULL, ESP_TASK_PRIO_MIN + 2, &tone_task, 1);
+	if (board_line) xTaskCreatePinnedToCore(line_main, "hifi_line", 4096, NULL, ESP_TASK_PRIO_MIN + 4, NULL, 1);
 	xTaskCreate(services_task, "hifi_svc", 3072, NULL, ESP_TASK_PRIO_MIN + 1, NULL);
 	hifi_remote_start(&hifi_ops);
 	hifi_bsp_start();

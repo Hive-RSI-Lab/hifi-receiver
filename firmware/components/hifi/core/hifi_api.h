@@ -26,6 +26,7 @@
 /* What the tier can do, so one web app serves all three. */
 typedef struct {
 	bool dj_direct;
+	bool line;         /* the line in through the ADC, the DSP and the governor */
 	float eq_min_db, eq_max_db;
 	int sub_count;
 	bool sub_crossover, sub_per_sub;
@@ -43,7 +44,11 @@ typedef struct {
 	hifi_caps_t caps;
 } hifi_info_t;
 
-typedef enum { HIFI_INPUT_STREAM = 0, HIFI_INPUT_DJ_DIRECT } hifi_input_t;
+typedef enum { HIFI_INPUT_STREAM = 0, HIFI_INPUT_DJ_DIRECT, HIFI_INPUT_LINE } hifi_input_t;
+
+/* "stream", "dj_direct", "line"; parse: false on an unknown name */
+const char *hifi_input_name(hifi_input_t in);
+bool hifi_input_parse(const char *s, hifi_input_t *in);
 
 /* Everything /state reports. Floats that can't be measured are NaN. */
 typedef struct {
@@ -67,6 +72,12 @@ typedef struct {
 	bool tone_active;
 	hifi_tone_params_t tone;
 	float level_dbfs;
+	/* DJ direct's thermal guard (boards whose ADC hears the line): the 60 s
+	 * input power it sees, its limit, and why it last moved DJ direct to
+	 * the governed line in (NULL: it hasn't) */
+	bool dj_guard;
+	float dj_guard_w, dj_guard_limit_w;
+	const char *dj_guard_tripped;
 	bool sub_on;
 	float sub_db;
 	float eq[HIFI_EQ_BANDS];

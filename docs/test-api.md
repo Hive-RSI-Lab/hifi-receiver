@@ -108,9 +108,14 @@ Everything the bench logs, in one read. Poll it at up to 10 Hz.
   estimated (Lite) or measured (Plus/Ultra) input power, averaged over 1 s;
   `out_w` the estimated speaker power. `gain_db` ≤ 0 is what the limiter is
   taking off now. `limit_events` counts the times it started limiting.
-- **`audio.source`:** `idle`, `lms`, `airplay`, `spotify`, `bt` or `test`.
-  `input` is `stream` or `dj_direct` (Lite: the ES8388's analog bypass from
-  the RCA line in). `tone` is the running tone (below) or `null`.
+- **`audio.source`:** `idle`, `lms`, `airplay`, `spotify`, `bt`, `test` or
+  `line` (Plus/Ultra: the line in through the ADC is playing).
+  `input` is `stream`, `dj_direct` (Lite: the ES8388's analog bypass from
+  the RCA line in) or `line` (Plus/Ultra). `tone` is the running tone (below) or `null`.
+- **`audio.dj_guard`** (Plus/Ultra only): `{"in_w", "limit_w", "tripped"}`,
+  DJ direct's thermal guard: the 60 s input power it sees, the amps'
+  thermal budget as input power, and why it last moved DJ direct to `line`
+  (`"power"` or `"otw"`; `null`: it hasn't since boot).
   `level_dbfs` is the 1 s RMS of what goes to the DAC, relative to a full-
   scale sine. `sub` and `eq` are as set below.
 - **`audio.volume`** (0–100), **`mute`** and **`max_volume`** (30–100): the
@@ -176,8 +181,14 @@ Reply: the `amp` object from `/state`.
 sub outs through the codec's analog bypass: zero latency for the DJ deck.
 On Plus/Ultra it is the TS5A23157 switch in front of the amps: the line in
 reaches the speakers with nothing digital in the way, so the receiver's
-volume and governor don't act on it (the deck's own level does), and the
-subs get nothing.
+volume and governor don't act on it (the deck's own level does). The subs
+get the line in through the ES7243E, about 10 ms behind, at the sub level.
+If the amps would overheat (60 s input power over their thermal budget, or
+OTW_CLIP low for 200 ms), the input moves to `line` by itself
+(`audio.dj_guard`).
+`{"input": "line"}` (Plus/Ultra; Lite answers 409) plays the line in
+through the ES7243E and the digital path: volume, EQ, the governor and the
+subs apply, about 0.1 s behind.
 `{"input": "stream"}` goes back to the streamed audio. Reply:
 `{"ok": true, "input": "..."}`.
 
@@ -309,8 +320,10 @@ expected, and the bench script knows it.
 
 Plus and Ultra have no `vbus_matches` or `codec_i2c`; their board checks
 are `expander_i2c` (the I/O expander at 0x20, or 0x74–0x77 for the
-TCA9539), `dac_i2c` (the ES9018K2M at 0x48 answers and took the 16-bit word
-length), `adc_i2c` (the ES7243E at 0x10) and `amp_otw` (OTW_CLIP high).
+TCA9539), `dac_i2c` (the ES9018K2M at 0x48 answers and took the 32-bit word
+length), `adc_i2c` (the ES7243E at 0x10 or 0x14; "set up" once the line in
+has configured it) and `amp_otw` (OTW_CLIP high). Ultra adds `front_i2c`
+(the front board's TCA9535 at 0x27, through the FFC).
 
 ## Remote bring-up: `capture`, `ota`, `wifi`, `remote`
 
@@ -461,7 +474,7 @@ hifi tone noise -20 [seconds]
 hifi tone silence [seconds]
 hifi tone stop
 hifi amp on|off|reset
-hifi input stream|dj_direct
+hifi input stream|dj_direct|line
 hifi sub <dB>
 hifi control <action>
 hifi volume <0-100>

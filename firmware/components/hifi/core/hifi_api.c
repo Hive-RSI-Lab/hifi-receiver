@@ -15,6 +15,21 @@
 /* squeezelite-esp32's 10-band equalizer */
 static const int EQ_BANDS_HZ[HIFI_EQ_BANDS] = {31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000};
 
+static const char *const INPUT_NAMES[] = {"stream", "dj_direct", "line"};
+
+const char *hifi_input_name(hifi_input_t in) {
+	return (unsigned) in < sizeof(INPUT_NAMES) / sizeof(INPUT_NAMES[0]) ? INPUT_NAMES[in] : "stream";
+}
+
+bool hifi_input_parse(const char *s, hifi_input_t *in) {
+	for (unsigned i = 0; s && i < sizeof(INPUT_NAMES) / sizeof(INPUT_NAMES[0]); i++)
+		if (!strcmp(s, INPUT_NAMES[i])) {
+			*in = (hifi_input_t) i;
+			return true;
+		}
+	return false;
+}
+
 static int error(char *out, size_t cap, int status, const char *msg) {
 	hj_t j;
 	hj_init(&j, out, cap);
@@ -104,7 +119,15 @@ void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) {
 
 	hj_obj(&j, "audio");
 	hj_str(&j, "source", s->source ? s->source : "idle");
-	hj_str(&j, "input", s->input == HIFI_INPUT_DJ_DIRECT ? "dj_direct" : "stream");
+	hj_str(&j, "input", hifi_input_name(s->input));
+	if (s->dj_guard) {
+		hj_obj(&j, "dj_guard");
+		hj_num(&j, "in_w", s->dj_guard_w, 1);
+		hj_num(&j, "limit_w", s->dj_guard_limit_w, 1);
+		if (s->dj_guard_tripped) hj_str(&j, "tripped", s->dj_guard_tripped);
+		else hj_null(&j, "tripped");
+		hj_obj_end(&j);
+	}
 	if (s->tone_active) write_tone(&j, "tone", &s->tone);
 	else hj_null(&j, "tone");
 	hj_num(&j, "level_dbfs", s->level_dbfs, 1);
@@ -200,6 +223,7 @@ static int r_info(const hifi_ops_t *ops, char *out, size_t cap) {
 	hj_obj(&j, "caps");
 	hj_arr(&j, "line_modes");
 	if (i.caps.dj_direct) hj_str(&j, NULL, "dj_direct");
+	if (i.caps.line) hj_str(&j, NULL, "line");
 	hj_arr_end(&j);
 	hj_arr(&j, "eq_bands");
 	for (int b = 0; b < HIFI_EQ_BANDS; b++) hj_int(&j, NULL, EQ_BANDS_HZ[b]);
@@ -304,9 +328,12 @@ static int r_input(const hifi_ops_t *ops, const char *body, char *out, size_t ca
 	char in[16];
 	hifi_input_t v;
 	if (!hj_get_str(body, "input", in, sizeof(in))) return error(out, cap, 400, "input is required");
-	if (!strcmp(in, "stream")) v = HIFI_INPUT_STREAM;
-	else if (!strcmp(in, "dj_direct")) v = HIFI_INPUT_DJ_DIRECT;
-	else return error(out, cap, 400, "input must be stream or dj_direct");
+	if (!hifi_input_parse(in, &v)) return error(out, cap, 400, "input must be stream, dj_direct or line");
+	hifi_info_t i;
+	memset(&i, 0, sizeof(i));
+	ops->info(&i);
+	if ((v == HIFI_INPUT_DJ_DIRECT && !i.caps.dj_direct) || (v == HIFI_INPUT_LINE && !i.caps.line))
+		return error(out, cap, 409, "this board has no such input");
 	if (ops->set_input(v)) return error(out, cap, 500, "codec didn't take it");
 	hj_t j;
 	hj_init(&j, out, cap);
@@ -790,7 +817,7 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 static const char USAGE[] =
 	"usage: hifi info|state|selftest | tone sine <hz> <dBFS> [both|left|right] [s] | "
 	"tone sweep <from> <to> <dBFS> [s] | tone noise <dBFS> [s] | tone silence [s] | tone stop | "
-	"amp on|off|reset | input stream|dj_direct | sub <dB> | control <action> | "
+	"amp on|off|reset | input stream|dj_direct|line | sub <dB> | control <action> | "
 	"volume <0-100> | mute on|off | maxvol <30-100> | ir learn <action> | ir forget [action]";
 
 static bool usage(char *out, size_t cap) {
@@ -833,7 +860,8 @@ bool hifi_cli_request(int argc, const char *const *argv, const char **method,
 	if (!strcmp(cmd, "input") && argc == 2) {
 		*path = PREFIX "input";
 		snprintf(body, bc, "{\"input\":\"%s\"}", argv[1]);
-		return !strcmp(argv[1], "stream") || !strcmp(argv[1], "dj_direct") || usage(out, cap);
+		hifi_input_t v;
+		return hifi_input_parse(argv[1], &v) || usage(out, cap);
 	}
 	if (!strcmp(cmd, "sub") && argc == 2 && is_num(argv[1])) {
 		*path = PREFIX "sub";

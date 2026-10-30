@@ -50,11 +50,16 @@ void hifi_power_cfg_core(hifi_power_cfg_t *cfg) {
 	cfg->v_start = 14.0f;
 	cfg->v_min = 13.0f;
 	cfg->v_max = 30.0f;
-	/* PVDD ramps through C4 on Q1's gate-drain: 10-90 % in ~47 ms at 28 V
-	 * (hwde sim_inrush, fw_on); the amps come out of reset after it, once
-	 * the 940 uF bulk is charged. Q1's gate sits at VBUS/2 (R4/R5), 7 V at
-	 * the 14 V start floor */
-	cfg->soft_start_ms = 100;
+	/* PVDD ramps through C4 on Q1's gate-drain. With zone B's C311 the bulk
+	 * is 1410 uF and PVDD reaches 90 % 122-196 ms after PVDD_EN (review-3
+	 * R3-POWER-2, docs/review-3/sims/power/pvdd/): the amps come out of
+	 * reset at 500 ms, once it is charged, so no amp current flows through
+	 * Q1 mid-ramp. Q1's gate sits at VBUS/2 (R4/R5), 7 V at the 14 V start
+	 * floor */
+	cfg->soft_start_ms = 500;
+	/* a contract change (the firmware's own VREQ, EPR entry) settles 500 ms
+	 * before PVDD closes (R3-POWER-5) */
+	cfg->settle_ms = 500;
 	/* core has no PVDD sense: the sequencer runs on time alone */
 	cfg->pvdd_min_frac = 0;
 }

@@ -147,9 +147,16 @@ left. [TBD: Plus and Ultra rear panels: their enclosures aren't drawn yet]
   headphones. Streaming, EQ and the sub settings do not apply. Choose
   **Streaming** to go back.
 - **Plus and Ultra** also have **Line in**, which takes the line input
-  through the digital path, so EQ and the sub crossover apply. That adds
-  5–15 ms of delay, which a DJ cueing on headphones can hear. Lite has DJ
-  direct only.
+  through the digital path, so the volume, EQ, the subs and the power
+  limiter apply. That adds about 0.1 s of delay: fine for a CD player or a
+  TV, but a DJ cueing on headphones will hear it, so DJs use **DJ
+  direct**. Lite has DJ direct only.
+- **DJ direct on Plus and Ultra:** the subs play too, about 10 ms behind
+  the speakers, at the sub level you set. If a long, loud set would
+  overheat the amplifier, the receiver moves itself to **Line in**, which
+  turns the music down a little instead of letting the amplifier shut
+  off. Choose **DJ direct** again once it has cooled; it is also back after
+  a restart.
 - **Lite on a 65 W charger:** the power limiter (section 5) can't see DJ
   direct, because it is analog. A deck at full level, played very loud into
   4 Ω, can make a 65 W charger cut out. Turn the deck's master down a little
@@ -362,7 +369,18 @@ There is no double press.
 | **PRESET** | | play preset 1 [TBD: firmware: what a preset is] | store the current stream as the preset [TBD] |
 
 **Ultra:** the knob and three buttons are on the front panel next to the
-screen. [TBD: firmware: the Ultra button map]
+screen, left to right:
+
+| Ultra | Turn | Press | Hold 1 s |
+|---|---|---|---|
+| **Knob** | volume | play/pause | standby |
+| **Button 1** | | next input (Streaming, Line in, DJ direct) | mute |
+| **Button 2** | | previous track | |
+| **Button 3** | | next track | |
+
+The light under the screen is green when ready, blinks blue while it has
+no network (setup), and blinks red if the amplifier has shut itself off
+after repeated faults.
 
 **Factory reset:** there is no button combination. Use the app (section
 10).
@@ -385,9 +403,10 @@ screen. [TBD: firmware: the Ultra button map]
 
 ### Screen (Ultra)
 
-The 2" screen shows the source, the track and artist, the volume, and the
-power the charger is giving. It dims after [TBD: firmware: the dim timeout]
-and lights when you touch a control.
+The 2" screen shows what is playing: the track and artist from Spotify,
+AirPlay, Bluetooth or Lyrion. [TBD: firmware: the source, the volume and
+the charger's power on screen.] It goes dark a minute after you last touch
+a control when nothing is playing, and lights when you touch one.
 
 ## 9. Settings
 

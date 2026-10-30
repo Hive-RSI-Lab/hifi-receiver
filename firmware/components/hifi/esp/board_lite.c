@@ -52,6 +52,7 @@ void hifi_bsp_power_in(uint32_t now, hifi_bsp_power_t *p) {
 	p->pg = gpio_get_level(PIN_PD_PG) == 0;
 	p->fault = gpio_get_level(PIN_AMP_FAULTZ) == 0;
 	p->vbus_i_a = NAN;
+	p->otw = false; /* the TPA3118 has no warning pin, only FAULTZ */
 	/* the PD sink's registers every 500 ms */
 	p->pd_read = now - last_pd >= 500;
 	if (p->pd_read) {
@@ -71,9 +72,15 @@ void hifi_bsp_power_out(const hifi_power_out_t *o) {
 
 /* ------------------------------------------------------------------ codec */
 
+/* LOUT2/ROUT2 volume code, 1.5 dB a step, 30 = 0 dB. At most 26 (-6 dB):
+ * the sub mute's 2N7002s (Q13-Q15) are off with their gates near 0 V, so
+ * the sub line's negative swing has to stay above -Vth(min) 1.0 V; -6 dB is
+ * 0.71 V peak at 0 dBFS (docs/review-3/sims/fix/lite_mute/tb_play_cap) */
+#define SUB_CODE_MAX 26
+
 static int sub_code(float db) {
 	int code = (int) lrintf(30 + db / 1.5f);
-	return code < 0 ? 0 : code > 33 ? 33 : code;
+	return code < 0 ? 0 : code > SUB_CODE_MAX ? SUB_CODE_MAX : code;
 }
 
 float hifi_bsp_sub_db(float db) { return (sub_code(db) - 30) * 1.5f; }
@@ -156,3 +163,9 @@ bool hifi_bsp_parts_ok(void) {
 void hifi_bsp_set_zone(bool on) {}
 
 void hifi_bsp_audio(const uint8_t *buf, uint32_t frames, int bytes_per_frame) {}
+
+/* Lite's DJ direct is the ES8388's analog bypass: no line in through the DSP */
+bool hifi_bsp_line_start(void) { return false; }
+int hifi_bsp_line_read(int16_t *buf, int frames, bool invert, uint32_t wait_ms) { return 0; }
+void hifi_bsp_sub_direct(bool on) {}
+void hifi_bsp_sub_write(const int16_t *buf, int frames) {}
