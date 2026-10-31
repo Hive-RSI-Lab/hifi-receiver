@@ -17,8 +17,9 @@ product.md's Boards row.
 ## What it is
 
 - **Board:** 2 layers, 1.6 mm FR-4, 1 oz, HASL, 118 x 90 mm, four M3 plated
-  holes, 2 mm corners. 148 parts, all on the top side. 141 are SMT; 7 are
-  through-hole (J2, J3, J4-J7 and U9). The 4 mounting holes are not BOM parts.
+  holes, 2 mm corners. 148 parts on the top side, plus the five ESD clamps
+  (D3-D6, U10) on the bottom by their connectors (docs/boards/lite-esd.md).
+  The top's 141 are SMT; 7 are through-hole (J2, J3, J4-J7 and U9). The 4 mounting holes are not BOM parts.
   JLC assembly with LCSC part numbers.
 - **Rear edge, left to right:**
   - **J2:** RCA line in (FLX4). Top jack white = L, bottom red = R.
@@ -38,7 +39,7 @@ product.md's Boards row.
 
 | Block | Parts | Notes |
 |---|---|---|
-| USB-C + PD | J1 HRO TYPE-C-31-M-12 (20 V/5 A), U1 CH224A, D1 SMBJ22A | asks for 20 V (Rset 120k); I2C 0x22 on the codec's bus, so firmware reads the protocol status (0x09) and the PDO's max current (0x50). The CH224A has no SRCCAP registers (CH224Q only). |
+| USB-C + PD | J1 HRO TYPE-C-31-M-12 (20 V/5 A), U1 CH224A, D1 SMBJ22A; ESD: D3/D4 NUP2105L (CC), U10 USBLC6-2SC6 (D+/D-) | asks for 20 V (Rset 120k); I2C 0x22 on the codec's bus, so firmware reads the protocol status (0x09) and the PDO's max current (0x50). The CH224A has no SRCCAP registers (CH224Q only). |
 | PVDD switch | Q1 AO4485, Q4 MMBT3904 | on only when GPIO18 is high **and** the PD contract is good (Q4's emitter is CH224A PG); C19 holds the gate shut on VBUS steps; soft start ~28 ms, 0.41 A inrush; R16 bleeder |
 | 5 V | U2 TPS54302, L5 10 uH | TI design-example values |
 | 3.3 V | U3 SY8089 (digital), U4 LP5907 (codec analog) | |
