@@ -45,7 +45,7 @@
 	(fp_circle (center -5.33 -1.52) (end -5.18 -1.52) (layer F.SilkS) (width 0.25))
 	(fp_circle (center -4.75 -1.29) (end -4.60 -1.29) (layer Cmts.User) (width 0.30))
 	(model "${KIPRJMOD}/../lib/aiee.3dshapes/FPC-SMD_20P-P0.50_XUNPU_FPC-05F-20PH20.wrl"
-		(offset (xyz 0.000 0.000 0.000))
+		(offset (xyz 0.000 0.450 0.000))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))
 	)
