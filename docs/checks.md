@@ -254,3 +254,13 @@ CI (`.github/workflows/ci.yml`) checks out hive-hwde's current main. Neither
 is pinned, so a new hwde check reaches every board at once: every test on
 main re-gates every board. Both print the hwde commit that ran, so a red gate
 can be traced to an hwde change.
+
+## The score on the forge
+
+On every push to main (and on a dispatch), CI's `score` job runs `.hive/project.json`'s score
+command, unchanged, with the same KiCad and hwde as the test (both jobs set
+them up through `.github/actions/tools`). Its last line is
+`hive-score: <number>`, and the Hive reads main's score from it instead of
+running the score on its own machine. When the job is missing or red, the
+Hive scores on its own machine as before. A red score job doesn't make main
+red.
