@@ -1,7 +1,9 @@
 # lite-main: the Lite tier of hifi-receiver-2
 
-The Lite tier's one board, as `docs/product.md` defines it. You plug a 65–100 W
-USB-C laptop charger and a pair of speakers into it. It streams over Wi-Fi
+The Lite tier's one board, as `docs/product.md` defines it. You plug a USB-C PD
+laptop charger of 65 W or more and a pair of speakers into it (Lite asks for
+20 V and uses at most what that contract allows, 60–65 W with an ordinary
+cable: a bigger charger adds nothing; see issue #136). It streams over Wi-Fi
 (Spotify Connect, AirPlay, Lyrion) and Bluetooth, takes a DJ deck on RCA, and
 drives two subwoofers from RCA sub outs. A web app on your phone, three buttons
 or any IR remote control it.
