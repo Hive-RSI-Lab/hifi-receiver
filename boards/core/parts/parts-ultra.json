@@ -135,6 +135,46 @@
   },
   {
    "refdes": [
+    "D6",
+    "D9"
+   ],
+   "refdes_class": {
+    "D6": "smt_placed",
+    "D9": "smt_placed"
+   },
+   "lcsc": "C14486",
+   "mpn": "NUP2105LT1G",
+   "value": "NUP2105L",
+   "package": "SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BL-2",
+   "block": "power_in",
+   "basic": false,
+   "role": "USB-C CC ESD",
+   "price": 0.0829,
+   "stock": 218599,
+   "description": "NUP2105LT1G dual bidirectional TVS, 24 V VRWM, SOT-23"
+  },
+  {
+   "refdes": [
+    "D7",
+    "D8"
+   ],
+   "refdes_class": {
+    "D7": "smt_placed",
+    "D8": "smt_placed"
+   },
+   "lcsc": "C49338",
+   "mpn": "PESD5V0S2BT,215",
+   "value": "PESD5V0S2BT",
+   "package": "SOT-23_L2.9-W1.3-P1.90-LS2.4-BR",
+   "block": "dac",
+   "basic": false,
+   "role": "RCA ESD: sub out (D7), line in (D8)",
+   "price": 0.0857,
+   "stock": 22319,
+   "description": "PESD5V0S2BT dual bidirectional ESD, 5 V VRWM, SOT-23"
+  },
+  {
+   "refdes": [
     "U1"
    ],
    "refdes_class": {

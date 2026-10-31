@@ -21,6 +21,15 @@ P("D1", A + "SMBJ30A_C113998", "SMBJ30A", A + "SMB_L4.6-W3.6-LS5.3-RD",
 P("U2", A + "USBLC6-2SC6_C2687116", "USBLC6-2SC6", A + "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL",
   {"1": "USB_DP", "6": "USB_DP", "3": "USB_DM", "4": "USB_DM", "2": "GND",
    "5": "+5V"}, lcsc="C2687116", role="USB D+/D- ESD")
+# CC clamps at the receptacle (issue #133): 24 V working voltage (breaks down
+# at 26.2 V min), far above CC's 5.5 V; ~30 pF is well under the 620 pF a PD
+# BMC receiver tolerates (cReceiver). One dual part per CC line, the other
+# channel unused: J1's two pin rows leave CC1 (A5) reachable only from the
+# right and CC2 (B5) only from the left. docs/boards/core-esd.md.
+for ref, cc in (("D6", {"1": "CC1", "2": "NC"}), ("D9", {"1": "NC", "2": "CC2"})):
+    P(ref, A + "NUP2105LT1G", "NUP2105L", A + "SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BL-2",
+      {**cc, "3": "GND"}, lcsc="C14486", mpn="NUP2105LT1G",
+      role="USB-C CC ESD")
 # PG (pin 10, open drain, low = contract good) gates the PVDD switch like the
 # Lite's: review-2 POWER-6, PVDD drops in hardware when the contract is lost.
 P("U1", A + "CH224Q_C46061833", "CH224Q", A + "DFN-10_L2.0-W2.0-P0.40-BL-EP",

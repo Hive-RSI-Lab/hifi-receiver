@@ -4,7 +4,7 @@
  "workspace_schema": 2,
  "workspace": "/work/boards/core",
  "created": "2026-10-28T11:07:23",
- "updated": "2026-10-31T14:49:27",
+ "updated": "2026-10-31T15:12:54",
  "phase": "P9",
  "gates": {
   "erc": {
@@ -236,6 +236,17 @@
       "C329",
       "C332",
       "C335"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:12:54",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
      ],
      "human_hold": 2
     }
@@ -581,6 +592,19 @@
       "decoupling": "json_canonical:61e6d2ea5e21e586b74d0c912b9cced6f4039606aaa12d21baa7d2b305c5ba89",
       "place_waivers": null
      }
+    }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T15:12:54",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -4753,6 +4777,19 @@
       "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
      }
     }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T15:12:54",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
+     ],
+     "human_hold": 2
+    }
    ]
   },
   "verify": {
@@ -4932,6 +4969,17 @@
       "C335"
      ],
      "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:12:54",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -5050,6 +5098,19 @@
       "parts": null
      }
     }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T15:12:54",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
+     ],
+     "human_hold": 2
+    }
    ]
   }
  },
@@ -5129,6 +5190,17 @@
       "C335"
      ],
      "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:12:54",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -5150,6 +5222,17 @@
       "C329",
       "C332",
       "C335"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:12:54",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
      ],
      "human_hold": 2
     }
@@ -5175,6 +5258,17 @@
       "C335"
      ],
      "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:12:54",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -5196,6 +5290,36 @@
       "C329",
       "C332",
       "C335"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:12:54",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
+     ],
+     "human_hold": 2
+    }
+   ]
+  },
+  "gerbers": {
+   "path": "fab/core_gerbers.zip",
+   "kind": "gerbers",
+   "sha256": "gerber_design:0f159a3790e47d2dcc3498a6bb96787b87ed51a44b7ad829fc9ef4b0b7432144",
+   "hashed": "2026-10-31T15:12:54",
+   "stale": [
+    {
+     "ts": "2026-10-31T15:12:54",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
      ],
      "human_hold": 2
     }
@@ -5257,6 +5381,41 @@
    ],
    "stale_artifacts": [
     "netlist",
+    "bom",
+    "bom_full",
+    "cpl"
+   ]
+  },
+  {
+   "ts": "2026-10-31T15:12:54",
+   "class": "add_part",
+   "refs": [
+    "D6",
+    "D7",
+    "D8",
+    "D9"
+   ],
+   "note": null,
+   "human_hold": 2,
+   "gates": [
+    "erc",
+    "place",
+    "drc",
+    "drc_routed",
+    "verify",
+    "sim",
+    "dfm"
+   ],
+   "gates_marked": [
+    "erc",
+    "place",
+    "drc_routed",
+    "verify",
+    "dfm"
+   ],
+   "stale_artifacts": [
+    "netlist",
+    "gerbers",
     "bom",
     "bom_full",
     "cpl"
@@ -8634,6 +8793,18 @@
    "status": "pass",
    "attempt": 9,
    "failing_count": 0
+  },
+  {
+   "ts": "2026-10-31T15:12:54",
+   "event": "edit",
+   "edit_class": "add_part",
+   "refs": [
+    "D6",
+    "D7",
+    "D8",
+    "D9"
+   ],
+   "human_hold": 2
   }
  ]
 }
