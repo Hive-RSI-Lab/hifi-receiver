@@ -67,4 +67,4 @@ two new JLC extended lines.
    and puts the router's pad-centre ends back on the 45 degree grid.
 
 KiCad DRC with schematic parity is clean afterwards. `check_esd` reports 0
-errors and the 4 warnings above.
+errors and the 2 USB warnings above.
