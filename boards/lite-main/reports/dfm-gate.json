@@ -4,7 +4,7 @@
   "phase": "P9",
   "tool": "dfm",
   "input": "kicad/lite-main.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:a31a493cb1f80fc1cffe1c2b8a9d012de37bea0a70a73cee76192202a0806b34",
+  "input_digest": "sexpr_no_uuid:1b0198e948e8e2579794ed662eeb969f5be77df483defd13a9d182a60eed97b0",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -13,17 +13,18 @@
     "max_count": 0
   },
   "counts": {
-    "total": 3,
+    "total": 9,
     "by_severity": {
-      "warning": 3
+      "warning": 4,
+      "error": 5
     },
     "by_source": {
-      "check.dfm": 3
+      "check.dfm": 9
     }
   },
   "failing_count": 0,
   "failing": [],
-  "warnings_count": 3,
+  "warnings_count": 4,
   "warnings": [
     {
       "check": "dfm",
@@ -50,6 +51,32 @@
       "width_mm": 0.06,
       "min_mm": 0.15,
       "count": 263
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        84.3,
+        61.1698
+      ],
+      "layer": "B.Silkscreen",
+      "net": null,
+      "refs": [],
+      "msg": "2 silk strokes below JLC minimum width 0.15 mm (narrowest 0.0600 mm) on B.Silkscreen",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "2 silk strokes below JLC minimum width 0.15 mm (narrowest 0.0600 mm) on B.Silkscreen",
+          "pos": [
+            84.3,
+            61.1698
+          ]
+        }
+      ],
+      "kind": "dfm_silk_width",
+      "width_mm": 0.06,
+      "min_mm": 0.15,
+      "count": 2
     },
     {
       "check": "dfm",
@@ -92,6 +119,124 @@
       "offset_mm": 0.793
     }
   ],
+  "waived_count": 5,
+  "waived": [
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": null,
+      "layer": null,
+      "net": null,
+      "refs": [
+        "D3"
+      ],
+      "msg": "D3 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "D3 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
+          "pos": null
+        }
+      ],
+      "kind": "cpl_no_model",
+      "verdict": "bottom_unverified",
+      "lcsc": "C14486",
+      "cpl_rot": 180.0,
+      "expected_rot": null
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": null,
+      "layer": null,
+      "net": null,
+      "refs": [
+        "D4"
+      ],
+      "msg": "D4 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "D4 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
+          "pos": null
+        }
+      ],
+      "kind": "cpl_no_model",
+      "verdict": "bottom_unverified",
+      "lcsc": "C14486",
+      "cpl_rot": 90.0,
+      "expected_rot": null
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": null,
+      "layer": null,
+      "net": null,
+      "refs": [
+        "D5"
+      ],
+      "msg": "D5 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "D5 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
+          "pos": null
+        }
+      ],
+      "kind": "cpl_no_model",
+      "verdict": "bottom_unverified",
+      "lcsc": "C49338",
+      "cpl_rot": 270.0,
+      "expected_rot": null
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": null,
+      "layer": null,
+      "net": null,
+      "refs": [
+        "D6"
+      ],
+      "msg": "D6 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "D6 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
+          "pos": null
+        }
+      ],
+      "kind": "cpl_no_model",
+      "verdict": "bottom_unverified",
+      "lcsc": "C49338",
+      "cpl_rot": 270.0,
+      "expected_rot": null
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": null,
+      "layer": null,
+      "net": null,
+      "refs": [
+        "U10"
+      ],
+      "msg": "U10 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a part with more than two pads depends on the mirror - confirm it in JLC's preview",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "U10 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a part with more than two pads depends on the mirror - confirm it in JLC's preview",
+          "pos": null
+        }
+      ],
+      "kind": "cpl_no_model",
+      "verdict": "bottom_unverified",
+      "lcsc": "C2687116",
+      "cpl_rot": 270.0,
+      "expected_rot": null
+    }
+  ],
   "coverage": {
     "strict": false,
     "required": [
@@ -129,12 +274,13 @@
       "hole_to_edge",
       "silk",
       "polarity",
-      "placement",
       "bom",
       "release",
       "castellation"
     ],
-    "failed": [],
+    "failed": [
+      "placement"
+    ],
     "waived": [],
     "not_applicable": {},
     "skipped_error": {
@@ -147,10 +293,10 @@
     "workspace": ".",
     "gate": "dfm",
     "status": "pass",
-    "attempts": 9,
+    "attempts": 11,
     "inputs": {
-      "pcb": "sexpr_no_uuid:a31a493cb1f80fc1cffe1c2b8a9d012de37bea0a70a73cee76192202a0806b34",
-      "sch": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
+      "pcb": "sexpr_no_uuid:1b0198e948e8e2579794ed662eeb969f5be77df483defd13a9d182a60eed97b0",
+      "sch": "sexpr_no_uuid:8d3e3e0507e5a851fc2add7b38a3a252c8c7f52d659e920e0dfe0f16066fa1b8",
       "parts": null
     }
   }

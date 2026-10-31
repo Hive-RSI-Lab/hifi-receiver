@@ -4,20 +4,20 @@
  "workspace_schema": 2,
  "workspace": "boards/lite-main",
  "created": "2026-10-28T11:00:21",
- "updated": "2026-10-30T18:36:11",
+ "updated": "2026-10-31T15:34:45",
  "phase": "P9",
  "gates": {
   "erc": {
    "phase": "P4",
    "status": "pass",
-   "attempts": 17,
+   "attempts": 18,
    "last": {
-    "ts": "2026-10-30T18:12:40",
+    "ts": "2026-10-31T15:32:42",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
     "inputs": {
-     "sch": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
+     "sch": "sexpr_no_uuid:8d3e3e0507e5a851fc2add7b38a3a252c8c7f52d659e920e0dfe0f16066fa1b8",
      "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d"
     }
    },
@@ -189,6 +189,16 @@
      "total": 0,
      "inputs": {
       "sch": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
+      "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d"
+     }
+    },
+    {
+     "ts": "2026-10-31T15:32:42",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "sch": "sexpr_no_uuid:8d3e3e0507e5a851fc2add7b38a3a252c8c7f52d659e920e0dfe0f16066fa1b8",
       "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d"
      }
     }
@@ -475,22 +485,36 @@
       "place_waivers": null
      }
     }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T15:32:33",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "U10"
+     ],
+     "human_hold": 2
+    }
    ]
   },
   "drc_routed": {
    "phase": "P7",
    "status": "pass",
-   "attempts": 170,
+   "attempts": 171,
    "last": {
-    "ts": "2026-10-30T16:53:52",
+    "ts": "2026-10-31T15:32:36",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
     "inputs": {
-     "pcb": "sexpr_no_uuid:0c80c6bb5b268b7c07addeb0029bab98d041d625e84ad5976003582567987b76",
-     "sch": "sexpr_no_uuid:c71ef75501c52f58bd0870cc61131c8ac8b691f21243facb1eee816f0baa4614",
+     "pcb": "sexpr_no_uuid:1b0198e948e8e2579794ed662eeb969f5be77df483defd13a9d182a60eed97b0",
+     "sch": "sexpr_no_uuid:8d3e3e0507e5a851fc2add7b38a3a252c8c7f52d659e920e0dfe0f16066fa1b8",
      "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d",
-     "dru": "text_eol:1c2c46730fe53045a7b7ec69777530c5426c64527d6d603afc5cb0aa57649014"
+     "dru": "text_eol:6c0346b92a6a6b439fff98cc9076af3ee868ac1c036530cef874de33c7d12f14"
     }
    },
    "history": [
@@ -2533,6 +2557,18 @@
       "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d",
       "dru": "text_eol:1c2c46730fe53045a7b7ec69777530c5426c64527d6d603afc5cb0aa57649014"
      }
+    },
+    {
+     "ts": "2026-10-31T15:32:36",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:1b0198e948e8e2579794ed662eeb969f5be77df483defd13a9d182a60eed97b0",
+      "sch": "sexpr_no_uuid:8d3e3e0507e5a851fc2add7b38a3a252c8c7f52d659e920e0dfe0f16066fa1b8",
+      "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d",
+      "dru": "text_eol:6c0346b92a6a6b439fff98cc9076af3ee868ac1c036530cef874de33c7d12f14"
+     }
     }
    ]
   },
@@ -2673,20 +2709,34 @@
       "waivers": "json_canonical:fd04b3c398f91596a08605fd91c32f9be2d338bcc3860a37e636c7fd5a133f39"
      }
     }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T15:32:33",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "U10"
+     ],
+     "human_hold": 2
+    }
    ]
   },
   "dfm": {
    "phase": "P9",
    "status": "pass",
-   "attempts": 9,
+   "attempts": 11,
    "last": {
-    "ts": "2026-10-30T18:36:11",
+    "ts": "2026-10-31T15:34:45",
     "status": "pass",
     "failing_count": 0,
-    "total": 3,
+    "total": 9,
     "inputs": {
-     "pcb": "sexpr_no_uuid:a31a493cb1f80fc1cffe1c2b8a9d012de37bea0a70a73cee76192202a0806b34",
-     "sch": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
+     "pcb": "sexpr_no_uuid:1b0198e948e8e2579794ed662eeb969f5be77df483defd13a9d182a60eed97b0",
+     "sch": "sexpr_no_uuid:8d3e3e0507e5a851fc2add7b38a3a252c8c7f52d659e920e0dfe0f16066fa1b8",
      "parts": null
     }
    },
@@ -2789,6 +2839,28 @@
       "sch": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
       "parts": null
      }
+    },
+    {
+     "ts": "2026-10-31T15:33:39",
+     "status": "fail",
+     "failing_count": 5,
+     "total": 9,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:1b0198e948e8e2579794ed662eeb969f5be77df483defd13a9d182a60eed97b0",
+      "sch": "sexpr_no_uuid:8d3e3e0507e5a851fc2add7b38a3a252c8c7f52d659e920e0dfe0f16066fa1b8",
+      "parts": null
+     }
+    },
+    {
+     "ts": "2026-10-31T15:34:45",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 9,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:1b0198e948e8e2579794ed662eeb969f5be77df483defd13a9d182a60eed97b0",
+      "sch": "sexpr_no_uuid:8d3e3e0507e5a851fc2add7b38a3a252c8c7f52d659e920e0dfe0f16066fa1b8",
+      "parts": null
+     }
     }
    ]
   }
@@ -2798,20 +2870,20 @@
   "sch": {
    "path": "kicad/lite-main.kicad_sch",
    "kind": "sch",
-   "sha256": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
-   "hashed": "2026-10-30T18:36:11"
+   "sha256": "sexpr_no_uuid:8d3e3e0507e5a851fc2add7b38a3a252c8c7f52d659e920e0dfe0f16066fa1b8",
+   "hashed": "2026-10-31T15:34:45"
   },
   "pro": {
    "path": "kicad/lite-main.kicad_pro",
    "kind": "pro",
    "sha256": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d",
-   "hashed": "2026-10-30T18:12:40"
+   "hashed": "2026-10-31T15:32:42"
   },
   "pcb": {
    "path": "kicad/lite-main.kicad_pcb",
    "kind": "pcb",
-   "sha256": "sexpr_no_uuid:a31a493cb1f80fc1cffe1c2b8a9d012de37bea0a70a73cee76192202a0806b34",
-   "hashed": "2026-10-30T18:36:11"
+   "sha256": "sexpr_no_uuid:1b0198e948e8e2579794ed662eeb969f5be77df483defd13a9d182a60eed97b0",
+   "hashed": "2026-10-31T15:34:45"
   },
   "constraints": {
    "path": "kicad/constraints.json",
@@ -2834,8 +2906,8 @@
   "dru": {
    "path": "kicad/lite-main.kicad_dru",
    "kind": "dru",
-   "sha256": "text_eol:1c2c46730fe53045a7b7ec69777530c5426c64527d6d603afc5cb0aa57649014",
-   "hashed": "2026-10-30T16:53:52"
+   "sha256": "text_eol:6c0346b92a6a6b439fff98cc9076af3ee868ac1c036530cef874de33c7d12f14",
+   "hashed": "2026-10-31T15:32:36"
   },
   "waivers": {
    "path": "reports/verify-waivers.json",
@@ -2847,7 +2919,7 @@
    "path": "kicad/parts.json",
    "kind": "parts",
    "sha256": null,
-   "hashed": "2026-10-30T18:36:11"
+   "hashed": "2026-10-31T15:34:45"
   },
   "netlist": {
    "path": "kicad/lite-main.net",
@@ -2870,6 +2942,18 @@
       "J5",
       "J6",
       "J7"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:32:33",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "U10"
      ],
      "human_hold": 2
     }
@@ -2904,6 +2988,18 @@
      "edit_class": "outline_change",
      "refs": [],
      "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:32:33",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "U10"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -2928,6 +3024,18 @@
       "J5",
       "J6",
       "J7"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:32:33",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "U10"
      ],
      "human_hold": 2
     }
@@ -2956,6 +3064,18 @@
       "J7"
      ],
      "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:32:33",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "U10"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -2980,6 +3100,18 @@
       "J5",
       "J6",
       "J7"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:32:33",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "U10"
      ],
      "human_hold": 2
     }
@@ -3245,6 +3377,42 @@
    ],
    "stale_artifacts": [
     "gerbers"
+   ]
+  },
+  {
+   "ts": "2026-10-31T15:32:33",
+   "class": "add_part",
+   "refs": [
+    "D3",
+    "D4",
+    "D5",
+    "D6",
+    "U10"
+   ],
+   "note": null,
+   "human_hold": 2,
+   "gates": [
+    "erc",
+    "place",
+    "drc",
+    "drc_routed",
+    "verify",
+    "sim",
+    "dfm"
+   ],
+   "gates_marked": [
+    "erc",
+    "place",
+    "drc_routed",
+    "verify",
+    "dfm"
+   ],
+   "stale_artifacts": [
+    "netlist",
+    "gerbers",
+    "bom",
+    "bom_full",
+    "cpl"
    ]
   }
  ],
@@ -5299,6 +5467,51 @@
    "gate": "dfm",
    "status": "pass",
    "attempt": 9,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-31T15:32:33",
+   "event": "edit",
+   "edit_class": "add_part",
+   "refs": [
+    "D3",
+    "D4",
+    "D5",
+    "D6",
+    "U10"
+   ],
+   "human_hold": 2
+  },
+  {
+   "ts": "2026-10-31T15:32:36",
+   "event": "gate",
+   "gate": "drc_routed",
+   "status": "pass",
+   "attempt": 171,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-31T15:32:42",
+   "event": "gate",
+   "gate": "erc",
+   "status": "pass",
+   "attempt": 18,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-31T15:33:39",
+   "event": "gate",
+   "gate": "dfm",
+   "status": "fail",
+   "attempt": 10,
+   "failing_count": 5
+  },
+  {
+   "ts": "2026-10-31T15:34:45",
+   "event": "gate",
+   "gate": "dfm",
+   "status": "pass",
+   "attempt": 11,
    "failing_count": 0
   }
  ]
