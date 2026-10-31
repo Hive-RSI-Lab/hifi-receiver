@@ -33,13 +33,13 @@
   }
  ],
  "mode": "audit",
- "nets": 127,
- "components": 162,
- "unconnected_pins": 34,
+ "nets": 122,
+ "components": 163,
+ "unconnected_pins": 29,
  "constraint_nets_checked": 16,
  "constraint_refs_checked": 7,
- "pins_expected": 497,
- "pins_connected": 497,
+ "pins_expected": 491,
+ "pins_connected": 491,
  "decoupling_associations": 25,
  "power": [
   {
@@ -61,7 +61,7 @@
   },
   {
    "net": "GND",
-   "nodes": 118,
+   "nodes": 119,
    "power_in": 16,
    "power_out": 0
   },
@@ -192,7 +192,7 @@
  "polarized_caps_checked": 0,
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-31T19:30:13+00:00",
+ "generated_at": "2026-10-31T20:45:59+00:00",
  "input": "kicad/lite-main.net",
- "input_digest": "netlist_canonical:267ce8d5542b1eb30d69d0d6e0543748fd3da6dfd3f1bf77e95458d32e85b0ef"
+ "input_digest": "netlist_canonical:7eda67f57a7debd6d1f7a6e39fec968705f3f26ebfe8a2bc51b4498ec8b44cb0"
 }

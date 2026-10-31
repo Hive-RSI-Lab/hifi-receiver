@@ -10,74 +10,79 @@
   "add": [
    {
     "ref": "D3",
-    "fp": "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BL-2",
-    "value": "NUP2105L",
+    "fp": "aiee:DFN1006-2L-BI",
+    "value": "PESDNC2FD5VB",
     "fields": {
-     "LCSC": "C14486"
+     "LCSC": "C110694"
     },
     "pads": {
-     "1": "/CC2",
-     "3": "GND",
-     "2": "unconnected-(D3-Pad2)"
+     "1": "/LINEIN_L",
+     "2": "GND"
     },
     "dnp": false
    },
    {
     "ref": "D4",
-    "fp": "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BL-2",
-    "value": "NUP2105L",
+    "fp": "aiee:DFN1006-2L-BI",
+    "value": "PESDNC2FD5VB",
     "fields": {
-     "LCSC": "C14486"
+     "LCSC": "C110694"
     },
     "pads": {
-     "1": "/CC1",
-     "3": "GND",
-     "2": "unconnected-(D4-Pad2)"
+     "1": "/LINEIN_R",
+     "2": "GND"
     },
     "dnp": false
    },
    {
     "ref": "D5",
-    "fp": "aiee:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR",
-    "value": "PESD5V0S2BT",
+    "fp": "aiee:DFN1006-2L-BI",
+    "value": "PESDNC2FD5VB",
     "fields": {
-     "LCSC": "C49338"
+     "LCSC": "C110694"
     },
     "pads": {
-     "1": "/LINEIN_L",
-     "2": "/LINEIN_R",
-     "3": "GND"
+     "1": "/SUB_L",
+     "2": "GND"
     },
     "dnp": false
    },
    {
     "ref": "D6",
-    "fp": "aiee:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR",
-    "value": "PESD5V0S2BT",
+    "fp": "aiee:DFN1006-2L-BI",
+    "value": "PESDNC2FD5VB",
     "fields": {
-     "LCSC": "C49338"
+     "LCSC": "C110694"
     },
     "pads": {
-     "1": "/SUB_L",
-     "2": "/SUB_R",
-     "3": "GND"
+     "1": "/SUB_R",
+     "2": "GND"
     },
     "dnp": false
    },
    {
-    "ref": "U10",
-    "fp": "aiee:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL",
-    "value": "USBLC6-2SC6",
+    "ref": "D7",
+    "fp": "aiee:DFN1006-2L-BI",
+    "value": "PESDNC2FD5VB",
     "fields": {
-     "LCSC": "C2687116"
+     "LCSC": "C110694"
     },
     "pads": {
-     "4": "/USB_DM",
-     "6": "/USB_DP",
-     "2": "GND",
-     "1": "unconnected-(U10-I{slash}O1-Pad1)",
-     "3": "unconnected-(U10-I{slash}O2-Pad3)",
-     "5": "unconnected-(U10-VBUS-Pad5)"
+     "1": "/USB_DP",
+     "2": "GND"
+    },
+    "dnp": false
+   },
+   {
+    "ref": "D8",
+    "fp": "aiee:DFN1006-2L-BI",
+    "value": "PESDNC2FD5VB",
+    "fields": {
+     "LCSC": "C110694"
+    },
+    "pads": {
+     "1": "/USB_DM",
+     "2": "GND"
     },
     "dnp": false
    }
@@ -90,12 +95,8 @@
   ]
  },
  "warnings": [
-  "D3: declared position (79.3, 62.3) overlaps an existing courtyard or leaves the outline - applied as declared",
-  "D4: declared position (88.4, 64.05) overlaps an existing courtyard or leaves the outline - applied as declared",
-  "D5: declared position (42.47, 76.6) overlaps an existing courtyard or leaves the outline - applied as declared",
-  "D6: declared position (64.67, 76.6) overlaps an existing courtyard or leaves the outline - applied as declared",
-  "U10: declared position (82.9, 62.6) overlaps an existing courtyard or leaves the outline - applied as declared",
-  "8 new unconnected item(s) (the added/rewired parts' ratsnest) - route via the fix loop"
+  "D7: declared position (75.114, 64.6) overlaps an existing courtyard or leaves the outline - applied as declared",
+  "6 new unconnected item(s) (the added/rewired parts' ratsnest) - route via the fix loop"
  ],
  "orphans": {
   "affected_nets": [],
@@ -109,43 +110,51 @@
    "added": [
     {
      "ref": "D3",
-     "x": 79.3,
-     "y": 62.3,
-     "deg": 180.0,
-     "side": "back",
-     "pads_netted": 3
+     "x": 46.885,
+     "y": 80.71,
+     "deg": 0.0,
+     "side": "front",
+     "pads_netted": 2
     },
     {
      "ref": "D4",
-     "x": 88.4,
-     "y": 64.05,
-     "deg": 90.0,
-     "side": "back",
-     "pads_netted": 3
+     "x": 38.885,
+     "y": 80.71,
+     "deg": 0.0,
+     "side": "front",
+     "pads_netted": 2
     },
     {
      "ref": "D5",
-     "x": 42.47,
-     "y": 76.6,
-     "deg": -90.0,
-     "side": "back",
-     "pads_netted": 3
+     "x": 68.245,
+     "y": 80.71,
+     "deg": 180.0,
+     "side": "front",
+     "pads_netted": 2
     },
     {
      "ref": "D6",
-     "x": 64.67,
-     "y": 76.6,
-     "deg": -90.0,
-     "side": "back",
-     "pads_netted": 3
+     "x": 61.085,
+     "y": 80.71,
+     "deg": 0.0,
+     "side": "front",
+     "pads_netted": 2
     },
     {
-     "ref": "U10",
-     "x": 82.9,
-     "y": 62.6,
-     "deg": -90.0,
-     "side": "back",
-     "pads_netted": 6
+     "ref": "D7",
+     "x": 75.114,
+     "y": 64.6,
+     "deg": 180.0,
+     "side": "front",
+     "pads_netted": 2
+    },
+    {
+     "ref": "D8",
+     "x": 74.6,
+     "y": 68.45,
+     "deg": 0.0,
+     "side": "front",
+     "pads_netted": 2
     }
    ],
    "pads_renetted": [],
@@ -167,53 +176,59 @@
     "by_source": {}
    },
    "after": {
-    "total": 15,
+    "total": 17,
     "by_severity": {
-     "warning": 7,
-     "error": 8
+     "warning": 11,
+     "error": 6
     },
     "by_source": {
-     "drc": 7,
-     "unconnected": 8
+     "drc": 11,
+     "unconnected": 6
     }
    },
    "dangling_before": 0,
    "dangling_after": 0,
    "unconnected_before": 0,
-   "unconnected_after": 8,
+   "unconnected_after": 6,
    "new_errors": 0
   }
  },
  "placements": {
   "D3": {
-   "x": 79.3,
-   "y": 62.3,
-   "deg": 180.0,
-   "side": "back"
+   "x": 46.885,
+   "y": 80.71,
+   "deg": 0.0,
+   "side": "front"
   },
   "D4": {
-   "x": 88.4,
-   "y": 64.05,
-   "deg": 90.0,
-   "side": "back"
+   "x": 38.885,
+   "y": 80.71,
+   "deg": 0.0,
+   "side": "front"
   },
   "D5": {
-   "x": 42.47,
-   "y": 76.6,
-   "deg": 270.0,
-   "side": "back"
+   "x": 68.245,
+   "y": 80.71,
+   "deg": 180.0,
+   "side": "front"
   },
   "D6": {
-   "x": 64.67,
-   "y": 76.6,
-   "deg": 270.0,
-   "side": "back"
+   "x": 61.085,
+   "y": 80.71,
+   "deg": 0.0,
+   "side": "front"
   },
-  "U10": {
-   "x": 82.9,
-   "y": 62.6,
-   "deg": 270.0,
-   "side": "back"
+  "D7": {
+   "x": 75.114,
+   "y": 64.6,
+   "deg": 180.0,
+   "side": "front"
+  },
+  "D8": {
+   "x": 74.6,
+   "y": 68.45,
+   "deg": 0.0,
+   "side": "front"
   }
  },
  "state": {
@@ -226,7 +241,8 @@
      "D4",
      "D5",
      "D6",
-     "U10"
+     "D7",
+     "D8"
     ],
     "human_hold": 2
    }

@@ -486,28 +486,17 @@ ic(B_IO, "Q14", "C8545", "2N7002", {"3": "GND", "1": "SUB_MUTE", "2": "MUTE_S"},
 
 # ---- ESD clamps at the connectors a person touches (issue #133) --------------
 # hwde check_esd (TI SLVA680: clamp first, at the connector, short to ground).
-# All five sit on B.Cu under or beside their connector (the top side there is
-# full); docs/boards/lite-esd.md. Same parts as core (docs/boards/core-esd.md).
-# CC: NUP2105L, 24 V working / 26.2 V min breakdown, ~30 pF: CC's 5.5 V stays
-# inside it and a cable that shorts 20 V VBUS onto CC does not make it conduct.
-# J1's pin field gives CC2 (B5) and CC1 (A5) their own way out, one part each;
-# the unused channel has no net, like J1's A8/B8.
-ic(B_IO, "D3", "C14486", "NUP2105L", {"1": "CC2", "2": "NC", "3": "GND"}, role="CC2 ESD clamp")
-ic(B_IO, "D4", "C14486", "NUP2105L", {"1": "CC1", "2": "NC", "3": "GND"}, role="CC1 ESD clamp")
-# USB D+/D-: USBLC6-2SC6, one pad per channel used (6 = I/O1, 4 = I/O2; their
-# twins 1 and 3 have no net). VBUS (pin 5) is left open: the board's VBUS is
-# 20 V (over the part's 6 V) and its +5V is far; the internal zener still
-# clamps through the steering diodes.
-ic(B_IO, "U10", "C2687116", "USBLC6-2SC6",
-   {"6": "USB_DP", "1": "NC", "4": "USB_DM", "3": "NC", "2": "GND", "5": "NC"},
-   expect={"6": "I/O1", "4": "I/O2", "2": "GND", "5": "VBUS"}, role="USB D+/D- ESD clamp")
-# RCA: ground-centred, at most 2 Vrms (2.8 V peak), inside the PESD5V0S2BT's
-# bidirectional 5 V working voltage; nA leakage beside 15k (line in) and the
-# sub-out's 1k.
-ic(B_IO, "D5", "C49338", "PESD5V0S2BT", {"1": "LINEIN_L", "2": "LINEIN_R", "3": "GND"},
-   role="line-in ESD clamp")
-ic(B_IO, "D6", "C49338", "PESD5V0S2BT", {"1": "SUB_L", "2": "SUB_R", "3": "GND"},
-   role="sub-out ESD clamp")
+# Lite stays top-side only (cheap JLC assembly), so each line gets its own
+# 0402-sized bidirectional clamp on F.Cu where the top side has room:
+# PESDNC2FD5VB (C110694, DFN1006-2L): 5 V working, 15 pF, IEC 61000-4-2.
+# RCA lines are ground-centred, at most 2 Vrms (2.8 V peak): inside 5 V;
+# 1 uA leakage max beside 15k (line in) and the sub-out's 1k.
+# USB full speed (CH340B) takes 15 pF. CC has no top-side room ahead of the
+# CH224A (2 mm from J1) and is exempt in constraints.json; docs/boards/lite-esd.md.
+for ref, net in (("D3", "LINEIN_L"), ("D4", "LINEIN_R"), ("D5", "SUB_L"),
+                 ("D6", "SUB_R"), ("D7", "USB_DP"), ("D8", "USB_DM")):
+    ic(B_IO, ref, "C110694", "PESDNC2FD5VB", {"1": net, "2": "GND"},
+       role=f"{net} ESD clamp")
 
 if __name__ == "__main__":
     out = sheet.save(WS / "kicad")

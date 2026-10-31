@@ -4077,265 +4077,86 @@
    "ref_prefix_hint": "Q"
   },
   {
-   "lcsc": "C14486",
+   "lcsc": "C110694",
    "refdes": [
     "D3",
-    "D4"
+    "D4",
+    "D5",
+    "D6",
+    "D7",
+    "D8"
    ],
-   "value": "NUP2105L",
-   "mpn": "NUP2105LT1G",
-   "brand": "onsemi",
-   "package": "SOT-23",
+   "value": "PESDNC2FD5VB",
+   "mpn": "PESDNC2FD5VB",
+   "brand": "Shanghai Prisemi Elec",
+   "package": "DFN1006-2L",
    "basic": false,
-   "stock": 218599,
-   "price": 0.0829,
+   "stock": 4095744,
+   "price": 0.0086,
    "price_breaks": [
     {
      "qty": 1,
-     "price": 0.0829
+     "price": 0.0086
     },
     {
-     "qty": 50,
-     "price": 0.0681
-    },
-    {
-     "qty": 150,
-     "price": 0.0606
-    },
-    {
-     "qty": 500,
-     "price": 0.0545
+     "qty": 1000,
+     "price": 0.0067
     },
     {
      "qty": 3000,
-     "price": 0.0386
+     "price": 0.0057
     },
     {
-     "qty": 6000,
-     "price": 0.0371
+     "qty": 10000,
+     "price": 0.0051
+    },
+    {
+     "qty": 50000,
+     "price": 0.0046
+    },
+    {
+     "qty": 100000,
+     "price": 0.0043
     }
    ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/1811091923_onsemi-NUP2105LT1G_C14486.pdf",
-   "description": "-55℃~+150℃ 100nA 2 24V 30pF 32V 350W@8/20us 44V 8A@8/20us Bidirectional IEC 61000-4-2、IEC 61000-4-5、IEC 61000-4-4 TVS SOT-23 ESD and Surge Protection (TVS/ESD) ROHS",
+   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/1811131834_Shanghai-Prisemi-Elec-PESDNC2FD5VB_C110694.pdf",
+   "description": "1 10V、13V、15V 15pF 1uA 5.5A@8/20us 5V 6.7V 80W@8/20us Bidirectional ESD IEC 61000-4-2、IEC 61000-4-4 DFN1006-2L ESD and Surge Protection (TVS/ESD) ROHS",
    "attributes": [
-    {
-     "name": "Operating Temperature",
-     "value": "-55℃~+150℃"
-    },
-    {
-     "name": "Type",
-     "value": "TVS"
-    },
-    {
-     "name": "Junction Capacitance",
-     "value": "30pF"
-    },
-    {
-     "name": "Number of Channels",
-     "value": "2"
-    },
-    {
-     "name": "Peak Pulse Power Dissipation (Ppp)",
-     "value": "350W@8/20us"
-    },
-    {
-     "name": "level of protection",
-     "value": "IEC 61000-4-2、IEC 61000-4-5、IEC 61000-4-4"
-    },
-    {
-     "name": "Clamping Voltage",
-     "value": "44V"
-    },
-    {
-     "name": "Polarity",
-     "value": "Bidirectional"
-    },
-    {
-     "name": "Voltage - Breakdown",
-     "value": "32V"
-    },
-    {
-     "name": "Peak Pulse Current (Ipp)",
-     "value": "8A@8/20us"
-    },
-    {
-     "name": "Reverse Stand-Off Voltage (Vrwm)",
-     "value": "24V"
-    },
-    {
-     "name": "Reverse Leakage Current (Ir)",
-     "value": "100nA"
-    }
-   ],
-   "role": "CC2 ESD clamp; CC1 ESD clamp",
-   "ref_prefix_hint": "D"
-  },
-  {
-   "lcsc": "C2687116",
-   "refdes": [
-    "U10"
-   ],
-   "value": "USBLC6-2SC6",
-   "mpn": "USBLC6-2SC6",
-   "brand": "UMW(Youtai Semiconductor Co., Ltd.)",
-   "package": "SOT-23-6",
-   "basic": false,
-   "stock": 119103,
-   "price": 0.0479,
-   "price_breaks": [
-    {
-     "qty": 1,
-     "price": 0.0479
-    },
-    {
-     "qty": 100,
-     "price": 0.0386
-    },
-    {
-     "qty": 300,
-     "price": 0.0338
-    },
-    {
-     "qty": 3000,
-     "price": 0.0245
-    },
-    {
-     "qty": 6000,
-     "price": 0.0232
-    },
-    {
-     "qty": 9000,
-     "price": 0.0222
-    }
-   ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2311091738_UMW-Youtai-Semiconductor-Co---Ltd--USBLC6-2SC6_C2687116.pdf",
-   "description": "0.35pF、0.8pF 100nA 150W@8/20us 15V 2 5V 6A@8/20us 6V ESD SOT-23-6 ESD and Surge Protection (TVS/ESD) ROHS",
-   "attributes": [
-    {
-     "name": "Operating Temperature",
-     "value": "-55℃~+125℃"
-    },
     {
      "name": "Type",
      "value": "ESD"
     },
     {
      "name": "Junction Capacitance",
-     "value": "0.35pF、0.8pF"
+     "value": "15pF"
     },
     {
      "name": "Peak Pulse Power Dissipation (Ppp)",
-     "value": "150W@8/20us"
+     "value": "80W@8/20us"
     },
     {
      "name": "Number of Channels",
-     "value": "2"
+     "value": "Single-channel"
     },
     {
      "name": "level of protection",
-     "value": "IEC 61000-4-2、IEC 61000-4-5、IEC 61000-4-4"
+     "value": "IEC 61000-4-2、IEC 61000-4-4"
     },
     {
      "name": "Clamping Voltage",
      "value": "15V"
     },
     {
-     "name": "Peak Pulse Current (Ipp)",
-     "value": "6A@8/20us"
-    },
-    {
-     "name": "Voltage - Breakdown",
-     "value": "6V"
-    },
-    {
-     "name": "Reverse Stand-Off Voltage (Vrwm)",
-     "value": "5V"
-    },
-    {
-     "name": "Reverse Leakage Current (Ir)",
-     "value": "100nA"
-    }
-   ],
-   "role": "USB D+/D- ESD clamp",
-   "ref_prefix_hint": "U"
-  },
-  {
-   "lcsc": "C49338",
-   "refdes": [
-    "D5",
-    "D6"
-   ],
-   "value": "PESD5V0S2BT",
-   "mpn": "PESD5V0S2BT,215",
-   "brand": "Nexperia",
-   "package": "SOT-23",
-   "basic": false,
-   "stock": 22319,
-   "price": 0.0857,
-   "price_breaks": [
-    {
-     "qty": 1,
-     "price": 0.0857
-    },
-    {
-     "qty": 50,
-     "price": 0.0671
-    },
-    {
-     "qty": 150,
-     "price": 0.058
-    },
-    {
-     "qty": 500,
-     "price": 0.0509
-    },
-    {
-     "qty": 3000,
-     "price": 0.0453
-    },
-    {
-     "qty": 6000,
-     "price": 0.0425
-    }
-   ],
-   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2407241032_Nexperia-PESD5V0S2BT-215_C49338.pdf",
-   "description": "12A 130W@8/20us 14V 2 35pF 5.5V 5V 5nA Bidirectional ESD IEC 61000-4-2、IEC 61000-4-5 SOT-23 ESD and Surge Protection (TVS/ESD) ROHS",
-   "attributes": [
-    {
-     "name": "Type",
-     "value": "ESD"
-    },
-    {
-     "name": "Junction Capacitance",
-     "value": "35pF"
-    },
-    {
-     "name": "Peak Pulse Power Dissipation (Ppp)",
-     "value": "130W@8/20us"
-    },
-    {
-     "name": "Number of Channels",
-     "value": "2"
-    },
-    {
-     "name": "level of protection",
-     "value": "IEC 61000-4-2、IEC 61000-4-5"
-    },
-    {
-     "name": "Clamping Voltage",
-     "value": "14V"
-    },
-    {
      "name": "Polarity",
      "value": "Bidirectional"
     },
     {
      "name": "Peak Pulse Current (Ipp)",
-     "value": "12A"
+     "value": "5.5A@8/20us"
     },
     {
      "name": "Voltage - Breakdown",
-     "value": "5.5V"
+     "value": "6.7V"
     },
     {
      "name": "Reverse Stand-Off Voltage (Vrwm)",
@@ -4343,10 +4164,10 @@
     },
     {
      "name": "Reverse Leakage Current (Ir)",
-     "value": "5nA"
+     "value": "1uA"
     }
    ],
-   "role": "line-in ESD clamp; sub-out ESD clamp",
+   "role": "LINEIN_L ESD clamp; LINEIN_R ESD clamp; SUB_L ESD clamp; SUB_R ESD clamp; USB_DP ESD clamp; USB_DM ESD clamp",
    "ref_prefix_hint": "D"
   }
  ]

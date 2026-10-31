@@ -398,10 +398,13 @@
    "/SPK_L_P",
    "/SPK_L_N",
    "/SPK_R_P",
-   "/SPK_R_N"
+   "/SPK_R_N",
+   "/CC1",
+   "/CC2"
   ],
   "exempt_notes": {
-   "speaker outputs (J4-J7)": "each banana post's leg ends on its LC filter's 1 uF X7R cap to GND (C68-C71, 1206), about 16 mm of 1.2 mm track from the post, with the 10 uH inductor (L1-L4) between that cap and the TPA3118 pin. An IEC 61000-4-2 8 kV contact strike carries 150 pF x 8 kV = 1.2 uC: about 1.2 V on 1 uF. The track's inductance drops the ns edge across itself, between the post and the cap, where nothing else connects; the self-measurement taps (R66/R68, 100k into 470 pF) hang off the far side of the cap. The inductor blocks the edge from the amp. A TVS would add nothing; the same judgement as core's posts (docs/boards/core-esd.md, docs/boards/lite-esd.md)."
+   "speaker outputs (J4-J7)": "each banana post's leg ends on its LC filter's 1 uF X7R cap to GND (C68-C71, 1206), about 16 mm of 1.2 mm track from the post, with the 10 uH inductor (L1-L4) between that cap and the TPA3118 pin. An IEC 61000-4-2 8 kV contact strike carries 150 pF x 8 kV = 1.2 uC: about 1.2 V on 1 uF. The track's inductance drops the ns edge across itself, between the post and the cap, where nothing else connects; the self-measurement taps (R66/R68, 100k into 470 pF) hang off the far side of the cap. The inductor blocks the edge from the amp. A TVS would add nothing; the same judgement as core's posts (docs/boards/core-esd.md, docs/boards/lite-esd.md).",
+   "USB-C CC1/CC2 (J1)": "Lite is top-side only (JLC assembly cost; the person, 2026-10-31). J1's A5/B5 run about 2 mm of top track straight down to the CH224A (U1 pins 6/7), between J1's VBUS pins and with U1 1.4 mm below J1's body: no part fits on the top side ahead of U1. A clamp anywhere else would sit behind the CH224A pin, where the strike has already divided, and protect nothing (SLVA680 Fig 2-5). The CH224A's own pin protection takes it. If Lite ever goes double-sided, the fix is one NUP2105L per line under J1's body (PR #146's first version; core does this with D6/D9)."
   }
  }
 }
