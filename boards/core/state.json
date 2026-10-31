@@ -4,7 +4,7 @@
  "workspace_schema": 2,
  "workspace": "/work/boards/core",
  "created": "2026-10-28T11:07:23",
- "updated": "2026-10-30T20:37:51",
+ "updated": "2026-10-30T18:13:09",
  "phase": "P9",
  "gates": {
   "erc": {
@@ -570,14 +570,14 @@
   "drc_routed": {
    "phase": "P7",
    "status": "pass",
-   "attempts": 345,
+   "attempts": 343,
    "last": {
-    "ts": "2026-10-30T20:36:51",
+    "ts": "2026-10-30T18:11:30",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
     "inputs": {
-     "pcb": "sexpr_no_uuid:374ad028f6951dc593730d2cf25e4bb1ee9828c5755e2a720c05e3fa0225728a",
+     "pcb": "sexpr_no_uuid:893c05fc50aaa4c9c60cae241fefc9b5bb9525385d15e5fedfaeef725f584eb4",
      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
      "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
      "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
@@ -4699,30 +4699,6 @@
       "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
       "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
      }
-    },
-    {
-     "ts": "2026-10-30T20:31:10",
-     "status": "pass",
-     "failing_count": 0,
-     "total": 0,
-     "inputs": {
-      "pcb": "sexpr_no_uuid:374ad028f6951dc593730d2cf25e4bb1ee9828c5755e2a720c05e3fa0225728a",
-      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
-      "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
-      "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
-     }
-    },
-    {
-     "ts": "2026-10-30T20:36:51",
-     "status": "pass",
-     "failing_count": 0,
-     "total": 0,
-     "inputs": {
-      "pcb": "sexpr_no_uuid:374ad028f6951dc593730d2cf25e4bb1ee9828c5755e2a720c05e3fa0225728a",
-      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
-      "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
-      "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
-     }
     }
    ]
   },
@@ -4892,14 +4868,14 @@
   "dfm": {
    "phase": "P9",
    "status": "pass",
-   "attempts": 8,
+   "attempts": 7,
    "last": {
-    "ts": "2026-10-30T20:37:51",
+    "ts": "2026-10-30T18:13:09",
     "status": "pass",
     "failing_count": 0,
-    "total": 12,
+    "total": 2,
     "inputs": {
-     "pcb": "sexpr_no_uuid:374ad028f6951dc593730d2cf25e4bb1ee9828c5755e2a720c05e3fa0225728a",
+     "pcb": "sexpr_no_uuid:893c05fc50aaa4c9c60cae241fefc9b5bb9525385d15e5fedfaeef725f584eb4",
      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
      "parts": null
     }
@@ -4981,17 +4957,6 @@
       "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
       "parts": null
      }
-    },
-    {
-     "ts": "2026-10-30T20:37:51",
-     "status": "pass",
-     "failing_count": 0,
-     "total": 12,
-     "inputs": {
-      "pcb": "sexpr_no_uuid:374ad028f6951dc593730d2cf25e4bb1ee9828c5755e2a720c05e3fa0225728a",
-      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
-      "parts": null
-     }
     }
    ]
   }
@@ -5002,19 +4967,19 @@
    "path": "kicad/core.kicad_sch",
    "kind": "sch",
    "sha256": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
-   "hashed": "2026-10-30T20:37:51"
+   "hashed": "2026-10-30T18:13:09"
   },
   "pro": {
    "path": "kicad/core.kicad_pro",
    "kind": "pro",
    "sha256": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
-   "hashed": "2026-10-30T20:36:51"
+   "hashed": "2026-10-30T18:11:30"
   },
   "pcb": {
    "path": "kicad/core.kicad_pcb",
    "kind": "pcb",
-   "sha256": "sexpr_no_uuid:374ad028f6951dc593730d2cf25e4bb1ee9828c5755e2a720c05e3fa0225728a",
-   "hashed": "2026-10-30T20:37:51"
+   "sha256": "sexpr_no_uuid:893c05fc50aaa4c9c60cae241fefc9b5bb9525385d15e5fedfaeef725f584eb4",
+   "hashed": "2026-10-30T18:13:09"
   },
   "constraints": {
    "path": "kicad/constraints.json",
@@ -5038,7 +5003,7 @@
    "path": "kicad/core.kicad_dru",
    "kind": "dru",
    "sha256": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202",
-   "hashed": "2026-10-30T20:36:51"
+   "hashed": "2026-10-30T18:11:30"
   },
   "waivers": {
    "path": "reports/verify-waivers.json",
@@ -5050,7 +5015,7 @@
    "path": "kicad/parts.json",
    "kind": "parts",
    "sha256": null,
-   "hashed": "2026-10-30T20:37:51"
+   "hashed": "2026-10-30T18:13:09"
   }
  },
  "open_issues": [],
@@ -8394,30 +8359,6 @@
    "gate": "dfm",
    "status": "pass",
    "attempt": 7,
-   "failing_count": 0
-  },
-  {
-   "ts": "2026-10-30T20:31:10",
-   "event": "gate",
-   "gate": "drc_routed",
-   "status": "pass",
-   "attempt": 344,
-   "failing_count": 0
-  },
-  {
-   "ts": "2026-10-30T20:36:51",
-   "event": "gate",
-   "gate": "drc_routed",
-   "status": "pass",
-   "attempt": 345,
-   "failing_count": 0
-  },
-  {
-   "ts": "2026-10-30T20:37:51",
-   "event": "gate",
-   "gate": "dfm",
-   "status": "pass",
-   "attempt": 8,
    "failing_count": 0
   }
  ]

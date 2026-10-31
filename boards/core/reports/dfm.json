@@ -4,7 +4,7 @@
   "phase": "P9",
   "tool": "dfm",
   "input": "kicad/core.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:374ad028f6951dc593730d2cf25e4bb1ee9828c5755e2a720c05e3fa0225728a",
+  "input_digest": "sexpr_no_uuid:893c05fc50aaa4c9c60cae241fefc9b5bb9525385d15e5fedfaeef725f584eb4",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -13,13 +13,12 @@
     "max_count": 0
   },
   "counts": {
-    "total": 12,
+    "total": 2,
     "by_severity": {
-      "error": 10,
       "warning": 2
     },
     "by_source": {
-      "check.dfm": 12
+      "check.dfm": 2
     }
   },
   "failing_count": 0,
@@ -67,239 +66,6 @@
       "offset_mm": 0.793
     }
   ],
-  "waived_count": 10,
-  "waived": [
-    {
-      "check": "dfm",
-      "severity": "error",
-      "pos": null,
-      "layer": null,
-      "net": null,
-      "refs": [
-        "C207"
-      ],
-      "msg": "C207 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-      "source": "check.dfm",
-      "items": [
-        {
-          "msg": "C207 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-          "pos": null
-        }
-      ],
-      "kind": "cpl_no_model",
-      "verdict": "bottom_unverified",
-      "lcsc": "C282823",
-      "cpl_rot": 270.0,
-      "expected_rot": null
-    },
-    {
-      "check": "dfm",
-      "severity": "error",
-      "pos": null,
-      "layer": null,
-      "net": null,
-      "refs": [
-        "C208"
-      ],
-      "msg": "C208 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-      "source": "check.dfm",
-      "items": [
-        {
-          "msg": "C208 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-          "pos": null
-        }
-      ],
-      "kind": "cpl_no_model",
-      "verdict": "bottom_unverified",
-      "lcsc": "C14663",
-      "cpl_rot": 0.0,
-      "expected_rot": null
-    },
-    {
-      "check": "dfm",
-      "severity": "error",
-      "pos": null,
-      "layer": null,
-      "net": null,
-      "refs": [
-        "C209"
-      ],
-      "msg": "C209 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-      "source": "check.dfm",
-      "items": [
-        {
-          "msg": "C209 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-          "pos": null
-        }
-      ],
-      "kind": "cpl_no_model",
-      "verdict": "bottom_unverified",
-      "lcsc": "C282823",
-      "cpl_rot": 270.0,
-      "expected_rot": null
-    },
-    {
-      "check": "dfm",
-      "severity": "error",
-      "pos": null,
-      "layer": null,
-      "net": null,
-      "refs": [
-        "C210"
-      ],
-      "msg": "C210 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-      "source": "check.dfm",
-      "items": [
-        {
-          "msg": "C210 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-          "pos": null
-        }
-      ],
-      "kind": "cpl_no_model",
-      "verdict": "bottom_unverified",
-      "lcsc": "C14663",
-      "cpl_rot": 180.0,
-      "expected_rot": null
-    },
-    {
-      "check": "dfm",
-      "severity": "error",
-      "pos": null,
-      "layer": null,
-      "net": null,
-      "refs": [
-        "C218"
-      ],
-      "msg": "C218 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-      "source": "check.dfm",
-      "items": [
-        {
-          "msg": "C218 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-          "pos": null
-        }
-      ],
-      "kind": "cpl_no_model",
-      "verdict": "bottom_unverified",
-      "lcsc": "C15850",
-      "cpl_rot": 90.0,
-      "expected_rot": null
-    },
-    {
-      "check": "dfm",
-      "severity": "error",
-      "pos": null,
-      "layer": null,
-      "net": null,
-      "refs": [
-        "C220"
-      ],
-      "msg": "C220 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-      "source": "check.dfm",
-      "items": [
-        {
-          "msg": "C220 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-          "pos": null
-        }
-      ],
-      "kind": "cpl_no_model",
-      "verdict": "bottom_unverified",
-      "lcsc": "C15850",
-      "cpl_rot": 90.0,
-      "expected_rot": null
-    },
-    {
-      "check": "dfm",
-      "severity": "error",
-      "pos": null,
-      "layer": null,
-      "net": null,
-      "refs": [
-        "C307"
-      ],
-      "msg": "C307 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-      "source": "check.dfm",
-      "items": [
-        {
-          "msg": "C307 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-          "pos": null
-        }
-      ],
-      "kind": "cpl_no_model",
-      "verdict": "bottom_unverified",
-      "lcsc": "C282823",
-      "cpl_rot": 270.0,
-      "expected_rot": null
-    },
-    {
-      "check": "dfm",
-      "severity": "error",
-      "pos": null,
-      "layer": null,
-      "net": null,
-      "refs": [
-        "C308"
-      ],
-      "msg": "C308 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-      "source": "check.dfm",
-      "items": [
-        {
-          "msg": "C308 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-          "pos": null
-        }
-      ],
-      "kind": "cpl_no_model",
-      "verdict": "bottom_unverified",
-      "lcsc": "C14663",
-      "cpl_rot": 0.0,
-      "expected_rot": null
-    },
-    {
-      "check": "dfm",
-      "severity": "error",
-      "pos": null,
-      "layer": null,
-      "net": null,
-      "refs": [
-        "C309"
-      ],
-      "msg": "C309 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-      "source": "check.dfm",
-      "items": [
-        {
-          "msg": "C309 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-          "pos": null
-        }
-      ],
-      "kind": "cpl_no_model",
-      "verdict": "bottom_unverified",
-      "lcsc": "C282823",
-      "cpl_rot": 270.0,
-      "expected_rot": null
-    },
-    {
-      "check": "dfm",
-      "severity": "error",
-      "pos": null,
-      "layer": null,
-      "net": null,
-      "refs": [
-        "C310"
-      ],
-      "msg": "C310 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-      "source": "check.dfm",
-      "items": [
-        {
-          "msg": "C310 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled - confirm it in JLC's preview",
-          "pos": null
-        }
-      ],
-      "kind": "cpl_no_model",
-      "verdict": "bottom_unverified",
-      "lcsc": "C14663",
-      "cpl_rot": 180.0,
-      "expected_rot": null
-    }
-  ],
   "coverage": {
     "strict": false,
     "required": [
@@ -337,13 +103,12 @@
       "hole_to_edge",
       "silk",
       "polarity",
+      "placement",
       "bom",
       "release",
       "castellation"
     ],
-    "failed": [
-      "placement"
-    ],
+    "failed": [],
     "waived": [],
     "not_applicable": {},
     "skipped_error": {
@@ -356,9 +121,9 @@
     "workspace": "/work/boards/core",
     "gate": "dfm",
     "status": "pass",
-    "attempts": 8,
+    "attempts": 7,
     "inputs": {
-      "pcb": "sexpr_no_uuid:374ad028f6951dc593730d2cf25e4bb1ee9828c5755e2a720c05e3fa0225728a",
+      "pcb": "sexpr_no_uuid:893c05fc50aaa4c9c60cae241fefc9b5bb9525385d15e5fedfaeef725f584eb4",
       "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
       "parts": null
     }

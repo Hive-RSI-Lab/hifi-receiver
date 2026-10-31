@@ -34,8 +34,8 @@ All hwde gates pass on the routed board after the first-spin review ECO, with hi
 The fab package is in `fab/`:
 
 - **Gerbers:** `core_gerbers.zip`.
-- **Plus build:** `BOM.csv` (72 lines, every one with an LCSC number), `CPL.csv` (293 placed parts, 10 of them on the bottom: see `fab/ORDERING.md`), `BOM-full.csv` and `prebuy.csv`, which lists the Extended parts.
-- **Ultra build:** `fab/ultra/` holds `BOM.csv` and `CPL.csv` (293 placed parts) for the same Gerbers.
+- **Plus build:** `BOM.csv` (72 lines, every one with an LCSC number), `CPL.csv` (230 placed parts), `BOM-full.csv` and `prebuy.csv`, which lists the Extended parts.
+- **Ultra build:** `fab/ultra/` holds `BOM.csv` and `CPL.csv` (272 placed parts) for the same Gerbers.
 
 Board facts:
 
