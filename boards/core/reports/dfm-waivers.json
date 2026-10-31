@@ -109,6 +109,50 @@
    "reason": "C310 is a non-polar 2-pad MLCC on B.Cu (amp-area ECO, review-3 R3-AMP-2 / R3-LAYOUT-1). hwde's cpl_verify does not model JLC's bottom-side convention, so every bottom part is 'bottom_unverified'. For a 2-pad non-polar part only the pad axis matters, and a mirror keeps a 0/90/180/270 axis: the CPL row's rotation puts the pads on the board's axis (checked against the CPL, docs/boards/core-amp-eco.md). Confirm in JLC's bottom-side preview at order.",
    "approved": "core worker 261030-215553 (person delegated sign-offs: 'go on with best judgement and record the choice')",
    "expires": "2027-04-30"
+  },
+  {
+   "check": "dfm",
+   "kind": "cpl_no_model",
+   "net": null,
+   "refs": [
+    "D6"
+   ],
+   "reason": "D6 is a dual ESD clamp in SOT-23 on B.Cu (issue #133, docs/boards/core-esd.md). hwde's cpl_verify does not model JLC's bottom-side convention, so every bottom part is 'bottom_unverified'. Pins 1 and 2 are identical bidirectional channels to the common pin 3, so a mirror that swaps 1 and 2 changes nothing. What matters is that pin 3 lands on the lone pad (GND): confirm that in JLC's bottom-side preview at order.",
+   "approved": "af884 (H2, taking over H0's hifi work; person delegated sign-offs: 'go on with best judgement and record the choice')",
+   "expires": "2027-04-30"
+  },
+  {
+   "check": "dfm",
+   "kind": "cpl_no_model",
+   "net": null,
+   "refs": [
+    "D7"
+   ],
+   "reason": "D7 is a dual ESD clamp in SOT-23 on B.Cu (issue #133, docs/boards/core-esd.md). hwde's cpl_verify does not model JLC's bottom-side convention, so every bottom part is 'bottom_unverified'. Pins 1 and 2 are identical bidirectional channels to the common pin 3, so a mirror that swaps 1 and 2 changes nothing. What matters is that pin 3 lands on the lone pad (GND): confirm that in JLC's bottom-side preview at order.",
+   "approved": "af884 (H2, taking over H0's hifi work; person delegated sign-offs: 'go on with best judgement and record the choice')",
+   "expires": "2027-04-30"
+  },
+  {
+   "check": "dfm",
+   "kind": "cpl_no_model",
+   "net": null,
+   "refs": [
+    "D8"
+   ],
+   "reason": "D8 is a dual ESD clamp in SOT-23 on B.Cu (issue #133, docs/boards/core-esd.md). hwde's cpl_verify does not model JLC's bottom-side convention, so every bottom part is 'bottom_unverified'. Pins 1 and 2 are identical bidirectional channels to the common pin 3, so a mirror that swaps 1 and 2 changes nothing. What matters is that pin 3 lands on the lone pad (GND): confirm that in JLC's bottom-side preview at order.",
+   "approved": "af884 (H2, taking over H0's hifi work; person delegated sign-offs: 'go on with best judgement and record the choice')",
+   "expires": "2027-04-30"
+  },
+  {
+   "check": "dfm",
+   "kind": "cpl_no_model",
+   "net": null,
+   "refs": [
+    "D9"
+   ],
+   "reason": "D9 is a dual ESD clamp in SOT-23 on B.Cu (issue #133, docs/boards/core-esd.md). hwde's cpl_verify does not model JLC's bottom-side convention, so every bottom part is 'bottom_unverified'. Pins 1 and 2 are identical bidirectional channels to the common pin 3, so a mirror that swaps 1 and 2 changes nothing. What matters is that pin 3 lands on the lone pad (GND): confirm that in JLC's bottom-side preview at order.",
+   "approved": "af884 (H2, taking over H0's hifi work; person delegated sign-offs: 'go on with best judgement and record the choice')",
+   "expires": "2027-04-30"
   }
  ]
 }
