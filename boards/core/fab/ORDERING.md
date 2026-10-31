@@ -46,13 +46,7 @@ and the one step that has to happen before the assembly order can go in.
   - The TPA3220's thermal pad has 15 open 0.3 mm vias. No via filling is
     needed: the paste is cut to 63 % in 4 windows to allow for the solder
     that wicks into them.
-- **Assembly, both sides** (choose JLC's two-sided PCBA). Ten 2-pad MLCCs
-  are on the bottom, under the amps (`Layer` = Bottom in the CPL): each
-  TPA3220's PVDD HF pair (C207-C210, C307-C310), right under its PVDD pins,
-  and U15's input caps C218/C220. Check their pads line up in JLC's
-  bottom-side preview: hwde can't verify bottom-side rotations
-  (`reports/dfm-waivers.json`). All ten are non-polar, so only the axis
-  matters.
+- **Assembly, top side only:**
   - Plus: `BOM.csv` and `CPL.csv`. Zone B (U16) is fitted too: Plus plays L on zone A and R on zone B.
   - Ultra: `ultra/BOM.csv` and `ultra/CPL.csv`, with the same Gerbers.
 - **Not on the board:** the binding posts, the remote, Ultra's front board
