@@ -4,8 +4,7 @@ Task 261030-215553 (issue #121). This is a layout ECO on the routed board. It
 runs from the board as it was before the ECO, in order:
 
 1. `boards/core/kicad/gen/amp_eco.py`
-2. `amp_in_eco.py`
-3. `j3_model.py` Checked by round 2's `docs/review-3/sims/amp/check_amp_layout.py`
+2. `amp_in_eco.py` Checked by round 2's `docs/review-3/sims/amp/check_amp_layout.py`
 (16 fails before, 0 after), drc_routed (0) and dfm (pass, with 10 waivers, see below).
 
 ## R3-AMP-2: PVDD HF caps at the pins
@@ -70,8 +69,6 @@ The ten bottom parts make core a two-sided JLC build (`fab/ORDERING.md`).
 - **Wiring:** `tools/hwcheck.py` and `kicad/gen/fab.sh` pass that file to the dfm gate.
 - **At order:** confirm in JLC's bottom-side preview.
 
-## Also in this change
+## Result
 
-**J3** (`j3_model.py`): the FFC connector's 3D model is offset 0.45 mm, as hwde's check_model_fit asks. This fails on main too with /hive/tools/hwde.
-
-Result: core passes erc, drc_routed, verify and dfm (dfm with the 10 waivers above).
+core passes erc, drc_routed, verify and dfm, with dfm taking the 10 waivers above. The check's `python3 tools/hwcheck.py test` passes on all three boards.
