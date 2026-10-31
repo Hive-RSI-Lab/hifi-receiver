@@ -81,8 +81,10 @@ def zone(z: str, base: int, ultra: bool):
           {"1": n(o), "2": net}, lcsc="C2962885",
           role="output filter 10 uH, Isat 10 A (= TPA3221 OC limit)")
         C(f"C{nr()}", "1uF/50V", net, pkg="0805")
+        # Zobel per leg (issue #137): 4.7R + 470nF damps the 10uH/1uF filter
+        # with no speaker from +40 dB to +16 dB at ~45 kHz (docs/boards/core-zobel.md).
         R(f"R{nr()}", "4.7R", net, n(o + "_SN"), pkg="0603")
-        C(f"C{nr()}", "1nF/50V", n(o + "_SN"), pkg="0603")
+        C(f"C{nr()}", "470nF/50V", n(o + "_SN"), pkg="0603")
     # speaker terminals: one 2-way 5 mm screw terminal per channel; the
     # enclosure's banana sockets / binding posts wire to these
     for k, ch in enumerate(("L", "R")):

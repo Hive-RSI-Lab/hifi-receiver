@@ -1,8 +1,8 @@
 (export
 	(version "E")
 	(design
-		(source "/work/boards/core/kicad/core.kicad_sch")
-		(date "2026-10-30T17:52:15")
+		(source "/home/hive2/projects/hifi-zobel/boards/core/kicad/core.kicad_sch")
+		(date "2026-10-31T14:43:54")
 		(tool "Eeschema 10.0.6")
 		(sheet
 			(number "1")
@@ -13061,12 +13061,12 @@
 		(comp
 			(ref "C207")
 			(value "1uF")
-			(footprint "aiee:C0805")
+			(footprint "aiee:C1206")
 			(fields
 				(field
-					(name "LCSC") "C28323")
+					(name "LCSC") "C282823")
 				(field
-					(name "Footprint") "aiee:C0805")
+					(name "Footprint") "aiee:C1206")
 				(field
 					(name "Datasheet")
 				)
@@ -13081,7 +13081,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C28323")
+				(value "C282823")
 			)
 			(property
 				(name "Sheetname")
@@ -13181,12 +13181,12 @@
 		(comp
 			(ref "C209")
 			(value "1uF")
-			(footprint "aiee:C0805")
+			(footprint "aiee:C1206")
 			(fields
 				(field
-					(name "LCSC") "C28323")
+					(name "LCSC") "C282823")
 				(field
-					(name "Footprint") "aiee:C0805")
+					(name "Footprint") "aiee:C1206")
 				(field
 					(name "Datasheet")
 				)
@@ -13201,7 +13201,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C28323")
+				(value "C282823")
 			)
 			(property
 				(name "Sheetname")
@@ -13900,11 +13900,11 @@
 		)
 		(comp
 			(ref "C228")
-			(value "1nF")
+			(value "470nF")
 			(footprint "aiee:C0603")
 			(fields
 				(field
-					(name "LCSC") "C1588")
+					(name "LCSC") "C513577")
 				(field
 					(name "Footprint") "aiee:C0603")
 				(field
@@ -13921,7 +13921,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C1588")
+				(value "C513577")
 			)
 			(property
 				(name "Sheetname")
@@ -14020,11 +14020,11 @@
 		)
 		(comp
 			(ref "C231")
-			(value "1nF")
+			(value "470nF")
 			(footprint "aiee:C0603")
 			(fields
 				(field
-					(name "LCSC") "C1588")
+					(name "LCSC") "C513577")
 				(field
 					(name "Footprint") "aiee:C0603")
 				(field
@@ -14041,7 +14041,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C1588")
+				(value "C513577")
 			)
 			(property
 				(name "Sheetname")
@@ -14140,11 +14140,11 @@
 		)
 		(comp
 			(ref "C234")
-			(value "1nF")
+			(value "470nF")
 			(footprint "aiee:C0603")
 			(fields
 				(field
-					(name "LCSC") "C1588")
+					(name "LCSC") "C513577")
 				(field
 					(name "Footprint") "aiee:C0603")
 				(field
@@ -14161,7 +14161,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C1588")
+				(value "C513577")
 			)
 			(property
 				(name "Sheetname")
@@ -14260,11 +14260,11 @@
 		)
 		(comp
 			(ref "C237")
-			(value "1nF")
+			(value "470nF")
 			(footprint "aiee:C0603")
 			(fields
 				(field
-					(name "LCSC") "C1588")
+					(name "LCSC") "C513577")
 				(field
 					(name "Footprint") "aiee:C0603")
 				(field
@@ -14281,7 +14281,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C1588")
+				(value "C513577")
 			)
 			(property
 				(name "Sheetname")
@@ -17053,12 +17053,12 @@
 		(comp
 			(ref "C307")
 			(value "1uF")
-			(footprint "aiee:C0805")
+			(footprint "aiee:C1206")
 			(fields
 				(field
-					(name "LCSC") "C28323")
+					(name "LCSC") "C282823")
 				(field
-					(name "Footprint") "aiee:C0805")
+					(name "Footprint") "aiee:C1206")
 				(field
 					(name "Datasheet")
 				)
@@ -17073,7 +17073,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C28323")
+				(value "C282823")
 			)
 			(property
 				(name "Sheetname")
@@ -17173,12 +17173,12 @@
 		(comp
 			(ref "C309")
 			(value "1uF")
-			(footprint "aiee:C0805")
+			(footprint "aiee:C1206")
 			(fields
 				(field
-					(name "LCSC") "C28323")
+					(name "LCSC") "C282823")
 				(field
-					(name "Footprint") "aiee:C0805")
+					(name "Footprint") "aiee:C1206")
 				(field
 					(name "Datasheet")
 				)
@@ -17193,7 +17193,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C28323")
+				(value "C282823")
 			)
 			(property
 				(name "Sheetname")
@@ -17952,11 +17952,11 @@
 		)
 		(comp
 			(ref "C326")
-			(value "1nF")
+			(value "470nF")
 			(footprint "aiee:C0603")
 			(fields
 				(field
-					(name "LCSC") "C1588")
+					(name "LCSC") "C513577")
 				(field
 					(name "Footprint") "aiee:C0603")
 				(field
@@ -17973,7 +17973,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C1588")
+				(value "C513577")
 			)
 			(property
 				(name "Sheetname")
@@ -18072,11 +18072,11 @@
 		)
 		(comp
 			(ref "C329")
-			(value "1nF")
+			(value "470nF")
 			(footprint "aiee:C0603")
 			(fields
 				(field
-					(name "LCSC") "C1588")
+					(name "LCSC") "C513577")
 				(field
 					(name "Footprint") "aiee:C0603")
 				(field
@@ -18093,7 +18093,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C1588")
+				(value "C513577")
 			)
 			(property
 				(name "Sheetname")
@@ -18192,11 +18192,11 @@
 		)
 		(comp
 			(ref "C332")
-			(value "1nF")
+			(value "470nF")
 			(footprint "aiee:C0603")
 			(fields
 				(field
-					(name "LCSC") "C1588")
+					(name "LCSC") "C513577")
 				(field
 					(name "Footprint") "aiee:C0603")
 				(field
@@ -18213,7 +18213,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C1588")
+				(value "C513577")
 			)
 			(property
 				(name "Sheetname")
@@ -18312,11 +18312,11 @@
 		)
 		(comp
 			(ref "C335")
-			(value "1nF")
+			(value "470nF")
 			(footprint "aiee:C0603")
 			(fields
 				(field
-					(name "LCSC") "C1588")
+					(name "LCSC") "C513577")
 				(field
 					(name "Footprint") "aiee:C0603")
 				(field
@@ -18333,7 +18333,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C1588")
+				(value "C513577")
 			)
 			(property
 				(name "Sheetname")
