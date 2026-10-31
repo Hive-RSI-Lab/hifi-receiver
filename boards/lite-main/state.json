@@ -4,21 +4,21 @@
  "workspace_schema": 2,
  "workspace": "boards/lite-main",
  "created": "2026-10-28T11:00:21",
- "updated": "2026-10-30T18:36:11",
+ "updated": "2026-10-31T16:51:19",
  "phase": "P9",
  "gates": {
   "erc": {
    "phase": "P4",
    "status": "pass",
-   "attempts": 17,
+   "attempts": 18,
    "last": {
-    "ts": "2026-10-30T18:12:40",
+    "ts": "2026-10-31T16:45:59",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
     "inputs": {
-     "sch": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
-     "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d"
+     "sch": "sexpr_no_uuid:13decca961939d66f4646c7b6dfac410c545729269cceadc251d5a477ce3e187",
+     "pro": "json_canonical:6d0de1152d76259e8cf3cd06513cbd1e922a675949c20612c642e5014f5a0329"
     }
    },
    "history": [
@@ -191,6 +191,44 @@
       "sch": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
       "pro": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d"
      }
+    },
+    {
+     "ts": "2026-10-31T16:45:59",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "sch": "sexpr_no_uuid:13decca961939d66f4646c7b6dfac410c545729269cceadc251d5a477ce3e187",
+      "pro": "json_canonical:6d0de1152d76259e8cf3cd06513cbd1e922a675949c20612c642e5014f5a0329"
+     }
+    }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T16:48:04",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T16:50:37",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -474,6 +512,34 @@
       "decoupling": "json_canonical:6e0abe76bc94c3adf63834a0af08af32a591dddde239022232419170e70162aa",
       "place_waivers": null
      }
+    }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T16:48:04",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T16:50:37",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -2534,6 +2600,34 @@
       "dru": "text_eol:1c2c46730fe53045a7b7ec69777530c5426c64527d6d603afc5cb0aa57649014"
      }
     }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T16:48:04",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T16:50:37",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+     ],
+     "human_hold": 2
+    }
    ]
   },
   "verify": {
@@ -2673,20 +2767,48 @@
       "waivers": "json_canonical:fd04b3c398f91596a08605fd91c32f9be2d338bcc3860a37e636c7fd5a133f39"
      }
     }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T16:48:04",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T16:50:37",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+     ],
+     "human_hold": 2
+    }
    ]
   },
   "dfm": {
    "phase": "P9",
    "status": "pass",
-   "attempts": 9,
+   "attempts": 10,
    "last": {
-    "ts": "2026-10-30T18:36:11",
+    "ts": "2026-10-31T16:51:19",
     "status": "pass",
     "failing_count": 0,
     "total": 3,
     "inputs": {
-     "pcb": "sexpr_no_uuid:a31a493cb1f80fc1cffe1c2b8a9d012de37bea0a70a73cee76192202a0806b34",
-     "sch": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
+     "pcb": "sexpr_no_uuid:0fdc4844245a7b17999ba91ac7c97bcffc4c278f298601a1bec5957e0ba878f9",
+     "sch": "sexpr_no_uuid:13decca961939d66f4646c7b6dfac410c545729269cceadc251d5a477ce3e187",
      "parts": null
     }
    },
@@ -2789,6 +2911,17 @@
       "sch": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
       "parts": null
      }
+    },
+    {
+     "ts": "2026-10-31T16:51:19",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 3,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:0fdc4844245a7b17999ba91ac7c97bcffc4c278f298601a1bec5957e0ba878f9",
+      "sch": "sexpr_no_uuid:13decca961939d66f4646c7b6dfac410c545729269cceadc251d5a477ce3e187",
+      "parts": null
+     }
     }
    ]
   }
@@ -2798,20 +2931,20 @@
   "sch": {
    "path": "kicad/lite-main.kicad_sch",
    "kind": "sch",
-   "sha256": "sexpr_no_uuid:3817c0e26947ed5aa0feec839d63eb4ad98cf0c0db3a0d7b9fd21f0f3edcc1e0",
-   "hashed": "2026-10-30T18:36:11"
+   "sha256": "sexpr_no_uuid:13decca961939d66f4646c7b6dfac410c545729269cceadc251d5a477ce3e187",
+   "hashed": "2026-10-31T16:51:19"
   },
   "pro": {
    "path": "kicad/lite-main.kicad_pro",
    "kind": "pro",
-   "sha256": "json_canonical:68c7fa5e93e710c46aadc42519fee152f529f73d7ac3eeaf38dd8f4bb9a3b72d",
-   "hashed": "2026-10-30T18:12:40"
+   "sha256": "json_canonical:6d0de1152d76259e8cf3cd06513cbd1e922a675949c20612c642e5014f5a0329",
+   "hashed": "2026-10-31T16:45:59"
   },
   "pcb": {
    "path": "kicad/lite-main.kicad_pcb",
    "kind": "pcb",
-   "sha256": "sexpr_no_uuid:a31a493cb1f80fc1cffe1c2b8a9d012de37bea0a70a73cee76192202a0806b34",
-   "hashed": "2026-10-30T18:36:11"
+   "sha256": "sexpr_no_uuid:0fdc4844245a7b17999ba91ac7c97bcffc4c278f298601a1bec5957e0ba878f9",
+   "hashed": "2026-10-31T16:51:19"
   },
   "constraints": {
    "path": "kicad/constraints.json",
@@ -2847,7 +2980,7 @@
    "path": "kicad/parts.json",
    "kind": "parts",
    "sha256": null,
-   "hashed": "2026-10-30T18:36:11"
+   "hashed": "2026-10-31T16:51:19"
   },
   "netlist": {
    "path": "kicad/lite-main.net",
@@ -2870,6 +3003,32 @@
       "J5",
       "J6",
       "J7"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T16:48:04",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T16:50:37",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
      ],
      "human_hold": 2
     }
@@ -2904,6 +3063,32 @@
      "edit_class": "outline_change",
      "refs": [],
      "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T16:48:04",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T16:50:37",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -2928,6 +3113,32 @@
       "J5",
       "J6",
       "J7"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T16:48:04",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T16:50:37",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
      ],
      "human_hold": 2
     }
@@ -2956,6 +3167,32 @@
       "J7"
      ],
      "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T16:48:04",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T16:50:37",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -2980,6 +3217,32 @@
       "J5",
       "J6",
       "J7"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T16:48:04",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T16:50:37",
+     "edit_class": "add_part",
+     "refs": [
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
      ],
      "human_hold": 2
     }
@@ -3245,6 +3508,80 @@
    ],
    "stale_artifacts": [
     "gerbers"
+   ]
+  },
+  {
+   "ts": "2026-10-31T16:48:04",
+   "class": "add_part",
+   "refs": [
+    "D3",
+    "D4",
+    "D5",
+    "D6",
+    "D7",
+    "D8"
+   ],
+   "note": null,
+   "human_hold": 2,
+   "gates": [
+    "erc",
+    "place",
+    "drc",
+    "drc_routed",
+    "verify",
+    "sim",
+    "dfm"
+   ],
+   "gates_marked": [
+    "erc",
+    "place",
+    "drc_routed",
+    "verify",
+    "dfm"
+   ],
+   "stale_artifacts": [
+    "netlist",
+    "gerbers",
+    "bom",
+    "bom_full",
+    "cpl"
+   ]
+  },
+  {
+   "ts": "2026-10-31T16:50:37",
+   "class": "add_part",
+   "refs": [
+    "D3",
+    "D4",
+    "D5",
+    "D6",
+    "D7",
+    "D8"
+   ],
+   "note": null,
+   "human_hold": 2,
+   "gates": [
+    "erc",
+    "place",
+    "drc",
+    "drc_routed",
+    "verify",
+    "sim",
+    "dfm"
+   ],
+   "gates_marked": [
+    "erc",
+    "place",
+    "drc_routed",
+    "verify",
+    "dfm"
+   ],
+   "stale_artifacts": [
+    "netlist",
+    "gerbers",
+    "bom",
+    "bom_full",
+    "cpl"
    ]
   }
  ],
@@ -5299,6 +5636,50 @@
    "gate": "dfm",
    "status": "pass",
    "attempt": 9,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-31T16:45:59",
+   "event": "gate",
+   "gate": "erc",
+   "status": "pass",
+   "attempt": 18,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-31T16:48:04",
+   "event": "edit",
+   "edit_class": "add_part",
+   "refs": [
+    "D3",
+    "D4",
+    "D5",
+    "D6",
+    "D7",
+    "D8"
+   ],
+   "human_hold": 2
+  },
+  {
+   "ts": "2026-10-31T16:50:37",
+   "event": "edit",
+   "edit_class": "add_part",
+   "refs": [
+    "D3",
+    "D4",
+    "D5",
+    "D6",
+    "D7",
+    "D8"
+   ],
+   "human_hold": 2
+  },
+  {
+   "ts": "2026-10-31T16:51:19",
+   "event": "gate",
+   "gate": "dfm",
+   "status": "pass",
+   "attempt": 10,
    "failing_count": 0
   }
  ]

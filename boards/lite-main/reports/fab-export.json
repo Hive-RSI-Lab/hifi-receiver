@@ -25,60 +25,60 @@
  "files": [
   {
    "name": "lite-main-B_Cu.gbl",
-   "sha256": "8832bd1c784c3d94910352025bf1d05e92f61f6088a6e81c80a134bd61247c73",
-   "bytes": 227683
+   "sha256": "4ead3d780225ceb87144edfddaa0987dafd7bfff69d43662dc0a23a0d03f35f3",
+   "bytes": 229243
   },
   {
    "name": "lite-main-B_Mask.gbs",
-   "sha256": "b6c4864373a2d4388ce0c4b18bd992360076373d5279e21c2028121d1c5eb68c",
+   "sha256": "ef6129a9c101daa59f174c72699fceb1053e28759dbbc4f8e0c7608866545f4f",
    "bytes": 2624
   },
   {
    "name": "lite-main-B_Paste.gbp",
-   "sha256": "dc4275e030c666bb026c339707588b5574c56e012617e9c88b924f0ed0853926",
+   "sha256": "9503c2ae027081911c5f09b74c19f7368bedb341b0637eb11bd1ae15093e79c0",
    "bytes": 454
   },
   {
    "name": "lite-main-B_Silkscreen.gbo",
-   "sha256": "90e93893563f741eceb88c1f5fa72c6d3a333e7b877dbb36192f68daff9fa40e",
+   "sha256": "ec5e3f163a48a7317c6be8e048f4aeab4eb6a17f1edc39464a77ace213319692",
    "bytes": 455
   },
   {
    "name": "lite-main-Edge_Cuts.gm1",
-   "sha256": "d3d86205f85dbd37110d27e50fdadb4a9e2b00fec42d24dc5a576660b387d544",
+   "sha256": "ac0e10718f48e04f3d49c71a26d1848f0132b49ee993f7a8ed9c2ad37d8d0abd",
    "bytes": 986
   },
   {
    "name": "lite-main-F_Cu.gtl",
-   "sha256": "809d95ff1a71124e392e14b2d555b5ab738ac031a173f590ca39d4bb334b82e7",
-   "bytes": 550536
+   "sha256": "697a8fee712b87c55c3ec1fca54e64fe20183046049306010691410c3d85730a",
+   "bytes": 560175
   },
   {
    "name": "lite-main-F_Mask.gts",
-   "sha256": "624bd3a4ea64552e4cd5bbda1f63903550389d537d55cda7e6cf55108a3f763f",
-   "bytes": 19639
+   "sha256": "f3e2e36aa8867904c1e574af93b7cdd9ed12770e41a46fa65f6ef7a7cc5b54a5",
+   "bytes": 20082
   },
   {
    "name": "lite-main-F_Paste.gtp",
-   "sha256": "007064701327c047c4299393ec412bffcc50e5f7c13491febc2772617c9f8af9",
-   "bytes": 17549
+   "sha256": "9bc3ed6aaf17897e6b049de5f5cff1a916db3d70a6c37d241138c55373d11621",
+   "bytes": 17992
   },
   {
    "name": "lite-main-F_Silkscreen.gto",
-   "sha256": "75b184f5bb5dc1b04d78be97961df1659dbce0e6addae3edd69133bb5ac7677e",
-   "bytes": 285544
+   "sha256": "951a8204782dd76e9b024ba7ebf79bc05eedb7e69190a7b6a5e5682b6412daa9",
+   "bytes": 284776
   },
   {
    "name": "lite-main-job.gbrjob",
-   "sha256": "3794a9961edd84a93815a40a235d1e7d0139caf51eee6a1d24c354e7e9d36e42",
+   "sha256": "e87f6a918c93bf0607a8d3722a1d4d1d25c0354e419655d216aa96836951e917",
    "bytes": 2580
   },
   {
    "name": "lite-main.drl",
-   "sha256": "943a5f9a52f590770f0c883819cfce9b11da6942b36a4665dc4724417f179107",
-   "bytes": 6564
+   "sha256": "139093d84a280deef0ab721c37a0e24d3d000861e9062c9eabf5f43ed24b9cd3",
+   "bytes": 6642
   }
  ],
  "gerber_zip": "fab/lite-main_gerbers.zip",
- "gerber_zip_sha256": "0c4adda0687076fdd0b4e9cb7b5aea4464c3ad0e476d5f76d66d9ff3c9e543dc"
+ "gerber_zip_sha256": "6a0f20b482a9b909b0f5b5e63d264241aa0877a693daaed6870708af3fe092fb"
 }

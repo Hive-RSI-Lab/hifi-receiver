@@ -1,8 +1,8 @@
 (export
 	(version "E")
 	(design
-		(source "/work/boards/lite-main/kicad/lite-main.kicad_sch")
-		(date "2026-10-30T18:12:46")
+		(source "/home/hive2/projects/hifi-lite-esd/boards/lite-main/kicad/lite-main.kicad_sch")
+		(date "2026-10-31T16:45:59")
 		(tool "Eeschema 10.0.6")
 		(sheet
 			(number "1")
@@ -4409,6 +4409,342 @@
 						)
 						(pin
 							(num "1")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "D3")
+			(value "PESDNC2FD5VB")
+			(footprint "aiee:DFN1006-2L-BI")
+			(fields
+				(field
+					(name "LCSC") "C110694")
+				(field
+					(name "Footprint") "aiee:DFN1006-2L-BI")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "PESDNC2FD5VB")
+				(description "")
+			)
+			(property
+				(name "LCSC")
+				(value "C110694")
+			)
+			(property
+				(name "Sheetname")
+				(value "lite-main")
+			)
+			(property
+				(name "Sheetfile")
+				(value "lite-main.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "ESD Protection Devices")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "9cb8f6df-4d9f-5d76-b7bc-716c7e250850")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "D4")
+			(value "PESDNC2FD5VB")
+			(footprint "aiee:DFN1006-2L-BI")
+			(fields
+				(field
+					(name "LCSC") "C110694")
+				(field
+					(name "Footprint") "aiee:DFN1006-2L-BI")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "PESDNC2FD5VB")
+				(description "")
+			)
+			(property
+				(name "LCSC")
+				(value "C110694")
+			)
+			(property
+				(name "Sheetname")
+				(value "lite-main")
+			)
+			(property
+				(name "Sheetfile")
+				(value "lite-main.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "ESD Protection Devices")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "3a03d96c-ae4a-54ef-861d-1015d035cdf6")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "D5")
+			(value "PESDNC2FD5VB")
+			(footprint "aiee:DFN1006-2L-BI")
+			(fields
+				(field
+					(name "LCSC") "C110694")
+				(field
+					(name "Footprint") "aiee:DFN1006-2L-BI")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "PESDNC2FD5VB")
+				(description "")
+			)
+			(property
+				(name "LCSC")
+				(value "C110694")
+			)
+			(property
+				(name "Sheetname")
+				(value "lite-main")
+			)
+			(property
+				(name "Sheetfile")
+				(value "lite-main.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "ESD Protection Devices")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "d5bc89e0-b6a4-573b-9193-50c810c12941")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "D6")
+			(value "PESDNC2FD5VB")
+			(footprint "aiee:DFN1006-2L-BI")
+			(fields
+				(field
+					(name "LCSC") "C110694")
+				(field
+					(name "Footprint") "aiee:DFN1006-2L-BI")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "PESDNC2FD5VB")
+				(description "")
+			)
+			(property
+				(name "LCSC")
+				(value "C110694")
+			)
+			(property
+				(name "Sheetname")
+				(value "lite-main")
+			)
+			(property
+				(name "Sheetfile")
+				(value "lite-main.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "ESD Protection Devices")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "eedf6cca-ce84-56e2-b8f9-6d416dc7c2c6")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "D7")
+			(value "PESDNC2FD5VB")
+			(footprint "aiee:DFN1006-2L-BI")
+			(fields
+				(field
+					(name "LCSC") "C110694")
+				(field
+					(name "Footprint") "aiee:DFN1006-2L-BI")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "PESDNC2FD5VB")
+				(description "")
+			)
+			(property
+				(name "LCSC")
+				(value "C110694")
+			)
+			(property
+				(name "Sheetname")
+				(value "lite-main")
+			)
+			(property
+				(name "Sheetfile")
+				(value "lite-main.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "ESD Protection Devices")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "3d2b1051-c1ad-5332-b633-e265f1d2229a")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "D8")
+			(value "PESDNC2FD5VB")
+			(footprint "aiee:DFN1006-2L-BI")
+			(fields
+				(field
+					(name "LCSC") "C110694")
+				(field
+					(name "Footprint") "aiee:DFN1006-2L-BI")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "PESDNC2FD5VB")
+				(description "")
+			)
+			(property
+				(name "LCSC")
+				(value "C110694")
+			)
+			(property
+				(name "Sheetname")
+				(value "lite-main")
+			)
+			(property
+				(name "Sheetfile")
+				(value "lite-main.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "ESD Protection Devices")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "fbde28d8-de58-50dd-8287-dbb540460c92")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
 						)
 					)
 				)
@@ -10822,6 +11158,42 @@
 		)
 		(libpart
 			(lib "aiee")
+			(part "PESDNC2FD5VB")
+			(docs "https://lcsc.com/product-detail/Diodes-ESD_PESDNC2FD5VB_C110694.html")
+			(fields
+				(field
+					(name "Reference") "D")
+				(field
+					(name "Value") "PESDNC2FD5VB")
+				(field
+					(name "Footprint") "aiee:DFN1006-2L-BI")
+				(field
+					(name "Datasheet") "https://lcsc.com/product-detail/Diodes-ESD_PESDNC2FD5VB_C110694.html")
+				(field
+					(name "Description")
+				)
+				(field
+					(name "Manufacturer") "Prisemi(芯导)")
+				(field
+					(name "MPN") "PESDNC2FD5VB")
+				(field
+					(name "LCSC Part") "C110694")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "1")
+					(type "passive")
+				)
+				(pin
+					(num "2")
+					(name "2")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "aiee")
 			(part "RVT220UF35V67RV0024")
 			(docs "https://www.lcsc.com/datasheet/C2836441.pdf")
 			(fields
@@ -11691,7 +12063,7 @@
 		(net
 			(code "3")
 			(name "+5V")
-			(class "Pwr_0p4mm")
+			(class "Default")
 			(node
 				(ref "C10")
 				(pin "1")
@@ -12165,7 +12537,7 @@
 		(net
 			(code "23")
 			(name "/BUCK3_LX")
-			(class "Pwr_0p5mm")
+			(class "Default")
 			(node
 				(ref "L6")
 				(pin "1")
@@ -12224,7 +12596,7 @@
 		(net
 			(code "26")
 			(name "/BUCK5_SW")
-			(class "Pwr_0p4mm")
+			(class "Default")
 			(node
 				(ref "C6")
 				(pin "2")
@@ -12603,6 +12975,12 @@
 				(pintype "passive")
 			)
 			(node
+				(ref "D3")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
 				(ref "J2")
 				(pin "1")
 				(pinfunction "1_1")
@@ -12657,6 +13035,12 @@
 			(node
 				(ref "C45")
 				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "D4")
+				(pin "1")
+				(pinfunction "1_1")
 				(pintype "passive")
 			)
 			(node
@@ -12775,7 +13159,7 @@
 		(net
 			(code "53")
 			(name "/OUT_L_N")
-			(class "Pwr_0p3083mm")
+			(class "Default")
 			(node
 				(ref "C65")
 				(pin "2")
@@ -12797,7 +13181,7 @@
 		(net
 			(code "54")
 			(name "/OUT_L_P")
-			(class "Pwr_0p3083mm")
+			(class "Default")
 			(node
 				(ref "C64")
 				(pin "2")
@@ -12819,7 +13203,7 @@
 		(net
 			(code "55")
 			(name "/OUT_R_N")
-			(class "Pwr_0p3083mm")
+			(class "Default")
 			(node
 				(ref "C67")
 				(pin "2")
@@ -12841,7 +13225,7 @@
 		(net
 			(code "56")
 			(name "/OUT_R_P")
-			(class "Pwr_0p3083mm")
+			(class "Default")
 			(node
 				(ref "C66")
 				(pin "2")
@@ -13118,7 +13502,7 @@
 		(net
 			(code "70")
 			(name "/SPK_L_N")
-			(class "Pwr_1p2109mm")
+			(class "Default")
 			(node
 				(ref "C69")
 				(pin "1")
@@ -13146,7 +13530,7 @@
 		(net
 			(code "71")
 			(name "/SPK_L_P")
-			(class "Pwr_1p2109mm")
+			(class "Default")
 			(node
 				(ref "C68")
 				(pin "1")
@@ -13179,7 +13563,7 @@
 		(net
 			(code "72")
 			(name "/SPK_R_N")
-			(class "Pwr_1p2109mm")
+			(class "Default")
 			(node
 				(ref "C71")
 				(pin "1")
@@ -13207,7 +13591,7 @@
 		(net
 			(code "73")
 			(name "/SPK_R_P")
-			(class "Pwr_1p2109mm")
+			(class "Default")
 			(node
 				(ref "C70")
 				(pin "1")
@@ -13241,6 +13625,12 @@
 			(code "74")
 			(name "/SUB_L")
 			(class "Default")
+			(node
+				(ref "D5")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive")
+			)
 			(node
 				(ref "J3")
 				(pin "1")
@@ -13333,6 +13723,12 @@
 			(code "78")
 			(name "/SUB_R")
 			(class "Default")
+			(node
+				(ref "D6")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive")
+			)
 			(node
 				(ref "J3")
 				(pin "3")
@@ -13508,6 +13904,12 @@
 			(name "/USB_DM")
 			(class "Default")
 			(node
+				(ref "D8")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
 				(ref "J1")
 				(pin "A7")
 				(pinfunction "DN1_A7")
@@ -13530,6 +13932,12 @@
 			(code "88")
 			(name "/USB_DP")
 			(class "Default")
+			(node
+				(ref "D7")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive")
+			)
 			(node
 				(ref "J1")
 				(pin "A6")
@@ -13861,6 +14269,42 @@
 				(ref "D2")
 				(pin "2")
 				(pinfunction "K_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D3")
+				(pin "2")
+				(pinfunction "2_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D4")
+				(pin "2")
+				(pinfunction "2_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D5")
+				(pin "2")
+				(pinfunction "2_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D6")
+				(pin "2")
+				(pinfunction "2_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D7")
+				(pin "2")
+				(pinfunction "2_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D8")
+				(pin "2")
+				(pinfunction "2_2")
 				(pintype "passive")
 			)
 			(node
@@ -14214,7 +14658,7 @@
 		(net
 			(code "92")
 			(name "PVDD")
-			(class "Pwr_0p2949mm")
+			(class "Default")
 			(node
 				(ref "C2")
 				(pin "2")

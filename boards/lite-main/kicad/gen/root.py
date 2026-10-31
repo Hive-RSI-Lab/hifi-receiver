@@ -484,6 +484,20 @@ for side, q in (("L", "Q13"), ("R", "Q15")):
 ic(B_IO, "Q14", "C8545", "2N7002", {"3": "GND", "1": "SUB_MUTE", "2": "MUTE_S"},
    expect={"1": "G", "2": "S", "3": "D"}, role="sub mute, ground side (both channels)")
 
+# ---- ESD clamps at the connectors a person touches (issue #133) --------------
+# hwde check_esd (TI SLVA680: clamp first, at the connector, short to ground).
+# Lite stays top-side only (cheap JLC assembly), so each line gets its own
+# 0402-sized bidirectional clamp on F.Cu where the top side has room:
+# PESDNC2FD5VB (C110694, DFN1006-2L): 5 V working, 15 pF, IEC 61000-4-2.
+# RCA lines are ground-centred, at most 2 Vrms (2.8 V peak): inside 5 V;
+# 1 uA leakage max beside 15k (line in) and the sub-out's 1k.
+# USB full speed (CH340B) takes 15 pF. CC has no top-side room ahead of the
+# CH224A (2 mm from J1) and is exempt in constraints.json; docs/boards/lite-esd.md.
+for ref, net in (("D3", "LINEIN_L"), ("D4", "LINEIN_R"), ("D5", "SUB_L"),
+                 ("D6", "SUB_R"), ("D7", "USB_DP"), ("D8", "USB_DM")):
+    ic(B_IO, ref, "C110694", "PESDNC2FD5VB", {"1": net, "2": "GND"},
+       role=f"{net} ESD clamp")
+
 if __name__ == "__main__":
     out = sheet.save(WS / "kicad")
     # decoupling.json carries FINAL netlist names: rails are global power

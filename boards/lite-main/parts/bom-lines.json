@@ -940,5 +940,41 @@
   "lcsc": "C8545",
   "value": "2N7002",
   "role": "sub mute, ground side (both channels)"
+ },
+ {
+  "ref": "D3",
+  "lcsc": "C110694",
+  "value": "PESDNC2FD5VB",
+  "role": "LINEIN_L ESD clamp"
+ },
+ {
+  "ref": "D4",
+  "lcsc": "C110694",
+  "value": "PESDNC2FD5VB",
+  "role": "LINEIN_R ESD clamp"
+ },
+ {
+  "ref": "D5",
+  "lcsc": "C110694",
+  "value": "PESDNC2FD5VB",
+  "role": "SUB_L ESD clamp"
+ },
+ {
+  "ref": "D6",
+  "lcsc": "C110694",
+  "value": "PESDNC2FD5VB",
+  "role": "SUB_R ESD clamp"
+ },
+ {
+  "ref": "D7",
+  "lcsc": "C110694",
+  "value": "PESDNC2FD5VB",
+  "role": "USB_DP ESD clamp"
+ },
+ {
+  "ref": "D8",
+  "lcsc": "C110694",
+  "value": "PESDNC2FD5VB",
+  "role": "USB_DM ESD clamp"
  }
 ]

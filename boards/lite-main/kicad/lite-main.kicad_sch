@@ -7851,6 +7851,159 @@
 				)
 			)
 		)
+		(symbol "aiee:PESDNC2FD5VB"
+			(pin_names
+				(hide yes)
+			)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "D"
+				(id 0)
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "PESDNC2FD5VB"
+				(id 1)
+				(at 0 -5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "aiee:DFN1006-2L-BI"
+				(id 2)
+				(at 0 -7.62 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(property "Datasheet" "https://lcsc.com/product-detail/Diodes-ESD_PESDNC2FD5VB_C110694.html"
+				(id 3)
+				(at 0 -10.16 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(property "Manufacturer" "Prisemi(芯导)"
+				(id 4)
+				(at 0 -12.7 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(property "MPN" "PESDNC2FD5VB"
+				(id 5)
+				(at 0 -15.24 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(property "LCSC Part" "C110694"
+				(id 6)
+				(at 0 -17.78 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(property "ki_keywords" "ESD Protection Devices"
+				(id 8)
+				(at 0 -20.32 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(symbol "PESDNC2FD5VB_0_1"
+				(polyline
+					(pts
+						(xy -0.51 1.52) (xy -0.51 1.52) (xy 0.0000 1.52) (xy 0.0000 -1.52) (xy 0.51 -1.52) (xy 0.51 -1.52)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.54 1.27) (xy 0.0000 0.0000) (xy -2.54 -1.27) (xy -2.54 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 1.27) (xy 0.0000 0.0000) (xy 2.54 -1.27) (xy 2.54 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin passive line
+					(at 5.08 0.0000 180)
+					(length 2.54)
+					(name "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 0.0000 0)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 	)
 	(symbol
 		(lib_id "power:VBUS")
@@ -18498,6 +18651,372 @@
 			)
 		)
 	)
+	(symbol
+		(lib_id "aiee:PESDNC2FD5VB")
+		(at 819.15 709.93 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced no)
+		(uuid "9cb8f6df-4d9f-5d76-b7bc-716c7e250850")
+		(property "Reference" "D3"
+			(at 818.1606 707.14 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PESDNC2FD5VB"
+			(at 813.5886 712.72 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "aiee:DFN1006-2L-BI"
+			(at 819.15 702.31 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C110694"
+			(at 821.69 715.0099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "2"
+			(uuid "a9af8956-60b1-5073-b9cb-6b77b2bcaad2")
+		)
+		(pin "1"
+			(uuid "21a9a4c6-913d-5525-8d1f-e083fc3062fc")
+		)
+		(instances
+			(project "lite-main"
+				(path "/018cc814-c0f4-45ad-a4fb-6af95f668fe6"
+					(reference "D3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "aiee:PESDNC2FD5VB")
+		(at 858.52 709.93 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced no)
+		(uuid "3a03d96c-ae4a-54ef-861d-1015d035cdf6")
+		(property "Reference" "D4"
+			(at 857.5306 707.14 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PESDNC2FD5VB"
+			(at 852.9586 712.72 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "aiee:DFN1006-2L-BI"
+			(at 858.52 702.31 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C110694"
+			(at 861.06 715.0099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "2"
+			(uuid "ee6fc0eb-d925-5783-9503-bac5b8a21fca")
+		)
+		(pin "1"
+			(uuid "94550934-f83e-5c96-b9d0-b79cbe859076")
+		)
+		(instances
+			(project "lite-main"
+				(path "/018cc814-c0f4-45ad-a4fb-6af95f668fe6"
+					(reference "D4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "aiee:PESDNC2FD5VB")
+		(at 899.16 709.93 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced no)
+		(uuid "d5bc89e0-b6a4-573b-9193-50c810c12941")
+		(property "Reference" "D5"
+			(at 898.1706 707.14 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PESDNC2FD5VB"
+			(at 893.5986 712.72 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "aiee:DFN1006-2L-BI"
+			(at 899.16 702.31 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C110694"
+			(at 901.7 715.0099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "2"
+			(uuid "b3527e8a-2e71-5edf-bd4b-b5c122387e0a")
+		)
+		(pin "1"
+			(uuid "53dd6747-9468-5bff-b657-20ec27cc88ad")
+		)
+		(instances
+			(project "lite-main"
+				(path "/018cc814-c0f4-45ad-a4fb-6af95f668fe6"
+					(reference "D5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "aiee:PESDNC2FD5VB")
+		(at 938.53 709.93 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced no)
+		(uuid "eedf6cca-ce84-56e2-b8f9-6d416dc7c2c6")
+		(property "Reference" "D6"
+			(at 937.5406 707.14 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PESDNC2FD5VB"
+			(at 932.9686 712.72 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "aiee:DFN1006-2L-BI"
+			(at 938.53 702.31 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C110694"
+			(at 941.07 715.0099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "2"
+			(uuid "61850574-638f-5a07-8505-52be30750c4d")
+		)
+		(pin "1"
+			(uuid "c5790371-f6b7-54c5-b4c3-9d5306923ad8")
+		)
+		(instances
+			(project "lite-main"
+				(path "/018cc814-c0f4-45ad-a4fb-6af95f668fe6"
+					(reference "D6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "aiee:PESDNC2FD5VB")
+		(at 979.17 709.93 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced no)
+		(uuid "3d2b1051-c1ad-5332-b633-e265f1d2229a")
+		(property "Reference" "D7"
+			(at 978.1806 707.14 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PESDNC2FD5VB"
+			(at 973.6086 712.72 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "aiee:DFN1006-2L-BI"
+			(at 979.17 702.31 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C110694"
+			(at 981.71 715.0099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "2"
+			(uuid "45ddbbbf-c553-5db4-ad07-340de4554488")
+		)
+		(pin "1"
+			(uuid "8574cc20-b74c-5716-97b0-617c2608a127")
+		)
+		(instances
+			(project "lite-main"
+				(path "/018cc814-c0f4-45ad-a4fb-6af95f668fe6"
+					(reference "D7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "aiee:PESDNC2FD5VB")
+		(at 1019.81 709.93 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced no)
+		(uuid "fbde28d8-de58-50dd-8287-dbb540460c92")
+		(property "Reference" "D8"
+			(at 1018.8206 707.14 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PESDNC2FD5VB"
+			(at 1014.2486 712.72 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "aiee:DFN1006-2L-BI"
+			(at 1019.81 702.31 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C110694"
+			(at 1022.35 715.0099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "2"
+			(uuid "a3aad735-93f3-5e2a-a129-9eaa9ac903b9")
+		)
+		(pin "1"
+			(uuid "eab01cca-586f-52ca-92e1-daa2a76ba310")
+		)
+		(instances
+			(project "lite-main"
+				(path "/018cc814-c0f4-45ad-a4fb-6af95f668fe6"
+					(reference "D8")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(wire
 		(pts
 			(xy 45.72 83.82) (xy 50.8 83.82)
@@ -23068,6 +23587,126 @@
 		)
 		(uuid "babc52d6-6248-57da-8aab-a8f864dadf17")
 	)
+	(wire
+		(pts
+			(xy 814.07 709.93) (xy 811.53 709.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f34e6c02-cd57-5712-9824-b7403db5ff70")
+	)
+	(wire
+		(pts
+			(xy 824.23 709.93) (xy 826.77 709.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "37141c2d-cada-53f4-9010-66131683c07d")
+	)
+	(wire
+		(pts
+			(xy 853.44 709.93) (xy 850.9 709.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "78ac50a8-c20b-5abf-b364-d5ab399ea0ca")
+	)
+	(wire
+		(pts
+			(xy 863.6 709.93) (xy 866.14 709.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7f805a41-e8bd-5b40-b2e7-cd162b22b224")
+	)
+	(wire
+		(pts
+			(xy 894.08 709.93) (xy 891.54 709.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cb9caad7-1a19-5376-9c63-fd972eb569cc")
+	)
+	(wire
+		(pts
+			(xy 904.24 709.93) (xy 906.78 709.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "baa07fcb-05bc-577b-950b-d2e7b602fd27")
+	)
+	(wire
+		(pts
+			(xy 933.45 709.93) (xy 930.91 709.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b503256c-09dd-51ca-8441-b0cb8d2a68b8")
+	)
+	(wire
+		(pts
+			(xy 943.61 709.93) (xy 946.15 709.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4d69bde9-e6bb-5fa6-858d-41d8c20d0c37")
+	)
+	(wire
+		(pts
+			(xy 974.09 709.93) (xy 971.55 709.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "031e53d0-5994-5797-bdec-a818a1034bd5")
+	)
+	(wire
+		(pts
+			(xy 984.25 709.93) (xy 986.79 709.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "14ba0d97-1e39-5181-a612-9a43d0a60bed")
+	)
+	(wire
+		(pts
+			(xy 1014.73 709.93) (xy 1012.19 709.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cbdd2193-a0d7-5ec1-b6a6-1402b1a3fa45")
+	)
+	(wire
+		(pts
+			(xy 1024.89 709.93) (xy 1027.43 709.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f03f696c-80df-5fc4-9325-f063885f3bd2")
+	)
 	(label "VBUS"
 		(at 48.26 83.82 0.0000)
 		(effects
@@ -27637,6 +28276,126 @@
 			(justify left bottom)
 		)
 		(uuid "edd169c9-8d0e-595c-83c2-5e0e3f0d038d")
+	)
+	(label "LINEIN_L"
+		(at 811.53 709.93 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "de2ecbb8-a457-591f-88b0-2af67cd3d979")
+	)
+	(label "GND"
+		(at 826.77 709.93 0.0000)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "78c14a54-6932-5b51-a11f-ef4d40562a4b")
+	)
+	(label "LINEIN_R"
+		(at 850.9 709.93 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "2846cc1c-3848-560f-bd20-75da1e173e7b")
+	)
+	(label "GND"
+		(at 866.14 709.93 0.0000)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "f13b7129-2db9-5176-bbbf-05e0e70a2e4c")
+	)
+	(label "SUB_L"
+		(at 891.54 709.93 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "67efeab3-166b-542b-abfb-23bd65743655")
+	)
+	(label "GND"
+		(at 906.78 709.93 0.0000)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "d5be29d4-481f-5637-9c12-ab67e6097e5e")
+	)
+	(label "SUB_R"
+		(at 930.91 709.93 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "a9861107-416e-55a6-82b6-a56a4ea6fe3d")
+	)
+	(label "GND"
+		(at 946.15 709.93 0.0000)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "86d5ed1f-8ab6-5183-b205-28d441480e6c")
+	)
+	(label "USB_DP"
+		(at 971.55 709.93 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "84e42872-05b0-5c86-bf3f-8e513987bf80")
+	)
+	(label "GND"
+		(at 986.79 709.93 0.0000)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "70eb6ef8-860e-57b1-b5fe-e30a842dd272")
+	)
+	(label "USB_DM"
+		(at 1012.19 709.93 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "3b5c8e50-a767-5fef-8bf0-64bc1ac292cf")
+	)
+	(label "GND"
+		(at 1027.43 709.93 0.0000)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "fb1e2a99-2916-5b73-a027-a66e112ebac8")
 	)
 	(no_connect
 		(at 143.51 110.49)
