@@ -52,8 +52,6 @@ two new JLC extended lines.
   of the USB pair through the VBUS via field. USB on core is for firmware
   flashing at the bench, not a port a listener plugs into, and the line still
   is clamped. Left for the next layout touch.
-- **SUB_OUT branch first (C71/C72, 2.7-3.0 mm, before D7 at 3.3 mm).** The
-  first thing the strike meets is a 1 nF cap to ground, which only helps.
 
 **How it was done** (reproducible, from `boards/core`):
 
@@ -65,7 +63,8 @@ two new JLC extended lines.
 3. Export the netlist, then run `hwde board_update --placements
    kicad/gen/esd_placements.json`. The spots for D6, D7 and D9 come from
    `kicad/gen/esd_spots.py`. D8 is placed by hand, as `esd_eco.py` explains.
-4. Run `python3.11 kicad/gen/esd_eco.py`, which adds the stubs and ground vias.
+4. Run `python3.11 kicad/gen/esd_eco.py`, which adds the stubs and ground vias
+   and puts the router's pad-centre ends back on the 45 degree grid.
 
 KiCad DRC with schematic parity is clean afterwards. `check_esd` reports 0
 errors and the 4 warnings above.

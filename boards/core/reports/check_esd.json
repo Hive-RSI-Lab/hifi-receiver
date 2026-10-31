@@ -3,12 +3,12 @@
  "status": "violations",
  "board": "core.kicad_pcb",
  "counts": {
-  "total": 4,
+  "total": 2,
   "by_severity": {
-   "warning": 4
+   "warning": 2
   },
   "by_source": {
-   "check_esd": 4
+   "check_esd": 2
   }
  },
  "violations": [
@@ -65,60 +65,6 @@
    ],
    "kind": "esd_clamp_far",
    "mm": 18.73
-  },
-  {
-   "check": "check_esd",
-   "severity": "warning",
-   "pos": [
-    111.294,
-    140.144
-   ],
-   "layer": null,
-   "net": "/dac/SUB1_OUT",
-   "refs": [
-    "C71",
-    "D7",
-    "J4"
-   ],
-   "msg": "J4 pin 1 (/dac/SUB1_OUT): C71 pin 1 is 2.7 mm from the pin, before the clamp D7 (3.3 mm) and off its path: route the connector to the clamp pin first, then on (SLVA680 2.3)",
-   "source": "check_esd",
-   "items": [
-    {
-     "msg": "J4 pin 1 (/dac/SUB1_OUT): C71 pin 1 is 2.7 mm from the pin, before the clamp D7 (3.3 mm) and off its path: route the connector to the clamp pin first, then on (SLVA680 2.3)",
-     "pos": [
-      111.294,
-      140.144
-     ]
-    }
-   ],
-   "kind": "esd_branch_first"
-  },
-  {
-   "check": "check_esd",
-   "severity": "warning",
-   "pos": [
-    104.403,
-    140.151
-   ],
-   "layer": null,
-   "net": "/dac/SUB2_OUT",
-   "refs": [
-    "C72",
-    "D7",
-    "J4"
-   ],
-   "msg": "J4 pin 3 (/dac/SUB2_OUT): C72 pin 1 is 3.0 mm from the pin, before the clamp D7 (3.3 mm) and off its path: route the connector to the clamp pin first, then on (SLVA680 2.3)",
-   "source": "check_esd",
-   "items": [
-    {
-     "msg": "J4 pin 3 (/dac/SUB2_OUT): C72 pin 1 is 3.0 mm from the pin, before the clamp D7 (3.3 mm) and off its path: route the connector to the clamp pin first, then on (SLVA680 2.3)",
-     "pos": [
-      104.403,
-      140.151
-     ]
-    }
-   ],
-   "kind": "esd_branch_first"
   }
  ],
  "checked": [
@@ -214,13 +160,13 @@
      "power": false,
      "clamp": "D9",
      "clamp_pin": "2",
-     "mm": 1.19,
+     "mm": 0.89,
      "routed": true,
      "vias": 0,
-     "stub_mm": 1.19,
+     "stub_mm": 0.89,
      "ground_via_mm": 0.0,
-     "est_extra_nh": 1.19,
-     "est_extra_v": 44.6
+     "est_extra_nh": 0.89,
+     "est_extra_v": 33.4
     },
     {
      "connector": "J4",
@@ -229,13 +175,13 @@
      "power": false,
      "clamp": "D7",
      "clamp_pin": "1",
-     "mm": 3.28,
+     "mm": 2.62,
      "routed": true,
      "vias": 0,
-     "stub_mm": 3.28,
+     "stub_mm": 2.62,
      "ground_via_mm": 0.0,
-     "est_extra_nh": 3.28,
-     "est_extra_v": 122.9
+     "est_extra_nh": 2.62,
+     "est_extra_v": 98.1
     },
     {
      "connector": "J4",
@@ -244,13 +190,13 @@
      "power": false,
      "clamp": "D7",
      "clamp_pin": "2",
-     "mm": 3.3,
+     "mm": 2.64,
      "routed": true,
      "vias": 0,
-     "stub_mm": 3.3,
+     "stub_mm": 2.64,
      "ground_via_mm": 0.0,
-     "est_extra_nh": 3.3,
-     "est_extra_v": 123.7
+     "est_extra_nh": 2.64,
+     "est_extra_v": 99.2
     },
     {
      "connector": "J5",
@@ -287,7 +233,7 @@
  ],
  "report_schema": 1,
  "checker_version": 1,
- "generated_at": "2026-10-31T19:13:21+00:00",
+ "generated_at": "2026-10-31T19:25:18+00:00",
  "input": "kicad/core.kicad_pcb",
- "input_digest": "sexpr_no_uuid:37a09ed89dcd057ae16ba692d25097ab0bfc8453243788acdea686e7746e27e7"
+ "input_digest": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6"
 }

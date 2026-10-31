@@ -4,7 +4,7 @@
  "workspace_schema": 2,
  "workspace": "/work/boards/core",
  "created": "2026-10-28T11:07:23",
- "updated": "2026-10-31T15:17:20",
+ "updated": "2026-10-31T15:26:31",
  "phase": "P9",
  "gates": {
   "erc": {
@@ -240,7 +240,7 @@
      "human_hold": 2
     },
     {
-     "ts": "2026-10-31T15:12:54",
+     "ts": "2026-10-31T15:25:03",
      "edit_class": "add_part",
      "refs": [
       "D6",
@@ -596,7 +596,7 @@
    ],
    "stale": [
     {
-     "ts": "2026-10-31T15:12:54",
+     "ts": "2026-10-31T15:25:03",
      "edit_class": "add_part",
      "refs": [
       "D6",
@@ -613,12 +613,12 @@
    "status": "pass",
    "attempts": 347,
    "last": {
-    "ts": "2026-10-31T15:15:01",
+    "ts": "2026-10-31T15:25:33",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
     "inputs": {
-     "pcb": "sexpr_no_uuid:37a09ed89dcd057ae16ba692d25097ab0bfc8453243788acdea686e7746e27e7",
+     "pcb": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
      "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
      "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
@@ -4778,12 +4778,12 @@
      }
     },
     {
-     "ts": "2026-10-31T15:15:01",
+     "ts": "2026-10-31T15:25:33",
      "status": "pass",
      "failing_count": 0,
      "total": 0,
      "inputs": {
-      "pcb": "sexpr_no_uuid:37a09ed89dcd057ae16ba692d25097ab0bfc8453243788acdea686e7746e27e7",
+      "pcb": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
       "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
       "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
       "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
@@ -4970,7 +4970,7 @@
      "human_hold": 2
     },
     {
-     "ts": "2026-10-31T15:12:54",
+     "ts": "2026-10-31T15:25:03",
      "edit_class": "add_part",
      "refs": [
       "D6",
@@ -4985,14 +4985,14 @@
   "dfm": {
    "phase": "P9",
    "status": "pass",
-   "attempts": 11,
+   "attempts": 10,
    "last": {
-    "ts": "2026-10-31T15:17:19",
+    "ts": "2026-10-31T15:26:31",
     "status": "pass",
     "failing_count": 0,
     "total": 6,
     "inputs": {
-     "pcb": "sexpr_no_uuid:37a09ed89dcd057ae16ba692d25097ab0bfc8453243788acdea686e7746e27e7",
+     "pcb": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
      "parts": null
     }
@@ -5098,23 +5098,12 @@
      }
     },
     {
-     "ts": "2026-10-31T15:16:02",
-     "status": "fail",
-     "failing_count": 4,
-     "total": 6,
-     "inputs": {
-      "pcb": "sexpr_no_uuid:37a09ed89dcd057ae16ba692d25097ab0bfc8453243788acdea686e7746e27e7",
-      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
-      "parts": null
-     }
-    },
-    {
-     "ts": "2026-10-31T15:17:19",
+     "ts": "2026-10-31T15:26:31",
      "status": "pass",
      "failing_count": 0,
      "total": 6,
      "inputs": {
-      "pcb": "sexpr_no_uuid:37a09ed89dcd057ae16ba692d25097ab0bfc8453243788acdea686e7746e27e7",
+      "pcb": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
       "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
       "parts": null
      }
@@ -5128,19 +5117,19 @@
    "path": "kicad/core.kicad_sch",
    "kind": "sch",
    "sha256": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
-   "hashed": "2026-10-31T15:17:20"
+   "hashed": "2026-10-31T15:26:31"
   },
   "pro": {
    "path": "kicad/core.kicad_pro",
    "kind": "pro",
    "sha256": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
-   "hashed": "2026-10-31T15:15:01"
+   "hashed": "2026-10-31T15:25:33"
   },
   "pcb": {
    "path": "kicad/core.kicad_pcb",
    "kind": "pcb",
-   "sha256": "sexpr_no_uuid:37a09ed89dcd057ae16ba692d25097ab0bfc8453243788acdea686e7746e27e7",
-   "hashed": "2026-10-31T15:17:20"
+   "sha256": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
+   "hashed": "2026-10-31T15:26:31"
   },
   "constraints": {
    "path": "kicad/constraints.json",
@@ -5164,7 +5153,7 @@
    "path": "kicad/core.kicad_dru",
    "kind": "dru",
    "sha256": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202",
-   "hashed": "2026-10-31T15:15:01"
+   "hashed": "2026-10-31T15:25:33"
   },
   "waivers": {
    "path": "reports/verify-waivers.json",
@@ -5176,7 +5165,7 @@
    "path": "kicad/parts.json",
    "kind": "parts",
    "sha256": null,
-   "hashed": "2026-10-31T15:17:20"
+   "hashed": "2026-10-31T15:26:31"
   },
   "netlist": {
    "path": "kicad/core.net",
@@ -5200,7 +5189,7 @@
      "human_hold": 2
     },
     {
-     "ts": "2026-10-31T15:12:54",
+     "ts": "2026-10-31T15:25:03",
      "edit_class": "add_part",
      "refs": [
       "D6",
@@ -5234,7 +5223,7 @@
      "human_hold": 2
     },
     {
-     "ts": "2026-10-31T15:12:54",
+     "ts": "2026-10-31T15:25:03",
      "edit_class": "add_part",
      "refs": [
       "D6",
@@ -5268,7 +5257,7 @@
      "human_hold": 2
     },
     {
-     "ts": "2026-10-31T15:12:54",
+     "ts": "2026-10-31T15:25:03",
      "edit_class": "add_part",
      "refs": [
       "D6",
@@ -5302,7 +5291,7 @@
      "human_hold": 2
     },
     {
-     "ts": "2026-10-31T15:12:54",
+     "ts": "2026-10-31T15:25:03",
      "edit_class": "add_part",
      "refs": [
       "D6",
@@ -5317,11 +5306,11 @@
   "gerbers": {
    "path": "fab/core_gerbers.zip",
    "kind": "gerbers",
-   "sha256": "gerber_design:0f159a3790e47d2dcc3498a6bb96787b87ed51a44b7ad829fc9ef4b0b7432144",
-   "hashed": "2026-10-31T15:12:54",
+   "sha256": "gerber_design:6fb8d0c8b08782c51a213d461af9e722470c8008eee50bf1e155b2fb06730744",
+   "hashed": "2026-10-31T15:25:03",
    "stale": [
     {
-     "ts": "2026-10-31T15:12:54",
+     "ts": "2026-10-31T15:25:03",
      "edit_class": "add_part",
      "refs": [
       "D6",
@@ -5395,7 +5384,7 @@
    ]
   },
   {
-   "ts": "2026-10-31T15:12:54",
+   "ts": "2026-10-31T15:25:03",
    "class": "add_part",
    "refs": [
     "D6",
@@ -8803,7 +8792,7 @@
    "failing_count": 0
   },
   {
-   "ts": "2026-10-31T15:12:54",
+   "ts": "2026-10-31T15:25:03",
    "event": "edit",
    "edit_class": "add_part",
    "refs": [
@@ -8815,7 +8804,7 @@
    "human_hold": 2
   },
   {
-   "ts": "2026-10-31T15:15:01",
+   "ts": "2026-10-31T15:25:33",
    "event": "gate",
    "gate": "drc_routed",
    "status": "pass",
@@ -8823,19 +8812,11 @@
    "failing_count": 0
   },
   {
-   "ts": "2026-10-31T15:16:02",
-   "event": "gate",
-   "gate": "dfm",
-   "status": "fail",
-   "attempt": 10,
-   "failing_count": 4
-  },
-  {
-   "ts": "2026-10-31T15:17:20",
+   "ts": "2026-10-31T15:26:31",
    "event": "gate",
    "gate": "dfm",
    "status": "pass",
-   "attempt": 11,
+   "attempt": 10,
    "failing_count": 0
   }
  ]

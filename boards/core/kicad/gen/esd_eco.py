@@ -87,6 +87,33 @@ for d, (j, lines, g) in CLAMPS.items():
     net, a, _ = pad(d, g)
     out.append((d, g, net, r.route_to_via(net, a, layer=1, margin=2.0, width=0.4)))
     r.refresh()
+
+
+def fix45(nets):
+    """Split a segment off the 45-degree grid (a router end snapped onto a pad
+    centre) into a straight run and a 45-degree run (check_route_style), as
+    amp_in_eco.py does."""
+    k = 0
+    for t in list(b.GetTracks()):
+        if t.GetClass() == "PCB_VIA" or t.GetNetname() not in nets:
+            continue
+        (x1, y1), (x2, y2) = [(v.x / MM, v.y / MM) for v in (t.GetStart(), t.GetEnd())]
+        dx, dy = x2 - x1, y2 - y1
+        if min(abs(dx), abs(dy)) < 0.002 or abs(abs(dx) - abs(dy)) < 0.002:
+            continue
+        if abs(dx) > abs(dy):
+            m = (x1 + math.copysign(abs(dx) - abs(dy), dx), y1)
+        else:
+            m = (x1, y1 + math.copysign(abs(dy) - abs(dx), dy))
+        u = pcbnew.PCB_TRACK(b)
+        u.SetStart(mr.V(*m)); u.SetEnd(t.GetEnd()); u.SetWidth(t.GetWidth())
+        u.SetLayer(t.GetLayer()); u.SetNet(t.GetNet()); b.Add(u)
+        t.SetEnd(mr.V(*m))
+        k += 1
+    return k
+
+
+print("off-grid split", fix45({o[2] for o in out} | {n for n, _, _ in STUBS}))
 pcbnew.ZONE_FILLER(b).Fill(b.Zones())
 b.Save(mr.PCB)
 for o in out:
