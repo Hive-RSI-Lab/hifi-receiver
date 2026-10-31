@@ -69,6 +69,10 @@ SPEC = json.loads((ROOT / "tools" / "product.json").read_text(encoding="utf-8"))
 BOARDS = ROOT / "boards"
 TIERS = ("lite", "plus", "ultra")
 GATES = ("erc", "drc_routed", "verify", "dfm")
+# hwde applies verify's (and place's) waiver sidecar on its own; dfm takes
+# one only through --waivers, so a board's reports/dfm-waivers.json is passed
+# (core's bottom-side MLCCs: hwde doesn't model JLC's bottom convention).
+GATE_WAIVERS = {"dfm": "reports/dfm-waivers.json"}
 # The gates never ask a live service: dfm reads each board's committed
 # EasyEDA cache (<board>/parts/easyeda) and skips LCSC stock lookups, so a
 # rate limit or outage can't turn a check red (docs/checks.md).
@@ -251,9 +255,12 @@ def gate_board(ws: Path, name: str, bin_: str, logs: Path) -> list[tuple[str, in
             print(f"  {g}: FAIL (no {inp.relative_to(ws)})", flush=True)
             continue
         out, log = logs / f"{name}-{g}.json", logs / f"{name}-{g}.log"
+        extra = []
+        if g in GATE_WAIVERS and (ws / GATE_WAIVERS[g]).is_file():
+            extra = ["--waivers", GATE_WAIVERS[g]]
         with log.open("w") as f:
             rc = subprocess.run([bin_, "gate", "--gate", g, str(inp.relative_to(ws)),
-                                 "--workspace", ".", "--out", str(out)], cwd=ws,
+                                 "--workspace", ".", "--out", str(out)] + extra, cwd=ws,
                                 stdout=f, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
                                 env=dict(os.environ, HWDE_BOARDS_ROOT=str(ws.parent), **OFFLINE)).returncode
         if rc == 0:
