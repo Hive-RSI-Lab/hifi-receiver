@@ -37,8 +37,9 @@ def zone(z: str, base: int, ultra: bool):
     C(f"C{nr()}", "1uF", n("AVDD"), ic=u, pin="21")
     R(f"R{nr()}", "4.7R", "+5V", n("GVDD"), pkg="0603")
     C(f"C{nr()}", "1uF", n("GVDD"), ic=u, pin="22")
+    # PVDD HF pair per pin group, on B.Cu under the pins (review-3 R3-AMP-2)
     for pin in ("29", "36"):
-        C(f"C{nr()}", "1uF/50V", "PVDD", pkg="0805", ic=u, pin=pin)
+        C(f"C{nr()}", "1uF/100V", "PVDD", pkg="1206", ic=u, pin=pin)
         C(f"C{nr()}", "100nF/50V", "PVDD", pkg="0603", ic=u, pin=pin)
     if z == "B":
         P(f"C{nr()}", "Device:C_Polarized", "470uF/50V",

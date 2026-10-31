@@ -362,14 +362,10 @@
   {
    "refdes": [
     "C1",
-    "C207",
-    "C209",
     "C226",
     "C229",
     "C232",
     "C235",
-    "C307",
-    "C309",
     "C324",
     "C327",
     "C330",
@@ -377,14 +373,10 @@
    ],
    "refdes_class": {
     "C1": "smt_placed",
-    "C207": "smt_placed",
-    "C209": "smt_placed",
     "C226": "smt_placed",
     "C229": "smt_placed",
     "C232": "smt_placed",
     "C235": "smt_placed",
-    "C307": "smt_placed",
-    "C309": "smt_placed",
     "C324": "smt_placed",
     "C327": "smt_placed",
     "C330": "smt_placed",
@@ -426,6 +418,36 @@
    ],
    "stock": 2324795,
    "description": "1uF 50V X7R ±10% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
+  },
+  {
+   "refdes": [
+    "C207",
+    "C209",
+    "C307",
+    "C309"
+   ],
+   "refdes_class": {
+    "C207": "smt_placed",
+    "C209": "smt_placed",
+    "C307": "smt_placed",
+    "C309": "smt_placed"
+   },
+   "lcsc": "C282823",
+   "mpn": "TCC1206X7R105K101HT",
+   "value": "1uF",
+   "package": "C1206",
+   "block": "amp_a",
+   "basic": false,
+   "role": "TPA3220 PVDD HF decoupling at the pins (B.Cu), 100 V so it keeps its value at 28 V",
+   "price": 0.0494,
+   "price_breaks": [
+    {
+     "qty": 1,
+     "price": 0.0494
+    }
+   ],
+   "stock": 160949,
+   "description": "100V 1uF X7R ±10% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
   },
   {
    "refdes": [

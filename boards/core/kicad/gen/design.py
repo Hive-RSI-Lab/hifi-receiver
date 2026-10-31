@@ -73,6 +73,7 @@ PASSIVES = {
     ("C", "1nF/50V", "0603"): ("C1588", True),
     ("C", "22uF", "0805"): ("C45783", True),
     ("C", "1uF/50V", "0805"): ("C28323", True),
+    ("C", "1uF/100V", "1206"): ("C282823", False),  # review-3 R3-AMP-2: TPA3220 PVDD HF, keeps its value at 28 V
     ("C", "10uF/25V", "0805"): ("C15850", True),
     ("C", "4.7uF/25V", "0805"): ("C1779", True),
     ("C", "10uF/50V", "1206"): ("C13585", True),
