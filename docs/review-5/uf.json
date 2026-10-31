@@ -1,0 +1,443 @@
+{
+ "domain": "uf (ultra-front full + core interface)",
+ "findings": [
+  {
+   "id": "R5-UF-1",
+   "board": "both",
+   "severity": "major",
+   "repeat_of": "new",
+   "refs": [
+    "SW4",
+    "SW1(core)",
+    "U17(core)"
+   ],
+   "nets": [
+    "ENC_A",
+    "ENC_B"
+   ],
+   "finding": "Clockwise on the knob turns the volume DOWN (Ultra and Plus). EC11E1834403 (no detents, 18 pulses): Alps CW has A leading; with pull-ups (OFF=1) CW from rest is 11->01->00->10->11 (A,B); hifi_exp.c QUAD counts that -1 per edge, so one CW turn = -18 steps = -36 volume. test_core.c assumes B leads ('11 -> 10 -> 00 -> 01 -> 11'). Footprint pad A = Alps terminal A (fig. 5 turned 180, not mirrored), A -> ENC_A -> U17 P12 = enc_a.",
+   "evidence": "Alps EC11 catalogue (LCSC C361165) p.1 table (EC11E1834403: detents none, 18 pulses), p.282 output waveform (CW, A leads), p.278 fig.5 hole layout; board pads SW4 A(91.595,40.55) B(86.515,40.55) D(91.595,55.05) E(86.515,55.05) rot 180; test docs/review-5/sims/uf/enc_rev.c FAILS: 'clockwise (A leads) counts -18 per turn'.",
+   "reference_design": "Alps/Bourns convention: CW seen from the shaft end, A leads B; decoders count that +.",
+   "fix": "board_core.c controls(): .enc_a = EXP_ENC_B, .enc_b = EXP_ENC_A (or negate steps); fix test_core.c cw/ccw tables; bench: one CW turn must raise volume by 36.",
+   "margin": "firmware-only; 100 % of turns go the wrong way"
+  },
+  {
+   "id": "R5-UF-2",
+   "board": "ultra-front",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "SW1",
+    "SW2",
+    "SW3",
+    "SW4",
+    "U1"
+   ],
+   "nets": [
+    "BTN1",
+    "BTN2",
+    "BTN3",
+    "ENC_SW",
+    "GND"
+   ],
+   "finding": "User-touched switches have no clamp: TS-1187A-B-A-B has a brass keystake and stainless cover; BTN1-3 go straight to U1 (UMW TCA9535, no ESD rating; TI 2 kV HBM) with only a 10k pull-up. Path from panel face to switch metal ~5.8 mm of seams (0.3 mm cap gap through 2.4 mm wall, past 8.5 mm flange, 0.3 mm air). Knob strike lands on EC11 frame = GND; the board-to-board return over 5 FFC GND conductors (~15 nH) moves grounds ~55 V for ~1 ns if 10 % of 30 A crosses (screen estimate).",
+   "evidence": "XKB TS-1187A-X-X-X drawing (Keystake B: Brass, Cover Sus); enclosure/core_box.py ultra_buttons (WALL 2.4, BTN_CAP 6.0 in 6.6, flange 8.5); IEC 61000-4-2 8 kV air.",
+   "reference_design": "TI SLVA680: clamp at the touch point, short to GND.",
+   "fix": "PESD5V0S2BT (C49338) on BTN1/BTN2 and BTN3/ENC_SW at the switches with own GND via (~$0.05 each), or 1 nF X7R per BTN net; bring-up 8 kV air gun on caps and knob.",
+   "margin": "unknown: depends on which terminal the dome sits on; ~5.8 mm seam vs ~8 mm 8 kV reach"
+  },
+  {
+   "id": "R5-UF-3",
+   "board": "both",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "R402",
+    "R403",
+    "U7(core)",
+    "J2"
+   ],
+   "nets": [
+    "LCD_SCLK",
+    "FFC_SCK",
+    "LCD_MOSI"
+   ],
+   "finding": "Firmware runs the ST7789 SPI at 20 MHz (50 ns) against its 66 ns minimum serial write cycle (15.15 MHz) and requirements.md / README's 'SPI at 15 MHz or less'. R402/R403 (33R) sit 44-49 mm from U7's pins, not at the source as the README asked. SI is fine: as-built bench passes.",
+   "evidence": "sdkconfig.defaults l.207 speed=20000000; core R402 (96.0,199.8) vs U7 pin 8 (139.7,191.7); docs/review-5/sims/uf/tb_sck_asbuilt.cir: high min 3.25 V (VIH 2.31), low max 0.05 V (VIL 0.99), +3.77/-0.47 V.",
+   "reference_design": "ST7789V datasheet tSCYCW 66 ns; TFT_eSPI commonly runs ST7789 at 27-80 MHz.",
+   "fix": "DISPLAY_CONFIG speed=16000000 (in spec, ~25 % slower redraw), or keep 20 MHz and verify a full-screen redraw at bring-up.",
+   "margin": "32 % over the timing spec; SI margin 0.94 V"
+  },
+  {
+   "id": "R5-UF-4",
+   "board": "both",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "U17(core)",
+    "Q1"
+   ],
+   "nets": [
+    "LCD_BL",
+    "LCD_BL_PWM"
+   ],
+   "finding": "Backlight is on/off only: LCD_BL is a TCA9539 bit, not a PWM GPIO, while requirements B3 'PWM-dimmable from the core' and product.md l.462 'backlight PWM' say dimmable. It runs at a fixed 39-64 mA and firmware keeps it at full brightness for all of playback.",
+   "evidence": "core blocks_mcu.py U17 P06 = LCD_BL; board_core.c exp_set(EXP_LCD_BL, audio_active || touched<60 s); backlight (5.25-2.7)/40 = 64 mA, (4.75-3.2)/40 = 39 mA.",
+   "reference_design": "n/a",
+   "fix": "Accept and correct the docs, or firmware software PWM through U17 at ~200 Hz (400 writes/s x ~75 us = 3 % of the 400 kHz bus).",
+   "margin": "spec drift; no hardware change possible without a free GPIO"
+  },
+  {
+   "id": "R5-UF-5",
+   "board": "both",
+   "severity": "minor",
+   "repeat_of": "new",
+   "refs": [
+    "J3(core)",
+    "J1"
+   ],
+   "nets": [
+    "LCD_BL",
+    "FFC_SCK",
+    "ENC_A"
+   ],
+   "finding": "The FFC cable isn't a concrete part: docs/bom-estimate.csv says '20P 0.5 mm 100 mm' with no type, while the READMEs say type B, 30-50 mm. A common type-A cable with one end flipped maps pin N -> 21-N: rails stay safe, but U17 P06 (push-pull) drives into front GND (pin 11) and ESP32 GPIO32 (SCK) into ENC_A, which is GND while the knob rests with A closed.",
+   "evidence": "docs/review-5/sims/uf/ffc_orient.py reversed-cable listing; TCA9539 50 mA abs per pin; ESP32 GPIO short ~40-80 mA.",
+   "reference_design": "n/a",
+   "fix": "Name a buyable 20P 0.5 mm 50 mm type-B (reverse) FFC in the order list; correct bom-estimate to 30-50 mm (route needs ~25-30 mm).",
+   "margin": "assembly-error exposure only"
+  },
+  {
+   "id": "R5-UF-6",
+   "board": "ultra-front",
+   "severity": "minor",
+   "repeat_of": "DFM-8",
+   "refs": [
+    "J1",
+    "J2",
+    "U1"
+   ],
+   "nets": [],
+   "finding": "Ordered HASL (gbrjob Finish HASL) with 0.3 mm pads at 0.5 mm pitch (J1, J2) and 0.4 mm TSSOP pads; round 1's DFM-8 'order ENIG' disposition names Lite and core only.",
+   "evidence": "boards/ultra-front/fab/gerbers/ultra-front-job.gbrjob l.22; docs/review-2/dispositions.md l.44.",
+   "reference_design": "JLC: ENIG preferred for fine pitch.",
+   "fix": "Order ENIG for ultra-front too (~$2-5 a 5-board order).",
+   "margin": "assembly yield"
+  },
+  {
+   "id": "R5-UF-N1",
+   "board": "ultra-front",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "R10",
+    "C5",
+    "U2"
+   ],
+   "nets": [],
+   "finding": "IR supply RC filter is 9.6 mm of IR_VCC track from U2 pin 4 (Everlight: 'as close as possible'); little switching noise on this board. Bench range test while the panel redraws.",
+   "evidence": "see uf.md",
+   "reference_design": "",
+   "fix": "",
+   "margin": ""
+  },
+  {
+   "id": "R5-UF-N2",
+   "board": "ultra-front",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "J2"
+   ],
+   "nets": [],
+   "finding": "LCD VCI/IOVCC operating max is 3.3 V; core +3V3 is 3.33 V nominal, up to ~3.40 V; abs max 4.6 V (1.2 V margin).",
+   "evidence": "see uf.md",
+   "reference_design": "",
+   "fix": "",
+   "margin": ""
+  },
+  {
+   "id": "R5-UF-N3",
+   "board": "ultra-front",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "SW4"
+   ],
+   "nets": [],
+   "finding": "EC11 footprint centres its rows at 7.25 mm against Alps 7.5/7.0, so the shaft is 0.25 mm off the footprint origin; 1.2 mm holes take it (round 1 DFM-14).",
+   "evidence": "see uf.md",
+   "reference_design": "",
+   "fix": "",
+   "margin": ""
+  },
+  {
+   "id": "R5-UF-N4",
+   "board": "ultra-front",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "U1"
+   ],
+   "nets": [],
+   "finding": "U1 is the UMW TCA9535 clone; its registers, address and 5.5 V-tolerant inputs match TI's; it gives no ESD figure.",
+   "evidence": "see uf.md",
+   "reference_design": "",
+   "fix": "",
+   "margin": ""
+  },
+  {
+   "id": "R5-UF-N5",
+   "board": "both",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "U7(core)"
+   ],
+   "nets": [],
+   "finding": "EXP_INT on GPIO39: ESP32 errata 3.11 glitch when the ADC powers up, so ISENSE sampling causes spurious notifications at ~0.4 ms of I2C each. Harmless.",
+   "evidence": "see uf.md",
+   "reference_design": "",
+   "fix": "",
+   "margin": ""
+  },
+  {
+   "id": "R5-UF-N6",
+   "board": "both",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [],
+   "nets": [],
+   "finding": "exp_init turns the backlight on before display init: a white/garbage flash at boot. Turn LCD_BL on after display_init.",
+   "evidence": "see uf.md",
+   "reference_design": "",
+   "fix": "",
+   "margin": ""
+  },
+  {
+   "id": "R5-UF-N7",
+   "board": "ultra-front",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "J2"
+   ],
+   "nets": [],
+   "finding": "The 'rotate' orientation of the 320x240 panel with its tail to J2 can only be checked on the bench.",
+   "evidence": "see uf.md",
+   "reference_design": "",
+   "fix": "",
+   "margin": ""
+  },
+  {
+   "id": "R5-UF-N8",
+   "board": "both",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "J1",
+    "J3"
+   ],
+   "nets": [],
+   "finding": "Rails mirror 1/20, 2/19, 3/18: a reversed cable never shorts a rail (ffc_orient.py).",
+   "evidence": "see uf.md",
+   "reference_design": "",
+   "fix": "",
+   "margin": ""
+  },
+  {
+   "id": "R5-UF-N9",
+   "board": "ultra-front",
+   "severity": "note",
+   "repeat_of": "new",
+   "refs": [
+    "U2"
+   ],
+   "nets": [],
+   "finding": "The EasyEDA model's silk dot sits nearest pad 4; the pinout against Everlight's 3D view is right (1/2 GND left, 3 OUT bottom-right, 4 VCC top-right, counter-clockwise).",
+   "evidence": "see uf.md",
+   "reference_design": "",
+   "fix": "",
+   "margin": ""
+  }
+ ],
+ "round2_fixes_checked": [
+  {
+   "id": "R3-DIGITAL-3",
+   "holds": true,
+   "how": "board_core.c front_init/hifi_display_reset/front_read/front_led, patch display_init hook, DISPLAY_CONFIG/SPI_CONFIG/SET_GPIO 35=ir:nec for HIFI_ULTRA; the knob direction defect is new (R5-UF-1)"
+  },
+  {
+   "id": "R3-DIGITAL-10",
+   "holds": true,
+   "how": "hifi_display_reset rewrites U1 port 1 and pulses LCD_RST each boot; both expanders read each loop + 10 ms poll"
+  },
+  {
+   "id": "R3-LAYOUT-5",
+   "holds": true,
+   "how": "cpl_pin1.py re-run on ultra-front: 36 parts 0 FAIL (1 CHECK: U2 silk dot, pinout verified)"
+  },
+  {
+   "id": "R3-LAYOUT-10",
+   "holds": true,
+   "how": "KiCad 10.0.6 DRC refill + parity and ERC: 0/0/0 on ultra-front"
+  }
+ ],
+ "field_issues": [
+  {
+   "issue": "ST7789 with CS tied low needs SPI mode 3",
+   "source": "TFT_eSPI/Adafruit forums",
+   "our_board": "immune",
+   "how": "cs=-1,mode=3"
+  },
+  {
+   "issue": "ST7789 stuck after MCU crash (no SWRESET)",
+   "source": "R3-DIGITAL-3/10",
+   "our_board": "immune",
+   "how": "U1 P10 hardware reset each boot"
+  },
+  {
+   "issue": "5 V common-anode LED glows on a 3.3 V push-pull high",
+   "source": "TCA95xx/PCF8574 LED threads",
+   "our_board": "immune",
+   "how": "red off = input; G/B Vf too high at 2.05 V"
+  },
+  {
+   "issue": "TCA95xx INT stuck if the port isn't read",
+   "source": "TI TCA9535 DS 8.3.3",
+   "our_board": "immune",
+   "how": "both ports of both expanders read each loop"
+  },
+  {
+   "issue": "ESP32 GPIO36/39 glitch",
+   "source": "Espressif ESP32 errata 3.11",
+   "our_board": "has it",
+   "how": "harmless extra read (N5)"
+  },
+  {
+   "issue": "EC11 chatter up to 3 ms",
+   "source": "Alps p.282",
+   "our_board": "immune",
+   "how": "RC 100 us + Gray decode; enc_rev.c"
+  },
+  {
+   "issue": "encoder direction / count convention",
+   "source": "hobby EC11 threads",
+   "our_board": "has it",
+   "how": "R5-UF-1"
+  },
+  {
+   "issue": "I2C slave holds SDA after a mid-transaction reset (TCA9535 has no RESET)",
+   "source": "NXP UM10204 3.1.16",
+   "our_board": "immune",
+   "how": "unverified: relies on ESP-IDF bus clear"
+  },
+  {
+   "issue": "IR receiver false triggers from TFT backlight PWM",
+   "source": "Everlight/Vishay",
+   "our_board": "immune",
+   "how": "backlight DC"
+  },
+  {
+   "issue": "metal-actuator tact switch ESD through plastic caps",
+   "source": "consumer ESD practice",
+   "our_board": "has it",
+   "how": "R5-UF-2"
+  },
+  {
+   "issue": "wrong FFC type at assembly",
+   "source": "maker forums",
+   "our_board": "has it",
+   "how": "R5-UF-5"
+  }
+ ],
+ "tests_built": [
+  {
+   "path": "docs/review-5/sims/uf/ffc_orient.py",
+   "checks": "J3<->J1 pin N=N, mouths, pin-1 box x, contact face -> type B",
+   "result": "pass"
+  },
+  {
+   "path": "docs/review-5/sims/uf/fab_check.py",
+   "checks": "BOM/CPL/netlist/parts/PCB refs, values, LCSC, CPL xy/rot, zip == gerbers",
+   "result": "pass"
+  },
+  {
+   "path": "docs/review-5/sims/uf/tb_sck_asbuilt.cir",
+   "checks": "SCK SI at 20 MHz with routed lengths, sim_run bounds",
+   "result": "pass"
+  },
+  {
+   "path": "docs/review-5/sims/uf/enc_rev.c",
+   "checks": "knob steps/turn, chatter, direction vs Alps CW",
+   "result": "fail"
+  },
+  {
+   "path": "docs/review-5/sims/uf/pcbsum.py",
+   "checks": "routing summary (info)",
+   "result": "pass"
+  }
+ ],
+ "known_unknowns": [
+  {
+   "fact": "Alps CW is seen from the shaft end (A leads)",
+   "board": "both",
+   "refs": [
+    "SW4",
+    "SW1"
+   ],
+   "status": "unverified",
+   "source": "industry convention (Bourns PEC11 states it); Alps catalogue silent",
+   "date": "2026-10-31",
+   "could_stop_board": false
+  },
+  {
+   "fact": "FFC is type B, 30-50 mm, pin N to pin N",
+   "board": "both",
+   "refs": [
+    "J3",
+    "J1"
+   ],
+   "status": "verified",
+   "source": "ffc_orient.py + XUNPU FPC-05F-20PH20 drawing (repaired LCSC PDF)",
+   "date": "2026-10-31",
+   "could_stop_board": true
+  },
+  {
+   "fact": "TS-1187A dome/cover potential (BTN or GND)",
+   "board": "ultra-front",
+   "refs": [
+    "SW1",
+    "SW2",
+    "SW3"
+   ],
+   "status": "unverified",
+   "source": "XKB drawing silent",
+   "date": "2026-10-31",
+   "could_stop_board": false
+  },
+  {
+   "fact": "ST7789 runs at 20 MHz over the FFC",
+   "board": "ultra-front",
+   "refs": [
+    "J2"
+   ],
+   "status": "unverified",
+   "source": "SI sim passes; timing spec 15 MHz",
+   "date": "2026-10-31",
+   "could_stop_board": false
+  },
+  {
+   "fact": "PLR237/T8BK pins and USB4085 footprint on core",
+   "board": "core",
+   "refs": [
+    "U19",
+    "J1"
+   ],
+   "status": "verified",
+   "source": "Everlight DPL-0000262/263 Rev.1 p.5; GCT USB4085 rev B sheets 1-2",
+   "date": "2026-10-31",
+   "could_stop_board": true
+  }
+ ]
+}

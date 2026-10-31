@@ -12,7 +12,8 @@ ordering is the person's.**
 
 ## What it is
 
-- 2 layers, 1.6 mm FR-4, 1 oz, HASL, 110 x 40 mm, 2 mm corner radius,
+- 2 layers, 1.6 mm FR-4, 1 oz, **order ENIG** (HASL is uneven on J1's
+  0.3 mm pads at 0.5 mm pitch; R5-UF-6), 110 x 40 mm, 2 mm corner radius,
   4 x M2.5 plated mounting holes (GND) 3.05 mm in from each corner.
 - Everything is on the top side, which faces the user. All parts are SMD
   except the knob (EC11, through-hole).
