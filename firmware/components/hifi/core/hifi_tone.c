@@ -35,6 +35,10 @@ const char *hifi_tone_check(const hifi_tone_params_t *p, bool force) {
 	if (p->level_dbfs > -6.0f && !force) return "level_dbfs above -6 needs \"force\": true";
 	if (p->type == HIFI_TONE_SINE && !(p->freq_hz >= 10.0f && p->freq_hz <= 24000.0f))
 		return "freq_hz must be 10-24000";
+	/* A steady high sine heats the output Zobels (core: 4.7R 0603 + 470nF per leg,
+	 * docs/boards/core-zobel.md): -16 dBFS at 20 kHz is ~43 mW in each 0.1 W resistor. */
+	if (p->type == HIFI_TONE_SINE && p->freq_hz > 5000.0f && p->level_dbfs > -16.0f && !force)
+		return "a sine above 5 kHz louder than -16 dBFS needs \"force\": true (output Zobels)";
 	if (p->type == HIFI_TONE_SWEEP) {
 		if (!(p->start_hz >= 10.0f && p->start_hz <= 24000.0f && p->end_hz >= 10.0f && p->end_hz <= 24000.0f))
 			return "start_hz and end_hz must be 10-24000";

@@ -132,6 +132,16 @@ static void limits(void) {
 	CHECK(hifi_tone_check(&p, false) != NULL);
 	p.duration_s = NAN;
 	CHECK(hifi_tone_check(&p, false) != NULL);
+	p.duration_s = 5;
+	p.freq_hz = 10000; /* the Zobels' limit: a high steady sine stays at -16 dBFS */
+	p.level_dbfs = -16;
+	CHECK(hifi_tone_check(&p, false) == NULL);
+	p.level_dbfs = -10;
+	CHECK(hifi_tone_check(&p, false) != NULL);
+	CHECK(hifi_tone_check(&p, true) == NULL);
+	p.freq_hz = 1000;
+	CHECK(hifi_tone_check(&p, false) == NULL);
+	p.level_dbfs = -20;
 	hifi_tone_params_t s = {.type = HIFI_TONE_SWEEP, .start_hz = 100, .end_hz = 100, .level_dbfs = -20, .duration_s = 1};
 	CHECK(hifi_tone_check(&s, false) != NULL);
 	hifi_tone_params_t si = {.type = HIFI_TONE_SILENCE, .duration_s = 1, .level_dbfs = 99};

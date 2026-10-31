@@ -4,7 +4,7 @@
  "workspace_schema": 2,
  "workspace": "/work/boards/core",
  "created": "2026-10-28T11:07:23",
- "updated": "2026-10-30T20:37:51",
+ "updated": "2026-10-31T14:44:13",
  "phase": "P9",
  "gates": {
   "erc": {
@@ -221,6 +221,23 @@
       "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
       "pro": "json_canonical:ade210d648016346219e733a80aa291be83b7604227024277df89bb7b23acc28"
      }
+    }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T14:44:13",
+     "edit_class": "swap_part_same_fp",
+     "refs": [
+      "C228",
+      "C231",
+      "C234",
+      "C237",
+      "C326",
+      "C329",
+      "C332",
+      "C335"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -4887,6 +4904,23 @@
       "waivers": "json_canonical:b617b01d130b74a9c5e33240470e7ef866d297c5b8d1032d7b06f0753517010a"
      }
     }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T14:44:13",
+     "edit_class": "swap_part_same_fp",
+     "refs": [
+      "C228",
+      "C231",
+      "C234",
+      "C237",
+      "C326",
+      "C329",
+      "C332",
+      "C335"
+     ],
+     "human_hold": 2
+    }
    ]
   },
   "dfm": {
@@ -4993,6 +5027,23 @@
       "parts": null
      }
     }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T14:44:13",
+     "edit_class": "swap_part_same_fp",
+     "refs": [
+      "C228",
+      "C231",
+      "C234",
+      "C237",
+      "C326",
+      "C329",
+      "C332",
+      "C335"
+     ],
+     "human_hold": 2
+    }
    ]
   }
  },
@@ -5051,6 +5102,98 @@
    "kind": "parts",
    "sha256": null,
    "hashed": "2026-10-30T20:37:51"
+  },
+  "netlist": {
+   "path": "kicad/core.net",
+   "kind": "netlist",
+   "sha256": "netlist_canonical:6133c372064e70f82cd46ded48cc3de51742a4b32bc43f5118df62210c8acd95",
+   "hashed": "2026-10-31T14:44:13",
+   "stale": [
+    {
+     "ts": "2026-10-31T14:44:13",
+     "edit_class": "swap_part_same_fp",
+     "refs": [
+      "C228",
+      "C231",
+      "C234",
+      "C237",
+      "C326",
+      "C329",
+      "C332",
+      "C335"
+     ],
+     "human_hold": 2
+    }
+   ]
+  },
+  "bom": {
+   "path": "fab/BOM.csv",
+   "kind": "bom",
+   "sha256": "text_eol:2022b6670cd053006c0738b2c28a24f9f86859a1169caf10ccdcef4ca877b72a",
+   "hashed": "2026-10-31T14:44:13",
+   "stale": [
+    {
+     "ts": "2026-10-31T14:44:13",
+     "edit_class": "swap_part_same_fp",
+     "refs": [
+      "C228",
+      "C231",
+      "C234",
+      "C237",
+      "C326",
+      "C329",
+      "C332",
+      "C335"
+     ],
+     "human_hold": 2
+    }
+   ]
+  },
+  "bom_full": {
+   "path": "fab/BOM-full.csv",
+   "kind": "bom_full",
+   "sha256": "text_eol:a2253e69065d1cf7e999bfc9fd8642484a8b1755683e5e40aca3d9ee2f680ce5",
+   "hashed": "2026-10-31T14:44:13",
+   "stale": [
+    {
+     "ts": "2026-10-31T14:44:13",
+     "edit_class": "swap_part_same_fp",
+     "refs": [
+      "C228",
+      "C231",
+      "C234",
+      "C237",
+      "C326",
+      "C329",
+      "C332",
+      "C335"
+     ],
+     "human_hold": 2
+    }
+   ]
+  },
+  "cpl": {
+   "path": "fab/CPL.csv",
+   "kind": "cpl",
+   "sha256": "text_eol:89b2c1f9edbbcd1c88f613e5a5dfaf8bdc85c4d408b753bc288e3284787bf0a0",
+   "hashed": "2026-10-31T14:44:13",
+   "stale": [
+    {
+     "ts": "2026-10-31T14:44:13",
+     "edit_class": "swap_part_same_fp",
+     "refs": [
+      "C228",
+      "C231",
+      "C234",
+      "C237",
+      "C326",
+      "C329",
+      "C332",
+      "C335"
+     ],
+     "human_hold": 2
+    }
+   ]
   }
  },
  "open_issues": [],
@@ -5079,7 +5222,41 @@
   }
  },
  "decisions": [],
- "edits": [],
+ "edits": [
+  {
+   "ts": "2026-10-31T14:44:13",
+   "class": "swap_part_same_fp",
+   "refs": [
+    "C228",
+    "C231",
+    "C234",
+    "C237",
+    "C326",
+    "C329",
+    "C332",
+    "C335"
+   ],
+   "note": null,
+   "human_hold": 2,
+   "gates": [
+    "erc",
+    "verify",
+    "sim",
+    "dfm"
+   ],
+   "gates_marked": [
+    "erc",
+    "verify",
+    "dfm"
+   ],
+   "stale_artifacts": [
+    "netlist",
+    "bom",
+    "bom_full",
+    "cpl"
+   ]
+  }
+ ],
  "spawns": [],
  "history": [
   {
@@ -8419,6 +8596,22 @@
    "status": "pass",
    "attempt": 8,
    "failing_count": 0
+  },
+  {
+   "ts": "2026-10-31T14:44:13",
+   "event": "edit",
+   "edit_class": "swap_part_same_fp",
+   "refs": [
+    "C228",
+    "C231",
+    "C234",
+    "C237",
+    "C326",
+    "C329",
+    "C332",
+    "C335"
+   ],
+   "human_hold": 2
   }
  ]
 }
