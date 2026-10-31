@@ -159,6 +159,8 @@ Sample rate 48 kHz. The power governor still applies.
 
 - `duration_s`: 0.1–600, default 5.
 - `level_dbfs`: −90 to −6, or up to 0 with `"force": true`.
+  A `sine` above 5 kHz stays at or below −16 dBFS unless `"force": true`: a
+  steady high tone heats core's output Zobels ([boards/core-zobel.md](boards/core-zobel.md)).
 - `freq_hz`: 10–24000.
 
 Reply: `{"ok": true, "tone": {...the tone as it will play...}}`. Status 409
