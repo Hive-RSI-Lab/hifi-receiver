@@ -1,0 +1,114 @@
+{
+ "waivers": [
+  {
+   "check": "dfm",
+   "kind": "cpl_no_model",
+   "net": null,
+   "refs": [
+    "C207"
+   ],
+   "reason": "C207 is a non-polar 2-pad MLCC on B.Cu (amp-area ECO, review-3 R3-AMP-2 / R3-LAYOUT-1). hwde's cpl_verify does not model JLC's bottom-side convention, so every bottom part is 'bottom_unverified'. For a 2-pad non-polar part only the pad axis matters, and a mirror keeps a 0/90/180/270 axis: the CPL row's rotation puts the pads on the board's axis (checked against the CPL, docs/boards/core-amp-eco.md). Confirm in JLC's bottom-side preview at order.",
+   "approved": "core worker 261030-215553 (person delegated sign-offs: 'go on with best judgement and record the choice')",
+   "expires": "2027-04-30"
+  },
+  {
+   "check": "dfm",
+   "kind": "cpl_no_model",
+   "net": null,
+   "refs": [
+    "C208"
+   ],
+   "reason": "C208 is a non-polar 2-pad MLCC on B.Cu (amp-area ECO, review-3 R3-AMP-2 / R3-LAYOUT-1). hwde's cpl_verify does not model JLC's bottom-side convention, so every bottom part is 'bottom_unverified'. For a 2-pad non-polar part only the pad axis matters, and a mirror keeps a 0/90/180/270 axis: the CPL row's rotation puts the pads on the board's axis (checked against the CPL, docs/boards/core-amp-eco.md). Confirm in JLC's bottom-side preview at order.",
+   "approved": "core worker 261030-215553 (person delegated sign-offs: 'go on with best judgement and record the choice')",
+   "expires": "2027-04-30"
+  },
+  {
+   "check": "dfm",
+   "kind": "cpl_no_model",
+   "net": null,
+   "refs": [
+    "C209"
+   ],
+   "reason": "C209 is a non-polar 2-pad MLCC on B.Cu (amp-area ECO, review-3 R3-AMP-2 / R3-LAYOUT-1). hwde's cpl_verify does not model JLC's bottom-side convention, so every bottom part is 'bottom_unverified'. For a 2-pad non-polar part only the pad axis matters, and a mirror keeps a 0/90/180/270 axis: the CPL row's rotation puts the pads on the board's axis (checked against the CPL, docs/boards/core-amp-eco.md). Confirm in JLC's bottom-side preview at order.",
+   "approved": "core worker 261030-215553 (person delegated sign-offs: 'go on with best judgement and record the choice')",
+   "expires": "2027-04-30"
+  },
+  {
+   "check": "dfm",
+   "kind": "cpl_no_model",
+   "net": null,
+   "refs": [
+    "C210"
+   ],
+   "reason": "C210 is a non-polar 2-pad MLCC on B.Cu (amp-area ECO, review-3 R3-AMP-2 / R3-LAYOUT-1). hwde's cpl_verify does not model JLC's bottom-side convention, so every bottom part is 'bottom_unverified'. For a 2-pad non-polar part only the pad axis matters, and a mirror keeps a 0/90/180/270 axis: the CPL row's rotation puts the pads on the board's axis (checked against the CPL, docs/boards/core-amp-eco.md). Confirm in JLC's bottom-side preview at order.",
+   "approved": "core worker 261030-215553 (person delegated sign-offs: 'go on with best judgement and record the choice')",
+   "expires": "2027-04-30"
+  },
+  {
+   "check": "dfm",
+   "kind": "cpl_no_model",
+   "net": null,
+   "refs": [
+    "C218"
+   ],
+   "reason": "C218 is a non-polar 2-pad MLCC on B.Cu (amp-area ECO, review-3 R3-AMP-2 / R3-LAYOUT-1). hwde's cpl_verify does not model JLC's bottom-side convention, so every bottom part is 'bottom_unverified'. For a 2-pad non-polar part only the pad axis matters, and a mirror keeps a 0/90/180/270 axis: the CPL row's rotation puts the pads on the board's axis (checked against the CPL, docs/boards/core-amp-eco.md). Confirm in JLC's bottom-side preview at order.",
+   "approved": "core worker 261030-215553 (person delegated sign-offs: 'go on with best judgement and record the choice')",
+   "expires": "2027-04-30"
+  },
+  {
+   "check": "dfm",
+   "kind": "cpl_no_model",
+   "net": null,
+   "refs": [
+    "C220"
+   ],
+   "reason": "C220 is a non-polar 2-pad MLCC on B.Cu (amp-area ECO, review-3 R3-AMP-2 / R3-LAYOUT-1). hwde's cpl_verify does not model JLC's bottom-side convention, so every bottom part is 'bottom_unverified'. For a 2-pad non-polar part only the pad axis matters, and a mirror keeps a 0/90/180/270 axis: the CPL row's rotation puts the pads on the board's axis (checked against the CPL, docs/boards/core-amp-eco.md). Confirm in JLC's bottom-side preview at order.",
+   "approved": "core worker 261030-215553 (person delegated sign-offs: 'go on with best judgement and record the choice')",
+   "expires": "2027-04-30"
+  },
+  {
+   "check": "dfm",
+   "kind": "cpl_no_model",
+   "net": null,
+   "refs": [
+    "C307"
+   ],
+   "reason": "C307 is a non-polar 2-pad MLCC on B.Cu (amp-area ECO, review-3 R3-AMP-2 / R3-LAYOUT-1). hwde's cpl_verify does not model JLC's bottom-side convention, so every bottom part is 'bottom_unverified'. For a 2-pad non-polar part only the pad axis matters, and a mirror keeps a 0/90/180/270 axis: the CPL row's rotation puts the pads on the board's axis (checked against the CPL, docs/boards/core-amp-eco.md). Confirm in JLC's bottom-side preview at order.",
+   "approved": "core worker 261030-215553 (person delegated sign-offs: 'go on with best judgement and record the choice')",
+   "expires": "2027-04-30"
+  },
+  {
+   "check": "dfm",
+   "kind": "cpl_no_model",
+   "net": null,
+   "refs": [
+    "C308"
+   ],
+   "reason": "C308 is a non-polar 2-pad MLCC on B.Cu (amp-area ECO, review-3 R3-AMP-2 / R3-LAYOUT-1). hwde's cpl_verify does not model JLC's bottom-side convention, so every bottom part is 'bottom_unverified'. For a 2-pad non-polar part only the pad axis matters, and a mirror keeps a 0/90/180/270 axis: the CPL row's rotation puts the pads on the board's axis (checked against the CPL, docs/boards/core-amp-eco.md). Confirm in JLC's bottom-side preview at order.",
+   "approved": "core worker 261030-215553 (person delegated sign-offs: 'go on with best judgement and record the choice')",
+   "expires": "2027-04-30"
+  },
+  {
+   "check": "dfm",
+   "kind": "cpl_no_model",
+   "net": null,
+   "refs": [
+    "C309"
+   ],
+   "reason": "C309 is a non-polar 2-pad MLCC on B.Cu (amp-area ECO, review-3 R3-AMP-2 / R3-LAYOUT-1). hwde's cpl_verify does not model JLC's bottom-side convention, so every bottom part is 'bottom_unverified'. For a 2-pad non-polar part only the pad axis matters, and a mirror keeps a 0/90/180/270 axis: the CPL row's rotation puts the pads on the board's axis (checked against the CPL, docs/boards/core-amp-eco.md). Confirm in JLC's bottom-side preview at order.",
+   "approved": "core worker 261030-215553 (person delegated sign-offs: 'go on with best judgement and record the choice')",
+   "expires": "2027-04-30"
+  },
+  {
+   "check": "dfm",
+   "kind": "cpl_no_model",
+   "net": null,
+   "refs": [
+    "C310"
+   ],
+   "reason": "C310 is a non-polar 2-pad MLCC on B.Cu (amp-area ECO, review-3 R3-AMP-2 / R3-LAYOUT-1). hwde's cpl_verify does not model JLC's bottom-side convention, so every bottom part is 'bottom_unverified'. For a 2-pad non-polar part only the pad axis matters, and a mirror keeps a 0/90/180/270 axis: the CPL row's rotation puts the pads on the board's axis (checked against the CPL, docs/boards/core-amp-eco.md). Confirm in JLC's bottom-side preview at order.",
+   "approved": "core worker 261030-215553 (person delegated sign-offs: 'go on with best judgement and record the choice')",
+   "expires": "2027-04-30"
+  }
+ ]
+}
