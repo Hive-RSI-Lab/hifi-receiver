@@ -4,7 +4,7 @@
  "workspace_schema": 2,
  "workspace": "/work/boards/core",
  "created": "2026-10-28T11:07:23",
- "updated": "2026-10-31T14:49:27",
+ "updated": "2026-10-31T15:26:31",
  "phase": "P9",
  "gates": {
   "erc": {
@@ -236,6 +236,17 @@
       "C329",
       "C332",
       "C335"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:25:03",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
      ],
      "human_hold": 2
     }
@@ -582,19 +593,32 @@
       "place_waivers": null
      }
     }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T15:25:03",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
+     ],
+     "human_hold": 2
+    }
    ]
   },
   "drc_routed": {
    "phase": "P7",
    "status": "pass",
-   "attempts": 346,
+   "attempts": 347,
    "last": {
-    "ts": "2026-10-31T14:48:31",
+    "ts": "2026-10-31T15:25:33",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
     "inputs": {
-     "pcb": "sexpr_no_uuid:c01aad9e5b659b0a2366b07144f684b9c8bf37f05d442cf600aa13ac7589b88c",
+     "pcb": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
      "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
      "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
@@ -4752,6 +4776,18 @@
       "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
       "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
      }
+    },
+    {
+     "ts": "2026-10-31T15:25:33",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
+      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
+      "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
+      "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
+     }
     }
    ]
   },
@@ -4932,20 +4968,31 @@
       "C335"
      ],
      "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:25:03",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
+     ],
+     "human_hold": 2
     }
    ]
   },
   "dfm": {
    "phase": "P9",
    "status": "pass",
-   "attempts": 9,
+   "attempts": 10,
    "last": {
-    "ts": "2026-10-31T14:49:27",
+    "ts": "2026-10-31T15:26:31",
     "status": "pass",
     "failing_count": 0,
-    "total": 2,
+    "total": 6,
     "inputs": {
-     "pcb": "sexpr_no_uuid:c01aad9e5b659b0a2366b07144f684b9c8bf37f05d442cf600aa13ac7589b88c",
+     "pcb": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
      "parts": null
     }
@@ -5049,6 +5096,17 @@
       "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
       "parts": null
      }
+    },
+    {
+     "ts": "2026-10-31T15:26:31",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 6,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
+      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
+      "parts": null
+     }
     }
    ]
   }
@@ -5059,19 +5117,19 @@
    "path": "kicad/core.kicad_sch",
    "kind": "sch",
    "sha256": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
-   "hashed": "2026-10-31T14:49:27"
+   "hashed": "2026-10-31T15:26:31"
   },
   "pro": {
    "path": "kicad/core.kicad_pro",
    "kind": "pro",
    "sha256": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
-   "hashed": "2026-10-31T14:48:31"
+   "hashed": "2026-10-31T15:25:33"
   },
   "pcb": {
    "path": "kicad/core.kicad_pcb",
    "kind": "pcb",
-   "sha256": "sexpr_no_uuid:c01aad9e5b659b0a2366b07144f684b9c8bf37f05d442cf600aa13ac7589b88c",
-   "hashed": "2026-10-31T14:49:27"
+   "sha256": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
+   "hashed": "2026-10-31T15:26:31"
   },
   "constraints": {
    "path": "kicad/constraints.json",
@@ -5095,7 +5153,7 @@
    "path": "kicad/core.kicad_dru",
    "kind": "dru",
    "sha256": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202",
-   "hashed": "2026-10-31T14:48:31"
+   "hashed": "2026-10-31T15:25:33"
   },
   "waivers": {
    "path": "reports/verify-waivers.json",
@@ -5107,7 +5165,7 @@
    "path": "kicad/parts.json",
    "kind": "parts",
    "sha256": null,
-   "hashed": "2026-10-31T14:49:27"
+   "hashed": "2026-10-31T15:26:31"
   },
   "netlist": {
    "path": "kicad/core.net",
@@ -5127,6 +5185,17 @@
       "C329",
       "C332",
       "C335"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:25:03",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
      ],
      "human_hold": 2
     }
@@ -5152,6 +5221,17 @@
       "C335"
      ],
      "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:25:03",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -5175,6 +5255,17 @@
       "C335"
      ],
      "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:25:03",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -5196,6 +5287,36 @@
       "C329",
       "C332",
       "C335"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T15:25:03",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
+     ],
+     "human_hold": 2
+    }
+   ]
+  },
+  "gerbers": {
+   "path": "fab/core_gerbers.zip",
+   "kind": "gerbers",
+   "sha256": "gerber_design:6fb8d0c8b08782c51a213d461af9e722470c8008eee50bf1e155b2fb06730744",
+   "hashed": "2026-10-31T15:25:03",
+   "stale": [
+    {
+     "ts": "2026-10-31T15:25:03",
+     "edit_class": "add_part",
+     "refs": [
+      "D6",
+      "D7",
+      "D8",
+      "D9"
      ],
      "human_hold": 2
     }
@@ -5257,6 +5378,41 @@
    ],
    "stale_artifacts": [
     "netlist",
+    "bom",
+    "bom_full",
+    "cpl"
+   ]
+  },
+  {
+   "ts": "2026-10-31T15:25:03",
+   "class": "add_part",
+   "refs": [
+    "D6",
+    "D7",
+    "D8",
+    "D9"
+   ],
+   "note": null,
+   "human_hold": 2,
+   "gates": [
+    "erc",
+    "place",
+    "drc",
+    "drc_routed",
+    "verify",
+    "sim",
+    "dfm"
+   ],
+   "gates_marked": [
+    "erc",
+    "place",
+    "drc_routed",
+    "verify",
+    "dfm"
+   ],
+   "stale_artifacts": [
+    "netlist",
+    "gerbers",
     "bom",
     "bom_full",
     "cpl"
@@ -8633,6 +8789,34 @@
    "gate": "dfm",
    "status": "pass",
    "attempt": 9,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-31T15:25:03",
+   "event": "edit",
+   "edit_class": "add_part",
+   "refs": [
+    "D6",
+    "D7",
+    "D8",
+    "D9"
+   ],
+   "human_hold": 2
+  },
+  {
+   "ts": "2026-10-31T15:25:33",
+   "event": "gate",
+   "gate": "drc_routed",
+   "status": "pass",
+   "attempt": 347,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-10-31T15:26:31",
+   "event": "gate",
+   "gate": "dfm",
+   "status": "pass",
+   "attempt": 10,
    "failing_count": 0
   }
  ]

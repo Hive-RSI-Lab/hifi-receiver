@@ -1,8 +1,8 @@
 (export
 	(version "E")
 	(design
-		(source "/home/hive2/projects/hifi-zobel/boards/core/kicad/core.kicad_sch")
-		(date "2026-10-31T14:43:54")
+		(source "/home/hive2/projects/hifi-esd/boards/core/kicad/core.kicad_sch")
+		(date "2026-10-31T15:10:15")
 		(tool "Eeschema 10.0.6")
 		(sheet
 			(number "1")
@@ -1242,6 +1242,136 @@
 					(pins
 						(pin
 							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "D6")
+			(value "NUP2105L")
+			(footprint "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BL-2")
+			(fields
+				(field
+					(name "LCSC") "C14486")
+				(field
+					(name "MPN") "NUP2105LT1G")
+				(field
+					(name "Footprint") "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BL-2")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "NUP2105LT1G")
+				(description "NUP2105LT1G")
+			)
+			(property
+				(name "LCSC")
+				(value "C14486")
+			)
+			(property
+				(name "MPN")
+				(value "NUP2105LT1G")
+			)
+			(property
+				(name "Sheetname")
+				(value "power_in")
+			)
+			(property
+				(name "Sheetfile")
+				(value "power_in.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "TVS")
+			)
+			(sheetpath
+				(names "/power_in/")
+				(tstamps "/e3483d22-0f7c-4250-ae9a-cf0125c663c4/")
+			)
+			(tstamps "b6b84258-e954-57d9-9035-f4de4a0653ca")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "3")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "D9")
+			(value "NUP2105L")
+			(footprint "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BL-2")
+			(fields
+				(field
+					(name "LCSC") "C14486")
+				(field
+					(name "MPN") "NUP2105LT1G")
+				(field
+					(name "Footprint") "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BL-2")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "NUP2105LT1G")
+				(description "NUP2105LT1G")
+			)
+			(property
+				(name "LCSC")
+				(value "C14486")
+			)
+			(property
+				(name "MPN")
+				(value "NUP2105LT1G")
+			)
+			(property
+				(name "Sheetname")
+				(value "power_in")
+			)
+			(property
+				(name "Sheetfile")
+				(value "power_in.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "TVS")
+			)
+			(sheetpath
+				(names "/power_in/")
+				(tstamps "/e3483d22-0f7c-4250-ae9a-cf0125c663c4/")
+			)
+			(tstamps "c82dea8e-ee46-5e16-b557-15337631ca07")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "3")
 						)
 						(pin
 							(num "2")
@@ -3981,6 +4111,71 @@
 					(pins
 						(pin
 							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "D7")
+			(value "PESD5V0S2BT")
+			(footprint "aiee:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR")
+			(fields
+				(field
+					(name "LCSC") "C49338")
+				(field
+					(name "MPN") "PESD5V0S2BT,215")
+				(field
+					(name "Footprint") "aiee:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "PESD5V0S2BT,215")
+				(description "PESD5V0S2BT")
+			)
+			(property
+				(name "LCSC")
+				(value "C49338")
+			)
+			(property
+				(name "MPN")
+				(value "PESD5V0S2BT,215")
+			)
+			(property
+				(name "Sheetname")
+				(value "dac")
+			)
+			(property
+				(name "Sheetfile")
+				(value "dac.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "ESD Protection Devices")
+			)
+			(sheetpath
+				(names "/dac/")
+				(tstamps "/155452ee-dcf7-4954-b4f0-25541f9275f5/")
+			)
+			(tstamps "bfe627fb-edb4-5b5d-8820-f57aefac7d42")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "3")
 						)
 						(pin
 							(num "2")
@@ -8663,6 +8858,71 @@
 					(pins
 						(pin
 							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "D8")
+			(value "PESD5V0S2BT")
+			(footprint "aiee:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR")
+			(fields
+				(field
+					(name "LCSC") "C49338")
+				(field
+					(name "MPN") "PESD5V0S2BT,215")
+				(field
+					(name "Footprint") "aiee:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "PESD5V0S2BT,215")
+				(description "PESD5V0S2BT")
+			)
+			(property
+				(name "LCSC")
+				(value "C49338")
+			)
+			(property
+				(name "MPN")
+				(value "PESD5V0S2BT,215")
+			)
+			(property
+				(name "Sheetname")
+				(value "linein")
+			)
+			(property
+				(name "Sheetfile")
+				(value "linein.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "ESD Protection Devices")
+			)
+			(sheetpath
+				(names "/linein/")
+				(tstamps "/618081e7-010d-4203-8d6c-da91a82b579a/")
+			)
+			(tstamps "fe31c653-b778-50df-bdc7-a959a6979b2d")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "3")
 						)
 						(pin
 							(num "2")
@@ -21232,6 +21492,47 @@
 		)
 		(libpart
 			(lib "aiee")
+			(part "NUP2105LT1G")
+			(description "NUP2105LT1G")
+			(docs "https://lcsc.com/product-detail/TVS_ON_NUP2105LT1G_NUP2105LT1G_C14486.html")
+			(fields
+				(field
+					(name "Reference") "D")
+				(field
+					(name "Value") "NUP2105LT1G")
+				(field
+					(name "Footprint") "aiee:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BL-2")
+				(field
+					(name "Datasheet") "https://lcsc.com/product-detail/TVS_ON_NUP2105LT1G_NUP2105LT1G_C14486.html")
+				(field
+					(name "Description") "NUP2105LT1G")
+				(field
+					(name "Manufacturer") "onsemi(安森美)")
+				(field
+					(name "MPN") "NUP2105LT1G")
+				(field
+					(name "LCSC Part") "C14486")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "1")
+					(type "passive")
+				)
+				(pin
+					(num "2")
+					(name "2")
+					(type "passive")
+				)
+				(pin
+					(num "3")
+					(name "3")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "aiee")
 			(part "OPA1678IDR")
 			(docs "https://lcsc.com/product-detail/Others_Texas-Instruments_OPA1678IDR_Texas-Instruments-TI-OPA1678IDR_C192421.html")
 			(fields
@@ -21464,6 +21765,47 @@
 				(pin
 					(num "20")
 					(name "DVDD")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "aiee")
+			(part "PESD5V0S2BT,215")
+			(description "PESD5V0S2BT")
+			(docs "https://lcsc.com/product-detail/Diodes-ESD_NXP_PESD5V0S2BT_PESD5V0S2BT_C49338.html")
+			(fields
+				(field
+					(name "Reference") "D")
+				(field
+					(name "Value") "PESD5V0S2BT,215")
+				(field
+					(name "Footprint") "aiee:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR")
+				(field
+					(name "Datasheet") "https://lcsc.com/product-detail/Diodes-ESD_NXP_PESD5V0S2BT_PESD5V0S2BT_C49338.html")
+				(field
+					(name "Description") "PESD5V0S2BT")
+				(field
+					(name "Manufacturer") "Nexperia(安世)")
+				(field
+					(name "MPN") "PESD5V0S2BT,215")
+				(field
+					(name "LCSC Part") "C49338")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "1")
+					(type "passive")
+				)
+				(pin
+					(num "2")
+					(name "2")
+					(type "passive")
+				)
+				(pin
+					(num "3")
+					(name "3")
 					(type "passive")
 				)
 			)
@@ -25752,6 +26094,12 @@
 				(pintype "passive")
 			)
 			(node
+				(ref "D7")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
 				(ref "J4")
 				(pin "1")
 				(pinfunction "1_1")
@@ -25786,6 +26134,12 @@
 			(node
 				(ref "C72")
 				(pin "1")
+				(pintype "passive")
+			)
+			(node
+				(ref "D7")
+				(pin "2")
+				(pinfunction "2_2")
 				(pintype "passive")
 			)
 			(node
@@ -26243,6 +26597,12 @@
 			(name "/linein/LIN_L")
 			(class "Default")
 			(node
+				(ref "D8")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
 				(ref "J5")
 				(pin "1")
 				(pinfunction "1_1")
@@ -26258,6 +26618,12 @@
 			(code "145")
 			(name "/linein/LIN_R")
 			(class "Default")
+			(node
+				(ref "D8")
+				(pin "2")
+				(pinfunction "2_2")
+				(pintype "passive")
+			)
 			(node
 				(ref "J5")
 				(pin "3")
@@ -26650,6 +27016,12 @@
 			(name "/power_in/CC1")
 			(class "Default")
 			(node
+				(ref "D6")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
 				(ref "J1")
 				(pin "A5")
 				(pinfunction "CC1_A5")
@@ -26666,6 +27038,12 @@
 			(code "163")
 			(name "/power_in/CC2")
 			(class "Default")
+			(node
+				(ref "D9")
+				(pin "2")
+				(pinfunction "2_2")
+				(pintype "passive")
+			)
 			(node
 				(ref "J1")
 				(pin "B5")
@@ -27685,6 +28063,30 @@
 				(ref "D3")
 				(pin "2")
 				(pinfunction "K_2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D6")
+				(pin "3")
+				(pinfunction "3_3")
+				(pintype "passive")
+			)
+			(node
+				(ref "D7")
+				(pin "3")
+				(pinfunction "3_3")
+				(pintype "passive")
+			)
+			(node
+				(ref "D8")
+				(pin "3")
+				(pinfunction "3_3")
+				(pintype "passive")
+			)
+			(node
+				(ref "D9")
+				(pin "3")
+				(pinfunction "3_3")
 				(pintype "passive")
 			)
 			(node
@@ -28755,6 +29157,28 @@
 		)
 		(net
 			(code "191")
+			(name "unconnected-(D6-Pad2)")
+			(class "Default")
+			(node
+				(ref "D6")
+				(pin "2")
+				(pinfunction "2_2")
+				(pintype "passive+no_connect")
+			)
+		)
+		(net
+			(code "192")
+			(name "unconnected-(D9-Pad1)")
+			(class "Default")
+			(node
+				(ref "D9")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive+no_connect")
+			)
+		)
+		(net
+			(code "193")
 			(name "unconnected-(J1-SBU1-PadA8)")
 			(class "Default")
 			(node
@@ -28765,7 +29189,7 @@
 			)
 		)
 		(net
-			(code "192")
+			(code "194")
 			(name "unconnected-(J1-SBU2-PadB8)")
 			(class "Default")
 			(node
@@ -28776,7 +29200,7 @@
 			)
 		)
 		(net
-			(code "193")
+			(code "195")
 			(name "unconnected-(J2-NC-Pad7)")
 			(class "Default")
 			(node
@@ -28787,7 +29211,7 @@
 			)
 		)
 		(net
-			(code "194")
+			(code "196")
 			(name "unconnected-(J2-Pad9)")
 			(class "Default")
 			(node
@@ -28798,7 +29222,7 @@
 			)
 		)
 		(net
-			(code "195")
+			(code "197")
 			(name "unconnected-(J2-Pad10)")
 			(class "Default")
 			(node
@@ -28809,7 +29233,7 @@
 			)
 		)
 		(net
-			(code "196")
+			(code "198")
 			(name "unconnected-(J2-Pad11)")
 			(class "Default")
 			(node
@@ -28820,7 +29244,7 @@
 			)
 		)
 		(net
-			(code "197")
+			(code "199")
 			(name "unconnected-(J2-Pad12)")
 			(class "Default")
 			(node
@@ -28831,7 +29255,7 @@
 			)
 		)
 		(net
-			(code "198")
+			(code "200")
 			(name "unconnected-(U1-DM-Pad5)")
 			(class "Default")
 			(node
@@ -28842,7 +29266,7 @@
 			)
 		)
 		(net
-			(code "199")
+			(code "201")
 			(name "unconnected-(U1-DP-Pad4)")
 			(class "Default")
 			(node
@@ -28853,7 +29277,7 @@
 			)
 		)
 		(net
-			(code "200")
+			(code "202")
 			(name "unconnected-(U6-N{slash}C-Pad4)")
 			(class "Default")
 			(node
@@ -28864,7 +29288,7 @@
 			)
 		)
 		(net
-			(code "201")
+			(code "203")
 			(name "unconnected-(U7-NC-Pad17)")
 			(class "Default")
 			(node
@@ -28875,7 +29299,7 @@
 			)
 		)
 		(net
-			(code "202")
+			(code "204")
 			(name "unconnected-(U7-NC-Pad18)")
 			(class "Default")
 			(node
@@ -28886,7 +29310,7 @@
 			)
 		)
 		(net
-			(code "203")
+			(code "205")
 			(name "unconnected-(U7-NC-Pad19)")
 			(class "Default")
 			(node
@@ -28897,7 +29321,7 @@
 			)
 		)
 		(net
-			(code "204")
+			(code "206")
 			(name "unconnected-(U7-NC-Pad20)")
 			(class "Default")
 			(node
@@ -28908,7 +29332,7 @@
 			)
 		)
 		(net
-			(code "205")
+			(code "207")
 			(name "unconnected-(U7-NC-Pad21)")
 			(class "Default")
 			(node
@@ -28919,7 +29343,7 @@
 			)
 		)
 		(net
-			(code "206")
+			(code "208")
 			(name "unconnected-(U7-NC-Pad22)")
 			(class "Default")
 			(node
@@ -28930,7 +29354,7 @@
 			)
 		)
 		(net
-			(code "207")
+			(code "209")
 			(name "unconnected-(U7-NC-Pad27)")
 			(class "Default")
 			(node
@@ -28941,7 +29365,7 @@
 			)
 		)
 		(net
-			(code "208")
+			(code "210")
 			(name "unconnected-(U7-NC-Pad28)")
 			(class "Default")
 			(node
@@ -28952,7 +29376,7 @@
 			)
 		)
 		(net
-			(code "209")
+			(code "211")
 			(name "unconnected-(U7-NC-Pad32)")
 			(class "Default")
 			(node
@@ -28963,7 +29387,7 @@
 			)
 		)
 		(net
-			(code "210")
+			(code "212")
 			(name "unconnected-(U8-NC.-Pad8)")
 			(class "Default")
 			(node
@@ -28974,7 +29398,7 @@
 			)
 		)
 		(net
-			(code "211")
+			(code "213")
 			(name "unconnected-(U8-TNOW-Pad15)")
 			(class "Default")
 			(node
@@ -28985,7 +29409,7 @@
 			)
 		)
 		(net
-			(code "212")
+			(code "214")
 			(name "unconnected-(U8-~{CTS}-Pad9)")
 			(class "Default")
 			(node
@@ -28996,7 +29420,7 @@
 			)
 		)
 		(net
-			(code "213")
+			(code "215")
 			(name "unconnected-(U8-~{DCD}-Pad12)")
 			(class "Default")
 			(node
@@ -29007,7 +29431,7 @@
 			)
 		)
 		(net
-			(code "214")
+			(code "216")
 			(name "unconnected-(U8-~{DSR}-Pad10)")
 			(class "Default")
 			(node
@@ -29018,7 +29442,7 @@
 			)
 		)
 		(net
-			(code "215")
+			(code "217")
 			(name "unconnected-(U8-~{RI}-Pad11)")
 			(class "Default")
 			(node
@@ -29029,7 +29453,7 @@
 			)
 		)
 		(net
-			(code "216")
+			(code "218")
 			(name "unconnected-(U8-~{RST}-Pad7)")
 			(class "Default")
 			(node
@@ -29040,7 +29464,7 @@
 			)
 		)
 		(net
-			(code "217")
+			(code "219")
 			(name "unconnected-(U9-LED1{slash}REGOFF-Pad3)")
 			(class "Default")
 			(node
@@ -29051,7 +29475,7 @@
 			)
 		)
 		(net
-			(code "218")
+			(code "220")
 			(name "unconnected-(U9-LED2{slash}nINTSEL-Pad2)")
 			(class "Default")
 			(node
@@ -29062,7 +29486,7 @@
 			)
 		)
 		(net
-			(code "219")
+			(code "221")
 			(name "unconnected-(U9-RXER{slash}PHYAD0-Pad10)")
 			(class "Default")
 			(node
@@ -29073,7 +29497,7 @@
 			)
 		)
 		(net
-			(code "220")
+			(code "222")
 			(name "unconnected-(U9-XTAL2-Pad4)")
 			(class "Default")
 			(node
@@ -29084,7 +29508,7 @@
 			)
 		)
 		(net
-			(code "221")
+			(code "223")
 			(name "unconnected-(U9-nINT{slash}REFCLKO-Pad14)")
 			(class "Default")
 			(node
@@ -29095,7 +29519,7 @@
 			)
 		)
 		(net
-			(code "222")
+			(code "224")
 			(name "unconnected-(U10-GPIO2-Pad23)")
 			(class "Default")
 			(node
@@ -29106,7 +29530,7 @@
 			)
 		)
 		(net
-			(code "223")
+			(code "225")
 			(name "unconnected-(U10-N.C.-Pad2)")
 			(class "Default")
 			(node
@@ -29117,7 +29541,7 @@
 			)
 		)
 		(net
-			(code "224")
+			(code "226")
 			(name "unconnected-(U10-N.C.-Pad19)")
 			(class "Default")
 			(node
@@ -29128,7 +29552,7 @@
 			)
 		)
 		(net
-			(code "225")
+			(code "227")
 			(name "unconnected-(U10-N.C.-Pad22)")
 			(class "Default")
 			(node
@@ -29139,7 +29563,7 @@
 			)
 		)
 		(net
-			(code "226")
+			(code "228")
 			(name "unconnected-(U10-XO-Pad6)")
 			(class "Default")
 			(node
@@ -29150,7 +29574,7 @@
 			)
 		)
 		(net
-			(code "227")
+			(code "229")
 			(name "unconnected-(U19-NC-Pad4)")
 			(class "Default")
 			(node
@@ -29161,7 +29585,7 @@
 			)
 		)
 		(net
-			(code "228")
+			(code "230")
 			(name "unconnected-(U19-NC-Pad5)")
 			(class "Default")
 			(node

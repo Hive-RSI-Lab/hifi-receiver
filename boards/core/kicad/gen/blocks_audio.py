@@ -78,11 +78,21 @@ C("C71", "1nF", "SUB1_OUT")
 C("C72", "1nF", "SUB2_OUT")
 P("J4", A + "XDJK-0271-1650", "SUB OUT", A + "CONN-TH_XDJK-0271-1650",
   {"1": "SUB1_OUT", "2": "GND", "3": "SUB2_OUT"}, lcsc="C7527522", mpn="XDJK-0271-1650", role="stacked dual RCA: SUB1 (top) / SUB2")
+# sub out ESD at the RCA (issue #133): bidirectional 5 V, the 2 Vrms
+# (2.8 V peak) ground-centred signal stays inside it.
+P("D7", A + "PESD5V0S2BT,215", "PESD5V0S2BT", A + "SOT-23_L2.9-W1.3-P1.90-LS2.4-BR",
+  {"1": "SUB1_OUT", "2": "SUB2_OUT", "3": "GND"}, lcsc="C49338", mpn="PESD5V0S2BT,215",
+  role="sub out ESD")
 
 # ------------------------------------------------------------ B9 line in
 sheet("linein")
 P("J5", A + "XDJK-0271-1650", "LINE IN", A + "CONN-TH_XDJK-0271-1650",
   {"1": "LIN_L", "2": "GND", "3": "LIN_R"}, lcsc="C7527522", mpn="XDJK-0271-1650", role="stacked dual RCA: line in L (top) / R")
+# line in ESD at the RCA (issue #133): bidirectional 5 V, the 2 Vrms
+# (2.8 V peak) ground-centred signal stays inside it.
+P("D8", A + "PESD5V0S2BT,215", "PESD5V0S2BT", A + "SOT-23_L2.9-W1.3-P1.90-LS2.4-BR",
+  {"1": "LIN_L", "2": "LIN_R", "3": "GND"}, lcsc="C49338", mpn="PESD5V0S2BT,215",
+  role="line in ESD")
 for ch, n in (("L", 100), ("R", 110)):
     R(f"R{n}", "4.7k", f"LIN_{ch}", f"LDIV_{ch}", role="halve 2 Vrms to 1 Vrms")
     R(f"R{n + 1}", "4.7k", f"LDIV_{ch}", "GND")

@@ -820,5 +820,27 @@
    "current_a": 0.15,
    "note": "the ultra-front board over the FFC"
   }
- ]
+ ],
+ "esd": {
+  "level_kv": 8,
+  "exempt_nets": [
+   "/A_SPK_L+",
+   "/amp_a/A_SPK_L-",
+   "/A_SPK_R+",
+   "/amp_a/A_SPK_R-",
+   "/amp_b/B_SPK_L+",
+   "/amp_b/B_SPK_L-",
+   "/amp_b/B_SPK_R+",
+   "/amp_b/B_SPK_R-",
+   "/ethernet/ETH_TXP",
+   "/ethernet/ETH_TXN",
+   "/ethernet/ETH_RXP",
+   "/ethernet/ETH_RXN",
+   "+3V3E"
+  ],
+  "exempt_notes": {
+   "speaker outputs (J6/J7/J10/J11)": "each leg's LC filter cap (1 uF X7R, plus the 470 nF Zobel) sits about 6 mm from the binding post, and the 10 uH inductor stands between it and the TPA3220 pin. An IEC 61000-4-2 8 kV contact strike carries 150 pF x 8 kV = 1.2 uC: about 0.8 V on 1.47 uF. The inductor blocks the ns edge from the amp. A TVS would add nothing (docs/boards/core-esd.md).",
+   "Ethernet (J2)": "HR911105A is a MagJack: the cable side ends on the integrated transformers and Bob Smith termination (1500 Vrms isolation), so the strike never reaches these PHY-side pins directly. +3V3E is the centre-tap supply on the PHY side."
+  }
+ }
 }
