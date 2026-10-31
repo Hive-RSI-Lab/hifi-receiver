@@ -102,8 +102,8 @@ class Firmware(Base):
             self.t.put(p.relative_to(self.t.root), edit(p.read_text()))
 
     def test_the_lite_config_copied_for_plus_fails(self):
-        lite = re.search(r'default "(model=ES8388[^"]*)" if HIFI_LITE', self.t.text(
-            next(p.relative_to(self.t.root) for p in (self.t.root / "firmware/patches").glob("*.patch")))).group(1)
+        lite = next(m.group(1) for p in sorted((self.t.root / "firmware/patches").glob("*.patch"))
+                    if (m := re.search(r'default "(model=ES8388[^"]*)" if HIFI_LITE', p.read_text())))
         self._patch(lambda t: re.sub(r'default "model=I2S[^"]*" if HIFI_PLUS', f'default "{lite}" if HIFI_PLUS', t))
         bad = self.t.check("Plus firmware")
         self.assertTrue(any("on boards/core, not a /" in b for b in bad), bad)
