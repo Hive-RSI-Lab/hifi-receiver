@@ -28,6 +28,7 @@ ordering is the person's.**
 | SW4 | Rotary encoder with push switch (smooth, no detents) | EC11E1834403 | C361165 | Extended |
 | SW1-SW3 | 5.1 mm tact switches | TS-1187A-B-A-B | C318884 | Basic |
 | D1 | RGB status LED, common anode | TJ-S1615SW6TGLCCYRGB-A5 | C273610 | Extended |
+| D2-D3 | ESD clamps at the switches, dual bidirectional 5 V (D2: BTN1/BTN2, D3: BTN3/ENC_SW) | PESD5V0S2BT,215 | C49338 | Extended |
 | Q1 | Backlight switch | AO3400A | C20917 | Basic |
 | R/C | 19 resistors, 7 capacitors, 0603/0805 | see `fab/BOM.csv` | | Basic |
 
@@ -41,8 +42,8 @@ Not on the board, and not assembled by JLC:
   contacts)**; a type A cable shorts core outputs to GND (enclosure/README.md,
   "The FFC").
 
-**Parts cost:** $2.80 per board at 10 and $2.42 at 100, plus the LCD. It has
-6 extended parts.
+**Parts cost:** $2.97 per board at 10 and $2.54 at 100, plus the LCD. It has
+7 extended parts.
 
 ## The connector to the core board (J1)
 
@@ -155,6 +156,24 @@ Pin N on the core board connects to pin N here.
 Every decision is also recorded in `state.json` (`decisions`), with the
 stage digests in `log/P*-digest.md`.
 
+- **ESD clamps at the switches (D2, D3; review round 4, R5-UF-2).** The
+  TS-1187A's keystake is brass, and an 8 kV air strike can creep about 5.8 mm
+  past the printed cap to it. BTN1-3 had only a 10 k pull-up before U1, whose
+  pins are rated about 2 kV HBM.
+  - **The part:** PESD5V0S2BT (C49338, already on core as D7/D8), dual
+    bidirectional, 5 V working, 3.3 V lines well inside it. Pin 3 to GND
+    through its own via, 0.4 mm track.
+  - **D2** (BTN2 on pin 1, BTN1 on pin 2) sits in the gap between SW1 and SW2.
+    BTN2 drops 4 mm from SW2's pin 2. BTN1 comes from SW1's pin-2
+    run through two vias and 6 mm of B.Cu (8 mm in all), because SW1's GND pad row and
+    ENC_A/ENC_B cross under SW1 on F.Cu.
+  - **D3** (BTN3 on pin 1, ENC_SW on pin 2) sits between SW2 and SW3. BTN3
+    drops 3.2 mm from SW3's pin 2. ENC_SW runs 19 mm on F.Cu from SW4's pin D,
+    under the knob's pin row. The knob's frame is GND, so a strike there lands
+    on GND; ENC_SW takes the spare channel.
+  - **How it was added:** `kicad/esd-placements.json` via `board_update`,
+    then `kicad/gen/esd_eco.py` (`docs/boards/ultra-front-esd.md`).
+
 ## Where things are, for the enclosure
 
 Coordinates are in mm from the board's top-left corner, looking at the top
@@ -242,6 +261,8 @@ $H fab_export --pcb kicad/ultra-front.kicad_pcb --out-dir fab
 $H bom_cpl --pcb kicad/ultra-front.kicad_pcb --out-dir fab --parts parts/parts.json --build-qty 10
 ```
 
+- **ESD clamps D2/D3**, added to the routed board: `$H board_update --pcb kicad/ultra-front.kicad_pcb --netlist kicad/ultra-front.net --placements kicad/esd-placements.json --state state.json`, then `kicad/gen/esd_eco.py kicad/ultra-front.kicad_pcb` with KiCad's python.
+
 - **Placement:** `anneal/placement.ops.json` (`place_edit`).
 - **Routing, in order:**
   1. `kicad/gen/edge_keepout.py <board> 0.5`, with KiCad's python, then
@@ -259,7 +280,7 @@ In `fab/`:
 - **Gerbers:** `ultra-front_gerbers.zip`.
 - **For JLC:** `BOM.csv` and `CPL.csv`.
 - **Full record:** `BOM-full.csv`.
-- **To buy first:** `prebuy.csv`, the 6 extended parts. JLC may ask for these
+- **To buy first:** `prebuy.csv`, the 7 extended parts. JLC may ask for these
   to be bought into inventory.
 
 At JLC:
@@ -289,3 +310,6 @@ At JLC:
    - plug in the panel, contacts either way up.
    - drive LCD_BL_PWM high: the backlight should draw about 50 mA from +5V.
    - init the ST7789 over SPI at 10-15 MHz.
+7. **ESD (bring-up):** gun-test 8 kV air on each button cap and on the knob
+   in the enclosure. After each strike, all buttons and the knob still read
+   right and U1 still answers at 0x27.
