@@ -1,26 +1,26 @@
 * I2S_BCK bench tr1p5_r30
-Vs s 0 PULSE(0 3.3 5e-09 1.8750000000000002e-09 1.8750000000000002e-09 1.58125e-07 320e-9)
+Vs s 0 PULSE(0 3.3 5e-09 1.8750000000000002e-09 1.8750000000000002e-09 3.8125e-08 80e-9)
 Rd s d 30
 Cd d 0 3p
 Ta d 0 x1 0 Z0=73 TD=3.5716e-10
-Tadc x1 0 adc 0 Z0=73 TD=8.6550e-12
-Cadc adc 0 5p
+Radc x1 adc 0.01
+Cadc adc 0 5.2p
 Tb x1 0 x2 0 Z0=73 TD=1.5983e-10
 Tpcm x2 0 pcm 0 Z0=73 TD=2.8273e-11
 Cpcm pcm 0 5p
 Tsab x2 0 sab 0 Z0=73 TD=5.1353e-11
 Csab sab 0 6p
-.tran 10p 330n 0 10p
-.measure tran adc_min_hi MIN v(adc) FROM=9.375e-09 TO=160n
-.measure tran adc_max_lo MAX v(adc) FROM=1.694e-07 TO=320n
+.tran 20p 90n 0 20p
+.measure tran adc_min_hi MIN v(adc) FROM=9.375e-09 TO=45n
+.measure tran adc_max_lo MAX v(adc) FROM=4.938e-08 TO=85n
 .measure tran adc_max MAX v(adc)
 .measure tran adc_min MIN v(adc)
-.measure tran pcm_min_hi MIN v(pcm) FROM=9.375e-09 TO=160n
-.measure tran pcm_max_lo MAX v(pcm) FROM=1.694e-07 TO=320n
+.measure tran pcm_min_hi MIN v(pcm) FROM=9.375e-09 TO=45n
+.measure tran pcm_max_lo MAX v(pcm) FROM=4.938e-08 TO=85n
 .measure tran pcm_max MAX v(pcm)
 .measure tran pcm_min MIN v(pcm)
-.measure tran sab_min_hi MIN v(sab) FROM=9.375e-09 TO=160n
-.measure tran sab_max_lo MAX v(sab) FROM=1.694e-07 TO=320n
+.measure tran sab_min_hi MIN v(sab) FROM=9.375e-09 TO=45n
+.measure tran sab_max_lo MAX v(sab) FROM=4.938e-08 TO=85n
 .measure tran sab_max MAX v(sab)
 .measure tran sab_min MIN v(sab)
 .end

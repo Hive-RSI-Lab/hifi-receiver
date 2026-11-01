@@ -1,0 +1,22 @@
+RIN 19.2k: amp input 0.916 Vrms, speaker 14.52 Vrms (20.5 Vpk)
+RIN 24.0k: amp input 0.936 Vrms, speaker 14.84 Vrms (21.0 Vpk)
+RIN 28.8k: amp input 0.950 Vrms, speaker 15.06 Vrms (21.3 Vpk)
+
+ok   Plus          4 ohm EPR 28 V 5 A (140 W)     speaker  14.8 Vrms in  129.1 W = 0.92x contract ( 4.6 A); guard trips after 13.3 s
+OVER Plus          4 ohm SPR 20 V 5 A (100 W)     speaker  13.4 Vrms in  113.0 W = 1.13x contract ( 5.6 A); guard trips after 15.4 s
+OVER Plus          4 ohm SPR 20 V 3.25 A (65 W)   speaker  13.4 Vrms in  113.0 W = 1.74x contract ( 5.6 A); guard trips after 15.4 s
+OVER Plus          4 ohm SPR 20 V 2.25 A (45 W)   speaker  13.4 Vrms in  113.0 W = 2.51x contract ( 5.6 A); guard trips after 15.4 s
+ok   Plus          6 ohm EPR 28 V 5 A (140 W)     speaker  14.8 Vrms in   87.4 W = 0.62x contract ( 3.1 A); guard trips after 20.8 s
+ok   Plus          6 ohm SPR 20 V 5 A (100 W)     speaker  13.4 Vrms in   76.7 W = 0.77x contract ( 3.8 A); guard trips after 24.4 s
+OVER Plus          6 ohm SPR 20 V 3.25 A (65 W)   speaker  13.4 Vrms in   76.7 W = 1.18x contract ( 3.8 A); guard trips after 24.4 s
+OVER Plus          6 ohm SPR 20 V 2.25 A (45 W)   speaker  13.4 Vrms in   76.7 W = 1.70x contract ( 3.8 A); guard trips after 24.4 s
+OVER Ultra 2 zones 4 ohm EPR 28 V 5 A (140 W)     speaker  14.8 Vrms in  254.2 W = 1.82x contract ( 9.1 A); guard trips after  5.8 s
+OVER Ultra 2 zones 4 ohm SPR 20 V 5 A (100 W)     speaker  13.4 Vrms in  222.0 W = 2.22x contract (11.1 A); guard trips after  6.7 s
+OVER Ultra 2 zones 4 ohm SPR 20 V 3.25 A (65 W)   speaker  13.4 Vrms in  222.0 W = 3.42x contract (11.1 A); guard trips after  6.7 s
+OVER Ultra 2 zones 4 ohm SPR 20 V 2.25 A (45 W)   speaker  13.4 Vrms in  222.0 W = 4.93x contract (11.1 A); guard trips after  6.7 s
+OVER Ultra 2 zones 6 ohm EPR 28 V 5 A (140 W)     speaker  14.8 Vrms in  170.8 W = 1.22x contract ( 6.1 A); guard trips after  8.8 s
+OVER Ultra 2 zones 6 ohm SPR 20 V 5 A (100 W)     speaker  13.4 Vrms in  149.3 W = 1.49x contract ( 7.5 A); guard trips after 10.2 s
+OVER Ultra 2 zones 6 ohm SPR 20 V 3.25 A (65 W)   speaker  13.4 Vrms in  149.3 W = 2.30x contract ( 7.5 A); guard trips after 10.2 s
+OVER Ultra 2 zones 6 ohm SPR 20 V 2.25 A (45 W)   speaker  13.4 Vrms in  149.3 W = 3.32x contract ( 7.5 A); guard trips after 10.2 s
+
+guard limits: Plus 25.6 W, Ultra 2 zones 23.3 W (60 s EMA)
