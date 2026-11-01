@@ -69,7 +69,7 @@ def zone(z: str, base: int, ultra: bool):
         C(f"C{nr()}", "33nF/50V", n(b), n(o), pkg="0603")
     # output filters + snubbers
     lbase = 1 if z == "A" else 5
-    jbase = 6 if z == "A" else 10
+    jbase = 20 if z == "A" else 24
     # L1 top-left, L2 bottom-left, L3 bottom-right, L4 top-right (anchors.py).
     # The amp's inversion is undone in the DAC stage (U11 inputs swapped), so
     # OUTx_P is the + terminal here.
@@ -85,12 +85,22 @@ def zone(z: str, base: int, ultra: bool):
         # with no speaker from +40 dB to +16 dB at ~45 kHz (docs/boards/core-zobel.md).
         R(f"R{nr()}", "4.7R", net, n(o + "_SN"), pkg="0603")
         C(f"C{nr()}", "470nF/50V", n(o + "_SN"), pkg="0603")
-    # speaker terminals: one 2-way 5 mm screw terminal per channel; the
-    # enclosure's banana sockets / binding posts wire to these
-    for k, ch in enumerate(("L", "R")):
-        P(f"J{jbase + k}", A + "KF301-5.0-2P", f"SPK {z} {ch}", A + "x",
-          {"1": f"{z}_SPK_{ch}+", "2": f"{z}_SPK_{ch}-"}, lcsc="C474881", mpn="KF301-5.0-2P",
-          role=f"zone {z} {ch} speaker terminal, 17 A", nc_rest=True)
+    # speaker outputs: one 4 mm banana socket per leg (Amass 24.243,
+    # right-angle PCB mount, 24 A, JLC fits them, as on Lite), red + and
+    # black -, their bores through the rear wall: banana plugs go straight
+    # in and nothing is wired by hand (issues #117, #124). Both pins of a
+    # socket are its one contact (pin 1 at the back, pin 2 by the nose).
+    # J20-J27 run along the rear edge: A L+ L- R+ R-, B L+ L- R+ R-. Plus
+    # plays L on zone A and R on zone B (HIFI_SPLIT), so it fits only A L
+    # and B R; A R and B L are Ultra's.
+    for k, (ch, sign) in enumerate((("L", "+"), ("L", "-"), ("R", "+"), ("R", "-"))):
+        red = sign == "+"
+        P(f"J{jbase + k}", A + ("24.243.1" if red else "24.243.2"),
+          f"24.243 {'red' if red else 'black'}", A + "x",
+          {"1": f"{z}_SPK_{ch}{sign}", "2": f"{z}_SPK_{ch}{sign}"},
+          lcsc="C7437321" if red else "C7437322", mpn="24.243.1" if red else "24.243.2",
+          dnp=(z, ch) in (("A", "R"), ("B", "L")),
+          role=f"zone {z} {ch}{sign} speaker banana socket, 4 mm, 24 A")
 
 
 zone("A", 200, ultra=False)

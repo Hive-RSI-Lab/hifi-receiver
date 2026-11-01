@@ -4,7 +4,7 @@
  "workspace_schema": 2,
  "workspace": "/work/boards/core",
  "created": "2026-10-28T11:07:23",
- "updated": "2026-10-31T15:26:31",
+ "updated": "2026-10-31T20:04:50",
  "phase": "P9",
  "gates": {
   "erc": {
@@ -247,6 +247,32 @@
       "D7",
       "D8",
       "D9"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "add_part",
+     "refs": [
+      "J20",
+      "J21",
+      "J22",
+      "J23",
+      "J24",
+      "J25",
+      "J26",
+      "J27"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "del_part",
+     "refs": [
+      "J10",
+      "J11",
+      "J6",
+      "J7"
      ],
      "human_hold": 2
     }
@@ -603,6 +629,32 @@
       "D7",
       "D8",
       "D9"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "add_part",
+     "refs": [
+      "J20",
+      "J21",
+      "J22",
+      "J23",
+      "J24",
+      "J25",
+      "J26",
+      "J27"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "del_part",
+     "refs": [
+      "J10",
+      "J11",
+      "J6",
+      "J7"
      ],
      "human_hold": 2
     }
@@ -4789,6 +4841,34 @@
       "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
      }
     }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "add_part",
+     "refs": [
+      "J20",
+      "J21",
+      "J22",
+      "J23",
+      "J24",
+      "J25",
+      "J26",
+      "J27"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "del_part",
+     "refs": [
+      "J10",
+      "J11",
+      "J6",
+      "J7"
+     ],
+     "human_hold": 2
+    }
    ]
   },
   "verify": {
@@ -4979,6 +5059,32 @@
       "D9"
      ],
      "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "add_part",
+     "refs": [
+      "J20",
+      "J21",
+      "J22",
+      "J23",
+      "J24",
+      "J25",
+      "J26",
+      "J27"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "del_part",
+     "refs": [
+      "J10",
+      "J11",
+      "J6",
+      "J7"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -5108,6 +5214,34 @@
       "parts": null
      }
     }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "add_part",
+     "refs": [
+      "J20",
+      "J21",
+      "J22",
+      "J23",
+      "J24",
+      "J25",
+      "J26",
+      "J27"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "del_part",
+     "refs": [
+      "J10",
+      "J11",
+      "J6",
+      "J7"
+     ],
+     "human_hold": 2
+    }
    ]
   }
  },
@@ -5198,6 +5332,32 @@
       "D9"
      ],
      "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "add_part",
+     "refs": [
+      "J20",
+      "J21",
+      "J22",
+      "J23",
+      "J24",
+      "J25",
+      "J26",
+      "J27"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "del_part",
+     "refs": [
+      "J10",
+      "J11",
+      "J6",
+      "J7"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -5230,6 +5390,32 @@
       "D7",
       "D8",
       "D9"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "add_part",
+     "refs": [
+      "J20",
+      "J21",
+      "J22",
+      "J23",
+      "J24",
+      "J25",
+      "J26",
+      "J27"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "del_part",
+     "refs": [
+      "J10",
+      "J11",
+      "J6",
+      "J7"
      ],
      "human_hold": 2
     }
@@ -5266,6 +5452,32 @@
       "D9"
      ],
      "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "add_part",
+     "refs": [
+      "J20",
+      "J21",
+      "J22",
+      "J23",
+      "J24",
+      "J25",
+      "J26",
+      "J27"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "del_part",
+     "refs": [
+      "J10",
+      "J11",
+      "J6",
+      "J7"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -5300,6 +5512,32 @@
       "D9"
      ],
      "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "add_part",
+     "refs": [
+      "J20",
+      "J21",
+      "J22",
+      "J23",
+      "J24",
+      "J25",
+      "J26",
+      "J27"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "del_part",
+     "refs": [
+      "J10",
+      "J11",
+      "J6",
+      "J7"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -5317,6 +5555,32 @@
       "D7",
       "D8",
       "D9"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "add_part",
+     "refs": [
+      "J20",
+      "J21",
+      "J22",
+      "J23",
+      "J24",
+      "J25",
+      "J26",
+      "J27"
+     ],
+     "human_hold": 2
+    },
+    {
+     "ts": "2026-10-31T20:04:50",
+     "edit_class": "del_part",
+     "refs": [
+      "J10",
+      "J11",
+      "J6",
+      "J7"
      ],
      "human_hold": 2
     }
@@ -5391,6 +5655,80 @@
     "D7",
     "D8",
     "D9"
+   ],
+   "note": null,
+   "human_hold": 2,
+   "gates": [
+    "erc",
+    "place",
+    "drc",
+    "drc_routed",
+    "verify",
+    "sim",
+    "dfm"
+   ],
+   "gates_marked": [
+    "erc",
+    "place",
+    "drc_routed",
+    "verify",
+    "dfm"
+   ],
+   "stale_artifacts": [
+    "netlist",
+    "gerbers",
+    "bom",
+    "bom_full",
+    "cpl"
+   ]
+  },
+  {
+   "ts": "2026-10-31T20:04:50",
+   "class": "add_part",
+   "refs": [
+    "J20",
+    "J21",
+    "J22",
+    "J23",
+    "J24",
+    "J25",
+    "J26",
+    "J27"
+   ],
+   "note": null,
+   "human_hold": 2,
+   "gates": [
+    "erc",
+    "place",
+    "drc",
+    "drc_routed",
+    "verify",
+    "sim",
+    "dfm"
+   ],
+   "gates_marked": [
+    "erc",
+    "place",
+    "drc_routed",
+    "verify",
+    "dfm"
+   ],
+   "stale_artifacts": [
+    "netlist",
+    "gerbers",
+    "bom",
+    "bom_full",
+    "cpl"
+   ]
+  },
+  {
+   "ts": "2026-10-31T20:04:50",
+   "class": "del_part",
+   "refs": [
+    "J10",
+    "J11",
+    "J6",
+    "J7"
    ],
    "note": null,
    "human_hold": 2,
@@ -8818,6 +9156,34 @@
    "status": "pass",
    "attempt": 10,
    "failing_count": 0
+  },
+  {
+   "ts": "2026-10-31T20:04:50",
+   "event": "edit",
+   "edit_class": "add_part",
+   "refs": [
+    "J20",
+    "J21",
+    "J22",
+    "J23",
+    "J24",
+    "J25",
+    "J26",
+    "J27"
+   ],
+   "human_hold": 2
+  },
+  {
+   "ts": "2026-10-31T20:04:50",
+   "event": "edit",
+   "edit_class": "del_part",
+   "refs": [
+    "J10",
+    "J11",
+    "J6",
+    "J7"
+   ],
+   "human_hold": 2
   }
  ]
 }

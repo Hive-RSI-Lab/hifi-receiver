@@ -1,8 +1,8 @@
 (export
 	(version "E")
 	(design
-		(source "/home/hive2/projects/hifi-esd/boards/core/kicad/core.kicad_sch")
-		(date "2026-10-31T15:10:15")
+		(source "/home/hive2/projects/hifi-core-banana/boards/core/kicad/core.kicad_sch")
+		(date "2026-10-31T19:58:41")
 		(tool "Eeschema 10.0.6")
 		(sheet
 			(number "1")
@@ -14579,16 +14579,16 @@
 			)
 		)
 		(comp
-			(ref "J6")
-			(value "SPK A L")
-			(footprint "aiee:CONN-TH_P5.00_KF301-5.0-2P")
+			(ref "J20")
+			(value "24.243 red")
+			(footprint "aiee:CONN-TH_24.243.1_RED")
 			(fields
 				(field
-					(name "LCSC") "C474881")
+					(name "LCSC") "C7437321")
 				(field
-					(name "MPN") "KF301-5.0-2P")
+					(name "MPN") "24.243.1")
 				(field
-					(name "Footprint") "aiee:CONN-TH_P5.00_KF301-5.0-2P")
+					(name "Footprint") "aiee:CONN-TH_24.243.1_RED")
 				(field
 					(name "Datasheet")
 				)
@@ -14598,16 +14598,16 @@
 			)
 			(libsource
 				(lib "aiee")
-				(part "KF301-5.0-2P")
+				(part "24.243.1")
 				(description "")
 			)
 			(property
 				(name "LCSC")
-				(value "C474881")
+				(value "C7437321")
 			)
 			(property
 				(name "MPN")
-				(value "KF301-5.0-2P")
+				(value "24.243.1")
 			)
 			(property
 				(name "Sheetname")
@@ -14619,13 +14619,13 @@
 			)
 			(property
 				(name "ki_keywords")
-				(value "Screw terminal")
+				(value "Banana Connectors/Alligator Clips")
 			)
 			(sheetpath
 				(names "/amp_a/")
 				(tstamps "/ac40da09-0691-4265-8967-baedd98a3ad2/")
 			)
-			(tstamps "13895711-d585-4d0f-88e4-8fdd72abc0e6")
+			(tstamps "2eb2186c-046f-5e21-a94d-8aa541672c1f")
 			(units
 				(unit
 					(name "A")
@@ -14641,16 +14641,16 @@
 			)
 		)
 		(comp
-			(ref "J7")
-			(value "SPK A R")
-			(footprint "aiee:CONN-TH_P5.00_KF301-5.0-2P")
+			(ref "J21")
+			(value "24.243 black")
+			(footprint "aiee:CONN-TH_24.243.2")
 			(fields
 				(field
-					(name "LCSC") "C474881")
+					(name "LCSC") "C7437322")
 				(field
-					(name "MPN") "KF301-5.0-2P")
+					(name "MPN") "24.243.2")
 				(field
-					(name "Footprint") "aiee:CONN-TH_P5.00_KF301-5.0-2P")
+					(name "Footprint") "aiee:CONN-TH_24.243.2")
 				(field
 					(name "Datasheet")
 				)
@@ -14660,16 +14660,16 @@
 			)
 			(libsource
 				(lib "aiee")
-				(part "KF301-5.0-2P")
+				(part "24.243.2")
 				(description "")
 			)
 			(property
 				(name "LCSC")
-				(value "C474881")
+				(value "C7437322")
 			)
 			(property
 				(name "MPN")
-				(value "KF301-5.0-2P")
+				(value "24.243.2")
 			)
 			(property
 				(name "Sheetname")
@@ -14681,13 +14681,143 @@
 			)
 			(property
 				(name "ki_keywords")
-				(value "Screw terminal")
+				(value "Banana Connectors/Alligator Clips")
 			)
 			(sheetpath
 				(names "/amp_a/")
 				(tstamps "/ac40da09-0691-4265-8967-baedd98a3ad2/")
 			)
-			(tstamps "c84561d5-b569-441b-b9b7-1c97ebf52da0")
+			(tstamps "1d4d72e7-460c-51c1-95b4-32022d70e1a0")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "J22")
+			(value "24.243 red")
+			(footprint "aiee:CONN-TH_24.243.1_RED")
+			(fields
+				(field
+					(name "LCSC") "C7437321")
+				(field
+					(name "MPN") "24.243.1")
+				(field
+					(name "Footprint") "aiee:CONN-TH_24.243.1_RED")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "24.243.1")
+				(description "")
+			)
+			(property
+				(name "LCSC")
+				(value "C7437321")
+			)
+			(property
+				(name "MPN")
+				(value "24.243.1")
+			)
+			(property
+				(name "Sheetname")
+				(value "amp_a")
+			)
+			(property
+				(name "Sheetfile")
+				(value "amp_a.kicad_sch")
+			)
+			(property
+				(name "dnp")
+			)
+			(property
+				(name "ki_keywords")
+				(value "Banana Connectors/Alligator Clips")
+			)
+			(sheetpath
+				(names "/amp_a/")
+				(tstamps "/ac40da09-0691-4265-8967-baedd98a3ad2/")
+			)
+			(tstamps "054e0eca-004f-57f3-8974-b21014f46665")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "J23")
+			(value "24.243 black")
+			(footprint "aiee:CONN-TH_24.243.2")
+			(fields
+				(field
+					(name "LCSC") "C7437322")
+				(field
+					(name "MPN") "24.243.2")
+				(field
+					(name "Footprint") "aiee:CONN-TH_24.243.2")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "24.243.2")
+				(description "")
+			)
+			(property
+				(name "LCSC")
+				(value "C7437322")
+			)
+			(property
+				(name "MPN")
+				(value "24.243.2")
+			)
+			(property
+				(name "Sheetname")
+				(value "amp_a")
+			)
+			(property
+				(name "Sheetfile")
+				(value "amp_a.kicad_sch")
+			)
+			(property
+				(name "dnp")
+			)
+			(property
+				(name "ki_keywords")
+				(value "Banana Connectors/Alligator Clips")
+			)
+			(sheetpath
+				(names "/amp_a/")
+				(tstamps "/ac40da09-0691-4265-8967-baedd98a3ad2/")
+			)
+			(tstamps "5e348981-65b8-5a3a-bac2-87a1d6b55914")
 			(units
 				(unit
 					(name "A")
@@ -18631,16 +18761,16 @@
 			)
 		)
 		(comp
-			(ref "J10")
-			(value "SPK B L")
-			(footprint "aiee:CONN-TH_P5.00_KF301-5.0-2P")
+			(ref "J24")
+			(value "24.243 red")
+			(footprint "aiee:CONN-TH_24.243.1_RED")
 			(fields
 				(field
-					(name "LCSC") "C474881")
+					(name "LCSC") "C7437321")
 				(field
-					(name "MPN") "KF301-5.0-2P")
+					(name "MPN") "24.243.1")
 				(field
-					(name "Footprint") "aiee:CONN-TH_P5.00_KF301-5.0-2P")
+					(name "Footprint") "aiee:CONN-TH_24.243.1_RED")
 				(field
 					(name "Datasheet")
 				)
@@ -18650,16 +18780,16 @@
 			)
 			(libsource
 				(lib "aiee")
-				(part "KF301-5.0-2P")
+				(part "24.243.1")
 				(description "")
 			)
 			(property
 				(name "LCSC")
-				(value "C474881")
+				(value "C7437321")
 			)
 			(property
 				(name "MPN")
-				(value "KF301-5.0-2P")
+				(value "24.243.1")
 			)
 			(property
 				(name "Sheetname")
@@ -18670,14 +18800,17 @@
 				(value "amp_b.kicad_sch")
 			)
 			(property
+				(name "dnp")
+			)
+			(property
 				(name "ki_keywords")
-				(value "Screw terminal")
+				(value "Banana Connectors/Alligator Clips")
 			)
 			(sheetpath
 				(names "/amp_b/")
 				(tstamps "/d3cf3d3f-341d-4740-b3e5-9191cca8a21d/")
 			)
-			(tstamps "dd2bdca0-b5ae-408c-89f7-7615c850e170")
+			(tstamps "5d30bc98-a2ac-5c40-bd7d-fc8dd7d26740")
 			(units
 				(unit
 					(name "A")
@@ -18693,16 +18826,16 @@
 			)
 		)
 		(comp
-			(ref "J11")
-			(value "SPK B R")
-			(footprint "aiee:CONN-TH_P5.00_KF301-5.0-2P")
+			(ref "J25")
+			(value "24.243 black")
+			(footprint "aiee:CONN-TH_24.243.2")
 			(fields
 				(field
-					(name "LCSC") "C474881")
+					(name "LCSC") "C7437322")
 				(field
-					(name "MPN") "KF301-5.0-2P")
+					(name "MPN") "24.243.2")
 				(field
-					(name "Footprint") "aiee:CONN-TH_P5.00_KF301-5.0-2P")
+					(name "Footprint") "aiee:CONN-TH_24.243.2")
 				(field
 					(name "Datasheet")
 				)
@@ -18712,16 +18845,81 @@
 			)
 			(libsource
 				(lib "aiee")
-				(part "KF301-5.0-2P")
+				(part "24.243.2")
 				(description "")
 			)
 			(property
 				(name "LCSC")
-				(value "C474881")
+				(value "C7437322")
 			)
 			(property
 				(name "MPN")
-				(value "KF301-5.0-2P")
+				(value "24.243.2")
+			)
+			(property
+				(name "Sheetname")
+				(value "amp_b")
+			)
+			(property
+				(name "Sheetfile")
+				(value "amp_b.kicad_sch")
+			)
+			(property
+				(name "dnp")
+			)
+			(property
+				(name "ki_keywords")
+				(value "Banana Connectors/Alligator Clips")
+			)
+			(sheetpath
+				(names "/amp_b/")
+				(tstamps "/d3cf3d3f-341d-4740-b3e5-9191cca8a21d/")
+			)
+			(tstamps "7b67cdb9-b7ff-591b-ad04-c5c045926068")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "J26")
+			(value "24.243 red")
+			(footprint "aiee:CONN-TH_24.243.1_RED")
+			(fields
+				(field
+					(name "LCSC") "C7437321")
+				(field
+					(name "MPN") "24.243.1")
+				(field
+					(name "Footprint") "aiee:CONN-TH_24.243.1_RED")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "24.243.1")
+				(description "")
+			)
+			(property
+				(name "LCSC")
+				(value "C7437321")
+			)
+			(property
+				(name "MPN")
+				(value "24.243.1")
 			)
 			(property
 				(name "Sheetname")
@@ -18733,13 +18931,75 @@
 			)
 			(property
 				(name "ki_keywords")
-				(value "Screw terminal")
+				(value "Banana Connectors/Alligator Clips")
 			)
 			(sheetpath
 				(names "/amp_b/")
 				(tstamps "/d3cf3d3f-341d-4740-b3e5-9191cca8a21d/")
 			)
-			(tstamps "f2565229-c510-4416-a2ef-60254a4ba195")
+			(tstamps "7cf50f20-043b-5727-8c43-03da8878da3e")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "J27")
+			(value "24.243 black")
+			(footprint "aiee:CONN-TH_24.243.2")
+			(fields
+				(field
+					(name "LCSC") "C7437322")
+				(field
+					(name "MPN") "24.243.2")
+				(field
+					(name "Footprint") "aiee:CONN-TH_24.243.2")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "24.243.2")
+				(description "")
+			)
+			(property
+				(name "LCSC")
+				(value "C7437322")
+			)
+			(property
+				(name "MPN")
+				(value "24.243.2")
+			)
+			(property
+				(name "Sheetname")
+				(value "amp_b")
+			)
+			(property
+				(name "Sheetfile")
+				(value "amp_b.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "Banana Connectors/Alligator Clips")
+			)
+			(sheetpath
+				(names "/amp_b/")
+				(tstamps "/d3cf3d3f-341d-4740-b3e5-9191cca8a21d/")
+			)
+			(tstamps "647c27a7-7969-5e8f-8ae0-9a0d06fb3a97")
 			(units
 				(unit
 					(name "A")
@@ -19841,6 +20101,78 @@
 				(pin
 					(num "2")
 					(name "")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "aiee")
+			(part "24.243.1")
+			(docs "https://www.lcsc.com/datasheet/C7437321.pdf")
+			(fields
+				(field
+					(name "Reference") "CN")
+				(field
+					(name "Value") "24.243.1")
+				(field
+					(name "Footprint") "aiee:CONN-TH_24.243.1_RED")
+				(field
+					(name "Datasheet") "https://www.lcsc.com/datasheet/C7437321.pdf")
+				(field
+					(name "Description")
+				)
+				(field
+					(name "Manufacturer") "AMASS(艾迈斯)")
+				(field
+					(name "MPN") "24.243.1")
+				(field
+					(name "LCSC Part") "C7437321")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "1")
+					(type "passive")
+				)
+				(pin
+					(num "2")
+					(name "2")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "aiee")
+			(part "24.243.2")
+			(docs "https://www.lcsc.com/datasheet/C7437322.pdf")
+			(fields
+				(field
+					(name "Reference") "CN")
+				(field
+					(name "Value") "24.243.2")
+				(field
+					(name "Footprint") "aiee:CONN-TH_24.243.2")
+				(field
+					(name "Datasheet") "https://www.lcsc.com/datasheet/C7437322.pdf")
+				(field
+					(name "Description")
+				)
+				(field
+					(name "Manufacturer") "AMASS(艾迈斯)")
+				(field
+					(name "MPN") "24.243.2")
+				(field
+					(name "LCSC Part") "C7437322")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "1")
+					(type "passive")
+				)
+				(pin
+					(num "2")
+					(name "2")
 					(type "passive")
 				)
 			)
@@ -21156,42 +21488,6 @@
 				(pin
 					(num "3")
 					(name "VCC")
-					(type "passive")
-				)
-			)
-		)
-		(libpart
-			(lib "aiee")
-			(part "KF301-5.0-2P")
-			(docs "https://lcsc.com/product-detail/New-Quadratic-Unclassified-Data_Cixi-Kefa-Elec-KF301-5-0-2P_C474881.html")
-			(fields
-				(field
-					(name "Reference") "U")
-				(field
-					(name "Value") "KF301-5.0-2P")
-				(field
-					(name "Footprint") "aiee:CONN-TH_P5.00_KF301-5.0-2P")
-				(field
-					(name "Datasheet") "https://lcsc.com/product-detail/New-Quadratic-Unclassified-Data_Cixi-Kefa-Elec-KF301-5-0-2P_C474881.html")
-				(field
-					(name "Description")
-				)
-				(field
-					(name "Manufacturer") "KEFA(科发)")
-				(field
-					(name "MPN") "KF301-5.0-2P")
-				(field
-					(name "LCSC Part") "C474881")
-			)
-			(pins
-				(pin
-					(num "1")
-					(name "1")
-					(type "passive")
-				)
-				(pin
-					(num "2")
-					(name "2")
 					(type "passive")
 				)
 			)
@@ -23832,9 +24128,15 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J6")
+				(ref "J20")
 				(pin "1")
 				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "J20")
+				(pin "2")
+				(pinfunction "2_2")
 				(pintype "passive")
 			)
 			(node
@@ -23864,9 +24166,15 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J7")
+				(ref "J22")
 				(pin "1")
 				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "J22")
+				(pin "2")
+				(pinfunction "2_2")
 				(pintype "passive")
 			)
 			(node
@@ -25307,7 +25615,13 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J6")
+				(ref "J21")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "J21")
 				(pin "2")
 				(pinfunction "2_2")
 				(pintype "passive")
@@ -25334,7 +25648,13 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J7")
+				(ref "J23")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "J23")
 				(pin "2")
 				(pinfunction "2_2")
 				(pintype "passive")
@@ -25754,9 +26074,15 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J10")
+				(ref "J24")
 				(pin "1")
 				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "J24")
+				(pin "2")
+				(pinfunction "2_2")
 				(pintype "passive")
 			)
 			(node
@@ -25781,7 +26107,13 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J10")
+				(ref "J25")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "J25")
 				(pin "2")
 				(pinfunction "2_2")
 				(pintype "passive")
@@ -25808,9 +26140,15 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J11")
+				(ref "J26")
 				(pin "1")
 				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "J26")
+				(pin "2")
+				(pinfunction "2_2")
 				(pintype "passive")
 			)
 			(node
@@ -25835,7 +26173,13 @@
 				(pintype "passive")
 			)
 			(node
-				(ref "J11")
+				(ref "J27")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
+				(ref "J27")
 				(pin "2")
 				(pinfunction "2_2")
 				(pintype "passive")
