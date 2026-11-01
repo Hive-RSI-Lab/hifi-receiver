@@ -4,7 +4,7 @@
   "phase": "P7",
   "tool": "drc",
   "input": "kicad/core.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:dc3f85957d74fdeb9a54660732beb6d7ba2da08f861b556c29a9f3f88567dfa9",
+  "input_digest": "sexpr_no_uuid:9a7b45c7fb09a883bbd7b04f1f91616dd92315079491ee2906fe310f06bfe47f",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -30,7 +30,7 @@
     "status": "pass",
     "attempts": 353,
     "inputs": {
-      "pcb": "sexpr_no_uuid:dc3f85957d74fdeb9a54660732beb6d7ba2da08f861b556c29a9f3f88567dfa9",
+      "pcb": "sexpr_no_uuid:9a7b45c7fb09a883bbd7b04f1f91616dd92315079491ee2906fe310f06bfe47f",
       "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
       "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
       "dru": "text_eol:ad451e573d8caefb08f5a51334afebb5b4a810f63b945aa6d8835b4b0c35627d"

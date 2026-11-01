@@ -28,7 +28,7 @@
  "stock": {
   "status": "fail",
   "boards": 5,
-  "checked_at": "2026-11-01T17:02:31+00:00",
+  "checked_at": "2026-11-01T17:14:17+00:00",
   "counts": {
    "ok": 85,
    "short": 1
@@ -39,17 +39,17 @@
     "need": 45,
     "mpn": "1uF",
     "value": "1uF",
-    "checked_at": "2026-11-01T17:02:00+00:00",
+    "checked_at": "2026-11-01T17:14:03+00:00",
     "notes": [
-     "LCSC shows 0 in stock; JLC's own stock covers the build (1405103)"
+     "LCSC shows 0 in stock; JLC's own stock covers the build (1405093)"
     ],
     "jlc": {
      "code": "C28323",
      "model": "CL21B105KBFNNNE",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 2349747,
-     "can_sell": 1405103,
+     "stock": 2349727,
+     "can_sell": 1405093,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -67,9 +67,9 @@
      "ok": true,
      "why": "value 1uF in JLC's description '1uF 50V X7R \u00b110% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL21B105KBFNNNE)"
     },
-    "available": 1405103,
+    "available": 1405093,
     "status": "ok",
-    "why": "1405103 available at JLC, need 45; value 1uF in JLC's description '1uF 50V X7R \u00b110% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL21B105KBFNNNE)",
+    "why": "1405093 available at JLC, need 45; value 1uF in JLC's description '1uF 50V X7R \u00b110% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL21B105KBFNNNE)",
     "refs": [
      "C1",
      "C226",
@@ -88,15 +88,15 @@
     "need": 115,
     "mpn": "100nF",
     "value": "100nF",
-    "checked_at": "2026-11-01T17:02:00+00:00",
+    "checked_at": "2026-11-01T17:14:03+00:00",
     "notes": [],
     "jlc": {
      "code": "C1525",
      "model": "CL05B104KO5NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 35598372,
-     "can_sell": 27708201,
+     "stock": 35598056,
+     "can_sell": 27707949,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -114,9 +114,9 @@
      "ok": true,
      "why": "value 100nF in JLC's description '100nF 16V X7R \u00b110% 0402 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL05B104KO5NNNC)"
     },
-    "available": 27708201,
+    "available": 27707949,
     "status": "ok",
-    "why": "27708201 available at JLC, need 115; value 100nF in JLC's description '100nF 16V X7R \u00b110% 0402 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL05B104KO5NNNC)",
+    "why": "27707949 available at JLC, need 115; value 100nF in JLC's description '100nF 16V X7R \u00b110% 0402 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL05B104KO5NNNC)",
     "refs": [
      "C2",
      "C31",
@@ -149,7 +149,7 @@
     "need": 25,
     "mpn": "10nF",
     "value": "10nF",
-    "checked_at": "2026-11-01T17:02:00+00:00",
+    "checked_at": "2026-11-01T17:14:03+00:00",
     "notes": [],
     "jlc": {
      "code": "C15195",
@@ -192,7 +192,7 @@
     "need": 5,
     "mpn": "TCC0603X7R224K500CT",
     "value": "220nF",
-    "checked_at": "2026-11-01T17:02:00+00:00",
+    "checked_at": "2026-11-01T17:14:03+00:00",
     "notes": [],
     "jlc": {
      "code": "C344195",
@@ -231,7 +231,7 @@
     "need": 15,
     "mpn": "470uF/50V",
     "value": "470uF/50V",
-    "checked_at": "2026-11-01T17:02:00+00:00",
+    "checked_at": "2026-11-01T17:14:03+00:00",
     "notes": [],
     "jlc": {
      "code": "C88733",
@@ -272,15 +272,15 @@
     "need": 10,
     "mpn": "10uF",
     "value": "10uF",
-    "checked_at": "2026-11-01T17:02:00+00:00",
+    "checked_at": "2026-11-01T17:14:03+00:00",
     "notes": [],
     "jlc": {
      "code": "C13585",
      "model": "CL31A106KBHNNNE",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 3347976,
-     "can_sell": 2536693,
+     "stock": 3347969,
+     "can_sell": 2536688,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -298,9 +298,9 @@
      "ok": true,
      "why": "value 10uF in JLC's description '10uF 50V X5R \u00b110% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL31A106KBHNNNE)"
     },
-    "available": 2536693,
+    "available": 2536688,
     "status": "ok",
-    "why": "2536693 available at JLC, need 10; value 10uF in JLC's description '10uF 50V X5R \u00b110% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL31A106KBHNNNE)",
+    "why": "2536688 available at JLC, need 10; value 10uF in JLC's description '10uF 50V X5R \u00b110% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL31A106KBHNNNE)",
     "refs": [
      "C7",
      "C10"
@@ -312,7 +312,7 @@
     "need": 15,
     "mpn": "4.7uF",
     "value": "4.7uF",
-    "checked_at": "2026-11-01T17:02:02+00:00",
+    "checked_at": "2026-11-01T17:14:03+00:00",
     "notes": [],
     "jlc": {
      "code": "C1779",
@@ -353,7 +353,7 @@
     "need": 5,
     "mpn": "100nF",
     "value": "100nF",
-    "checked_at": "2026-11-01T17:02:02+00:00",
+    "checked_at": "2026-11-01T17:14:03+00:00",
     "notes": [],
     "jlc": {
      "code": "C307331",
@@ -392,15 +392,15 @@
     "need": 25,
     "mpn": "100nF",
     "value": "100nF",
-    "checked_at": "2026-11-01T17:02:02+00:00",
+    "checked_at": "2026-11-01T17:14:03+00:00",
     "notes": [],
     "jlc": {
      "code": "C14663",
      "model": "CC0603KRX7R9BB104",
      "brand": "YAGEO",
      "library": "basic",
-     "stock": 41415500,
-     "can_sell": 23587312,
+     "stock": 41412800,
+     "can_sell": 23584657,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -418,9 +418,9 @@
      "ok": true,
      "why": "value 100nF in JLC's description '100nF 50V X7R \u00b110% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CC0603KRX7R9BB104)"
     },
-    "available": 23587312,
+    "available": 23584657,
     "status": "ok",
-    "why": "23587312 available at JLC, need 25; value 100nF in JLC's description '100nF 50V X7R \u00b110% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CC0603KRX7R9BB104)",
+    "why": "23584657 available at JLC, need 25; value 100nF in JLC's description '100nF 50V X7R \u00b110% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CC0603KRX7R9BB104)",
     "refs": [
      "C11",
      "C208",
@@ -435,15 +435,15 @@
     "need": 25,
     "mpn": "22uF",
     "value": "22uF",
-    "checked_at": "2026-11-01T17:02:02+00:00",
+    "checked_at": "2026-11-01T17:14:04+00:00",
     "notes": [],
     "jlc": {
      "code": "C45783",
      "model": "CL21A226MAQNNNE",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 3740981,
-     "can_sell": 2780516,
+     "stock": 3738491,
+     "can_sell": 2778110,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -461,9 +461,9 @@
      "ok": true,
      "why": "value 22uF in JLC's description '22uF 25V X5R \u00b120% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL21A226MAQNNNE)"
     },
-    "available": 2780516,
+    "available": 2778110,
     "status": "ok",
-    "why": "2780516 available at JLC, need 25; value 22uF in JLC's description '22uF 25V X5R \u00b120% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL21A226MAQNNNE)",
+    "why": "2778110 available at JLC, need 25; value 22uF in JLC's description '22uF 25V X5R \u00b120% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL21A226MAQNNNE)",
     "refs": [
      "C13",
      "C14",
@@ -478,15 +478,15 @@
     "need": 30,
     "mpn": "10uF",
     "value": "10uF",
-    "checked_at": "2026-11-01T17:02:03+00:00",
+    "checked_at": "2026-11-01T17:14:04+00:00",
     "notes": [],
     "jlc": {
      "code": "C19702",
      "model": "CL10A106KP8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 11740329,
-     "can_sell": 9291551,
+     "stock": 11740259,
+     "can_sell": 9291481,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -498,15 +498,15 @@
      "code": "C19702",
      "model": "CL10A106KP8NNNC",
      "brand": "Samsung Electro-Mechanics",
-     "stock": 2336180
+     "stock": 2336160
     },
     "match": {
      "ok": true,
      "why": "value 10uF in JLC's description '10V 10uF X5R \u00b110% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL10A106KP8NNNC)"
     },
-    "available": 9291551,
+    "available": 9291481,
     "status": "ok",
-    "why": "9291551 available at JLC, need 30; value 10uF in JLC's description '10V 10uF X5R \u00b110% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL10A106KP8NNNC)",
+    "why": "9291481 available at JLC, need 30; value 10uF in JLC's description '10V 10uF X5R \u00b110% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL10A106KP8NNNC)",
     "refs": [
      "C15",
      "C21",
@@ -522,15 +522,15 @@
     "need": 95,
     "mpn": "1uF",
     "value": "1uF",
-    "checked_at": "2026-11-01T17:02:03+00:00",
+    "checked_at": "2026-11-01T17:14:04+00:00",
     "notes": [],
     "jlc": {
      "code": "C52923",
      "model": "CL05A105KA5NQNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 10234318,
-     "can_sell": 7992839,
+     "stock": 10234298,
+     "can_sell": 7992819,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -548,9 +548,9 @@
      "ok": true,
      "why": "value 1uF in JLC's description '1uF 25V X5R \u00b110% 0402 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL05A105KA5NQNC)"
     },
-    "available": 7992839,
+    "available": 7992819,
     "status": "ok",
-    "why": "7992839 available at JLC, need 95; value 1uF in JLC's description '1uF 25V X5R \u00b110% 0402 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL05A105KA5NQNC)",
+    "why": "7992819 available at JLC, need 95; value 1uF in JLC's description '1uF 25V X5R \u00b110% 0402 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL05A105KA5NQNC)",
     "refs": [
      "C18",
      "C19",
@@ -579,15 +579,15 @@
     "need": 25,
     "mpn": "4.7uF",
     "value": "4.7uF",
-    "checked_at": "2026-11-01T17:02:04+00:00",
+    "checked_at": "2026-11-01T17:14:04+00:00",
     "notes": [],
     "jlc": {
      "code": "C19666",
      "model": "CL10A475KO8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 4190486,
-     "can_sell": 3419398,
+     "stock": 4185621,
+     "can_sell": 3414553,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -605,9 +605,9 @@
      "ok": true,
      "why": "value 4.7uF in JLC's description '16V 4.7uF X5R \u00b110% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL10A475KO8NNNC)"
     },
-    "available": 3419398,
+    "available": 3414553,
     "status": "ok",
-    "why": "3419398 available at JLC, need 25; value 4.7uF in JLC's description '16V 4.7uF X5R \u00b110% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL10A475KO8NNNC)",
+    "why": "3414553 available at JLC, need 25; value 4.7uF in JLC's description '16V 4.7uF X5R \u00b110% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL10A475KO8NNNC)",
     "refs": [
      "C56",
      "C101",
@@ -622,7 +622,7 @@
     "need": 5,
     "mpn": "100uF",
     "value": "100uF",
-    "checked_at": "2026-11-01T17:02:04+00:00",
+    "checked_at": "2026-11-01T17:14:04+00:00",
     "notes": [],
     "jlc": {
      "code": "C15008",
@@ -630,7 +630,7 @@
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
      "stock": 1775589,
-     "can_sell": 1605640,
+     "can_sell": 1605636,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -648,9 +648,9 @@
      "ok": true,
      "why": "value 100uF in JLC's description '100uF 6.3V X5R \u00b120% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL31A107MQHNNNE)"
     },
-    "available": 1605640,
+    "available": 1605636,
     "status": "ok",
-    "why": "1605640 available at JLC, need 5; value 100uF in JLC's description '100uF 6.3V X5R \u00b120% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL31A107MQHNNNE)",
+    "why": "1605636 available at JLC, need 5; value 100uF in JLC's description '100uF 6.3V X5R \u00b120% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL31A107MQHNNNE)",
     "refs": [
      "C64"
     ],
@@ -661,15 +661,15 @@
     "need": 15,
     "mpn": "2.2uF",
     "value": "2.2uF",
-    "checked_at": "2026-11-01T17:02:04+00:00",
+    "checked_at": "2026-11-01T17:14:04+00:00",
     "notes": [],
     "jlc": {
      "code": "C23630",
      "model": "CL10A225KO8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 2823891,
-     "can_sell": 2252375,
+     "stock": 2823861,
+     "can_sell": 2252345,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -687,9 +687,9 @@
      "ok": true,
      "why": "value 2.2uF in JLC's description '16V 2.2uF X5R \u00b110% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL10A225KO8NNNC)"
     },
-    "available": 2252375,
+    "available": 2252345,
     "status": "ok",
-    "why": "2252375 available at JLC, need 15; value 2.2uF in JLC's description '16V 2.2uF X5R \u00b110% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL10A225KO8NNNC)",
+    "why": "2252345 available at JLC, need 15; value 2.2uF in JLC's description '16V 2.2uF X5R \u00b110% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL10A225KO8NNNC)",
     "refs": [
      "C65",
      "C66",
@@ -702,7 +702,7 @@
     "need": 30,
     "mpn": "1nF",
     "value": "1nF",
-    "checked_at": "2026-11-01T17:02:04+00:00",
+    "checked_at": "2026-11-01T17:14:04+00:00",
     "notes": [
      "LCSC shows 0 in stock; JLC's own stock covers the build (1716405)"
     ],
@@ -748,7 +748,7 @@
     "need": 10,
     "mpn": "470pF",
     "value": "470pF",
-    "checked_at": "2026-11-01T17:02:05+00:00",
+    "checked_at": "2026-11-01T17:14:05+00:00",
     "notes": [],
     "jlc": {
      "code": "C1620",
@@ -788,7 +788,7 @@
     "need": 20,
     "mpn": "TCC1206X7R105K101HT",
     "value": "1uF",
-    "checked_at": "2026-11-01T17:02:05+00:00",
+    "checked_at": "2026-11-01T17:14:05+00:00",
     "notes": [],
     "jlc": {
      "code": "C282823",
@@ -830,15 +830,15 @@
     "need": 50,
     "mpn": "33nF",
     "value": "33nF",
-    "checked_at": "2026-11-01T17:02:05+00:00",
+    "checked_at": "2026-11-01T17:14:05+00:00",
     "notes": [],
     "jlc": {
      "code": "C21117",
      "model": "CL10B333KB8NNNC",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 809723,
-     "can_sell": 643361,
+     "stock": 809703,
+     "can_sell": 643341,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -856,9 +856,9 @@
      "ok": true,
      "why": "value 33nF in JLC's description '33nF 50V X7R \u00b110% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL10B333KB8NNNC)"
     },
-    "available": 643361,
+    "available": 643341,
     "status": "ok",
-    "why": "643361 available at JLC, need 50; value 33nF in JLC's description '33nF 50V X7R \u00b110% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL10B333KB8NNNC)",
+    "why": "643341 available at JLC, need 50; value 33nF in JLC's description '33nF 50V X7R \u00b110% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL10B333KB8NNNC)",
     "refs": [
      "C211",
      "C222",
@@ -878,15 +878,15 @@
     "need": 40,
     "mpn": "10uF",
     "value": "10uF",
-    "checked_at": "2026-11-01T17:02:05+00:00",
+    "checked_at": "2026-11-01T17:14:05+00:00",
     "notes": [],
     "jlc": {
      "code": "C15850",
      "model": "CL21A106KAYNNNE",
      "brand": "Samsung Electro-Mechanics",
      "library": "basic",
-     "stock": 8300337,
-     "can_sell": 6521554,
+     "stock": 8300242,
+     "can_sell": 6521487,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -904,9 +904,9 @@
      "ok": true,
      "why": "value 10uF in JLC's description '10uF 25V X5R \u00b110% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL21A106KAYNNNE)"
     },
-    "available": 6521554,
+    "available": 6521487,
     "status": "ok",
-    "why": "6521554 available at JLC, need 40; value 10uF in JLC's description '10uF 25V X5R \u00b110% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL21A106KAYNNNE)",
+    "why": "6521487 available at JLC, need 40; value 10uF in JLC's description '10uF 25V X5R \u00b110% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS' (CL21A106KAYNNNE)",
     "refs": [
      "C218",
      "C219",
@@ -924,7 +924,7 @@
     "need": 40,
     "mpn": "CC0603KRX7R9BB474",
     "value": "470nF",
-    "checked_at": "2026-11-01T17:02:05+00:00",
+    "checked_at": "2026-11-01T17:14:05+00:00",
     "notes": [],
     "jlc": {
      "code": "C513577",
@@ -970,7 +970,7 @@
     "need": 5,
     "mpn": "SMBJ30A",
     "value": "SMBJ30A",
-    "checked_at": "2026-11-01T17:02:05+00:00",
+    "checked_at": "2026-11-01T17:14:05+00:00",
     "notes": [
      "JLC also lists C10218, C116960, C151917, C266337, C2759871, C2760887, C284014, C353368, C362090, C440294, C693534, C699005, C726833, C83851, C908803 as SMBJ30A: its BOM review may match by MPN, so check it shows C113998"
     ],
@@ -1011,7 +1011,7 @@
     "need": 5,
     "mpn": "BZT52C33",
     "value": "BZT52C33",
-    "checked_at": "2026-11-01T17:02:06+00:00",
+    "checked_at": "2026-11-01T17:14:05+00:00",
     "notes": [
      "JLC also lists C173417, C2110, C216731, C2827901, C2891788, C353536, C545300, C699150, C707152, C727014 as BZT52C33: its BOM review may match by MPN, so check it shows C266574"
     ],
@@ -1052,15 +1052,15 @@
     "need": 5,
     "mpn": "KT-0603R",
     "value": "KT-0603R",
-    "checked_at": "2026-11-01T17:02:06+00:00",
+    "checked_at": "2026-11-01T17:14:06+00:00",
     "notes": [],
     "jlc": {
      "code": "C2286",
      "model": "KT-0603R",
      "brand": "Hubei KENTO Elec",
      "library": "basic",
-     "stock": 7156385,
-     "can_sell": 6475902,
+     "stock": 7156345,
+     "can_sell": 6475850,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1078,9 +1078,9 @@
      "ok": true,
      "why": "BOM value KT-0603R in JLC model KT-0603R"
     },
-    "available": 6475902,
+    "available": 6475850,
     "status": "ok",
-    "why": "6475902 available at JLC, need 5; BOM value KT-0603R in JLC model KT-0603R",
+    "why": "6475850 available at JLC, need 5; BOM value KT-0603R in JLC model KT-0603R",
     "refs": [
      "D3"
     ],
@@ -1091,7 +1091,7 @@
     "need": 5,
     "mpn": "BZT52C15",
     "value": "BZT52C15",
-    "checked_at": "2026-11-01T17:02:07+00:00",
+    "checked_at": "2026-11-01T17:14:06+00:00",
     "notes": [
      "JLC also lists C2104, C216723, C266569, C353556, C358477, C571376 as BZT52C15: its BOM review may match by MPN, so check it shows C173427"
     ],
@@ -1132,7 +1132,7 @@
     "need": 5,
     "mpn": "BAS16L",
     "value": "BAS16L",
-    "checked_at": "2026-11-01T17:02:08+00:00",
+    "checked_at": "2026-11-01T17:14:06+00:00",
     "notes": [],
     "jlc": {
      "code": "C99382",
@@ -1171,7 +1171,7 @@
     "need": 10,
     "mpn": "NUP2105LT1G",
     "value": "NUP2105L",
-    "checked_at": "2026-11-01T17:02:08+00:00",
+    "checked_at": "2026-11-01T17:14:06+00:00",
     "notes": [
      "JLC also lists C21713988, C2890118, C2943015, C2972524, C2976509, C5261087 as NUP2105LT1G: its BOM review may match by MPN, so check it shows C14486"
     ],
@@ -1180,7 +1180,7 @@
      "model": "NUP2105LT1G",
      "brand": "onsemi",
      "library": "extended",
-     "stock": 218271,
+     "stock": 218264,
      "can_sell": 216773,
      "for_sale": true,
      "no_buy_reason": null,
@@ -1193,7 +1193,7 @@
      "code": "C14486",
      "model": "NUP2105LT1G",
      "brand": "onsemi",
-     "stock": 218285
+     "stock": 218280
     },
     "match": {
      "ok": true,
@@ -1213,7 +1213,7 @@
     "need": 10,
     "mpn": "PESD5V0S2BT,215",
     "value": "PESD5V0S2BT",
-    "checked_at": "2026-11-01T17:02:08+00:00",
+    "checked_at": "2026-11-01T17:14:06+00:00",
     "notes": [],
     "jlc": {
      "code": "C49338",
@@ -1253,7 +1253,7 @@
     "need": 15,
     "mpn": "120R",
     "value": "120R",
-    "checked_at": "2026-11-01T17:02:09+00:00",
+    "checked_at": "2026-11-01T17:14:07+00:00",
     "notes": [],
     "jlc": {
      "code": "C14709",
@@ -1294,7 +1294,7 @@
     "need": 5,
     "mpn": "USB4085-GF-A",
     "value": "USB4085-GF-A",
-    "checked_at": "2026-11-01T17:02:09+00:00",
+    "checked_at": "2026-11-01T17:14:07+00:00",
     "notes": [
      "JLC also lists C9900013983 as USB4085-GF-A: its BOM review may match by MPN, so check it shows C7095263"
     ],
@@ -1335,7 +1335,7 @@
     "need": 5,
     "mpn": "HR911105A",
     "value": "HR911105A",
-    "checked_at": "2026-11-01T17:02:10+00:00",
+    "checked_at": "2026-11-01T17:14:07+00:00",
     "notes": [
      "JLC also lists C54123497, C9900010004, C9900014237, C9900176322, C9900195065, C9900292841 as HR911105A: its BOM review may match by MPN, so check it shows C12074"
     ],
@@ -1376,7 +1376,7 @@
     "need": 5,
     "mpn": "FFC 20P",
     "value": "FFC 20P",
-    "checked_at": "2026-11-01T17:02:10+00:00",
+    "checked_at": "2026-11-01T17:14:07+00:00",
     "notes": [],
     "jlc": {
      "code": "C2856803",
@@ -1415,7 +1415,7 @@
     "need": 10,
     "mpn": "XDJK-0271-1650",
     "value": "SUB OUT",
-    "checked_at": "2026-11-01T17:02:10+00:00",
+    "checked_at": "2026-11-01T17:14:07+00:00",
     "notes": [],
     "jlc": {
      "code": "C7527522",
@@ -1455,7 +1455,7 @@
     "need": 20,
     "mpn": "24.243.1",
     "value": "24.243 red",
-    "checked_at": "2026-11-01T17:02:11+00:00",
+    "checked_at": "2026-11-01T17:14:07+00:00",
     "notes": [
      "JLC also lists C17701754 as 24.243.1: its BOM review may match by MPN, so check it shows C7437321"
     ],
@@ -1499,7 +1499,7 @@
     "need": 20,
     "mpn": "24.243.2",
     "value": "24.243 black",
-    "checked_at": "2026-11-01T17:02:11+00:00",
+    "checked_at": "2026-11-01T17:14:08+00:00",
     "notes": [
      "JLC also lists C17701807 as 24.243.2: its BOM review may match by MPN, so check it shows C7437322"
     ],
@@ -1543,7 +1543,7 @@
     "need": 40,
     "mpn": "10uH",
     "value": "10uH",
-    "checked_at": "2026-11-01T17:02:12+00:00",
+    "checked_at": "2026-11-01T17:14:08+00:00",
     "notes": [],
     "jlc": {
      "code": "C2962885",
@@ -1589,7 +1589,7 @@
     "need": 5,
     "mpn": "4.7uH",
     "value": "4.7uH",
-    "checked_at": "2026-11-01T17:02:12+00:00",
+    "checked_at": "2026-11-01T17:14:08+00:00",
     "notes": [
      "JLC also lists C9900213478 as SWPA4030S4R7MT: its BOM review may match by MPN, so check it shows C57269"
     ],
@@ -1625,7 +1625,7 @@
     "need": 5,
     "mpn": "2.2uH",
     "value": "2.2uH",
-    "checked_at": "2026-11-01T17:02:12+00:00",
+    "checked_at": "2026-11-01T17:14:08+00:00",
     "notes": [],
     "jlc": {
      "code": "C36409",
@@ -1659,7 +1659,7 @@
     "need": 5,
     "mpn": "AO4485",
     "value": "AO4485",
-    "checked_at": "2026-11-01T17:02:13+00:00",
+    "checked_at": "2026-11-01T17:14:08+00:00",
     "notes": [
      "JLC also lists C48580949, C5125949, C5183843, C5197352, C5261057, C5334068, C55488499 as AO4485: its BOM review may match by MPN, so check it shows C51499"
     ],
@@ -1700,15 +1700,15 @@
     "need": 5,
     "mpn": "2N7002",
     "value": "2N7002",
-    "checked_at": "2026-11-01T17:02:13+00:00",
+    "checked_at": "2026-11-01T17:14:09+00:00",
     "notes": [],
     "jlc": {
      "code": "C8545",
      "model": "2N7002",
      "brand": "Jiangsu Changjing Electronics Technology Co., Ltd.",
      "library": "basic",
-     "stock": 3342110,
-     "can_sell": 3179173,
+     "stock": 3342085,
+     "can_sell": 3179148,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1726,9 +1726,9 @@
      "ok": true,
      "why": "BOM value 2N7002 in JLC model 2N7002"
     },
-    "available": 3179173,
+    "available": 3179148,
     "status": "ok",
-    "why": "3179173 available at JLC, need 5; BOM value 2N7002 in JLC model 2N7002",
+    "why": "3179148 available at JLC, need 5; BOM value 2N7002 in JLC model 2N7002",
     "refs": [
      "Q2"
     ],
@@ -1739,7 +1739,7 @@
     "need": 5,
     "mpn": "MMDT3904",
     "value": "MMDT3904",
-    "checked_at": "2026-11-01T17:02:14+00:00",
+    "checked_at": "2026-11-01T17:14:09+00:00",
     "notes": [],
     "jlc": {
      "code": "C83572",
@@ -1778,7 +1778,7 @@
     "need": 20,
     "mpn": "S8050",
     "value": "S8050",
-    "checked_at": "2026-11-01T17:02:14+00:00",
+    "checked_at": "2026-11-01T17:14:09+00:00",
     "notes": [],
     "jlc": {
      "code": "C2146",
@@ -1786,7 +1786,7 @@
      "brand": "Jiangsu Changjing Electronics Technology Co., Ltd.",
      "library": "basic",
      "stock": 1471190,
-     "can_sell": 1340330,
+     "can_sell": 1340328,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1804,9 +1804,9 @@
      "ok": true,
      "why": "BOM value S8050 in JLC model S8050 J3Y(RANGE:200-350)"
     },
-    "available": 1340330,
+    "available": 1340328,
     "status": "ok",
-    "why": "1340330 available at JLC, need 20; BOM value S8050 in JLC model S8050 J3Y(RANGE:200-350)",
+    "why": "1340328 available at JLC, need 20; BOM value S8050 in JLC model S8050 J3Y(RANGE:200-350)",
     "refs": [
      "Q4",
      "Q5",
@@ -1820,7 +1820,7 @@
     "need": 5,
     "mpn": "10m",
     "value": "10m",
-    "checked_at": "2026-11-01T17:02:15+00:00",
+    "checked_at": "2026-11-01T17:14:09+00:00",
     "notes": [],
     "jlc": {
      "code": "C393070",
@@ -1859,7 +1859,7 @@
     "need": 5,
     "mpn": "210k",
     "value": "210k",
-    "checked_at": "2026-11-01T17:02:15+00:00",
+    "checked_at": "2026-11-01T17:14:09+00:00",
     "notes": [],
     "jlc": {
      "code": "C2998176",
@@ -1898,15 +1898,15 @@
     "need": 10,
     "mpn": "1k",
     "value": "1k",
-    "checked_at": "2026-11-01T17:02:15+00:00",
+    "checked_at": "2026-11-01T17:14:10+00:00",
     "notes": [],
     "jlc": {
      "code": "C11702",
      "model": "0402WGF1001TCE",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 21423699,
-     "can_sell": 18278545,
+     "stock": 21423509,
+     "can_sell": 18278355,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -1918,15 +1918,15 @@
      "code": "C11702",
      "model": "0402WGF1001TCE",
      "brand": "UNI-ROYAL",
-     "stock": 9323500
+     "stock": 9323400
     },
     "match": {
      "ok": true,
      "why": "value 1k in JLC's description '-55\u2103~+155\u2103 1k\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF1001TCE)"
     },
-    "available": 18278545,
+    "available": 18278355,
     "status": "ok",
-    "why": "18278545 available at JLC, need 10; value 1k in JLC's description '-55\u2103~+155\u2103 1k\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF1001TCE)",
+    "why": "18278355 available at JLC, need 10; value 1k in JLC's description '-55\u2103~+155\u2103 1k\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF1001TCE)",
     "refs": [
      "R3",
      "R6"
@@ -1938,7 +1938,7 @@
     "need": 10,
     "mpn": "470k",
     "value": "470k",
-    "checked_at": "2026-11-01T17:02:15+00:00",
+    "checked_at": "2026-11-01T17:14:10+00:00",
     "notes": [
      "LCSC shows 0 in stock; JLC's own stock covers the build (18394)"
     ],
@@ -1980,15 +1980,15 @@
     "need": 110,
     "mpn": "100k",
     "value": "100k",
-    "checked_at": "2026-11-01T17:02:15+00:00",
+    "checked_at": "2026-11-01T17:14:10+00:00",
     "notes": [],
     "jlc": {
      "code": "C25741",
      "model": "0402WGF1003TCE",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 8258210,
-     "can_sell": 6490981,
+     "stock": 8258160,
+     "can_sell": 6490961,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -2006,9 +2006,9 @@
      "ok": true,
      "why": "value 100k in JLC's description '-55\u2103~+155\u2103 100k\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF1003TCE)"
     },
-    "available": 6490981,
+    "available": 6490961,
     "status": "ok",
-    "why": "6490981 available at JLC, need 110; value 100k in JLC's description '-55\u2103~+155\u2103 100k\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF1003TCE)",
+    "why": "6490961 available at JLC, need 110; value 100k in JLC's description '-55\u2103~+155\u2103 100k\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF1003TCE)",
     "refs": [
      "R7",
      "R10",
@@ -2040,17 +2040,17 @@
     "need": 120,
     "mpn": "10k",
     "value": "10k",
-    "checked_at": "2026-11-01T17:02:16+00:00",
+    "checked_at": "2026-11-01T17:14:10+00:00",
     "notes": [
-     "LCSC shows 0 in stock; JLC's own stock covers the build (11269240)"
+     "LCSC shows 0 in stock; JLC's own stock covers the build (11268987)"
     ],
     "jlc": {
      "code": "C25744",
      "model": "0402WGF1002TCE",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 16626635,
-     "can_sell": 11269240,
+     "stock": 16626302,
+     "can_sell": 11268987,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -2068,9 +2068,9 @@
      "ok": true,
      "why": "value 10k in JLC's description '-55\u2103~+155\u2103 10k\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF1002TCE)"
     },
-    "available": 11269240,
+    "available": 11268987,
     "status": "ok",
-    "why": "11269240 available at JLC, need 120; value 10k in JLC's description '-55\u2103~+155\u2103 10k\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF1002TCE)",
+    "why": "11268987 available at JLC, need 120; value 10k in JLC's description '-55\u2103~+155\u2103 10k\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF1002TCE)",
     "refs": [
      "R8",
      "R9",
@@ -2104,14 +2104,14 @@
     "need": 5,
     "mpn": "15k",
     "value": "15k",
-    "checked_at": "2026-11-01T17:02:17+00:00",
+    "checked_at": "2026-11-01T17:14:10+00:00",
     "notes": [],
     "jlc": {
      "code": "C25756",
      "model": "0402WGF1502TCE",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 2517359,
+     "stock": 2517339,
      "can_sell": 2279336,
      "for_sale": true,
      "no_buy_reason": null,
@@ -2143,7 +2143,7 @@
     "need": 25,
     "mpn": "2k",
     "value": "2k",
-    "checked_at": "2026-11-01T17:02:17+00:00",
+    "checked_at": "2026-11-01T17:14:10+00:00",
     "notes": [],
     "jlc": {
      "code": "C4109",
@@ -2186,7 +2186,7 @@
     "need": 5,
     "mpn": "22k",
     "value": "22k",
-    "checked_at": "2026-11-01T17:02:17+00:00",
+    "checked_at": "2026-11-01T17:14:11+00:00",
     "notes": [],
     "jlc": {
      "code": "C25768",
@@ -2225,7 +2225,7 @@
     "need": 15,
     "mpn": "10R",
     "value": "10R",
-    "checked_at": "2026-11-01T17:02:17+00:00",
+    "checked_at": "2026-11-01T17:14:11+00:00",
     "notes": [],
     "jlc": {
      "code": "C25077",
@@ -2233,7 +2233,7 @@
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
      "stock": 3144795,
-     "can_sell": 2520826,
+     "can_sell": 2520824,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -2251,9 +2251,9 @@
      "ok": true,
      "why": "value 10R in JLC's description '-55\u2103~+155\u2103 10\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1200ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF100JTCE)"
     },
-    "available": 2520826,
+    "available": 2520824,
     "status": "ok",
-    "why": "2520826 available at JLC, need 15; value 10R in JLC's description '-55\u2103~+155\u2103 10\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1200ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF100JTCE)",
+    "why": "2520824 available at JLC, need 15; value 10R in JLC's description '-55\u2103~+155\u2103 10\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1200ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF100JTCE)",
     "refs": [
      "R17",
      "R18",
@@ -2266,7 +2266,7 @@
     "need": 15,
     "mpn": "2.2k",
     "value": "2.2k",
-    "checked_at": "2026-11-01T17:02:18+00:00",
+    "checked_at": "2026-11-01T17:14:11+00:00",
     "notes": [],
     "jlc": {
      "code": "C25879",
@@ -2307,17 +2307,17 @@
     "need": 20,
     "mpn": "33R",
     "value": "33R",
-    "checked_at": "2026-11-01T17:02:18+00:00",
+    "checked_at": "2026-11-01T17:14:11+00:00",
     "notes": [
-     "LCSC shows 0 in stock; JLC's own stock covers the build (1170044)"
+     "LCSC shows 0 in stock; JLC's own stock covers the build (1169969)"
     ],
     "jlc": {
      "code": "C25105",
      "model": "0402WGF330JTCE",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 1922551,
-     "can_sell": 1170044,
+     "stock": 1922476,
+     "can_sell": 1169969,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -2335,9 +2335,9 @@
      "ok": true,
      "why": "value 33R in JLC's description '-55\u2103~+155\u2103 33\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF330JTCE)"
     },
-    "available": 1170044,
+    "available": 1169969,
     "status": "ok",
-    "why": "1170044 available at JLC, need 20; value 33R in JLC's description '-55\u2103~+155\u2103 33\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF330JTCE)",
+    "why": "1169969 available at JLC, need 20; value 33R in JLC's description '-55\u2103~+155\u2103 33\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF330JTCE)",
     "refs": [
      "R60",
      "R71",
@@ -2351,7 +2351,7 @@
     "need": 5,
     "mpn": "12k",
     "value": "12k",
-    "checked_at": "2026-11-01T17:02:18+00:00",
+    "checked_at": "2026-11-01T17:14:11+00:00",
     "notes": [],
     "jlc": {
      "code": "C25752",
@@ -2390,15 +2390,15 @@
     "need": 5,
     "mpn": "1.5k",
     "value": "1.5k",
-    "checked_at": "2026-11-01T17:02:18+00:00",
+    "checked_at": "2026-11-01T17:14:11+00:00",
     "notes": [],
     "jlc": {
      "code": "C25867",
      "model": "0402WGF1501TCE",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 1533162,
-     "can_sell": 1291192,
+     "stock": 1533062,
+     "can_sell": 1291092,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -2410,15 +2410,15 @@
      "code": "C25867",
      "model": "0402WGF1501TCE",
      "brand": "UNI-ROYAL",
-     "stock": 584300
+     "stock": 584200
     },
     "match": {
      "ok": true,
      "why": "value 1.5k in JLC's description '-55\u2103~+155\u2103 1.5k\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF1501TCE)"
     },
-    "available": 1291192,
+    "available": 1291092,
     "status": "ok",
-    "why": "1291192 available at JLC, need 5; value 1.5k in JLC's description '-55\u2103~+155\u2103 1.5k\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF1501TCE)",
+    "why": "1291092 available at JLC, need 5; value 1.5k in JLC's description '-55\u2103~+155\u2103 1.5k\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF1501TCE)",
     "refs": [
      "R62"
     ],
@@ -2429,7 +2429,7 @@
     "need": 20,
     "mpn": "49.9R",
     "value": "49.9R",
-    "checked_at": "2026-11-01T17:02:19+00:00",
+    "checked_at": "2026-11-01T17:14:11+00:00",
     "notes": [],
     "jlc": {
      "code": "C25120",
@@ -2471,7 +2471,7 @@
     "need": 20,
     "mpn": "1.3k",
     "value": "1.3k",
-    "checked_at": "2026-11-01T17:02:19+00:00",
+    "checked_at": "2026-11-01T17:14:11+00:00",
     "notes": [],
     "jlc": {
      "code": "C25866",
@@ -2513,7 +2513,7 @@
     "need": 25,
     "mpn": "470R",
     "value": "470R",
-    "checked_at": "2026-11-01T17:02:19+00:00",
+    "checked_at": "2026-11-01T17:14:11+00:00",
     "notes": [],
     "jlc": {
      "code": "C25117",
@@ -2521,7 +2521,7 @@
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
      "stock": 1213405,
-     "can_sell": 898621,
+     "can_sell": 898619,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -2539,9 +2539,9 @@
      "ok": true,
      "why": "value 470R in JLC's description '-55\u2103~+155\u2103 470\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF4700TCE)"
     },
-    "available": 898621,
+    "available": 898619,
     "status": "ok",
-    "why": "898621 available at JLC, need 25; value 470R in JLC's description '-55\u2103~+155\u2103 470\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF4700TCE)",
+    "why": "898619 available at JLC, need 25; value 470R in JLC's description '-55\u2103~+155\u2103 470\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF4700TCE)",
     "refs": [
      "R90",
      "R91",
@@ -2556,15 +2556,15 @@
     "need": 20,
     "mpn": "4.7k",
     "value": "4.7k",
-    "checked_at": "2026-11-01T17:02:19+00:00",
+    "checked_at": "2026-11-01T17:14:11+00:00",
     "notes": [],
     "jlc": {
      "code": "C25900",
      "model": "0402WGF4701TCE",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 14720799,
-     "can_sell": 12739129,
+     "stock": 14720779,
+     "can_sell": 12739103,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -2582,9 +2582,9 @@
      "ok": true,
      "why": "value 4.7k in JLC's description '-55\u2103~+155\u2103 4.7k\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF4701TCE)"
     },
-    "available": 12739129,
+    "available": 12739103,
     "status": "ok",
-    "why": "12739129 available at JLC, need 20; value 4.7k in JLC's description '-55\u2103~+155\u2103 4.7k\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF4701TCE)",
+    "why": "12739103 available at JLC, need 20; value 4.7k in JLC's description '-55\u2103~+155\u2103 4.7k\u03a9 50V 62.5mW Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0402 Chip Resistor - Surface Mount ROHS' (0402WGF4701TCE)",
     "refs": [
      "R100",
      "R101",
@@ -2598,15 +2598,15 @@
     "need": 10,
     "mpn": "150k",
     "value": "150k",
-    "checked_at": "2026-11-01T17:02:19+00:00",
+    "checked_at": "2026-11-01T17:14:12+00:00",
     "notes": [],
     "jlc": {
      "code": "C22807",
      "model": "0603WAF1503T5E",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 829653,
-     "can_sell": 689808,
+     "stock": 829633,
+     "can_sell": 689788,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -2624,9 +2624,9 @@
      "ok": true,
      "why": "value 150k in JLC's description '-55\u2103~+155\u2103 100mW 150k\u03a9 75V Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0603 Chip Resistor - Surface Mount ROHS' (0603WAF1503T5E)"
     },
-    "available": 689808,
+    "available": 689788,
     "status": "ok",
-    "why": "689808 available at JLC, need 10; value 150k in JLC's description '-55\u2103~+155\u2103 100mW 150k\u03a9 75V Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0603 Chip Resistor - Surface Mount ROHS' (0603WAF1503T5E)",
+    "why": "689788 available at JLC, need 10; value 150k in JLC's description '-55\u2103~+155\u2103 100mW 150k\u03a9 75V Thick Film Resistor \u00b11% \u00b1100ppm/\u2103 0603 Chip Resistor - Surface Mount ROHS' (0603WAF1503T5E)",
     "refs": [
      "R130",
      "R136"
@@ -2638,14 +2638,14 @@
     "need": 20,
     "mpn": "47k",
     "value": "47k",
-    "checked_at": "2026-11-01T17:02:20+00:00",
+    "checked_at": "2026-11-01T17:14:12+00:00",
     "notes": [],
     "jlc": {
      "code": "C25792",
      "model": "0402WGF4702TCE",
      "brand": "UNI-ROYAL(Uniroyal Elec)",
      "library": "basic",
-     "stock": 6834316,
+     "stock": 6834296,
      "can_sell": 6326220,
      "for_sale": true,
      "no_buy_reason": null,
@@ -2680,7 +2680,7 @@
     "need": 60,
     "mpn": "4.7R",
     "value": "4.7R",
-    "checked_at": "2026-11-01T17:02:20+00:00",
+    "checked_at": "2026-11-01T17:14:12+00:00",
     "notes": [
      "LCSC shows 0 in stock; JLC's own stock covers the build (276684)"
     ],
@@ -2732,7 +2732,7 @@
     "need": 5,
     "mpn": "20k",
     "value": "20k",
-    "checked_at": "2026-11-01T17:02:20+00:00",
+    "checked_at": "2026-11-01T17:14:12+00:00",
     "notes": [],
     "jlc": {
      "code": "C25765",
@@ -2771,7 +2771,7 @@
     "need": 5,
     "mpn": "75k",
     "value": "75k",
-    "checked_at": "2026-11-01T17:02:21+00:00",
+    "checked_at": "2026-11-01T17:14:12+00:00",
     "notes": [],
     "jlc": {
      "code": "C25798",
@@ -2810,7 +2810,7 @@
     "need": 5,
     "mpn": "0R",
     "value": "0R",
-    "checked_at": "2026-11-01T17:02:21+00:00",
+    "checked_at": "2026-11-01T17:14:12+00:00",
     "notes": [],
     "jlc": {
      "code": "C17168",
@@ -2849,7 +2849,7 @@
     "need": 5,
     "mpn": "CH224Q",
     "value": "CH224Q",
-    "checked_at": "2026-11-01T17:02:21+00:00",
+    "checked_at": "2026-11-01T17:14:12+00:00",
     "notes": [
      "JLC also lists C9900166627 as CH224Q: its BOM review may match by MPN, so check it shows C46061833"
     ],
@@ -2858,8 +2858,8 @@
      "model": "CH224Q",
      "brand": "WCH(Jiangsu Qin Heng)",
      "library": "extended",
-     "stock": 16834,
-     "can_sell": 13570,
+     "stock": 16824,
+     "can_sell": 13560,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -2877,9 +2877,9 @@
      "ok": true,
      "why": "BOM value CH224Q in JLC model CH224Q"
     },
-    "available": 13570,
+    "available": 13560,
     "status": "ok",
-    "why": "13570 available at JLC, need 5; BOM value CH224Q in JLC model CH224Q",
+    "why": "13560 available at JLC, need 5; BOM value CH224Q in JLC model CH224Q",
     "refs": [
      "U1"
     ],
@@ -2890,7 +2890,7 @@
     "need": 5,
     "mpn": "USBLC6-2SC6",
     "value": "USBLC6-2SC6",
-    "checked_at": "2026-11-01T17:02:21+00:00",
+    "checked_at": "2026-11-01T17:14:12+00:00",
     "notes": [
      "JLC also lists C21713975, C22390014, C2827654, C323793, C47147619, C48971164, C5250994, C5261088, C7519, C9900186896 as USBLC6-2SC6: its BOM review may match by MPN, so check it shows C2687116"
     ],
@@ -2899,8 +2899,8 @@
      "model": "USBLC6-2SC6",
      "brand": "UMW(Youtai Semiconductor Co., Ltd.)",
      "library": "extended",
-     "stock": 116375,
-     "can_sell": 113781,
+     "stock": 115155,
+     "can_sell": 112568,
      "for_sale": true,
      "no_buy_reason": null,
      "alternative": null,
@@ -2912,15 +2912,15 @@
      "code": "C2687116",
      "model": "USBLC6-2SC6",
      "brand": "UMW",
-     "stock": 116030
+     "stock": 115160
     },
     "match": {
      "ok": true,
      "why": "BOM value USBLC6-2SC6 in JLC model USBLC6-2SC6"
     },
-    "available": 113781,
+    "available": 112568,
     "status": "ok",
-    "why": "113781 available at JLC, need 5; BOM value USBLC6-2SC6 in JLC model USBLC6-2SC6",
+    "why": "112568 available at JLC, need 5; BOM value USBLC6-2SC6 in JLC model USBLC6-2SC6",
     "refs": [
      "U2"
     ],
@@ -2931,7 +2931,7 @@
     "need": 5,
     "mpn": "INA186A1",
     "value": "INA186A1",
-    "checked_at": "2026-11-01T17:02:21+00:00",
+    "checked_at": "2026-11-01T17:14:13+00:00",
     "notes": [],
     "jlc": {
      "code": "C2058311",
@@ -2970,7 +2970,7 @@
     "need": 5,
     "mpn": "SY8303AIC",
     "value": "SY8303AIC",
-    "checked_at": "2026-11-01T17:02:22+00:00",
+    "checked_at": "2026-11-01T17:14:13+00:00",
     "notes": [],
     "jlc": {
      "code": "C97054",
@@ -3009,7 +3009,7 @@
     "need": 5,
     "mpn": "SY8089A1AAC",
     "value": "SY8089A1AAC",
-    "checked_at": "2026-11-01T17:02:22+00:00",
+    "checked_at": "2026-11-01T17:14:13+00:00",
     "notes": [],
     "jlc": {
      "code": "C479074",
@@ -3048,7 +3048,7 @@
     "need": 5,
     "mpn": "LP5907-3.3",
     "value": "LP5907-3.3",
-    "checked_at": "2026-11-01T17:02:23+00:00",
+    "checked_at": "2026-11-01T17:14:13+00:00",
     "notes": [],
     "jlc": {
      "code": "C80670",
@@ -3087,7 +3087,7 @@
     "need": 5,
     "mpn": "ESP32-WROVER-E-N8R8",
     "value": "ESP32-WROVER-E-N8R8",
-    "checked_at": "2026-11-01T17:02:23+00:00",
+    "checked_at": "2026-11-01T17:14:14+00:00",
     "notes": [
      "JLC also lists C701348 as ESP32-WROVER-E-N8R8: its BOM review may match by MPN, so check it shows C2973667"
     ],
@@ -3128,7 +3128,7 @@
     "need": 5,
     "mpn": "CH340B",
     "value": "CH340B",
-    "checked_at": "2026-11-01T17:02:24+00:00",
+    "checked_at": "2026-11-01T17:14:14+00:00",
     "notes": [],
     "jlc": {
      "code": "C81010",
@@ -3167,7 +3167,7 @@
     "need": 5,
     "mpn": "LAN8720A",
     "value": "LAN8720A",
-    "checked_at": "2026-11-01T17:02:24+00:00",
+    "checked_at": "2026-11-01T17:14:14+00:00",
     "notes": [],
     "jlc": {
      "code": "C45223",
@@ -3206,7 +3206,7 @@
     "need": 5,
     "mpn": "ES9018K2M",
     "value": "ES9018K2M",
-    "checked_at": "2026-11-01T17:02:24+00:00",
+    "checked_at": "2026-11-01T17:14:14+00:00",
     "notes": [],
     "jlc": {
      "code": "C2688377",
@@ -3245,7 +3245,7 @@
     "need": 5,
     "mpn": "OPA1678",
     "value": "OPA1678",
-    "checked_at": "2026-11-01T17:02:25+00:00",
+    "checked_at": "2026-11-01T17:14:14+00:00",
     "notes": [],
     "jlc": {
      "code": "C192421",
@@ -3284,7 +3284,7 @@
     "need": 5,
     "mpn": "PCM5102A",
     "value": "PCM5102A",
-    "checked_at": "2026-11-01T17:02:26+00:00",
+    "checked_at": "2026-11-01T17:14:15+00:00",
     "notes": [],
     "jlc": {
      "code": "C107671",
@@ -3323,7 +3323,7 @@
     "need": 5,
     "mpn": "ES7243E",
     "value": "ES7243E",
-    "checked_at": "2026-11-01T17:02:26+00:00",
+    "checked_at": "2026-11-01T17:14:15+00:00",
     "notes": [],
     "jlc": {
      "code": "C2929446",
@@ -3362,7 +3362,7 @@
     "need": 10,
     "mpn": "TS5A23157",
     "value": "TS5A23157",
-    "checked_at": "2026-11-01T17:02:26+00:00",
+    "checked_at": "2026-11-01T17:14:15+00:00",
     "notes": [
      "LCSC shows 0 in stock; JLC's own stock covers the build (432)"
     ],
@@ -3404,7 +3404,7 @@
     "need": 10,
     "mpn": "TPA3220",
     "value": "TPA3220",
-    "checked_at": "2026-11-01T17:02:27+00:00",
+    "checked_at": "2026-11-01T17:14:15+00:00",
     "notes": [],
     "jlc": {
      "code": "C2879306",
@@ -3444,7 +3444,7 @@
     "need": 5,
     "mpn": "TCA9539",
     "value": "TCA9539",
-    "checked_at": "2026-11-01T17:02:27+00:00",
+    "checked_at": "2026-11-01T17:14:15+00:00",
     "notes": [
      "JLC also lists C22448189 as TCA9539PWR: its BOM review may match by MPN, so check it shows C131972"
     ],
@@ -3485,7 +3485,7 @@
     "need": 5,
     "mpn": "PLR237/T8BK",
     "value": "PLR237/T8BK",
-    "checked_at": "2026-11-01T17:02:27+00:00",
+    "checked_at": "2026-11-01T17:14:15+00:00",
     "notes": [],
     "jlc": {
      "code": "C17223620",
@@ -3524,7 +3524,7 @@
     "need": 5,
     "mpn": "TLV803SDBZR",
     "value": "TLV803S",
-    "checked_at": "2026-11-01T17:02:28+00:00",
+    "checked_at": "2026-11-01T17:14:16+00:00",
     "notes": [],
     "jlc": {
      "code": "C132016",
@@ -3563,7 +3563,7 @@
     "need": 5,
     "mpn": "49.152MHz",
     "value": "49.152MHz",
-    "checked_at": "2026-11-01T17:02:29+00:00",
+    "checked_at": "2026-11-01T17:14:16+00:00",
     "notes": [],
     "jlc": {
      "code": "C7431354",
@@ -3602,7 +3602,7 @@
     "need": 5,
     "mpn": "50MHz",
     "value": "50MHz",
-    "checked_at": "2026-11-01T17:02:29+00:00",
+    "checked_at": "2026-11-01T17:14:16+00:00",
     "notes": [],
     "jlc": {
      "code": "C717684",

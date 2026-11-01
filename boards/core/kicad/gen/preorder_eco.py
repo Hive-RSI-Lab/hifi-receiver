@@ -59,14 +59,18 @@ def c229(b):
     v.SetDrill(int(0.2 * MM))
     v.SetNet(b.GetNetsByName()["/A_SPK_L+"])
     b.Add(v)
-    t = pcbnew.PCB_TRACK(b)
-    t.SetStart(mr.V(48.61, 129.95))
-    t.SetEnd(mr.V(44.3, 129.5))  # y < 129.7: the column keepout starts at y 130
-    t.SetWidth(int(0.6 * MM))
-    t.SetLayer(pcbnew.B_Cu)
-    t.SetNet(b.GetNetsByName()["/A_SPK_L+"])
-    b.Add(t)
-    return [v, t]
+    keep = [v]
+    pts = [(48.61, 129.95), (48.16, 129.5), (44.3, 129.5)]  # on the 45-degree grid; y < 129.7: the column keepout starts at y 130
+    for p, q in zip(pts, pts[1:]):
+        t = pcbnew.PCB_TRACK(b)
+        t.SetStart(mr.V(*p))
+        t.SetEnd(mr.V(*q))
+        t.SetWidth(int(0.6 * MM))
+        t.SetLayer(pcbnew.B_Cu)
+        t.SetNet(b.GetNetsByName()["/A_SPK_L+"])
+        b.Add(t)
+        keep.append(t)
+    return keep
 
 
 def via_fill():
