@@ -4,7 +4,7 @@
  "workspace_schema": 2,
  "workspace": "/work/boards/core",
  "created": "2026-10-28T11:07:23",
- "updated": "2026-10-31T23:26:18",
+ "updated": "2026-10-31T23:40:01",
  "phase": "P9",
  "gates": {
   "erc": {
@@ -689,15 +689,15 @@
   },
   "drc_routed": {
    "phase": "P7",
-   "status": "pass",
-   "attempts": 347,
+   "status": "fail",
+   "attempts": 348,
    "last": {
-    "ts": "2026-10-31T15:25:33",
-    "status": "pass",
-    "failing_count": 0,
-    "total": 0,
+    "ts": "2026-10-31T23:40:01",
+    "status": "fail",
+    "failing_count": 36,
+    "total": 36,
     "inputs": {
-     "pcb": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
+     "pcb": "sexpr_no_uuid:0fd17f7dba3842af48cc85c8bf18c5a9030b086298d5346473f5fd2088a362f9",
      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
      "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
      "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
@@ -4867,34 +4867,18 @@
       "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
       "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
      }
-    }
-   ],
-   "stale": [
-    {
-     "ts": "2026-10-31T20:04:50",
-     "edit_class": "add_part",
-     "refs": [
-      "J20",
-      "J21",
-      "J22",
-      "J23",
-      "J24",
-      "J25",
-      "J26",
-      "J27"
-     ],
-     "human_hold": 2
     },
     {
-     "ts": "2026-10-31T20:04:50",
-     "edit_class": "del_part",
-     "refs": [
-      "J10",
-      "J11",
-      "J6",
-      "J7"
-     ],
-     "human_hold": 2
+     "ts": "2026-10-31T23:40:01",
+     "status": "fail",
+     "failing_count": 36,
+     "total": 36,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:0fd17f7dba3842af48cc85c8bf18c5a9030b086298d5346473f5fd2088a362f9",
+      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
+      "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
+      "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
+     }
     }
    ]
   },
@@ -5332,19 +5316,19 @@
    "path": "kicad/core.kicad_sch",
    "kind": "sch",
    "sha256": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
-   "hashed": "2026-10-31T15:26:31"
+   "hashed": "2026-10-31T23:40:01"
   },
   "pro": {
    "path": "kicad/core.kicad_pro",
    "kind": "pro",
    "sha256": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
-   "hashed": "2026-10-31T15:25:33"
+   "hashed": "2026-10-31T23:40:01"
   },
   "pcb": {
    "path": "kicad/core.kicad_pcb",
    "kind": "pcb",
-   "sha256": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
-   "hashed": "2026-10-31T15:26:31"
+   "sha256": "sexpr_no_uuid:0fd17f7dba3842af48cc85c8bf18c5a9030b086298d5346473f5fd2088a362f9",
+   "hashed": "2026-10-31T23:40:01"
   },
   "constraints": {
    "path": "kicad/constraints.json",
@@ -5368,7 +5352,7 @@
    "path": "kicad/core.kicad_dru",
    "kind": "dru",
    "sha256": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202",
-   "hashed": "2026-10-31T15:25:33"
+   "hashed": "2026-10-31T23:40:01"
   },
   "waivers": {
    "path": "reports/verify-waivers.json",
@@ -9484,6 +9468,14 @@
     "C8"
    ],
    "human_hold": 2
+  },
+  {
+   "ts": "2026-10-31T23:40:01",
+   "event": "gate",
+   "gate": "drc_routed",
+   "status": "fail",
+   "attempt": 348,
+   "failing_count": 36
   }
  ]
 }

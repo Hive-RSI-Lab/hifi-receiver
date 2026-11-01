@@ -4,7 +4,7 @@ The EasyEDA footprints arrive with an "LCSC Part" field naming whatever part
 the footprint was pulled for, and board_update keeps it, so on ~170 parts it
 disagreed with the BOM. parts.json (Plus; Ultra uses the same numbers) is the
 source of truth: both "LCSC Part" and "LCSC" are rewritten from it, and a
-footprint with no parts.json line loses them (the mounting holes).
+footprint with no parts.json line gets them blanked (the mounting holes).
 
     python3.11 kicad/gen/lcsc_fields.py kicad/core.kicad_pcb parts/parts.json
 """
@@ -19,14 +19,14 @@ changed = 0
 for fp in b.GetFootprints():
     want = lcsc.get(fp.GetReference())
     for name in ("LCSC Part", "LCSC"):
-        if not fp.HasFieldByName(name):
+        if not fp.HasField(name):
             continue
-        f = fp.GetFieldByName(name)
         if want is None:
-            fp.RemoveField(name)
-            changed += 1
-        elif f.GetText() != want:
-            f.SetText(want)
+            want_text = ""          # no parts.json line (mounting holes): no part number
+        else:
+            want_text = want
+        if fp.GetFieldText(name) != want_text:
+            fp.SetField(name, want_text)
             changed += 1
 b.Save(sys.argv[1])
 print(changed, "fields changed")

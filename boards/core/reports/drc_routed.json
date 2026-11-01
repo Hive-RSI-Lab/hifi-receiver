@@ -4,8 +4,8 @@
   "phase": "P7",
   "tool": "drc",
   "input": "kicad/core.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
-  "status": "pass",
+  "input_digest": "sexpr_no_uuid:0fd17f7dba3842af48cc85c8bf18c5a9030b086298d5346473f5fd2088a362f9",
+  "status": "fail",
   "criteria": {
     "fail_severities": [
       "error",
@@ -14,23 +14,1217 @@
     "max_count": 0
   },
   "counts": {
-    "total": 0,
-    "by_severity": {},
-    "by_source": {}
+    "total": 36,
+    "by_severity": {
+      "warning": 36
+    },
+    "by_source": {
+      "drc": 36
+    }
   },
-  "failing_count": 0,
-  "failing": [],
+  "failing_count": 36,
+  "failing": [
+    {
+      "check": "track_dangling",
+      "severity": "warning",
+      "pos": [
+        121.8,
+        150.7
+      ],
+      "layer": "In2.Cu",
+      "net": "GND",
+      "refs": [],
+      "msg": "Track has unconnected end",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Track [GND] on In2.Cu, length 0.4243 mm",
+          "pos": [
+            121.8,
+            150.7
+          ],
+          "uuid": "7f813eb9-6ae6-416f-aa71-bac891049ce4"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J26"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J26 on F.Silkscreen",
+          "pos": [
+            110.35,
+            128.9975
+          ],
+          "uuid": "81248816-27e9-41c4-835b-e2c6dcdf5674"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J26"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J26 on F.Silkscreen",
+          "pos": [
+            110.95,
+            128.9975
+          ],
+          "uuid": "3ca3d4f1-90d3-44f8-9816-7f0ec917ca8c"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J26"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J26 on F.Silkscreen",
+          "pos": [
+            121.05,
+            107.4975
+          ],
+          "uuid": "6aea9e2b-f435-4423-b0b5-e27166be1528"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J23"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J23 on F.Silkscreen",
+          "pos": [
+            77.35,
+            128.9975
+          ],
+          "uuid": "4c6b2707-6d6b-42e8-952e-96d9453b2b58"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J23"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J23 on F.Silkscreen",
+          "pos": [
+            77.95,
+            128.9975
+          ],
+          "uuid": "022cd485-4b2c-4d5a-bac0-9fd059e5fc32"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J23"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J23 on F.Silkscreen",
+          "pos": [
+            88.05,
+            107.4975
+          ],
+          "uuid": "bc5218ef-9344-4746-92ea-d25cd6949de9"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J25"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J25 on F.Silkscreen",
+          "pos": [
+            99.35,
+            128.9975
+          ],
+          "uuid": "ea34d19e-6a68-49e0-b8b7-c68c3bfd341b"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J25"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J25 on F.Silkscreen",
+          "pos": [
+            99.95,
+            128.9975
+          ],
+          "uuid": "62688c0a-ee75-401c-847b-ec44657c6b32"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J25"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J25 on F.Silkscreen",
+          "pos": [
+            110.05,
+            107.4975
+          ],
+          "uuid": "e8819f28-8b50-4d01-9a46-666b9a8f94db"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J21"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J21 on F.Silkscreen",
+          "pos": [
+            55.35,
+            128.9975
+          ],
+          "uuid": "cbde807b-945b-4513-b62e-49298188788f"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J21"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J21 on F.Silkscreen",
+          "pos": [
+            55.95,
+            128.9975
+          ],
+          "uuid": "2e4ab681-5f5e-42a9-8bbd-125b5be88d21"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J21"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J21 on F.Silkscreen",
+          "pos": [
+            66.05,
+            107.4975
+          ],
+          "uuid": "9c92ef93-e204-473c-97c7-443558b75c04"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J20"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J20 on F.Silkscreen",
+          "pos": [
+            44.35,
+            128.9975
+          ],
+          "uuid": "c53849ad-39bf-4537-a849-4fedac0a33da"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J20"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J20 on F.Silkscreen",
+          "pos": [
+            44.95,
+            128.9975
+          ],
+          "uuid": "7122cf3e-b2cb-4be9-891f-8d2fdf338faf"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J20"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J20 on F.Silkscreen",
+          "pos": [
+            55.05,
+            107.4975
+          ],
+          "uuid": "7335a7db-d9ea-4fef-9b7f-ad432af71d61"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J22"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J22 on F.Silkscreen",
+          "pos": [
+            66.35,
+            128.9975
+          ],
+          "uuid": "dc613de7-067a-45cc-9ddc-c245ba69a18a"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J22"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J22 on F.Silkscreen",
+          "pos": [
+            66.95,
+            128.9975
+          ],
+          "uuid": "ad81cf72-105f-4f80-9b0f-c2d97481b812"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J22"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J22 on F.Silkscreen",
+          "pos": [
+            77.05,
+            107.4975
+          ],
+          "uuid": "6c265583-1b48-4661-b8e1-24966a7e75d5"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J27"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J27 on F.Silkscreen",
+          "pos": [
+            121.35,
+            128.9975
+          ],
+          "uuid": "5ef959fe-5ece-46a1-99ed-9418139ac3ce"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J27"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J27 on F.Silkscreen",
+          "pos": [
+            121.95,
+            128.9975
+          ],
+          "uuid": "36b55216-da2f-45b9-9782-8ee88b7be997"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J27"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J27 on F.Silkscreen",
+          "pos": [
+            132.05,
+            107.4975
+          ],
+          "uuid": "da8e8466-a985-49f4-99ef-756683266706"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J24"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J24 on F.Silkscreen",
+          "pos": [
+            88.35,
+            128.9975
+          ],
+          "uuid": "aeb15148-2671-4762-ae1f-8dac89d94894"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J24"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J24 on F.Silkscreen",
+          "pos": [
+            88.95,
+            128.9975
+          ],
+          "uuid": "a8fc98a9-73ab-4e1b-9440-a71e1063fb5f"
+        }
+      ]
+    },
+    {
+      "check": "silk_edge_clearance",
+      "severity": "warning",
+      "pos": [
+        36.5875,
+        107.6975
+      ],
+      "layer": "Edge.Cuts",
+      "net": null,
+      "refs": [
+        "J24"
+      ],
+      "msg": "Silkscreen clipped by board edge",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment on Edge.Cuts",
+          "pos": [
+            36.5875,
+            107.6975
+          ],
+          "uuid": "7cc4a5e6-7a57-4875-a665-6110f30161b5"
+        },
+        {
+          "msg": "Segment of J24 on F.Silkscreen",
+          "pos": [
+            99.05,
+            107.4975
+          ],
+          "uuid": "57825c1e-1fc6-4898-ba38-549ff21922dc"
+        }
+      ]
+    },
+    {
+      "check": "silk_overlap",
+      "severity": "warning",
+      "pos": [
+        92.387,
+        129.622
+      ],
+      "layer": "F.Silkscreen",
+      "net": null,
+      "refs": [
+        "J24",
+        "R331"
+      ],
+      "msg": "Silkscreen clearance",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Reference field of R331",
+          "pos": [
+            92.387,
+            129.622
+          ],
+          "uuid": "1434ad08-526c-4797-809d-d20dff725b79"
+        },
+        {
+          "msg": "Segment of J24 on F.Silkscreen",
+          "pos": [
+            99.05,
+            128.9975
+          ],
+          "uuid": "a43cec12-4115-4375-9614-83c04b4be618"
+        }
+      ]
+    },
+    {
+      "check": "silk_overlap",
+      "severity": "warning",
+      "pos": [
+        84.787,
+        129.472
+      ],
+      "layer": "F.Silkscreen",
+      "net": null,
+      "refs": [
+        "C329",
+        "J23"
+      ],
+      "msg": "Silkscreen clearance",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Reference field of C329",
+          "pos": [
+            84.787,
+            129.472
+          ],
+          "uuid": "495415f8-653f-4206-b9d6-0cd0f6ac4106"
+        },
+        {
+          "msg": "Segment of J23 on F.Silkscreen",
+          "pos": [
+            88.05,
+            128.9975
+          ],
+          "uuid": "5fa0f49f-77a6-43d4-8a9e-bc89a85a4873"
+        }
+      ]
+    },
+    {
+      "check": "silk_overlap",
+      "severity": "warning",
+      "pos": [
+        110.05,
+        107.4975
+      ],
+      "layer": "F.Silkscreen",
+      "net": null,
+      "refs": [
+        "J25",
+        "J26"
+      ],
+      "msg": "Silkscreen clearance",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment of J25 on F.Silkscreen",
+          "pos": [
+            110.05,
+            107.4975
+          ],
+          "uuid": "e8819f28-8b50-4d01-9a46-666b9a8f94db"
+        },
+        {
+          "msg": "Reference field of J26",
+          "pos": [
+            109.525,
+            117.6475
+          ],
+          "uuid": "f6e87caf-fd36-4583-b59d-975acc95d12a"
+        }
+      ]
+    },
+    {
+      "check": "silk_overlap",
+      "severity": "warning",
+      "pos": [
+        99.05,
+        107.4975
+      ],
+      "layer": "F.Silkscreen",
+      "net": null,
+      "refs": [
+        "J24",
+        "J25"
+      ],
+      "msg": "Silkscreen clearance",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment of J24 on F.Silkscreen",
+          "pos": [
+            99.05,
+            107.4975
+          ],
+          "uuid": "57825c1e-1fc6-4898-ba38-549ff21922dc"
+        },
+        {
+          "msg": "Reference field of J25",
+          "pos": [
+            98.525,
+            117.6475
+          ],
+          "uuid": "a70e3c43-6d75-4e0d-8b65-16d7d1c74c84"
+        }
+      ]
+    },
+    {
+      "check": "silk_overlap",
+      "severity": "warning",
+      "pos": [
+        120.525,
+        117.6475
+      ],
+      "layer": "F.Silkscreen",
+      "net": null,
+      "refs": [
+        "J26",
+        "J27"
+      ],
+      "msg": "Silkscreen clearance",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Reference field of J27",
+          "pos": [
+            120.525,
+            117.6475
+          ],
+          "uuid": "111ebdf7-2733-48af-b33c-ab3024ac101c"
+        },
+        {
+          "msg": "Segment of J26 on F.Silkscreen",
+          "pos": [
+            121.05,
+            107.4975
+          ],
+          "uuid": "6aea9e2b-f435-4423-b0b5-e27166be1528"
+        }
+      ]
+    },
+    {
+      "check": "silk_overlap",
+      "severity": "warning",
+      "pos": [
+        77.05,
+        107.4975
+      ],
+      "layer": "F.Silkscreen",
+      "net": null,
+      "refs": [
+        "J22",
+        "J23"
+      ],
+      "msg": "Silkscreen clearance",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment of J22 on F.Silkscreen",
+          "pos": [
+            77.05,
+            107.4975
+          ],
+          "uuid": "6c265583-1b48-4661-b8e1-24966a7e75d5"
+        },
+        {
+          "msg": "Reference field of J23",
+          "pos": [
+            76.525,
+            117.6475
+          ],
+          "uuid": "77b1ff49-3061-409e-9ba3-4a1df5fa73dd"
+        }
+      ]
+    },
+    {
+      "check": "silk_overlap",
+      "severity": "warning",
+      "pos": [
+        87.525,
+        117.6475
+      ],
+      "layer": "F.Silkscreen",
+      "net": null,
+      "refs": [
+        "J23",
+        "J24"
+      ],
+      "msg": "Silkscreen clearance",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Reference field of J24",
+          "pos": [
+            87.525,
+            117.6475
+          ],
+          "uuid": "adbc0b4e-ded3-47cf-8eb5-90a36f5c65d3"
+        },
+        {
+          "msg": "Segment of J23 on F.Silkscreen",
+          "pos": [
+            88.05,
+            107.4975
+          ],
+          "uuid": "bc5218ef-9344-4746-92ea-d25cd6949de9"
+        }
+      ]
+    },
+    {
+      "check": "silk_overlap",
+      "severity": "warning",
+      "pos": [
+        55.05,
+        128.9975
+      ],
+      "layer": "F.Silkscreen",
+      "net": null,
+      "refs": [
+        "C231",
+        "J20"
+      ],
+      "msg": "Silkscreen clearance",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment of J20 on F.Silkscreen",
+          "pos": [
+            55.05,
+            128.9975
+          ],
+          "uuid": "16b4a89d-3747-44e5-a4fb-26b51aa0acce"
+        },
+        {
+          "msg": "Reference field of C231",
+          "pos": [
+            51.887,
+            129.472
+          ],
+          "uuid": "337da04b-8b1f-49a8-af21-1325cb86de6a"
+        }
+      ]
+    },
+    {
+      "check": "silk_overlap",
+      "severity": "warning",
+      "pos": [
+        59.487,
+        129.622
+      ],
+      "layer": "F.Silkscreen",
+      "net": null,
+      "refs": [
+        "J21",
+        "R233"
+      ],
+      "msg": "Silkscreen clearance",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Reference field of R233",
+          "pos": [
+            59.487,
+            129.622
+          ],
+          "uuid": "2226fbcb-add9-4d3f-a3f1-5d729724a5be"
+        },
+        {
+          "msg": "Segment of J21 on F.Silkscreen",
+          "pos": [
+            66.05,
+            128.9975
+          ],
+          "uuid": "3b1eb288-19e4-4a09-b46b-941b9761630a"
+        }
+      ]
+    },
+    {
+      "check": "silk_overlap",
+      "severity": "warning",
+      "pos": [
+        55.05,
+        107.4975
+      ],
+      "layer": "F.Silkscreen",
+      "net": null,
+      "refs": [
+        "J20",
+        "J21"
+      ],
+      "msg": "Silkscreen clearance",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Segment of J20 on F.Silkscreen",
+          "pos": [
+            55.05,
+            107.4975
+          ],
+          "uuid": "7335a7db-d9ea-4fef-9b7f-ad432af71d61"
+        },
+        {
+          "msg": "Reference field of J21",
+          "pos": [
+            54.525,
+            117.6475
+          ],
+          "uuid": "834549e6-89fc-4bf0-af7b-c215253c4cb0"
+        }
+      ]
+    },
+    {
+      "check": "silk_overlap",
+      "severity": "warning",
+      "pos": [
+        65.525,
+        117.6475
+      ],
+      "layer": "F.Silkscreen",
+      "net": null,
+      "refs": [
+        "J21",
+        "J22"
+      ],
+      "msg": "Silkscreen clearance",
+      "source": "drc",
+      "items": [
+        {
+          "msg": "Reference field of J22",
+          "pos": [
+            65.525,
+            117.6475
+          ],
+          "uuid": "88e51dc8-67fe-4b96-bd35-bf89ba885cea"
+        },
+        {
+          "msg": "Segment of J21 on F.Silkscreen",
+          "pos": [
+            66.05,
+            107.4975
+          ],
+          "uuid": "9c92ef93-e204-473c-97c7-443558b75c04"
+        }
+      ]
+    }
+  ],
   "warnings_count": 0,
   "warnings": [],
   "record_result": {
     "ok": true,
     "recorded": true,
-    "workspace": "/home/hive2/projects/hifi-esd/boards/core",
+    "workspace": "/home/hive2/projects/hifi-core-banana/boards/core",
     "gate": "drc_routed",
-    "status": "pass",
-    "attempts": 347,
+    "status": "fail",
+    "attempts": 348,
     "inputs": {
-      "pcb": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
+      "pcb": "sexpr_no_uuid:0fd17f7dba3842af48cc85c8bf18c5a9030b086298d5346473f5fd2088a362f9",
       "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
       "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
       "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
