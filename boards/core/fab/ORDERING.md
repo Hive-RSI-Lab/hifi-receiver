@@ -13,7 +13,7 @@ and the one step that has to happen before the assembly order can go in.
 2. **Check stock:** `python3 tools/bom_stock.py core` (Plus) and
    `python3 tools/bom_stock.py core/ultra` (Ultra). The step below shows up
    there as short.
-3. **Pre-buy the TPA3220 (U15, and U16 on Ultra) into your JLC parts
+3. **Pre-buy the TPA3220 (U15 and U16, on both Plus and Ultra) into your JLC parts
    inventory.** LCSC and JLC have none: C2879306 read 0 on 2026-10-29. The
    TPA3221 has its pad on top and needs a heatsink fitted by hand, so the
    board takes this pad-down twin instead.
@@ -39,13 +39,27 @@ and the one step that has to happen before the assembly order can go in.
 ## The upload
 
 - **PCB:** `core_gerbers.zip`.
-  - 4 layers, 1.6 mm, 1 oz outer and 0.5 oz inner copper.
+  - 4 layers, 1.6 mm, 1 oz outer and **1 oz inner copper. Change this on the
+    quote page: JLC's default is 0.5 oz.** In2 carries the full 5 A alone
+    (`kicad/gen/power_trunk.py`): 5 A needs 3.5 mm at 1 oz and 8.06 mm at
+    0.5 oz, against a measured 3.88 mm neck. If the quote page has no 1 oz
+    option, stop: don't order at 0.5 oz.
   - The stackup is in `gerbers/core-job.gbrjob`.
   - ENIG is the better finish: HASL is uneven on the 0.65 mm SOT-363 (Q3) and
     the 1006-size BAS16L (D5).
-  - The TPA3220's thermal pad has 15 open 0.3 mm vias. No via filling is
-    needed: the paste is cut to 63 % in 4 windows to allow for the solder
-    that wicks into them.
+  - **Via Covering: Epoxy Filled & Capped (POFV). Change this on the quote
+    page.** 107 joints have an open via in the pad, fine-pitch chips and Q1-Q3
+    among them, and solder drains down an open via. It is a per-order charge
+    on 4 layers: hwde's table has $17.33 for 5 boards at 91 x 70 mm and $17.57
+    at 91 x 91 mm, so expect a little more at 154 x 113 mm. Read the real
+    figure on the quote page. Add this remark to the order:
+    "Fill and cap all 0.2 mm and 0.3 mm holes, including the 30 holes in the
+    U15/U16 thermal pads. Do not fill J1's 0.4 mm pin holes: they take
+    connector pins." Check it in JLC's engineering confirmation: a filled J1
+    hole means the USB-C connector won't fit.
+  - The TPA3220's thermal pad has 15 x 0.3 mm holes. The paste stays at 63 % in
+    4 windows, which works filled or not: with no wicking 63 % sits inside the
+    usual 50-80 %, so the amp doesn't float.
 - **Assembly, both sides** (choose JLC's two-sided PCBA). Fourteen parts
   are on the bottom (`Layer` = Bottom in the CPL): ten 2-pad MLCCs under the
   amps, each TPA3220's PVDD HF pair (C207-C210, C307-C310), right under its
@@ -56,5 +70,9 @@ and the one step that has to happen before the assembly order can go in.
   so only their axis matters; the clamps' pin 3 is their ground.
   - Plus: `BOM.csv` and `CPL.csv`. Zone B (U16) is fitted too: Plus plays L on zone A and R on zone B.
   - Ultra: `ultra/BOM.csv` and `ultra/CPL.csv`, with the same Gerbers.
+- **Banana sockets J20-J27 (through-hole, fitted by JLC):** Plus fits J20, J21,
+  J26, J27; Ultra fits all 8. In JLC's preview each collar must overhang the
+  rear edge by 2.65 mm. The two pins are symmetric, so nothing else shows a
+  socket turned back to front: it would sit over the snubber row.
 - **Not on the board:** the remote, Ultra's front board
   and its FFC. They are in `docs/bom-estimate.csv`. No heatsink is needed.

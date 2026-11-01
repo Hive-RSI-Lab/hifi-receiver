@@ -505,7 +505,7 @@
    "could_stop_board": false
   },
   {
-   "fact": "PVDD ripple current estimate (~Iout,rms x 0.5 per BTL channel) and its split between ceramics and bulk",
+   "fact": "PVDD ripple current estimate (Iout,rms x sqrt(1-0.75 m^2) per BTL channel; 0.5 only at full swing) and its split between ceramics and bulk (docs/review-6/c5c6_ripple.py)",
    "board": "both",
    "refs": [
     "C58",

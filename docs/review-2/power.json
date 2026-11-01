@@ -609,7 +609,7 @@
    "could_stop_board": false
   },
   {
-   "fact": "JLC 4-layer inner copper 0.5 oz (15.2 um in stackup)",
+   "fact": "Core is ordered with 1 oz inner copper, not JLC's 0.5 oz default (35 um in the stackup; R6-M1, fab/ORDERING.md)",
    "board": "core",
    "refs": [],
    "status": "verified",

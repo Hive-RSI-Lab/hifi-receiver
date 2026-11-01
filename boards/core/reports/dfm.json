@@ -4,7 +4,7 @@
   "phase": "P9",
   "tool": "dfm",
   "input": "kicad/core.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:9404a8f45ec38bad54a9b99a380066a7e7f45cdb3be2048ff5c4594627d2b906",
+  "input_digest": "sexpr_no_uuid:9a7b45c7fb09a883bbd7b04f1f91616dd92315079491ee2906fe310f06bfe47f",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -13,58 +13,546 @@
     "max_count": 0
   },
   "counts": {
-    "total": 6,
+    "total": 22,
     "by_severity": {
-      "error": 4,
-      "warning": 2
+      "warning": 18,
+      "error": 4
     },
     "by_source": {
-      "check.dfm": 6
+      "check.dfm": 22
     }
   },
   "failing_count": 0,
   "failing": [],
-  "warnings_count": 2,
+  "warnings_count": 18,
   "warnings": [
     {
       "check": "dfm",
       "severity": "warning",
-      "pos": null,
-      "layer": null,
-      "net": null,
-      "refs": [
-        "J4"
+      "pos": [
+        86.8,
+        165.95
       ],
-      "msg": "J4: the LCSC model's pad centre sits 0.793 mm from the board's at the CPL position",
+      "layer": "In2.Cu",
+      "net": "GND",
+      "refs": [],
+      "msg": "via via@86.800,165.950 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
       "source": "check.dfm",
       "items": [
         {
-          "msg": "J4: the LCSC model's pad centre sits 0.793 mm from the board's at the CPL position",
-          "pos": null
+          "msg": "via via@86.800,165.950 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            86.8,
+            165.95
+          ]
         }
       ],
-      "kind": "cpl_offset",
-      "offset_mm": 0.793
+      "kind": "dfm_ring_breakout",
+      "item": "via@86.800,165.950",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "In2.Cu"
+      ]
     },
     {
       "check": "dfm",
       "severity": "warning",
-      "pos": null,
-      "layer": null,
-      "net": null,
-      "refs": [
-        "J5"
+      "pos": [
+        107.6,
+        148.8
       ],
-      "msg": "J5: the LCSC model's pad centre sits 0.793 mm from the board's at the CPL position",
+      "layer": "In2.Cu",
+      "net": "GND",
+      "refs": [],
+      "msg": "via via@107.600,148.800 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
       "source": "check.dfm",
       "items": [
         {
-          "msg": "J5: the LCSC model's pad centre sits 0.793 mm from the board's at the CPL position",
-          "pos": null
+          "msg": "via via@107.600,148.800 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            107.6,
+            148.8
+          ]
         }
       ],
-      "kind": "cpl_offset",
-      "offset_mm": 0.793
+      "kind": "dfm_ring_breakout",
+      "item": "via@107.600,148.800",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "In2.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        125.65,
+        147.85
+      ],
+      "layer": "In2.Cu",
+      "net": "GND",
+      "refs": [],
+      "msg": "via via@125.650,147.850 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@125.650,147.850 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            125.65,
+            147.85
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@125.650,147.850",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "In2.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        124.95,
+        142.55
+      ],
+      "layer": "In2.Cu",
+      "net": "GND",
+      "refs": [],
+      "msg": "via via@124.950,142.550 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@124.950,142.550 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            124.95,
+            142.55
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@124.950,142.550",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "In2.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        104.2,
+        198.6
+      ],
+      "layer": "In2.Cu",
+      "net": "GND",
+      "refs": [],
+      "msg": "via via@104.200,198.600 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@104.200,198.600 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            104.2,
+            198.6
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@104.200,198.600",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "In2.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        77.25,
+        195.75
+      ],
+      "layer": "In2.Cu",
+      "net": "GND",
+      "refs": [],
+      "msg": "via via@77.250,195.750 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@77.250,195.750 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            77.25,
+            195.75
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@77.250,195.750",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "In2.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        52.35,
+        168.4
+      ],
+      "layer": "In2.Cu",
+      "net": "GND",
+      "refs": [],
+      "msg": "via via@52.350,168.400 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@52.350,168.400 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            52.35,
+            168.4
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@52.350,168.400",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "In2.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        121.7,
+        144.2
+      ],
+      "layer": "In2.Cu",
+      "net": "GND",
+      "refs": [],
+      "msg": "via via@121.700,144.200 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@121.700,144.200 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            121.7,
+            144.2
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@121.700,144.200",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "In2.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        120.5,
+        145.4
+      ],
+      "layer": "In2.Cu",
+      "net": "GND",
+      "refs": [],
+      "msg": "via via@120.500,145.400 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@120.500,145.400 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            120.5,
+            145.4
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@120.500,145.400",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "In2.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        111.25,
+        141.9
+      ],
+      "layer": "In2.Cu",
+      "net": "GND",
+      "refs": [],
+      "msg": "via via@111.250,141.900 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@111.250,141.900 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            111.25,
+            141.9
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@111.250,141.900",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "In2.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        81.3,
+        193.1
+      ],
+      "layer": "In2.Cu",
+      "net": "GND",
+      "refs": [],
+      "msg": "via via@81.300,193.100 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@81.300,193.100 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            81.3,
+            193.1
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@81.300,193.100",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "In2.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        109.9,
+        150.2
+      ],
+      "layer": "In2.Cu",
+      "net": "GND",
+      "refs": [],
+      "msg": "via via@109.900,150.200 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@109.900,150.200 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on In2.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            109.9,
+            150.2
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@109.900,150.200",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "In2.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        102.7,
+        159.2
+      ],
+      "layer": "F.Cu",
+      "net": "+5VA",
+      "refs": [],
+      "msg": "via via@102.700,159.200 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on F.Cu, In2.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@102.700,159.200 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on F.Cu, In2.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            102.7,
+            159.2
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@102.700,159.200",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "F.Cu",
+        "In2.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        130.35,
+        156.45
+      ],
+      "layer": "B.Cu",
+      "net": "/linein/ADC_RP",
+      "refs": [],
+      "msg": "via via@130.350,156.450 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on B.Cu, F.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@130.350,156.450 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on B.Cu, F.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            130.35,
+            156.45
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@130.350,156.450",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "B.Cu",
+        "F.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        62.55,
+        218.25
+      ],
+      "layer": "F.Cu",
+      "net": "/IR_IN",
+      "refs": [],
+      "msg": "via via@62.550,218.250 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on F.Cu, In1.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@62.550,218.250 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on F.Cu, In1.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            62.55,
+            218.25
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@62.550,218.250",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "F.Cu",
+        "In1.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        59.1,
+        218.15
+      ],
+      "layer": "F.Cu",
+      "net": "/IR_IN",
+      "refs": [],
+      "msg": "via via@59.100,218.150 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on F.Cu, In1.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@59.100,218.150 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on F.Cu, In1.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            59.1,
+            218.15
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@59.100,218.150",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "F.Cu",
+        "In1.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        43.6,
+        185.4
+      ],
+      "layer": "B.Cu",
+      "net": "/power_in/CC2",
+      "refs": [],
+      "msg": "via via@43.600,185.400 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on B.Cu, F.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@43.600,185.400 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on B.Cu, F.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            43.6,
+            185.4
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@43.600,185.400",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "B.Cu",
+        "F.Cu"
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        82.9,
+        164.25
+      ],
+      "layer": "B.Cu",
+      "net": "/AMP_B_RST",
+      "refs": [],
+      "msg": "via via@82.900,164.250 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on B.Cu, F.Cu with no teardrop there (route_teardrops.py)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "via via@82.900,164.250 ring 0.100 mm < 0.05 + 0.075 drill wander: the drill can break out at the track neck on B.Cu, F.Cu with no teardrop there (route_teardrops.py)",
+          "pos": [
+            82.9,
+            164.25
+          ]
+        }
+      ],
+      "kind": "dfm_ring_breakout",
+      "item": "via@82.900,164.250",
+      "ring_mm": 0.1,
+      "limit_mm": 0.125,
+      "layers": [
+        "B.Cu",
+        "F.Cu"
+      ]
     }
   ],
   "waived_count": 4,
@@ -176,7 +664,9 @@
       "placement_visual",
       "bom",
       "release",
-      "castellation"
+      "castellation",
+      "netlist",
+      "teardrop"
     ],
     "ran": [
       "copper",
@@ -189,7 +679,9 @@
       "placement",
       "bom",
       "release",
-      "castellation"
+      "castellation",
+      "netlist",
+      "teardrop"
     ],
     "passed": [
       "copper",
@@ -201,7 +693,9 @@
       "polarity",
       "bom",
       "release",
-      "castellation"
+      "castellation",
+      "netlist",
+      "teardrop"
     ],
     "failed": [
       "placement"
@@ -215,12 +709,12 @@
   "record_result": {
     "ok": true,
     "recorded": true,
-    "workspace": "/home/hive2/projects/hifi-core-banana/boards/core",
+    "workspace": "/home/hive2/projects/hifi-order-docs/boards/core",
     "gate": "dfm",
     "status": "pass",
-    "attempts": 13,
+    "attempts": 14,
     "inputs": {
-      "pcb": "sexpr_no_uuid:9404a8f45ec38bad54a9b99a380066a7e7f45cdb3be2048ff5c4594627d2b906",
+      "pcb": "sexpr_no_uuid:9a7b45c7fb09a883bbd7b04f1f91616dd92315079491ee2906fe310f06bfe47f",
       "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
       "parts": null
     }

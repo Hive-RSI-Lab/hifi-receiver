@@ -150,5 +150,9 @@
  "digital:38": {
   "status": "verified",
   "how": "Everlight PLR237/T8BK DPL-0000262/263 Rev.1 (everlighteurope.com, fetched 2026-10-30) p1-2: operates at 2.4-5.5 V, recommended Vcc 3.0-5.5 V, TTL-compatible output (Vout max Vcc+0.3), so at OPT_VCC = 3.3 V the output swings to 3.3 V into the ES9018K2M GPIO; 10 % margin at the 3.0 V floor."
+ },
+ "dfm:35": {
+  "status": "resolved",
+  "how": "fab/ORDERING.md gives the order remark that names the diameters to fill and says to leave J1's 0.4 mm pin holes open; all 910 vias measure over 0.45 mm from other holes and within JLC's 0.2-0.5 mm range. JLC's engineering review confirms at order time; a filled J1 hole would show there, not after the build."
  }
 }

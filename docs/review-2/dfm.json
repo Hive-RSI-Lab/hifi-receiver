@@ -617,6 +617,19 @@
    "source": "parts not yet on the boards; models cached in sims/dfm/easyeda-cache",
    "date": "2026-10-28",
    "could_stop_board": true
+  },
+  {
+   "fact": "JLC POFV on core: fills the 0.2 and 0.3 mm holes (vias and U15/U16's thermal-pad holes) and leaves J1's 0.4 mm pin holes open",
+   "board": "core",
+   "refs": [
+    "J1",
+    "U15",
+    "U16"
+   ],
+   "status": "unverified",
+   "source": "JLC help 'pcb via covering' (fill all vias of a given diameter) and the POFV page (0.2-0.5 mm hole, >0.45 mm to other holes), read 2026-11-01; not confirmed by JLC for this board",
+   "date": "2026-11-01",
+   "could_stop_board": true
   }
  ],
  "tools_wanted": [
