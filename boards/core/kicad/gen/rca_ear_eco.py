@@ -1,8 +1,8 @@
 """core: the RCA jack's side ear clashed with its neighbours (person's render, af884 110112318f32).
 
 The ear reaches local x +12.3 at 10.8-16.2 mm over the board, local y up to 9.05;
-the old courtyard stopped at +8. New rear row: J4 x 145 (ear clears J27), J5 x 166.1
-(21.1 pitch: ear courtyard clears J4's leg step), U19 x 179.9 with FB3/C126, H2 south
+the old courtyard stopped at +8. New rear row: J4 x 145 (ear clears J27), J5 x 166.3
+(21.3 pitch: ear courtyard clears J4's flange), U19 x 180.5 (0.4 mm off J5's), FB3/C126 +5.75, H2 south
 to (185.45, 127.4) on the east edge so U19 stays on the rear wall.
 
 Moves the parts, carries their local copper, rips LIN_L, LIN_R and OPT_SPDIF's runs
@@ -24,9 +24,9 @@ import pcbnew  # noqa: E402
 
 MM = 1e6
 GAP = float(os.environ.get("LIN_GAP", 0.6))
-DJ4, DJ5, DU19 = 3.0, 6.1, 5.5
-MOVES = {"J4": (DJ4, 0), "D7": (DJ4, 0), "J5": (DJ5, 0), "D8": (DJ5, 0), "U19": (DU19, 0), "FB3": (DU19, 0),
-         "C126": (DU19, 0), "H2": (0, 127.4 - 111.25)}
+DJ4, DJ5, DU19, DFB = 3.0, 6.3, 6.1, 5.75
+MOVES = {"J4": (DJ4, 0), "D7": (DJ4, 0), "J5": (DJ5, 0), "D8": (DJ5, 0), "U19": (DU19, 0), "FB3": (DFB, 0),
+         "C126": (DFB, 0), "H2": (0, 127.4 - 111.25)}
 LIN_L, LIN_R, SPDIF = "/linein/LIN_L", "/linein/LIN_R", "/OPT_SPDIF"
 SUB = ("/dac/SUB1_OUT", "/dac/SUB2_OUT")
 
@@ -110,8 +110,10 @@ def main():
                 rigid.append((t, DJ4 if t.GetPosition().x / MM < 150 else DJ5))
             elif not via and t.GetStart().y / MM < 124 and t.GetStart().x / MM > 133 and t.GetLength() / MM < 0.6:
                 rigid.append((t, DJ4 if t.GetStart().x / MM < 150 else DJ5))
-        elif n in ("/linein/OPT_VCC",) or (n == "+3V3" and t.GetPosition().x / MM > 178 and t.GetPosition().y / MM < 124):
-            rigid.append((t, DU19))
+        elif n == "/linein/OPT_VCC":
+            rigid.append((t, "vcc"))
+        elif n == "+3V3" and t.GetPosition().x / MM > 178 and t.GetPosition().y / MM < 124:
+            rigid.append((t, DFB))
         elif n in SUB:
             rigid.append((t, None))
         elif via:
@@ -136,6 +138,8 @@ def main():
     for t, d in rigid:
         if d is None:
             shift(t, lambda x, y: (DJ4, 0) if x > 131 else (0, 0))
+        elif d == "vcc":  # U19's pin end goes with U19, the rest with FB3/C126; the run at y 119.93 shortens
+            shift(t, lambda x, y: (DU19, 0) if x < 178 else (DFB, 0))
         else:
             shift(t, lambda x, y: (d, 0))
     for ref, (dx, dy) in MOVES.items():
@@ -160,8 +164,8 @@ def main():
     drop += [t for t in tracks if t.GetClass() == "PCB_VIA" and t.GetNetname() == "GND"
              and math.dist(xy(t.GetPosition()), (139.5, 126.2)) < 0.05]
     # silk: C126's reference off the edge, H2's off FB3
-    fps["C126"].Reference().SetTextAngleDegrees(0)
-    fps["C126"].Reference().SetPosition(mr.V(186.95, 117.5))
+    fps["C126"].Reference().SetTextAngleDegrees(90)
+    fps["C126"].Reference().SetPosition(mr.V(187.9, 117.0))
     fps["H2"].Reference().SetPosition(mr.V(185.45, 131.7))
     r = Avoid(b)
     a = (133.56, 126.85)

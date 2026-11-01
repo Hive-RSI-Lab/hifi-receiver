@@ -60,16 +60,19 @@ A 0.45/0.2 via on C229's existing F.Cu track at (48.61, 129.95) and a 0.6 mm B.C
 
 ## RCA jack ear clash (the person's render; branch h2/core-rca-ear)
 
-The jack's side ear reaches local x +12.3 at 10.8-16.2 mm over the board, and its courtyard stopped at +8. J4's ear ran 2.0 mm into J27, and J5's about 0.4 mm into J4. `kicad/gen/rca_ear_eco.py` and `rca_ear_court.py` do the move; the courtyard now holds the ear in the library, `eco_rca.py` and on the board.
+The jack's side ear reaches local x +12.3 at 10.8-16.2 mm over the board, and its courtyard stopped at +8. J4's ear ran 2.0 mm into J27, and J5's about 0.4 mm into J4. `kicad/gen/rca_ear_eco.py` and `rca_ear_court.py` do the move; the courtyard now holds the flange (±8.9) and the ear (+12.3, local y up to 10.3) in the library, `eco_rca.py` and on the board.
+
+A first version (J5 x 166.1, U19 x 179.9, a smaller courtyard) left J5 and U19 0.1 mm apart. a6671's `check_body_clash` caught that, and that J4/J5 still stood 0.85 mm past their courtyards, before it merged.
 
 | Part | Was | Now |
 |---|---|---|
 | J4, D7 | x 142.0, 142.01 | +3.0: x 145.0, 145.01 |
-| J5, D8 | x 160.0, 159.21 | +6.1: x 166.1, 165.31 |
-| U19, FB3, C126 | x 174.4, 181.55, 180.94 | +5.5: x 179.9, 187.05, 186.44 |
+| J5, D8 | x 160.0, 159.21 | +6.3: x 166.3, 165.51 |
+| U19 | x 174.4 | +6.1: x 180.5 |
+| FB3, C126 | x 181.55, 180.94 | +5.75: x 187.3, 186.69 |
 | H2 | (185.45, 111.25) | (185.45, 127.4) |
 
-- **Checks on the moved board:** af884's `clash.py` finds no 3D clash among the 307 parts with a model (U3's is missing). `check_courtyard` passes with the ear in. DRC: 0 violations, 0 unconnected, parity clean.
+- **Checks on the moved board:** hive-hwde main's `check_body_clash` (26d0ef7, run from a scratch copy) finds no clash, and J4/J5 no longer stand past their courtyards. Its 6 warnings aren't from this move: the banana pairs at about 0.2 mm (af884 judged them), U18 and U7 past the board edge. `check_courtyard` passes with the ear in. DRC: 0 violations, 0 unconnected, parity clean.
 - **Copper:** LIN_L, LIN_R and OPT_SPDIF's runs were re-routed; SUB1/SUB2 stretch along their horizontal run at x 131. 4 GND stitching vias were removed where parts now sit, and one added where H2 was. The bananas didn't move.
 - **Crosstalk:** `check_si` flags nothing on LIN_L, LIN_R or OPT_SPDIF. LIN_L's worst forced sim is 2.93 mV (LRCK), budget 33 mV.
 - **The forced sim is not trustworthy below check_si's floor.** To get LIN_L's figure I set the floor to 0. That run also gives impossible values, such as 1e26 mV on ESP_EN and 4,214 mV on LIN_R, including on copper this round didn't touch, so the solver is diverging on some pairs. The earlier 2.96 mV and this 2.93 mV come from that same run. They are sane and match the field estimate's size (1.0 mV), but the estimate is the firmer number. Both of OPT_SPDIF's forced results are unusable; its estimates are 1.0-6.7 mV against a 165 mV budget.

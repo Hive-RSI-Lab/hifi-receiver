@@ -7,9 +7,9 @@ import sys
 import pcbnew
 
 M = pcbnew.FromMM
-# legs at +-8.65 (y -0.05..3.25); ear to +12.3, local y -0.05..9.3 (3D model, vendor drawing A-AV2-7A1)
-OUTLINE = [(-8, -3.45), (8, -3.45), (8, -0.05), (12.3, -0.05), (12.3, 9.3), (8, 9.3), (8, 21.8), (-8, 21.8),
-           (-8, 3.25), (-8.75, 3.25), (-8.75, -0.05), (-8, -0.05)]
+# from the 3D model, vendor drawing A-AV2-7A1: flange and legs +-8.85 up to z 2.1, local y -2.25..10.25; ear to +12.3, y 0.72..10.25
+OUTLINE = [(-8, -3.45), (8, -3.45), (8, -2.3), (12.3, -2.3), (12.3, 10.3), (8, 10.3), (8, 21.8), (-8, 21.8),
+           (-8, 10.3), (-8.9, 10.3), (-8.9, -2.3), (-8, -2.3)]
 pcb, ref = sys.argv[1:3]
 b = pcbnew.LoadBoard(pcb)
 fp = next(f for f in b.GetFootprints() if f.GetReference() == ref)
