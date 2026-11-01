@@ -52,8 +52,9 @@ b.Save(pcb)
 # The legs at +-7.65 (2.0 x 3.0 at y +1.60) reach x +-8.65: the courtyard
 # steps out to +-8.75 beside them only (hwde verify check_courtyard), so it
 # stays clear of J11's beside J4
-OUTLINE = [(-8, -3.45), (8, -3.45), (8, -0.05), (8.75, -0.05), (8.75, 3.25), (8, 3.25),
-           (8, 21.8), (-8, 21.8), (-8, 3.25), (-8.75, 3.25), (-8.75, -0.05), (-8, -0.05)]
+# and to +12.3 beside the side ear (rca_ear_eco.py)
+OUTLINE = [(-8, -3.45), (8, -3.45), (8, -2.3), (12.3, -2.3), (12.3, 10.3), (8, 10.3), (8, 21.8), (-8, 21.8),
+           (-8, 10.3), (-8.9, 10.3), (-8.9, -2.3), (-8, -2.3)]
 # one part per run (kicad/gen/eco_rca.py PCB J4, then J5): after one
 # footprint's courtyard is replaced, KiCad's python hands back stale handles
 for ref in sys.argv[2:3] or ("J4",):
