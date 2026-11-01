@@ -5,7 +5,7 @@
  "piece_missing": 100,
  "open_fact": 100,
  "open_fact_about": "Each fact a board relies on that could stop it working and is neither verified nor resolved (tools/known_unknowns.py --check, docs/known-unknowns.md) adds open_fact, so a score of 0 means order-ready.",
- "budget_about": "Each tier's BOM budget per unit at 100: docs/product.md's target retail without the charger over the usual 4x retail-to-BOM markup ($59, $129, $199 / 4). The score counts only a counted tier's cost above it.",
+ "budget_about": "Each tier's BOM budget per unit at 100: docs/product.md's target retail without the charger over the usual 4x retail-to-BOM markup ($59, $129, $199 / 4). The score counts only a counted tier's cost above it. A tier's optional 'accepted' {cost, by, at, why} is an overrun the person signed off: the score then counts only cost above accepted.cost.",
  "tiers": {
   "lite": {
    "budget": 14.75,
@@ -25,6 +25,7 @@
   },
   "plus": {
    "budget": 32.25,
+   "accepted": {"cost": 38.63, "by": "person", "at": "2026-11-01", "why": "banana-socket core (PR #149) grew the board to 154.4 x 113 mm; person: 'the hifi plus thing is fine accept it' (board thread hifi-core-banana)"},
    "builds": [{"board": "core"}],
    "needs": [
     {"what": "USB-C power input", "match": "USB4105|USB4085|TYPE-C|USB-C", "count": 1},

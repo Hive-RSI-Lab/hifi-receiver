@@ -147,7 +147,9 @@ evaluator file, like `hwcheck.py`.
    $129 / 4 = $32.25, Ultra $199 / 4 = $49.75. Under budget, a first spin's
    contingencies (test points, loopback taps, a spare part) cost nothing and
    cutting them gains nothing; only cost past the budget counts, cent for
-   cent. **A score of 0 means the product is order-ready:** every tier's
+   cent. A tier may carry an `accepted` cost the person signed off (Plus:
+   $38.63 for the banana-socket core, 2026-11-01); then only cost past that
+   counts, so growth beyond the accepted figure still shows. **A score of 0 means the product is order-ready:** every tier's
    boards pass their gates, carry every needed function and sit within
    budget, every piece passes, and no fact that could stop a board is
    open (3, below).

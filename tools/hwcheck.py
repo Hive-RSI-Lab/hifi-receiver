@@ -609,9 +609,13 @@ def cmd_score() -> int:
             unit = SPEC["tier_not_counted"]
             lines.append(f"{name}: {unit:.2f} (not counted: {'; '.join(why)})")
         else:
-            over = max(0.0, unit - tier["budget"])
+            # An accepted cost (person's sign-off) lifts the bar to it; cost above it still counts.
+            acc = tier.get("accepted", {}).get("cost", 0.0)
+            bar = max(tier["budget"], acc)
+            over = max(0.0, unit - bar)
+            note = f", accepted up to {acc:.2f}" if acc > tier["budget"] else ""
             lines.append(f"{name}: {over:.2f} ({unit:.2f} USD per unit at {QTY} against its "
-                         f"{tier['budget']:.2f} budget, every needed function on the board)")
+                         f"{tier['budget']:.2f} budget{note}, every needed function on the board)")
             unit = over
         total += unit
     ran = {}
