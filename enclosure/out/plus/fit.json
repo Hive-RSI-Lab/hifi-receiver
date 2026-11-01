@@ -7,6 +7,12 @@
    "overlap_mm3": 0
   },
   {
+   "name": "board_gap",
+   "ok": true,
+   "min_gap_mm": 0.1,
+   "within_mm3": 0
+  },
+  {
    "name": "lid_covers",
    "ok": true,
    "open_mm2": 0.0,
@@ -25,17 +31,8 @@
   {
    "name": "added_parts_clear",
    "ok": true,
-   "added": 6,
+   "added": 3,
    "clashes": []
-  },
-  {
-   "name": "port_J1",
-   "ok": true,
-   "edge": "W",
-   "kind": "usb-c",
-   "blocked_mm3": 0,
-   "recess_mm": 1.9,
-   "max_recess_mm": 3.0
   },
   {
    "name": "port_J2",
@@ -44,6 +41,15 @@
    "kind": "generic",
    "blocked_mm3": 0,
    "recess_mm": 2.6,
+   "max_recess_mm": 3.0
+  },
+  {
+   "name": "port_J1",
+   "ok": true,
+   "edge": "W",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 0.47,
    "max_recess_mm": 3.0
   },
   {
@@ -83,39 +89,39 @@
    "max_recess_mm": 3.0
   },
   {
-   "name": "port_PA1",
+   "name": "port_J20",
    "ok": true,
    "edge": "N",
    "kind": "generic",
    "blocked_mm3": 0,
-   "recess_mm": 2.4,
+   "recess_mm": 3.0,
    "max_recess_mm": 3.0
   },
   {
-   "name": "port_PA2",
+   "name": "port_J21",
    "ok": true,
    "edge": "N",
    "kind": "generic",
    "blocked_mm3": 0,
-   "recess_mm": 2.4,
+   "recess_mm": 3.0,
    "max_recess_mm": 3.0
   },
   {
-   "name": "port_PA3",
+   "name": "port_J26",
    "ok": true,
    "edge": "N",
    "kind": "generic",
    "blocked_mm3": 0,
-   "recess_mm": 2.4,
+   "recess_mm": 3.0,
    "max_recess_mm": 3.0
   },
   {
-   "name": "port_PA4",
+   "name": "port_J27",
    "ok": true,
    "edge": "N",
    "kind": "generic",
    "blocked_mm3": 0,
-   "recess_mm": 2.4,
+   "recess_mm": 3.0,
    "max_recess_mm": 3.0
   },
   {
@@ -133,9 +139,21 @@
    "supported": 1.0
   },
   {
+   "name": "screw_H3",
+   "ok": true,
+   "axis_blocked_mm3": 0,
+   "peg": false
+  },
+  {
    "name": "hole_H2",
    "ok": true,
    "supported": 1.0
+  },
+  {
+   "name": "screw_H2",
+   "ok": true,
+   "axis_blocked_mm3": 0,
+   "peg": false
   },
   {
    "name": "hole_H1",
@@ -143,16 +161,28 @@
    "supported": 1.0
   },
   {
+   "name": "screw_H1",
+   "ok": true,
+   "axis_blocked_mm3": 0,
+   "peg": false
+  },
+  {
    "name": "hole_H4",
    "ok": true,
    "supported": 1.0
   },
   {
+   "name": "screw_H4",
+   "ok": true,
+   "axis_blocked_mm3": 0,
+   "peg": false
+  },
+  {
    "name": "bed_base",
    "ok": true,
    "size_mm": [
-    132.4,
-    112.4,
+    166.8,
+    125.4,
     37.6
    ],
    "bed_mm": [
@@ -207,8 +237,8 @@
    "name": "bed_lid",
    "ok": true,
    "size_mm": [
-    132.4,
-    112.4,
+    166.8,
+    125.4,
     31.0
    ],
    "bed_mm": [
@@ -227,7 +257,7 @@
   {
    "name": "bridge_base",
    "ok": true,
-   "flat_faces": 80,
+   "flat_faces": 91,
    "worst_bridge_mm": 12.01,
    "worst_ledge_mm": 0.11,
    "max_bridge_mm": 15.0,
@@ -356,20 +386,20 @@
    ]
   },
   {
-   "ref": "D3",
+   "ref": "U18",
    "open_above": true,
    "under": []
   },
   {
-   "ref": "U18",
+   "ref": "D3",
    "open_above": true,
    "under": []
   }
  ],
  "material": {
   "base": {
-   "volume_cm3": 63.4,
-   "solid_petg_g": 80.6
+   "volume_cm3": 82.2,
+   "solid_petg_g": 104.4
   },
   "btn_SW2": {
    "volume_cm3": 0.3,
@@ -384,9 +414,9 @@
    "solid_petg_g": 10.7
   },
   "lid": {
-   "volume_cm3": 33.0,
-   "solid_petg_g": 41.9
+   "volume_cm3": 46.6,
+   "solid_petg_g": 59.2
   }
  },
- "build_s": 9.8
+ "build_s": 33.8
 }

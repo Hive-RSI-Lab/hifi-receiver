@@ -2,18 +2,19 @@
 
 `plus.py` and `ultra.py` are the scripts `mech build` runs; both call
 build() here with their variant. `lite.py` uses the shared pieces too
-(rca_ports, post_ports, base, lid, light_pipe, tray). Everything is in mech's board frame: mm,
+(rca_ports, banana_ports, base, lid, light_pipe, tray). Everything is in mech's board frame: mm,
 x right along the core's front edge, y back (the rear panel is the N edge,
-y = 100), z up, z = 0 the core's bottom face.
+y = 113), z up, z = 0 the core's bottom face.
 
 What mech's Tray gives and what this adds:
 
 - **Tray:** the shell, the locating lip, port openings (USB-C, RJ45,
   TOSLINK), buttons through the lid and vents.
-- **Here:** per-side gaps (the ESP32 antenna overhangs the E edge 1.5 mm,
-  Ultra's front board stands in front of the S edge), screws from below
+- **Here:** per-side gaps (Ultra's front board stands in front of the S
+  edge; the ESP32's antenna is at the board's notched front-right edge, well
+  inside the box), screws from below
   into lid pillars (as on Lite), round RCA holes with one port per barrel,
-  binding posts on the rear wall, heatsink room over each TPA3221, a
+  round holes for the board's banana sockets in the rear wall, heatsink room over each TPA3221, a
   chimney through the box (`vent_plan`: low inlets, a riser past the
   board's S and E edges, a lid grille over the amps), a long
   knob for the core's vertical EC11 (Plus) and Ultra's front panel around
@@ -23,7 +24,7 @@ The board is changed before mech's fit check sees it (`prepare`): parts
 the variant doesn't fit are dropped, the RCA footprints are cut to their
 body (their barrels become ports), internal connectors stop counting as
 ports, and things that aren't on the board but must fit are added as
-boxes: the heatsinks, the binding posts' nuts and lugs, and for Ultra the
+boxes: the heatsinks, and for Ultra the
 front board, its parts and the LCD. mech then checks all of them against
 the plastic.
 """
@@ -46,7 +47,7 @@ WALL = 2.4          # 6 perimeters at 0.4
 FLOOR = 2.0
 LID = 2.2
 STANDOFF = 5.0      # floor top to board bottom: the RCA, RJ45 and EC11 pins stick out 2.9-3.5 mm
-GAP = {"W": 0.6, "S": 0.6, "E": 2.0, "N": 0.6}   # board edge to inner wall; E: the ESP32 antenna overhangs 1.5
+GAP = {"W": 0.6, "S": 0.6, "E": 2.0, "N": 0.6}   # board edge to inner wall (E: the risers set it)
 TOP_CLEAR = 2.0     # RCA tops (28.6) to the lid's underside, Plus
 
 SCREW_CLEAR = 3.4   # M3 through the floor, standoff and board
@@ -69,10 +70,6 @@ BANANA_NOSE = 9.6   # Amass 24.243 socket: the round collar round its 4 mm bore,
                     # mark, not the part: docs/review-4/ban.md R4-BAN-1). Measure a sample
 BANANA_AXIS = 8.1   # bore axis over the board top (Amass drawing)
 BANANA_HOLE = 10.2  # round hole (a teardrop roof) round the collar, 0.3 mm a side
-POST_HOLE = 4.3     # M4-thread 4 mm binding posts
-POST_NUT = 9.0      # M4 nut (8.1 across corners) + ring lug, inside the wall
-POST_DEPTH = 10.0   # shank, nut and lug inside the wall
-POST_X = (11.2, 30.2, 41.4, 60.4)  # 19 mm within a pair (dual banana plugs); between H1's pillar and J4
 FOOT_D, FOOT_DEPTH = 11.0, 0.8
 
 # The chimney (docs/review-2/thermal.md 6.2, task 261030-074523): air comes in low, rises past the
@@ -132,7 +129,7 @@ class CoreTray(Tray):
         return self.ztop
 
 
-# --- shared with Lite (lite.py): RCA barrels and binding posts through the rear wall ---------
+# --- shared with Lite (lite.py): RCA barrels and banana sockets through the rear wall ---------
 
 def rca_ports(board: Board, refs, feats: dict, gap_n: float):
     """Stacked RCA jacks on the N edge: the body ends inside the rear wall; each barrel is a port
@@ -162,25 +159,9 @@ def banana_ports(board: Board, refs, feats: dict, gap_n: float):
         feats.setdefault("banana", []).append((ref, x, z))
 
 
-def post_ports(board: Board, xs, zs: dict, y_wall_n: float, feats: dict):
-    """Binding posts through the rear wall at each x, one row per zone at zs[zone] (above the board's
-    bottom face): the hole is a port (a square inside the round hole), the nut and lug a box."""
-    for zone, z in zs.items():
-        for i, x in enumerate(xs):
-            name = f"P{zone}{i + 1}"
-            h = POST_HOLE / 2 / math.sqrt(2) - 0.1
-            board.ports.append(Port(name, "N", [x - h, x + h, z - h, z + h], y_wall_n, 0.0, "top"))
-            n = POST_NUT / 2
-            board.parts.append(box_part(name, x - n, y_wall_n - POST_DEPTH, z - n, x + n, y_wall_n, z + n,
-                                        "binding post nut and lug"))
-            feats.setdefault("posts", []).append((name, x, z))
-
-
 # --- the board as the box sees it ------------------------------------------------
 
-def post_z(variant):
-    """Binding-post axes above the board's bottom face: zone A, and zone B on Ultra."""
-    return {"A": 21.0} if variant == "plus" else {"A": 19.0, "B": 33.0}
+SOCKETS = tuple(f"J{20 + i}" for i in range(8))   # core's rear row: A L+ L- R+ R-, B L+ L- R+ R-
 
 
 def prepare(board: Board, variant: str, y_wall_n: float) -> dict:
@@ -190,7 +171,7 @@ def prepare(board: Board, variant: str, y_wall_n: float) -> dict:
     board.top_access = [r for r in board.top_access if r not in gone]
     keep = {"J1", "J2"}          # USB-C and RJ45 on the W wall; the rest are internal or replaced
     board.ports = [p for p in board.ports if p.ref in keep]
-    feats = {"rca": [], "posts": [], "heatsinks": []}
+    feats = {"rca": [], "banana": [], "heatsinks": []}
 
     rca_ports(board, ("J4", "J5"), feats, GAP["N"])
 
@@ -199,7 +180,9 @@ def prepare(board: Board, variant: str, y_wall_n: float) -> dict:
         p = board.part("U19")
         board.ports.append(Port("U19", "N", [p.bbox[0], p.bbox[2], p.z[0], p.z[1]], p.bbox[3], 0.0, "top"))
 
-    post_ports(board, POST_X, post_z(variant), y_wall_n, feats)
+    # speaker outputs: the board's own 4 mm banana sockets J20-J27 (issues #117, #124), each fitted
+    # one's collar in a round hole in the rear wall. Plus fits J20/J21 (zone A L) and J26/J27 (zone B R).
+    banana_ports(board, [r for r in SOCKETS if r not in gone], feats, GAP["N"])
 
     # Heatsink room over each fitted TPA3221's top slug: the free area round it, up to the lid.
     room = {"U15": (2.0, 52.5, 21.0, 64.5), "U16": (35.4, 52.5, 53.4, 64.5)}
@@ -222,7 +205,7 @@ def add_heatsinks(board: Board, feats: dict, z_top: float):
 
 def base(t: CoreTray, feats: dict, ports=("J1", "J2", "U19")):
     """Walls and floor, standoffs with the screws' clearance and counterbores from below, feet
-    recesses, the `ports` mech found, and feats' RCA holes, post holes and heatsink floor vents."""
+    recesses, the `ports` mech found, and feats' RCA holes, banana-socket holes and heatsink floor vents."""
     x0, y0, x1, y1 = t.outer
     ix0, iy0, ix1, iy1 = t.inner
     b = rounded(x0, y0, x1, y1, t.z_bottom, t.z_top, t.corner + t.wall)
@@ -249,8 +232,6 @@ def base(t: CoreTray, feats: dict, ports=("J1", "J2", "U19")):
     yn = y1 - t.wall / 2
     for _, x, z in feats.get("rca", []):
         b -= teardrop_y(x, yn, z, RCA_HOLE, cut, cap=RCA_CAP)
-    for _, x, z in feats.get("posts", []):
-        b -= teardrop_y(x, yn, z, POST_HOLE, cut)
     for _, x, z in feats.get("banana", []):
         b -= teardrop_y(x, yn, z, BANANA_HOLE, cut)
     under = feats.get("amp_floor", [h[1:5] for h in feats.get("heatsinks", [])])

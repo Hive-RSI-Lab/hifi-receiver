@@ -104,7 +104,7 @@ left. [TBD: Plus and Ultra rear panels: their enclosures aren't drawn yet]
 | **LINE IN** L/R | RCA, line level, up to 2 V | all |
 | **OPTICAL** | TOSLINK digital in, up to 24-bit/96 kHz | Ultra |
 | **SUB OUT** L/R (Lite), **SUB 1**, **SUB 2** (Plus, Ultra) | RCA, to powered subwoofers | all |
-| **L+ L− R+ R−** | speakers: 4 mm banana sockets (Lite), 4 mm binding posts (Plus, Ultra) | all |
+| **L+ L− R+ R−** | speakers: 4 mm banana sockets | all |
 | **ZONE B L+ L− R+ R−** | second speaker pair | Ultra |
 
 ### Speakers
@@ -118,11 +118,8 @@ left. [TBD: Plus and Ultra rear panels: their enclosures aren't drawn yet]
 - **Not ground:** both speaker terminals carry the signal, so neither is
   ground. Don't connect a speaker **−** to anything else, such as a
   subwoofer's ground.
-- **Terminals (Plus, Ultra):** 4 mm binding posts, red and black. They
-  take single banana plugs, dual banana plugs (the pairs are 19 mm apart),
-  spades, or bare wire under the nut.
-- **Terminals (Lite):** four 4 mm banana sockets, red and black, 11 mm
-  apart. They take **single banana plugs only**, no wider than 11 mm across
+- **Terminals:** 4 mm banana sockets, red and black, 11 mm apart: four
+  on Lite and Plus, eight on Ultra (zone A and zone B). They take **single banana plugs only**, no wider than 11 mm across
   the body, so neighbouring plugs can't touch. Dual plugs, spades and bare
   wire don't fit; put a pair of banana plugs on each speaker cable (they
   come with most speaker cable, or cost a few dollars).
@@ -497,7 +494,7 @@ screen. Their patterns come with their firmware.]
 | Light off | No power | Try another USB-C charger and cable. A data-only cable doesn't carry power. |
 | Light on, no sound at all | Amplifier off on a 5 V charger | Use a PD charger (section 5). The app says **Speakers off: charger too weak**, and **Setup → About and diagnostics** shows the **Charger**. |
 | No sound from one source | **DJ direct** still on, or volume at 0 | In the app, set **Play → Input** to **Streaming**. Check the volume on the phone that is playing. |
-| No sound from one speaker | A loose wire | Check the wires at both ends and that the binding posts are tight. |
+| No sound from one speaker | A loose wire or plug | Check the wires at both ends and that each banana plug is pushed fully home. |
 | Thin bass, vague image | One speaker wired backwards | Check **+** to **+** on both. |
 | Cuts out at high volume | Charger too small, or a 3 A cable on 28 V | Use a 140 W charger and a 240 W cable (Plus, Ultra) or a 65 W+ charger (Lite). On Lite in **DJ direct**, turn the deck down a little (section 4). |
 | No sound, the app says **Speakers off: the supply is out of range** | The charger's voltage is wrong | Try another charger and cable. |
@@ -531,7 +528,7 @@ screen. Their patterns come with their firmware.]
 | Streaming | Spotify Connect, AirPlay 1, Bluetooth, Lyrion (LMS) | same | same |
 | Power in | USB-C PD, 20 V | USB-C PD 3.1 EPR, 28 V (20 V fallback) | same as Plus |
 | Standby power | [TBD: bring-up measurement] | [TBD] | [TBD] |
-| Speaker terminals | 4 mm binding posts | [TBD: enclosure] | [TBD: enclosure] |
+| Speaker terminals | 4 × 4 mm banana sockets | 4 × 4 mm banana sockets | 8 × 4 mm banana sockets |
 | Size | 106 × 96 × 47 mm | [TBD: enclosure] | [TBD] |
 | Weight | [TBD: bring-up] | [TBD] | [TBD] |
 | Enclosure | 3D-printed PETG or ASA | same | same |

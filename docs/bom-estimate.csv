@@ -11,7 +11,8 @@ platform,Low-noise LDO 3.3 V for audio,C80670,LP5907MFX-3.3/NOPB,extended,0.165,
 platform,"IR receiver 38 kHz, front-facing through-hole",C42421366,IRM-3638T,extended,0.1859,0.1212,3,tht,0,1,1,"core as built, LCSC 2026-10-29 (review-2)"
 platform,Tactile switch,C318884,TS-1187A-B-A-B,basic,0.021,0.021,4,smt,0,2,3,LCSC live 2026-10-28
 platform,Dual RCA jack right angle (in; sub out),C7527522,XDJK-0271-1650,extended,0.258,0.202,6,tht,0,2,2,LCSC live 2026-10-28
-platform,4 mm banana socket (speaker out),C99865,GC4010-F,extended,0.164,0.151,1,tht,0,4,8,LCSC live 2026-10-28 (fit with a banana plug unchecked)
+platform,4 mm banana socket red (speaker +; board-mounted on core J20/J22/J24/J26),C7437321,24.243.1,extended,0.4179,0.3311,2,tht,0,2,4,"boards/core parts.json (Plus fits A L and B R), LCSC live 2026-10-30"
+platform,4 mm banana socket black (speaker -; board-mounted on core J21/J23/J25/J27),C7437322,24.243.2,extended,0.4179,0.3311,2,tht,0,2,4,"boards/core parts.json (Plus fits A L and B R), LCSC live 2026-10-30"
 lite-audio,Codec: DAC + ADC + analog bypass,C365736,ES8388,extended,0.937,0.714,29,smt,0,0,0,LCSC live 2026-10-28
 lite-audio,Class-D amp 2x BTL 26 V (as built and measured),C46497,TPA3118D2DAPR,extended,1.022,0.807,33,smt,0,0,0,LCSC live 2026-10-28
 hifi-audio,Sabre DAC (mains),C2688377,ES9018K2M,extended,3.045,2.398,29,smt,0,1,1,LCSC live 2026-10-28
@@ -99,4 +100,4 @@ lite-board,5 V buck feed-forward 47 pF,C1671,CL10C470JB8NNNC,basic,0.0074,0.0074
 lite-board,line-in attenuator 15k,C22809,0603WAF1502T5E,basic,0.0029,0.0029,2,smt,2,0,0,"boards/lite-main parts.json, LCSC 2026-10-29 (review-2)"
 lite-board,speaker tap carrier filter,C1620,0603B471K500NT,basic,0.0058,0.0058,2,smt,2,0,0,"boards/lite-main parts.json, LCSC 2026-10-29 (review-2)"
 lite-board,amp SDZ slew limit,C1622,CL10B473KB8NNNC,basic,0.0059,0.0059,2,smt,1,0,0,"boards/lite-main parts.json, LCSC 2026-10-29 (review-2)"
-offboard,4 mm binding post (speaker; wired to the board's screw terminal),,(not on LCSC),offboard,0.40,0.30,0,hand,0,0,0,estimate AliExpress-class; none now: Lite has board-mounted sockets (J4-J7)
+offboard,4 mm binding post (speaker; wired to the board's screw terminal),,(not on LCSC),offboard,0.40,0.30,0,hand,0,0,0,estimate AliExpress-class; none now: every tier has board-mounted sockets (Lite J4-J7, core J20-J27)

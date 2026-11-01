@@ -437,39 +437,59 @@
     "pos": 0.6
    },
    {
+    "ref": "J20",
+    "edge": "top",
+    "pos": 0.1
+   },
+   {
+    "ref": "J21",
+    "edge": "top",
+    "pos": 0.171
+   },
+   {
+    "ref": "J22",
+    "edge": "top",
+    "pos": 0.242
+   },
+   {
+    "ref": "J23",
+    "edge": "top",
+    "pos": 0.314
+   },
+   {
+    "ref": "J24",
+    "edge": "top",
+    "pos": 0.385
+   },
+   {
+    "ref": "J25",
+    "edge": "top",
+    "pos": 0.456
+   },
+   {
+    "ref": "J26",
+    "edge": "top",
+    "pos": 0.527
+   },
+   {
+    "ref": "J27",
+    "edge": "top",
+    "pos": 0.598
+   },
+   {
     "ref": "U19",
     "edge": "top",
-    "pos": 0.86
-   },
-   {
-    "ref": "J6",
-    "edge": "top",
-    "pos": 0.08
-   },
-   {
-    "ref": "J7",
-    "edge": "top",
-    "pos": 0.2
+    "pos": 0.905
    },
    {
     "ref": "J4",
     "edge": "top",
-    "pos": 0.38
+    "pos": 0.696
    },
    {
     "ref": "J5",
     "edge": "top",
-    "pos": 0.55
-   },
-   {
-    "ref": "J10",
-    "edge": "top",
-    "pos": 0.75
-   },
-   {
-    "ref": "J11",
-    "edge": "top",
-    "pos": 0.9
+    "pos": 0.812
    },
    {
     "ref": "SW1",
@@ -545,10 +565,14 @@
    }
   ],
   "fixed": [
-   "J6",
-   "J7",
-   "J10",
-   "J11",
+   "J20",
+   "J21",
+   "J22",
+   "J23",
+   "J24",
+   "J25",
+   "J26",
+   "J27",
    "J4",
    "J5",
    "U19",
@@ -704,20 +728,20 @@
  },
  "enclosure": {
   "box_mm": [
-   132.4,
-   112.4,
+   166.8,
+   125.4,
    39.8
   ],
   "wall_mm": 2.4,
   "material": "PETG",
   "room_c": 30,
   "other_w": 3.0,
-  "inlet_mm2": 1730,
-  "riser_mm2": 1565,
-  "outlet_mm2": 1598,
+  "inlet_mm2": 2118,
+  "riser_mm2": 1928,
+  "outlet_mm2": 1622,
   "stack_mm": 32,
   "floor": "feet",
-  "note": "Plus box as built on main (enclosure/core_box.py vent_plan, task 261030-074523 / PR #102): low wall and floor inlets 1730 mm2, 7 mm S+E riser strips 1565 mm2, lid grille over both amps 1598 mm2, stack 32 mm. Ultra: 135.4 x 114.4 x 49.2 mm, 1516/1578/1736 mm2, stack 39. other_w: the rest of core (~2.5 W) plus the output filters at the governed level (~0.5 W)"
+  "note": "Plus box after the banana-socket row (enclosure/core_box.py vent_plan, 2026-11-01, issues #117/#124: core 154.4 x 113): low wall and floor inlets 2118 mm2, 7 mm S+E riser strips 1928 mm2 (the notch beside the board's front right, open to the lid, not counted), lid grille over both amps plus E-strip slots 1622 mm2, stack 32 mm. Ultra: 169.8 x 127.4 x 49.2 mm, 1748/1901/1778 mm2, stack 39. other_w: the rest of core (~2.5 W) plus the output filters at the governed level (~0.5 W)"
  },
  "ripple": [
   {

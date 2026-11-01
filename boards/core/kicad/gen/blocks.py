@@ -60,8 +60,10 @@ P("Q1", A + "AO4485", "AO4485", A + "SOIC-8_L5.0-W4.0-P1.27-LS6.0-BL",
 # (docs/review-2/sims/power/tb_core_fw_on_28v_FIX.cir), 2.5x SOA margin.
 R("R4", "470k", "VBUS", "PVDD_G")
 R("R5", "470k", "PVDD_G", "PVDD_PD")
-C("C4", "100nF/50V", "PVDD_G", "PVDD", pkg="0603", role="soft-start gate-drain")
-C("C8", "2.2uF/50V", "VBUS", "PVDD_G", pkg="0805",
+# review-5 R5-PA-1: C4 100n -> 220n and C8 2.2u -> 4.7u slow the ramp further so
+# Q1 stays inside its SOA (docs/review-5/pa.md); C8 sits across D4's 15 V clamp
+C("C4", "220nF/50V", "PVDD_G", "PVDD", pkg="0603", role="soft-start gate-drain")
+C("C8", "4.7uF/25V", "VBUS", "PVDD_G", pkg="0805",
   role="gate-source: holds Q1 off while VBUS steps (attach, 5 V to 28 V)")
 P("D4", A + "BZT52C15", "BZT52C15", A + "x", {"n:K": "VBUS", "n:A": "PVDD_G"},
   lcsc="C173427", role="Q1 gate-source clamp, 15 V")

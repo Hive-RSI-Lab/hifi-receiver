@@ -30,7 +30,7 @@ and say why.
 | Streaming | Spotify Connect, AirPlay 1, Bluetooth, Lyrion (LMS) | same | same |
 | Control | web app, 3 buttons, IR (bring your own remote) | web app, knob + 2 buttons, IR remote in box | web app, 2" colour screen, knob + 3 buttons, IR remote |
 | Boards | 1: `lite-main` (2-layer) | 1: `core` (4-layer) | 2: `core` fully populated + `ultra-front` |
-| Unit cost at 100, board + assembly + PCB | **$14.8** (banana sockets on the board; board $14.5 per `tools/hwcheck.py cost`) | **$34.3** (two TPA3220s, one channel each, no heatsink; `core` board alone $35.4 per `tools/hwcheck.py cost`) | **$41.0** |
+| Unit cost at 100, board + assembly + PCB | **$14.8** (banana sockets on the board; board $14.5 per `tools/hwcheck.py cost`) | **$36.2** (two TPA3220s, one channel each, no heatsink, banana sockets on the board; `core` board alone $38.6 per `tools/hwcheck.py cost`) | **$43.7** |
 | Target retail (charger not included / with charger) | **$59 / $79** | **$129 / $159** | **$199 / $229** |
 | Build order | **first** | second | third |
 
@@ -527,9 +527,9 @@ routed board:
   on its internal DVDD.
 - **Ethernet clock:** a gated 50 MHz oscillator. The ESP32 GPIO0 clock-out
   is experimental in ESP-IDF.
-- **Speaker connections:** 2-way screw terminals on the board. The
-  enclosure's banana sockets or binding posts wire to them, which closes
-  open item 4.
+- **Speaker connections:** board-mounted 4 mm banana sockets (Amass
+  24.243, JLC-fitted), eight in one row on the rear edge: no wiring in the
+  box (2026-11-01, issues #117, #124; they replaced screw terminals).
 - **Front-board FFC:** ultra-front's pinout, with SPI, I2C and an interrupt
   line. The front board carries its own expander.
 
@@ -556,8 +556,8 @@ routed board:
    carries four board-mounted 4 mm banana sockets, Amass 24.243 (red C7437321,
    black C7437322, right-angle PCB mount, 24 A), which JLC fits: no binding
    posts and no hand wiring. The GC4010-F is an RC bullet connector with no PCB
-   footprint. Plus/Ultra (`core`) still have screw terminals and wired posts;
-   the same sockets there need the rear edge re-laid (8 sockets for Ultra).
+   footprint. Plus/Ultra (`core`) got the same sockets on 2026-11-01: eight
+   along a re-laid rear edge (Plus fits four), `boards/core/README.md`.
 5. **Thermal:** the made TPA3118 board's temperature under load was never
    measured.
 6. **Questions with the person** (step-back 2026-10-28):

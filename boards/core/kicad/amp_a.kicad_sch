@@ -1634,13 +1634,13 @@
 				)
 			)
 		)
-		(symbol "aiee:KF301-5.0-2P"
+		(symbol "aiee:24.243.1"
 			(pin_names
 				(hide yes)
 			)
 			(in_bom yes)
 			(on_board yes)
-			(property "Reference" "U"
+			(property "Reference" "CN"
 				(id 0)
 				(at 0 6.35 0)
 				(effects
@@ -1649,7 +1649,7 @@
 					)
 				)
 			)
-			(property "Value" "KF301-5.0-2P"
+			(property "Value" "24.243.1"
 				(id 1)
 				(at 0 -6.35 0)
 				(effects
@@ -1658,7 +1658,7 @@
 					)
 				)
 			)
-			(property "Footprint" "aiee:CONN-TH_P5.00_KF301-5.0-2P"
+			(property "Footprint" "aiee:CONN-TH_24.243.1_RED"
 				(id 2)
 				(at 0 -8.89 0)
 				(effects
@@ -1667,7 +1667,7 @@
 					) hide
 				)
 			)
-			(property "Datasheet" "https://lcsc.com/product-detail/New-Quadratic-Unclassified-Data_Cixi-Kefa-Elec-KF301-5-0-2P_C474881.html"
+			(property "Datasheet" "https://www.lcsc.com/datasheet/C7437321.pdf"
 				(id 3)
 				(at 0 -11.43 0)
 				(effects
@@ -1676,7 +1676,7 @@
 					) hide
 				)
 			)
-			(property "Manufacturer" "KEFA(科发)"
+			(property "Manufacturer" "AMASS(艾迈斯)"
 				(id 4)
 				(at 0 -13.97 0)
 				(effects
@@ -1685,7 +1685,7 @@
 					) hide
 				)
 			)
-			(property "MPN" "KF301-5.0-2P"
+			(property "MPN" "24.243.1"
 				(id 5)
 				(at 0 -16.51 0)
 				(effects
@@ -1694,7 +1694,7 @@
 					) hide
 				)
 			)
-			(property "LCSC Part" "C474881"
+			(property "LCSC Part" "C7437321"
 				(id 6)
 				(at 0 -19.05 0)
 				(effects
@@ -1703,7 +1703,7 @@
 					) hide
 				)
 			)
-			(property "ki_keywords" "Screw terminal"
+			(property "ki_keywords" "Banana Connectors/Alligator Clips"
 				(id 8)
 				(at 0 -21.59 0)
 				(effects
@@ -1712,7 +1712,146 @@
 					) hide
 				)
 			)
-			(symbol "KF301-5.0-2P_0_1"
+			(symbol "24.243.1_0_1"
+				(rectangle
+					(start -1.27 3.81)
+					(end 3.81 -3.81)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(circle
+					(center 0.0000 2.54)
+					(radius 0.38)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin passive line
+					(at -3.81 1.27 0)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -3.81 -1.27 0)
+					(length 2.54)
+					(name "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
+		(symbol "aiee:24.243.2"
+			(pin_names
+				(hide yes)
+			)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "CN"
+				(id 0)
+				(at 0 6.35 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "24.243.2"
+				(id 1)
+				(at 0 -6.35 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "aiee:CONN-TH_24.243.2"
+				(id 2)
+				(at 0 -8.89 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(property "Datasheet" "https://www.lcsc.com/datasheet/C7437322.pdf"
+				(id 3)
+				(at 0 -11.43 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(property "Manufacturer" "AMASS(艾迈斯)"
+				(id 4)
+				(at 0 -13.97 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(property "MPN" "24.243.2"
+				(id 5)
+				(at 0 -16.51 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(property "LCSC Part" "C7437322"
+				(id 6)
+				(at 0 -19.05 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(property "ki_keywords" "Banana Connectors/Alligator Clips"
+				(id 8)
+				(at 0 -21.59 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					) hide
+				)
+			)
+			(symbol "24.243.2_0_1"
 				(rectangle
 					(start -1.27 3.81)
 					(end 3.81 -3.81)
@@ -6590,7 +6729,7 @@
 		)
 	)
 	(symbol
-		(lib_id "aiee:KF301-5.0-2P")
+		(lib_id "aiee:24.243.1")
 		(at 485.14 115.57 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -6598,9 +6737,9 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "13895711-d585-4d0f-88e4-8fdd72abc0e6")
-		(property "Reference" "J6"
-			(at 484.1506 110.49 0.0000)
+		(uuid "2eb2186c-046f-5e21-a94d-8aa541672c1f")
+		(property "Reference" "J20"
+			(at 483.6934 110.49 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6608,8 +6747,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "SPK A L"
-			(at 481.8646 120.65 0.0000)
+		(property "Value" "24.243 red"
+			(at 480.493 120.65 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6617,7 +6756,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "aiee:CONN-TH_P5.00_KF301-5.0-2P"
+		(property "Footprint" "aiee:CONN-TH_24.243.1_RED"
 			(at 485.14 106.68 0.0000)
 			(effects
 				(font
@@ -6626,7 +6765,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C474881"
+		(property "LCSC" "C7437321"
 			(at 487.68 120.6499 0)
 			(effects
 				(font
@@ -6635,7 +6774,7 @@
 				(justify left)
 			)
 		)
-		(property "MPN" "KF301-5.0-2P"
+		(property "MPN" "24.243.1"
 			(at 487.68 120.6499 0)
 			(effects
 				(font
@@ -6645,22 +6784,22 @@
 			)
 		)
 		(pin "1"
-			(uuid "01f90671-45d3-41e8-86cb-58a9f0f3f80a")
+			(uuid "d72424ec-6c5e-5bab-8013-a627e9036042")
 		)
 		(pin "2"
-			(uuid "6669c716-c0df-4e5d-b584-e55a9e907955")
+			(uuid "628068d8-3fda-5314-93d7-8a989b73afe5")
 		)
 		(instances
 			(project "amp_a"
 				(path "/915c4a56-71c7-4abb-b9f9-d48620d5b558"
-					(reference "J6")
+					(reference "J20")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "aiee:KF301-5.0-2P")
+		(lib_id "aiee:24.243.2")
 		(at 513.08 115.57 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -6668,9 +6807,9 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced no)
-		(uuid "c84561d5-b569-441b-b9b7-1c97ebf52da0")
-		(property "Reference" "J7"
-			(at 512.0906 110.49 0.0000)
+		(uuid "1d4d72e7-460c-51c1-95b4-32022d70e1a0")
+		(property "Reference" "J21"
+			(at 511.6334 110.49 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6678,8 +6817,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "SPK A R"
-			(at 509.8046 120.65 0.0000)
+		(property "Value" "24.243 black"
+			(at 507.5186 120.65 0.0000)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6687,7 +6826,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "aiee:CONN-TH_P5.00_KF301-5.0-2P"
+		(property "Footprint" "aiee:CONN-TH_24.243.2"
 			(at 513.08 106.68 0.0000)
 			(effects
 				(font
@@ -6696,7 +6835,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C474881"
+		(property "LCSC" "C7437322"
 			(at 515.62 120.6499 0)
 			(effects
 				(font
@@ -6705,7 +6844,7 @@
 				(justify left)
 			)
 		)
-		(property "MPN" "KF301-5.0-2P"
+		(property "MPN" "24.243.2"
 			(at 515.62 120.6499 0)
 			(effects
 				(font
@@ -6715,15 +6854,155 @@
 			)
 		)
 		(pin "1"
-			(uuid "7c19b4ee-23cd-4fc8-923d-a3283257aad4")
+			(uuid "eeb07662-5c5f-5505-a70d-cffdadd895b4")
 		)
 		(pin "2"
-			(uuid "be3be2d0-fbb5-4692-a821-5773f3691756")
+			(uuid "5e848b19-4851-5c14-a42a-ba50dc278229")
 		)
 		(instances
 			(project "amp_a"
 				(path "/915c4a56-71c7-4abb-b9f9-d48620d5b558"
-					(reference "J7")
+					(reference "J21")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "aiee:24.243.1")
+		(at 541.02 115.57 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp yes)
+		(fields_autoplaced no)
+		(uuid "054e0eca-004f-57f3-8974-b21014f46665")
+		(property "Reference" "J22"
+			(at 539.5734 110.49 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "24.243 red"
+			(at 536.373 120.65 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "aiee:CONN-TH_24.243.1_RED"
+			(at 541.02 106.68 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C7437321"
+			(at 543.56 120.6499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "MPN" "24.243.1"
+			(at 543.56 120.6499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "f34bef46-42ec-5e76-a2ab-7aa62ab8d7a1")
+		)
+		(pin "2"
+			(uuid "8784d397-a6cd-557d-89de-9219e960829c")
+		)
+		(instances
+			(project "amp_a"
+				(path "/915c4a56-71c7-4abb-b9f9-d48620d5b558"
+					(reference "J22")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "aiee:24.243.2")
+		(at 568.96 115.57 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp yes)
+		(fields_autoplaced no)
+		(uuid "5e348981-65b8-5a3a-bac2-87a1d6b55914")
+		(property "Reference" "J23"
+			(at 567.5134 110.49 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "24.243 black"
+			(at 563.3986 120.65 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "aiee:CONN-TH_24.243.2"
+			(at 568.96 106.68 0.0000)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C7437322"
+			(at 571.5 120.6499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "MPN" "24.243.2"
+			(at 571.5 120.6499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "9d548b68-0a47-550a-a477-708a4d116b94")
+		)
+		(pin "2"
+			(uuid "eee92e4f-2a98-532e-843b-757e0363a159")
+		)
+		(instances
+			(project "amp_a"
+				(path "/915c4a56-71c7-4abb-b9f9-d48620d5b558"
+					(reference "J23")
 					(unit 1)
 				)
 			)
@@ -8129,6 +8408,46 @@
 		)
 		(uuid "a1118b92-f585-5dc6-8d2a-a1ea2b325103")
 	)
+	(wire
+		(pts
+			(xy 537.21 114.3) (xy 534.67 114.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8f4c24e9-af69-5681-b29b-45d7022804ec")
+	)
+	(wire
+		(pts
+			(xy 537.21 116.84) (xy 534.67 116.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "21600b8b-0d91-5453-8256-738b2a18b496")
+	)
+	(wire
+		(pts
+			(xy 565.15 114.3) (xy 562.61 114.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "982cf8ba-3acf-58d4-a22b-dce175b3fec9")
+	)
+	(wire
+		(pts
+			(xy 565.15 116.84) (xy 562.61 116.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8741bb4d-0e07-572b-8c90-0b6fd4621f0d")
+	)
 	(label "AMP_A_RST"
 		(at 12.7 25.4 180)
 		(effects
@@ -9499,7 +9818,7 @@
 		)
 		(uuid "b5316862-7bfd-5fa1-b5fd-21c4cb477efd")
 	)
-	(label "A_SPK_L-"
+	(label "A_SPK_L+"
 		(at 478.79 116.84 180)
 		(effects
 			(font
@@ -9507,9 +9826,9 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "483bbb97-a300-5a6d-bc47-510c84543952")
+		(uuid "29a0ebde-8060-58e5-a20b-67cdc07e0178")
 	)
-	(label "A_SPK_R+"
+	(label "A_SPK_L-"
 		(at 506.73 114.3 180)
 		(effects
 			(font
@@ -9517,9 +9836,9 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "255fcca3-501b-51b6-9d2a-da40541a99cb")
+		(uuid "6ea78ad9-85f0-53a6-8564-7f52b92634af")
 	)
-	(label "A_SPK_R-"
+	(label "A_SPK_L-"
 		(at 506.73 116.84 180)
 		(effects
 			(font
@@ -9527,7 +9846,47 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "900b3d92-667d-5e25-ac48-e929750f1e4b")
+		(uuid "5e7566b4-2ae6-5861-a075-a560d3b6af49")
+	)
+	(label "A_SPK_R+"
+		(at 534.67 114.3 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "3bcd03d6-3381-5f07-a9f4-bb02e82d8698")
+	)
+	(label "A_SPK_R+"
+		(at 534.67 116.84 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "3776ab0a-c2d6-5b80-8467-86cc082371ea")
+	)
+	(label "A_SPK_R-"
+		(at 562.61 114.3 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "8ee8f714-7cee-52bc-a5bd-46a7ee94517e")
+	)
+	(label "A_SPK_R-"
+		(at 562.61 116.84 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "30ccefff-eaea-59ec-a413-3437cf29d5c2")
 	)
 	(hierarchical_label "AMP_A_RST"
 		(shape input)

@@ -2,7 +2,8 @@
 
 The main board of hifi-receiver-2's **Plus** and **Ultra** tiers
 ([docs/product.md](../../docs/product.md)). It is a USB-C-powered
-streaming amplifier on one 4-layer 120 x 100 mm board:
+streaming amplifier on one 4-layer board, 154.4 x 113 mm (120 x 100 until the
+banana sockets; see below):
 
 - **Input:** 28 V USB PD EPR at up to 140 W.
 - **Streaming:** ESP32 with Wi-Fi, Bluetooth and Ethernet.
@@ -34,12 +35,14 @@ All hwde gates pass on the routed board after the first-spin review ECO, with hi
 The fab package is in `fab/`:
 
 - **Gerbers:** `core_gerbers.zip`.
-- **Plus build:** `BOM.csv` (72 lines, every one with an LCSC number), `CPL.csv` (293 placed parts, 10 of them on the bottom: see `fab/ORDERING.md`), `BOM-full.csv` and `prebuy.csv`, which lists the Extended parts.
-- **Ultra build:** `fab/ultra/` holds `BOM.csv` and `CPL.csv` (293 placed parts) for the same Gerbers.
+- **Plus build:** `BOM.csv` (88 lines, every one with an LCSC number), `CPL.csv` (298 placed parts, 14 of them on the bottom: see `fab/ORDERING.md`), `BOM-full.csv` and `prebuy.csv`, which lists the Extended parts.
+- **Ultra build:** `fab/ultra/` holds `BOM.csv` and `CPL.csv` (302 placed parts) for the same Gerbers.
 
 Board facts:
 
-- **Size:** 4 layers, 120 x 100 mm, 1.6 mm.
+- **Size:** 4 layers, 154.4 x 113 mm overall, 1.6 mm. The right-hand 34.4 mm
+  is a wing along the rear only (y < 150 in KiCad); the front right stays
+  notched so the ESP32's antenna is still at the board edge.
 - **Stackup:** JLC04161H-1080B, 1 oz outer and 1 oz inner. Order it with
   inner copper 1 oz, not JLC's 0.5 oz default: the In2 VBUS/PVDD planes carry
   the full 5 A on their own (`power_trunk.py`).
@@ -68,7 +71,7 @@ pinout and the power tree are in
 | Sub DAC | PCM5102A to a stacked dual RCA (SUB1, SUB2) |
 | Line in | stacked dual RCA, ES7243E ADC, TS5A23157 DAC/DJ-direct selector |
 | Self-measurement | zone A's A_SPK_L+/R+ through 150k/10k, 470 pF, 1 uF onto a 1.65 V bias; TS5A23157 U20 picks RCA input (default) or the taps for the ADC; select from expander P17 through Q7 |
-| Zone A amp | TPA3220 (24 dB, AD mode, 600 kHz; pad down, 15 vias into the GND planes), 10 µH / 10 A filters, 2 screw terminals |
+| Zone A amp | TPA3220 (24 dB, AD mode, 600 kHz; pad down, 15 vias into the GND planes), 10 µH / 10 A filters, 4 board-mounted 4 mm banana sockets |
 | Zone B amp [Ultra] | the same, synchronised to zone A as a peripheral |
 | Control | TCA9539 I/O expander (0x74, reset with the ESP32's EN); Plus front-edge knob, 2 buttons, IR receiver, status LED |
 | Optical [Ultra] | PLR237 TOSLINK into the ES9018K2M's S/PDIF mux |
@@ -78,13 +81,60 @@ pinout and the power tree are in
 
 | Parts | Plus | Ultra |
 |---|---|---|
-| zone B amp, its filters, bulk cap, terminals (U16, L5-L8, C3xx/R3xx, J10/J11) | not fitted | fitted |
+| zone B amp, its filters, bulk cap (U16, L5-L8, C3xx/R3xx) | fitted (plays R) | fitted |
+| speaker sockets J20/J21 (zone A L), J26/J27 (zone B R) | fitted | fitted |
+| speaker sockets J22/J23 (zone A R), J24/J25 (zone B L) | not fitted | fitted |
 | TOSLINK U19, FB3, C126 | not fitted | fitted |
 | FFC J3, R402/R403 | not fitted | fitted |
 | knob SW1, buttons SW2/SW3, IR U18 (+R400/C400) | fitted | not fitted |
 
 `fab/BOM.csv`/`CPL.csv` are the **Plus** build. `fab/ultra/BOM.csv` and
 `CPL.csv` are the **Ultra** build of the same Gerbers.
+
+## Banana sockets (2026-11-01, issues #117, #124)
+
+The speaker outputs are eight 4 mm banana sockets in one row along the rear
+edge, 11 mm apart. From the left in KiCad (from behind the box it reads
+right to left): J20 A L+, J21 A L-, J22 A R+, J23 A R-, J24 B L+, J25 B L-,
+J26 B R+, J27 B R-. Red is +. Plus plays L on zone A and R on zone B
+(`HIFI_SPLIT`), so it fits J20/J21 and J26/J27; Ultra fits all eight.
+
+A socket reaches 21.4 mm into the board and its nose stands 2.65 mm past the
+edge, so the board grew. The rear edge moved 13 mm back, and a 34.4 mm wing
+on the right took the RCA jacks J4/J5 and the TOSLINK U19. They moved with
+D7/D8, FB3 and C126 and the copper between them as one block. The mounting
+holes H1/H2 went to the new rear corners. How it was done, from
+`boards/core`, KiCad's python as `python3.11`:
+
+1. `kicad/gen/blocks_amp.py`: the sockets replace the terminals. Then
+   `hwde lib_pull --lcsc C7437321 C7437322`, `build.py` (only amp_a/amp_b
+   kept), `parts/*.json` by hand, and the netlist.
+2. `python3.11 kicad/gen/banana_eco.py kicad/core.kicad_pcb`: rips the old
+   terminal copper and the stitch vias under the row, and cuts the speaker
+   pours back to y 130. It moves the rear block and the holes, and redraws
+   the outline and the planes.
+3. `hwde board_update --placements kicad/gen/banana_placements.json`.
+4. `python3.11 kicad/gen/banana_route.py kicad/core.kicad_pcb`: one
+   staircase pour per speaker net from its old pour to its socket's pin 2.
+   L-/R+ run on F.Cu and L+/R- on B.Cu, four per layer, with no crossings
+   and no vias. The pours are 2 mm wide (3.7 A rms). Where a later band
+   crosses below a socket, its pin 1 joins pin 2 by a 1 mm In2 link (J23,
+   J24, J25).
+5. `python3.11 kicad/gen/banana_snub.py kicad/core.kicad_pcb`: zone A R- and
+   zone B L+'s snubbers reached their net through the old terminal pin. Each
+   gets a via and a B.Cu stub into its pour.
+6. `miniroute.py` relays SUB1/SUB2_OUT, LIN_L/LIN_R and OPT_SPDIF to the
+   moved block. Each line still goes into its ESD clamp (D7/D8) before the
+   jack. Stale stubs are ripped with `rip_at.py`, and
+   `kicad/gen/banana_silk.py` drops the sockets' silk, as on Lite.
+   `kicad/gen/banana_45.py` puts the route ends back on the 45-degree grid
+   (hwde check_route_style).
+
+Folded in from review 5: R5-PA-1 (C4 220 nF/50 V C344195, C8 4.7 uF/25 V
+C1779: Q1's soft start stays in its SOA), the EP paste windows off the vias
+for U9/U10/U13 (`kicad/gen/ep_paste.py`, hwde check_ep_paste), and the
+footprints' LCSC fields from parts.json (`kicad/gen/lcsc_fields.py`, run by
+`fab.sh`, R5-DAL-8).
 
 ## First-spin review (review-2, 2026-10-29)
 
@@ -147,13 +197,13 @@ These are the decisions that differ from, or add to, docs/product.md.
 - **Snubbers:** on the speaker side of the output filter, as in TI's
   figure 9-1. On the switching node a 1 nF snubber would dissipate 0.47 W
   in each resistor.
-- **Speaker terminals:** 2-way 5 mm screw terminals (17 A). The planned
-  4 mm sockets (GC4010-F) have no EasyEDA model, and it was never confirmed
-  that a real banana plug fits them. The enclosure's banana sockets or
-  binding posts wire to the terminals, which product.md already allowed
-  for.
-- **Amp polarity:** the TPA3220 inverts, so OUTx_M goes to the speaker's
-  + terminal.
+- **Speaker outputs:** eight board-mounted 4 mm banana sockets, Amass
+  24.243 (red C7437321, black C7437322, 24 A), the part Lite uses. JLC fits
+  them, so nothing is wired by hand (issues #117, #124). They replaced 2-way
+  5 mm screw terminals, which needed posts in the box wired to them. See
+  "Banana sockets" above.
+- **Amp polarity:** the TPA3220 inverts. The DAC stage undoes it (U11's
+  inputs are swapped), so OUTx_P is the speaker's + (blocks_amp.py).
 - **DJ switch logic:** the expander's 3.3 V output can't drive the 5 V
   switch's logic (it needs VIH 3.5 V), so Q6 inverts it up to 5 V.
 - **I2S:** one bit and frame clock for all three converters. The sub DAC

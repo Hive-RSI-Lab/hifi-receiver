@@ -899,7 +899,6 @@
   },
   {
    "refdes": [
-    "C4",
     "C11",
     "C208",
     "C210",
@@ -907,7 +906,6 @@
     "C310"
    ],
    "refdes_class": {
-    "C4": "smt_placed",
     "C11": "smt_placed",
     "C208": "smt_placed",
     "C210": "smt_placed",
@@ -953,47 +951,47 @@
   },
   {
    "refdes": [
-    "C8"
+    "C4"
    ],
    "refdes_class": {
-    "C8": "smt_placed"
+    "C4": "smt_placed"
    },
-   "lcsc": "C377773",
-   "mpn": "2.2uF",
-   "value": "2.2uF",
-   "package": "C0805",
+   "lcsc": "C344195",
+   "mpn": "TCC0603X7R224K500CT",
+   "value": "220nF",
+   "package": "C0603",
    "block": "power_in",
-   "basic": true,
-   "role": "gate-source: holds Q1 off while VBUS steps (attach, 5 V to 28 V)",
-   "price": 0.0549,
+   "basic": false,
+   "role": "soft-start gate-drain (review-5 R5-PA-1)",
+   "price": 0.0129,
    "price_breaks": [
     {
      "qty": 1,
-     "price": 0.0549
+     "price": 0.0129
     },
     {
-     "qty": 100,
-     "price": 0.0451
+     "qty": 500,
+     "price": 0.0098
     },
     {
-     "qty": 300,
-     "price": 0.04
-    },
-    {
-     "qty": 2000,
-     "price": 0.0336
+     "qty": 1500,
+     "price": 0.0081
     },
     {
      "qty": 4000,
-     "price": 0.0323
+     "price": 0.0071
     },
     {
-     "qty": 10000,
-     "price": 0.0314
+     "qty": 24000,
+     "price": 0.0062
+    },
+    {
+     "qty": 48000,
+     "price": 0.0057
     }
    ],
-   "stock": 906488,
-   "description": "2.2uF 50V X5R ±10% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
+   "stock": 1140648,
+   "description": "220nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS"
   },
   {
    "refdes": [
@@ -3159,10 +3157,12 @@
   },
   {
    "refdes": [
+    "C8",
     "C100",
     "C110"
    ],
    "refdes_class": {
+    "C8": "smt_placed",
     "C100": "smt_placed",
     "C110": "smt_placed"
    },
@@ -3873,53 +3873,87 @@
   },
   {
    "refdes": [
-    "J6",
-    "J7",
-    "J10",
-    "J11"
+    "J20",
+    "J22",
+    "J24",
+    "J26"
    ],
    "refdes_class": {
-    "J6": "smt_placed",
-    "J7": "smt_placed",
-    "J10": "smt_placed",
-    "J11": "smt_placed"
+    "J20": "smt_placed",
+    "J22": "smt_placed",
+    "J24": "smt_placed",
+    "J26": "smt_placed"
    },
-   "lcsc": "C474881",
-   "mpn": "KF301-5.0-2P",
-   "value": "SPK A L",
-   "package": "CONN-TH_P5.00_KF301-5.0-2P",
+   "lcsc": "C7437321",
+   "mpn": "24.243.1",
+   "value": "24.243 red",
+   "package": "CONN-TH_24.243.1_RED",
    "block": "amp_a",
    "basic": false,
-   "role": "zone A L speaker terminal, 17 A",
-   "price": 0.1018,
+   "role": "speaker banana socket + (red), 4 mm, 24 A: zone A L/R, zone B L/R",
+   "price": 0.4179,
    "price_breaks": [
     {
      "qty": 1,
-     "price": 0.1018
+     "price": 0.4179
     },
     {
-     "qty": 50,
-     "price": 0.084
+     "qty": 10,
+     "price": 0.3934
     },
     {
-     "qty": 150,
-     "price": 0.0748
+     "qty": 250,
+     "price": 0.3311
     },
     {
      "qty": 1000,
-     "price": 0.0628
-    },
-    {
-     "qty": 2000,
-     "price": 0.0602
-    },
-    {
-     "qty": 5000,
-     "price": 0.0584
+     "price": 0.3196
     }
    ],
-   "stock": 58480,
-   "description": "-30℃~+120℃ 1 1.5 14~22 17A 1x2P 2 250V 2P 5mm Blue Through Hole 插件,P=5mm Screw Terminal Blocks ROHS"
+   "stock": 5936,
+   "description": "24A 60V Terminal 插件 Banana Connectors / Alligator Clips ROHS"
+  },
+  {
+   "refdes": [
+    "J21",
+    "J23",
+    "J25",
+    "J27"
+   ],
+   "refdes_class": {
+    "J21": "smt_placed",
+    "J23": "smt_placed",
+    "J25": "smt_placed",
+    "J27": "smt_placed"
+   },
+   "lcsc": "C7437322",
+   "mpn": "24.243.2",
+   "value": "24.243 black",
+   "package": "CONN-TH_24.243.2",
+   "block": "amp_a",
+   "basic": false,
+   "role": "speaker banana socket - (black), 4 mm, 24 A: zone A L/R, zone B L/R",
+   "price": 0.4179,
+   "price_breaks": [
+    {
+     "qty": 1,
+     "price": 0.4179
+    },
+    {
+     "qty": 10,
+     "price": 0.3934
+    },
+    {
+     "qty": 250,
+     "price": 0.3327
+    },
+    {
+     "qty": 1000,
+     "price": 0.3196
+    }
+   ],
+   "stock": 3301,
+   "description": "24A 60V Terminal 插件 Banana Connectors / Alligator Clips ROHS"
   },
   {
    "refdes": [
