@@ -322,9 +322,16 @@ Three inputs, in the Input button's order:
   the governor scales the DAC's samples), against the amps' thermal budget
   as input power (the governor's thermal cap / 0.88 + 4 W idle: Ultra one
   zone 14.2 W, both 23.3 W, Plus 25.6 W). It also trips on OTW_CLIP low
-  for 200 ms. Then the input moves to `line`, through the governor, with
-  the amps held in reset across the switch as any input change does; the
-  choice in flash stays DJ direct, so a reboot brings it back. `/state`
+  for 200 ms, and (review-5 R5-PA-2) on the charger's contract: when the
+  measured ISENSE × VBUS is over the contract's watts for two 10 ms steps
+  in a row, it hands over at once, inside the ~10 ms the PVDD bulk rides a
+  charger's OCP through. Then the input moves to `line`, through the
+  governor, with the amps held in reset across the switch as any input
+  change does. After a thermal or OTW trip the choice in flash stays DJ
+  direct, so a reboot brings it back; after a contract trip `line` is
+  saved, so a charger too small for DJ direct can't loop OCP, reboot, DJ
+  direct. (Plus at 4 ohm with the FLX4 at full level draws ~113 W, so it
+  needs 140 W EPR, or 100 W at 6 ohm.) `/state`
   `audio.dj_guard` shows `in_w`, `limit_w` and what last `tripped` it.
   The FLX4 at full level on Ultra (≈8 W/ch of DJ program, 1.8× the
   budget) trips it inside a minute, before the chips reach OTE; on Plus
