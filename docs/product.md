@@ -526,9 +526,9 @@ routed board:
   on its internal DVDD.
 - **Ethernet clock:** a gated 50 MHz oscillator. The ESP32 GPIO0 clock-out
   is experimental in ESP-IDF.
-- **Speaker connections:** 2-way screw terminals on the board. The
-  enclosure's banana sockets or binding posts wire to them, which closes
-  open item 4.
+- **Speaker connections:** board-mounted 4 mm banana sockets (Amass
+  24.243, JLC-fitted), eight in one row on the rear edge: no wiring in the
+  box (2026-11-01, issues #117, #124; they replaced screw terminals).
 - **Front-board FFC:** ultra-front's pinout, with SPI, I2C and an interrupt
   line. The front board carries its own expander.
 
@@ -555,8 +555,8 @@ routed board:
    carries four board-mounted 4 mm banana sockets, Amass 24.243 (red C7437321,
    black C7437322, right-angle PCB mount, 24 A), which JLC fits: no binding
    posts and no hand wiring. The GC4010-F is an RC bullet connector with no PCB
-   footprint. Plus/Ultra (`core`) still have screw terminals and wired posts;
-   the same sockets there need the rear edge re-laid (8 sockets for Ultra).
+   footprint. Plus/Ultra (`core`) got the same sockets on 2026-11-01: eight
+   along a re-laid rear edge (Plus fits four), `boards/core/README.md`.
 5. **Thermal:** the made TPA3118 board's temperature under load was never
    measured.
 6. **Questions with the person** (step-back 2026-10-28):

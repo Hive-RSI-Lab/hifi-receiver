@@ -21,8 +21,8 @@ PCB_CAL = 2.5
 # board(s) per tier: (name, layers, w_mm, h_mm)
 BOARDS = {
     "lite": [("lite-main", 2, 100, 90)],
-    "plus": [("core", 4, 120, 100)],
-    "ultra": [("core", 4, 120, 100), ("ultra-front", 2, 110, 40)],
+    "plus": [("core", 4, 154.4, 113)],      # core's bounding box since the banana-socket row (#117/#124)
+    "ultra": [("core", 4, 154.4, 113), ("ultra-front", 2, 110, 40)],
 }
 PCB_BASE = {2: {10: 2.00, 100: 24.90}, 4: {10: 9.90, 100: 76.90}}
 
