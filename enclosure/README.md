@@ -133,7 +133,7 @@ is held under each mounting hole; every part fits a 220 x 220 mm bed.
 
 ## Plus and Ultra
 
-Both are fitted to the routed `core` board (`boards/core`, main at 18ceb29).
+Both are fitted to the routed `core` board (`boards/core`, with the banana-socket row of 2026-11-01).
 They are built by `plus.py` and `ultra.py`, which call `core_box.py`.
 
 | | Plus | Ultra |
