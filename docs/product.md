@@ -30,7 +30,7 @@ and say why.
 | Streaming | Spotify Connect, AirPlay 1, Bluetooth, Lyrion (LMS) | same | same |
 | Control | web app, 3 buttons, IR (bring your own remote) | web app, knob + 2 buttons, IR remote in box | web app, 2" colour screen, knob + 3 buttons, IR remote |
 | Boards | 1: `lite-main` (2-layer) | 1: `core` (4-layer) | 2: `core` fully populated + `ultra-front` |
-| Unit cost at 100, board + assembly + PCB | **$14.8** (banana sockets on the board; board $14.5 per `tools/hwcheck.py cost`) | **$34.3** (two TPA3220s, one channel each, no heatsink; `core` board alone $35.4 per `tools/hwcheck.py cost`) | **$40.9** |
+| Unit cost at 100, board + assembly + PCB | **$14.8** (banana sockets on the board; board $14.5 per `tools/hwcheck.py cost`) | **$36.2** (two TPA3220s, one channel each, no heatsink, banana sockets on the board; `core` board alone $38.6 per `tools/hwcheck.py cost`) | **$43.5** |
 | Target retail (charger not included / with charger) | **$59 / $79** | **$129 / $159** | **$199 / $229** |
 | Build order | **first** | second | third |
 
