@@ -4,7 +4,7 @@
   "phase": "P9",
   "tool": "dfm",
   "input": "kicad/core.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
+  "input_digest": "sexpr_no_uuid:2e695198d08495041ff29f45c32ecddbe2f5b97f3606fe42c472f68bc243557a",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -215,12 +215,12 @@
   "record_result": {
     "ok": true,
     "recorded": true,
-    "workspace": "/home/hive2/projects/hifi-esd/boards/core",
+    "workspace": "/home/hive2/projects/hifi-core-banana/boards/core",
     "gate": "dfm",
     "status": "pass",
-    "attempts": 10,
+    "attempts": 12,
     "inputs": {
-      "pcb": "sexpr_no_uuid:630542ce7ba57dc295cc63170c7ff137d680b2911d73032c71e3add858619ae6",
+      "pcb": "sexpr_no_uuid:2e695198d08495041ff29f45c32ecddbe2f5b97f3606fe42c472f68bc243557a",
       "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
       "parts": null
     }
