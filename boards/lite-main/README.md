@@ -258,6 +258,12 @@ Two fixes, between `route` and `finish`, only where drc_routed asked for them:
   under the 0.5 mm hole-to-hole floor.
 - The route run was repeated until only those were left.
 
+Later, for hive-hwde 9ad982e's stricter checks (review round 4),
+`kicad/gen/ep_paste.py` (KiCad's python) gives U1's and U7's exposed pads
+window-pane paste apertures off their GND vias (check_ep_paste). It also
+takes U8's 16 thermal-via pads to 0.70 mm on their 0.30 mm drill, for JLC's
+0.18 mm annular ring (dfm). The same edits are in `lib/aiee.pretty`.
+
 The fab package in `fab/`:
 
 - `lite-main_gerbers.zip`: Gerbers and drill.
