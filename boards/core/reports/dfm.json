@@ -4,7 +4,7 @@
   "phase": "P9",
   "tool": "dfm",
   "input": "kicad/core.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:9a7b45c7fb09a883bbd7b04f1f91616dd92315079491ee2906fe310f06bfe47f",
+  "input_digest": "sexpr_no_uuid:718ac37e544701f87ad4a5616ec377dbf84e5bc837778e4638b38aaf51efb744",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -714,7 +714,7 @@
     "status": "pass",
     "attempts": 14,
     "inputs": {
-      "pcb": "sexpr_no_uuid:9a7b45c7fb09a883bbd7b04f1f91616dd92315079491ee2906fe310f06bfe47f",
+      "pcb": "sexpr_no_uuid:718ac37e544701f87ad4a5616ec377dbf84e5bc837778e4638b38aaf51efb744",
       "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
       "parts": null
     }

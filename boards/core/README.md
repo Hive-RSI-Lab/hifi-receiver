@@ -103,7 +103,7 @@ A socket reaches 21.4 mm into the board and its nose stands 2.65 mm past the
 edge, so the board grew. The rear edge moved 13 mm back, and a 34.4 mm wing
 on the right took the RCA jacks J4/J5 and the TOSLINK U19. They moved with
 D7/D8, FB3 and C126 and the copper between them as one block. The mounting
-holes H1/H2 went to the new rear corners. How it was done, from
+holes H1/H2 went to the new rear corners (H2 later moved south along the east edge to (185.45, 127.4), to make room for the jacks' side ears: `kicad/gen/rca_ear_eco.py`). How it was done, from
 `boards/core`, KiCad's python as `python3.11`:
 
 1. `kicad/gen/blocks_amp.py`: the sockets replace the terminals. Then

@@ -57,3 +57,21 @@ A 0.45/0.2 via on C229's existing F.Cu track at (48.61, 129.95) and a 0.6 mm B.C
 
 - **J4/J5 in the CPL moved 0.79 mm in y (Plus and Ultra).** No part moved. Main's CPL came from an older hwde; the newer `bom_cpl` carries the part model's offset, which clears main's 2 `cpl_offset` warnings on them. Check J4/J5 in JLC's preview, as for every part.
 - **dfm:** passes, with the same 4 waived and 0 failing. 18 `dfm_ring_breakout` warnings are new, from the newer hwde, on 0.5/0.3 mm vias with a 0.1 mm ring. None is a via this round added. Left as they are; it is a warning for JLC's drill wander, not a rule break.
+
+## RCA jack ear clash (the person's render; branch h2/core-rca-ear)
+
+The jack's side ear reaches local x +12.3 at 10.8-16.2 mm over the board, and its courtyard stopped at +8. J4's ear ran 2.0 mm into J27, and J5's about 0.4 mm into J4. `kicad/gen/rca_ear_eco.py` and `rca_ear_court.py` do the move; the courtyard now holds the ear in the library, `eco_rca.py` and on the board.
+
+| Part | Was | Now |
+|---|---|---|
+| J4, D7 | x 142.0, 142.01 | +3.0: x 145.0, 145.01 |
+| J5, D8 | x 160.0, 159.21 | +6.1: x 166.1, 165.31 |
+| U19, FB3, C126 | x 174.4, 181.55, 180.94 | +5.5: x 179.9, 187.05, 186.44 |
+| H2 | (185.45, 111.25) | (185.45, 127.4) |
+
+- **Checks on the moved board:** af884's `clash.py` finds no 3D clash among the 307 parts with a model (U3's is missing). `check_courtyard` passes with the ear in. DRC: 0 violations, 0 unconnected, parity clean.
+- **Copper:** LIN_L, LIN_R and OPT_SPDIF's runs were re-routed; SUB1/SUB2 stretch along their horizontal run at x 131. 4 GND stitching vias were removed where parts now sit, and one added where H2 was. The bananas didn't move.
+- **Crosstalk:** `check_si` flags nothing on LIN_L, LIN_R or OPT_SPDIF. LIN_L's worst forced sim is 2.93 mV (LRCK), budget 33 mV.
+- **The forced sim is not trustworthy below check_si's floor.** To get LIN_L's figure I set the floor to 0. That run also gives impossible values, such as 1e26 mV on ESP_EN and 4,214 mV on LIN_R, including on copper this round didn't touch, so the solver is diverging on some pairs. The earlier 2.96 mV and this 2.93 mV come from that same run. They are sane and match the field estimate's size (1.0 mV), but the estimate is the firmer number. Both of OPT_SPDIF's forced results are unusable; its estimates are 1.0-6.7 mV against a 165 mV budget.
+- **Left for the box:** a5246 rebuilds Plus/Ultra from the new positions. H2's pillar and the rear wall's U19 and RCA openings change.
+
