@@ -1,0 +1,50 @@
+[
+ {
+  "measure": "phy_min_hi",
+  "min": 2.0,
+  "severity": "error",
+  "msg": "LAN8720A CLKIN: ring-back under VIH 2.0 V in the high half (double clock)"
+ },
+ {
+  "measure": "phy_max_lo",
+  "max": 0.8,
+  "severity": "error",
+  "msg": "LAN8720A CLKIN: ring-back over VIL 0.8 V in the low half"
+ },
+ {
+  "measure": "phy_max",
+  "max": 3.9,
+  "severity": "warning",
+  "msg": "LAN8720A CLKIN: overshoot past VDD+0.6 V (clamp current)"
+ },
+ {
+  "measure": "phy_min",
+  "min": -0.6,
+  "severity": "warning",
+  "msg": "LAN8720A CLKIN: undershoot under -0.6 V"
+ },
+ {
+  "measure": "esp_min_hi",
+  "min": 2.48,
+  "severity": "error",
+  "msg": "ESP32 GPIO0: ring-back under VIH 2.48 V in the high half (double clock)"
+ },
+ {
+  "measure": "esp_max_lo",
+  "max": 0.8,
+  "severity": "error",
+  "msg": "ESP32 GPIO0: ring-back over VIL 0.8 V in the low half"
+ },
+ {
+  "measure": "esp_max",
+  "max": 3.9,
+  "severity": "warning",
+  "msg": "ESP32 GPIO0: overshoot past VDD+0.6 V (clamp current)"
+ },
+ {
+  "measure": "esp_min",
+  "min": -0.6,
+  "severity": "warning",
+  "msg": "ESP32 GPIO0: undershoot under -0.6 V"
+ }
+]

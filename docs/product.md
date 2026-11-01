@@ -459,7 +459,8 @@ units the Hive builds for the person need none of it.
     its FFC pinout and the reasons for each choice.
   - **Fewer core GPIOs:** a TCA9535 I²C expander on the front board reads the
     knob and buttons, and drives the LED and the LCD reset. So the core gives
-    it only SPI (4 pins), backlight PWM, an interrupt and the IR line, plus
+    it only SPI (4 pins), a backlight on/off line (an expander output, so not
+    dimmable in hardware; R5-UF-4), an interrupt and the IR line, plus
     the shared I²C. The knob's A/B lines are also brought out, for the core
     to use if it has 2 pins spare.
   - **The LCD is plugged in by hand:** JLC can't place it. The panel's

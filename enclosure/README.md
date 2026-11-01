@@ -248,6 +248,18 @@ contacts)**:
 - **Pin mapping:** the cable doesn't twist, and both sockets are at
   rotation 0, so pin N meets pin N. That is what ultra-front's README
   requires.
+- **Don't fit a type A (same-side) cable** (review-5 R5-UF-5). It's the
+  common default. As inserted it makes no contact; with one end flipped it
+  maps pin N to 21-N, which puts core's LCD_BL push-pull output on front GND
+  (pin 11) and GPIO32 (FFC_SCK) on ENC_A, which is GND whenever the knob
+  rests with A closed: an output shorted for as long as it drives high.
+- **What to order:** search for "FFC 0.5 mm 20P 50 mm reverse" (also sold
+  as "type B" or "opposite side"); check the listing says reverse/opposite
+  contacts, not "same side". On LCSC, BXCONN's FC0.5-xxP-050-...-B family
+  is reverse-contact 50 mm (the 24-pin one is C53207182); LX's FFC20P parts
+  there are same-side. The route needs about 25-30 mm (J3 mouth to the
+  board back 4.1 mm, ~4 mm down, 1.6 mm under, 1.8 mm up, 2 x 3 mm
+  inserted), so 50 mm leaves slack; don't go past 50 mm.
 
 ### What the box adds to the board before the fit check
 

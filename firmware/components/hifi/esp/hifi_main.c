@@ -83,7 +83,7 @@ static volatile bool codec_dirty = true; /* re-apply input/sub to the codec */
  * the amp hears it (L4); review-3 R3-SYSTEM-5 */
 static volatile uint32_t amp_hold_until, route_at;
 static bool codec_up;
-static uint32_t otw_ms, otw_clear_ms; /* the OTW step-down (C2) */
+static uint32_t otw_ms, otw_clear_ms, otw_high_ms; /* the OTW step-down (C2) */
 static volatile uint32_t selftest_hold_until; /* keeps the amp awake for the self-test */
 static volatile bool capture_busy;   /* the codec's ADC is ours until the capture ends */
 
@@ -201,8 +201,12 @@ static void power_task(void *arg) {
 			hifi_gov_set_supply(&gov, contract.v, pg ? contract.w : 2.5f);
 		}
 		/* an amp that warns it is hot: -3 dB every 2 s while it does, back up
-		 * 1 dB every 10 s once it has been clear for 10 s (requirement C2) */
-		if (bp.otw) {
+		 * 1 dB every 10 s once it has been clear for 10 s (requirement C2).
+		 * OTW_CLIP must be low for 200 ms: it also pulses ~500 ns on every
+		 * clipped PWM cycle, which is not heat (R5-DAL-5) */
+		if (!bp.otw) otw_high_ms = now;
+		bool otw_held = bp.otw && now - otw_high_ms >= 200;
+		if (otw_held) {
 			otw_clear_ms = now;
 			if (now - otw_ms >= 2000) {
 				otw_ms = now;
@@ -218,8 +222,13 @@ static void power_task(void *arg) {
 		const char *dj_trip = NULL;
 		if (board_line && input == HIFI_INPUT_DJ_DIRECT && power.out.amp_on) {
 			float meas = isnan(bp.vbus_i_a) ? NAN : bp.vbus_i_a * bp.vbus_v;
-			dj_trip = hifi_djg_step(&djg, now, 0.01f, meas, bp.otw, hifi_djg_limit_w(&gov.cfg, gov.amps));
-			if (dj_trip) {
+			dj_trip = hifi_djg_step(&djg, now, 0.01f, meas, bp.otw, hifi_djg_limit_w(&gov.cfg, gov.amps),
+						pg ? contract.w : 0);
+			if (dj_trip && !strcmp(dj_trip, "contract")) {
+				ESP_LOGW(TAG, "DJ direct: %.1f W in, over the charger's %.1f W: the line in goes through "
+					      "the governor now", meas, contract.w);
+				input = HIFI_INPUT_LINE;
+			} else if (dj_trip) {
 				ESP_LOGW(TAG, "DJ direct: %s (%.1f W of %.1f W): the line in goes through the governor now",
 					 !strcmp(dj_trip, "otw") ? "the amps warn they are hot" : "over the amps' thermal budget",
 					 hifi_djg_in_w(&djg), hifi_djg_limit_w(&gov.cfg, gov.amps));
@@ -241,7 +250,9 @@ static void power_task(void *arg) {
 			ESP_LOGI(TAG, "power %s -> %s (VBUS %.2f V, PVDD %.2f V, PG %d)", hifi_power_state_name(before),
 				 hifi_power_state_name(power.state), bp.vbus_v, bp.pvdd_v, bp.pg);
 		UNLOCK();
-		if (dj_trip) input_changed(HIFI_INPUT_LINE, false); /* until it is chosen again */
+		/* until it is chosen again; a charger too small for DJ direct is
+		 * remembered, so a restart after its OCP comes back governed */
+		if (dj_trip) input_changed(HIFI_INPUT_LINE, !strcmp(dj_trip, "contract"));
 		if (!codec_up || (int32_t) (amp_hold_until - now) > 0) o.amp_on = false;
 		hifi_bsp_power_out(&o);
 		if (save_vol) {

@@ -1,0 +1,21 @@
+as built        PD step 5->28 V, PVDD_EN low, Vth 1.7: Vsg max 1.21 V, PVDD max 0.002 V
+R3-POWER-2 fix  PD step 5->28 V, PVDD_EN low, Vth 1.7: Vsg max 1.21 V, PVDD max 0.003 V
+swap 220n/4.7u  PD step 5->28 V, PVDD_EN low, Vth 1.7: Vsg max 0.95 V, PVDD max 0.003 V
+as built        VBUS 28.0 Vth 1.7: P peak  15.0 W, E 0.550 J, I peak 0.71 A, t90 114 ms after EN; Tj 127 C@25, 142 C@40, 152 C@50, 162 C@60
+as built        VBUS 28.0 Vth 1.9: P peak  14.8 W, E 0.550 J, I peak 0.70 A, t90 122 ms after EN; Tj 125 C@25, 140 C@40, 150 C@50, 160 C@60
+as built        VBUS 28.0 Vth 2.5: P peak  14.1 W, E 0.550 J, I peak 0.67 A, t90 147 ms after EN; Tj 122 C@25, 137 C@40, 147 C@50, 157 C@60
+as built        VBUS 29.4 Vth 1.7: P peak  16.8 W, E 0.606 J, I peak 0.75 A, t90 110 ms after EN; Tj 138 C@25, 153 C@40, 163 C@50, 173 C@60
+as built        VBUS 29.4 Vth 1.9: P peak  16.6 W, E 0.606 J, I peak 0.74 A, t90 118 ms after EN; Tj 137 C@25, 152 C@40, 162 C@50, 172 C@60
+as built        VBUS 29.4 Vth 2.5: P peak  15.8 W, E 0.607 J, I peak 0.71 A, t90 142 ms after EN; Tj 133 C@25, 148 C@40, 158 C@50, 168 C@60
+R3-POWER-2 fix  VBUS 28.0 Vth 1.7: P peak   7.9 W, E 0.553 J, I peak 0.36 A, t90 221 ms after EN; Tj 85 C@25, 100 C@40, 110 C@50, 120 C@60
+R3-POWER-2 fix  VBUS 28.0 Vth 1.9: P peak   7.7 W, E 0.553 J, I peak 0.36 A, t90 237 ms after EN; Tj 84 C@25, 99 C@40, 109 C@50, 119 C@60
+R3-POWER-2 fix  VBUS 28.0 Vth 2.5: P peak   7.4 W, E 0.553 J, I peak 0.34 A, t90 288 ms after EN; Tj 82 C@25, 97 C@40, 107 C@50, 117 C@60
+R3-POWER-2 fix  VBUS 29.4 Vth 1.7: P peak   8.8 W, E 0.609 J, I peak 0.38 A, t90 214 ms after EN; Tj 92 C@25, 107 C@40, 117 C@50, 127 C@60
+R3-POWER-2 fix  VBUS 29.4 Vth 1.9: P peak   8.7 W, E 0.609 J, I peak 0.38 A, t90 230 ms after EN; Tj 91 C@25, 106 C@40, 116 C@50, 126 C@60
+R3-POWER-2 fix  VBUS 29.4 Vth 2.5: P peak   8.3 W, E 0.610 J, I peak 0.36 A, t90 277 ms after EN; Tj 88 C@25, 103 C@40, 113 C@50, 123 C@60
+swap 220n/4.7u  VBUS 28.0 Vth 1.7: P peak   9.8 W, E 0.552 J, I peak 0.48 A, t90 194 ms after EN; Tj 98 C@25, 113 C@40, 123 C@50, 133 C@60
+swap 220n/4.7u  VBUS 28.0 Vth 1.9: P peak   9.6 W, E 0.552 J, I peak 0.47 A, t90 209 ms after EN; Tj 97 C@25, 112 C@40, 122 C@50, 132 C@60
+swap 220n/4.7u  VBUS 28.0 Vth 2.5: P peak   9.2 W, E 0.552 J, I peak 0.45 A, t90 257 ms after EN; Tj 94 C@25, 109 C@40, 119 C@50, 129 C@60
+swap 220n/4.7u  VBUS 29.4 Vth 1.7: P peak  10.9 W, E 0.608 J, I peak 0.50 A, t90 188 ms after EN; Tj 106 C@25, 121 C@40, 131 C@50, 141 C@60
+swap 220n/4.7u  VBUS 29.4 Vth 1.9: P peak  10.8 W, E 0.608 J, I peak 0.50 A, t90 202 ms after EN; Tj 105 C@25, 120 C@40, 130 C@50, 140 C@60
+swap 220n/4.7u  VBUS 29.4 Vth 2.5: P peak  10.3 W, E 0.609 J, I peak 0.47 A, t90 247 ms after EN; Tj 102 C@25, 117 C@40, 127 C@50, 137 C@60

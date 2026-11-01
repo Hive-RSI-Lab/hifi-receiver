@@ -1,7 +1,9 @@
 # lite-main: the Lite tier of hifi-receiver-2
 
-The Lite tier's one board, as `docs/product.md` defines it. You plug a 65–100 W
-USB-C laptop charger and a pair of speakers into it. It streams over Wi-Fi
+The Lite tier's one board, as `docs/product.md` defines it. You plug a USB-C PD
+laptop charger of 65 W or more and a pair of speakers into it (Lite asks for
+20 V and uses at most what that contract allows, 60–65 W with an ordinary
+cable: a bigger charger adds nothing; see issue #136). It streams over Wi-Fi
 (Spotify Connect, AirPlay, Lyrion) and Bluetooth, takes a DJ deck on RCA, and
 drives two subwoofers from RCA sub outs. A web app on your phone, three buttons
 or any IR remote control it.
@@ -255,6 +257,12 @@ Two fixes, between `route` and `finish`, only where drc_routed asked for them:
 - `kicad/gen/nudge_vias.py` + `kicad/gen/refill.py` for Freerouting's vias
   under the 0.5 mm hole-to-hole floor.
 - The route run was repeated until only those were left.
+
+Later, for hive-hwde 9ad982e's stricter checks (review round 4),
+`kicad/gen/ep_paste.py` (KiCad's python) gives U1's and U7's exposed pads
+window-pane paste apertures off their GND vias (check_ep_paste). It also
+takes U8's 16 thermal-via pads to 0.70 mm on their 0.30 mm drill, for JLC's
+0.18 mm annular ring (dfm). The same edits are in `lib/aiee.pretty`.
 
 The fab package in `fab/`:
 

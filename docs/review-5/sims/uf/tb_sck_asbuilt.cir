@@ -1,0 +1,26 @@
+* tb_sck_asbuilt: LCD SCK from core U7 GPIO32 to the ST7789 on ultra-front, 20 MHz (firmware speed=20000000)
+* Fast corner: ESP32 GPIO driver 25 ohm, 1.0 ns edge (drive strength 2). Lengths routed (pcbsum.py):
+*  core LCD_SCLK 49.2 mm (U7 pin 8 -> R402), R402 33R, core FFC_SCK 57.8 mm -> J3,
+*  FFC 50 mm (enclosure README 30-50), front LCD_SCK 20.4 mm (J1 -> J2), LCD tail ~25 mm, ST7789 ~8 pF.
+* Z0: core outer-layer microstrip over the In1 GND 55 ohm; FFC G-S-G 0.5 mm pitch 100 ohm;
+*  front 2-layer 0.2 mm over 1.5 mm FR-4 (B.Cu pour) 120 ohm; LCD FPC 100 ohm.
+Vclk drv 0 PULSE(0 3.3 5n 1n 1n 24n 50n)
+Rdrv drv n0 25
+T1 n0 0 n1 0 Z0=55 TD=0.295n
+R402 n1 n2 33
+T2 n2 0 n3 0 Z0=55 TD=0.345n
+Cj3 n3 0 1p
+T3 n3 0 n4 0 Z0=100 TD=0.265n
+Cj1 n4 0 1p
+T4 n4 0 n5 0 Z0=120 TD=0.13n
+Cj2 n5 0 1p
+T5 n5 0 load 0 Z0=100 TD=0.13n
+Cin load 0 8p
+.tran 10p 160n 0 10p
+* 3rd cycle: rising edge leaves the driver at 105 ns, falling at 130 ns
+.measure tran t_hi WHEN v(load)=2.31 RISE=3
+.measure tran hi_min MIN v(load) FROM=108n TO=130n
+.measure tran lo_max MAX v(load) FROM=133n TO=155n
+.measure tran v_over MAX v(load) FROM=100n TO=160n
+.measure tran v_under MIN v(load) FROM=100n TO=160n
+.end

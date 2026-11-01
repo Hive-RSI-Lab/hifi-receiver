@@ -1,0 +1,17 @@
+IPC-2152 (1 oz outer) width: 3.74 A rms dT20 -> 1.71 mm; 1.55 A dT20 -> 0.59 mm; 4.7 A dT20 -> 2.27 mm
+LOW  U15 A_OUT1M pins->L1             neck 0.67 mm -> 1.3 A @dT10, 1.7 A @dT20, 2.3 A @dT40
+LOW  L1->J6 A_SPK_L-                  neck 1.20 mm -> 2.1 A @dT10, 2.9 A @dT20, 3.9 A @dT40
+FAIL U15 A_OUT1P pins->L2             neck 0.53 mm -> 1.1 A @dT10, 1.4 A @dT20, 1.9 A @dT40
+LOW  L2->J6 A_SPK_L+                  neck 1.60 mm -> 2.6 A @dT10, 3.6 A @dT20, 4.8 A @dT40
+FAIL U15 A_OUT2M pins->L3             neck 0.45 mm -> 0.9 A @dT10, 1.2 A @dT20, 1.6 A @dT40
+LOW  L3->J7 A_SPK_R-                  neck 1.60 mm -> 2.6 A @dT10, 3.6 A @dT20, 4.8 A @dT40
+FAIL U15 A_OUT2P pins->L4             neck 0.50 mm -> 1.0 A @dT10, 1.4 A @dT20, 1.8 A @dT40
+LOW  L4->J7 A_SPK_R+                  neck 1.20 mm -> 2.1 A @dT10, 2.9 A @dT20, 3.9 A @dT40
+LOW  U16 B_OUT1M pins->L5             neck 0.67 mm -> 1.3 A @dT10, 1.7 A @dT20, 2.3 A @dT40
+LOW  L5->J10 B_SPK_L-                 neck 1.20 mm -> 2.1 A @dT10, 2.9 A @dT20, 3.9 A @dT40
+FAIL U16 B_OUT1P pins->L6             neck 0.53 mm -> 1.1 A @dT10, 1.4 A @dT20, 1.9 A @dT40
+LOW  L6->J10 B_SPK_L+                 neck 1.27 mm -> 2.2 A @dT10, 3.0 A @dT20, 4.1 A @dT40
+FAIL U16 B_OUT2M pins->L7             neck 0.45 mm -> 0.9 A @dT10, 1.2 A @dT20, 1.6 A @dT40
+LOW  L7->J11 B_SPK_R-                 neck 1.60 mm -> 2.6 A @dT10, 3.6 A @dT20, 4.8 A @dT40
+FAIL U16 B_OUT2P pins->L8             neck 0.50 mm -> 1.0 A @dT10, 1.4 A @dT20, 1.8 A @dT40
+LOW  L8->J11 B_SPK_R+                 neck 0.89 mm -> 1.7 A @dT10, 2.2 A @dT20, 3.0 A @dT40

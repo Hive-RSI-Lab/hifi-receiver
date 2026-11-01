@@ -39,6 +39,8 @@ float hifi_line_block_w(const hifi_gov_cfg_t *c, const int16_t *buf, size_t fram
 typedef struct {
 	float tau_s;        /* the power average; 60 */
 	uint32_t otw_ms;    /* OTW_CLIP low this long trips it; 200 */
+	int over_steps;     /* measured input over the charger's contract this
+	                     * many steps in a row trips it; 2 (R5-PA-2) */
 	float efficiency, idle_w; /* the governor's: speaker power to input power */
 } hifi_djg_cfg_t;
 
@@ -48,6 +50,7 @@ typedef struct {
 	float meas_w;       /* averaged measured input power */
 	uint32_t otw_since; /* when OTW went low */
 	bool otw_low;
+	int over_n;         /* steps in a row over the contract */
 	const char *tripped; /* the last trip's reason, NULL none */
 } hifi_djg_t;
 
@@ -64,7 +67,11 @@ float hifi_djg_in_w(const hifi_djg_t *g);
 float hifi_djg_limit_w(const hifi_gov_cfg_t *gc, int amps);
 /*
  * Every power step in DJ direct: in_w_meas the measured input power (NaN:
- * none), otw the amps' warning. Returns why DJ direct must hand over
- * ("power" or "otw", kept in tripped), or NULL.
+ * none), otw the amps' warning, limit_w the thermal budget, contract_w what
+ * the charger agreed to (0: unknown). The thermal budget is a 60 s average;
+ * the contract is checked on each step, because a charger's OCP acts in ms
+ * (R5-PA-2). Returns why DJ direct must hand over ("contract", "otw" or
+ * "power", kept in tripped), or NULL.
  */
-const char *hifi_djg_step(hifi_djg_t *g, uint32_t now_ms, float dt_s, float in_w_meas, bool otw, float limit_w);
+const char *hifi_djg_step(hifi_djg_t *g, uint32_t now_ms, float dt_s, float in_w_meas, bool otw, float limit_w,
+			  float contract_w);

@@ -42,6 +42,7 @@ float hifi_line_block_w(const hifi_gov_cfg_t *c, const int16_t *buf, size_t fram
 void hifi_djg_cfg_default(hifi_djg_cfg_t *c, const hifi_gov_cfg_t *gc) {
 	c->tau_s = 60.0f;
 	c->otw_ms = 200;
+	c->over_steps = 2;
 	c->efficiency = gc->efficiency;
 	c->idle_w = gc->p_idle_w;
 }
@@ -55,6 +56,7 @@ void hifi_djg_reset(hifi_djg_t *g) {
 	g->out_w = 0;
 	g->meas_w = 0;
 	g->otw_low = false;
+	g->over_n = 0;
 }
 
 static float ema(float avg, float x, float dt, float tau) {
@@ -75,12 +77,16 @@ float hifi_djg_limit_w(const hifi_gov_cfg_t *gc, int amps) {
 	return cap / gc->efficiency + gc->p_idle_w;
 }
 
-const char *hifi_djg_step(hifi_djg_t *g, uint32_t now_ms, float dt_s, float in_w_meas, bool otw, float limit_w) {
+const char *hifi_djg_step(hifi_djg_t *g, uint32_t now_ms, float dt_s, float in_w_meas, bool otw, float limit_w,
+			  float contract_w) {
 	if (!isnan(in_w_meas) && dt_s > 0) g->meas_w = ema(g->meas_w, in_w_meas, dt_s, g->cfg.tau_s);
+	if (!isnan(in_w_meas) && contract_w > 0 && in_w_meas > contract_w) g->over_n++;
+	else g->over_n = 0;
 	if (otw && !g->otw_low) g->otw_since = now_ms;
 	g->otw_low = otw;
 	const char *why = NULL;
-	if (otw && now_ms - g->otw_since >= g->cfg.otw_ms) why = "otw";
+	if (g->over_n >= g->cfg.over_steps) why = "contract";
+	else if (otw && now_ms - g->otw_since >= g->cfg.otw_ms) why = "otw";
 	else if (limit_w > 0 && hifi_djg_in_w(g) > limit_w) why = "power";
 	if (why) g->tripped = why;
 	return why;
