@@ -12,6 +12,7 @@ Three cases:
 - FIXED: ESP32's exposed pad, where the via has to land in the gaps of the
   paste/mask windows and not next to a pad.
 Zones are not refilled here: run kicad-cli pcb drc --refill-zones --save-board.
+Then kicad/gen/i2s_respace.py, kicad/gen/vbus_neck.py and kicad/gen/grid45.py (which puts these stubs on the 45-degree grid).
 """
 import math
 import sys
