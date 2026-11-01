@@ -47,9 +47,19 @@ and the one step that has to happen before the assembly order can go in.
   - The stackup is in `gerbers/core-job.gbrjob`.
   - ENIG is the better finish: HASL is uneven on the 0.65 mm SOT-363 (Q3) and
     the 1006-size BAS16L (D5).
-  - The TPA3220's thermal pad has 15 open 0.3 mm vias. No via filling is
-    needed: the paste is cut to 63 % in 4 windows to allow for the solder
-    that wicks into them.
+  - **Via Covering: Epoxy Filled & Capped (POFV). Change this on the quote
+    page.** 107 joints have an open via in the pad, fine-pitch chips and Q1-Q3
+    among them, and solder drains down an open via. It is a per-order charge
+    on 4 layers: hwde's table has $17.33 for 5 boards at 91 x 70 mm and $17.57
+    at 91 x 91 mm, so expect a little more at 154 x 113 mm. Read the real
+    figure on the quote page. Add this remark to the order:
+    "Fill and cap all 0.2 mm and 0.3 mm holes, including the 30 holes in the
+    U15/U16 thermal pads. Do not fill J1's 0.4 mm pin holes: they take
+    connector pins." Check it in JLC's engineering confirmation: a filled J1
+    hole means the USB-C connector won't fit.
+  - The TPA3220's thermal pad has 15 x 0.3 mm holes. The paste stays at 63 % in
+    4 windows, which works filled or not: with no wicking 63 % sits inside the
+    usual 50-80 %, so the amp doesn't float.
 - **Assembly, both sides** (choose JLC's two-sided PCBA). Fourteen parts
   are on the bottom (`Layer` = Bottom in the CPL): ten 2-pad MLCCs under the
   amps, each TPA3220's PVDD HF pair (C207-C210, C307-C310), right under its
