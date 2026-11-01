@@ -30,7 +30,7 @@ STEP moves it to Onshape later (see the end of this page).
 - **Settings:** 0.4 mm nozzle, 0.2 mm layers, 4 walls, 20–25 % infill.
 - **No supports.** The base prints on its floor, the lid on its top face and
   each button on its cap. The holes in the walls are teardrops (RCA: cut
-  flat 1 mm over the hole, a 3 mm bridge), squares with a 45-degree roof (the
+  flat 1 mm over the hole, a 3 mm bridge), rounds with a 45-degree roof (the
   banana sockets) or bridge (USB-C, IR window). Each standoff has a 7.8 mm foot round its 6.2 mm
   counterbore, so the ring left round it is two nozzle lines. The foot joins
   the wall beside it.
@@ -47,7 +47,7 @@ STEP moves it to Onshape later (see the end of this page).
 
 1. Drop the board onto the four standoffs, with its connectors to the rear
    wall: tilt it nose-first so the four banana sockets' round collars go into
-   their square holes, then lay it down. The RCA and USB-C sockets line up
+   their round holes, then lay it down. The RCA and USB-C sockets line up
    with their holes. There is no wiring: the speaker sockets are on the board.
 2. Drop the three buttons into their holes in the lid from underneath, cap
    up, then put the lid on, holding them in. Its lip locates it inside the
@@ -105,7 +105,7 @@ z = 0 the board's bottom face. The dimensions behind it:
 
 Before mech's check sees the board, `lite.py` cuts the RCA jacks to their
 body inside the rear wall with a port per barrel, cuts the banana sockets
-(J4-J7) the same way with their square nose as the port, and makes U9's lens
+(J4-J7) the same way with their round collar as the port, and makes U9's lens
 a port through the front wall.
 
 Part heights come from `heights.json`: the parts' STEP models and LCSC's

@@ -27,7 +27,7 @@ the way.
     the board is $14.54 at 100 with them, and nothing is bought off-board.
 - **Open before ordering:**
   - the RCA jacks' exact depth against a real part
-  - the banana sockets' nose against the rear wall's 6.8 mm square holes
+  - the banana sockets' 9.40 mm collar against the rear wall's 10.2 mm round holes
   - the IR receiver's lens direction
 
   All three are mechanical and only matter for the enclosure. Details are in
