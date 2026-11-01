@@ -28,9 +28,11 @@ product.md's Boards row.
   - **J1:** USB-C.
   - **J4-J7:** the speaker outputs, four 4 mm banana sockets (Amass 24.243,
     right-angle PCB mount, 24 A, red C7437321 / black C7437322; JLC fits
-    them): J4 L+, J5 L-, J6 R+, J7 R-, at 11 mm pitch. Their square noses
-    reach 2.65 mm past the rear edge into the enclosure's rear wall, bore
-    axis 7.5 mm over the board. Nothing is wired by hand. Single banana plugs;
+    them): J4 L+, J5 L-, J6 R+, J7 R-, at 11 mm pitch. Their round collars
+    (9.40 mm across, 2.60 mm long, bottom 3.20 mm over the board) reach 2.65 mm
+    past the rear edge into the enclosure's 10.2 mm round holes, bore axis
+    8.1 mm over the board. Body 10.10 mm wide, 10.70 mm across the rib; pins
+    15.5 +/-0.3 mm (Multicomp's sheet for the same part numbers; Amass's says 15.7). Nothing is wired by hand. Single banana plugs;
     the 11 mm pitch is too close for a dual (19 mm) plug.
 - **Front edge:** SW1 vol-, SW2 vol+, SW3 play/source (hold = BT pairing),
   the IR receiver U9 (an IRM-3638T standing at the edge with its lens facing
@@ -220,9 +222,13 @@ $14.79 at 100 and $23.41 at 10.
 - **Order remarks** (review-4 R4-BAN-5): the banana sockets J4-J7 have two
   identical pads and their key lies past the board edge, so the remark says
   "J4-J7: plug face outward, past the rear edge (2.65 mm overhang is by
-  design)". Before the order, measure one Amass 24.243 sample: the collar
-  (round, ~9.5 mm on Amass's drawing; the box's holes are 10.2 mm) and a 15 mm
-  and a 19 mm banana plug's contact.
+  design)". Before the order, if it causes no delay, measure one Amass 24.243
+  sample. Body width over about 11.2 mm stops the board: the sockets no longer
+  fit side by side at 11 mm pitch. Worst case on Multicomp's tolerance table
+  (+/-0.4 mm, so 11.1 mm wide) overlaps 3 x 0.1 mm across Lite's row, inside
+  the 0.7 mm of pin play in the holes (Ultra's eight sockets: 7 x 0.1 mm of the
+  same 0.7 mm). The collar (9.40 mm against the box's 10.2 mm holes) only
+  affects the box. Also try a 15 mm and a 19 mm banana plug's contact.
 
 ## How to rebuild and re-check it
 
@@ -308,10 +314,14 @@ The bench scripts (plan item 9) will automate this.
    - The board edge sits at the footprint silk's face line.
    - The EasyEDA 3D model sits 13.5 mm low and 6 mm inboard (found by the
      enclosure worker); only renders are affected.
-3. **Banana socket nose:** the 6 mm square nose and its 2.5 mm reach come
-   from the EasyEDA 3D model and footprint (the datasheet drawing gives 24 mm
-   overall, 15.7 mm pin pitch, Ø4 bore, no nose width). The rear wall's hole
-   is 6.8 mm square; check a real socket against it before printing.
+3. **Banana socket collar:** Amass's sheet gives 24 mm overall, 15.7 mm pin
+   pitch and a Ø4 bore, but no widths. The numbers here come from Multicomp's
+   sheet for the same part numbers
+   (https://electrokit.com/upload/quick/5d/25/3fca_41022868-tds.pdf), assumed to
+   match what JLC fits: body 10.10 mm, 10.70 mm across the rib, collar 9.40 x
+   2.60 mm long, its bottom 3.20 mm over the board, pins 15.5 +/-0.3 mm. The
+   rear wall's hole is 10.2 mm round at axis 8.1 mm; check a real socket against
+   it before printing.
 4. **CH224A I2C pull-ups:** if bring-up measures CFG2/CFG3 idling above 3.6 V,
    depopulate R2/R3. The I2C readout is then lost, and VBUS sense still works.
 5. **USB ESD:** none on this tier (decision above). Plus/Ultra should add a
