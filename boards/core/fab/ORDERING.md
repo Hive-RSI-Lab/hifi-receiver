@@ -13,7 +13,7 @@ and the one step that has to happen before the assembly order can go in.
 2. **Check stock:** `python3 tools/bom_stock.py core` (Plus) and
    `python3 tools/bom_stock.py core/ultra` (Ultra). The step below shows up
    there as short.
-3. **Pre-buy the TPA3220 (U15, and U16 on Ultra) into your JLC parts
+3. **Pre-buy the TPA3220 (U15 and U16, on both Plus and Ultra) into your JLC parts
    inventory.** LCSC and JLC have none: C2879306 read 0 on 2026-10-29. The
    TPA3221 has its pad on top and needs a heatsink fitted by hand, so the
    board takes this pad-down twin instead.
@@ -39,7 +39,11 @@ and the one step that has to happen before the assembly order can go in.
 ## The upload
 
 - **PCB:** `core_gerbers.zip`.
-  - 4 layers, 1.6 mm, 1 oz outer and 0.5 oz inner copper.
+  - 4 layers, 1.6 mm, 1 oz outer and **1 oz inner copper. Change this on the
+    quote page: JLC's default is 0.5 oz.** In2 carries the full 5 A alone
+    (`kicad/gen/power_trunk.py`): 5 A needs 3.5 mm at 1 oz and 8.06 mm at
+    0.5 oz, against a measured 3.88 mm neck. If the quote page has no 1 oz
+    option, stop: don't order at 0.5 oz.
   - The stackup is in `gerbers/core-job.gbrjob`.
   - ENIG is the better finish: HASL is uneven on the 0.65 mm SOT-363 (Q3) and
     the 1006-size BAS16L (D5).
@@ -56,5 +60,9 @@ and the one step that has to happen before the assembly order can go in.
   so only their axis matters; the clamps' pin 3 is their ground.
   - Plus: `BOM.csv` and `CPL.csv`. Zone B (U16) is fitted too: Plus plays L on zone A and R on zone B.
   - Ultra: `ultra/BOM.csv` and `ultra/CPL.csv`, with the same Gerbers.
+- **Banana sockets J20-J27 (through-hole, fitted by JLC):** Plus fits J20, J21,
+  J26, J27; Ultra fits all 8. In JLC's preview each collar must overhang the
+  rear edge by 2.65 mm. The two pins are symmetric, so nothing else shows a
+  socket turned back to front: it would sit over the snubber row.
 - **Not on the board:** the remote, Ultra's front board
   and its FFC. They are in `docs/bom-estimate.csv`. No heatsink is needed.
