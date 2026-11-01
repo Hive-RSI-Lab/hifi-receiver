@@ -16,6 +16,11 @@
 #define PIN_PVDD_EN 18   /* high closes the PVDD switch (ANDed with PG in hardware) */
 #define PIN_AMP_SDZ 21   /* TPA3118 SDZ through 100k, high = run */
 #define PIN_AMP_FAULTZ 23 /* TPA3118 FAULTZ, open drain, low = fault */
+/* The ESP32's I2S outputs (squeezelite sets them up from DAC_CONFIG): only named
+ * here to slow their edges, see hifi_bsp_init */
+#define PIN_I2S_BCLK 27
+#define PIN_I2S_LRCK 25
+#define PIN_I2S_DOUT 26
 #define ADC_VBUS ADC1_CHANNEL_6 /* GPIO34, VBUS / 11 (100k over 10k) */
 #define VBUS_DIVIDER 11.0f
 #define ADC_PVDD ADC1_CHANNEL_3 /* GPIO39 (SENSOR_VN), PVDD_SENSE: PVDD / 11 (R17 100k over R18 10k) */

@@ -27,6 +27,12 @@ void hifi_bsp_init(hifi_power_cfg_t *pc, hifi_gov_cfg_t *gc) {
 	gpio_config_t in = {.pin_bit_mask = BIT64(PIN_PD_PG) | BIT64(PIN_AMP_FAULTZ), .mode = GPIO_MODE_INPUT,
 			    .pull_up_en = GPIO_PULLUP_ENABLE};
 	gpio_config(&in);
+	/* BCLK, LRCK and DOUT run about 45 mm side by side and the signals are only
+	 * 3 MHz at most: the weakest drive (about 5 mA) slows the edges that cross-talk
+	 * (check_si: docs/boards/lite-preorder.md). i2s_set_pin leaves pad drive alone. */
+	gpio_set_drive_capability(PIN_I2S_BCLK, GPIO_DRIVE_CAP_0);
+	gpio_set_drive_capability(PIN_I2S_LRCK, GPIO_DRIVE_CAP_0);
+	gpio_set_drive_capability(PIN_I2S_DOUT, GPIO_DRIVE_CAP_0);
 
 	adc1_config_width(ADC_WIDTH_BIT_12);
 	adc1_config_channel_atten(ADC_VBUS, ADC_ATTEN_DB_12);

@@ -47,7 +47,7 @@
 | overhang_lid | pass | steep_mm2=0, faces=[], max_deg=45.0 |
 | bridge_lid | pass | flat_faces=0, worst_bridge_mm=0.0, worst_ledge_mm=0.0, max_bridge_mm=15.0, max_ledge_mm=1.0, unsupported=[] |
 | wall_lid | pass | min_wall_mm=0.8, thin=[] |
-| added_boxes_clear | pass | 0 boxes (posts, heatsinks, front board) vs the board's parts; clashes=[] |
+| added_boxes_clear | pass | 0 boxes (heatsinks, front board) vs the board's parts; clashes=[] |
 
 ## What is over each top-access part
 
