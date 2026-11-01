@@ -350,7 +350,6 @@ def main(argv):
             if not pa or not pb:
                 failed.append((net, "zone item"))
                 continue
-            import os
             n = r.route(net, pa[:2], pb[:2], pa[2], pb[2],
                         margin=float(os.environ.get("MR_MARGIN", 6)),
                         width=float(os.environ["MR_WIDTH"]) if "MR_WIDTH" in os.environ else None)
@@ -359,7 +358,8 @@ def main(argv):
         net, x1, y1, x2, y2 = argv[0], *map(float, argv[1:5])
         la = tuple(int(c) for c in argv[5]) if len(argv) > 5 else (0,)   # e.g. 01 = F or B
         lb = tuple(int(c) for c in argv[6]) if len(argv) > 6 else (0,)
-        n = r.route(net, (x1, y1), (x2, y2), la, lb)
+        n = r.route(net, (x1, y1), (x2, y2), la, lb,
+                    margin=float(os.environ.get("MR_MARGIN", 6)))
         (done if n else failed).append((net, n))
     if not os.environ.get("MR_NOFILL"):     # the DRC gate refills; a python fill can take >20 min
         pcbnew.ZONE_FILLER(board).Fill(board.Zones())

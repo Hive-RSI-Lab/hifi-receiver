@@ -22,7 +22,8 @@ import pcbnew
 
 MM = 1e6
 P1, P2 = 125.4975, 109.7975          # socket pin rows
-COL0 = 129.5                         # columns start inside the cut pours (y 130)
+COL0 = 131.0                         # columns overlap the cut pours (y 130) by 1 mm: priority 6 over their 5,
+                                     # so same-net zones of one priority never overlap (zones_intersect)
 W = 1.0                              # half band/spine width
 # net, layer, column (x0, x1), band centre y, socket x, spine to pin 1
 NETS = [
@@ -77,6 +78,7 @@ def main(path):
             o.Append(V(x, y))
         z.SetZoneName("")
         z.ResetUuid()      # a Clone keeps the UUID; duplicates deadlock the zone filler
+        z.SetAssignedPriority(6)
         b.Add(z)
         keep.append(z)
     in2 = b.GetLayerID("In2.Cu")
