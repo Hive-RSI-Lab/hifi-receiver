@@ -1,0 +1,100 @@
+{
+ "script": "parts_search",
+ "status": "pass",
+ "source": "live",
+ "query": "C49338",
+ "total": 1,
+ "count": 1,
+ "results": [
+  {
+   "lcsc": "C49338",
+   "mpn": "PESD5V0S2BT,215",
+   "brand": "Nexperia",
+   "description": "12A 130W@8/20us 14V 2 35pF 5.5V 5V 5nA Bidirectional ESD IEC 61000-4-2\u3001IEC 61000-4-5 SOT-23 ESD and Surge Protection (TVS/ESD) ROHS",
+   "package": "SOT-23",
+   "category": "ESD and Surge Protection (TVS/ESD)",
+   "type": "Extended",
+   "basic": false,
+   "stock": 22319,
+   "price": 0.0857,
+   "price_breaks": [
+    {
+     "qty": 1,
+     "price": 0.0857
+    },
+    {
+     "qty": 50,
+     "price": 0.0671
+    },
+    {
+     "qty": 150,
+     "price": 0.058
+    },
+    {
+     "qty": 500,
+     "price": 0.0509
+    },
+    {
+     "qty": 3000,
+     "price": 0.0453
+    },
+    {
+     "qty": 6000,
+     "price": 0.0425
+    }
+   ],
+   "min_qty": 1,
+   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2407241032_Nexperia-PESD5V0S2BT-215_C49338.pdf",
+   "url": "https://www.lcsc.com/product-detail/esd-and-surge-protection-tvs-esd_nexperia-pesd5v0s2bt-215_C49338.html",
+   "attributes": [
+    {
+     "name": "Type",
+     "value": "ESD"
+    },
+    {
+     "name": "Junction Capacitance",
+     "value": "35pF"
+    },
+    {
+     "name": "Peak Pulse Power Dissipation (Ppp)",
+     "value": "130W@8/20us"
+    },
+    {
+     "name": "Number of Channels",
+     "value": "2"
+    },
+    {
+     "name": "level of protection",
+     "value": "IEC 61000-4-2\u3001IEC 61000-4-5"
+    },
+    {
+     "name": "Clamping Voltage",
+     "value": "14V"
+    },
+    {
+     "name": "Polarity",
+     "value": "Bidirectional"
+    },
+    {
+     "name": "Peak Pulse Current (Ipp)",
+     "value": "12A"
+    },
+    {
+     "name": "Voltage - Breakdown",
+     "value": "5.5V"
+    },
+    {
+     "name": "Reverse Stand-Off Voltage (Vrwm)",
+     "value": "5V"
+    },
+    {
+     "name": "Reverse Leakage Current (Ir)",
+     "value": "5nA"
+    }
+   ],
+   "rank": 0
+  }
+ ],
+ "filters": {},
+ "placeholders_filtered": 0
+}

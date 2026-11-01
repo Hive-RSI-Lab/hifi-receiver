@@ -30,7 +30,7 @@ and say why.
 | Streaming | Spotify Connect, AirPlay 1, Bluetooth, Lyrion (LMS) | same | same |
 | Control | web app, 3 buttons, IR (bring your own remote) | web app, knob + 2 buttons, IR remote in box | web app, 2" colour screen, knob + 3 buttons, IR remote |
 | Boards | 1: `lite-main` (2-layer) | 1: `core` (4-layer) | 2: `core` fully populated + `ultra-front` |
-| Unit cost at 100, board + assembly + PCB | **$14.8** (banana sockets on the board; board $14.5 per `tools/hwcheck.py cost`) | **$34.3** (two TPA3220s, one channel each, no heatsink; `core` board alone $35.4 per `tools/hwcheck.py cost`) | **$40.9** |
+| Unit cost at 100, board + assembly + PCB | **$14.8** (banana sockets on the board; board $14.5 per `tools/hwcheck.py cost`) | **$34.3** (two TPA3220s, one channel each, no heatsink; `core` board alone $35.4 per `tools/hwcheck.py cost`) | **$41.0** |
 | Target retail (charger not included / with charger) | **$59 / $79** | **$129 / $159** | **$199 / $229** |
 | Build order | **first** | second | third |
 
@@ -318,12 +318,12 @@ Per unit, from [`bom-estimate.csv`](bom-estimate.csv)
 
 | | Lite ×10 | Lite ×100 | Plus ×10 | Plus ×100 | Ultra ×10 | Ultra ×100 |
 |---|---|---|---|---|---|---|
-| Parts on the board | $14.30 | $12.40 | $33.72 | $27.63 | $39.91 | $32.82 |
-| JLC assembly (setup, stencil, $3 per unique extended part, joints) | $8.61 | $1.77 | $12.27 | $3.54 | $15.95 | $4.16 |
+| Parts on the board | $14.30 | $12.40 | $33.72 | $27.63 | $40.08 | $32.93 |
+| JLC assembly (setup, stencil, $3 per unique extended part, joints) | $8.61 | $1.77 | $12.27 | $3.54 | $16.26 | $4.20 |
 | PCB (hwde price points × 2.5 calibration) | $0.50 | $0.62 | $2.97 | $2.31 | $3.47 | $2.93 |
 | Off-board (Lite: none; Plus/Ultra: remote, FFC cable) | $0.00 | $0.00 | $1.20 | $0.80 | $1.40 | $0.95 |
-| **Per unit** | **$23.41** | **$14.79** | **$50.16** | **$34.28** | **$60.73** | **$40.86** |
-| Unique extended parts / SMT joints / THT joints | 20 / 452 / 14 | | 27 / 860 / 64 | | 33 / 955 / 71 | |
+| **Per unit** | **$23.41** | **$14.79** | **$50.16** | **$34.28** | **$61.21** | **$41.01** |
+| Unique extended parts / SMT joints / THT joints | 20 / 452 / 14 | | 27 / 860 / 64 | | 34 / 961 / 71 | |
 
 **Basic vs extended:** nearly every IC is an **extended** part, $3 per unique
 part per order. That is why the per-unit cost falls so far from ×10 to ×100.

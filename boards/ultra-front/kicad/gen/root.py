@@ -146,6 +146,17 @@ def build() -> schlib.Sheet:
         sh.wire_pins(ref, {"1": f"BTN{i}", "2": f"BTN{i}", "3": "GND",
                            "4": "GND"})
         resistor(sh, f"R{3 + i}", "10k", (x, 237.49), "+3V3", f"BTN{i}")
+    # ESD at the switches (review round 4, R5-UF-2): the TS-1187A's keystake
+    # is brass and an 8 kV air strike can creep to it past the printed cap.
+    # Dual bidirectional 5 V clamps, one channel per line, pin 3 to GND.
+    # D2 sits between SW1 and SW2, D3 between SW2 and SW3; pin 1 is the
+    # channel nearer the switch below it (the PCB keeps both stubs short).
+    for ref, x, a, b in (("D2", 177.8, "BTN2", "BTN1"),
+                         ("D3", 213.36, "BTN3", "ENC_SW")):
+        sh.add_component("aiee:PESD5V0S2BT,215", ref, "PESD5V0S2BT",
+                         at=(x, 266.7),
+                         footprint="aiee:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR")
+        sh.wire_pins(ref, {"1": a, "2": b, "3": "GND"})
 
     # B7 IR receiver with its RC supply filter and output pull-up
     sh.add_component("aiee:IRM-H638T_TR2", "U2", "IRM-H638T/TR2",

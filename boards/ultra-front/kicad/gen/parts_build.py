@@ -20,6 +20,7 @@ LINES = [
     ("C361165", ["SW4"], "B5 encoder", "EC11 rotary encoder with push switch, THT", ["C470754 EC11E15244B2"]),
     ("C318884", ["SW1", "SW2", "SW3"], "B6 buttons", "5.1 mm SMD tact switch, 1.5 mm, JLC basic", []),
     ("C273610", ["D1"], "B8 status LED", "RGB LED 1615, common anode", []),
+    ("C49338", ["D2", "D3"], "B6 buttons", "ESD clamps at the switches, dual bidirectional 5 V: D2 BTN1/BTN2, D3 BTN3/ENC_SW (R5-UF-2)", []),
     ("C20917", ["Q1"], "B3 backlight", "N-MOSFET low-side backlight switch", []),
     ("r10k", ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R19"], "pull-ups", "10 k pull-ups (inputs, INT, LCD_RST, IR out); R19 pulls the unused expander pins down", []),
     ("r100k", ["R11"], "B3 backlight", "Q1 gate pull-down", []),
