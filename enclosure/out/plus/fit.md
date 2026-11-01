@@ -61,7 +61,7 @@
 
 ## Material
 
-- base: 82.2 cm3, 104.4 g PETG if solid
+- base: 82.1 cm3, 104.3 g PETG if solid
 - btn_SW2: 0.3 cm3, 0.4 g PETG if solid
 - btn_SW3: 0.3 cm3, 0.4 g PETG if solid
 - knob: 8.4 cm3, 10.7 g PETG if solid
