@@ -14,7 +14,7 @@ for tier in sys.argv[1:]:
         info = ", ".join(f"{k}={v}" for k, v in c.items() if k not in ("name", "ok"))
         rows.append(f"| {c['name']} | {'pass' if c['ok'] else 'fail'} | {info} |")
     # mech checks parts against the plastic, not against each other: the boxes the scripts add
-    # (posts, heatsinks, the front board) must also clear the board's own parts.
+    # (heatsinks, the front board) must also clear the board's own parts.
     b = json.loads((OUT / tier / "board.json").read_text())
     def bx(p):
         x0, y0, x1, y1 = p["bbox"]
@@ -29,7 +29,7 @@ for tier in sys.argv[1:]:
             if all(min(A[i + 3], C[i + 3]) - max(A[i], C[i]) > 0.01 for i in range(3)):
                 clash.append(f"{a['ref']}/{c['ref']}")
     clash = sorted(set("/".join(sorted(x.split("/"))) for x in clash))
-    rows.append(f"| added_boxes_clear | {'fail' if clash else 'pass'} | {len(added)} boxes (posts, heatsinks, front board) "
+    rows.append(f"| added_boxes_clear | {'fail' if clash else 'pass'} | {len(added)} boxes (heatsinks, front board) "
                 f"vs the board's parts; clashes={clash} |")
     top = [f"- {t['ref']}: " + ("open above" if t["open_above"] else "under " + ", ".join(t["under"]))
            for t in r.get("top_access", [])]

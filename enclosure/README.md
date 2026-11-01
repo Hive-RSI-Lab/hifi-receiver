@@ -4,7 +4,7 @@
 to the boards' KiCad files, and exported as STEP and STL. All three tiers
 are read, built, rendered and fit-checked with hive-mech's `mech`: each tier
 is a `mech build` script (`lite.py`, `plus.py`, `ultra.py`), and the pieces
-they share (screws from below into lid pillars, RCA holes, binding posts,
+they share (screws from below into lid pillars, RCA holes,
 Lite's banana-socket holes, light pipes) are in `core_box.py`.
 
 The brief asked for Onshape. The Hive has no Onshape account or key (nothing
@@ -127,9 +127,9 @@ python3 enclosure/fit_md.py lite
 mech's checks (see its `docs/README.md`): the board and every part's box
 (with through-hole leads under the board) clear the plastic; base, lid and
 buttons don't overlap; each plug's opening (USB-C, each RCA barrel, each
-post) and the IR window are open straight out through the wall; the board
+banana socket) and the IR window are open straight out through the wall; the board
 is held under each mounting hole; every part fits a 220 x 220 mm bed.
-`fit_md.py` adds that the post boxes clear the board's own parts.
+`fit_md.py` adds that the added boxes (heatsinks, the front board) clear the board's own parts.
 
 ## Plus and Ultra
 
@@ -138,10 +138,10 @@ They are built by `plus.py` and `ultra.py`, which call `core_box.py`.
 
 | | Plus | Ultra |
 |---|---|---|
-| Outside, without knob | 132.4 x 112.4 x 39.8 mm | 135.4 x 114.4 x 49.2 mm, plus a 4.2 mm control column on the front |
+| Outside, without knob | 166.8 x 125.4 x 39.8 mm | 169.8 x 127.4 x 49.2 mm, plus a 4.2 mm control column on the front |
 | Printed parts | base, lid, knob, 2 buttons | base, lid, knob, 3 buttons |
-| PETG if solid | about 134 g | about 146 g |
-| Fit check | `out/plus/fit.md`, 40/40 | `out/ultra/fit.md`, 50/50, printing without support included |
+| PETG if solid | about 171 g | about 190 g |
+| Fit check | `out/plus/fit.md`, 46/46 | `out/ultra/fit.md`, 56/56, printing without support included |
 
 Each `out/<tier>/` folder holds the STLs (already in print orientation),
 `enclosure.step` (the assembly with the board as a slab, for Onshape), the
@@ -150,23 +150,16 @@ fit report and renders (`iso.png`, `top.png`, `port-<edge>.png`).
 ### What is where (board frame: N = rear, S = front, W = left seen from the front)
 
 - **Rear (N):**
-  - the speaker binding posts, at 19 mm pitch within each pair so dual
-    banana plugs fit. From the left, seen from the front: L pair, then R
-    pair. Inside, each post wires to a screw terminal on the board:
-
-    | Posts | Plus | Ultra (lower row) | Ultra (upper row) |
-    |---|---|---|---|
-    | L pair (x 11.2, 30.2) | zone A, **J6** | zone A, J6/J7 | zone B, J10/J11 |
-    | R pair (x 41.4, 60.4) | zone B, **J11** | zone A, J6/J7 | zone B, J10/J11 |
-
-    Plus fits both amps, one per channel (task 261029-075354, PR #68): L on
-    zone A's J6, R on zone B's J11, which sits right under the R pair, so
-    its wires are the shortest. On a board that still has zone B unfitted
-    (main's `boards/core/parts/parts.json` before PR #68 lands), the R pair
-    wires to J7 instead.
+  - the speaker outputs: the board's own 4 mm banana sockets (J20-J27,
+    issues #117, #124), 11 mm apart, each collar in a 10.2 mm round hole
+    with a teardrop roof, 9.7 mm over the board's bottom face. Seen from
+    behind, right to left (KiCad x order): zone A L+ L- R+ R-, then zone B
+    L+ L- R+ R-. Red is +. Plus fits only zone A's L pair (J20/J21) and
+    zone B's R pair (J26/J27), so its panel has four holes: L at the right,
+    R at the left. Ultra has all eight. Single banana plugs only: the
+    sockets are too close for a dual plug. Nothing is wired inside the box.
   - SUB OUT (J4) and LINE IN (J5), a 12 mm teardrop hole per barrel.
-  - Ultra adds TOSLINK (U19) and a second row of posts for zone B
-    (J10/J11) above zone A's.
+  - Ultra adds TOSLINK (U19).
 - **Left (W):** USB-C power (J1) and Ethernet (J2).
 - **Top, Plus:** the volume knob, with a long printed stem down to the core's
   vertical EC11 (SW1). Also two buttons (SW2, SW3), a light pipe over the
@@ -202,10 +195,10 @@ fit report and renders (`iso.png`, `top.png`, `port-<edge>.png`).
 
   | open area, mm² | Plus | Ultra |
   |---|---|---|
-  | inlet: low wall slots (2 mm wide, from 0.5 mm over the floor) | 61 slots x 10.5 mm on S, E, W: 1281 | 35 x 15 mm on E, W: 1050 |
-  | inlet: floor slots in the riser strips, clear of the feet | 45: 449 | 46: 466 |
-  | riser: board edge to wall, less what stands in it | S 7 mm + E 7 mm: 1565 | behind the front board 4.8 mm + E 10 mm: 1578 |
-  | outlet: lid grille (17 slots 2 x 42 mm over both amps) + slots over the E strip | 1598 | 1736 |
+  | inlet: low wall slots (2 mm wide, from 0.5 mm over the floor) | 74 slots x 10.5 mm on S, E, W: 1554 | 39 x 15 mm on E, W: 1170 |
+  | inlet: floor slots in the riser strips, clear of the feet | 56: 564 | 58: 578 |
+  | riser: board edge to wall, less what stands in it | S 7 mm + E 7 mm: 1928 | behind the front board 4.8 mm + E 10 mm: 1901 |
+  | outlet: lid grille (17 slots 2 x 42 mm over both amps) + slots over the E strip | 1622 | 1778 |
   | stack, inlet middle to lid top | 32 mm | 39 mm |
 
   - **What it buys (hwde check_thermal's box model, ±30 %):** Plus's air at
@@ -213,9 +206,12 @@ fit report and renders (`iso.png`, `top.png`, `port-<edge>.png`).
     margin goes from 16 K to 31 K. At 10 W it is ~62 C (was ~95 C).
     Ultra's is ~60 C at 10 W and ~69 C at 14 W (its 1/8-power heat). The
     amps' governor can rise to match (heatsink-options.md, PR #68). The
-    numbers go in core's constraints `enclosure` block with PR #68, which
-    adds it: Plus box_mm [132.4, 112.4, 39.8], inlet 1730, riser 1565,
-    outlet 1598, stack 32.
+    numbers are in core's constraints `enclosure` block. Since the banana
+    sockets (2026-11-01) the board is 154.4 x 113 and the boxes grew:
+    Plus box_mm [166.8, 125.4, 39.8], inlet 2118, riser 1928, outlet 1622,
+    stack 32; Ultra 1748/1901/1778, stack 39. The open notch beside the
+    board's front right (x > 120 in front of the wing) is extra riser the
+    figures don't count.
   - **Room it costs:** the 7 mm riser strips make Plus 5 mm wider and 6.4
     mm deeper, and Ultra 8 mm wider. Plus's IR window (U18) is now 9.9 mm
     in from the front face (the fit check allows it 11; it is seen, not
@@ -256,7 +252,7 @@ contacts)**:
 - **Dropped:** parts the tier doesn't fit (from `boards/core/parts/parts*.json`).
 - **RCA jacks:** J4/J5 are cut to their body inside the rear wall. Their
   barrels are checked as ports through the round holes.
-- **Added as boxes:** the binding-post nuts and lugs, the heatsinks, and
+- **Added as boxes:** the heatsinks, and
   for Ultra the front board, its parts and the LCD.
 - **Plus SW1:** counts as the EC11's body and bushing. Its shaft runs up
   the knob's bore.
@@ -303,8 +299,6 @@ and re-read on its merge with main: the board as landed gives the same file.
     window is centred with 1 mm a side to spare.
   - the EC11 shaft length: Alps lists 20 mm, the library model 24.5 mm.
     Both knobs' bores take either; push the knob on until it stops.
-- **Tight post spacing:** the posts between pairs are 11.2 mm apart, the
-  most room there is between H1's pillar and J4.
 
 ## Moving it to Onshape
 
