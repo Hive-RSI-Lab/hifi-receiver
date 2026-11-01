@@ -46,14 +46,15 @@ and the one step that has to happen before the assembly order can go in.
   - The TPA3220's thermal pad has 15 open 0.3 mm vias. No via filling is
     needed: the paste is cut to 63 % in 4 windows to allow for the solder
     that wicks into them.
-- **Assembly, both sides** (choose JLC's two-sided PCBA). Ten 2-pad MLCCs
-  are on the bottom, under the amps (`Layer` = Bottom in the CPL): each
-  TPA3220's PVDD HF pair (C207-C210, C307-C310), right under its PVDD pins,
-  and U15's input caps C218/C220. Check their pads line up in JLC's
-  bottom-side preview: hwde can't verify bottom-side rotations
-  (`reports/dfm-waivers.json`). All ten are non-polar, so only the axis
-  matters.
+- **Assembly, both sides** (choose JLC's two-sided PCBA). Fourteen parts
+  are on the bottom (`Layer` = Bottom in the CPL): ten 2-pad MLCCs under the
+  amps, each TPA3220's PVDD HF pair (C207-C210, C307-C310), right under its
+  PVDD pins, and U15's input caps C218/C220; and four SOT-23 ESD clamps at
+  their connectors, D6/D9 at the USB-C's CC pins and D7/D8 at the RCA jacks.
+  Check their pads line up in JLC's bottom-side preview: hwde can't verify
+  bottom-side rotations (`reports/dfm-waivers.json`). The MLCCs are non-polar,
+  so only their axis matters; the clamps' pin 3 is their ground.
   - Plus: `BOM.csv` and `CPL.csv`. Zone B (U16) is fitted too: Plus plays L on zone A and R on zone B.
   - Ultra: `ultra/BOM.csv` and `ultra/CPL.csv`, with the same Gerbers.
-- **Not on the board:** the binding posts, the remote, Ultra's front board
+- **Not on the board:** the remote, Ultra's front board
   and its FFC. They are in `docs/bom-estimate.csv`. No heatsink is needed.

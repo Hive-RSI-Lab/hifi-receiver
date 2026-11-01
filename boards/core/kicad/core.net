@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/home/hive2/projects/hifi-core-banana/boards/core/kicad/core.kicad_sch")
-		(date "2026-10-31T19:58:41")
+		(date "2026-10-31T23:22:42")
 		(tool "Eeschema 10.0.6")
 		(sheet
 			(number "1")
@@ -668,11 +668,11 @@
 		)
 		(comp
 			(ref "C4")
-			(value "100nF")
+			(value "220nF")
 			(footprint "aiee:C0603")
 			(fields
 				(field
-					(name "LCSC") "C14663")
+					(name "LCSC") "C344195")
 				(field
 					(name "Footprint") "aiee:C0603")
 				(field
@@ -689,7 +689,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C14663")
+				(value "C344195")
 			)
 			(property
 				(name "Sheetname")
@@ -908,11 +908,11 @@
 		)
 		(comp
 			(ref "C8")
-			(value "2.2uF")
+			(value "4.7uF")
 			(footprint "aiee:C0805")
 			(fields
 				(field
-					(name "LCSC") "C377773")
+					(name "LCSC") "C1779")
 				(field
 					(name "Footprint") "aiee:C0805")
 				(field
@@ -929,7 +929,7 @@
 			)
 			(property
 				(name "LCSC")
-				(value "C377773")
+				(value "C1779")
 			)
 			(property
 				(name "Sheetname")

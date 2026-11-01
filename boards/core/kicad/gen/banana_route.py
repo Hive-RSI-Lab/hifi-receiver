@@ -9,7 +9,8 @@ the same left-to-right order on each layer, so bands stack (the further
 right a net goes, the lower its band) and nothing crosses: no vias.
 A spine runs on down to pin 1 where no later band on its layer crosses it.
 
-Every piece is a solid-connected zone (priority 5, like power_zones.py's
+Zones are left unfilled (a full-board fill in python takes >20 min here;
+the DRC gate refills). Every piece is a solid-connected zone (priority 5, like power_zones.py's
 pours), 2.0 mm or wider: 3.7 A rms continuous (constraints.json
 power_notes) on 1 oz outer copper.
 
@@ -40,11 +41,22 @@ def V(x, y):
     return pcbnew.VECTOR2I(int(round(x * MM)), int(round(y * MM)))
 
 
-def rects(col, band, s, full):
-    (c0, c1) = col
-    return [(c0, band - W, c1, COL0),                       # column
-            (c0, band - W, s + W, band + W),                # band
-            (s - W, P2, s + W, P1 if full else band + W)]   # spine
+def outline(col, band, s, full):
+    """the staircase as one polygon (same-net zones may not overlap): column up
+    from the pour, band across, spine up to pin 2 (and on down to pin 1)"""
+    c0, c1 = col
+    pts = [(c0, band - W), (s - W, band - W), (s - W, P2), (s + W, P2)]
+    if full:
+        pts += [(s + W, P1), (s - W, P1), (s - W, band + W)]
+    else:
+        pts += [(s + W, band + W)]
+    return pts + [(c1, band + W), (c1, COL0), (c0, COL0)]
+
+
+# pin 1 of a socket whose spine stops at its band: a later band on the same
+# layer crosses below it, and on the other layer too. A 1 mm In2 link joins
+# its pins; the In2 plane fills round it. The current goes in at pin 2.
+IN2_LINKS = [(s, net) for net, _, _, _, s, full in NETS if not full]
 
 
 def main(path):
@@ -56,21 +68,29 @@ def main(path):
     nets = b.GetNetsByName()
     keep = []
     for net, layer, col, band, s, full in NETS:
-        for (x0, y0, x1, y1) in rects(col, band, s, full):
-            z = proto[layer].Clone()
-            z = pcbnew.Cast_to_BOARD_ITEM(z).Cast() if not hasattr(z, "Outline") else z
-            z.SetNet(nets[net])
-            o = z.Outline()
-            o.RemoveAllContours()
-            o.NewOutline()
-            for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1)):
-                o.Append(V(x, y))
-            z.SetZoneName("")
-            b.Add(z)
-            keep.append(z)
-    pcbnew.ZONE_FILLER(b).Fill(b.Zones())
+        z = pcbnew.Cast_to_BOARD_ITEM(proto[layer].Clone()).Cast()   # Clone() comes back as EDA_ITEM
+        z.SetNet(nets[net])
+        o = z.Outline()
+        o.RemoveAllContours()
+        o.NewOutline()
+        for x, y in outline(col, band, s, full):
+            o.Append(V(x, y))
+        z.SetZoneName("")
+        z.ResetUuid()      # a Clone keeps the UUID; duplicates deadlock the zone filler
+        b.Add(z)
+        keep.append(z)
+    in2 = b.GetLayerID("In2.Cu")
+    for s, net in IN2_LINKS:
+        t = pcbnew.PCB_TRACK(b)
+        t.SetStart(V(s, P2))
+        t.SetEnd(V(s, P1))
+        t.SetWidth(int(1.0 * MM))
+        t.SetLayer(in2)
+        t.SetNet(nets[net])
+        b.Add(t)
+        keep.append(t)
     b.Save(path)
-    print(len(keep), "zones")
+    print(len(keep), "zones and In2 links")
 
 
 if __name__ == "__main__":

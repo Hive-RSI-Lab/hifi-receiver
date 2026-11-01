@@ -88,6 +88,8 @@ PASSIVES = {
     ("C", "100uF", "1206"): ("C15008", True),
     # issue #137: output Zobels damp the LC filter with no speaker (4.7R + 470nF per leg)
     ("C", "470nF/50V", "0603"): ("C513577", False),
+    # review-5 R5-PA-1: Q1's soft start slowed to stay in its SOA (C4 sees up to VBUS: 50 V)
+    ("C", "220nF/50V", "0603"): ("C344195", False),
 }
 FP = {"R0402": "aiee:R0402", "R0603": "aiee:R0603", "R2512": "aiee:R2512",
       "C0402": "aiee:C0402", "C0603": "aiee:C0603", "C0805": "aiee:C0805",
