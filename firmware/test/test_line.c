@@ -47,7 +47,7 @@ static double run(hifi_djg_t *g, float out_w, float meas_w, double s, float limi
 	uint32_t t = 0;
 	for (int i = 0; i < s * 100; i++, t += 10) {
 		hifi_djg_audio(g, out_w, 0.01f);
-		if (hifi_djg_step(g, t, 0.01f, meas_w, false, limit)) return t / 1000.0;
+		if (hifi_djg_step(g, t, 0.01f, meas_w, false, limit, 0)) return t / 1000.0;
 	}
 	return -1;
 }
@@ -89,18 +89,41 @@ static void guard(void) {
 	/* OTW: a 150 ms blip passes, 200 ms held trips */
 	hifi_djg_init(&g, &dc);
 	uint32_t now = 1000;
-	for (int i = 0; i < 15; i++, now += 10) CHECK(!hifi_djg_step(&g, now, 0.01f, NAN, true, 14.2f));
-	CHECK(!hifi_djg_step(&g, now, 0.01f, NAN, false, 14.2f));
+	for (int i = 0; i < 15; i++, now += 10) CHECK(!hifi_djg_step(&g, now, 0.01f, NAN, true, 14.2f, 0));
+	CHECK(!hifi_djg_step(&g, now, 0.01f, NAN, false, 14.2f, 0));
 	now += 10;
 	const char *why = NULL;
 	int n = 0;
-	for (; n < 30 && !why; n++, now += 10) why = hifi_djg_step(&g, now, 0.01f, NAN, true, 14.2f);
+	for (; n < 30 && !why; n++, now += 10) why = hifi_djg_step(&g, now, 0.01f, NAN, true, 14.2f, 0);
 	CHECK_STR(why, "otw");
 	CHECK(n == 21); /* the step at 200 ms */
 	/* a reset starts the averages, and keeps what tripped it last */
 	hifi_djg_reset(&g);
 	CHECK(g.out_w == 0 && g.meas_w == 0);
 	CHECK_STR(g.tripped, "otw");
+
+	/* R5-PA-2: the charger's contract acts in ms. Plus at 4 ohm with the FLX4
+	 * at full level on a bass passage draws ~113 W; on a 65 W contract it
+	 * hands over on the second 10 ms step (inside 30 ms), long before the
+	 * 60 s thermal average notices */
+	hifi_djg_init(&g, &dc);
+	now = 0;
+	why = NULL;
+	for (n = 0; n < 10 && !why; n++, now += 10) why = hifi_djg_step(&g, now, 0.01f, 113.0f, false, 25.6f, 65.0f);
+	CHECK_STR(why, "contract");
+	CHECK(n == 2);
+	/* one 10 ms step over (a transient the bulk rides through) does not */
+	hifi_djg_init(&g, &dc);
+	CHECK(!hifi_djg_step(&g, 0, 0.01f, 80.0f, false, 25.6f, 65.0f));
+	CHECK(!hifi_djg_step(&g, 10, 0.01f, 50.0f, false, 25.6f, 65.0f));
+	CHECK(!hifi_djg_step(&g, 20, 0.01f, 80.0f, false, 25.6f, 65.0f));
+	CHECK(!hifi_djg_step(&g, 30, 0.01f, 50.0f, false, 25.6f, 65.0f));
+	/* 129 W on 140 W EPR is inside the contract; no current sense (NaN) or no
+	 * contract (0) never trips on it */
+	hifi_djg_init(&g, &dc);
+	for (n = 0; n < 10; n++) CHECK(!hifi_djg_step(&g, n * 10, 0.01f, 129.0f, false, 300.0f, 140.0f));
+	for (n = 0; n < 10; n++) CHECK(!hifi_djg_step(&g, 100 + n * 10, 0.01f, NAN, false, 300.0f, 65.0f));
+	for (n = 0; n < 10; n++) CHECK(!hifi_djg_step(&g, 200 + n * 10, 0.01f, 129.0f, false, 300.0f, 0));
 }
 
 int main(void) {

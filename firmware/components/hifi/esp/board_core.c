@@ -549,7 +549,9 @@ static const int HOLD[HIFI_EXP_BUTTONS] = {HIFI_IR_POWER, HIFI_IR_MUTE, HIFI_IR_
 #endif
 
 static void controls(void *arg) {
-	hifi_exp_cfg_t cfg = {.enc_a = EXP_ENC_A, .enc_b = EXP_ENC_B, .edges_per_detent = 4,
+	/* the decoder counts + when its enc_b changes first; Alps' EC11E turns clockwise
+	 * with A leading (catalogue output waveform), so A goes in as enc_b (R5-UF-1) */
+	hifi_exp_cfg_t cfg = {.enc_a = EXP_ENC_B, .enc_b = EXP_ENC_A, .edges_per_detent = 4,
 #ifdef CONFIG_HIFI_ULTRA
 			      .buttons = {FRONT_BITS, FRONT_BITS + 1, FRONT_BITS + 2, FRONT_BITS + 3},
 #else

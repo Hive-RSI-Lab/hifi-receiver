@@ -21,127 +21,127 @@
    "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
   },
   "C14663/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
    "kind": "lifecycle",
    "lcsc": "C14663",
    "refs": [
     "C1",
     "C4"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C14663",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C14663/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
    "kind": "part_match",
    "lcsc": "C14663",
    "refs": [
     "C1",
     "C4"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C14663",
-   "value": ""
+   "value": "BOM MPN CC0603KRX7R9BB104 vs JLC model CC0603KRX7R9BB104"
   },
   "C14663/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
    "kind": "stock",
    "lcsc": "C14663",
    "refs": [
     "C1",
     "C4"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C14663",
-   "value": ""
+   "value": "JLC can sell 23714874, build needs 20 (JLC lists 41539221, LCSC 4000)"
   },
   "C15850/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
    "kind": "lifecycle",
    "lcsc": "C15850",
    "refs": [
     "C2",
     "C3"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C15850",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C15850/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
    "kind": "part_match",
    "lcsc": "C15850",
    "refs": [
     "C2",
     "C3"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C15850",
-   "value": ""
+   "value": "BOM MPN CL21A106KAYNNNE vs JLC model CL21A106KAYNNNE"
   },
   "C15850/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
    "kind": "stock",
    "lcsc": "C15850",
    "refs": [
     "C2",
     "C3"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C15850",
-   "value": ""
+   "value": "JLC can sell 6551752, build needs 20 (JLC lists 8329457, LCSC 1433800)"
   },
   "C19666/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
    "kind": "lifecycle",
    "lcsc": "C19666",
    "refs": [
     "C5"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C19666",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C19666/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
    "kind": "part_match",
    "lcsc": "C19666",
    "refs": [
     "C5"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C19666",
-   "value": ""
+   "value": "BOM MPN CL10A475KO8NNNC vs JLC model CL10A475KO8NNNC"
   },
   "C19666/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
    "kind": "stock",
    "lcsc": "C19666",
    "refs": [
     "C5"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C19666",
-   "value": ""
+   "value": "JLC can sell 3443856, build needs 10 (JLC lists 4214660, LCSC 1230310)"
   },
   "C2/footprint": {
    "by": "cpl_verify",
@@ -164,167 +164,167 @@
    "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
   },
   "C20917/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:11+00:00",
    "kind": "lifecycle",
    "lcsc": "C20917",
    "refs": [
     "Q1"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C20917",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C20917/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:11+00:00",
    "kind": "part_match",
    "lcsc": "C20917",
    "refs": [
     "Q1"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C20917",
-   "value": ""
+   "value": "BOM value AO3400A in JLC model AO3400A"
   },
   "C20917/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:11+00:00",
    "kind": "stock",
    "lcsc": "C20917",
    "refs": [
     "Q1"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C20917",
-   "value": ""
+   "value": "JLC can sell 992496, build needs 10 (JLC lists 1145201, LCSC 567335)"
   },
   "C21190/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "lifecycle",
    "lcsc": "C21190",
    "refs": [
     "R14"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C21190",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C21190/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "part_match",
    "lcsc": "C21190",
    "refs": [
     "R14"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C21190",
-   "value": ""
+   "value": "BOM MPN 0603WAF1001T5E vs JLC model 0603WAF1001T5E"
   },
   "C21190/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "stock",
    "lcsc": "C21190",
    "refs": [
     "R14"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C21190",
-   "value": ""
+   "value": "JLC can sell 24375654, build needs 10 (JLC lists 30971640, LCSC 5438700)"
   },
   "C22396388/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "lifecycle",
    "lcsc": "C22396388",
    "refs": [
     "U1"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C22396388",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C22396388/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "part_match",
    "lcsc": "C22396388",
    "refs": [
     "U1"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C22396388",
-   "value": ""
+   "value": "BOM MPN TCA9535PWR(UMW) vs JLC model TCA9535PWR(UMW)"
   },
   "C22396388/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "stock",
    "lcsc": "C22396388",
    "refs": [
     "U1"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C22396388",
-   "value": ""
+   "value": "JLC can sell 15189, build needs 10 (JLC lists 15483, LCSC 15039)"
   },
   "C22775/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "lifecycle",
    "lcsc": "C22775",
    "refs": [
     "R10",
     "R12"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C22775",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C22775/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "part_match",
    "lcsc": "C22775",
    "refs": [
     "R10",
     "R12"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C22775",
-   "value": ""
+   "value": "BOM MPN 0603WAF1000T5E vs JLC model 0603WAF1000T5E"
   },
   "C22775/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "stock",
    "lcsc": "C22775",
    "refs": [
     "R10",
     "R12"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C22775",
-   "value": ""
+   "value": "JLC can sell 7246182, build needs 20 (JLC lists 9436832, LCSC 942100)"
   },
   "C22787/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "lifecycle",
    "lcsc": "C22787",
    "refs": [
@@ -332,14 +332,14 @@
     "R17",
     "R18"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C22787",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C22787/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "part_match",
    "lcsc": "C22787",
    "refs": [
@@ -347,14 +347,14 @@
     "R17",
     "R18"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C22787",
-   "value": ""
+   "value": "BOM MPN 0603WAF1200T5E vs JLC model 0603WAF1200T5E"
   },
   "C22787/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "stock",
    "lcsc": "C22787",
    "refs": [
@@ -362,95 +362,95 @@
     "R17",
     "R18"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C22787",
-   "value": ""
+   "value": "JLC can sell 1698436, build needs 30 (JLC lists 2112312, LCSC 519500)"
   },
   "C23228/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "lifecycle",
    "lcsc": "C23228",
    "refs": [
     "R15",
     "R16"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C23228",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C23228/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "part_match",
    "lcsc": "C23228",
    "refs": [
     "R15",
     "R16"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C23228",
-   "value": ""
+   "value": "BOM MPN 0603WAF6800T5E vs JLC model 0603WAF6800T5E"
   },
   "C23228/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "stock",
    "lcsc": "C23228",
    "refs": [
     "R15",
     "R16"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C23228",
-   "value": ""
+   "value": "JLC can sell 1656628, build needs 20 (JLC lists 1871015, LCSC 1029700)"
   },
   "C25803/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "lifecycle",
    "lcsc": "C25803",
    "refs": [
     "R11"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C25803",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C25803/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "part_match",
    "lcsc": "C25803",
    "refs": [
     "R11"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C25803",
-   "value": ""
+   "value": "BOM MPN 0603WAF1003T5E vs JLC model 0603WAF1003T5E"
   },
   "C25803/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "stock",
    "lcsc": "C25803",
    "refs": [
     "R11"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C25803",
-   "value": ""
+   "value": "JLC can sell 15322331, build needs 10 (JLC lists 17663399, LCSC 8564000)"
   },
   "C25804/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "lifecycle",
    "lcsc": "C25804",
    "refs": [
@@ -465,14 +465,14 @@
     "R9",
     "R19"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C25804",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C25804/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "part_match",
    "lcsc": "C25804",
    "refs": [
@@ -487,14 +487,14 @@
     "R9",
     "R19"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C25804",
-   "value": ""
+   "value": "BOM MPN 0603WAF1002T5E vs JLC model 0603WAF1002T5E"
   },
   "C25804/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "stock",
    "lcsc": "C25804",
    "refs": [
@@ -509,127 +509,127 @@
     "R9",
     "R19"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C25804",
-   "value": ""
+   "value": "JLC can sell 32471917, build needs 100 (JLC lists 42748994, LCSC 2860300)"
   },
   "C273610/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
    "kind": "lifecycle",
    "lcsc": "C273610",
    "refs": [
     "D1"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C273610",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C273610/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
    "kind": "part_match",
    "lcsc": "C273610",
    "refs": [
     "D1"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C273610",
-   "value": ""
+   "value": "BOM value TJ-S1615SW6TGLCCYRGB-A5 in JLC model TJ-S1615SW6TGLCCYRGB-A5"
   },
   "C273610/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
    "kind": "stock",
    "lcsc": "C273610",
    "refs": [
     "D1"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C273610",
-   "value": ""
+   "value": "JLC can sell 25581, build needs 10 (JLC lists 27222, LCSC 23965)"
   },
   "C2856803/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:11+00:00",
    "kind": "lifecycle",
    "lcsc": "C2856803",
    "refs": [
     "J1"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C2856803",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C2856803/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:11+00:00",
    "kind": "part_match",
    "lcsc": "C2856803",
    "refs": [
     "J1"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C2856803",
-   "value": ""
+   "value": "BOM value FPC-05F-20PH20 in JLC model FPC-05F-20PH20"
   },
   "C2856803/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:11+00:00",
    "kind": "stock",
    "lcsc": "C2856803",
    "refs": [
     "J1"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C2856803",
-   "value": ""
+   "value": "JLC can sell 123794, build needs 10 (JLC lists 125232, LCSC 122985)"
   },
   "C2856829/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:11+00:00",
    "kind": "lifecycle",
    "lcsc": "C2856829",
    "refs": [
     "J2"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C2856829",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C2856829/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:11+00:00",
    "kind": "part_match",
    "lcsc": "C2856829",
    "refs": [
     "J2"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C2856829",
-   "value": ""
+   "value": "BOM value FPC-05FB-12PH20 in JLC model FPC-05FB-12PH20"
   },
   "C2856829/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:11+00:00",
    "kind": "stock",
    "lcsc": "C2856829",
    "refs": [
     "J2"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C2856829",
-   "value": ""
+   "value": "JLC can sell 17171, build needs 10 (JLC lists 18009, LCSC 16770)"
   },
   "C3/footprint": {
    "by": "cpl_verify",
@@ -652,8 +652,8 @@
    "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
   },
   "C318884/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "lifecycle",
    "lcsc": "C318884",
    "refs": [
@@ -661,14 +661,14 @@
     "SW2",
     "SW3"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C318884",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C318884/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "part_match",
    "lcsc": "C318884",
    "refs": [
@@ -676,14 +676,14 @@
     "SW2",
     "SW3"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C318884",
-   "value": ""
+   "value": "BOM value TS-1187A-B-A-B in JLC model TS-1187A-B-A-B"
   },
   "C318884/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "stock",
    "lcsc": "C318884",
    "refs": [
@@ -691,49 +691,49 @@
     "SW2",
     "SW3"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C318884",
-   "value": ""
+   "value": "JLC can sell 1022602, build needs 30 (JLC lists 1095913, LCSC 825620)"
   },
   "C361165/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "lifecycle",
    "lcsc": "C361165",
    "refs": [
     "SW4"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C361165",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C361165/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "part_match",
    "lcsc": "C361165",
    "refs": [
     "SW4"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C361165",
-   "value": ""
+   "value": "BOM value EC11E1834403 in JLC model EC11E1834403"
   },
   "C361165/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:12+00:00",
    "kind": "stock",
    "lcsc": "C361165",
    "refs": [
     "SW4"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C361165",
-   "value": ""
+   "value": "JLC can sell 3145, build needs 10 (JLC lists 3177, LCSC 3115)"
   },
   "C4/footprint": {
    "by": "cpl_verify",
@@ -754,6 +754,48 @@
    "status": "verified",
    "subject": "C4",
    "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
+  },
+  "C49338/lifecycle": {
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
+   "kind": "lifecycle",
+   "lcsc": "C49338",
+   "refs": [
+    "D2",
+    "D3"
+   ],
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
+   "subject": "C49338",
+   "value": "JLC sells it"
+  },
+  "C49338/part_match": {
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
+   "kind": "part_match",
+   "lcsc": "C49338",
+   "refs": [
+    "D2",
+    "D3"
+   ],
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
+   "subject": "C49338",
+   "value": "BOM MPN PESD5V0S2BT,215 vs JLC model PESD5V0S2BT,215"
+  },
+  "C49338/stock": {
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
+   "kind": "stock",
+   "lcsc": "C49338",
+   "refs": [
+    "D2",
+    "D3"
+   ],
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
+   "subject": "C49338",
+   "value": "JLC can sell 21913, build needs 20 (JLC lists 22319, LCSC 22315)"
   },
   "C5/footprint": {
    "by": "cpl_verify",
@@ -776,46 +818,46 @@
    "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
   },
   "C57112/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
    "kind": "lifecycle",
    "lcsc": "C57112",
    "refs": [
     "C6",
     "C7"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C57112",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C57112/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
    "kind": "part_match",
    "lcsc": "C57112",
    "refs": [
     "C6",
     "C7"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C57112",
-   "value": ""
+   "value": "BOM MPN 0603B103K500NT vs JLC model 0603B103K500NT"
   },
   "C57112/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:10+00:00",
    "kind": "stock",
    "lcsc": "C57112",
    "refs": [
     "C6",
     "C7"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C57112",
-   "value": ""
+   "value": "JLC can sell 3986963, build needs 20 (JLC lists 5565438, LCSC 0)"
   },
   "C6/footprint": {
    "by": "cpl_verify",
@@ -858,43 +900,43 @@
    "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
   },
   "C91447/lifecycle": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:13+00:00",
    "kind": "lifecycle",
    "lcsc": "C91447",
    "refs": [
     "U2"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C91447",
-   "value": ""
+   "value": "JLC sells it"
   },
   "C91447/part_match": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:13+00:00",
    "kind": "part_match",
    "lcsc": "C91447",
    "refs": [
     "U2"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C91447",
-   "value": ""
+   "value": "BOM value IRM-H638T/TR2 in JLC model IRM-H638T/TR2"
   },
   "C91447/stock": {
-   "by": null,
-   "checked_at": null,
+   "by": "stock_check",
+   "checked_at": "2026-11-01T03:21:13+00:00",
    "kind": "stock",
    "lcsc": "C91447",
    "refs": [
     "U2"
    ],
-   "source": "",
-   "status": "unknown",
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
    "subject": "C91447",
-   "value": ""
+   "value": "JLC can sell 123605, build needs 10 (JLC lists 137182, LCSC 110840)"
   },
   "D1/footprint": {
    "by": "cpl_verify",
@@ -915,6 +957,58 @@
    "status": "unknown",
    "subject": "D1",
    "value": "D1 (C273610): no datasheet extraction"
+  },
+  "D2/footprint": {
+   "by": null,
+   "checked_at": null,
+   "kind": "footprint",
+   "lcsc": "C49338",
+   "refs": [
+    "D2"
+   ],
+   "source": "",
+   "status": "unknown",
+   "subject": "D2",
+   "value": ""
+  },
+  "D2/rating": {
+   "by": null,
+   "checked_at": null,
+   "kind": "rating",
+   "lcsc": "C49338",
+   "refs": [
+    "D2"
+   ],
+   "source": "",
+   "status": "unknown",
+   "subject": "D2",
+   "value": ""
+  },
+  "D3/footprint": {
+   "by": null,
+   "checked_at": null,
+   "kind": "footprint",
+   "lcsc": "C49338",
+   "refs": [
+    "D3"
+   ],
+   "source": "",
+   "status": "unknown",
+   "subject": "D3",
+   "value": ""
+  },
+  "D3/rating": {
+   "by": null,
+   "checked_at": null,
+   "kind": "rating",
+   "lcsc": "C49338",
+   "refs": [
+    "D3"
+   ],
+   "source": "",
+   "status": "unknown",
+   "subject": "D3",
+   "value": ""
   },
   "J1/footprint": {
    "by": "cpl_verify",
@@ -1568,5 +1662,5 @@
   }
  },
  "schema": 1,
- "updated": "2026-10-29T11:05:56+00:00"
+ "updated": "2026-11-01T03:21:14+00:00"
 }

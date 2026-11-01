@@ -9,12 +9,15 @@
 #include "hifi_vol.h"
 
 /* the core board's expander: knob on P12/P13, knob push P14, buttons P15/P16 */
-static const hifi_exp_cfg_t CFG = {.enc_a = 10, .enc_b = 11, .edges_per_detent = 4, .buttons = {12, 13, 14, -1}};
+/* as board_core.c wires it: Alps A (P12, bit 10) is the decoder's enc_b (R5-UF-1) */
+static const hifi_exp_cfg_t CFG = {.enc_a = 11, .enc_b = 10, .edges_per_detent = 4, .buttons = {12, 13, 14, -1}};
 #define IDLE 0xFFFF /* everything pulled up */
 
-static uint16_t knob(int ab) { return (uint16_t) ((IDLE & ~(3u << 10)) | (ab >> 1 & 1) << 10 | (ab & 1) << 11); }
+static uint16_t knob(int ab) { return (uint16_t) ((IDLE & ~(3u << 10)) | (ab >> 1 & 1) << CFG.enc_a | (ab & 1) << CFG.enc_b); }
 
-/* one detent clockwise from rest: 11 -> 10 -> 00 -> 01 -> 11 (A, B) */
+/* knob(ab) takes the decoder's frame: ab = (enc_a, enc_b) = (Alps B, Alps A).
+ * One detent clockwise from rest, A leading (Alps EC11E): 11 -> 10 -> 00 -> 01 -> 11 here,
+ * i.e. 11 -> 01 -> 00 -> 10 -> 11 in (A, B) */
 static int turn(hifi_exp_t *e, int dir, uint32_t *t, hifi_exp_event_t *ev) {
 	static const int cw[4] = {2, 0, 1, 3}, ccw[4] = {1, 0, 2, 3};
 	int n = 0;

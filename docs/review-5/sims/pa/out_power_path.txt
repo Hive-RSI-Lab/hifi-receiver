@@ -1,0 +1,5 @@
+J1 -> R1 (VBUS_IN)           all layers 5.79 mm | single layer: In2.Cu 5.79 mm (4.8 A dT10) | best single layer 4.8 A @dT20
+R1 -> Q1 source (VBUS)       all layers 5.39 mm | single layer: In2.Cu 5.39 mm (4.8 A dT10) | best single layer 4.8 A @dT20
+Q1 drain -> U15 PVDD pins    all layers 3.88 mm | single layer: In2.Cu 3.88 mm (3.3 A dT10) | best single layer 4.5 A @dT20
+Q1 drain -> U16 PVDD pins    all layers 3.88 mm | single layer: In2.Cu 3.88 mm (3.3 A dT10) | best single layer 4.5 A @dT20
+Q1 drain -> C5/C6 bulk       all layers 0.58 mm | single layer: In2.Cu 0.58 mm (0.7 A dT10) | best single layer 0.9 A @dT20

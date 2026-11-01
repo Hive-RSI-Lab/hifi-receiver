@@ -40,11 +40,12 @@ ultra,FPC connector 12P 0.5 mm dual contact (LCD tail),C2856829,FPC-05FB-12PH20,
 ultra,I2C GPIO expander 16-bit (front panel),C22396388,TCA9535PWR(UMW),extended,0.495,0.420,24,smt,0,0,1,LCSC live 2026-10-28 (ultra-front BOM)
 ultra,RGB status LED common anode,C273610,TJ-S1615SW6TGLCCYRGB-A5,extended,0.099,0.080,4,smt,0,0,1,LCSC live 2026-10-28 (ultra-front BOM)
 ultra,Backlight switch N-MOSFET,C20917,AO3400A,basic,0.089,0.070,3,smt,0,0,1,LCSC live 2026-10-28 (ultra-front BOM)
+ultra,ESD clamp dual 5 V at the front-panel switches (BTN1-3 + ENC_SW),C49338,"PESD5V0S2BT,215",extended,0.0857,0.058,3,smt,0,0,2,"LCSC live 2026-11-01 (ultra-front D2/D3, R5-UF-2)"
 misc,Small passives (R/C 0402-0805 basic; per-tier count in qty columns) (Plus fits zone B too; +18 for the review-2 taps and bias),,(estimate),basic,0.004,0.003,2,smt,0,218,218,estimate: JLC basic R/C 0.001-0.01 each
 misc,Buck inductors + 10 uF/22 uF bulk MLCC + ferrites (lump),,(estimate),basic,0.40,0.30,20,smt,0,1,1,estimate
 misc,Status LEDs 0603,,(estimate),basic,0.010,0.010,2,smt,0,2,3,estimate
 offboard,IR remote (NEC 21-key),,(not on LCSC),offboard,1.20,0.80,0,hand,0,1,1,estimate AliExpress-class
-offboard,FFC cable 20P 0.5 mm 100 mm,,(estimate),offboard,0.20,0.15,0,hand,0,0,1,estimate
+offboard,FFC cable 20P 0.5 mm 50 mm type B (reverse contacts; type A shorts outputs),,(estimate),offboard,0.20,0.15,0,hand,0,0,1,estimate
 lite-board,USB-C 20 V/5 A  power + CH340B data,C165948,TYPE-C-31-M-12,extended,0.2468,0.1871,16,smt,1,0,0,"boards/lite-main parts.json, LCSC 2026-10-29 (review-2)"
 lite-board,USB PD sink  asks for 20 V,C46061833,CH224Q,extended,0.3587,0.2670,11,smt,1,0,0,"boards/lite parts.json, LCSC live 2026-10-28"
 lite-board,CH224Q VHV,C15849,CL10A105KB8NNNC,basic,0.0146,0.0146,2,smt,13,0,0,"boards/lite parts.json, LCSC live 2026-10-28"

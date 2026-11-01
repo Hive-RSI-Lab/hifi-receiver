@@ -4,7 +4,7 @@
  "workspace_schema": 2,
  "workspace": "boards/ultra-front",
  "created": "2026-10-28T11:01:12",
- "updated": "2026-10-29T07:10:48",
+ "updated": "2026-10-31T23:13:48",
  "phase": "P9",
  "gates": {
   "erc": {
@@ -81,6 +81,17 @@
       "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
       "pro": "json_canonical:6ec3460c19d0afad44f5ee8f381b2106e8306a7472ecb16ba7cde0f00a6b960a"
      }
+    }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T23:13:48",
+     "edit_class": "add_part",
+     "refs": [
+      "D2",
+      "D3"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -329,6 +340,17 @@
       "place_waivers": null
      }
     }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T23:13:48",
+     "edit_class": "add_part",
+     "refs": [
+      "D2",
+      "D3"
+     ],
+     "human_hold": 2
+    }
    ]
   },
   "drc_routed": {
@@ -443,6 +465,17 @@
       "pro": "json_canonical:6ec3460c19d0afad44f5ee8f381b2106e8306a7472ecb16ba7cde0f00a6b960a",
       "dru": "text_eol:d18f79ca0214f0cdf238b7ed722efe8107bfba58ef12c2d95832240367064201"
      }
+    }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T23:13:48",
+     "edit_class": "add_part",
+     "refs": [
+      "D2",
+      "D3"
+     ],
+     "human_hold": 2
     }
    ]
   },
@@ -559,6 +592,17 @@
       "waivers": null
      }
     }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T23:13:48",
+     "edit_class": "add_part",
+     "refs": [
+      "D2",
+      "D3"
+     ],
+     "human_hold": 2
+    }
    ]
   },
   "dfm": {
@@ -620,6 +664,17 @@
       "sch": "sexpr_no_uuid:69318992777b82dc5dd23661a4dd16426ba599fb23319c3c592fe4c361f3070e",
       "parts": null
      }
+    }
+   ],
+   "stale": [
+    {
+     "ts": "2026-10-31T23:13:48",
+     "edit_class": "add_part",
+     "refs": [
+      "D2",
+      "D3"
+     ],
+     "human_hold": 2
     }
    ]
   }
@@ -695,6 +750,91 @@
    "kind": "parts",
    "sha256": null,
    "hashed": "2026-10-29T07:05:59"
+  },
+  "netlist": {
+   "path": "kicad/ultra-front.net",
+   "kind": "netlist",
+   "sha256": "netlist_canonical:cce5a7bce213d66f45d9fca748a8b51bb48bc953307915435656b63c31c5d00b",
+   "hashed": "2026-10-31T23:13:48",
+   "stale": [
+    {
+     "ts": "2026-10-31T23:13:48",
+     "edit_class": "add_part",
+     "refs": [
+      "D2",
+      "D3"
+     ],
+     "human_hold": 2
+    }
+   ]
+  },
+  "gerbers": {
+   "path": "fab/ultra-front_gerbers.zip",
+   "kind": "gerbers",
+   "sha256": "gerber_design:19c96483014c3ba4214ed435c73fb2bfcd3cd4dc21b62d0c148696ce1b5966cb",
+   "hashed": "2026-10-31T23:13:48",
+   "stale": [
+    {
+     "ts": "2026-10-31T23:13:48",
+     "edit_class": "add_part",
+     "refs": [
+      "D2",
+      "D3"
+     ],
+     "human_hold": 2
+    }
+   ]
+  },
+  "bom": {
+   "path": "fab/BOM.csv",
+   "kind": "bom",
+   "sha256": "text_eol:08786c40f7075722df905334c1a338d702c3abe139f091eaede6da2374abb4ee",
+   "hashed": "2026-10-31T23:13:48",
+   "stale": [
+    {
+     "ts": "2026-10-31T23:13:48",
+     "edit_class": "add_part",
+     "refs": [
+      "D2",
+      "D3"
+     ],
+     "human_hold": 2
+    }
+   ]
+  },
+  "bom_full": {
+   "path": "fab/BOM-full.csv",
+   "kind": "bom_full",
+   "sha256": "text_eol:ada069a96ef77e171db6e71dc6b20fe2530783e0428c6c4d621b901092f467d1",
+   "hashed": "2026-10-31T23:13:48",
+   "stale": [
+    {
+     "ts": "2026-10-31T23:13:48",
+     "edit_class": "add_part",
+     "refs": [
+      "D2",
+      "D3"
+     ],
+     "human_hold": 2
+    }
+   ]
+  },
+  "cpl": {
+   "path": "fab/CPL.csv",
+   "kind": "cpl",
+   "sha256": "text_eol:5925b650b1106f5088a8c3b3e1d1aea2da1c4b4d7a7ad7ce9bf7f70cfbd23c83",
+   "hashed": "2026-10-31T23:13:48",
+   "stale": [
+    {
+     "ts": "2026-10-31T23:13:48",
+     "edit_class": "add_part",
+     "refs": [
+      "D2",
+      "D3"
+     ],
+     "human_hold": 2
+    }
+   ]
   }
  },
  "open_issues": [],
@@ -832,7 +972,41 @@
    "ts": "2026-10-29T07:07:00"
   }
  ],
- "edits": [],
+ "edits": [
+  {
+   "ts": "2026-10-31T23:13:48",
+   "class": "add_part",
+   "refs": [
+    "D2",
+    "D3"
+   ],
+   "note": null,
+   "human_hold": 2,
+   "gates": [
+    "erc",
+    "place",
+    "drc",
+    "drc_routed",
+    "verify",
+    "sim",
+    "dfm"
+   ],
+   "gates_marked": [
+    "erc",
+    "place",
+    "drc_routed",
+    "verify",
+    "dfm"
+   ],
+   "stale_artifacts": [
+    "netlist",
+    "gerbers",
+    "bom",
+    "bom_full",
+    "cpl"
+   ]
+  }
+ ],
  "spawns": [
   {
    "ts": "2026-10-28T11:35:11",
@@ -1405,6 +1579,16 @@
    "event": "human",
    "checkpoint": "4",
    "status": "approved"
+  },
+  {
+   "ts": "2026-10-31T23:13:48",
+   "event": "edit",
+   "edit_class": "add_part",
+   "refs": [
+    "D2",
+    "D3"
+   ],
+   "human_hold": 2
   }
  ]
 }

@@ -1,0 +1,146 @@
+repo /home/hive2/projects/hifi-review5
+last PCB commit e89d1d0 2026-10-31 15:26:31 -0400; last fab commit e89d1d0 2026-10-31 15:26:31 -0400; uncommitted in kicad/parts/fab: none
+PCB footprints 308; attrs: {'smd': 285, 'dnp smd': 5, 'through_hole': 13, 'board_only exclude_from_bom exclude_from_pos_files': 4, 'dnp through_hole': 1}
+PCB dnp-attr refs: C126,FB3,J3,R402,R403,U19; board_only refs: H1,H2,H3,H4
+  PASS: PCB dnp attrs == Plus DB dnp (diff -)
+  PASS: generator refs == PCB refs (gen-only -, pcb-only -)
+  PASS: Plus parts DB LCSC == generator lcsc= for all 304 refs: 
+  WARN: Plus reports/bom_cpl*.json violations: C2879306: JLC can sell -2 of C2879306 (TPA3220DDWR); the build needs 10
+  PASS: Ultra parts DB LCSC == generator lcsc= for all 304 refs: 
+  WARN: Ultra reports/bom_cpl*.json violations: C2879306: JLC can sell -2 of C2879306 (TPA3220DDWR); the build needs 10
+
+[1] Gerbers + drill vs current PCB; zip vs gerbers/
+    core-B_Cu.gbl                identical (44268 lines, 1058 flashes)
+    core-B_Mask.gbs              identical (257 lines, 113 flashes)
+    core-B_Paste.gbp             identical (89 lines, 32 flashes)
+    core-B_Silkscreen.gbo        identical (102 lines, 0 flashes)
+    core-Edge_Cuts.gm1           identical (40 lines, 0 flashes)
+    core-F_Cu.gtl                identical (59155 lines, 1927 flashes)
+    core-F_Mask.gts              identical (1960 lines, 982 flashes)
+    core-F_Paste.gtp             identical (1796 lines, 907 flashes)
+    core-F_Silkscreen.gto        identical (21843 lines, 0 flashes)
+    core-In1_Cu.g1               identical (24177 lines, 1026 flashes)
+    core-In2_Cu.g2               identical (38829 lines, 1026 flashes)
+    core-job.gbrjob              identical (163 lines, 0 flashes)
+    core.drl                     identical (1107 lines, 0 flashes)
+  PASS: 13 files: fresh export == fab/gerbers (headers/timestamps ignored)
+  PASS: core_gerbers.zip == gerbers/ byte-for-byte (13 files)
+  WARN: Plus: rotation from package table (no LCSC model) for D6,D7,D8,D9
+
+[2] CPL vs PCB (Plus: boards/core/fab/CPL.csv)
+  PASS: Plus: PCB placed refs missing from CPL: -
+  PASS: Plus: CPL refs not expected (not on PCB / DNP / excluded): -
+  PASS: Plus: X/Y within 0.01 mm (CPL Y = -PCB Y, origin = page origin): 0 off 
+  PASS: Plus: Layer matches PCB side: 0 off 
+    rotation (CPL - PCB) mod 360, grouped by layer / delta / bom_cpl audit correction:
+      Bottom delta    0.00  audit-corr    0.00  n= 14  C207,C208,C209,C210,C218,C220,C307,C308,C309,C310,D6,D7,D8,D9
+      Top    delta    0.00  audit-corr    0.00  n=284  C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11,C12,C13,C14,C15,C16,C17,C18,C19,C21,C22,C30,C31,C32,C33,C34,C37,C38,C39,C40,...
+  PASS: Plus: rotation delta == bom_cpl audit correction for all parts; unexplained: -
+
+[3] BOM vs PCB / parts DB / generator (Plus: boards/core/fab/BOM.csv)
+  PASS: Plus: one BOM line per LCSC number (dupes: -)
+  PASS: Plus: BOM designators == CPL designators (BOM-only -, CPL-only -)
+  PASS: Plus: BOM refs not on PCB: -
+  PASS: Plus: BOM Comment == PCB Value: 0 off 
+  PASS: Plus: BOM Footprint == PCB footprint name: 0 off 
+  PASS: Plus: BOM LCSC == parts DB: 0 off 
+  PASS: Plus: BOM LCSC == generator lcsc=: 0 off 
+  WARN: Plus: BOM Comment is another ref's label on a same-LCSC/MPN line (grouping artefact, same part): J5(bom SUB OUT pcb LINE IN) J7(bom SPK A L pcb SPK A R) J10(bom SPK A L pcb SPK B L) J11(bom SPK A L pcb SPK B R) SW3(bom BTN1 pcb BTN2)
+  PASS: Plus: PCB footprint 'LCSC' property == BOM LCSC: 0 off 
+  WARN: Plus: PCB footprint 'LCSC Part' property (second, stale-looking field) disagrees with BOM on 170 placed refs; uploaded BOM unaffected, but a tool reading 'LCSC Part' off the board would pick wrong parts: C1(bom C28323 pcb 'LCSC Part'=C45783) C3(bom C15195 pcb 'LCSC Part'=C1525) C4(bom C14663 pcb 'LCSC Part'=C19702) C7(bom C13585 pcb 'LCSC Part'=C377070) C8(bom C377773 pcb 'LCSC Part'=C45783) C9(bom C307331 pcb 'LCSC Part'=C1525) C10(bom C13585 pcb 'LCSC Part'=C377070) C11(bom C14663 pcb 'LCSC Part'=C19702) C12(bom C15195 pcb 'LCSC Part'=C1525) C18(bom C52923 pcb 'LCSC Part'=C1525) C19(bom C52923 pcb 'LCSC Part'=C1525) C32(bom C52923 pcb 'LCSC Part'=C1525) C37(bom C15195 pcb 'LCSC Part'=C1525) C38(bom C15195 pcb 'LCSC Part'=C1525) C39(bom C15195 pcb 'LCSC Part'=C1525) ...
+  PASS: Plus: DNP refs (C126,FB3,J3,R402,R403,U19) leaked into BOM: -
+  PASS: Plus: DB-placed refs missing from BOM: -
+  PASS: Plus: own-variant parts C400,R400,SW1,SW2,SW3,U18 all in BOM (missing -)
+  PASS: Plus: other-variant parts C126,FB3,J3,R402,R403,U19 absent (present -)
+  PASS: Plus: BOM-full placed set == BOM set (diff -); BOM-full non-placed: C126,FB3,H1,H2,H3,H4,J3,R402,R403,U19
+  PASS: Plus: every PCB part in BOM-full (missing -)
+  WARN: Ultra: rotation from package table (no LCSC model) for D6,D7,D8,D9,U19
+
+[2] CPL vs PCB (Ultra: boards/core/fab/ultra/CPL.csv)
+  PASS: Ultra: PCB placed refs missing from CPL: -
+  PASS: Ultra: CPL refs not expected (not on PCB / DNP / excluded): -
+  PASS: Ultra: X/Y within 0.01 mm (CPL Y = -PCB Y, origin = page origin): 0 off 
+  PASS: Ultra: Layer matches PCB side: 0 off 
+    rotation (CPL - PCB) mod 360, grouped by layer / delta / bom_cpl audit correction:
+      Bottom delta    0.00  audit-corr    0.00  n= 14  C207,C208,C209,C210,C218,C220,C307,C308,C309,C310,D6,D7,D8,D9
+      Top    delta    0.00  audit-corr    0.00  n=284  C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11,C12,C13,C14,C15,C16,C17,C18,C19,C21,C22,C30,C31,C32,C33,C34,C37,C38,C39,C40,...
+  PASS: Ultra: rotation delta == bom_cpl audit correction for all parts; unexplained: -
+
+[3] BOM vs PCB / parts DB / generator (Ultra: boards/core/fab/ultra/BOM.csv)
+  PASS: Ultra: one BOM line per LCSC number (dupes: -)
+  PASS: Ultra: BOM designators == CPL designators (BOM-only -, CPL-only -)
+  PASS: Ultra: BOM refs not on PCB: -
+  PASS: Ultra: BOM Comment == PCB Value: 0 off 
+  PASS: Ultra: BOM Footprint == PCB footprint name: 0 off 
+  PASS: Ultra: BOM LCSC == parts DB: 0 off 
+  PASS: Ultra: BOM LCSC == generator lcsc=: 0 off 
+  WARN: Ultra: BOM Comment is another ref's label on a same-LCSC/MPN line (grouping artefact, same part): J5(bom SUB OUT pcb LINE IN) J7(bom SPK A L pcb SPK A R) J10(bom SPK A L pcb SPK B L) J11(bom SPK A L pcb SPK B R)
+  PASS: Ultra: PCB footprint 'LCSC' property == BOM LCSC: 0 off 
+  WARN: Ultra: PCB footprint 'LCSC Part' property (second, stale-looking field) disagrees with BOM on 171 placed refs; uploaded BOM unaffected, but a tool reading 'LCSC Part' off the board would pick wrong parts: C1(bom C28323 pcb 'LCSC Part'=C45783) C3(bom C15195 pcb 'LCSC Part'=C1525) C4(bom C14663 pcb 'LCSC Part'=C19702) C7(bom C13585 pcb 'LCSC Part'=C377070) C8(bom C377773 pcb 'LCSC Part'=C45783) C9(bom C307331 pcb 'LCSC Part'=C1525) C10(bom C13585 pcb 'LCSC Part'=C377070) C11(bom C14663 pcb 'LCSC Part'=C19702) C12(bom C15195 pcb 'LCSC Part'=C1525) C18(bom C52923 pcb 'LCSC Part'=C1525) C19(bom C52923 pcb 'LCSC Part'=C1525) C32(bom C52923 pcb 'LCSC Part'=C1525) C37(bom C15195 pcb 'LCSC Part'=C1525) C38(bom C15195 pcb 'LCSC Part'=C1525) C39(bom C15195 pcb 'LCSC Part'=C1525) ...
+  PASS: Ultra: DNP refs (C400,R400,SW1,SW2,SW3,U18) leaked into BOM: -
+  PASS: Ultra: DB-placed refs missing from BOM: -
+  PASS: Ultra: own-variant parts C126,FB3,J3,R402,R403,U19 all in BOM (missing -)
+  PASS: Ultra: other-variant parts C400,R400,SW1,SW2,SW3,U18 absent (present -)
+  PASS: Ultra: BOM-full placed set == BOM set (diff -); BOM-full non-placed: C400,H1,H2,H3,H4,R400,SW1,SW2,SW3,U18
+  PASS: Ultra: every PCB part in BOM-full (missing -)
+
+[2b] raw kicad pos files kept in fab/ (informational)
+  PASS: boards/core/fab/core-pos.csv: 304 rows; PCB refs not in it -; not on PCB -; XY off -
+  PASS: boards/core/fab/ultra/core-pos.csv: 304 rows; PCB refs not in it -; not on PCB -; XY off -
+  WARN: boards/core/fab/ultra/core-ultra-pos.csv: 300 rows; PCB refs not in it D6,D7,D8,D9; not on PCB -; XY off C207,C208,C209,C210,C218,C220,C222,C223,C224,C225,C307,C308,C309,C310,C320,C321,C322,C323
+
+[3b] new / ECO parts detail (Plus DB; Ultra identical unless noted)
+    D6    pcb NUP2105L     B.Cu  SOT-23-3_L2.9-W1.3-P1.90-LS2 BOM[NUP2105L C14486] db C14486 gen C14486 inPlus=True inUltra=True | NUP2105LT1G dual bidirectional TVS, 24 V VRWM, SOT-23
+    D7    pcb PESD5V0S2BT  B.Cu  SOT-23_L2.9-W1.3-P1.90-LS2.4 BOM[PESD5V0S2BT C49338] db C49338 gen C49338 inPlus=True inUltra=True | PESD5V0S2BT dual bidirectional ESD, 5 V VRWM, SOT-23
+    D8    pcb PESD5V0S2BT  B.Cu  SOT-23_L2.9-W1.3-P1.90-LS2.4 BOM[PESD5V0S2BT C49338] db C49338 gen C49338 inPlus=True inUltra=True | PESD5V0S2BT dual bidirectional ESD, 5 V VRWM, SOT-23
+    D9    pcb NUP2105L     B.Cu  SOT-23-3_L2.9-W1.3-P1.90-LS2 BOM[NUP2105L C14486] db C14486 gen C14486 inPlus=True inUltra=True | NUP2105LT1G dual bidirectional TVS, 24 V VRWM, SOT-23
+    U21   pcb TLV803S      F.Cu  SOT-23-3_L2.9-W1.3-P1.90-LS2 BOM[TLV803S C132016] db C132016 gen C132016 inPlus=True inUltra=True | -40℃~+125℃@(Tj) 1 1.1V~6V 2.93V 200ms 9uA Active Low No No Open Drain 
+    C4    pcb 100nF        F.Cu  C0603                        BOM[100nF C14663] db C14663 gen C14663 inPlus=True inUltra=True | 100nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT R
+    C8    pcb 2.2uF        F.Cu  C0805                        BOM[2.2uF C377773] db C377773 gen C377773 inPlus=True inUltra=True | 2.2uF 50V X5R ±10% 0805 Multilayer Ceramic Capacitors MLCC - SMD/SMT R
+    C228  pcb 470nF        F.Cu  C0603                        BOM[470nF C513577] db C513577 gen C513577 inPlus=True inUltra=True | 470nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT R
+    C231  pcb 470nF        F.Cu  C0603                        BOM[470nF C513577] db C513577 gen C513577 inPlus=True inUltra=True | 470nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT R
+    C234  pcb 470nF        F.Cu  C0603                        BOM[470nF C513577] db C513577 gen C513577 inPlus=True inUltra=True | 470nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT R
+    C237  pcb 470nF        F.Cu  C0603                        BOM[470nF C513577] db C513577 gen C513577 inPlus=True inUltra=True | 470nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT R
+    C326  pcb 470nF        F.Cu  C0603                        BOM[470nF C513577] db C513577 gen C513577 inPlus=True inUltra=True | 470nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT R
+    C329  pcb 470nF        F.Cu  C0603                        BOM[470nF C513577] db C513577 gen C513577 inPlus=True inUltra=True | 470nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT R
+    C332  pcb 470nF        F.Cu  C0603                        BOM[470nF C513577] db C513577 gen C513577 inPlus=True inUltra=True | 470nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT R
+    C335  pcb 470nF        F.Cu  C0603                        BOM[470nF C513577] db C513577 gen C513577 inPlus=True inUltra=True | 470nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT R
+    R227  pcb 4.7R         F.Cu  R0603                        BOM[4.7R C23164] db C23164 gen C23164 inPlus=True inUltra=True | -55℃~+155℃ 100mW 4.7Ω 75V Thick Film Resistor ±1% ±400ppm/℃ 0603 Chip 
+    R230  pcb 4.7R         F.Cu  R0603                        BOM[4.7R C23164] db C23164 gen C23164 inPlus=True inUltra=True | -55℃~+155℃ 100mW 4.7Ω 75V Thick Film Resistor ±1% ±400ppm/℃ 0603 Chip 
+    R233  pcb 4.7R         F.Cu  R0603                        BOM[4.7R C23164] db C23164 gen C23164 inPlus=True inUltra=True | -55℃~+155℃ 100mW 4.7Ω 75V Thick Film Resistor ±1% ±400ppm/℃ 0603 Chip 
+    R236  pcb 4.7R         F.Cu  R0603                        BOM[4.7R C23164] db C23164 gen C23164 inPlus=True inUltra=True | -55℃~+155℃ 100mW 4.7Ω 75V Thick Film Resistor ±1% ±400ppm/℃ 0603 Chip 
+    R325  pcb 4.7R         F.Cu  R0603                        BOM[4.7R C23164] db C23164 gen C23164 inPlus=True inUltra=True | -55℃~+155℃ 100mW 4.7Ω 75V Thick Film Resistor ±1% ±400ppm/℃ 0603 Chip 
+    R328  pcb 4.7R         F.Cu  R0603                        BOM[4.7R C23164] db C23164 gen C23164 inPlus=True inUltra=True | -55℃~+155℃ 100mW 4.7Ω 75V Thick Film Resistor ±1% ±400ppm/℃ 0603 Chip 
+    R331  pcb 4.7R         F.Cu  R0603                        BOM[4.7R C23164] db C23164 gen C23164 inPlus=True inUltra=True | -55℃~+155℃ 100mW 4.7Ω 75V Thick Film Resistor ±1% ±400ppm/℃ 0603 Chip 
+    R334  pcb 4.7R         F.Cu  R0603                        BOM[4.7R C23164] db C23164 gen C23164 inPlus=True inUltra=True | -55℃~+155℃ 100mW 4.7Ω 75V Thick Film Resistor ±1% ±400ppm/℃ 0603 Chip 
+    C207  pcb 1uF          B.Cu  C1206                        BOM[1uF C282823] db C282823 gen C282823 inPlus=True inUltra=True | 100V 1uF X7R ±10% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT RO
+    C208  pcb 100nF        B.Cu  C0603                        BOM[100nF C14663] db C14663 gen C14663 inPlus=True inUltra=True | 100nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT R
+    C209  pcb 1uF          B.Cu  C1206                        BOM[1uF C282823] db C282823 gen C282823 inPlus=True inUltra=True | 100V 1uF X7R ±10% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT RO
+    C210  pcb 100nF        B.Cu  C0603                        BOM[100nF C14663] db C14663 gen C14663 inPlus=True inUltra=True | 100nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT R
+    C307  pcb 1uF          B.Cu  C1206                        BOM[1uF C282823] db C282823 gen C282823 inPlus=True inUltra=True | 100V 1uF X7R ±10% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT RO
+    C308  pcb 100nF        B.Cu  C0603                        BOM[100nF C14663] db C14663 gen C14663 inPlus=True inUltra=True | 100nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT R
+    C309  pcb 1uF          B.Cu  C1206                        BOM[1uF C282823] db C282823 gen C282823 inPlus=True inUltra=True | 100V 1uF X7R ±10% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT RO
+    C310  pcb 100nF        B.Cu  C0603                        BOM[100nF C14663] db C14663 gen C14663 inPlus=True inUltra=True | 100nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT R
+    C222  pcb 33nF         F.Cu  C0603                        BOM[33nF C21117] db C21117 gen C21117 inPlus=True inUltra=True | 33nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT RO
+    C223  pcb 33nF         F.Cu  C0603                        BOM[33nF C21117] db C21117 gen C21117 inPlus=True inUltra=True | 33nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT RO
+    C224  pcb 33nF         F.Cu  C0603                        BOM[33nF C21117] db C21117 gen C21117 inPlus=True inUltra=True | 33nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT RO
+    C225  pcb 33nF         F.Cu  C0603                        BOM[33nF C21117] db C21117 gen C21117 inPlus=True inUltra=True | 33nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT RO
+    C320  pcb 33nF         F.Cu  C0603                        BOM[33nF C21117] db C21117 gen C21117 inPlus=True inUltra=True | 33nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT RO
+    C321  pcb 33nF         F.Cu  C0603                        BOM[33nF C21117] db C21117 gen C21117 inPlus=True inUltra=True | 33nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT RO
+    C322  pcb 33nF         F.Cu  C0603                        BOM[33nF C21117] db C21117 gen C21117 inPlus=True inUltra=True | 33nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT RO
+    C323  pcb 33nF         F.Cu  C0603                        BOM[33nF C21117] db C21117 gen C21117 inPlus=True inUltra=True | 33nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT RO
+    Zobel caps rating from parts.json description: {'50V'}; BOM Comment {'470nF'} (no voltage in BOM Comment column)
+
+[4] Bottom-side parts
+  PASS: Plus: 14 placed parts on B.Cu, all marked Bottom in CPL (wrong -): C207,C208,C209,C210,C218,C220,C307,C308,C309,C310,D6,D7,D8,D9
+    Plus: CPL has both Top and Bottom rows -> JLC must assemble both sides (Economic PCBA is single-side only, so this needs Standard PCBA or the bottom parts hand-fitted)
+  PASS: Ultra: 14 placed parts on B.Cu, all marked Bottom in CPL (wrong -): C207,C208,C209,C210,C218,C220,C307,C308,C309,C310,D6,D7,D8,D9
+    Ultra: CPL has both Top and Bottom rows -> JLC must assemble both sides (Economic PCBA is single-side only, so this needs Standard PCBA or the bottom parts hand-fitted)
+    all B.Cu footprints incl. DNP/board_only: C207,C208,C209,C210,C218,C220,C307,C308,C309,C310,D6,D7,D8,D9
+  WARN: ORDERING.md says 'Ten 2-pad MLCCs are on the bottom ... all non-polar', but B.Cu also carries D6,D7,D8,D9 (14 bottom parts total)
+
+[5] Totals
+    Plus: CPL placements 298 (Top 284, Bottom 14, THT 13); BOM designators 298; unique BOM lines 87; unique LCSC 87
+    Ultra: CPL placements 298 (Top 284, Bottom 14, THT 12); BOM designators 298; unique BOM lines 85; unique LCSC 85
+
+SUMMARY: 0 FAIL, 10 WARN

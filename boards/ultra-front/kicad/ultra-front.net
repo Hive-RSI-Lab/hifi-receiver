@@ -1,8 +1,8 @@
 (export
 	(version "E")
 	(design
-		(source "/work/boards/ultra-front/kicad/ultra-front.kicad_sch")
-		(date "2026-10-28T11:24:45")
+		(source "/home/hive2/projects/hifi-front-esd/boards/ultra-front/kicad/ultra-front.kicad_sch")
+		(date "2026-10-31T23:13:45")
 		(tool "Eeschema 10.0.6")
 		(sheet
 			(number "1")
@@ -483,6 +483,112 @@
 						)
 						(pin
 							(num "1")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "D2")
+			(value "PESD5V0S2BT")
+			(footprint "aiee:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR")
+			(fields
+				(field
+					(name "Footprint") "aiee:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "PESD5V0S2BT,215")
+				(description "PESD5V0S2BT")
+			)
+			(property
+				(name "Sheetname")
+				(value "ultra-front")
+			)
+			(property
+				(name "Sheetfile")
+				(value "ultra-front.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "ESD Protection Devices")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "8142141a-22ac-5afc-b0a1-bd037fe9a28c")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "3")
+						)
+						(pin
+							(num "2")
+						)
+					)
+				)
+			)
+		)
+		(comp
+			(ref "D3")
+			(value "PESD5V0S2BT")
+			(footprint "aiee:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR")
+			(fields
+				(field
+					(name "Footprint") "aiee:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR")
+				(field
+					(name "Datasheet")
+				)
+				(field
+					(name "Description")
+				)
+			)
+			(libsource
+				(lib "aiee")
+				(part "PESD5V0S2BT,215")
+				(description "PESD5V0S2BT")
+			)
+			(property
+				(name "Sheetname")
+				(value "ultra-front")
+			)
+			(property
+				(name "Sheetfile")
+				(value "ultra-front.kicad_sch")
+			)
+			(property
+				(name "ki_keywords")
+				(value "ESD Protection Devices")
+			)
+			(sheetpath
+				(names "/")
+				(tstamps "/")
+			)
+			(tstamps "88935bf5-6cb8-5838-8f51-2bf4afedcfd9")
+			(units
+				(unit
+					(name "A")
+					(pins
+						(pin
+							(num "1")
+						)
+						(pin
+							(num "3")
+						)
+						(pin
+							(num "2")
 						)
 					)
 				)
@@ -2622,6 +2728,47 @@
 		)
 		(libpart
 			(lib "aiee")
+			(part "PESD5V0S2BT,215")
+			(description "PESD5V0S2BT")
+			(docs "https://lcsc.com/product-detail/Diodes-ESD_NXP_PESD5V0S2BT_PESD5V0S2BT_C49338.html")
+			(fields
+				(field
+					(name "Reference") "D")
+				(field
+					(name "Value") "PESD5V0S2BT,215")
+				(field
+					(name "Footprint") "aiee:SOT-23_L2.9-W1.3-P1.90-LS2.4-BR")
+				(field
+					(name "Datasheet") "https://lcsc.com/product-detail/Diodes-ESD_NXP_PESD5V0S2BT_PESD5V0S2BT_C49338.html")
+				(field
+					(name "Description") "PESD5V0S2BT")
+				(field
+					(name "Manufacturer") "Nexperia(安世)")
+				(field
+					(name "MPN") "PESD5V0S2BT,215")
+				(field
+					(name "LCSC Part") "C49338")
+			)
+			(pins
+				(pin
+					(num "1")
+					(name "1")
+					(type "passive")
+				)
+				(pin
+					(num "2")
+					(name "2")
+					(type "passive")
+				)
+				(pin
+					(num "3")
+					(name "3")
+					(type "passive")
+				)
+			)
+		)
+		(libpart
+			(lib "aiee")
 			(part "TCA9535PWR")
 			(docs "https://www.lcsc.com/datasheet/C22396388.pdf")
 			(fields
@@ -3096,6 +3243,12 @@
 			(name "/BTN1")
 			(class "Default")
 			(node
+				(ref "D2")
+				(pin "2")
+				(pinfunction "2_2")
+				(pintype "passive")
+			)
+			(node
 				(ref "R4")
 				(pin "2")
 				(pintype "passive")
@@ -3124,6 +3277,12 @@
 			(name "/BTN2")
 			(class "Default")
 			(node
+				(ref "D2")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive")
+			)
+			(node
 				(ref "R5")
 				(pin "2")
 				(pintype "passive")
@@ -3151,6 +3310,12 @@
 			(code "8")
 			(name "/BTN3")
 			(class "Default")
+			(node
+				(ref "D3")
+				(pin "1")
+				(pinfunction "1_1")
+				(pintype "passive")
+			)
 			(node
 				(ref "R6")
 				(pin "2")
@@ -3245,6 +3410,12 @@
 			(code "11")
 			(name "/ENC_SW")
 			(class "Default")
+			(node
+				(ref "D3")
+				(pin "2")
+				(pinfunction "2_2")
+				(pintype "passive")
+			)
 			(node
 				(ref "R3")
 				(pin "2")
@@ -3647,6 +3818,18 @@
 			(node
 				(ref "C7")
 				(pin "2")
+				(pintype "passive")
+			)
+			(node
+				(ref "D2")
+				(pin "3")
+				(pinfunction "3_3")
+				(pintype "passive")
+			)
+			(node
+				(ref "D3")
+				(pin "3")
+				(pinfunction "3_3")
 				(pintype "passive")
 			)
 			(node
