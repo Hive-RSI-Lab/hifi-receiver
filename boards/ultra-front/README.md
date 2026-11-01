@@ -37,7 +37,9 @@ Not on the board, and not assembled by JLC:
   $2.43 at 100. Its 12-pin tail plugs into J2, and the panel is taped to
   the board at final assembly.
 - **The FFC cable to the core board:** 20-pin, 0.5 mm pitch. Its length and
-  type are set by the enclosure (see the next section).
+  type are set by the enclosure: 50 mm, **type B (reverse / opposite-side
+  contacts)**; a type A cable shorts core outputs to GND (enclosure/README.md,
+  "The FFC").
 
 **Parts cost:** $2.80 per board at 10 and $2.42 at 100, plus the LCD. It has
 6 extended parts.
