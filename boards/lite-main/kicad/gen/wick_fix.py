@@ -211,6 +211,14 @@ add_track((51.315, 93.393), (51.0, 93.393), 0.2, pcbnew.B_Cu, "/TAP_R_C")
 for c in STITCH:
     add_via(c, "GND")
 
+# L5.2's and C25.1's in-pad vias were the second of a pair (check_current: 0.8 A needs
+# 2 vias): each gets its second via back on the +5V B.Cu track, off the pad.
+add_via((84.5, 94.0), "+5V")
+add_track((84.5, 94.0), (84.3, 93.2), 0.405, pcbnew.F_Cu, "+5V")
+add_via((86.3, 100.85), "+5V")
+add_track((86.3, 100.85), (86.6, 100.3), 0.405, pcbnew.F_Cu, "+5V")
+add_track((85.9, 98.95), (86.3, 100.85), 0.405, pcbnew.B_Cu, "+5V")
+
 for pos, new in FIXED:
     rec = at(pos)
     net = rec[1]

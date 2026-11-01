@@ -15,7 +15,7 @@ Scripts: `boards/lite-main/kicad/gen/wick_fix.py`.
 | U8.14 GND | via moved under the package, 1.3 mm. This is a 0.34 mm signal-row pin, not an exposed pad, so it was a must-move |
 | D1.2 GND | via moved off the pad, 1.4 mm, 0.6 mm stub |
 | C58.2, C59.2 GND | 3 vias each moved to a row beside the pad, 1.2 mm away, 0.6 mm stubs |
-| C25.1, L5.2 +5V | in-pad via deleted: a second via of the same node stays, joined by the F.Cu track |
+| C25.1, L5.2 +5V | via moved off the pad, to (86.3, 100.85) and (84.5, 94.0). They must stay: check_current wants 2 vias at each of these layer changes (0.8 A) |
 | C30.2, R10.2 GND | in-pad via deleted |
 | U5.39 (ESP32 exposed pad) | 2 vias nudged into the gaps between the 0.9 mm lands |
 
