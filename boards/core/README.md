@@ -127,6 +127,8 @@ holes H1/H2 went to the new rear corners. How it was done, from
    moved block. Each line still goes into its ESD clamp (D7/D8) before the
    jack. Stale stubs are ripped with `rip_at.py`, and
    `kicad/gen/banana_silk.py` drops the sockets' silk, as on Lite.
+   `kicad/gen/banana_45.py` puts the route ends back on the 45-degree grid
+   (hwde check_route_style).
 
 Folded in from review 5: R5-PA-1 (C4 220 nF/50 V C344195, C8 4.7 uF/25 V
 C1779: Q1's soft start stays in its SOA), the EP paste windows off the vias
