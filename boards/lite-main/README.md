@@ -171,6 +171,8 @@ was done about each finding is in
 
 ## The checks it passed
 
+The pre-order round of 2026-11-01 (hwde 0600487: vias off pads, I2S respaced, VBUS stubs, box holes) is in `docs/boards/lite-preorder.md`.
+
 | Gate | Result |
 |---|---|
 | ERC (`erc`) | 0 errors, 0 warnings (every pulled pin is typed passive, so the schematic review checked pins by hand) |

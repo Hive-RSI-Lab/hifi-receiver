@@ -154,7 +154,9 @@ def banana_ports(board: Board, refs, feats: dict, gap_n: float):
         p.bbox[3] = min(p.bbox[3], board.size[1] + gap_n - 0.05)
         # mech's port is a square: the one inside the round collar, which the hole
         # (concentric, 0.3 mm larger a side) clears all round
-        x, z, h = (p.bbox[0] + p.bbox[2]) / 2, T_PCB + BANANA_AXIS, BANANA_NOSE / 2 / math.sqrt(2)
+        # the part's own x, not its bbox centre: a stray silk line in the EasyEDA footprint
+        # inflates the bbox on one side and put every hole 0.30 mm off the socket axis
+        x, z, h = p.x, T_PCB + BANANA_AXIS, BANANA_NOSE / 2 / math.sqrt(2)
         board.ports.append(Port(ref, "N", [x - h, x + h, z - h, z + h], board.size[1], 0.0, "top"))
         feats.setdefault("banana", []).append((ref, x, z))
 
