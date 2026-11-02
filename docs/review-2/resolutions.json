@@ -154,5 +154,17 @@
  "dfm:35": {
   "status": "resolved",
   "how": "fab/ORDERING.md gives the order remark that names the diameters to fill and says to leave J1's 0.4 mm pin holes open; all 910 vias measure over 0.45 mm from other holes and within JLC's 0.2-0.5 mm range. JLC's engineering review confirms at order time; a filled J1 hole would show there, not after the build."
+ },
+ "dfm:24": {
+  "status": "verified",
+  "how": "XunPu drawing FPC-05F-NPH20 rev A (file.huaqiu.com/web2/M00/4C/A2/pYYBAGKwU4iATiB-AADmFDwz97g598.pdf, the series drawing for this part, fetched 2026-11-02) recommended land pattern against core J3 and ultra-front J1, which are the same footprint: pads 0.30 x 1.25 at 0.50 pitch (board 0.3 x 1.25, 0.5); tabs 2.00 x 2.50 (board 2 x 2.5); outer tab edge to pad 1's centre 2.69 (board 7.44 - 4.75); 0.70 from the pad row to the tabs (board 0.705). The drawing numbers the FFC's circuit 1 only, not the socket's pins, but the socket has no polarity of its own: pin N is position N, and parts:64 covers the mapping through the cable."
+ },
+ "dfm:33": {
+  "status": "resolved",
+  "how": "U19 is a through-hole part, so a wrong CPL rotation can't change how it's fitted: its footprint isn't symmetric (three 0.91 mm pins in one row, two 1.10 mm pins in the other, 1.70 mm posts on one side only), and the part goes in one way. dfm:16 covers that way against Everlight's drawing. CPL has rotation 180, the same as the board. In JLC's preview it may still draw wrong, as there's no EasyEDA model for C17223620; that's a preview matter only."
+ },
+ "parts:57": {
+  "status": "verified",
+  "how": "Alps EC11E catalogue, update 2510, drawing 3 (tech.alpsalpine.com/cms.media/product_catalog_ec_01_ec11e_en_611f078659.pdf, fetched 2026-11-02), mounting holes against core SW1 and ultra-front SW4, the same footprint: tabs 12.5 apart (board +-6.25); tab holes 1.5 x 2.6 (board 1.70 x 2.80 slots, 0.2 larger); rows 7.5 and 7 from the tab line (board 7.5 and 7.0, tabs at local y -0.25); pins 1 mm holes at 2.5 pitch (board 1.2 holes at 2.54, 5.08 against 5). A C B order matches. The shaft is on the tab line, so it's at local (0, -0.25), not the footprint origin; the library model agrees."
  }
 }
