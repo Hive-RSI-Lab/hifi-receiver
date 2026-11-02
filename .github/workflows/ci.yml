@@ -46,6 +46,8 @@ jobs:
           HIVE_TOOLS: ${{ runner.temp }}/tools
           HWDE_BIN: ${{ github.workspace }}/.ci/hive-hwde/bin/hwde
           HWDE_HOME: ${{ runner.temp }}/hwde
+          # No ESP-IDF or QEMU here: it says it didn't run them. The tower's check does (docs/checks.md).
+          HWCHECK_FW: skip
       # Job logs need a login; annotations don't, so the Hive can read what failed.
       - name: name the failing tests
         if: failure()

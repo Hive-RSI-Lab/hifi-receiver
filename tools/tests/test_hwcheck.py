@@ -1,10 +1,12 @@
 """The score's own logic: needed functions, the spec. No gates run (test_pieces.py has the pieces)."""
 import contextlib
 import io
+import os
 import shutil
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -77,15 +79,18 @@ class Test(unittest.TestCase):
     """cmd_test counts each failing gate, not each gated board; what is
     unverified is neither a pass nor a fail."""
 
+    fw = ([], [])  # firmware_fw's (failures, couldn't-run reasons)
+
     def run_test(self, gates):
         saved = {k: getattr(hwcheck, k) for k in ("check_product", "run_unittests", "firmware_tests",
                                                     "boards", "run_gates", "cant_run",
-                                                    "firmware_pins")}
+                                                    "firmware_pins", "firmware_fw")}
         dirs = list(gates)
         hwcheck.check_product = lambda: ([], {})
         hwcheck.run_unittests = lambda: []
         hwcheck.firmware_tests = lambda: True
         hwcheck.firmware_pins = lambda: []
+        hwcheck.firmware_fw = lambda all_boards=False: self.fw
         hwcheck.boards = lambda: dirs
         hwcheck.run_gates = lambda todo: {d: gates[d] for d in todo}
         self.cant = None
@@ -121,6 +126,97 @@ class Test(unittest.TestCase):
         u = ("b dfm: placement unverified: U1", hwcheck.UNVERIFIED)
         self.assertEqual(self.run_test({Path("a"): [("a drc_routed", 1)], Path("b"): [u]}), 1)
         self.assertIsNone(self.cant)
+
+
+    def test_no_esp_idf_cant_run_rather_than_pass(self):
+        self.fw = ([], ["ESP-IDF missing"])
+        self.assertEqual(self.run_test({Path("a"): []}), 127)
+        self.assertEqual(self.cant, ("esp-idf", ["ESP-IDF missing"]))
+
+    def test_a_failed_boot_fails(self):
+        self.fw = (["fw check-all hifi-lite"], [])
+        self.assertEqual(self.run_test({Path("a"): []}), 1)
+
+    def test_a_failed_constraint_beside_no_esp_idf_fails(self):
+        self.fw = (["fw constraints hifi-lite"], ["ESP-IDF missing"])
+        self.assertEqual(self.run_test({Path("a"): []}), 1)
+        self.assertIsNone(self.cant)
+
+
+class FirmwareFw(unittest.TestCase):
+    """firmware_fw runs fw per tier when firmware changed, and says couldn't
+    run, never pass, without fw, ESP-IDF or QEMU. Uses a fake fw: nothing here
+    builds or boots anything."""
+
+    GOOD = "idf       /x/esp-idf-v4.4.8\nqemu      /x/qemu-system-xtensa\n"
+
+    def run_fw(self, doctor=GOOD, fail="", has_fw=True, changed=True, all_boards=False, env=None):
+        with tempfile.TemporaryDirectory() as tmp:
+            log = Path(tmp) / "calls"
+            fake = Path(tmp) / "fw"
+            fake.write_text(f"""#!/bin/sh
+echo "$1 $2 $3 $4" >> {log}
+case "$1 $2 $3 $4" in *"{fail or 'NOTHING'}"*) exit 1;; esac
+[ "$1" = doctor ] && printf '%s' '{doctor}'
+exit 0
+""")
+            fake.chmod(0o755)
+            saved = (hwcheck.find_fw, hwcheck.firmware_changed)
+            hwcheck.find_fw = lambda: str(fake) if has_fw else None
+            seen = []
+
+            def fw_changed(a=False):
+                seen.append(a)
+                return changed or a
+            hwcheck.firmware_changed = fw_changed
+            with unittest.mock.patch.dict(os.environ, env or {}):
+                if not env:
+                    os.environ.pop("HWCHECK_FW", None)
+                try:
+                    with contextlib.redirect_stdout(io.StringIO()) as out:
+                        r = hwcheck.firmware_fw(all_boards)
+                finally:
+                    hwcheck.find_fw, hwcheck.firmware_changed = saved
+            calls = log.read_text().splitlines() if log.exists() else []
+        return r, calls, out.getvalue()
+
+    def test_all_three_tiers_are_constrained_built_and_booted(self):
+        r, calls, _ = self.run_fw()
+        self.assertEqual(r, ([], []))
+        for t in ("hifi-lite", "hifi-plus", "hifi-ultra"):
+            self.assertIn(f"constraints firmware --target {t}", calls)
+            self.assertTrue(any(c.startswith(f"check-all {t} --from") for c in calls), calls)
+
+    def test_no_fw_cant_run(self):
+        (bad, unv), calls, _ = self.run_fw(has_fw=False)
+        self.assertEqual(bad, [])
+        self.assertIn("not checked, built or booted", unv[0])
+
+    def test_missing_idf_or_qemu_cant_run_and_builds_nothing(self):
+        for doctor in ("idf       MISSING (fw setup)\nqemu      /x/q\n",
+                       "idf       /x/esp-idf-v4.4.8\nqemu      MISSING (fw setup)\n",
+                       ""):  # a crashed doctor says nothing: not a pass either
+            (bad, unv), calls, _ = self.run_fw(doctor=doctor)
+            self.assertEqual(bad, [])
+            self.assertIn("not built or booted", unv[0])
+            self.assertFalse([c for c in calls if c.startswith("check-all")], calls)
+
+    def test_a_failed_target_is_named(self):
+        (bad, unv), _, _ = self.run_fw(fail="check-all hifi-plus")
+        self.assertEqual((bad, unv), (["fw check-all hifi-plus"], []))
+        (bad, unv), _, _ = self.run_fw(fail="constraints firmware --target hifi-ultra")
+        self.assertEqual((bad, unv), (["fw constraints hifi-ultra"], []))
+
+    def test_unchanged_runs_nothing_but_all_does(self):
+        r, calls, _ = self.run_fw(changed=False)
+        self.assertEqual((r, calls), (([], []), []))
+        _, calls, _ = self.run_fw(changed=False, all_boards=True)
+        self.assertTrue(calls)
+
+    def test_skip_runs_nothing_and_says_so(self):
+        r, calls, out = self.run_fw(env={"HWCHECK_FW": "skip"})
+        self.assertEqual((r, calls), (([], []), []))
+        self.assertIn("NOT run here", out)
 
 
 class Pins(unittest.TestCase):
