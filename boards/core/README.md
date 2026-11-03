@@ -178,8 +178,10 @@ under the front UI area, where nothing fast crosses it.
 These are the decisions that differ from, or add to, docs/product.md.
 
 - **Current sense:** INA186 (40 V), not INA180. The INA180 stops at 26 V
-  common mode, under the 28 V rail. The sense taps are Kelvin, through
-  10 Ω + 100 nF.
+  common mode, under the 28 V rail. The sense taps run through
+  10 Ω + 100 nF, but they leave the input planes rather than R1's own pads, so U3 reads
+  about 5.6% high (`check_kelvin`, waived in `reports/verify-waivers.json`). It errs on the
+  safe side; set the gain at bring-up (`docs/firmware.md`).
 - **DAC clock:** 49.152 MHz. With its internal 1.2 V DVDD the
   ES9018K2M is limited to 50 MHz; a 50 MHz part met it only at 0 ppm, so
   review-2 moved to 49.152 MHz (synchronous 1024 x 48 kHz). It covers

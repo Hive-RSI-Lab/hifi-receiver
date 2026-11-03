@@ -7,6 +7,9 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  # hwde isn't pinned, so a new hwde gate can fail a board with no push here: gate main daily too.
+  schedule:
+    - cron: "17 7 * * *"
 concurrency:
   # A PR's superseded run is cancelled; every push to main gets a group of its own (keyed by
   # its commit), so none is left pending behind another.

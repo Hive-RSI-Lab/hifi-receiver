@@ -137,6 +137,10 @@ These are estimates from datasheets and the made amp board. The bring-up
 - `efficiency`: input against output power at 10–40 W.
 - The ES8388's full scale and whether the −3 dB cap keeps a 0 dBFS sine out
   of clipping at 20 V.
+- On Plus/Ultra, `ISENSE_V_PER_A` (`hifi_board_core.h`, now 0.25): measure it
+  against a known load of 3-5 A. The core board's taps leave the input planes, so U3
+  should read about 5.6% high (about 0.264 V/A; `boards/core/README.md`). Until then the
+  governor and DJ direct's contract trip act early, about 7 W of the 126 W limit at 28 V.
 
 ## Test signals
 

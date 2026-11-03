@@ -65,9 +65,10 @@ and the one step that has to happen before the assembly order can go in.
   amps, each TPA3220's PVDD HF pair (C207-C210, C307-C310), right under its
   PVDD pins, and U15's input caps C218/C220; and four SOT-23 ESD clamps at
   their connectors, D6/D9 at the USB-C's CC pins and D7/D8 at the RCA jacks.
-  Check their pads line up in JLC's bottom-side preview: hwde can't verify
-  bottom-side rotations (`reports/dfm-waivers.json`). The MLCCs are non-polar,
-  so only their axis matters; the clamps' pin 3 is their ground.
+  Check their pads line up in JLC's bottom-side preview, the clamps above
+  all. `cpl_verify` now checks these rotations, but hwde's bottom-side rule
+  comes from community exporters and geometry, not from JLC. The MLCCs are
+  non-polar, so only their axis matters; the clamps' pin 3 is their ground.
   - Plus: `BOM.csv` and `CPL.csv`. Zone B (U16) is fitted too: Plus plays L on zone A and R on zone B.
   - Ultra: `ultra/BOM.csv` and `ultra/CPL.csv`, with the same Gerbers.
 - **Banana sockets J20-J27 (through-hole, fitted by JLC):** Plus fits J20, J21,

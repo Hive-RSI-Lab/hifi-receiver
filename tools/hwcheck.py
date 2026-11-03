@@ -345,8 +345,11 @@ def changed_boards(dirs: list[Path]) -> tuple[list[Path], str]:
         return dirs, f"{', '.join(hit)} changed"
     top = ROOT.resolve()
     rels = {d: d.resolve().relative_to(top).as_posix() + "/" for d in dirs}
-    return ([d for d in dirs if any(f.startswith(rels[d]) for f in changed)],
-            f"changed since {ref} ({base.strip()[:9]})")
+    todo = [d for d in dirs if any(f.startswith(rels[d]) for f in changed)]
+    # On main itself, stray files from earlier steps (CI's .ci/, build output) aren't a reason to gate nothing.
+    if not todo and base.strip() == (git("rev-parse", "HEAD") or "").strip():
+        return dirs, f"no board differs and HEAD is {ref}: main itself"
+    return todo, f"changed since {ref} ({base.strip()[:9]})"
 
 
 def board_name(d: Path) -> str:
@@ -501,7 +504,8 @@ def firmware_changed(all_boards: bool = False) -> bool:
     if tracked is None or untracked is None or not base:
         return True
     changed = [f for f in (tracked + untracked).split("\0") if f]
-    return not changed or any(f.startswith("firmware/") or f.endswith(".net") for f in changed)
+    return (not changed or base.strip() == (git("rev-parse", "HEAD") or "").strip()
+            or any(f.startswith("firmware/") or f.endswith(".net") for f in changed))
 
 
 def firmware_targets() -> list[str]:
