@@ -261,7 +261,7 @@ routed `kicad/core.kicad_pcb` is the source of truth for copper.
   ran over pads or the edge. The assembly drawing keeps every reference.
 
 **Current ratings:** `constraints.json` budgets the real currents: VBUS_IN,
-VBUS and PVDD at 5 A (the 28 V, 5 A PD contract), +5V at 0.65 A. hwde's
+VBUS and PVDD at 5 A (the 28 V, 5 A PD contract), +5V at 1.1 A on its trunk and 0.4 A on its branches. hwde's
 check_current passes them with each layer's pour judged on its own. The width
 rules for the plane-fed rails (VBUS_IN, VBUS, PVDD, +3V3) and the amp OUT/SPK
 nets are sized for the tracks that remain, which are taps and bootstrap
