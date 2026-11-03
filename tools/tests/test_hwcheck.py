@@ -143,6 +143,24 @@ class Test(unittest.TestCase):
         self.assertIsNone(self.cant)
 
 
+class ChangedBoards(unittest.TestCase):
+    """On main itself every board is gated, whatever stray files lie around."""
+
+    def run_it(self, head, untracked):
+        def git(*a):
+            return {"rev-parse": head if a[1] == "HEAD" else "ref", "merge-base": "base\n",
+                    "diff": "", "ls-files": untracked}[a[0]]
+        env = {k: v for k, v in os.environ.items() if k not in ("HWCHECK_ALL", "HWCHECK_BASE")}
+        with unittest.mock.patch.object(hwcheck, "git", git), unittest.mock.patch.dict(os.environ, env, clear=True):
+            return hwcheck.changed_boards([hwcheck.BOARDS / "core"])[0]
+
+    def test_main_with_stray_files_gates_every_board(self):
+        self.assertEqual(self.run_it("base\n", ".ci/x\0"), [hwcheck.BOARDS / "core"])
+
+    def test_branch_with_stray_files_gates_none(self):
+        self.assertEqual(self.run_it("other\n", ".ci/x\0"), [])
+
+
 class FirmwareFw(unittest.TestCase):
     """firmware_fw runs fw per tier when firmware changed, and says couldn't
     run, never pass, without fw, ESP-IDF or QEMU. Uses a fake fw: nothing here
