@@ -233,6 +233,13 @@ From this directory (`boards/core`), with `H="sh $HIVE_MODULES/hive-hwde/bin/hwd
    `fab_export`, and `bom_cpl` run once with `parts/parts.json` (Plus) and
    once with `parts/parts-ultra.json` into `fab/ultra` (Ultra).
 
+### C43 to the LAN8720A's VDD1A
+
+C43 is the 100 nF on U9 pin 19. It sat 3.8 mm from the pin, but its copper reached the pin only
+through 20.3 mm of +3V3E, out through J2.4 and back, so it did little for that pin. ETH_TXN
+lies between the two tracks, so `kicad/gen/c43_eco.py` crosses under it on B.Cu with two 0.6/0.3 mm
+vias and 1.8 mm of track. The walk is now 6.55 mm, inside hwde's 10 mm limit.
+
 ### How the routing was finished
 
 Freerouting (`route_auto`) left about 40 connections open on this dense
