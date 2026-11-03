@@ -5,7 +5,10 @@
                                      the check: docs/product.md, the software's
                                      unit tests, the firmware's host tests, each
                                      tier's firmware pins against its board's
-                                     ESP32 pads (tools/pieces.py), then
+                                     ESP32 pads (tools/pieces.py), fw
+                                     constraints, ESP-IDF build and QEMU boot
+                                     of each tier when firmware/ or a netlist
+                                     changed, then
                                      the hwde gates of each board whose files
                                      changed since the merge base with main
                                      (every board on main itself, with --all
@@ -476,6 +479,78 @@ def cant_run(tool: str, why: list[str]) -> None:
     os.execvp("sh", ["sh", "-c", tool])
 
 
+def find_fw() -> str | None:
+    """hive-fw's bin/fw: $FW_BIN, `fw` on PATH, or the installed module."""
+    for c in (os.environ.get("FW_BIN"), shutil.which("fw"),
+              *(f"{d}/fw/bin/fw" for d in (os.environ.get("HIVE_MODULES"), "/hive/modules", str(Path.home() / "modules")) if d)):
+        if c and os.access(c, os.X_OK):
+            return c
+    return None
+
+
+def firmware_changed(all_boards: bool = False) -> bool:
+    """Whether firmware/ or a board netlist differs from the merge base with
+    main (every run on main itself, with --all, or when git can't say)."""
+    if all_boards or os.environ.get("HWCHECK_ALL"):
+        return True
+    bases = [os.environ["HWCHECK_BASE"]] if os.environ.get("HWCHECK_BASE") else ["origin/main", "main"]
+    ref = next((b for b in bases if git("rev-parse", "-q", "--verify", b + "^{commit}")), None)
+    base = ref and git("merge-base", ref, "HEAD")
+    tracked = base and git("diff", "--name-only", "--no-renames", "-z", base.strip())
+    untracked = git("ls-files", "--others", "--exclude-standard", "-z")
+    if tracked is None or untracked is None or not base:
+        return True
+    changed = [f for f in (tracked + untracked).split("\0") if f]
+    return not changed or any(f.startswith("firmware/") or f.endswith(".net") for f in changed)
+
+
+def firmware_targets() -> list[str]:
+    """fw's targets for the tiers whose firmware exists (hifi-lite, -plus, -ultra)."""
+    return [f"hifi-{piece['name'].split()[0].lower()}" for piece in SPEC["pieces"]
+            if piece["check"] == "firmware" and (ROOT / "firmware" / "board" / piece["fw"]).is_dir()]
+
+
+def firmware_fw(all_boards: bool = False) -> tuple[list[str], list[str]]:
+    """Per target: `fw constraints` (what the firmware needs from the board,
+    against the board's netlist) and `fw check-all` (ESP-IDF build, then a
+    QEMU boot of ota_0 and its HTTP replies). Run only when firmware/ or a
+    netlist changed. Returns (failures, couldn't-run reasons): without fw, or
+    without the ESP-IDF or QEMU (fw setup firmware), the build and boot are
+    reported as couldn't run, never as a pass. HWCHECK_FW=skip (CI, which
+    has neither and would go red on the 127) says it wasn't run and goes on."""
+    if os.environ.get("HWCHECK_FW") == "skip":
+        print("firmware/ESP-IDF: NOT run here (HWCHECK_FW=skip): no fw constraints, build or QEMU boot in this result")
+        return [], []
+    fw = find_fw()
+    names = firmware_targets()
+    if not names or not firmware_changed(all_boards):
+        print("firmware/ESP-IDF: firmware and netlists unchanged, not re-run (--all or HWCHECK_ALL=1 runs it)")
+        return [], []
+    if not fw:
+        return [], ["hive-fw's bin/fw not found (FW_BIN, PATH, $HIVE_MODULES/fw): firmware not checked, built or booted"]
+    bad = []
+    for n in names:
+        r = subprocess.run([fw, "constraints", "firmware", "--target", n], cwd=ROOT, capture_output=True, text=True)
+        out = (r.stdout + r.stderr).strip()
+        print(f"fw constraints {n}: {'ok' if r.returncode == 0 else f'FAIL (exit {r.returncode})'}", flush=True)
+        if r.returncode:
+            print(out[-3000:])
+            bad.append(f"fw constraints {n}")
+    doc = subprocess.run([fw, "doctor", "firmware"], cwd=ROOT, capture_output=True, text=True).stdout
+    if not (re.search(r"^idf\s+/", doc, re.M) and re.search(r"^qemu\s+/", doc, re.M)):
+        return bad, [f"ESP-IDF or QEMU for firmware/fw.json is missing (fw setup firmware): "
+                     f"{', '.join(names)} not built or booted"]
+    for n in names:
+        r = subprocess.run([fw, "check-all", n, "--from", str(ROOT / "firmware")], cwd=ROOT,
+                           capture_output=True, text=True)
+        print(f"fw check-all {n} (build, QEMU boot): {'pass' if r.returncode == 0 else f'FAIL (exit {r.returncode})'}",
+              flush=True)
+        if r.returncode:
+            print((r.stdout + r.stderr)[-3000:])
+            bad.append(f"fw check-all {n}")
+    return bad, []
+
+
 def firmware_pins() -> list[str]:
     """Each tier's firmware that exists (firmware/board/<fw>) against its
     board: every pin it gives a job lands on its board's ESP32 on a net named
@@ -508,7 +583,9 @@ def cmd_test(all_boards: bool = False) -> int:
     if (ROOT / "firmware" / "test" / "Makefile").is_file() and not firmware_tests():
         bad.append("firmware/test")
     bad += firmware_pins()
-    unv = []
+    fbad, funv = firmware_fw(all_boards)
+    bad += fbad
+    unv = [("esp-idf", w) for w in funv]
     dirs = boards()
     if not dirs:
         print("boards/: no boards yet, no gates to run")

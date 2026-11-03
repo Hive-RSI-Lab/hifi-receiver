@@ -83,12 +83,16 @@ esp-mqtt and libsodium linked; `squeezelite.bin` 2.77 MB of its 3.06 MB slot,
 this machine with ESP-IDF v4.4.8: `squeezelite.bin` 2.69 MB in its 4 MB
 slot, `recovery.bin` 1.38 MB in its 2 MB slot; the hooks link
 (`target_hifi`, `hifi_dsp_process`, `hifi_http_register`, `hifi_sink_start`
-in `squeezelite.elf`). **Not yet:** a boot. Espressif's QEMU (esp-develop
-9.2.2) gets through the PSRAM test and then asserts in ESP-IDF's own startup
-(`esp_vfs_console_register`), before any of our code runs; the hive-fw
-module is looking at booting squeezelite in QEMU. QEMU needs
-`CONFIG_ESP32_REV_MIN_0`; the board's config keeps rev 1, which the
-WROVER-E's rev-3 chip meets.
+in `squeezelite.elf`). QEMU needs `CONFIG_ESP32_REV_MIN_0`; the board's config
+keeps rev 1, which the WROVER-E's rev-3 chip meets.
+
+**Checked on 2026-11-02, none of it on hardware:**
+- `fw check-all hifi-lite|hifi-plus|hifi-ultra --from firmware`: ESP-IDF v4.4.8
+  build, host tests and a QEMU boot of ota_0 that answers its HTTP checks. These
+  images have the placeholder page, since check-all copies only `firmware/`.
+- `tools/build.sh` for each `HIFI_BOARD`, with the web app. Compiled, not booted:
+  `squeezelite.bin` of its 3.06 MB slot: lite-main 2.82 MB, core and ultra 2.83 MB.
+  `recovery.bin` of 1.75 MB: lite-main 1.57 MB, core and ultra 1.59 MB.
 
 **Checked again (2026-10-29),** with volume, now playing and the remote:
 - Both images build: `squeezelite.bin` 2.74 MB, `recovery.bin` 1.42 MB.

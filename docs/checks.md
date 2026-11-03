@@ -36,14 +36,23 @@ It fails (exit 1) if any of these fails:
    tones, JSON and every test-API call and console command, against a mock
    board. Built in a scratch folder. Where there is no
    `make` or `cc`, the check exits 127: it couldn't run, no verdict.
-   The full ESP-IDF build is not part of the check: it needs
-   ESP-IDF and takes minutes ([firmware/README.md](../firmware/README.md)).
    **The firmware's pins against its board,** every run: for each tier
    whose firmware exists (`firmware/board/<fw>`), the score's firmware
    check (below), so a pin the firmware gives a job that isn't on the
    board's ESP32 net for it (Lite's `ADC_PVDD` on GPIO39 is `PVDD_SENSE`)
    fails the test, not only the score. A tier with no firmware yet is left
    to the score.
+   **The firmware built and booted,** when `firmware/` or a board's `.net`
+   changed since the merge base with main (and on main, with `--all` or
+   `HWCHECK_ALL=1`): per tier, `fw constraints` against the netlist, then
+   `fw check-all` (ESP-IDF build, then a QEMU boot of `ota_0` and its HTTP
+   replies; [firmware/README.md](../firmware/README.md)). About 10 minutes a
+   tier, so on the tower run the check through `heavy`. Without hive-fw, or
+   without the ESP-IDF or QEMU that `firmware/fw.json` pins (`fw setup
+   firmware`), it exits 127: couldn't run, no verdict. CI has neither, so it
+   sets `HWCHECK_FW=skip` and its log says this part did not run: **a green
+   CI says nothing about the ESP-IDF build or the boot.** QEMU has no board:
+   ADC1 reads 0, so power stays in `wait_pd`.
 4. **The hwde gates of each board that changed.** A workspace under
    `boards/` (a folder with a `state.json`) is gated only when a file in it
    differs from the merge base with main (`origin/main`, else `main`, or
@@ -198,8 +207,9 @@ evaluator file, like `hwcheck.py`.
      `PIN_AMP_SDZ` on an `AMP_SDZ` net, and so on). The partitions can't
      overlap or run past the flash size the config sets, and the module on
      the board (its `-N8` in the value) has that much flash. Its suite is
-     the firmware's host tests, as in the test. The ESP-IDF build itself
-     isn't run: it needs ESP-IDF and minutes (see above).
+     the firmware's host tests, as in the test. The ESP-IDF build isn't
+     part of the score: it needs ESP-IDF and minutes (the test runs it, see
+     above).
    - **`app`**: `app/build.py` packs `app/web` under its budget into a C
      table that compiles with `cc -Wall -Werror`; every file `index.html`
      loads is in the pack, with a manifest (name, start_url, icons in the
