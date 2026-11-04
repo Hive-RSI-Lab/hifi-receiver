@@ -240,6 +240,19 @@ through 20.3 mm of +3V3E, out through J2.4 and back, so it did little for that p
 lies between the two tracks, so `kicad/gen/c43_eco.py` crosses under it on B.Cu with two 0.6/0.3 mm
 vias and 1.8 mm of track. The walk is now 6.55 mm, inside hwde's 10 mm limit.
 
+### The two U10 decoupling warnings, left as they are
+
+hwde's `check_decoupling` warns twice on U10 (ES9018K2M). Both are warnings, not errors, and both are left on purpose (2026-11-04):
+
+- **C53 to pin 16 (AVCC_R), 13.7 mm of +3V3A.** Pins 15 (AVCC_L), 16 (AVCC_R) and 17 (VCCA) are joined at the package, 0.5 mm apart.
+  So pin 16 is also served by C50 (1 uF, 5.7 mm), C51 (100 nF, 6.1 mm), C54 (100 nF, 7.2 mm) and C52 (1 uF, 7.7 mm), all inside the 10 mm limit.
+  C53 is a fifth cap on that group. Its long walk costs nothing the others don't already cover. Moving it would mean new copper beside the DAC outputs for no gain.
+- **C55 to pin 18 (DVCC, +3V3), loop about 11.3 nH against a 10 nH limit.** That is 8.8 mm of rail, 3.0 mm of ground and three vias. DVCC is the digital supply that feeds the chip's own 1.2 V regulator, whose output pin 21 (DVDD) has C56 (4.7 uF).
+  13 % over the limit moves the cap's self-resonance from about 5.0 to 4.7 MHz. That is not worth a copper change on a board about to be ordered.
+  If bring-up shows DAC noise tied to the digital supply, the fix is a 100 nF 0402 placed beside pin 18 on the next spin.
+
+Walks are from hwde's `copperpath` on the board as merged at 5b7f956.
+
 ### How the routing was finished
 
 Freerouting (`route_auto`) left about 40 connections open on this dense
