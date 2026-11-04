@@ -181,7 +181,7 @@ The pre-order round of 2026-11-01 (hwde 0600487: vias off pads, I2S respaced, VB
 | Placement (`place`) | pass, 0 errors |
 | Routed DRC (`drc_routed`) | 0 errors, 0 warnings, 0 unconnected |
 | Verify suite (`verify`) | pass, with one signed waiver (U8 thermal, below) and 44 warnings, now shown by hwde e225475: 25 route-style (off-45 jogs in Freerouting and maze-router copper; DRC-clean, cosmetic), 18 part ratings with no datasheet extraction (each part's voltage and current margin is in `docs/review-2/` instead), 1 decoupler 5.3 mm from U8 pin 31 (C57, 1 nF HF cap, limit 5.0; 0.3 mm over, left) |
-| JLC DFM on the exported Gerbers (`dfm`) | pass, 0 errors. 3 warnings: thin silk strokes inside stock/EasyEDA footprints, and J2/J3's LCSC model pad centre 0.79 mm off because of the added locating pegs. Every CPL rotation was checked against the LCSC model. |
+| JLC DFM on the exported Gerbers (`dfm`) | pass, 0 errors. 3 warnings: thin silk strokes inside stock/EasyEDA footprints, and J2/J3's LCSC model pad centre 0.79 mm off. The LCSC model itself has pad 3 0.8 mm off pad 1 in Y, where the real jack and our footprint have them level. Since 2026-11-04 the CPL places J2/J3 at the footprint origin (hwde 7f65e45; `cpl_verify` 0.0 mm). They are through-hole, so their holes locate them; check them in JLC's preview. Every CPL rotation was checked against the LCSC model. |
 
 All gates last passed on hive-hwde c23e27e (2026-10-29), after the review-2 ECO.
 
