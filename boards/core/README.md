@@ -322,12 +322,12 @@ these is in the CI gates. 0 errors on every check. The warnings:
    - The board boots with PVDD off.
    - The ESP32 appears as a CH340 serial port, and it can be flashed
      through the CH340.
-2. **Rails:** check +5V (5.1 V), +3V3, +3V3A and the 2.4 V VREF.
+2. **Rails:** check +5V (5.1 V), +3V3, +3V3A and the 2.55 V VREF.
 3. **PD contract on a 140 W EPR charger:** use a 240 W (5 A) cable. Read
    the contract from the CH224Q over I2C (0x22/0x23); VBUS should be
    28 V.
 4. **Amp bring-up:** set PVDD_EN (expander P03) and watch PVDD ramp in
-   about 15 ms. Then release AMP_A_RST (P00) with DAC_EN (P04) set.
+   about 60 ms. Then release AMP_A_RST (P00) with DAC_EN (P04) set.
 5. **Speaker polarity:** play a 1 kHz tone at low level into a 4 Ω dummy
    load and check the output polarity.
 6. **Thermals:** play 1/8 power into 8 ohm for 10 min and check for no OTW. Then do the same into 4 ohm with the governor on, and log the board temperature next to U15.

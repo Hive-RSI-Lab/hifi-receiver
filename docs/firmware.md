@@ -443,9 +443,10 @@ Designed in [remote.md](remote.md); here is where it lives in the code.
 
 **Unchecked on hardware:** the ES8388 ADC register values, I2S full duplex
 with squeezelite's DMA settings, the rollback on a real flash, and the relay
-over TLS. lite-main rev A has no taps, so `capture` with `loopback` answers
-409 there; the review task (261029-020622) adds them. `HIFI_HAS_TAPS=1` in
-the build or `hifi_taps=1` in NVS turns it on for that revision.
+over TLS. The board now has the taps (R66-R69, C81-C84), so `HIFI_HAS_TAPS`
+defaults
+to 1. `capture` with `loopback` answers 409 only if `hifi_taps=0` is set in
+NVS (a board without taps).
 
 **The LAN and console are not signed.** As in squeezelite-esp32 itself,
 anyone on the home network can call the HTTP API, firmware updates

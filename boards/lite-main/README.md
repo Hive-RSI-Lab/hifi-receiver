@@ -156,8 +156,8 @@ was done about each finding is in
   inductor-to-socket runs are 1.25 mm (3.5 A, 30 C).
 - **USB is not impedance-controlled.** Full speed, 12 Mb/s; a 90 ohm pair on
   1.6 mm 2-layer would be 1.1 mm wide.
-- **No USB ESD array** on the cost-first tier: the CH340B and CH224A have
-  their own. Plus/Ultra should add a USBLC6-2SC6.
+- **USB ESD:** D7/D8 (PESDNC2FD5VB) are fitted on D+/D-; the CC pins have no
+  clamp (docs/boards/lite-esd.md).
 - **Board 118 x 90 mm**, not the ~100 x 80 product.md estimated: 80 left no
   room for the PVDD switch between USB-C and the amp, and the banana sockets
   took 18 mm more.
@@ -313,8 +313,8 @@ The fab package in `fab/`:
    - VBUS reads 20 V.
    - The CH224A at I2C 0x22 reports PD active (0x09) and the PDO current
      (0x50).
-   - Firmware sets GPIO18. PVDD rises in ~6 ms and GPIO39 reads ~1.8 V.
-   - Watch the charger doesn't drop out (inrush ~1.6 A).
+   - Firmware sets GPIO18. PVDD rises in ~28-36 ms (R6 220k, C19 4.7 uF) and GPIO39 reads ~1.8 V.
+   - Watch the charger doesn't drop out (inrush ~0.5 A).
 5. **Audio:**
    - Line in, both routes: the analog bypass to the speakers, and the ADC.
    - Sub outs: about 2 Vrms max with no load.
@@ -343,8 +343,8 @@ The bench scripts (plan item 9) will automate this.
    it before printing.
 4. **CH224A I2C pull-ups:** if bring-up measures CFG2/CFG3 idling above 3.6 V,
    depopulate R2/R3. The I2C readout is then lost, and VBUS sense still works.
-5. **USB ESD:** none on this tier (decision above). Plus/Ultra should add a
-   USBLC6.
+5. **USB ESD:** D7/D8 are fitted on D+/D-; CC1/CC2 are left unclamped
+   (docs/boards/lite-esd.md).
 6. **cSnkBulk:** VBUS has ~15 uF of ceramic at 5 V, above USB-C's 10 uF
    attach limit. PD sources tolerate it in practice; check at bring-up with
    two or three chargers.
