@@ -14,7 +14,7 @@
 
 #define PIN_PD_PG 4      /* CH224A PG, open drain, low = contract good */
 #define PIN_PVDD_EN 18   /* high closes the PVDD switch (ANDed with PG in hardware) */
-#define PIN_AMP_SDZ 21   /* TPA3118 SDZ through 100k, high = run */
+#define PIN_AMP_SDZ 21   /* TPA3118 SDZ through R54 10k, high = run */
 #define PIN_AMP_FAULTZ 23 /* TPA3118 FAULTZ, open drain, low = fault */
 /* The ESP32's I2S outputs (squeezelite sets them up from DAC_CONFIG): only named
  * here to slow their edges, see hifi_bsp_init */

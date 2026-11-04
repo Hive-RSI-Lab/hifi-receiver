@@ -49,9 +49,9 @@ on USB.
      the request (200) and its power sequencer keeps PVDD off without
      power-good, so the bench reads `state` for half a second and passes if
      `power.pvdd_on` and `amp.enabled` stay false (a 403/409 also counts).
-     On Lite, PVDD_EN (GPIO18) is driven by firmware only and isn't ANDed
-     with the CH224Q's power-good, so this is the one check that a 5 V port
-     never powers the amp.
+     On Lite, PVDD_EN (GPIO18) is ANDed in hardware with the CH224A's
+     power-good (Q4's emitter is on /PD_PG), so a 5 V port can't power the
+     amp even if firmware asks.
    - `--wifi` sets the network over the console.
 2. **Each charger** (`--chargers 65w,100w`). The one USB-C port now carries
    power, not the console, so the board is found by mDNS. Its self-test

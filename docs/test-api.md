@@ -464,7 +464,7 @@ restate them.
 
 ## Serial console
 
-The same calls over the USB serial console (115200 8N1, CH340C), for a
+The same calls over the USB serial console (115200 8N1, CH340B), for a
 board that isn't on a network yet. Each prints the JSON reply on one line.
 
 ```
