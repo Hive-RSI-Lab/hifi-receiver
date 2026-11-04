@@ -592,12 +592,12 @@ static void controls(void *arg) {
 #ifdef CONFIG_HIFI_ULTRA
 			/* the front LED: red blinking with the amps latched off, blue
 			 * blinking with no network (setup), green when ready. The
-			 * backlight stays on while something plays and for a minute
-			 * after a touch */
+			 * backlight stays on while something plays, for a minute
+			 * after a touch and for the first minute after boot */
 			if (latched) front_led(phase & 1, false, false);
 			else if (!net) front_led(false, false, phase & 1);
 			else front_led(false, true, false);
-			exp_set(EXP_LCD_BL, hifi_main_audio_active() || now - touched < FRONT_DIM_MS || tick < 6000);
+			exp_set(EXP_LCD_BL, hifi_main_audio_active() || now - touched < FRONT_DIM_MS || now < FRONT_DIM_MS);
 #endif
 		}
 	}
