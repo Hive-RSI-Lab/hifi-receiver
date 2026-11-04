@@ -1,0 +1,29 @@
+lite-main U8 TPA3118D2 PVDD HF loop (estimate), I 7.5 A, tr 3 ns, PVDD max 21.0 V, abs max 30.0 V; single 0.6/0.3 via L 1.23 nH
+C55    1uF (left): PVDD strip 4.42 mm, cap GND pad -> via 0.67 mm, B.Cu via -> GND-pin via 5.16 mm; loop A 15.6 nH, B 7.0 nH
+C56  100nF (left): PVDD strip 3.54 mm, cap GND pad -> via 0.53 mm, B.Cu via -> GND-pin via 3.72 mm; loop A 12.4 nH, B 4.4 nH
+C57    1nF (left): PVDD strip 3.62 mm, cap GND pad -> via 0.53 mm, B.Cu via -> GND-pin via 4.39 mm; loop A 13.4 nH, B 4.8 nH
+C51    1uF (right): PVDD strip 5.44 mm, cap GND pad -> via 0.72 mm, B.Cu via -> GND-pin via 9.11 mm; loop A 22.0 nH, B 9.4 nH
+C52    1uF (right): PVDD strip 3.79 mm, cap GND pad -> via 0.51 mm, B.Cu via -> GND-pin via 8.94 mm; loop A 19.4 nH, B 8.5 nH
+C53  100nF (right): PVDD strip 3.12 mm, cap GND pad -> via 0.20 mm, B.Cu via -> GND-pin via 8.31 mm; loop A 17.4 nH, B 7.6 nH
+C54    1nF (right): PVDD strip 3.21 mm, cap GND pad -> via 0.20 mm, B.Cu via -> GND-pin via 8.63 mm; loop A 17.9 nH, B 7.6 nH
+per-cap edge spike (L*I/tr) and peak vs 30 V abs max:
+  C55 A:  39.0 V spike, peak  60.0 V, -30.0 V under 30 V
+  C55 B:  17.5 V spike, peak  38.5 V,  -8.5 V under 30 V
+  C56 A:  31.1 V spike, peak  52.1 V, -22.1 V under 30 V
+  C56 B:  11.0 V spike, peak  32.0 V,  -2.0 V under 30 V
+  C57 A:  33.5 V spike, peak  54.5 V, -24.5 V under 30 V
+  C57 B:  11.9 V spike, peak  32.9 V,  -2.9 V under 30 V
+  C51 A:  55.1 V spike, peak  76.1 V, -46.1 V under 30 V
+  C51 B:  23.6 V spike, peak  44.6 V, -14.6 V under 30 V
+  C52 A:  48.6 V spike, peak  69.6 V, -39.6 V under 30 V
+  C52 B:  21.2 V spike, peak  42.2 V, -12.2 V under 30 V
+  C53 A:  43.4 V spike, peak  64.4 V, -34.4 V under 30 V
+  C53 B:  19.0 V spike, peak  40.0 V, -10.0 V under 30 V
+  C54 A:  44.7 V spike, peak  65.7 V, -35.7 V under 30 V
+  C54 B:  19.1 V spike, peak  40.1 V, -10.1 V under 30 V
+side left A: all caps in parallel (no mutual, optimistic) 4.6 nH -> 11.4 V spike, peak 32.4 V
+side left B: all caps in parallel (no mutual, optimistic) 1.7 nH -> 4.3 V spike, peak 25.3 V
+side right A: all caps in parallel (no mutual, optimistic) 4.8 nH -> 11.9 V spike, peak 32.9 V
+side right B: all caps in parallel (no mutual, optimistic) 2.1 nH -> 5.1 V spike, peak 26.1 V
+allowed spike 7.0 V -> loop must be <= 2.8 nH at tr 3 ns, or the edge must be >= L*I/7 V (e.g. best 1 uF cap, B: 7.5 ns)
+RESULT: FAIL (worst single 1 uF cap leaves < 2 V under abs max)

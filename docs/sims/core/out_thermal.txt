@@ -1,0 +1,26 @@
+check_thermal: status violations, box heat 7.4 W -> air 51.8 C, G = 0.340 W/K (walls 0.175 + vents 0.165), PETG Tg margin 28 K
+  check_thermal warning: U15 (2.00 W) needs a thermal-via array to GND (the screen credits copper only to 645 mm2, ~51 C/W); found 20 via(s), want >= 36
+  check_thermal warning: U16 (2.00 W) needs a thermal-via array to GND (the screen credits copper only to 645 mm2, ~51 C/W); found 21 via(s), want >= 36
+  check_thermal warning: C5 at full power carries 0.85 A rms, 118% of its rating: only a power limit keeps that short; add low-ESR ceramic bulk at the switching node or pick a
+  check_thermal warning: C6 at full power carries 0.85 A rms, 118% of its rating: only a power limit keeps that short; add low-ESR ceramic bulk at the switching node or pick a
+  check_thermal warning: C311 at full power carries 0.85 A rms, 118% of its rating: only a power limit keeps that short; add low-ESR ceramic bulk at the switching node or pick
+
+TPA3220 Tj (per chip), box air re-solved with chip + inductor + Q1 + other heat
+case                                                       chip W  air C Tj@23.5  Tj@26  vs OTW 115 / OTE 145
+Plus rated 77 W/ch 4 ohm, 1 ch/chip, continuous              11.2  121.0     385    413  FAIL (OTE)
+Plus rated 43 W/ch 8 ohm, 1 ch/chip, continuous               4.7   75.1     186    198  FAIL (OTE)
+Plus 1/8 P 9.6 W/ch 4 ohm, 1 ch/chip (= governor 19 W)        2.0   56.7     103    108  margin 7 K  [governed]
+Plus 1/8 P 5.4 W/ch 8 ohm, 1 ch/chip                          1.0   50.1      73     75  margin 40 K  [governed]
+Ultra 1/8 P 9.6 W/ch 4 ohm, 2 ch/chip, both zones             3.5   70.2     152    161  FAIL (OTE)
+Ultra governed 4.25 W/ch 4 ohm (17 W total), 2 ch/chip        1.8   59.1     101    106  margin 9 K  [governed]
+Ultra 1/8 P 5.4 W/ch 8 ohm, 2 ch/chip, both zones             1.5   57.0      92     96  margin 19 K  [governed]
+governed worst Tj 108 C, margin to OTW 7 K
+
+Q1 AO4485 conduction (RthJA 75 C/W AOS 1 in2; ~90 C/W on this copper, review-2), R1 10 mohm 2512 3 W
+  supply-limited 140 W in, 5.0 A: Q1 0.57 W -> Tj 107 C vs 150 C (margin 43 K); R1 0.25 W of 3 W
+  governed Plus 19 W out, ~0.92 A: Q1 0.02 W -> Tj 57 C vs 150 C (margin 93 K); R1 0.01 W of 3 W
+
+Output inductors L1-L4 PSPMAA0805-100M (Irms 6 A at dT 40 K, Isat 10 A, DCR 30 mohm; core loss unverified)
+  1/8 P 4 ohm: Irms 1.55 A, DCR rise 3 K (+ core loss), Ipk 2.8 A vs Isat 10 A (margin 72 %)
+  rated 77 W/ch 4 ohm: Irms 4.39 A, DCR rise 21 K (+ core loss), Ipk 6.8 A vs Isat 10 A (margin 32 %)
+governed cases PASS (ungoverned rated continuous is over OTE: design relies on governor + OTW)

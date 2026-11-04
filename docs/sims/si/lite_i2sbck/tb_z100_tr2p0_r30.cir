@@ -1,0 +1,12 @@
+* lite I2S_BCLK bench z100_tr2p0_r30
+Vs s 0 PULSE(0 3.3 5e-09 2.5e-09 2.5e-09 3.75e-08 80e-9)
+Rd s d 30
+Cd d 0 3p
+Ta d 0 es 0 Z0=100 TD=2.5992e-10
+Ces es 0 5p
+.tran 20p 90n 0 20p
+.measure tran es_min_hi MIN v(es) FROM=1.000e-08 TO=45n
+.measure tran es_max_lo MAX v(es) FROM=5.000e-08 TO=85n
+.measure tran es_max MAX v(es)
+.measure tran es_min MIN v(es)
+.end

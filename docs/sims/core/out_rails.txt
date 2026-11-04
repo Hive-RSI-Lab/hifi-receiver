@@ -1,0 +1,11 @@
++5V  = 5.100 V  (0.6 x (1 + R13/R14))     +3V3 = 3.327 V (0.6 x (1 + R15/R16))
+load budget (est): +3V3 420 mA avg / 680 mA WiFi peak (ultra-front 50 mA); +3V3A 50 mA; +5V 666 / 855 mA (ultra-front 250 mA)
+  ratings: SY8303 3 A -> 28 % at peak; SY8089 2 A -> 34 %; LP5907 250 mA -> 20 %
+SY8303 at 28 V: D 0.18, ripple 0.85 A p-p, Ipk 1.28 A vs L9 Isat 2.9 A (SWPA4030S4R7MT) -> margin 56 %
+SY8089: D 0.65, ripple 0.35 A p-p, Ipk 0.86 A vs SY8089 2 A rating (L10 SWPA4030S2R2MT Isat not on file)
++5V out caps C13+C14+C15 at 5.1 V (low corner): 23.2 uF -> ripple 6.9 mV p-p vs 51 mV
++3V3 out caps C16+C17+C30 at 3.3 V (low corner): 44.2 uF -> ripple 1.7 mV p-p vs 33 mV
+U4 SY8303: 0.34 W x 80 C/W + box air 55.3 C = Tj 83 C vs 150 C, margin 67 K (est)
+U5 SY8089: 0.16 W x 120 C/W + box air 55.3 C = Tj 74 C vs 125 C, margin 51 K (est)
+U6 LP5907: 0.09 W x 193.4 C/W + box air 55.3 C = Tj 72 C vs 125 C, margin 53 K (est)
+ALL PASS

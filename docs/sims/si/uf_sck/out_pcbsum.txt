@@ -1,0 +1,33 @@
++3V3                     225.4 mm  w [0.15, 0.2]  ['B.Cu', 'F.Cu']  vias 11
++5V                      112.0 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 2
+/BL_A                     33.7 mm  w [0.2]  ['F.Cu']  vias 0
+/BL_GATE                  13.8 mm  w [0.2]  ['F.Cu']  vias 0
+/BL_K                     18.1 mm  w [0.2]  ['F.Cu']  vias 0
+/BTN1                     84.0 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 2
+/BTN2                     84.5 mm  w [0.2]  ['F.Cu']  vias 0
+/BTN3                     90.2 mm  w [0.2]  ['F.Cu']  vias 0
+/ENC_A                   125.1 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 5
+/ENC_B                   125.4 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 3
+/ENC_SW                  126.7 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 2
+/EXP_UNUSED               28.5 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 2
+/FRONT_INT_N              45.2 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 3
+/I2C_SCL                  53.4 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 2
+/I2C_SDA                  36.2 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 2
+/IR_OUT                  119.5 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 2
+/IR_VCC                   13.0 mm  w [0.2]  ['F.Cu']  vias 0
+/LCD_BL_PWM                6.3 mm  w [0.2]  ['F.Cu']  vias 0
+/LCD_CS                   22.2 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 2
+/LCD_DC                   24.9 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 2
+/LCD_MOSI                 30.8 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 2
+/LCD_RST                  36.5 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 2
+/LCD_SCK                  20.4 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 2
+/LEDB_K                    5.4 mm  w [0.2]  ['F.Cu']  vias 0
+/LEDG_K                    3.5 mm  w [0.2]  ['F.Cu']  vias 0
+/LEDR_K                    4.8 mm  w [0.2]  ['F.Cu']  vias 0
+/LED_B                    92.1 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 2
+/LED_G                    94.0 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 2
+/LED_R                   109.6 mm  w [0.2]  ['B.Cu', 'F.Cu']  vias 2
+GND                      370.8 mm  w [0.15, 0.2, 0.3, 0.4]  ['B.Cu', 'F.Cu']  vias 19
+zone ('GND', '"F.Cu"')
+zone ('GND', '"B.Cu"')
+filled_polygons 12

@@ -1,0 +1,7 @@
+== tb_sck_asbuilt
+  ok   t_hi            0.0000 V  limit <= 1.08e-07 margin +0.000 V  [error]
+  ok   hi_min          3.2455 V  limit >= 2.31  margin +0.935 V  [error]
+  ok   lo_max          0.0545 V  limit <= 0.99  margin +0.935 V  [error]
+  ok   v_over          3.7701 V  limit <= 3.9   margin +0.130 V  [warning]
+  ok   v_under        -0.4700 V  limit >= -0.6  margin +0.130 V  [warning]
+RESULT: PASS (error bounds)
