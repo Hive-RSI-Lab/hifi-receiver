@@ -576,6 +576,27 @@ The firmware's own constants are compile-time (see the gaps).
   against a real XDJK-0271-1650. Check the banana collar against the
   10.2 mm rear-wall hole, and test 15 mm and 19 mm plugs in J4–J7.
 
+### 9.9 U8 PVDD spike at the amp pins (`docs/sims.md`, SI)
+
+- **Why:** the sim puts the U8 PVDD loop at about 7 nH: the 1 µF caps return
+  on B.Cu to U8's GND vias. A 7.5 A (OCP) edge in 3 ns gives 38.5 V against
+  the TPA3118's 30 V abs max. At the rated peak (about 2.1 A, 9 W into 4 Ω)
+  it is about 26 V. Both are estimates. This order accepts it with this
+  gate.
+- **Probe:** PVDD at U8 pins 17-19 (then 31-32), with the ground spring on
+  the nearest GND pad. Use full scope bandwidth, not the 20 MHz limit.
+- **Load:** the 20 V contract, 4 Ω dummy loads, a tone at the volume cap
+  near clip (after 6.2 passes).
+- **Pass:** peak ≤ 27 V.
+- **On a fail:** drop the contract to 15 V and report the trace in the
+  hifi-receiver thread. Lite's voltage is set by R1 (120k = 20 V), not by
+  firmware. Either change R1 to the 15 V value in WCH CH224 V2.0 table 5-1
+  (look it up there; the repo doesn't record it yet), or add a CH224A
+  voltage-request write to `board_lite.c`. Core does this in
+  `board_core.c`; Lite doesn't yet.
+- **Next spin:** move the 1 µF caps next to the pins, with GND straight to
+  the EP (≤ 2.8 nH).
+
 ## 10. Firmware coverage gaps
 
 These steps need firmware, console or test-API support that does not
