@@ -355,16 +355,19 @@ Three inputs, in the Input button's order:
   not a high output, since 1.7 V could just light it (ultra-front B8).
 - **The LCD** is squeezelite's own display (now playing from every
   source): `SPI_CONFIG data=33,clk=32,dc=15`, `DISPLAY_CONFIG
-  SPI,driver=ST7789,width=320,height=240,cs=-1,mode=3,speed=20000000,rotate`
-  (CS is tied low on the core, R57, so SPI mode 3). The patch calls
+  SPI,driver=ST7789,width=320,height=240,cs=-1,mode=3,speed=13333333,rotate`
+  (CS is tied low on the core, R57, so SPI mode 3). 13.33 MHz is 80 MHz / 6,
+  a 75 ns period: the ST7789's write cycle is at least 66 ns, and the
+  ultra-front README sets 15 MHz as the limit. The patch calls
   `hifi_display_reset()` at the top of `display_init`, which pulses
   LCD_RST (the front's P10) low for 10 ms and waits 120 ms: the ST7789
   driver sends no software reset, and an ESP32 restart doesn't reset the
   front's expander. Both strings are in NVS (`spi_config`,
   `display_config`), so a panel that comes up mirrored or rotated is
   fixed remotely by adding `HFlip`/`VFlip` or dropping `rotate`.
-- **Backlight** (core expander P06): on while something plays and for a
-  minute after a control is touched (and the first minute after boot).
+- **Backlight** (core expander P06): on while something plays, for a minute
+  (`FRONT_DIM_MS`) after a control is touched, and for the first minute
+  after boot.
 
 ## Network, app and console
 

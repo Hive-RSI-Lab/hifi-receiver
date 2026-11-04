@@ -213,7 +213,7 @@ power the core from the PD charger.
 | Self-test | `front_i2c` pass, `"0x27 acks"` | `hifi selftest` / `bench.py selftest` / `POST /api/v1/selftest` | `"0x27 doesn't answer (the FFC?)"`: as above. Also check the core's own `expander_i2c` passes: a dead bus fails both. |
 | I2C bus levels, scope at J1 pins 12/13 | Idle 3.3 V. Rise time 10-90 % below 300 ns at 100 kHz, or below 1 µs in standard mode. The core's 2.2 k pull-ups drive the bus, and the FFC adds a few pF (`digital:36`). **Estimate.** | Slow edges: the core pull-ups. |
 | D1 at power-up | Blue (starting), then green with a network or blue blinking without | `front_led()` in the controls task | No light: see step 8. |
-| Backlight | On for the first 6 s after boot (`tick < 6000` in `board_core.c`), then off unless audio plays | `exp_set(EXP_LCD_BL, …)` | Never on: step 9. |
+| Backlight | On for the first 60 s after boot (`now < FRONT_DIM_MS` in `board_core.c`), then off unless audio plays or a control was touched in the last 60 s | `exp_set(EXP_LCD_BL, …)` | Never on: step 9. |
 | INT (pin 14, GPIO39), scope | High at rest. Not stuck low. | the controls task reads port 0 and 1 on every INT or every 10 ms | Stuck low: the core's U17 or the front's U1 isn't being read. This was R3-DIGITAL-3 before the fix. If `front_i2c` fails, U1's INT can stay low for good; the 10 ms poll keeps the core working, but GPIO39 is useless until it's fixed. |
 
 ### Step 6. Buttons and knob through the firmware
@@ -300,14 +300,14 @@ core has U18 fitted, the two outputs fight on one line. Take it off.
 The LCD is squeezelite's own display. On the Ultra build the strings are:
 
 - `CONFIG_SPI_CONFIG="data=33,clk=32,dc=15"`
-- `CONFIG_DISPLAY_CONFIG="SPI,driver=ST7789,width=320,height=240,cs=-1,mode=3,speed=16000000,rotate"`
+- `CONFIG_DISPLAY_CONFIG="SPI,driver=ST7789,width=320,height=240,cs=-1,mode=3,speed=13333333,rotate"`
 
 The display init calls `hifi_display_reset()` first.
 
 | Check | Expect | If not |
 |---|---|---|
 | LCD_RST (J2.6), scope, trigger on the falling edge at boot | One low pulse of 10 ms, then high, then 120 ms before any SPI | No pulse: U1's P10 isn't being driven (`front_i2c` failing?). It's low for good: P10 is stuck as an output low, or R8 is open. |
-| SCK (J1 pin 5 or J2.4), scope | Bursts at the configured clock. **The design limit is ≤ 15 MHz (ST7789 66 ns write period, README).** The defaults set 16 MHz, and `docs/firmware.md` says 20 MHz; both are over it (reported to the coordinator). Measure the actual period: it must be ≥ 66 ns after the fix (80 MHz / 6 = 13.33 MHz gives 75 ns). | |
+| SCK (J1 pin 5 or J2.4), scope | Bursts at the configured clock. **The design limit is ≤ 15 MHz (ST7789 66 ns write period, README).** The defaults set 13.33 MHz (80 MHz / 6). Measure the actual period: it must be ≥ 66 ns; expect 75 ns. | |
 | SCK and MOSI edges at J2 | Clean, with overshoot below about 0.5 V **(estimate)**, through R402/R403 33 R at the core end | Heavy ringing: the SPI ground return is a README open item. Fine at ≤ 15 MHz. Lower the speed with `nvsset` on `display_config`. |
 | DC (J1 pin 9) at boot | No pull on the front board. Check that GPIO15 (a strapping pin) still boots normally with the panel fitted: the boot log is present. | No boot log with the panel fitted but fine without: the panel is pulling DC. Tell the coordinator. |
 | Image | Squeezelite's screen (now playing or idle), the right way up, correct colours | Mirrored or rotated: add `HFlip` or `VFlip`, or drop `rotate`, in `display_config` (NVS, `nvsset`; `docs/firmware.md`). Colours swapped red↔blue: colour order, an open item in `docs/firmware.md`. Blank with the backlight on: no SPI (scope SCK/MOSI/DC), the panel's tail not seated, or a missing reset (row 1). Snow or garbage: SPI too fast, or bad contact. |
@@ -380,11 +380,11 @@ boards. Each workaround above checks the control by what it does instead.
 5. **No LCD test pattern.** The image check relies on squeezelite drawing
    something. Wanted: a colour-bar or RGB-fill command, to judge colour order
    and dead pixels.
-6. **Docs and defaults disagree.**
-   - On the SPI speed: 16 MHz in `sdkconfig.defaults`, 20 MHz in
-     `docs/firmware.md`, and ≤ 15 MHz in the README.
-   - On the backlight after boot: "the first minute" in `docs/firmware.md`,
-     6 s (`tick < 6000`) in `board_core.c`.
+6. **Docs and defaults disagreed (fixed).** The SPI speed is now 13.33 MHz
+   in `sdkconfig.defaults` and `docs/firmware.md`. The backlight's on-time
+   after boot is now 60 s by the clock (`now < FRONT_DIM_MS`); it was a
+   loop count (`tick < 6000`, up to 60 s at the 10 ms poll, less when
+   INT fires).
 7. **`bench.py` has no front-board stage.** Stage 5 asks "the buttons" and "the
    IR remote" as two y/n questions. A front stage needs gaps 1-3. It would:
    - read the port bits while asking for each press;
