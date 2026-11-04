@@ -408,6 +408,18 @@ static void console(void) {
 	CHECK(!CLI("ir", "dance"));
 	CHECK(!CLI("volume", "loud"));
 	CHECK(!CLI("mute", "maybe"));
+	CHECK(CLI("led", "test"));
+	CHECK_STR(path, "/api/v1/led");
+	CHECK_STR(body, "{\"mode\":\"test\"}");
+	CHECK(CLI("backlight", "off"));
+	CHECK_STR(path, "/api/v1/backlight");
+	CHECK_STR(body, "{\"mode\":\"off\"}");
+	CHECK(!CLI("led", "on"));
+	CHECK(!CLI("backlight", "test"));
+	CHECK(!CLI("backlight"));
+	/* i2c isn't an API request: the console handles it (hifi_i2c_cli) */
+	CHECK(!CLI("i2c", "0x20", "0"));
+	CHECK_HAS(msg, "i2c <addr> <reg> [val]");
 
 	/* garbage doesn't become a request, and can't inject JSON */
 	CHECK(!CLI("tone", "sine", "1000", "-20\",\"force\":true"));
@@ -431,6 +443,8 @@ static struct {
 	char url[192], sha[72];
 	bool sha_null;
 	hifi_update_status_t upd;
+	bool controls;
+	char led[8], backlight[8];
 } c;
 
 static void c_snapshot(hifi_snapshot_t *s) {
@@ -440,6 +454,24 @@ static void c_snapshot(hifi_snapshot_t *s) {
 	s->eth_present = true;
 	s->eth_up = true;
 	s->update = c.upd;
+	if (c.controls) {
+		s->exp_present = s->front_present = true;
+		s->exp_in = 0xbf7e;
+		s->front_in = 0xf7;
+		snprintf(s->last_control, sizeof(s->last_control), "button toggle");
+		s->last_control_ago_s = 12;
+		s->backlight = c.backlight[0] ? c.backlight : "auto";
+	}
+}
+static int c_set_led(const char *mode) {
+	if (strcmp(mode, "test") && strcmp(mode, "auto")) return -1;
+	snprintf(c.led, sizeof(c.led), "%s", mode);
+	return 0;
+}
+static int c_set_backlight(const char *mode) {
+	if (strcmp(mode, "on") && strcmp(mode, "off") && strcmp(mode, "auto")) return -1;
+	snprintf(c.backlight, sizeof(c.backlight), "%s", mode);
+	return 0;
 }
 static int c_wifi_scan(hifi_wifi_ap_t *aps, int max) {
 	if (c.scan_busy) return -1;
@@ -474,7 +506,8 @@ static const hifi_ops_t core_ops = {
 	.factory_reset = m_factory_reset, .control = m_control, .selftest = m_selftest,
 	.set_volume = m_set_volume, .ir_learn = m_ir_learn, .ir_forget = m_ir_forget,
 	.wifi_scan = c_wifi_scan, .wifi_forget = c_wifi_forget, .set_zone = c_set_zone,
-	.update_check = c_update_check, .update_start = c_update_start};
+	.update_check = c_update_check, .update_start = c_update_start, .set_led = c_set_led,
+	.set_backlight = c_set_backlight};
 
 static int ccall(const char *method, const char *path, const char *body) {
 	int st = hifi_api_handle(&core_ops, method, path, body, out, sizeof(out));
@@ -527,6 +560,97 @@ static void core_routes(void) {
 	c.upd = (hifi_update_status_t) {.state = HIFI_UPD_ERROR, .progress = 10, .error = "sha256 mismatch"};
 	CHECK(ccall("GET", "/api/v1/state", NULL) == 200);
 	CHECK_HAS(out, "\"update\":{\"state\":\"error\",\"progress\":10,\"error\":\"sha256 mismatch\"}}");
+	c.upd = (hifi_update_status_t) {0};
+
+	/* bring-up: the LED test and the backlight; Lite has neither */
+	CHECK(call("POST", "/api/v1/led", "{\"mode\":\"test\"}") == 404);
+	CHECK_HAS(out, "doesn't drive this model's LED");
+	CHECK(call("POST", "/api/v1/backlight", "{\"mode\":\"on\"}") == 404);
+	CHECK(ccall("POST", "/api/v1/led", "{\"mode\":\"test\"}") == 200);
+	CHECK_STR(c.led, "test");
+	CHECK(ccall("POST", "/api/v1/led", "{\"mode\":\"blink\"}") == 400);
+	CHECK_STR(out, "{\"error\":\"mode must be test or auto\"}");
+	CHECK(ccall("POST", "/api/v1/led", "{}") == 400);
+	CHECK(ccall("GET", "/api/v1/led", NULL) == 405);
+	CHECK(ccall("POST", "/api/v1/led", "{\"mode\":\"auto\"}") == 200);
+	CHECK_STR(c.led, "auto");
+	CHECK(ccall("POST", "/api/v1/backlight", "{\"mode\":\"off\"}") == 200);
+	CHECK_STR(c.backlight, "off");
+	CHECK(ccall("POST", "/api/v1/backlight", "{\"mode\":\"dim\"}") == 400);
+	CHECK_HAS(out, "on, off or auto");
+
+	/* the controls in the state: only where the board has them */
+	CHECK(ccall("GET", "/api/v1/state", NULL) == 200);
+	CHECK(!strstr(out, "\"controls\""));
+	CHECK(call("GET", "/api/v1/state", NULL) == 200);
+	CHECK(!strstr(out, "\"controls\""));
+	c.controls = true;
+	CHECK(ccall("GET", "/api/v1/state", NULL) == 200);
+	CHECK_HAS(out, "\"controls\":{\"expander\":\"0xbf7e\",\"front\":\"0xf7\",\"last\":\"button toggle\","
+		       "\"last_ago_s\":12,\"backlight\":\"off\"}");
+	c.controls = false;
+}
+
+/* `hifi i2c` on the console */
+static struct {
+	uint8_t regs[256];
+	int reads, writes;
+	uint8_t addr;
+} bus;
+static int b_rd(uint8_t addr, uint8_t reg, uint8_t *v) {
+	bus.reads++;
+	bus.addr = addr;
+	if (addr != 0x20) return -1;
+	*v = bus.regs[reg];
+	return 0;
+}
+static int b_wr(uint8_t addr, uint8_t reg, uint8_t v) {
+	bus.writes++;
+	bus.addr = addr;
+	if (addr != 0x20) return -1;
+	bus.regs[reg] = v;
+	return 0;
+}
+
+static void i2c_console(void) {
+	char o[256];
+#define I2C(busy, ...)                                                                    \
+	({                                                                                \
+		const char *argv_[] = {__VA_ARGS__};                                      \
+		hifi_i2c_cli(sizeof(argv_) / sizeof(argv_[0]), argv_, busy, b_rd, b_wr, o, sizeof(o)); \
+	})
+	bus.regs[0] = 0x3f;
+	CHECK(I2C(NULL, "i2c", "0x20", "0") == 200);
+	CHECK_STR(o, "{\"addr\":\"0x20\",\"reg\":\"0x00\",\"val\":\"0x3f\"}");
+	CHECK(I2C(NULL, "i2c", "32", "0x06", "0xfe") == 200);
+	CHECK_STR(o, "{\"addr\":\"0x20\",\"reg\":\"0x06\",\"val\":\"0xfe\",\"wrote\":true}");
+	CHECK(bus.regs[6] == 0xfe && bus.writes == 1);
+
+	/* reads are fine while audio plays; writes aren't */
+	CHECK(I2C("a source plays", "i2c", "0x20", "6") == 200);
+	CHECK_HAS(o, "\"val\":\"0xfe\"");
+	CHECK(I2C("a source plays", "i2c", "0x20", "6", "0") == 409);
+	CHECK_HAS(o, "no writes while a source plays");
+	CHECK(bus.regs[6] == 0xfe && bus.writes == 1);
+
+	/* no ack */
+	CHECK(I2C(NULL, "i2c", "0x48", "1") == 502);
+	CHECK_STR(o, "{\"error\":\"0x48 doesn't answer\"}");
+
+	/* nothing reaches the bus from a bad line */
+	int r = bus.reads, w = bus.writes;
+	CHECK(I2C(NULL, "i2c", "0x20") == 400);
+	CHECK_HAS(o, "usage: i2c");
+	CHECK(I2C(NULL, "i2c", "0x78", "0") == 400);  /* reserved addresses */
+	CHECK(I2C(NULL, "i2c", "0x07", "0") == 400);
+	CHECK(I2C(NULL, "i2c", "0x20", "256") == 400);
+	CHECK(I2C(NULL, "i2c", "0x20", "0", "0x100") == 400);
+	CHECK(I2C(NULL, "i2c", "0x20", "0", "-1") == 400);
+	CHECK(I2C(NULL, "i2c", "0x2g", "0") == 400);
+	CHECK(I2C(NULL, "i2c", "0x20", "", "1") == 400);
+	CHECK(I2C(NULL, "i2c", "0x20", "0", "1", "2") == 400);
+	CHECK(I2C(NULL, "amp", "0x20", "0") == 400);
+	CHECK(bus.reads == r && bus.writes == w);
 }
 
 int main(void) {
@@ -539,5 +663,6 @@ int main(void) {
 	selftest();
 	console();
 	core_routes();
+	i2c_console();
 	return check_report("api");
 }

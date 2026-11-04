@@ -180,6 +180,27 @@ void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) {
 	}
 	hj_obj_end(&j);
 
+	if (s->exp_present || s->front_present || s->last_control[0] || s->backlight) {
+		char hex[8];
+		hj_obj(&j, "controls");
+		if (s->exp_present) {
+			snprintf(hex, sizeof(hex), "0x%04x", s->exp_in);
+			hj_str(&j, "expander", hex);
+		}
+		if (s->front_present) {
+			snprintf(hex, sizeof(hex), "0x%02x", s->front_in);
+			hj_str(&j, "front", hex);
+		}
+		if (s->last_control[0]) {
+			hj_str(&j, "last", s->last_control);
+			hj_int(&j, "last_ago_s", s->last_control_ago_s);
+		} else {
+			hj_null(&j, "last");
+		}
+		if (s->backlight) hj_str(&j, "backlight", s->backlight);
+		hj_obj_end(&j);
+	}
+
 	if (s->update.state != HIFI_UPD_IDLE) {
 		hj_obj(&j, "update");
 		hj_str(&j, "state", hifi_update_state_name(s->update.state));
@@ -726,6 +747,16 @@ static int r_zone(const hifi_ops_t *ops, const char *body, char *out, size_t cap
 	return ok_reply(out, cap);
 }
 
+/* led and backlight: {"mode": ...} */
+static int r_mode(int (*set)(const char *), const char *none, const char *modes, const char *body,
+		  char *out, size_t cap) {
+	if (!set) return error(out, cap, 404, none);
+	char mode[8] = "", msg[48];
+	snprintf(msg, sizeof(msg), "mode must be %s", modes);
+	if (!hj_get_str(body, "mode", mode, sizeof(mode)) || set(mode)) return error(out, cap, 400, msg);
+	return ok_reply(out, cap);
+}
+
 static int r_update_check(const hifi_ops_t *ops, char *out, size_t cap) {
 	if (!ops->update_check) return error(out, cap, 404, "no update server in this build");
 	hifi_update_offer_t o;
@@ -803,6 +834,10 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "wifi/scan")) status = get ? r_wifi_scan(ops, out, cap) : -1;
 	else if (!strcmp(route, "wifi/forget")) status = post ? r_wifi_forget(ops, out, cap) : -1;
 	else if (!strcmp(route, "zone")) status = post ? r_zone(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "led"))
+		status = post ? r_mode(ops->set_led, "the firmware doesn't drive this model's LED", "test or auto", body, out, cap) : -1;
+	else if (!strcmp(route, "backlight"))
+		status = post ? r_mode(ops->set_backlight, "this model has no backlight", "on, off or auto", body, out, cap) : -1;
 	else if (!strcmp(route, "update/check")) status = get ? r_update_check(ops, out, cap) : -1;
 	else if (!strcmp(route, "update")) status = post ? r_update(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "remote")) status = r_remote(ops, post, body, out, cap);
@@ -818,7 +853,8 @@ static const char USAGE[] =
 	"usage: hifi info|state|selftest | tone sine <hz> <dBFS> [both|left|right] [s] | "
 	"tone sweep <from> <to> <dBFS> [s] | tone noise <dBFS> [s] | tone silence [s] | tone stop | "
 	"amp on|off|reset | input stream|dj_direct|line | sub <dB> | control <action> | "
-	"volume <0-100> | mute on|off | maxvol <30-100> | ir learn <action> | ir forget [action]";
+	"volume <0-100> | mute on|off | maxvol <30-100> | ir learn <action> | ir forget [action] | "
+	"led test|auto | backlight on|off|auto | i2c <addr> <reg> [val]";
 
 static bool usage(char *out, size_t cap) {
 	snprintf(out, cap, "%s", USAGE);
@@ -900,6 +936,16 @@ bool hifi_cli_request(int argc, const char *const *argv, const char **method,
 		else snprintf(body, bc, "{}");
 		return true;
 	}
+	if ((!strcmp(cmd, "led") || !strcmp(cmd, "backlight")) && argc == 2) {
+		bool led = !strcmp(cmd, "led");
+		const char *m = argv[1];
+		bool okm = led ? !strcmp(m, "test") || !strcmp(m, "auto")
+			       : !strcmp(m, "on") || !strcmp(m, "off") || !strcmp(m, "auto");
+		if (!okm) return usage(out, cap);
+		*path = led ? PREFIX "led" : PREFIX "backlight";
+		snprintf(body, bc, "{\"mode\":\"%s\"}", m);
+		return true;
+	}
 	if (!strcmp(cmd, "tone") && argc >= 2) {
 		const char *t = argv[1];
 		int n = argc - 2;
@@ -929,4 +975,48 @@ bool hifi_cli_request(int argc, const char *const *argv, const char **method,
 		return true;
 	}
 	return usage(out, cap);
+}
+
+/* ------------------------------------------------------------------ i2c */
+
+/* a whole number in [lo, hi], decimal or 0x hex */
+static bool parse_byte(const char *s, long lo, long hi, uint8_t *v) {
+	char *end;
+	if (!s || !*s) return false;
+	long n = strtol(s, &end, 0);
+	if (*end || n < lo || n > hi) return false;
+	*v = (uint8_t) n;
+	return true;
+}
+
+int hifi_i2c_cli(int argc, const char *const *argv, const char *busy, hifi_i2c_rd_t rd,
+		 hifi_i2c_wr_t wr, char *out, size_t cap) {
+	uint8_t addr, reg, val = 0;
+	if (argc < 3 || argc > 4 || strcmp(argv[0], "i2c") || !parse_byte(argv[1], 0x08, 0x77, &addr) ||
+	    !parse_byte(argv[2], 0, 255, &reg) || (argc == 4 && !parse_byte(argv[3], 0, 255, &val)))
+		return error(out, cap, 400, "usage: i2c <addr 0x08-0x77> <reg 0-255> [val 0-255]");
+	bool write = argc == 4;
+	if (write && busy) {
+		char msg[96];
+		snprintf(msg, sizeof(msg), "no writes while %s: stop it and turn the amps off (hifi amp off)", busy);
+		return error(out, cap, 409, msg);
+	}
+	if (write ? wr(addr, reg, val) : rd(addr, reg, &val)) {
+		char msg[48];
+		snprintf(msg, sizeof(msg), "0x%02x doesn't answer", addr);
+		return error(out, cap, 502, msg);
+	}
+	char a[5], r[5], v[5];
+	snprintf(a, sizeof(a), "0x%02x", addr);
+	snprintf(r, sizeof(r), "0x%02x", reg);
+	snprintf(v, sizeof(v), "0x%02x", val);
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_str(&j, "addr", a);
+	hj_str(&j, "reg", r);
+	hj_str(&j, "val", v);
+	if (write) hj_bool(&j, "wrote", true);
+	hj_obj_end(&j);
+	return 200;
 }

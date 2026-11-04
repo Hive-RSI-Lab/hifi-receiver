@@ -610,15 +610,19 @@ hifi-receiver).
      `hifi_gov_cfg_lite`, and `ADC_FS_PEAK_V`.
    - There is no NVS key or API to set them, so 9.7 needs a rebuild per
      board batch.
-2. **No raw I2C register read.**
+2. **Closed: `hifi i2c <addr> <reg> [val]`** reads (and, with nothing
+   playing and the amps off, writes) any register: `hifi i2c 0x22 0x09`.
+   Was: no raw I2C register read.
    - This blocks reading the CH224A 0x09/0x50 (step 4) and the ES8388
      DJ-direct registers (7.1).
    - It is unverified whether squeezelite-esp32's `i2cget`/`i2cdump`
      console tools are in the image.
-3. **No button or IR event in `state` or the log.** Steps 8.2 and 8.3 can
+3. **Closed: `controls.last` and `controls.last_ago_s` in `state`**
+   (`"button volup"`, `"ir mute"`). Was: no button or IR event in `state` or the log. Steps 8.2 and 8.3 can
    only be seen through volume changes. A `last_input` field in `state`,
    with the source, action and time, would make them scriptable.
-4. **No LED test op** (8.4).
+4. **No LED test op** (8.4): still open by design, since squeezelite owns
+   GPIO22 (`hifi led` answers 404 on Lite).
 5. **No raw GPIO readout** for the button pins, SDZ, FAULTZ or PG (an
    `io` object in `state`). FAULTZ and PG are reported, but not the
    buttons or SDZ.

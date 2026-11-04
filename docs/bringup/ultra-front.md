@@ -213,15 +213,16 @@ power the core from the PD charger.
 | Self-test | `front_i2c` pass, `"0x27 acks"` | `hifi selftest` / `bench.py selftest` / `POST /api/v1/selftest` | `"0x27 doesn't answer (the FFC?)"`: as above. Also check the core's own `expander_i2c` passes: a dead bus fails both. |
 | I2C bus levels, scope at J1 pins 12/13 | Idle 3.3 V. Rise time 10-90 % below 300 ns at 100 kHz, or below 1 µs in standard mode. The core's 2.2 k pull-ups drive the bus, and the FFC adds a few pF (`digital:36`). **Estimate.** | Slow edges: the core pull-ups. |
 | D1 at power-up | Blue (starting), then green with a network or blue blinking without | `front_led()` in the controls task | No light: see step 8. |
-| Backlight | On for the first 60 s after boot (`now < FRONT_DIM_MS` in `board_core.c`), then off unless audio plays or a control was touched in the last 60 s | `exp_set(EXP_LCD_BL, …)` | Never on: step 9. |
+| Backlight | On for the first 60 s after boot (`now < FRONT_DIM_MS` in `board_core.c`), then off unless audio plays or a control was touched in the last 60 s. `hifi backlight on` / `off` forces it, `auto` gives it back. | `exp_set(EXP_LCD_BL, …)` | Never on: step 9. |
 | INT (pin 14, GPIO39), scope | High at rest. Not stuck low. | the controls task reads port 0 and 1 on every INT or every 10 ms | Stuck low: the core's U17 or the front's U1 isn't being read. This was R3-DIGITAL-3 before the fix. If `front_i2c` fails, U1's INT can stay low for good; the 10 ms poll keeps the core working, but GPIO39 is useless until it's fixed. |
 
 ### Step 6. Buttons and knob through the firmware
 
-There is no console command that prints the expander's raw port bits (see
-**Firmware gaps** below), so this step checks each control by what it does,
-in `hifi state`. Run `hifi state` (or `api state`) before and after each
-action.
+Run `hifi state` (or `api state`) before and after each action. Besides
+the effect, `controls.front` shows U1's port 0 (bit 0 low while a button is
+held, and so on; read it with the control held), `controls.last` names the
+control the firmware saw (`"button play"`, `"knob -1"`), and
+`controls.expander` the core's port with the knob's ENC_A/B.
 
 | Action | Expect in `hifi state` / on the box | If not |
 |---|---|---|
@@ -250,8 +251,9 @@ driven. Check it doesn't make the expander chatter.
 
 ### Step 8. LED
 
-The firmware has no LED test command (see **Firmware gaps**). The states it
-shows on its own:
+`hifi led test` steps D1 red, green, blue, white, a second each, for 30 s
+(`hifi led auto` ends it). Check each die lights alone, and white has all
+three. The states it shows on its own:
 
 | State | How to get it | Expect |
 |---|---|---|
@@ -357,25 +359,25 @@ unknown until a built board answers it.
 
 ## Firmware gaps
 
-These steps need firmware, console or test-API support that doesn't exist at
+These steps needed firmware, console or test-API support that didn't exist at
 the head this plan was written against. None of it is needed to order the
-boards. Each workaround above checks the control by what it does instead.
+boards. 1-4 and 6 are now closed (`docs/firmware.md`); 5 and 7 are open.
 
-1. **No raw I2C read/write over the console or API.** The README's step 3
+1. **Closed: `hifi i2c <addr> <reg> [val]`** (console only). Was: no raw I2C read/write over the console or API. The README's step 3
    reads U1's port 0 and checks bits 0-5. Neither `hifi` nor `api` can read
    or write a register at 0x27, and nothing in the repo shows
    squeezelite-esp32's console has `i2cget`/`i2cset`. Wanted: a command that
    reads and writes a register at an I2C address, e.g.
    `hifi i2c <addr> <reg> [value]`.
-2. **No readout of the front's controls.** `hifi state` has no field for
+2. **Closed: `controls.front` and `controls.last` in `hifi state`.** Was: no readout of the front's controls. `hifi state` has no field for
    port 0's bits (ENC_SW, BTN1-3) or the knob count, so steps 6 and 11.8 go by
    side effects. BTN2/BTN3 need a playing stream to show anything. Wanted:
    `state.front: {"present": true, "buttons": "0x3f", "int": false}`, or the
    raw bits in `hifi state`.
-3. **No LED test.** Red only lights when the amps latch off. Wanted:
+3. **Closed: `hifi led test|auto`.** Was: no LED test. Red only lights when the amps latch off. Wanted:
    `hifi led r|g|b|off` (and an API equivalent) that overrides the status
    colour for a few seconds.
-4. **No backlight control.** The backlight follows play state and touches only.
+4. **Closed: `hifi backlight on|off|auto`.** Was: no backlight control. The backlight follows play state and touches only.
    Wanted: `hifi backlight on|off|auto`.
 5. **No LCD test pattern.** The image check relies on squeezelite drawing
    something. Wanted: a colour-bar or RGB-fill command, to judge colour order

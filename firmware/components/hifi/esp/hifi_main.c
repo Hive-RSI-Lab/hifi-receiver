@@ -92,6 +92,8 @@ static bool vol_dirty, vol_from_source;
 static uint32_t vol_changed_ms;
 static hifi_meta_t meta;
 static hifi_ir_t ir;
+static char last_ctl[24];            /* the last button, knob step or remote action */
+static uint32_t last_ctl_ms;
 
 static volatile bool audio_active;   /* set by the audio thread */
 
@@ -375,11 +377,29 @@ static void do_action(int a) {
 	if (h) h(true); /* like a button press (LMS's handlers act on the release too) */
 }
 
-void hifi_main_action(int a) { do_action(a); }
+/* the last control for state's controls.last; under lock */
+static void control_seen(const char *what, const char *name) {
+	snprintf(last_ctl, sizeof(last_ctl), "%s %s", what, name);
+	last_ctl_ms = now_ms();
+}
+
+static void control_seen_locked(const char *what, const char *name) {
+	LOCK();
+	control_seen(what, name);
+	UNLOCK();
+}
+
+void hifi_main_action(int a) {
+	control_seen_locked("button", hifi_ir_action_name(a));
+	do_action(a);
+}
 
 /* The core board's knob: the receiver's own volume when nothing streams or
  * in DJ direct, else the source's, a step per click, as the buttons do. */
 void hifi_main_knob(int detents) {
+	char n[8];
+	snprintf(n, sizeof(n), "%+d", detents);
+	control_seen_locked("knob", n);
 	if (volume_is_local()) {
 		LOCK();
 		hifi_vol_turn(&vol, detents);
@@ -393,6 +413,8 @@ void hifi_main_knob(int detents) {
 
 /* A button press on the board (squeezelite's audio controls). */
 bool hifi_button_hook(int action, bool pressed) {
+	for (int a = 0; pressed && a < HIFI_IR_N; a++)
+		if (IR_TO_ACTRLS[a] == action && action != ACTRLS_NONE) control_seen_locked("button", hifi_ir_action_name(a));
 	if (action == ACTRLS_VOLUP) return local_action(HIFI_IR_VOLUP, pressed);
 	if (action == ACTRLS_VOLDOWN) return local_action(HIFI_IR_VOLDOWN, pressed);
 	return false;
@@ -414,6 +436,7 @@ bool hifi_ir_hook(uint16_t addr, uint16_t cmd) {
 	uint32_t code = ((uint32_t) addr << 16) | cmd;
 	LOCK();
 	int a = hifi_ir_code(&ir, code, now_ms(), &changed);
+	if (a >= 0) control_seen("ir", hifi_ir_action_name(a));
 	UNLOCK();
 	if (changed) {
 		ESP_LOGI(TAG, "remote: learned %08lx", (unsigned long) code);
@@ -612,6 +635,10 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	for (int a = 0; a < HIFI_IR_N; a++) s->ir_learned[a] = ir.have[a];
 	s->ir_have_last = ir.have_last;
 	s->ir_last_code = ir.last_code;
+	if (last_ctl[0]) {
+		snprintf(s->last_control, sizeof(s->last_control), "%s", last_ctl);
+		s->last_control_ago_s = (t - last_ctl_ms) / 1000;
+	}
 	UNLOCK();
 	s->gov_budget_w = gov.budget_w;
 	s->gov_in_w = hifi_gov_in_w(&gov);
@@ -963,6 +990,12 @@ const hifi_ops_t hifi_ops = {
 	.set_zone = hifi_bsp_set_zone,
 #endif
 	.update_check = hifi_net_update_check, .update_start = hifi_net_update_start,
+#ifdef HIFI_HAS_LED_TEST
+	.set_led = hifi_bsp_set_led,
+#endif
+#ifdef HIFI_HAS_BACKLIGHT
+	.set_backlight = hifi_bsp_set_backlight,
+#endif
 };
 
 /* ------------------------------------------------------------------ console, mDNS */
@@ -975,7 +1008,15 @@ static int cmd_hifi(int argc, char **argv) {
 	if (!out) out = malloc(cap);
 	if (!out) return 1;
 	int rc = 0;
-	if (!hifi_cli_request(argc - 1, (const char *const *) argv + 1, &method, &path, body, sizeof(body), out, cap)) {
+	if (argc >= 2 && !strcmp(argv[1], "i2c")) {
+		/* `hifi i2c`: the console's only, never the LAN API's */
+		const char *busy = NULL;
+		if (tone_active) busy = "a test tone plays";
+		else if (strcmp(source_name(), "idle")) busy = "a source is connected";
+		else if (audio_active) busy = "audio plays";
+		else if (power.out.amp_on) busy = "the amps are on";
+		rc = hifi_i2c_cli(argc - 1, (const char *const *) argv + 1, busy, hifi_i2c_read, hifi_i2c_write, out, cap) != 200;
+	} else if (!hifi_cli_request(argc - 1, (const char *const *) argv + 1, &method, &path, body, sizeof(body), out, cap)) {
 		rc = 1;
 	} else {
 		int st = hifi_api_handle(&hifi_ops, method, path, body, out, cap);

@@ -268,7 +268,10 @@ same interface as Lite's (`esp/hifi_bsp.h`); the pins are in
   knob on the core's expander through the FFC, and its buttons on the
   front board (below).
 - **LED:** on with a network, a slow blink without one (setup), a fast
-  blink with the amps latched off by faults.
+  blink with the amps latched off by faults. `hifi led test` (or `POST
+  /api/v1/led {"mode":"test"}`) holds it on for 30 s (Ultra's front LED
+  steps red, green, blue, white a second each); `hifi led auto` ends it
+  early. Lite's LED is squeezelite's (GPIO22), so Lite answers 404.
 - **Subs:** I2S1 runs as a slave on I2S0's clocks (the GPIO matrix routes
   GPIO2/4 into its TX clock inputs), so the sub DAC costs one pin. It
   starts once the GPIO matrix shows squeezelite has put I2S0's bit clock on
@@ -367,7 +370,9 @@ Three inputs, in the Input button's order:
   fixed remotely by adding `HFlip`/`VFlip` or dropping `rotate`.
 - **Backlight** (core expander P06): on while something plays, for a minute
   (`FRONT_DIM_MS`) after a control is touched, and for the first minute
-  after boot.
+  after boot. `hifi backlight on|off|auto` (or `POST /api/v1/backlight
+  {"mode":"on"}`) overrides that until a restart; `auto` goes back to it.
+  Plus and Lite answer 404.
 
 ## Network, app and console
 
@@ -376,6 +381,19 @@ Three inputs, in the Input button's order:
   advertises `_hifi._tcp` for the bench scripts.
 - **Console** over the USB-C serial port: `hifi state`, `hifi selftest`,
   `hifi tone ...`, beside squeezelite's own commands.
+- **`hifi i2c <addr> <reg> [val]`** (console only, not the LAN API) reads
+  or writes one register on the shared I2C bus (addr 0x08-0x77, reg and
+  val 0-255, hex or decimal) and prints `{"addr","reg","val"}`. Writes are
+  refused (409) while a tone or a source plays or the amps are on: turn
+  them off first (`hifi amp off`). The firmware caches the expanders'
+  outputs, so a raw write to an output register lasts until it next
+  changes a bit on that port.
+- **Controls in `hifi state`** (Plus and Ultra): `controls.expander` is the
+  core expander's input port (P1 high byte), `controls.front` Ultra's front
+  port 0, `controls.last` and `controls.last_ago_s` the last button, knob
+  step or remote action (`"button play"`, `"knob +1"`, `"ir volup"`), and
+  `controls.backlight` Ultra's backlight mode. `ir.last_code` is the last
+  raw remote code.
 - **Names:** AirPlay, Bluetooth and the setup access point are `hifi-lite`
   until renamed (`POST /api/v1/name`).
 - **The box's address** (`/api/v1/state` `net.ip`, the self-test's

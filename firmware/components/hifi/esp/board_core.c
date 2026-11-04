@@ -72,6 +72,15 @@ static uint8_t adc_addr;            /* the ES7243E's, once set up */
 #ifdef CONFIG_HIFI_ULTRA
 static bool front;                  /* the front board's expander answered */
 static uint8_t front_out1, front_cfg1; /* its port 1 as last written */
+static volatile uint8_t front_in = 0xFF; /* its port 0 as last read */
+#endif
+
+/* bring-up (the API's led and backlight): the LED test runs until this
+ * (ms, 0: off); the backlight on or off, else its own timer */
+#define LED_TEST_MS 30000
+static volatile uint32_t led_test_until;
+#ifdef CONFIG_HIFI_ULTRA
+static volatile enum { BL_AUTO, BL_ON, BL_OFF } bl_mode;
 #endif
 
 /* ------------------------------------------------------------------ expander */
@@ -581,7 +590,9 @@ static void controls(void *arg) {
 		/* the front board's too, every time: reading it clears its INT,
 		 * which shares GPIO39 with the core's (review-3 R3-DIGITAL-3) */
 		uint8_t f;
-		uint16_t fb = front_read(&f) ? (f >> FRONT_ENC_SW) & 0xF : 0xF; /* ENC_SW, BTN1-3 */
+		bool fr = front_read(&f);
+		if (fr) front_in = f;
+		uint16_t fb = fr ? (f >> FRONT_ENC_SW) & 0xF : 0xF; /* ENC_SW, BTN1-3 */
 		pins = (uint16_t) ((pins & ~(0xFu << FRONT_BITS)) | fb << FRONT_BITS);
 #endif
 		int n = hifi_exp_input(&e, pins, now, ev, 4);
@@ -597,16 +608,24 @@ static void controls(void *arg) {
 			bool latched = hifi_main_amp_latched(), net = net_up();
 			uint32_t phase = now / (latched ? 125 : 500);
 			bool led = latched || !net ? phase & 1 : true;
-			exp_set(EXP_LED, led);
+			/* the API's LED test: the LED on; the front LED red, green,
+			 * blue, white, a second each */
+			uint32_t until = led_test_until;
+			if (until && (int32_t) (now - until) >= 0) led_test_until = until = 0;
+			exp_set(EXP_LED, until || led);
 #ifdef CONFIG_HIFI_ULTRA
 			/* the front LED: red blinking with the amps latched off, blue
 			 * blinking with no network (setup), green when ready. The
 			 * backlight stays on while something plays, for a minute
-			 * after a touch and for the first minute after boot */
-			if (latched) front_led(phase & 1, false, false);
+			 * after a touch and for the first minute after boot, unless
+			 * the API has set it on or off */
+			int c = now / 1000 % 4;
+			if (until) front_led(c == 0 || c == 3, c == 1 || c == 3, c == 2 || c == 3);
+			else if (latched) front_led(phase & 1, false, false);
 			else if (!net) front_led(false, false, phase & 1);
 			else front_led(false, true, false);
-			exp_set(EXP_LCD_BL, hifi_main_audio_active() || now - touched < FRONT_DIM_MS || now < FRONT_DIM_MS);
+			bool bl = hifi_main_audio_active() || now - touched < FRONT_DIM_MS || now < FRONT_DIM_MS;
+			exp_set(EXP_LCD_BL, bl_mode == BL_ON || (bl_mode == BL_AUTO && bl));
 #endif
 		}
 	}
@@ -647,8 +666,32 @@ void hifi_bsp_info(hifi_info_t *i) {
 	};
 }
 
+int hifi_bsp_set_led(const char *mode) {
+	if (!strcmp(mode, "test")) led_test_until = ((uint32_t) (esp_timer_get_time() / 1000) + LED_TEST_MS) | 1;
+	else if (!strcmp(mode, "auto")) led_test_until = 0;
+	else return -1;
+	return 0;
+}
+
+#ifdef CONFIG_HIFI_ULTRA
+int hifi_bsp_set_backlight(const char *mode) {
+	if (!strcmp(mode, "auto")) bl_mode = BL_AUTO;
+	else if (!strcmp(mode, "on")) bl_mode = BL_ON;
+	else if (!strcmp(mode, "off")) bl_mode = BL_OFF;
+	else return -1;
+	return 0;
+}
+#endif
+
 void hifi_bsp_snapshot(hifi_snapshot_t *s) {
 	s->pvdd_v = s->amp_temp_c = NAN; /* no PVDD or temperature sensing on core */
+	s->exp_present = exp_addr;
+	s->exp_in = in_pins;
+#ifdef CONFIG_HIFI_ULTRA
+	s->front_present = front;
+	s->front_in = front_in;
+	s->backlight = bl_mode == BL_ON ? "on" : bl_mode == BL_OFF ? "off" : "auto";
+#endif
 	s->zones = HIFI_ZONES;
 	s->zone_b_on = zone_b;
 	s->eth_present = true;

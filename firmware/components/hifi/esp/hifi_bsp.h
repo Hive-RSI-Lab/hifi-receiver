@@ -55,6 +55,11 @@ bool hifi_bsp_parts_ok(void);               /* the same, for the trial boot */
 /* Zone B's amp (boards with HIFI_ZONES 2) */
 void hifi_bsp_set_zone(bool on);
 
+/* The API's LED test and backlight modes (hifi_ops_t: set_led, set_backlight),
+ * on boards that define HIFI_HAS_LED_TEST and HIFI_HAS_BACKLIGHT */
+int hifi_bsp_set_led(const char *mode);
+int hifi_bsp_set_backlight(const char *mode);
+
 /* An output block (hifi_dsp_process), after the governor: the core board
  * sends its sub DAC the sum of it. */
 void hifi_bsp_audio(const uint8_t *buf, uint32_t frames, int bytes_per_frame);
