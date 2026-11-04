@@ -454,6 +454,15 @@ static bool sub_install(bool direct) {
 				 .ws_io_num = I2S_PIN_NO_CHANGE, .data_out_num = PIN_I2S_DOUT_SUB,
 				 .data_in_num = I2S_PIN_NO_CHANGE};
 	i2s_set_pin(SUB_I2S_NUM, &pins);
+	/* BCK runs 61.9 mm to the ES7243E and on to both DACs with no series
+	 * resistor (review-5's 33R didn't reach the board): at the default ~20 mA
+	 * drive it overshoots to 3.89 V, just under VDD + 0.6. ~10 mA takes it to
+	 * 3.31 V with clean edges; ~5 mA steps through the threshold (the
+	 * i2sbck benches, docs/review-5/dal.md R5-DAL-N1). i2s_set_pin leaves pad
+	 * drive alone, and squeezelite has set I2S0's pins by now (sub_task) */
+	gpio_set_drive_capability(PIN_I2S_BCK, GPIO_DRIVE_CAP_1);
+	gpio_set_drive_capability(PIN_I2S_LRCK, GPIO_DRIVE_CAP_1);
+	gpio_set_drive_capability(PIN_I2S_DOUT_SUB, GPIO_DRIVE_CAP_1);
 	PIN_INPUT_ENABLE(GPIO_PIN_MUX_REG[PIN_I2S_BCK]);
 	PIN_INPUT_ENABLE(GPIO_PIN_MUX_REG[PIN_I2S_LRCK]);
 	/* a TX slave takes its clocks on the TX side's inputs (IDF's i2s_set_pin

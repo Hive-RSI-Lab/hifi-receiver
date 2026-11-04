@@ -1,0 +1,74 @@
+[
+ {
+  "measure": "adc_min_hi",
+  "min": 2.31,
+  "severity": "error",
+  "msg": "ES7243E SCLK: ring-back under 0.7 VDD after the rising edge"
+ },
+ {
+  "measure": "adc_max_lo",
+  "max": 0.99,
+  "severity": "error",
+  "msg": "ES7243E SCLK: ring-back over 0.3 VDD after the falling edge"
+ },
+ {
+  "measure": "adc_max",
+  "max": 3.9,
+  "severity": "warning",
+  "msg": "ES7243E SCLK: overshoot over VDD+0.6"
+ },
+ {
+  "measure": "adc_min",
+  "min": -0.6,
+  "severity": "warning",
+  "msg": "ES7243E SCLK: undershoot under -0.6 V"
+ },
+ {
+  "measure": "pcm_min_hi",
+  "min": 2.31,
+  "severity": "error",
+  "msg": "PCM5102A BCK: ring-back under 0.7 VDD after the rising edge"
+ },
+ {
+  "measure": "pcm_max_lo",
+  "max": 0.99,
+  "severity": "error",
+  "msg": "PCM5102A BCK: ring-back over 0.3 VDD after the falling edge"
+ },
+ {
+  "measure": "pcm_max",
+  "max": 3.9,
+  "severity": "warning",
+  "msg": "PCM5102A BCK: overshoot over VDD+0.6"
+ },
+ {
+  "measure": "pcm_min",
+  "min": -0.6,
+  "severity": "warning",
+  "msg": "PCM5102A BCK: undershoot under -0.6 V"
+ },
+ {
+  "measure": "sab_min_hi",
+  "min": 2.31,
+  "severity": "error",
+  "msg": "ES9018K2M BCK: ring-back under 0.7 VDD after the rising edge"
+ },
+ {
+  "measure": "sab_max_lo",
+  "max": 0.99,
+  "severity": "error",
+  "msg": "ES9018K2M BCK: ring-back over 0.3 VDD after the falling edge"
+ },
+ {
+  "measure": "sab_max",
+  "max": 3.9,
+  "severity": "warning",
+  "msg": "ES9018K2M BCK: overshoot over VDD+0.6"
+ },
+ {
+  "measure": "sab_min",
+  "min": -0.6,
+  "severity": "warning",
+  "msg": "ES9018K2M BCK: undershoot under -0.6 V"
+ }
+]

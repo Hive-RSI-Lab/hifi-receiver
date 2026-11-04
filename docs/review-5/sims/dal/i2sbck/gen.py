@@ -8,7 +8,9 @@ Bounds: no ring-back through a CMOS 0.7/0.3 VDD (2.31/0.99 V) threshold after th
 import json
 PS = 5.77e-12
 def T(n, a, b, mm): return f"T{n} {a} 0 {b} 0 Z0=73 TD={mm*PS:.4e}\n"
-cases = {"tr2_r30": (2.0, 30), "tr1p5_r30": (1.5, 30), "tr2_r45": (2.0, 45), "fix_r33_tr1p5": (1.5, 30)}
+cases = {"tr2_r30": (2.0, 30), "tr1p5_r30": (1.5, 30), "tr2_r45": (2.0, 45), "fix_r33_tr1p5": (1.5, 30),
+         # the firmware sets GPIO_DRIVE_CAP_1 (~10 mA, modelled 60 ohm): R5-DAL-N1
+         "cap1_tr1p5_r60": (1.5, 60), "cap1_tr3_r60": (3.0, 60)}
 for name, (tr, rd) in cases.items():
     t0 = 5e-9; e = tr * 1.25e-9
     c = f"* I2S_BCK bench {name}\nVs s 0 PULSE(0 3.3 {t0} {e} {e} {40e-9 - e} 80e-9)\nRd s d {rd}\nCd d 0 3p\n"

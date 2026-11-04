@@ -41,6 +41,9 @@ Notes:
   ES9018K2M (8.9 mm). The `docs/review-5/sims/dal/i2sbck/` benches pass: no ring-back through 0.7/0.3 VDD at 1.5-2 ns
   edges and 30-45 ohm drivers, minimum high 3.12 V and maximum low 0.17 V. Overshoot reaches 3.89 V (VDD + 0.59) at 1.5 ns.
   A 33R at GPIO2 would take it to 3.31 V. That is optional, at the next touch.
+  The 33R didn't reach the board, so the firmware sets BCK, LRCK and the sub DOUT to `GPIO_DRIVE_CAP_1` (~10 mA, modelled
+  60 ohm): `tb_cap1_*` give 3.31 V overshoot, minimum high 2.96 V and maximum low 0.34 V at 1.5-3 ns. CAP_0 (~120 ohm) was
+  tried and rejected: its first step sits in the threshold band, with minimum high 2.2-2.4 V.
 - **R5-DAL-N2.** The governor and the DJ guard use `vfs_peak_v` = 25.8 Vpk (1.15 Vrms × 24 dB). The board computes 22.4 Vpk
   (MAIN 1.0 Vrms; `check_audio_nets.py`), so the firmware overestimates power by 1.24 dB (1.33×). That is safe, but the
   guard hands DJ direct over at ~14.3 W real against a 19 W Plus limit. Calibrate at bring-up, as the code comment says.
@@ -94,7 +97,7 @@ Notes:
 - `docs/review-5/sims/dal/fab/bottom_fit.py`: fits the bottom-side D6-D9 EasyEDA models to the board pads.
 - `docs/review-5/sims/dal/ethclk/` (`gen.py` + 3 `tb_*.cir` / `.bounds.json`): `sim_run.py --dir .` gives 1 pass and
   2 fail (the 1 ns cases).
-- `docs/review-5/sims/dal/i2sbck/` (`gen.py` + 4 benches): all pass.
+- `docs/review-5/sims/dal/i2sbck/` (`gen.py` + 6 benches): all pass.
 - `docs/review-5/sims/dal/q.py`, `netpath.py`: net, pad and routed-branch-length queries on the PCB.
 - Re-run from round 2:
   - `check_audio_nets.py`: 0 FAIL, 5 WARN.
