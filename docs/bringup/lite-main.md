@@ -227,8 +227,10 @@ cable.
    | `heap` | pass, > 20000 B |
    | `network` | fail until 8.1 |
 
-   `bench.py selftest` also asks for the amp and **must get a 409**. Check by
-   hand too: `hifi amp on` must leave PVDD (C58+) at 0 V.
+   `bench.py selftest` also asks for the amp and **must be refused**: the
+   request answers 200, but `state` must keep `power.pvdd_on` and
+   `amp.enabled` false. Check by hand too: `hifi amp on` must leave PVDD
+   (C58+) at 0 V.
 
 ## 4. PD contract and PVDD (charger)
 
