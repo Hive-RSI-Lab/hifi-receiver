@@ -26,6 +26,12 @@
  * (docs/review-2/heatsink-options.md). Both amps run whenever the amp is on */
 #define HIFI_SPLIT 1
 #endif
+/* bring-up: the API's LED test (the red LED, and Ultra's front LED) and
+ * Ultra's backlight modes (hifi_bsp_set_led, hifi_bsp_set_backlight) */
+#define HIFI_HAS_LED_TEST /* no value: the pinmap check reads "NAME <number>" as a GPIO */
+#ifdef CONFIG_HIFI_ULTRA
+#define HIFI_HAS_BACKLIGHT
+#endif
 #define HIFI_BOARD "core"
 #define HIFI_FW_VERSION "0.1.0"
 #define HIFI_UPSTREAM "squeezelite-esp32 master-v4.3 ee1720c"

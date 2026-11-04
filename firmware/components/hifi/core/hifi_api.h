@@ -91,6 +91,17 @@ typedef struct {
 	bool ir_learned[HIFI_IR_N];
 	bool ir_have_last;        /* any code seen since boot */
 	uint32_t ir_last_code;
+	/* the controls, for bring-up: the I/O expander's and the front board's
+	 * input ports as last read, the last button, knob step or remote
+	 * action and how long ago, the backlight's mode. Unset (false, "",
+	 * NULL): not on this board, and state leaves it out */
+	bool exp_present;
+	uint16_t exp_in;
+	bool front_present;
+	uint8_t front_in;
+	char last_control[24];    /* "button toggle", "knob +2", "ir mute"... */
+	uint32_t last_control_ago_s;
+	const char *backlight;    /* "auto" "on" "off" */
 	/* net, sys */
 	const char *net_mode; /* "sta" or "ap" */
 	bool eth_present, eth_up; /* a board with Ethernet; its link has an address */
@@ -183,6 +194,12 @@ typedef struct {
 	 * sha256 NULL: the one the last check offered for that url, if any.
 	 * 0, or an HTTP status with *err set */
 	int (*update_start)(const char *url, const char *sha256, const char **err);
+	/* bring-up. The LED test: "test" lights the board's LEDs solid (Ultra's
+	 * front LED red, green, blue and white in turn) for 30 s or until
+	 * "auto" hands them back. The backlight (Ultra): "on", "off" or
+	 * "auto". 0 ok, -1 an unknown mode; NULL: the board has none (404) */
+	int (*set_led)(const char *mode);
+	int (*set_backlight)(const char *mode);
 } hifi_ops_t;
 
 /* Returns the HTTP status; the reply (always a JSON object) is in out. */
@@ -205,3 +222,16 @@ void hifi_selftest_add(hifi_selftest_t *t, const char *name, bool pass, const ch
  */
 bool hifi_cli_request(int argc, const char *const *argv, const char **method,
 		      const char **path, char *body, size_t body_cap, char *out, size_t cap);
+
+/*
+ * The console's `hifi i2c <addr> <reg> [val]` (argv from "i2c"): reads or
+ * writes one register on the shared bus. Console only, never the LAN API.
+ * A write is refused (409) while busy is set (what plays, or the amps on):
+ * a DAC, ADC or amp register changed under live audio can pop or latch a
+ * fault. rd and wr return 0 on an ack. The reply, a JSON object, is in out;
+ * returns the HTTP-like status.
+ */
+typedef int (*hifi_i2c_rd_t)(uint8_t addr, uint8_t reg, uint8_t *val);
+typedef int (*hifi_i2c_wr_t)(uint8_t addr, uint8_t reg, uint8_t val);
+int hifi_i2c_cli(int argc, const char *const *argv, const char *busy, hifi_i2c_rd_t rd,
+		 hifi_i2c_wr_t wr, char *out, size_t cap);

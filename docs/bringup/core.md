@@ -411,7 +411,7 @@ Set `hifi maxvol` low first, with a −40 dBFS tone and volume about −30 dB.
   - **IR:** U18 has +3V3 through R400 at IR_VCC (C400.1). IR_IN (U7 pin 7) idles high (R58) and pulses low on a remote press. Then run `hifi ir learn vol_up` and press the remote.
 - **Ultra:** these come from the front board over J3 (ENC_A/B, BTN, IR_IN, LCD). R400 is not fitted, so U18 is unpowered. Bring up the front board in its own plan; on core, check only J3's +5V (pins 3/18) and +3V3 (pins 2/19).
 - **LED_STATUS** (U17 pin 11 → R401 → D3) should light as the firmware sets it.
-- There is no console command to read the buttons or IR codes directly (gap G7). For now, judge them by their effect on `hifi state`.
+- `hifi state`'s `controls.expander` shows the expander's input bits (ENC_A/B, ENC_SW, BTN_1/2, FAULT, OTW), `controls.last` the last button, knob step or remote action, and `ir.last_code` the last raw remote code. Hold a button and read the bits, then release and read again. `hifi led test` holds LED_STATUS on for 30 s.
 
 ## 6. Open items, measured
 
@@ -455,7 +455,7 @@ Set `hifi maxvol` low first, with a −40 dBFS tone and volume about −30 dB.
 
 ## Firmware and bench gaps
 
-These are the steps above that need support which doesn't exist yet. No firmware was changed for this plan.
+These are the steps above that need support which doesn't exist yet. G4 and G7 are closed (`hifi i2c`, `controls` in `hifi state`); G1 is closed in `bench.py`.
 
 - **G1 (fixed): `bench.py bringup` couldn't pass on core.** Stage 1 on 5 V now
   marks `pd_contract`, `pvdd_on`, `amp_no_fault` and (before `--wifi`)
@@ -469,14 +469,14 @@ These are the steps above that need support which doesn't exist yet. No firmware
   - `ISENSE_V_PER_A` is a compile-time `#define`.
   - `state` has no raw ISENSE volts.
   - `vbus_i_a` reads 0 below about 0.4 A (`ISENSE_RAW_FLOOR`), so idle current can't be read.
-- **G4: no low-level console access** (no raw I2C, register or expander command). The bench can't:
+- **G4: closed:** `hifi i2c <addr> <reg> [val]` reads and writes any register (`docs/firmware.md`). Writes are refused while audio plays or the amps are on, so forcing PVDD for the trip test still needs its own hook. Before, the bench couldn't:
   - read the CH224Q's registers or PDO list on demand (they appear only in the boot log, which is lost once the charger takes J1);
   - toggle PHY_RST, LED, TAP_SEL or DAC_EN by hand;
   - read the ES9018K2M or ES7243E registers;
   - force PVDD for the overvoltage-trip test.
 - **G5: core's `fs_vpk` is unset in `predict.py`** until the firmware fixes its gain, so the sweep can't judge level against prediction.
 - **G6: no zone B taps.** Loopback capture covers zone A only, and the Ultra 4-channel capture (plan item 23) isn't built.
-- **G7: no command shows the expander inputs** (ENC_A/B, ENC_SW, BTN_1/2, FAULT, OTW) or the last IR code received. Only `ir learn` exists.
+- **G7: closed:** `hifi state` has `controls.expander` (ENC_A/B, ENC_SW, BTN_1/2, FAULT, OTW), `controls.last` and `ir.last_code`.
 
 **Doc notes found on the way:**
 
