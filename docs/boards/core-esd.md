@@ -52,6 +52,16 @@ two new JLC extended lines.
   of the USB pair through the VBUS via field. USB on core is for firmware
   flashing at the bench, not a port a listener plugs into, and the line still
   is clamped. Left for the next layout touch.
+- **ISNS_P beside the D+ stretch (`esd_corridor_coupled`, added 2026-11-04).**
+  This check came into hwde after this PR. /power_in/ISNS_P runs 4.9 mm
+  beside the J1 A6 to U2 stretch, 0.22 mm away on F.Cu. The check puts the
+  coupling at about 5.8 V for an 8 kV strike (M 0.16 nH). It compares that
+  with a 3.6 V default, because core's pads have no pin functions for it to
+  read (hwde #579). ISNS_P is the high side of the current shunt. It sits at
+  VBUS, goes through R18 and C9's filter, and ends on the INA186's IN+ (U3
+  pin 4). That pin is rated for a 40 V common mode, so 28 V plus 5.8 V is
+  still inside it. The estimate is open-circuit and errs high. Accepted, and
+  no change to the board.
 
 **How it was done** (reproducible, from `boards/core`):
 
@@ -67,4 +77,5 @@ two new JLC extended lines.
    and puts the router's pad-centre ends back on the 45 degree grid.
 
 KiCad DRC with schematic parity is clean afterwards. `check_esd` reports 0
-errors and the 2 USB warnings above.
+errors and the 2 USB warnings above. hwde's newer corridor check
+adds the ISNS_P warning, which makes 3 (hand checks, 2026-11-04).

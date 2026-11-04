@@ -61,6 +61,36 @@ is because D- leaves J1 on B.Cu, and the top side under J1's body can't take
 a part. The inductance screen, which errs high, puts it at about 90 V on top
 of the clamp voltage at 8 kV. The CH340B is still well behind the clamp.
 
+**Corridor warnings (`esd_corridor_coupled`, added 2026-11-04).** This
+check came into hwde after this PR. It brings the count to 0 errors and 10
+warnings. The 8 new ones are nets that run beside the J1-to-clamp stretches.
+Each estimate is the open-circuit voltage an 8 kV strike couples in, and the
+check compares each one with a 3.6 V default.
+
+| Net | Goes to | Beside | Gap | Coupled (M) |
+|---|---|---|---|---|
+| /CC1 | J1 A5, U1 pin 6 | D- (D8) | 0.30 mm | 8.3 V (0.22 nH) |
+| /CC2 | J1 B5, U1 pin 7 | D- (D8) | 1.30 mm | 4.8 V (0.13 nH) |
+| /PD_CFG1 | U1 pin 9, R1 to GND | D+ / D- | 4.1-4.3 mm | 3.7 / 4.9 V (0.10 / 0.13 nH) |
+| /PD_PG | U1 PG, U5 IO4, Q4, R4 | D+ / D- | 6.0-6.2 mm | 12.1 / 20.7 V (0.32 / 0.55 nH) |
+| /PVDD_EN | U5 IO18, R7, R8 | D+ / D- | 6.8-8.4 mm | 4.7 / 11.2 V (0.12 / 0.30 nH) |
+
+All 8 are accepted, with no change to the board:
+
+- **CC1/CC2** are wired straight to J1's own pins. A strike on the CC pin
+  hits them with far more than this coupling. That case is the CC exemption
+  above, and the CH224A's pin protection takes it either way.
+- **The rest** get a pulse that lasts only as long as the strike's ~0.8 ns
+  rising edge (V = M di/dt, about 38 A/ns). The flux is at most M x 30 A,
+  about 17 nV·s on /PD_PG. Even at 20 V, a pulse that short pushes about a
+  nanocoulomb into a pin's clamp diodes, through the tens of ohms of the
+  trace and pin. A 2 kV HBM strike (the ESP32's pin rating) is 200 nC. This
+  is an order-of-magnitude judgement, not a simulation.
+- The strike has to reach D+ or D- inside the USB-C receptacle. A plug's
+  shell lands first, on J1's shield.
+- If the bench shows ESD trouble on Lite, the fix is the same as for D8: a
+  clamp right at J1's pins, which needs the board to go double-sided.
+
 **Also in this PR (hive-hwde #415 check_fp_attr):** L1-L4 (XR0850, two SMD
 pads) carried `(attr through_hole)`, so bom-cpl sent them to JLC's THT step.
 `fpfix.py --pcb` sets them to smd on the board, and `fpfix.py --lib` does

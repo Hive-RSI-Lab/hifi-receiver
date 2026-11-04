@@ -290,6 +290,32 @@ nets are sized for the tracks that remain, which are taps and bootstrap
 links. The main currents ride on the In2 planes and the solid F.Cu/B.Cu
 pours, which the width rules don't see (`constraints.json` `power_notes`).
 
+**Hand checks, 2026-11-04** (hwde `check_esd`, `check_body_clash`, the 3D
+clash and `check_model_paths`/`check_model_fit`, on main 5b7f956). None of
+these is in the CI gates. 0 errors on every check. The warnings:
+
+- **ESD:** 3 warnings, all accepted in
+  [`docs/boards/core-esd.md`](../../docs/boards/core-esd.md). They are the
+  two far-clamp warnings on USB D+/D-, and ISNS_P beside the D+ stretch.
+- **J21/J22, J23/J24, J25/J26 bodies 0.20 mm apart** (`body_tight`, which
+  wants 0.3 mm). These are neighbouring banana sockets at 11 mm pitch, whose
+  ribbed bodies nearly fill it. Their collars sit in the
+  enclosure's 10.2 mm holes, and the holes set each socket's axis. Accepted.
+  At assembly, check that no pair leans into contact.
+- **U18 overhangs the front edge by 1.15 mm, and its body is 1.65 mm outside
+  its courtyard.** U18 is the IRM-3638T IR receiver. It is meant to stand at
+  the edge with its lens facing out through the front wall. Accepted.
+- **U7 overhangs the board edge by 1.56 mm.** That is the WROVER's antenna
+  end, in the front-right notch, which is there to keep the antenna at the
+  edge (the `ANT_KEEPOUT` area). Accepted.
+- **U3 (INA186) has no 3D model in the check.** Its footprint points to
+  `aiee.3dshapes/SC-70-6_L2.0-W1.3-H1.0-P0.65.wrl`, and that file doesn't
+  exist. The library has `SC-70-6_L2.1-W1.3-H1.0-LS2.1-P0.65.wrl`. This
+  affects 3D only: the Gerbers, BOM and CPL don't change. It is 1 mm tall,
+  so nothing can stand on it. Fix the path at the next board edit.
+- The core + ultra-front stack fit (`enclosure/ultra.py`) passes again on the
+  current core pcb.
+
 ## Testing a built board
 
 1. **Power with no amp:** plug a laptop USB-C port or a 5 V supply into J1.
