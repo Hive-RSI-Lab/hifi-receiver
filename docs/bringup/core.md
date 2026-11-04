@@ -439,6 +439,20 @@ Set `hifi maxvol` low first, with a −40 dBFS tone and volume about −30 dB.
 
 **6.7 The power sweep.** Once 6.1 passes, run `bench.py sweep --loads 4,6,8 --governor both`. This fits `predict.py` core's 77/55/43 W at 1 % THD+N on 28 V. It needs a capture through the 10k/1k divider and `volts_per_fs` calibrated (5.5 step 5).
 
+**6.8 PVDD spike at the amp pins (R5-PA-3, `docs/sims.md`).** The sim puts the switching-edge spike at U15/U16 PVDD at 37.5 V against the TPA3220's 37 V abs max. That figure is an estimate for a 7 A edge in 3 ns, the OCP-level current. At the governed peak (about 3 A) it gives about 3.6 V of spike.
+
+- **Probe:** PVDD at U15 pins 29-31 (then 36-38, and U16 the same), with the ground spring on the nearest GND pad. Use full scope bandwidth, not the 20 MHz limit.
+- **Load:** the 28 V contract, 4 Ω dummy loads, a tone at the governor's limit (step 5.5, then raise the volume to the governor cap).
+- **Pass:** peak ≤ 35 V.
+- **On a fail:** set the firmware to ask for a 20 V contract, not 28 V, and report the trace in the hifi-receiver thread.
+
+**6.9 ETH_CLK edge at U9 CLKIN (`docs/sims.md`, SI).** The sim gives low-state ring-back over VIL (0.8 V) for Y2 edges faster than about 1.45 ns. Y2's datasheet only gives "4 ns max".
+
+- **Probe:** U9 pin 5 (ETH_CLK, CLKIN) with the ground spring, at full bandwidth (≥ 500 MHz probe and scope if you have one).
+- **Measure:** the 10-90 % rise and fall times, and the lowest ring-back level while the clock is low.
+- **Pass:** edges slower than 1.45 ns, and ring-back under 0.8 V.
+- **On a fail:** report it with the trace. If the link drops or shows CRC errors, a series resistor at Y2's output (or a slower part) is the next-spin fix.
+
 ## Firmware and bench gaps
 
 These are the steps above that need support which doesn't exist yet. No firmware was changed for this plan.
