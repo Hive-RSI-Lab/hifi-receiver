@@ -40,10 +40,18 @@ on USB.
 
 1. **Laptop USB, 5 V.** The board is found on its CH340.
    - It is flashed if `--image` is given.
-   - Its self-test runs. On 5 V the `pd_contract` item is expected to fail and is marked so.
-   - The bench asks for the amp and **must be refused**. On Lite, PVDD_EN
-     (GPIO18) is driven by firmware only and isn't ANDed with the CH224Q's
-     power-good, so this is the one check that a 5 V port never powers the amp.
+   - Its self-test runs. On 5 V (the bench reads `state.power.contract`, or
+     anything under 9 V) the items that need a contract are expected to fail
+     and are marked so: `pd_contract`, `pvdd_on`, `pvdd_sensed` (Lite) and
+     `amp_no_fault`. `network` is expected too, since `--wifi` comes after.
+     Any other failure fails the stage.
+   - The bench asks for the amp and **must be refused**. The firmware takes
+     the request (200) and its power sequencer keeps PVDD off without
+     power-good, so the bench reads `state` for half a second and passes if
+     `power.pvdd_on` and `amp.enabled` stay false (a 403/409 also counts).
+     On Lite, PVDD_EN (GPIO18) is driven by firmware only and isn't ANDed
+     with the CH224Q's power-good, so this is the one check that a 5 V port
+     never powers the amp.
    - `--wifi` sets the network over the console.
 2. **Each charger** (`--chargers 65w,100w`). The one USB-C port now carries
    power, not the console, so the board is found by mDNS. Its self-test

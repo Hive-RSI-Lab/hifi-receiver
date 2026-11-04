@@ -17,6 +17,55 @@ STREAMING = ["Spotify Connect plays", "AirPlay plays", "Bluetooth A2DP pairs and
              "DJ-direct bypass passes the FLX4 with the board's DSP off",
              "Sub outputs carry the low end (both RCAs)", "Buttons: vol-, vol+, play/source, hold = pairing",
              "IR remote learns and works"]
+# Each model's own controls (docs/firmware.md; board_core.c, board_lite.c)
+CONTROLS = {
+    "hifi-lite": "Buttons: vol-, vol+, play/source, hold = pairing",
+    "hifi-plus": "Controls: knob turns volume, push = play/pause (hold: power); "
+                 "BTN1 = source (hold: mute); BTN2 = next (hold: previous)",
+    "hifi-ultra": "Front controls: knob turns volume, push = play/pause (hold: standby); "
+                  "BTN1 = input (hold: mute); BTN2 = previous; BTN3 = next",
+}
+
+
+def streaming(model: str | None, board: str | None = None) -> list[str]:
+    """The by-ear-and-hand checklist with the board's own controls item. The
+    model comes from info (hifi-lite, hifi-plus, hifi-ultra); with none, the
+    board name (core means Plus)."""
+    model = model or {"lite-main": "hifi-lite", "core": "hifi-plus"}.get(board or "", "hifi-lite")
+    item = CONTROLS.get(model, CONTROLS["hifi-lite"])
+    return [item if i.startswith("Buttons:") else i for i in STREAMING]
+
+
+def supply(state: dict) -> dict:
+    """The source and contract from /state in either shape: the firmware's
+    power.contract {protocol, v, i_max_a} (hifi_api.c), or the mock's
+    pd {source, contract_v, contract_a}. low is True on a source the amp
+    may not run from (under 9 V, the firmware's own pd_contract rule)."""
+    if "power" in state:
+        p = state.get("power") or {}
+        c = p.get("contract") or {}
+        out = {"source": c.get("protocol"), "contract_v": c.get("v"), "contract_a": c.get("i_max_a")}
+        v = out["contract_v"] if out["contract_v"] is not None else p.get("vbus_v")
+    else:
+        pd = state.get("pd") or {}
+        out = {"source": pd.get("source"), "contract_v": pd.get("contract_v"), "contract_a": pd.get("contract_a")}
+        v = out["contract_v"]
+    out["low"] = out["source"] == "5v" or (v is not None and v < 9)
+    return out
+
+
+def amp_powered(state: dict) -> bool:
+    """PVDD on or the amp enabled, in either /state shape."""
+    if "power" in state:
+        return bool((state.get("power") or {}).get("pvdd_on") or (state.get("amp") or {}).get("enabled"))
+    return bool((state.get("amp") or {}).get("enabled"))
+
+
+# Self-test items that can't pass while the board sits on 5 V: no contract, so
+# no PVDD and no amp (hifi_main.c op_selftest; the mock's names too)
+FAIL_ON_5V = ("pd_contract", "pvdd_on", "pvdd_sensed", "amp_no_fault", "amp_faultz_high")
+# ... and before --wifi has set the network (stage 1 sets it after the self-test)
+FAIL_OFFLINE = ("network", "wifi_or_eth_up")
 
 
 class Rig:
@@ -130,10 +179,11 @@ def sweep(dev: Device, cap: Capture, cfg: Config, ohm: float, gov: bool, probe=N
     dev.volume(0)
     dev.governor(gov)
     dev.amp(True)
-    pd = dev.state().get("pd", {})
-    contract = f"{pd.get('contract_v', '?')} V {pd.get('contract_a', '?')} A"
+    pd = supply(dev.state())
+    contract = f"{pd['contract_v'] if pd['contract_v'] is not None else '?'} V " \
+               f"{pd['contract_a'] if pd['contract_a'] is not None else '?'} A"
     pred = predict.predicted(cfg.board, ohm)
-    budget = (pd.get("contract_v") or 0) * (pd.get("contract_a") or 0)
+    budget = (pd["contract_v"] or 0) * (pd["contract_a"] or 0)
     # The amp's own limit, ungoverned: if the charger can't feed both channels
     # at the predicted power (Plus at 4 ohm: 2 x 77 W of sine is ~175 W in,
     # past 140 W), drive only the measured one rather than trip the charger.
@@ -254,26 +304,43 @@ def soak(dev: Device, cap: Capture, cfg: Config, ohm: float, target_w: float, le
             "verdict": verdict or "no temperature (give --temp-cmd or --temp-manual)", "rows": rows}
 
 
-def selftest(dev: Device, expect_5v: bool = False) -> dict:
+def selftest(dev: Device, expect_5v: bool = False, expect_offline: bool = False, settle_s: float = 0.5) -> dict:
     """The board's own self-test, plus the 5 V rule checked from outside:
-    on a 5 V-only port the amp must refuse to start."""
+    on a 5 V-only port the amp must refuse to start. On 5 V the items that
+    need a contract (FAIL_ON_5V) are expected to fail and marked so; with
+    expect_offline (before --wifi), the network items too."""
     out = dev.selftest()
     st = dev.state()
+    sup = supply(st)
+    on_5v = expect_5v or sup["low"]
     extra = []
-    if st.get("pd", {}).get("source") == "5v" or expect_5v:
+    if on_5v:
+        # The firmware takes the request (200) and its sequencer keeps PVDD
+        # off without power-good; the mock answers 409. Either is a refusal.
+        after = st
         try:
             dev.amp(True)
-            refused = False
-            dev.amp(False)
+            deadline = time.monotonic() + settle_s
+            while True:
+                after = dev.state()
+                refused = not amp_powered(after)
+                if not refused or time.monotonic() >= deadline:
+                    break
+                time.sleep(0.05)
         except ApiError as e:
             refused = e.status in (403, 409)
-        extra.append({"name": "bench: amp refused on 5 V", "pass": refused, "value": st.get("vbus_v"),
-                      "limit": "refused", "detail": "PVDD_EN (GPIO18) is firmware-only on Lite"})
-        # The PD item can't pass on a laptop port; it's expected, not a fault.
-        for i in out.get("items", []):
-            if i["name"] == "pd_contract" and not i["pass"]:
-                i["expected"] = True
+        finally:
+            try:
+                dev.amp(False)
+            except ApiError:
+                pass
+        vbus = (after.get("power") or {}).get("vbus_v", after.get("vbus_v"))
+        extra.append({"name": "bench: amp refused on 5 V", "pass": refused, "value": vbus,
+                      "limit": "refused", "detail": "PVDD stays off without a contract's power-good"})
+    expected = (FAIL_ON_5V if on_5v else ()) + (FAIL_OFFLINE if expect_offline else ())
+    for i in out.get("items", []):
+        if i["name"] in expected and not i["pass"]:
+            i["expected"] = True
     items = out.get("items", []) + extra
     ok = all(i["pass"] or i.get("expected") for i in items)
-    return {"pass": ok, "source": st.get("pd", {}).get("source"), "contract_v": st.get("pd", {}).get("contract_v"),
-            "items": items}
+    return {"pass": ok, "source": sup["source"], "contract_v": sup["contract_v"], "items": items}

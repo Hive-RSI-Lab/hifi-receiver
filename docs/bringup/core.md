@@ -41,7 +41,7 @@ Use the console on the CH340 at 115200 baud: `hifi <cmd>`, or `api <op> [json]`,
 | `hifi ir learn <action>`, `ir forget` | IR remote |
 | `api wifi {"ssid","password"}` | Join Wi-Fi (bench: `--wifi SSID:PW`) |
 | `api capture {"source":"loopback"\|"line","frames":N}` | The ES7243E records the zone A speaker taps or the RCA input |
-| `bench.py find / flash / selftest / tone / calibrate / sweep / soak / bringup` | `docs/bench.md`. **`bringup` can't pass on core yet:** see the firmware gaps. |
+| `bench.py find / flash / selftest / tone / calibrate / sweep / soak / bringup` | `docs/bench.md`. `bringup` runs on core too (G1, fixed). |
 
 The boot log on the console also prints the bus scan and the PD result:
 
@@ -443,10 +443,13 @@ Set `hifi maxvol` low first, with a −40 dBFS tone and volume about −30 dB.
 
 These are the steps above that need support which doesn't exist yet. No firmware was changed for this plan.
 
-- **G1: `bench.py bringup` can't pass on core.**
-  - Stage 1 on 5 V marks only `pd_contract` as an expected fail. On core, `pvdd_on`, `amp_no_fault` and `network` also fail on a laptop port, so the stage fails on real firmware.
-  - The bench reads `state["pd"]["source"/"contract_v"]` (the mock's old schema), but the firmware writes `state.power.contract{...}`. This is in `run.py` (about line 133) and `remote.py` (about line 101).
-  - `run.STREAMING`'s button check is Lite's vol-/vol+, not core's knob and two buttons, or Ultra's front board.
+- **G1 (fixed): `bench.py bringup` couldn't pass on core.** Stage 1 on 5 V now
+  marks `pd_contract`, `pvdd_on`, `amp_no_fault` and (before `--wifi`)
+  `network` as expected; the bench reads `state.power.contract`; the amp
+  check passes when PVDD stays off after the request; and the controls
+  item in the checklist is the model's own (Plus: knob and two buttons,
+  Ultra: the front board's knob and three buttons). Host-tested only
+  against a firmware-shaped fake, not yet on a board.
 - **G2: no PVDD or VBUS voltage sense, and no amp temperature.** On core, `state.power.pvdd_v` and `amp.temp_c` are null. The PVDD ramp (3.5, 5.1) and the soak (6.1) need a scope and a thermocouple; `bench.py soak` needs `--temp-manual`.
 - **G3: ISENSE can't be calibrated at run time.**
   - `ISENSE_V_PER_A` is a compile-time `#define`.

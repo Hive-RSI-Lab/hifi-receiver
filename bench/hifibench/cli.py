@@ -257,7 +257,7 @@ def cmd_bringup(a, b: Bench):
             elif flash.flash(b.a.port or b.via, a.image, a.baud, a.esptool) != 0:
                 sys.exit("flash failed")
         s = b.session(dev)
-        st = run.selftest(dev, expect_5v=True)
+        st = run.selftest(dev, expect_5v=True, expect_offline=True)
         st["stage"] = "laptop USB (5 V)"
         s["selftests"].append(st)
         s["verdicts"]["self-test on a laptop port, amp held off"] = "pass" if st["pass"] else "fail"
@@ -285,7 +285,8 @@ def cmd_bringup(a, b: Bench):
             _soak(b, dev, s, loads(a.loads)[0])
         # 4. What only a person can hear and press.
         b.rig.wait("Now the streaming and controls checks (answer each).")
-        s["checklist"] = {item: b.rig.check(item) for item in run.STREAMING}
+        s["checklist"] = {item: b.rig.check(item)
+                          for item in run.streaming(s["info"].get("model"), s["board"])}
     except ApiError as e:
         if s is None:
             raise
