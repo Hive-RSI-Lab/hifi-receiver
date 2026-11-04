@@ -127,7 +127,7 @@ Margins are (limit − result), in the limit's units or as a % of the limit.
   - The failing case needs a 7.5 A OCP edge through a single cap, which only happens on an output short.
   - At rated current, and with the caps working in parallel, the peak is 25-26 V.
   - Gate: scope U8 PVDD to its GND pin at 20 V into 4 Ω, near clip. The peak must stay ≤ 27 V.
-  - Fallback: firmware requests 15 V PD instead of 20 V.
+  - Fallback: a 15 V contract. On Lite that means changing the R1 strap (CH224A table 5-1), or adding a request write to `board_lite.c`. Lite's firmware doesn't request a voltage today. See `docs/bringup/lite-main.md` 9.9.
   - Next spin: put the 1 µF caps at the pins with GND straight to the EP (≤ 2.8 nH).
 - **Core U15/U16 HF loop: already R5-PA-3.** Gate: ≤ 35 V on the bench. Fallback: a 20 V contract.
 - **Core ETH_CLK: measured at bring-up.** The Y2 edge at U9 CLKIN must be slower than 1.45 ns. This is to go into `docs/bringup/core.md`.

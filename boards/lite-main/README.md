@@ -205,6 +205,25 @@ All gates last passed on hive-hwde c23e27e (2026-10-29), after the review-2 ECO.
   [`reports/review-schematic-response.md`](reports/review-schematic-response.md).
 - **Routed board:** [`reports/review-board.md`](reports/review-board.md).
 
+**Hand checks, 2026-11-04** (hwde `check_esd`, `check_body_clash`, the 3D
+clash and `check_model_paths`/`check_model_fit`, on main 5b7f956). None of
+these is in the CI gates. 0 errors on every check. The warnings:
+
+- **ESD:** 10 warnings, all accepted in
+  [`docs/boards/lite-esd.md`](../../docs/boards/lite-esd.md). Two are USB_DM
+  warnings: D8's 2 vias and its 13.8 mm of track. The other 8 are corridor
+  warnings.
+- **J5/J6 bodies 0.20 mm apart** (`body_tight`). These are neighbouring
+  banana sockets at 11 mm pitch, whose ribbed bodies nearly fill it. The
+  enclosure's holes set each socket's axis. Accepted. At
+  assembly, check that they don't lean into contact.
+- **U9 overhangs the front edge by 1.13 mm, and its body is 1.63 mm outside
+  its courtyard.** U9 is the IR receiver, standing at the edge with its lens
+  facing out through the front wall, as designed. Accepted.
+- **L1-L4 (XR0850) have no 3D model.** The body-clash and 3D-clash checks
+  can't judge them. `enclosure/heights.json` carries their 5.2 mm height, so
+  the enclosure fit still counts them.
+
 ## Cost
 
 **$14.54 per board at 100**: parts $11.72, JLC assembly $2.16, PCB $0.66.
