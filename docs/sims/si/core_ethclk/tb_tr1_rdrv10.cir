@@ -1,0 +1,24 @@
+* ETH_CLK branch bench tr1_rdrv10: one 50 MHz period from Y2
+Vs src 0 PULSE(0 3.3 2e-09 1.25e-09 1.25e-09 8.75e-09 20e-9)
+Rdrv src y2 10
+Cy2 y2 0 1p
+Tosc y2 0 r60a 0 Z0=73 TD=1.0963e-10
+R60 r60a r60b 33
+Tt r60b 0 tj 0 Z0=73 TD=1.5002e-11
+Cq5 tj 0 3p
+R31 tj vdd 10k
+Vdd vdd 0 3.3
+Tphy tj 0 phy 0 Z0=73 TD=2.1060e-10
+Cphy phy 0 4p
+Tesp tj 0 esp 0 Z0=73 TD=3.2658e-10
+Cesp esp 0 6p
+.tran 5p 22n 0 5p
+.measure tran phy_max MAX v(phy) FROM=0 TO=12n
+.measure tran phy_min_hi MIN v(phy) FROM=4.250e-09 TO=11n
+.measure tran phy_min MIN v(phy) FROM=12n TO=22n
+.measure tran phy_max_lo MAX v(phy) FROM=1.425e-08 TO=21n
+.measure tran esp_max MAX v(esp) FROM=0 TO=12n
+.measure tran esp_min_hi MIN v(esp) FROM=4.250e-09 TO=11n
+.measure tran esp_min MIN v(esp) FROM=12n TO=22n
+.measure tran esp_max_lo MAX v(esp) FROM=1.425e-08 TO=21n
+.end

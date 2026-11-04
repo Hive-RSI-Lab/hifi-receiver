@@ -1,0 +1,51 @@
+== tb_z100_fix_r33_tr1p0
+  ok   es_min_hi       3.2867 V  limit >= 2.31  margin +0.977 V  [error]
+  ok   es_max_lo       0.0133 V  limit <= 0.99  margin +0.977 V  [error]
+  ok   es_max          3.4630 V  limit <= 3.9   margin +0.437 V  [warning]
+  ok   es_min         -0.1630 V  limit >= -0.6  margin +0.437 V  [warning]
+== tb_z100_tr1p0_r30
+  ok   es_min_hi       3.2270 V  limit >= 2.31  margin +0.917 V  [error]
+  ok   es_max_lo       0.0730 V  limit <= 0.99  margin +0.917 V  [error]
+  WARN es_max          4.1459 V  limit <= 3.9   margin -0.246 V  [warning]
+  WARN es_min         -0.8458 V  limit >= -0.6  margin -0.246 V  [warning]
+== tb_z100_tr1p5_r30
+  ok   es_min_hi       3.2673 V  limit >= 2.31  margin +0.957 V  [error]
+  ok   es_max_lo       0.0327 V  limit <= 0.99  margin +0.957 V  [error]
+  ok   es_max          3.6946 V  limit <= 3.9   margin +0.205 V  [warning]
+  ok   es_min         -0.3946 V  limit >= -0.6  margin +0.205 V  [warning]
+== tb_z100_tr1p5_r45
+  ok   es_min_hi       3.2921 V  limit >= 2.31  margin +0.982 V  [error]
+  ok   es_max_lo       0.0079 V  limit <= 0.99  margin +0.982 V  [error]
+  ok   es_max          3.4888 V  limit <= 3.9   margin +0.411 V  [warning]
+  ok   es_min         -0.1888 V  limit >= -0.6  margin +0.411 V  [warning]
+== tb_z100_tr2p0_r30
+  ok   es_min_hi       3.2644 V  limit >= 2.31  margin +0.954 V  [error]
+  ok   es_max_lo       0.0353 V  limit <= 0.99  margin +0.955 V  [error]
+  ok   es_max          3.5476 V  limit <= 3.9   margin +0.352 V  [warning]
+  ok   es_min         -0.2476 V  limit >= -0.6  margin +0.352 V  [warning]
+== tb_z145_fix_r33_tr1p0
+  ok   es_min_hi       3.1980 V  limit >= 2.31  margin +0.888 V  [error]
+  ok   es_max_lo       0.1020 V  limit <= 0.99  margin +0.888 V  [error]
+  ok   es_max          3.7801 V  limit <= 3.9   margin +0.120 V  [warning]
+  ok   es_min         -0.4801 V  limit >= -0.6  margin +0.120 V  [warning]
+== tb_z145_tr1p0_r30
+  ok   es_min_hi       2.6885 V  limit >= 2.31  margin +0.379 V  [error]
+  ok   es_max_lo       0.6088 V  limit <= 0.99  margin +0.381 V  [error]
+  WARN es_max          4.5377 V  limit <= 3.9   margin -0.638 V  [warning]
+  WARN es_min         -1.2377 V  limit >= -0.6  margin -0.638 V  [warning]
+== tb_z145_tr1p5_r30
+  ok   es_min_hi       3.0142 V  limit >= 2.31  margin +0.704 V  [error]
+  ok   es_max_lo       0.2858 V  limit <= 0.99  margin +0.704 V  [error]
+  WARN es_max          4.0294 V  limit <= 3.9   margin -0.129 V  [warning]
+  WARN es_min         -0.7294 V  limit >= -0.6  margin -0.129 V  [warning]
+== tb_z145_tr1p5_r45
+  ok   es_min_hi       3.1645 V  limit >= 2.31  margin +0.855 V  [error]
+  ok   es_max_lo       0.1355 V  limit <= 0.99  margin +0.855 V  [error]
+  ok   es_max          3.7448 V  limit <= 3.9   margin +0.155 V  [warning]
+  ok   es_min         -0.4448 V  limit >= -0.6  margin +0.155 V  [warning]
+== tb_z145_tr2p0_r30
+  ok   es_min_hi       3.1676 V  limit >= 2.31  margin +0.858 V  [error]
+  ok   es_max_lo       0.1355 V  limit <= 0.99  margin +0.854 V  [error]
+  ok   es_max          3.6339 V  limit <= 3.9   margin +0.266 V  [warning]
+  ok   es_min         -0.3339 V  limit >= -0.6  margin +0.266 V  [warning]
+RESULT: PASS (error bounds)

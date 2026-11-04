@@ -1,0 +1,88 @@
+== 0. Set points (netlist R9 100k/R10 13k, R11 150k/R12 33k)
+  +5V  = 5.181 V nominal, 5.029..5.337 V with +-2 % ref + 1 % resistors (assumed tolerances)
+  +3V3 = 3.327 V nominal, 3.230..3.428 V
+  +5V max vs SY8089 Vin recommended 5.5 V          5.337 V   limit <= 5.5      margin     3.0 %  PASS  (5.5 V recalled from datasheet, verify; abs max 6 V)
+  +5V max vs SY8089 Vin abs max 6 V                5.337 V   limit <= 6        margin    11.0 %  PASS  
+  +3V3 min vs ESP32 min 3.0 V                       3.23 V   limit >= 3        margin     7.7 %  PASS  
+  +3V3 max vs ES8388/ESP32 max 3.6 V               3.428 V   limit <= 3.6      margin     4.8 %  PASS  
+
+== 1. Load budget (ESTIMATES: datasheet-typical, review-2 thermal.md; not measured)
+  +3V3  U5 ESP32-WROVER-E-N8R8 (Wi-Fi stream/BT; max = TX peak, Espressif asks 500 mA)   typ 120.00 mA  max  500.0 mA   (typ per review-2 thermal.md)
+  +3V3  U6 CH340B                                                                        typ  10.00 mA  max   20.0 mA   (estimate)
+  +3V3  U7 ES8388 digital (pins 2,3)                                                     typ   8.00 mA  max   15.0 mA   (estimate)
+  +3V3  pull-ups R4,R20-R23,R53,R60-R63 (typ 25 % low, max all low)                      typ   1.50 mA  max    5.4 mA   (3.3/10k=0.33 mA, 3.3/2.2k=1.5 mA)
+  +3V3  IR receiver U9 via R65 + LED D2 via R64 1k                                       typ   2.90 mA  max    3.0 mA   (estimate (IRM-3638T ~1.5 mA, red LED 1.4 mA))
+  +3V3  FB divider R11/R12                                                               typ   0.02 mA  max    0.0 mA   (3.3/183k)
+  +3V3A U7 ES8388 analog via U4 LP5907                                              typ  25.00 mA  max   40.0 mA   (review-2 ~25 mA unverified; max estimate)
+  => +3V3 total  typ 142 mA, max (all peaks coincident) 543 mA;  +3V3A typ 25 mA / max 40 mA
+  +5V  = SY8089 input (eta 0.90) + U4 + R9/R10/R80 ~0.1 mA:  typ 127 mA, max 428 mA   (review-2 used 0.2 A avg / 0.4 A peak)
+  VBUS draw for the rails at 20 V (U2 eta 0.85): typ 39 mA (0.77 W), max 130 mA (2.61 W); plus CH224A, divider (est.)
+  U2 TPS54302 max load vs 3 A rating              0.4279 A   limit <= 3        margin    85.7 %  PASS  
+  U3 SY8089 max load vs 2 A rating                0.5434 A   limit <= 2        margin    72.8 %  PASS  
+  U4 LP5907 max load vs 250 mA                      0.04 A   limit <= 0.25     margin    84.0 %  PASS  
+
+== 2. Inductor ripple and peak (L = nominal -20 %/-30 % tolerance is the worst case, fsw -20 %)
+ -- U2/L5 typ load: Vin 15.0 V Vout 5.18 V D 0.345, L 10.0 uH x0.8, fsw 400 kHz x0.8: dIL 1.325 A pp
+  L5 Ipk (Iout 127 mA) vs Isat                    0.7891 A   limit <= 3.2      margin    75.3 %  PASS  
+  L5 Irms vs rated                                0.4029 A   limit <= 2.45     margin    83.6 %  PASS  
+ -- U2/L5 max load: Vin 15.0 V Vout 5.18 V D 0.345, L 10.0 uH x0.8, fsw 400 kHz x0.8: dIL 1.325 A pp
+  L5 Ipk (Iout 428 mA) vs Isat                      1.09 A   limit <= 3.2      margin    65.9 %  PASS  
+  L5 Irms vs rated                                0.5739 A   limit <= 2.45     margin    76.6 %  PASS  
+ -- U2/L5 typ load: Vin 20.0 V Vout 5.18 V D 0.259, L 10.0 uH x0.8, fsw 400 kHz x0.8: dIL 1.499 A pp
+  L5 Ipk (Iout 127 mA) vs Isat                    0.8765 A   limit <= 3.2      margin    72.6 %  PASS  
+  L5 Irms vs rated                                 0.451 A   limit <= 2.45     margin    81.6 %  PASS  
+ -- U2/L5 max load: Vin 20.0 V Vout 5.18 V D 0.259, L 10.0 uH x0.8, fsw 400 kHz x0.8: dIL 1.499 A pp
+  L5 Ipk (Iout 428 mA) vs Isat                     1.178 A   limit <= 3.2      margin    63.2 %  PASS  
+  L5 Irms vs rated                                0.6087 A   limit <= 2.45     margin    75.2 %  PASS  
+ -- U2/L5 typ load: Vin 21.0 V Vout 5.18 V D 0.247, L 10.0 uH x0.8, fsw 400 kHz x0.8: dIL 1.524 A pp
+  L5 Ipk (Iout 127 mA) vs Isat                     0.889 A   limit <= 3.2      margin    72.2 %  PASS  
+  L5 Irms vs rated                                 0.458 A   limit <= 2.45     margin    81.3 %  PASS  
+ -- U2/L5 max load: Vin 21.0 V Vout 5.18 V D 0.247, L 10.0 uH x0.8, fsw 400 kHz x0.8: dIL 1.524 A pp
+  L5 Ipk (Iout 428 mA) vs Isat                      1.19 A   limit <= 3.2      margin    62.8 %  PASS  
+  L5 Irms vs rated                                0.6138 A   limit <= 2.45     margin    74.9 %  PASS  
+ -- U2/L5 typ load: Vin 22.0 V Vout 5.18 V D 0.235, L 10.0 uH x0.8, fsw 400 kHz x0.8: dIL 1.547 A pp
+  L5 Ipk (Iout 127 mA) vs Isat                    0.9003 A   limit <= 3.2      margin    71.9 %  PASS  
+  L5 Irms vs rated                                0.4643 A   limit <= 2.45     margin    81.1 %  PASS  
+ -- U2/L5 max load: Vin 22.0 V Vout 5.18 V D 0.235, L 10.0 uH x0.8, fsw 400 kHz x0.8: dIL 1.547 A pp
+  L5 Ipk (Iout 428 mA) vs Isat                     1.201 A   limit <= 3.2      margin    62.5 %  PASS  
+  L5 Irms vs rated                                0.6185 A   limit <= 2.45     margin    74.8 %  PASS  
+ -- U3/L6 typ load: Vin 5.0 V Vout 3.33 V D 0.665, L 2.2 uH x0.7, fsw 1500 kHz x0.8: dIL 0.602 A pp
+  L6 Ipk (Iout 142 mA) vs Isat                    0.4436 A   limit <= 3.4      margin    87.0 %  PASS  
+  L6 Irms vs rated                                0.2248 A   limit <= 1.85     margin    87.9 %  PASS  
+ -- U3/L6 max load: Vin 5.0 V Vout 3.33 V D 0.665, L 2.2 uH x0.7, fsw 1500 kHz x0.8: dIL 0.602 A pp
+  L6 Ipk (Iout 543 mA) vs Isat                    0.8446 A   limit <= 3.4      margin    75.2 %  PASS  
+  L6 Irms vs rated                                0.5706 A   limit <= 1.85     margin    69.2 %  PASS  
+ -- U3/L6 typ load: Vin 4.5 V Vout 3.33 V D 0.739, L 2.2 uH x0.7, fsw 1500 kHz x0.8: dIL 0.469 A pp
+  L6 Ipk (Iout 142 mA) vs Isat                     0.377 A   limit <= 3.4      margin    88.9 %  PASS  
+  L6 Irms vs rated                                0.1965 A   limit <= 1.85     margin    89.4 %  PASS  
+ -- U3/L6 max load: Vin 4.5 V Vout 3.33 V D 0.739, L 2.2 uH x0.7, fsw 1500 kHz x0.8: dIL 0.469 A pp
+  L6 Ipk (Iout 543 mA) vs Isat                     0.778 A   limit <= 3.4      margin    77.1 %  PASS  
+  L6 Irms vs rated                                  0.56 A   limit <= 1.85     margin    69.7 %  PASS  
+
+== 3. Output ripple, derated caps (cap term dI/(8 f C) + 10 mOhm total ESR/ESL allowance; PFM/Eco light-load ripple NOT covered)
+ -- U2 worst-case for ripple: Vin 22 V, max load: Vin 22.0 V Vout 5.18 V D 0.235, L 10.0 uH x0.8, fsw 400 kHz x0.8: dIL 1.547 A pp
+  L5 (ripple case) Ipk (Iout 428 mA) vs Isat       1.201 A   limit <= 3.2      margin    62.5 %  PASS  
+  L5 (ripple case) Irms vs rated                  0.6185 A   limit <= 2.45     margin    74.8 %  PASS  
+ -- +5V: caps ['C7', 'C8', 'C25', 'C10', 'C11', 'C15'] at 5.18 V: Ceff typ 43.6 uF, low 33.8 uF (nominal 77.1 uF)
+  +5V ripple pp, caps typ (target 50 mV = 1 %, assumed)     29.33 mV  limit <= 50       margin    41.3 %  PASS  
+  +5V ripple pp, caps low (target 50 mV = 1 %, assumed)     33.34 mV  limit <= 50       margin    33.3 %  PASS  
+ -- U3 worst-case for ripple: Vin 4.5 V... 5.4 V, max load: Vin 5.4 V Vout 3.33 V D 0.616, L 2.2 uH x0.7, fsw 1500 kHz x0.8: dIL 0.691 A pp
+  L6 (ripple case) Ipk (Iout 543 mA) vs Isat       0.889 A   limit <= 3.4      margin    73.9 %  PASS  
+  L6 (ripple case) Irms vs rated                  0.5789 A   limit <= 1.85     margin    68.7 %  PASS  
+ -- +3V3: caps ['C12', 'C13', 'C20', 'C21', 'C23', 'C24', 'C30', 'C31'] at 3.33 V: Ceff typ 29.7 uF, low 24.8 uF (nominal 42.5 uF)
+  +3V3 ripple pp, caps typ (target 50 mV, assumed)     9.332 mV  limit <= 50       margin    81.3 %  PASS  
+  +3V3 ripple pp, caps low (target 50 mV, assumed)     9.809 mV  limit <= 50       margin    80.4 %  PASS  
+ -- U2 input: Icin_rms 187 mA at max load (VBUS ceramics 5.9 uF derated low; dVin pp ~ 43 mV)
+
+== 4. U4 LP5907-3.3 (+3V3A): dropout and dissipation (Iq 12 uA from LCSC; dropout 250 mV at 250 mA is the datasheet worst case, used for all loads)
+  U4 headroom Vin_min-3.3 V x1.03 (typ)             1.63 V   limit >= 0.25     margin   551.9 %  PASS  
+  U4 dissipation typ: (5.34-3.3) x 25 mA + Iq = 51 mW, rise at 193.4 C/W (TI SNVS798 DBV, via review-2) = 9.9 K
+  U4 Tj at 52 C box air (typ), 125 C limit         61.86 C   limit <= 125      margin    50.5 %  PASS  
+  U4 headroom Vin_min-3.3 V x1.03 (max)             1.63 V   limit >= 0.25     margin   551.9 %  PASS  
+  U4 dissipation max: (5.34-3.3) x 40 mA + Iq = 82 mW, rise at 193.4 C/W (TI SNVS798 DBV, via review-2) = 15.8 K
+  U4 Tj at 52 C box air (max), 125 C limit         67.77 C   limit <= 125      margin    45.8 %  PASS  
+  U4 PSRR note: Vin 400 kHz ripple not simulated         0     limit <= 1        margin   100.0 %  PASS  (not evaluated)
+
+== SUMMARY
+FAILS: none
+THIN (<15 %): ['+5V max vs SY8089 Vin recommended 5.5 V: 5.337 vs 5.5 (3.0 %)', '+5V max vs SY8089 Vin abs max 6 V: 5.337 vs 6 (11.0 %)', '+3V3 min vs ESP32 min 3.0 V: 3.23 vs 3 (7.7 %)', '+3V3 max vs ES8388/ESP32 max 3.6 V: 3.428 vs 3.6 (4.8 %)']

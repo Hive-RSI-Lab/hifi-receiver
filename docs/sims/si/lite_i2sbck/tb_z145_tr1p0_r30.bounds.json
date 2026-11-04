@@ -1,0 +1,26 @@
+[
+ {
+  "measure": "es_min_hi",
+  "min": 2.31,
+  "severity": "error",
+  "msg": "ES8388 SCLK ring-back under 0.7 VDD after rising edge"
+ },
+ {
+  "measure": "es_max_lo",
+  "max": 0.99,
+  "severity": "error",
+  "msg": "ES8388 SCLK ring-back over 0.3 VDD after falling edge"
+ },
+ {
+  "measure": "es_max",
+  "max": 3.9,
+  "severity": "warning",
+  "msg": "overshoot over VDD+0.6"
+ },
+ {
+  "measure": "es_min",
+  "min": -0.6,
+  "severity": "warning",
+  "msg": "undershoot under -0.6 V"
+ }
+]

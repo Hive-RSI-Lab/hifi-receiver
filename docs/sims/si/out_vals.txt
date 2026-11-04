@@ -1,0 +1,36 @@
+== core ETH_CLK (core_ethclk/gen.py: 19.0 / 2.6 / 36.5 / 56.6, R60 33R, R31 10k)
+ok   Y2.3 -> R60.1 (ETH_OSC): board 18.97 deck 19.0 (tol 0.50)
+ok   R60.2 -> U9.5 (=2.6+36.5): board 39.16 deck 39.1 (tol 0.78)
+ok   R60.2 -> U7.25 (=2.6+56.6): board 58.99 deck 59.2 (tol 1.18)
+ok   /ethernet/ETH_OSC width (+-0.01): board True deck True
+ok   /ethernet/ETH_OSC layers outer only: board True deck True
+ok   /ETH_CLK width (+-0.01): board True deck True
+ok   /ETH_CLK layers outer only: board True deck True
+ok   R60 value: board 33R deck 33R
+ok   R31 value: board 10k deck 10k
+ok   ETH_CLK driver Y2 / receivers: board ('50MHz', 'LAN8720A', 'ESP32-WROVER-E-N8R8') deck ('50MHz', 'LAN8720A', 'ESP32-WROVER-E-N8R8')
+== core I2S_BCK (core_i2sbck/gen.py: 61.9 / 1.5 stub / 27.7 / 4.9 / 8.9, no series R)
+ok   U7.24 -> U13.6 (61.9+1.5): board 63.36 deck 63.4 (tol 1.27)
+ok   U7.24 -> U12.13 (61.9+27.7+4.9): board 94.39 deck 94.5 (tol 1.89)
+ok   U7.24 -> U10.27 (61.9+27.7+8.9): board 98.39 deck 98.5 (tol 1.97)
+ok   /I2S_BCK width (+-0.01; 0.205 seen): board True deck True
+ok   /I2S_BCK no series R (only 4 pins): board ['U10', 'U12', 'U13', 'U7'] deck ['U10', 'U12', 'U13', 'U7']
+== core UF SCK (uf_sck/tb_sck_asbuilt.cir: 49.2 / 33R / 57.8)
+ok   U7.8 -> R402.1 /LCD_SCLK: board 49.19 deck 49.2 (tol 0.98)
+ok   R402.2 -> J3.5 /ui/FFC_SCK: board 57.72 deck 57.8 (tol 1.16)
+ok   R402 value: board 33R deck 33R
+== ultra-front LCD_SCK front side (deck 20.4 mm J1.5 -> J2.4)
+ok   J1.5 -> J2.4: board 20.42 deck 20.4 (tol 0.50)
+ok   front J1 part: board FPC-05F-20PH20 deck FPC-05F-20PH20
+== lite-main I2S_BCLK (lite_i2sbck/gen.py: 45.6 mm, 0.2 mm, no series R)
+ok   U5.12 -> U7.5: board 45.64 deck 45.6 (tol 0.91)
+ok   width (+-0.01): board True deck True
+ok   pins on net (no series R): board ['U5', 'U7'] deck ['U5', 'U7']
+ok   parts: board ('ESP32-WROVER-E-N8R8', 'ES8388') deck ('ESP32-WROVER-E-N8R8', 'ES8388')
+== PVDD decoupling parts (core_pvdd / lite_pvdd decks)
+core C207 1uF
+core C209 1uF
+core C307 1uF
+core C309 1uF
+lite U8 TPA3118D2
+RESULT: PASS (all deck constants match the boards)

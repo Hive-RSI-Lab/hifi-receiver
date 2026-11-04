@@ -1,0 +1,7 @@
+[
+ {"measure": "t_hi", "max": 1.08e-7, "severity": "error", "msg": "the edge reaches VIH (0.7 x 3.3 V) within 3 ns of leaving the driver"},
+ {"measure": "hi_min", "min": 2.31, "severity": "error", "msg": "no ring-back under VIH (0.7 IOVCC) while SCK is high: a dip there is a double clock"},
+ {"measure": "lo_max", "max": 0.99, "severity": "error", "msg": "no ring-back over VIL (0.3 IOVCC) while SCK is low"},
+ {"measure": "v_over", "max": 3.9, "severity": "warning", "msg": "overshoot within IOVCC + 0.6 V (input clamp conducts beyond)"},
+ {"measure": "v_under", "min": -0.6, "severity": "warning", "msg": "undershoot within -0.6 V"}
+]

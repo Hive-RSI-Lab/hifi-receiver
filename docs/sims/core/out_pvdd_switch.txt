@@ -1,0 +1,31 @@
+Warning: can't find the initialization file spinit.
+A  soft start (PVDD_EN at 20 ms), limit t90 < 500 ms after EN, Tj < 150 C
+   C4 220n VBUS 28.0 Vth 1.7: P pk   7.6 W  E 0.553 J  I pk 0.33 A  t90  205 ms  Vsg end  9.20 V  Tj 82@25 97@40 107@50 117@60
+   C4 220n VBUS 28.0 Vth 1.9: P pk   7.5 W  E 0.553 J  I pk 0.33 A  t90  218 ms  Vsg end  9.19 V  Tj 81@25 96@40 106@50 116@60
+   C4 220n VBUS 28.0 Vth 2.5: P pk   7.1 W  E 0.553 J  I pk 0.31 A  t90  260 ms  Vsg end  9.14 V  Tj 79@25 94@40 104@50 114@60
+   C4 220n VBUS 29.4 Vth 1.7: P pk   8.5 W  E 0.610 J  I pk 0.35 A  t90  199 ms  Vsg end  9.67 V  Tj 88@25 103@40 113@50 123@60
+   C4 220n VBUS 29.4 Vth 1.9: P pk   8.4 W  E 0.610 J  I pk 0.34 A  t90  212 ms  Vsg end  9.65 V  Tj 87@25 102@40 112@50 122@60
+   C4 220n VBUS 29.4 Vth 2.5: P pk   8.0 W  E 0.610 J  I pk 0.33 A  t90  251 ms  Vsg end  9.61 V  Tj 85@25 100@40 110@50 120@60
+   C4 152n VBUS 28.0 Vth 1.7: P pk  10.1 W  E 0.552 J  I pk 0.47 A  t90  172 ms  Vsg end  9.56 V  Tj 99@25 114@40 124@50 134@60
+   C4 152n VBUS 28.0 Vth 1.9: P pk  10.0 W  E 0.552 J  I pk 0.47 A  t90  184 ms  Vsg end  9.55 V  Tj 98@25 113@40 123@50 133@60
+   C4 152n VBUS 28.0 Vth 2.5: P pk   9.5 W  E 0.552 J  I pk 0.44 A  t90  224 ms  Vsg end  9.52 V  Tj 95@25 110@40 120@50 130@60
+   C4 152n VBUS 29.4 Vth 1.7: P pk  11.3 W  E 0.608 J  I pk 0.50 A  t90  167 ms  Vsg end 10.04 V  Tj 107@25 122@40 132@50 142@60
+   C4 152n VBUS 29.4 Vth 1.9: P pk  11.2 W  E 0.608 J  I pk 0.49 A  t90  179 ms  Vsg end 10.03 V  Tj 106@25 121@40 131@50 141@60
+   C4 152n VBUS 29.4 Vth 2.5: P pk  10.7 W  E 0.609 J  I pk 0.47 A  t90  216 ms  Vsg end 10.00 V  Tj 103@25 118@40 128@50 138@60
+   C4 125n VBUS 28.0 Vth 1.7: P pk  11.7 W  E 0.551 J  I pk 0.57 A  t90  159 ms  Vsg end  9.69 V  Tj 109@25 124@40 134@50 144@60
+   C4 125n VBUS 28.0 Vth 1.9: P pk  11.5 W  E 0.551 J  I pk 0.56 A  t90  171 ms  Vsg end  9.69 V  Tj 108@25 123@40 133@50 143@60
+   C4 125n VBUS 28.0 Vth 2.5: P pk  11.0 W  E 0.551 J  I pk 0.53 A  t90  210 ms  Vsg end  9.66 V  Tj 105@25 120@40 130@50 140@60
+   C4 125n VBUS 29.4 Vth 1.7: P pk  13.1 W  E 0.607 J  I pk 0.60 A  t90  154 ms  Vsg end 10.18 V  Tj 118@25 133@40 143@50 153@60
+   C4 125n VBUS 29.4 Vth 1.9: P pk  12.9 W  E 0.608 J  I pk 0.59 A  t90  166 ms  Vsg end 10.17 V  Tj 117@25 132@40 142@50 152@60
+   C4 125n VBUS 29.4 Vth 2.5: P pk  12.3 W  E 0.608 J  I pk 0.57 A  t90  202 ms  Vsg end 10.15 V  Tj 114@25 129@40 139@50 149@60
+   worst Tj@60 C: 153 C (C4 125n VBUS 29.4 Vth 1.7, P pk 13.1 W, E 0.61 J); margin -3 K
+B  PD step 5->28 V at 30 V/ms, PVDD_EN low, PG low; limit Vsg < 1.5 V (Vth min 1.7)
+   C4 220n C8 4.6u: Vsg max 1.05 V  PVDD max 0.004 V
+   C4 125n C8 4.6u: Vsg max 0.61 V  PVDD max 0.002 V
+   C4 125n C8 2.8u: Vsg max 0.98 V  PVDD max 0.002 V
+C  PD hard reset with PVDD on, amp shut down (Ramp 14k), source discharge 200 R; limit VBUS < 0.8 V at 650 ms
+   C4 152n C8 2.8u: VBUS at 650 ms after reset 0.160 V, PVDD 0.68 V
+   C4 220n C8 4.6u: VBUS at 650 ms after reset 0.160 V, PVDD 0.68 V
+D  hot plug into live 28 V, 1 uH / 50 mR cable, SMBJ30A on VBUS_IN; limit VBUS_PD < 32 V (CH224Q VHV abs max)
+   VBUS pk 44.4 V  VBUS_PD pk 28.82 V  Vsg max 1.18 V  PVDD max 0.11 V
+FAIL: Tj 153 C @60 C C4 125n 29.4 V Vth 1.7; Tj 152 C @60 C C4 125n 29.4 V Vth 1.9

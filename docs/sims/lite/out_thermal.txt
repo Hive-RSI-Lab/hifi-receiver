@@ -1,0 +1,59 @@
+== 1. U8 TPA3118D2 Tj = Tair + P_chip x theta_JA   (limit: 135 C = trip 150 C minus 15 K)
+  U8 idle Ta 45 C, P 0.60 W, 28 C/W own estimate                61.8 C  limit <= 135    margin   54.2 %  PASS  
+  U8 idle Ta 45 C, P 0.60 W, 35 C/W upper                       66.0 C  limit <= 135    margin   51.1 %  PASS  
+  U8 idle Ta 45 C, P 0.60 W, 47.5 C/W hwde check_thermal (pessimistic)    73.5 C  limit <= 135    margin   45.6 %  PASS  
+  U8 1/8 P 4 ohm Ta 45 C, P 1.75 W, 28 C/W own estimate         94.0 C  limit <= 135    margin   30.4 %  PASS  
+  U8 1/8 P 4 ohm Ta 45 C, P 1.75 W, 35 C/W upper               106.2 C  limit <= 135    margin   21.3 %  PASS  
+  U8 1/8 P 4 ohm Ta 45 C, P 1.75 W, 47.5 C/W hwde check_thermal (pessimistic)   128.1 C  limit <= 135    margin    5.1 %  PASS  
+  U8 1/8 P 4 ohm Ta 52 C, P 1.75 W, 28 C/W own estimate        101.0 C  limit <= 135    margin   25.2 %  PASS  
+  U8 1/8 P 4 ohm Ta 52 C, P 1.75 W, 35 C/W upper               113.2 C  limit <= 135    margin   16.1 %  PASS  
+  U8 1/8 P 4 ohm Ta 52 C, P 1.75 W, 47.5 C/W hwde check_thermal (pessimistic)   135.1 C  limit <= 135    margin   -0.1 %  FAIL  
+  U8 1/8 P 8 ohm Ta 52 C, P 0.85 W, 28 C/W own estimate         75.8 C  limit <= 135    margin   43.9 %  PASS  
+  U8 1/8 P 8 ohm Ta 52 C, P 0.85 W, 35 C/W upper                81.8 C  limit <= 135    margin   39.4 %  PASS  
+  U8 1/8 P 8 ohm Ta 52 C, P 0.85 W, 47.5 C/W hwde check_thermal (pessimistic)    92.4 C  limit <= 135    margin   31.6 %  PASS  
+  U8 1/8 P 4 ohm Ta 62 C, P 1.75 W, 28 C/W own estimate        111.0 C  limit <= 135    margin   17.8 %  PASS  
+  U8 1/8 P 4 ohm Ta 62 C, P 1.75 W, 35 C/W upper               123.2 C  limit <= 135    margin    8.7 %  PASS  
+  U8 1/8 P 4 ohm Ta 62 C, P 1.75 W, 47.5 C/W hwde check_thermal (pessimistic)   145.1 C  limit <= 135    margin   -7.5 %  FAIL  
+  U8 full 4 ohm 1% (rated) Ta 45 C, P 9.00 W, 28 C/W own estimate   297.0 C  limit <= 135    margin -120.0 %  FAIL(known)  
+  U8 full 4 ohm 1% (rated) Ta 45 C, P 9.00 W, 35 C/W upper     360.0 C  limit <= 135    margin -166.7 %  FAIL(known)  
+  U8 full 4 ohm 1% (rated) Ta 45 C, P 9.00 W, 47.5 C/W hwde check_thermal (pessimistic)   472.5 C  limit <= 135    margin -250.0 %  FAIL(known)  
+  U8 full 8 ohm 1% (rated) Ta 45 C, P 4.20 W, 28 C/W own estimate   162.6 C  limit <= 135    margin  -20.4 %  FAIL(known)  
+  U8 full 8 ohm 1% (rated) Ta 45 C, P 4.20 W, 35 C/W upper     192.0 C  limit <= 135    margin  -42.2 %  FAIL(known)  
+  U8 full 8 ohm 1% (rated) Ta 45 C, P 4.20 W, 47.5 C/W hwde check_thermal (pessimistic)   244.5 C  limit <= 135    margin  -81.1 %  FAIL(known)  
+  max sustainable chip loss at 52 C, 28 C/W, Tj 135 C: 2.96 W ; at 47.5 C/W: 1.75 W
+
+== 2. Regulators (loss from efficiency estimate; theta_JA from datasheet notes via review-2; limit 125 C operating)
+  U2 TPS54302 typ: 0.12 W x 118.9 C/W Ta 52                     65.8 C  limit <= 125    margin   47.4 %  PASS  
+  U3 SY8089 typ: 0.05 W x 120 C/W Ta 52                         58.3 C  limit <= 125    margin   53.4 %  PASS  
+  U4 LP5907 typ: 0.051 W x 193.4 C/W Ta 52                      61.8 C  limit <= 125    margin   50.5 %  PASS  
+  U2 TPS54302 typ: 0.12 W x 118.9 C/W Ta 62                     75.8 C  limit <= 125    margin   39.4 %  PASS  
+  U3 SY8089 typ: 0.05 W x 120 C/W Ta 62                         68.3 C  limit <= 125    margin   45.4 %  PASS  
+  U4 LP5907 typ: 0.051 W x 193.4 C/W Ta 62                      71.8 C  limit <= 125    margin   42.5 %  PASS  
+  U2 TPS54302 max (all peaks coincident): 0.39 W x 118.9 C/W Ta 52    98.5 C  limit <= 125    margin   21.2 %  PASS  
+  U3 SY8089 max (all peaks coincident): 0.20 W x 120 C/W Ta 52    76.1 C  limit <= 125    margin   39.1 %  PASS  
+  U4 LP5907 max (all peaks coincident): 0.081 W x 193.4 C/W Ta 52    67.8 C  limit <= 125    margin   45.8 %  PASS  
+  U2 TPS54302 max (all peaks coincident): 0.39 W x 118.9 C/W Ta 62   108.5 C  limit <= 125    margin   13.2 %  PASS  
+  U3 SY8089 max (all peaks coincident): 0.20 W x 120 C/W Ta 62    86.1 C  limit <= 125    margin   31.1 %  PASS  
+  U4 LP5907 max (all peaks coincident): 0.081 W x 193.4 C/W Ta 62    77.8 C  limit <= 125    margin   37.8 %  PASS  
+
+== 3. Q1 AO4485 I2R (RDS(on) 12.5 mohm max at 10 V/25 C from LCSC C5125949, x1.3 hot; Vgs -13.6 V; ~70 C/W drain copper, estimate)
+  Q1 1/8 P 4 ohm: 0.6 A, 6 mW, Ta 52                            52.4 C  limit <= 150    margin   65.1 %  PASS  
+  Q1 1/8 P 4 ohm: 0.6 A, 6 mW, Ta 62                            62.4 C  limit <= 150    margin   58.4 %  PASS  
+  Q1 full 4 ohm 1%: 4.4 A, 315 mW, Ta 52                        74.0 C  limit <= 150    margin   50.7 %  PASS  
+  Q1 full 4 ohm 1%: 4.4 A, 315 mW, Ta 62                        84.0 C  limit <= 150    margin   44.0 %  PASS  
+
+== 4. Inductors: DCR x Irms^2 plus core-loss ESTIMATE (no vendor core-loss data); rise from rated-dT (40 K at Irms rating) thermal resistance; limit 125 C
+  L1-L4 XR0850 10 uH (BD mode, 4 ohm) 1/8 P: DCR 36 mW + core 50 mW (est), Ta 52    54.7 C  limit <= 125    margin   56.2 %  PASS  
+  L1-L4 XR0850 10 uH (BD mode, 4 ohm) 1/8 P: DCR 36 mW + core 50 mW (est), Ta 62    64.7 C  limit <= 125    margin   48.2 %  PASS  
+  L1-L4 XR0850 10 uH (BD mode, 4 ohm) full: DCR 285 mW + core 100 mW (est), Ta 52    64.1 C  limit <= 125    margin   48.7 %  PASS  
+  L1-L4 XR0850 10 uH (BD mode, 4 ohm) full: DCR 285 mW + core 100 mW (est), Ta 62    74.1 C  limit <= 125    margin   40.7 %  PASS  
+  L5 SWPA6045S 10 uH (U2, 20 V) max load: DCR 18 mW + core 20 mW (est), Ta 52    57.3 C  limit <= 125    margin   54.1 %  PASS  
+  L5 SWPA6045S 10 uH (U2, 20 V) max load: DCR 18 mW + core 20 mW (est), Ta 62    67.3 C  limit <= 125    margin   46.1 %  PASS  
+  L6 VLCF4020 2.2 uH (U3) max load: DCR 13 mW + core 20 mW (est), Ta 52    61.6 C  limit <= 125    margin   50.7 %  PASS  
+  L6 VLCF4020 2.2 uH (U3) max load: DCR 13 mW + core 20 mW (est), Ta 62    71.6 C  limit <= 125    margin   42.7 %  PASS  
+  Core loss figures are estimates (ferrite 8x8 at ~400 kHz BD-mode ripple); mark these rows as estimates.
+
+== SUMMARY
+FAILS: ['U8 1/8 P 4 ohm Ta 52 C, P 1.75 W, 47.5 C/W hwde check_thermal (pessimistic): 135.1 vs 135', 'U8 1/8 P 4 ohm Ta 62 C, P 1.75 W, 47.5 C/W hwde check_thermal (pessimistic): 145.1 vs 135']
+KNOWN-LIMIT (expected, governed): ['U8 full 4 ohm 1% (rated) Ta 45 C, P 9.00 W, 28 C/W own estimate: 297 vs 135', 'U8 full 4 ohm 1% (rated) Ta 45 C, P 9.00 W, 35 C/W upper: 360 vs 135', 'U8 full 4 ohm 1% (rated) Ta 45 C, P 9.00 W, 47.5 C/W hwde check_thermal (pessimistic): 472.5 vs 135', 'U8 full 8 ohm 1% (rated) Ta 45 C, P 4.20 W, 28 C/W own estimate: 162.6 vs 135', 'U8 full 8 ohm 1% (rated) Ta 45 C, P 4.20 W, 35 C/W upper: 192 vs 135', 'U8 full 8 ohm 1% (rated) Ta 45 C, P 4.20 W, 47.5 C/W hwde check_thermal (pessimistic): 244.5 vs 135']
+THIN (<15 %): ['U8 1/8 P 4 ohm Ta 45 C, P 1.75 W, 47.5 C/W hwde check_thermal (pessimistic): 128.1 vs 135 (5.1 %)', 'U8 1/8 P 4 ohm Ta 62 C, P 1.75 W, 35 C/W upper: 123.2 vs 135 (8.7 %)', 'U2 TPS54302 max (all peaks coincident): 0.39 W x 118.9 C/W Ta 62: 108.5 vs 125 (13.2 %)']

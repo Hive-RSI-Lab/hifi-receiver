@@ -1,0 +1,10 @@
+PASS same part both ends (aiee:FPC-SMD_20P-P0.50_XUNPU_FPC-05F-20PH20), rot 0.0/0.0, F.Cu/F.Cu
+PASS pin N = pin N for 22 pads 
+  reversed cable (pin N -> 21-N): rail pins land on [('4', 'GND', 'ENC_B'), ('6', 'GND', 'IR_OUT'), ('10', 'LCD_BL', 'GND'), ('11', 'GND', 'LCD_BL_PWM'), ('15', 'IR_IN', 'GND'), ('17', 'ENC_B', 'GND')]
+PASS J3 (core): mouth (tab side) toward max-y edge, centre 3.50 mm from it
+PASS J1 (front): mouth (tab side) toward max-y edge, centre 4.40 mm from it
+PASS pin 1 box x: core J3 15.25, front J1 15.25 (FB_X 6.0); conductor order kept by x-axis bends
+PASS cable enters J1 running up (0, 0, 1)
+  at J1 the J3-end contact face points (0, -1, 0); J1 needs (0, 1, 0)
+PASS far-end contacts must be on the opposite face: type B (opposite-side) cable, as enclosure/README.md says
+PASS

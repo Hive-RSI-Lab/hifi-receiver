@@ -1,0 +1,33 @@
+J1 pins: +3V3 ['19', '2']  +5V ['18', '3']  GND ['1', '11', '20', '21', '22', '4', '6'] (review-5 text says 5 GND; netlist has 7 )
+backlight series R13||R17||R18 = [120.0, 120.0, 120.0] -> 40.0 ohm; LED R14/R15/R16 = 1k/680R/680R; R10 100R; Q1 AO3400A; R11 100k; R12 100R
+J1 pad pitch from pcb: median 0.500 mm (22 pads parsed)
+PASS J1 pitch is 0.5 mm: 0 mm vs limit max 0.01 mm, margin 100 % 
+backlight: 38.7 mA (4.75 V, Vf 3.2) .. 63.8 mA (5.25 V, Vf 2.7)  [review-5: 39..64 mA]; module max 80 mA [R5]
+PASS backlight current vs module 80 mA: 63.75 mA vs limit max 80 mA, margin 20 % 
+PASS R13/17/18 dissipation (0603 100 mW): 54.19 mW vs limit max 100 mW, margin 46 % 
+RGB LED mA each (5.25 V, low Vf): {'R14': 3.45, 'R15': 4.19, 'R16': 4.19} one=4.2 all=11.8
+PASS TCA9535 sink per pin vs 25 mA [DS]: 4.191 mA vs limit max 25 mA, margin 83 % 
+PASS TCA9535 total LED+port vs 200 mA [DS]: 11.83 mA vs limit max 200 mA, margin 94 % 
+IR supply: 1.2 mA through R10 100R -> 3.180 V at U2 pin 4 (IRM needs >= 2.7 V [DS])
+PASS U2 IR supply after R10 vs 2.7 V: 3.18 V vs limit min 2.7 V, margin 18 % 
++5V load 75.6 mA (backlight 63.8 + LED all-on 11.8); +3V3 load 14.4 mA (IR 1.2, pull-ups 3.1, U1 0.1, LCD 10.0 [A])
+-- cable 50 mm: conductor 82 mohm, contact 60 mohm x2 -> 202 mohm per conductor
+   per contact: +5V 37.8 mA, +3V3 7.2 mA, GND 12.8 mA; drop +5V 7.63 mV, +3V3 1.45 mV, GND rise 2.59 mV
+-- cable 50 mm: conductor 82 mohm, contact 100 mohm x2 -> 282 mohm per conductor
+   per contact: +5V 37.8 mA, +3V3 7.2 mA, GND 12.8 mA; drop +5V 10.65 mV, +3V3 2.02 mV, GND rise 3.62 mV
+PASS per-contact current (50 mm) vs 0.5 A [R5 XUNPU]: 0.03779 A vs limit max 0.5 A, margin 92 % 
+PASS +5V supply sag incl. GND rise (50 mm) vs 100 mV [A: 2 % of 5 V]: 0.01428 V vs limit max 0.1 V, margin 86 % 
+PASS +3V3 sag incl. GND rise (50 mm) vs 66 mV [A: 2 % of 3.3 V]: 0.005646 V vs limit max 0.066 V, margin 91 % 
+   backlight current change from +5V sag: 0.36 mA (0.56 % of 64 mA)
+-- cable 150 mm: conductor 246 mohm, contact 100 mohm x2 -> 446 mohm per conductor
+   per contact: +5V 37.8 mA, +3V3 7.2 mA, GND 12.8 mA; drop +5V 16.84 mV, +3V3 3.20 mV, GND rise 5.73 mV
+PASS per-contact current (150 mm) vs 0.5 A [R5 XUNPU]: 0.03779 A vs limit max 0.5 A, margin 92 % 
+PASS +5V supply sag incl. GND rise (150 mm) vs 100 mV [A: 2 % of 5 V]: 0.02257 V vs limit max 0.1 V, margin 77 % 
+PASS +3V3 sag incl. GND rise (150 mm) vs 66 mV [A: 2 % of 3.3 V]: 0.008927 V vs limit max 0.066 V, margin 86 % 
+   backlight current change from +5V sag: 0.56 mA (0.89 % of 64 mA)
+Q1: I 63.8 mA, Rds(on) 48 mohm, Vds 3.1 mV, P 0.195 mW, Tj 60.02 C at Ta 60 C
+PASS Q1 dissipation vs 350 mW [DS SOT-23 ~1.4 W at 25 C; 350 mW derated bound]: 0.1951 mW vs limit max 350 mW, margin 100 % 
+PASS Q1 junction temp vs 150 C: 60.02 C vs limit max 150 C, margin 60 % 
+PASS Q1 gate drive (3.0 V worst) vs 2.5 V Rds(on) spec point [DS]: 3 V vs limit min 2.5 V, margin 20 % 
+PASS Q1 gate pull-down R11 hold-off: gate leak drop: 0.01 V vs limit max 0.5 V, margin 98 % (100 nA leak [A])
+RESULT: PASS
