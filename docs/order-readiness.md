@@ -74,7 +74,7 @@ None found a reason a board would be dead.
 | 1 | No hardware power limit (PLIMIT tied to GVDD); clipping draws 80-88 W against a 60 W contract | **Explained.** By design: the firmware governor plus the volume cap hold it. Bench: the 9.2 power sweep. A PLIMIT divider is a next-spin option. |
 | 2 | D1 SMBJ22A clamps above 30 V parts | **Known**, POWER-9 / R3-POWER-6. Compliant sources never reach it. |
 | 3 | Q1 turns off slowly (τ 0.3-0.47 s) | **Explained, no change.** `board_lite.c` drives SDZ low before PVDD_EN, so the amp is in shutdown while Q1 turns off. |
-| 4 | SDZ comment says 100k, R54 is 10k | **To fix** (comment only), in the docs PR from thread hifi-docs. Not landed yet. |
+| 4 | SDZ comment says 100k, R54 is 10k | **Fixed** (comment only), PR 171. |
 
 ### core (a0cd7)
 | # | Finding | Disposition |
@@ -84,7 +84,7 @@ None found a reason a board would be dead.
 | 3 | OV cut at 31-35 V | **Known**, POWER-8 (justified). Slow cut-off for gross faults. |
 | 4 | Q1 partly on if PVDD_EN rises on a 5 V contract | **Explained.** Q2 gates PVDD_EN on PG (POWER-6), and firmware raises it only after the contract. Bench: core.md 3.5 and 5.1. |
 | 5 | ES7243E MCLK tied to GND | **Handled** by firmware (reg 0x02 = 0x80, 64 fs). |
-| 6 | `architecture/blocks.md` stale (TCA9555 at 0x20); the board has a TCA9539 at 0x74-0x77 | **To fix** in the docs PR from thread hifi-docs (not landed yet). `docs/bringup/core.md` already flags it. |
+| 6 | `architecture/blocks.md` stale (TCA9555 at 0x20); the board has a TCA9539 at 0x74 | **Fixed**, PR 171 (with CH340B, Y1 49.152 MHz and the banana sockets). |
 | 7 | Bottom-side CPL rotations | **Covered.** cpl_verify passes; ORDERING.md tells the assembler to check the bottom preview. |
 | 8 | RBIAS 12k not 12.1k | **Accepted**, cosmetic (review-3 pass). |
 
@@ -143,7 +143,7 @@ None found a reason a board would be dead.
 | Sims | done (PR 164); U8 PVDD spike has a bench gate |
 | Firmware | builds, boots in QEMU; `hifi i2c` and `controls` in state (PR 169) |
 | Bring-up plan | on main |
-| Review | 4 findings: 3 explained or known; 1 comment fix pending (docs PR) |
+| Review | 4 findings, all fixed, explained or known |
 | Not proven until the bench | U8 PVDD peak (9.9), amp thermal (waiver), power draw vs governor, no Zobel |
 | Needs the person | the order (money) |
 
@@ -156,7 +156,7 @@ None found a reason a board would be dead.
 | Sims | done; Q1 153 C stacked-corner accepted; PVDD and ETH_CLK bench gates |
 | Firmware | builds, boots in QEMU; I2S drive CAP_1 (PR 168); `hifi i2c` (PR 169) |
 | Bring-up plan | on main, plus bench stage 1 (PR 166) |
-| Review | 8 findings: 7 covered, known or explained; 1 doc fix pending (blocks.md) |
+| Review | 8 findings, all fixed, covered, known or explained |
 | Decisions | C53/C55: no change (PR 160) |
 | Not proven until the bench | PVDD spike (6.8), ETH_CLK (6.9), amp cooling and governor, Q1 soft start |
 | Needs the person | the order (money); **the TPA3220 pre-buy** (JLC has none; `fab/prebuy.csv`, ORDERING.md) |
