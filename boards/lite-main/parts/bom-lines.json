@@ -976,5 +976,11 @@
   "lcsc": "C110694",
   "value": "PESDNC2FD5VB",
   "role": "USB_DM ESD clamp"
+ },
+ {
+  "ref": "J8",
+  "lcsc": "C2883765",
+  "value": "ESP32 spare header",
+  "role": "spare-use ESP32 header (UART0, GPIO, I2C, 3.3 V)"
  }
 ]

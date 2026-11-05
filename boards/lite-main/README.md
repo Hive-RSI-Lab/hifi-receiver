@@ -68,9 +68,11 @@ ESP32 pin map:
 | 34 | VBUS/11 |
 | 39 | PVDD/11 (firmware confirms the switch closed) |
 | 36 | vol- |
-| 1/3 | UART0 |
+| 1/3 | UART0, also on spare header J8 |
+| 5, 15 | unused by the audio side, on spare header J8 (boot straps) |
 
-The full table is in [`architecture/blocks.md`](architecture/blocks.md).
+The full table is in [`architecture/blocks.md`](architecture/blocks.md). Spare header J8:
+[`docs/boards/lite-header.md`](../../docs/boards/lite-header.md).
 
 ## First-spin review (review-2, 2026-10-29)
 
