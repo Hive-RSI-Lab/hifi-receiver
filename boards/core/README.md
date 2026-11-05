@@ -237,6 +237,9 @@ From this directory (`boards/core`), with `H="sh $HIVE_MODULES/hive-hwde/bin/hwd
    `fab_export`, and `bom_cpl` run once with `parts/parts.json` (Plus) and
    once with `parts/parts-ultra.json` into `fab/ultra` (Ultra).
 
+The full GND stitching pass (272 vias) went on the routed board afterwards:
+[`docs/boards/core-stitch.md`](../../docs/boards/core-stitch.md).
+
 ### C43 to the LAN8720A's VDD1A
 
 C43 is the 100 nF on U9 pin 19. It sat 3.8 mm from the pin, but its copper reached the pin only
