@@ -27,11 +27,11 @@
 | screw_H4 | pass | axis_blocked_mm3=0, peg=False |
 | hole_H3 | pass | supported=1.0 |
 | screw_H3 | pass | axis_blocked_mm3=0, peg=False |
-| bed_base | pass | size_mm=[124.0, 96.0, 37.6], bed_mm=[220.0, 220.0, 250.0] |
-| bed_btn_SW1 | pass | size_mm=[6.2, 6.2, 30.4], bed_mm=[220.0, 220.0, 250.0] |
-| bed_btn_SW2 | pass | size_mm=[6.2, 6.2, 30.4], bed_mm=[220.0, 220.0, 250.0] |
-| bed_btn_SW3 | pass | size_mm=[6.2, 6.2, 30.4], bed_mm=[220.0, 220.0, 250.0] |
-| bed_lid | pass | size_mm=[124.0, 96.0, 31.0], bed_mm=[220.0, 220.0, 250.0] |
+| bed_base | pass | size_mm=[124.0, 96.0, 37.6], bed_mm=[180, 180, 180] |
+| bed_btn_SW1 | pass | size_mm=[6.2, 6.2, 30.4], bed_mm=[180, 180, 180] |
+| bed_btn_SW2 | pass | size_mm=[6.2, 6.2, 30.4], bed_mm=[180, 180, 180] |
+| bed_btn_SW3 | pass | size_mm=[6.2, 6.2, 30.4], bed_mm=[180, 180, 180] |
+| bed_lid | pass | size_mm=[124.0, 96.0, 31.0], bed_mm=[180, 180, 180] |
 | overhang_base | pass | steep_mm2=0, faces=[], max_deg=45.0 |
 | bridge_base | pass | flat_faces=16, worst_bridge_mm=12.01, worst_ledge_mm=0.11, max_bridge_mm=15.0, max_ledge_mm=1.0, unsupported=[] |
 | wall_base | pass | min_wall_mm=0.8, thin=[] |
@@ -60,8 +60,8 @@
 
 ## Material
 
-- base: 57.1 cm3, 72.5 g PETG if solid
+- base: 56.0 cm3, 71.2 g PETG if solid
 - btn_SW1: 0.3 cm3, 0.4 g PETG if solid
 - btn_SW2: 0.3 cm3, 0.4 g PETG if solid
 - btn_SW3: 0.3 cm3, 0.4 g PETG if solid
-- lid: 29.3 cm3, 37.2 g PETG if solid
+- lid: 29.2 cm3, 37.1 g PETG if solid
