@@ -286,12 +286,12 @@ ESP = {
     "14": "NC",           # GPIO12 (MTDI strap: internal pull-down = 3.3 V flash)
     "16": "BTN_VOLUP",    # GPIO13
     "17": "NC", "18": "NC", "19": "NC", "20": "NC", "21": "NC", "22": "NC",  # flash
-    "23": "NC",           # GPIO15
+    "23": "GPIO15",       # GPIO15
     "24": "NC",           # GPIO2
     "25": "I2S_MCLK",     # GPIO0 (boot strap, MCLK out)
     "26": "PD_PG",        # GPIO4
     "27": "NC", "28": "NC",  # GPIO16/17: PSRAM
-    "29": "NC",           # GPIO5
+    "29": "GPIO5",        # GPIO5
     "30": "PVDD_EN",      # GPIO18
     "31": "BTN_PLAY",     # GPIO19
     "32": "NC",
@@ -497,6 +497,16 @@ for ref, net in (("D3", "LINEIN_L"), ("D4", "LINEIN_R"), ("D5", "SUB_L"),
                  ("D6", "SUB_R"), ("D7", "USB_DP"), ("D8", "USB_DM")):
     ic(B_IO, ref, "C110694", "PESDNC2FD5VB", {"1": net, "2": "GND"},
        role=f"{net} ESD clamp")
+
+# ---- Spare-use header (docs/boards/lite-header.md) ----------------------------
+# Eight SMD pins JLC fits, so the board stays useful as an ESP32 dev board if
+# the audio side doesn't work: 3.3 V, GND, the I2C bus, UART0 and the two spare
+# GPIOs that route cleanly. GPIO5 and GPIO15 are boot straps and UART0 shares
+# the CH340B, so what's wired here must respect both (silk and doc say how).
+ic(B_MCU, "J8", "C2883765", "ESP32 spare header",
+   {"1": "U0TXD", "2": "GND", "3": "U0RXD", "4": "+3V3",
+    "5": "GPIO5", "6": "I2C_SDA", "7": "GPIO15", "8": "I2C_SCL"},
+   role="spare-use ESP32 header (UART0, GPIO, I2C, 3.3 V)")
 
 if __name__ == "__main__":
     out = sheet.save(WS / "kicad")

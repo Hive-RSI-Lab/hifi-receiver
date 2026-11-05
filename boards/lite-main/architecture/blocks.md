@@ -41,9 +41,10 @@ existing board profile applies.
 | Button vol+ | 13 | 10k pull-up |
 | Button play/source | 19 | 10k pull-up |
 | Status LED | 22 | 1k to the LED |
-| UART0 TX/RX | 1/3 | CH340C |
+| UART0 TX/RX | 1/3 | CH340C; also on spare header J8 |
 | PVDD enable | 18 | 100k pull-down |
-| Not used | 2, 5, 12, 15 | 12 left floating: its internal pull-down keeps the flash at 3.3 V |
+| Spare header J8 | 5, 15 | Nothing else on them; boot straps, high at reset (`docs/boards/lite-header.md`) |
+| Not used | 2, 12 | 12 left floating: its internal pull-down keeps the flash at 3.3 V |
 
 ## Power tree
 

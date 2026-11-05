@@ -73,3 +73,5 @@ was 0.30 mm. Plus's and Ultra's holes also match their sockets (J20 18.413 again
   preview as usual; `cpl_verify` passes on the new file (offset 0.0 mm against the LCSC
   model for both). The zip also gains the IPC netlist (`lite-main.ipc`), and `prebuy.csv` plans 10 boards (it
   was 5), the build size used in the stock check.
+- Spare header J8 and 5 more GND stitching vias were added after this round (2026-11-05):
+  [`lite-header.md`](lite-header.md).

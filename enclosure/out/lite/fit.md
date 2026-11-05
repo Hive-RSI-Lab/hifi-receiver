@@ -53,6 +53,7 @@
 
 - D2: open above
 - U9: under lid
+- J8: under lid
 - SW3: under btn_SW3
 - SW2: under btn_SW2
 - SW1: under btn_SW1

@@ -2,7 +2,7 @@
  "facts": {
   "C1/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
    "source": "EasyEDA/LCSC footprint model of C15849",
@@ -12,7 +12,7 @@
   },
   "C1/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C15849",
    "source": "parts.json attributes of C15849",
@@ -22,7 +22,7 @@
   },
   "C10/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
    "source": "EasyEDA/LCSC footprint model of C19702",
@@ -32,7 +32,7 @@
   },
   "C10/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C19702",
    "source": "parts.json attributes of C19702",
@@ -42,7 +42,7 @@
   },
   "C11/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -52,7 +52,7 @@
   },
   "C11/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "parts.json attributes of C14663",
@@ -62,7 +62,7 @@
   },
   "C110694/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:30+00:00",
    "kind": "lifecycle",
    "lcsc": "C110694",
    "refs": [
@@ -80,7 +80,7 @@
   },
   "C110694/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:30+00:00",
    "kind": "part_match",
    "lcsc": "C110694",
    "refs": [
@@ -98,7 +98,7 @@
   },
   "C110694/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:30+00:00",
    "kind": "stock",
    "lcsc": "C110694",
    "refs": [
@@ -112,11 +112,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C110694",
-   "value": "JLC can sell 4088762, build needs 60 (JLC lists 4093953, LCSC 4084200)"
+   "value": "JLC can sell 4083920, build needs 60 (JLC lists 4089018, LCSC 4084100)"
   },
   "C12/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C45783",
    "source": "EasyEDA/LCSC footprint model of C45783",
@@ -126,7 +126,7 @@
   },
   "C12/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C45783",
    "source": "parts.json attributes of C45783",
@@ -136,7 +136,7 @@
   },
   "C13/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
    "source": "EasyEDA/LCSC footprint model of C19702",
@@ -146,7 +146,7 @@
   },
   "C13/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C19702",
    "source": "parts.json attributes of C19702",
@@ -156,7 +156,7 @@
   },
   "C13585/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "lifecycle",
    "lcsc": "C13585",
    "refs": [
@@ -169,7 +169,7 @@
   },
   "C13585/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "part_match",
    "lcsc": "C13585",
    "refs": [
@@ -182,7 +182,7 @@
   },
   "C13585/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "stock",
    "lcsc": "C13585",
    "refs": [
@@ -191,11 +191,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C13585",
-   "value": "JLC can sell 3113514, build needs 10 (JLC lists 4016102, LCSC 675100)"
+   "value": "JLC can sell 2982760, build needs 10 (JLC lists 3897934, LCSC 581980)"
   },
   "C14/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C1653",
    "source": "EasyEDA/LCSC footprint model of C1653",
@@ -205,7 +205,7 @@
   },
   "C14/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C1653",
    "source": "",
@@ -215,7 +215,7 @@
   },
   "C14663/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "lifecycle",
    "lcsc": "C14663",
    "refs": [
@@ -245,7 +245,7 @@
   },
   "C14663/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "part_match",
    "lcsc": "C14663",
    "refs": [
@@ -275,7 +275,7 @@
   },
   "C14663/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "stock",
    "lcsc": "C14663",
    "refs": [
@@ -301,11 +301,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C14663",
-   "value": "JLC can sell 27227445, build needs 180 (JLC lists 37559973, LCSC 0)"
+   "value": "JLC can sell 18345768, build needs 180 (JLC lists 36144620, LCSC 8350)"
   },
   "C14858/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "lifecycle",
    "lcsc": "C14858",
    "refs": [
@@ -319,7 +319,7 @@
   },
   "C14858/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "part_match",
    "lcsc": "C14858",
    "refs": [
@@ -333,7 +333,7 @@
   },
   "C14858/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "stock",
    "lcsc": "C14858",
    "refs": [
@@ -343,11 +343,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C14858",
-   "value": "JLC can sell 3520124, build needs 20 (JLC lists 4369704, LCSC 1082150)"
+   "value": "JLC can sell 3364011, build needs 20 (JLC lists 4215784, LCSC 1059800)"
   },
   "C15/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
    "source": "EasyEDA/LCSC footprint model of C15849",
@@ -357,7 +357,7 @@
   },
   "C15/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C15849",
    "source": "parts.json attributes of C15849",
@@ -367,7 +367,7 @@
   },
   "C151920/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:30+00:00",
    "kind": "lifecycle",
    "lcsc": "C151920",
    "refs": [
@@ -380,7 +380,7 @@
   },
   "C151920/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:30+00:00",
    "kind": "part_match",
    "lcsc": "C151920",
    "refs": [
@@ -393,7 +393,7 @@
   },
   "C151920/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:30+00:00",
    "kind": "stock",
    "lcsc": "C151920",
    "refs": [
@@ -402,11 +402,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C151920",
-   "value": "JLC can sell 7885, build needs 10 (JLC lists 8215, LCSC 8210)"
+   "value": "JLC can sell 7861, build needs 10 (JLC lists 8186, LCSC 8180)"
   },
   "C15849/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "lifecycle",
    "lcsc": "C15849",
    "refs": [
@@ -431,7 +431,7 @@
   },
   "C15849/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "part_match",
    "lcsc": "C15849",
    "refs": [
@@ -456,7 +456,7 @@
   },
   "C15849/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "stock",
    "lcsc": "C15849",
    "refs": [
@@ -477,11 +477,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C15849",
-   "value": "JLC can sell 9073828, build needs 130 (JLC lists 12124385, LCSC 0)"
+   "value": "JLC can sell 8292304, build needs 130 (JLC lists 11484378, LCSC 436100)"
   },
   "C1588/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "lifecycle",
    "lcsc": "C1588",
    "refs": [
@@ -495,7 +495,7 @@
   },
   "C1588/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "part_match",
    "lcsc": "C1588",
    "refs": [
@@ -509,7 +509,7 @@
   },
   "C1588/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "stock",
    "lcsc": "C1588",
    "refs": [
@@ -519,11 +519,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C1588",
-   "value": "JLC can sell 4311352, build needs 20 (JLC lists 5601337, LCSC 635800)"
+   "value": "JLC can sell 4194819, build needs 20 (JLC lists 5477037, LCSC 605550)"
   },
   "C16/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
    "source": "EasyEDA/LCSC footprint model of C15849",
@@ -533,7 +533,7 @@
   },
   "C16/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C15849",
    "source": "parts.json attributes of C15849",
@@ -543,7 +543,7 @@
   },
   "C1620/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "lifecycle",
    "lcsc": "C1620",
    "refs": [
@@ -557,7 +557,7 @@
   },
   "C1620/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "part_match",
    "lcsc": "C1620",
    "refs": [
@@ -571,7 +571,7 @@
   },
   "C1620/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "stock",
    "lcsc": "C1620",
    "refs": [
@@ -581,11 +581,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C1620",
-   "value": "JLC can sell 545875, build needs 20 (JLC lists 703771, LCSC 131200)"
+   "value": "JLC can sell 530191, build needs 20 (JLC lists 688152, LCSC 110800)"
   },
   "C1622/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "lifecycle",
    "lcsc": "C1622",
    "refs": [
@@ -598,7 +598,7 @@
   },
   "C1622/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "part_match",
    "lcsc": "C1622",
    "refs": [
@@ -611,7 +611,7 @@
   },
   "C1622/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "stock",
    "lcsc": "C1622",
    "refs": [
@@ -620,11 +620,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C1622",
-   "value": "JLC can sell 1748321, build needs 10 (JLC lists 2062085, LCSC 819500)"
+   "value": "JLC can sell 1716519, build needs 10 (JLC lists 2035381, LCSC 830000)"
   },
   "C1653/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "lifecycle",
    "lcsc": "C1653",
    "refs": [
@@ -637,7 +637,7 @@
   },
   "C1653/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "part_match",
    "lcsc": "C1653",
    "refs": [
@@ -650,7 +650,7 @@
   },
   "C1653/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "stock",
    "lcsc": "C1653",
    "refs": [
@@ -659,11 +659,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C1653",
-   "value": "JLC can sell 2166216, build needs 10 (JLC lists 2655054, LCSC 811650)"
+   "value": "JLC can sell 2095996, build needs 10 (JLC lists 2585375, LCSC 788400)"
   },
   "C165948/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:30+00:00",
    "kind": "lifecycle",
    "lcsc": "C165948",
    "refs": [
@@ -676,7 +676,7 @@
   },
   "C165948/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:30+00:00",
    "kind": "part_match",
    "lcsc": "C165948",
    "refs": [
@@ -689,7 +689,7 @@
   },
   "C165948/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:30+00:00",
    "kind": "stock",
    "lcsc": "C165948",
    "refs": [
@@ -698,11 +698,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C165948",
-   "value": "JLC can sell 149943, build needs 10 (JLC lists 162645, LCSC 147430)"
+   "value": "JLC can sell 137822, build needs 10 (JLC lists 150524, LCSC 140135)"
   },
   "C1671/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "lifecycle",
    "lcsc": "C1671",
    "refs": [
@@ -715,7 +715,7 @@
   },
   "C1671/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "part_match",
    "lcsc": "C1671",
    "refs": [
@@ -728,7 +728,7 @@
   },
   "C1671/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "stock",
    "lcsc": "C1671",
    "refs": [
@@ -737,11 +737,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C1671",
-   "value": "JLC can sell 824534, build needs 10 (JLC lists 976063, LCSC 399100)"
+   "value": "JLC can sell 797404, build needs 10 (JLC lists 948271, LCSC 389100)"
   },
   "C17/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -751,7 +751,7 @@
   },
   "C17/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "",
@@ -761,7 +761,7 @@
   },
   "C18/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -771,7 +771,7 @@
   },
   "C18/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "",
@@ -781,7 +781,7 @@
   },
   "C1848/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "lifecycle",
    "lcsc": "C1848",
    "refs": [
@@ -797,7 +797,7 @@
   },
   "C1848/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "part_match",
    "lcsc": "C1848",
    "refs": [
@@ -813,7 +813,7 @@
   },
   "C1848/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "stock",
    "lcsc": "C1848",
    "refs": [
@@ -825,11 +825,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C1848",
-   "value": "JLC can sell 573407, build needs 40 (JLC lists 731578, LCSC 114520)"
+   "value": "JLC can sell 550565, build needs 40 (JLC lists 706416, LCSC 145820)"
   },
   "C19/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C19666",
    "source": "EasyEDA/LCSC footprint model of C19666",
@@ -839,7 +839,7 @@
   },
   "C19/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C19666",
    "source": "",
@@ -849,7 +849,7 @@
   },
   "C19666/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "lifecycle",
    "lcsc": "C19666",
    "refs": [
@@ -864,7 +864,7 @@
   },
   "C19666/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "part_match",
    "lcsc": "C19666",
    "refs": [
@@ -879,7 +879,7 @@
   },
   "C19666/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "stock",
    "lcsc": "C19666",
    "refs": [
@@ -890,11 +890,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C19666",
-   "value": "JLC can sell 3286508, build needs 30 (JLC lists 4055806, LCSC 1198130)"
+   "value": "JLC can sell 3277177, build needs 30 (JLC lists 4046273, LCSC 1307390)"
   },
   "C19702/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "lifecycle",
    "lcsc": "C19702",
    "refs": [
@@ -914,7 +914,7 @@
   },
   "C19702/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "part_match",
    "lcsc": "C19702",
    "refs": [
@@ -934,7 +934,7 @@
   },
   "C19702/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "stock",
    "lcsc": "C19702",
    "refs": [
@@ -950,11 +950,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C19702",
-   "value": "JLC can sell 8520434, build needs 80 (JLC lists 10949298, LCSC 1652180)"
+   "value": "JLC can sell 7956998, build needs 80 (JLC lists 10362693, LCSC 1470420)"
   },
   "C2/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -964,7 +964,7 @@
   },
   "C2/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "",
@@ -974,7 +974,7 @@
   },
   "C20/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
    "source": "EasyEDA/LCSC footprint model of C19702",
@@ -984,7 +984,7 @@
   },
   "C20/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C19702",
    "source": "parts.json attributes of C19702",
@@ -994,7 +994,7 @@
   },
   "C20526/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "lifecycle",
    "lcsc": "C20526",
    "refs": [
@@ -1011,7 +1011,7 @@
   },
   "C20526/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "part_match",
    "lcsc": "C20526",
    "refs": [
@@ -1028,7 +1028,7 @@
   },
   "C20526/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "stock",
    "lcsc": "C20526",
    "refs": [
@@ -1041,11 +1041,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C20526",
-   "value": "JLC can sell 2715777, build needs 50 (JLC lists 2836992, LCSC 2369900)"
+   "value": "JLC can sell 2621087, build needs 50 (JLC lists 2741018, LCSC 2319850)"
   },
   "C21/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -1055,7 +1055,7 @@
   },
   "C21/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "parts.json attributes of C14663",
@@ -1065,7 +1065,7 @@
   },
   "C21120/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "lifecycle",
    "lcsc": "C21120",
    "refs": [
@@ -1081,7 +1081,7 @@
   },
   "C21120/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "part_match",
    "lcsc": "C21120",
    "refs": [
@@ -1097,7 +1097,7 @@
   },
   "C21120/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "stock",
    "lcsc": "C21120",
    "refs": [
@@ -1109,11 +1109,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C21120",
-   "value": "JLC can sell 753831, build needs 40 (JLC lists 924648, LCSC 268000)"
+   "value": "JLC can sell 738779, build needs 40 (JLC lists 908467, LCSC 252350)"
   },
   "C21189/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "lifecycle",
    "lcsc": "C21189",
    "refs": [
@@ -1127,7 +1127,7 @@
   },
   "C21189/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "part_match",
    "lcsc": "C21189",
    "refs": [
@@ -1141,7 +1141,7 @@
   },
   "C21189/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "stock",
    "lcsc": "C21189",
    "refs": [
@@ -1151,11 +1151,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C21189",
-   "value": "JLC can sell 17523752, build needs 20 (JLC lists 19916072, LCSC 10785800)"
+   "value": "JLC can sell 17145878, build needs 20 (JLC lists 19522316, LCSC 10570500)"
   },
   "C21190/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "lifecycle",
    "lcsc": "C21190",
    "refs": [
@@ -1171,7 +1171,7 @@
   },
   "C21190/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "part_match",
    "lcsc": "C21190",
    "refs": [
@@ -1187,7 +1187,7 @@
   },
   "C21190/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "stock",
    "lcsc": "C21190",
    "refs": [
@@ -1199,11 +1199,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C21190",
-   "value": "JLC can sell 22151087, build needs 40 (JLC lists 28775382, LCSC 3396600)"
+   "value": "JLC can sell 21296104, build needs 40 (JLC lists 27906810, LCSC 2856400)"
   },
   "C22/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
    "source": "EasyEDA/LCSC footprint model of C15849",
@@ -1213,7 +1213,7 @@
   },
   "C22/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C15849",
    "source": "parts.json attributes of C15849",
@@ -1223,7 +1223,7 @@
   },
   "C22775/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "lifecycle",
    "lcsc": "C22775",
    "refs": [
@@ -1236,7 +1236,7 @@
   },
   "C22775/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "part_match",
    "lcsc": "C22775",
    "refs": [
@@ -1249,7 +1249,7 @@
   },
   "C22775/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "stock",
    "lcsc": "C22775",
    "refs": [
@@ -1258,11 +1258,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C22775",
-   "value": "JLC can sell 6462599, build needs 10 (JLC lists 8645152, LCSC 291400)"
+   "value": "JLC can sell 7210598, build needs 10 (JLC lists 9376831, LCSC 1127100)"
   },
   "C22797/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "lifecycle",
    "lcsc": "C22797",
    "refs": [
@@ -1275,7 +1275,7 @@
   },
   "C22797/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "part_match",
    "lcsc": "C22797",
    "refs": [
@@ -1288,7 +1288,7 @@
   },
   "C22797/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "stock",
    "lcsc": "C22797",
    "refs": [
@@ -1297,11 +1297,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C22797",
-   "value": "JLC can sell 348332, build needs 10 (JLC lists 412428, LCSC 163900)"
+   "value": "JLC can sell 311028, build needs 10 (JLC lists 375015, LCSC 135700)"
   },
   "C22807/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "lifecycle",
    "lcsc": "C22807",
    "refs": [
@@ -1314,7 +1314,7 @@
   },
   "C22807/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "part_match",
    "lcsc": "C22807",
    "refs": [
@@ -1327,7 +1327,7 @@
   },
   "C22807/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "stock",
    "lcsc": "C22807",
    "refs": [
@@ -1336,11 +1336,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C22807",
-   "value": "JLC can sell 574882, build needs 10 (JLC lists 711548, LCSC 188100)"
+   "value": "JLC can sell 555349, build needs 10 (JLC lists 692412, LCSC 185300)"
   },
   "C22809/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "lifecycle",
    "lcsc": "C22809",
    "refs": [
@@ -1354,7 +1354,7 @@
   },
   "C22809/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "part_match",
    "lcsc": "C22809",
    "refs": [
@@ -1368,7 +1368,7 @@
   },
   "C22809/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "stock",
    "lcsc": "C22809",
    "refs": [
@@ -1378,11 +1378,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C22809",
-   "value": "JLC can sell 3029352, build needs 20 (JLC lists 3447928, LCSC 1826200)"
+   "value": "JLC can sell 2959200, build needs 20 (JLC lists 3374806, LCSC 1781600)"
   },
   "C2286/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:30+00:00",
    "kind": "lifecycle",
    "lcsc": "C2286",
    "refs": [
@@ -1395,7 +1395,7 @@
   },
   "C2286/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:30+00:00",
    "kind": "part_match",
    "lcsc": "C2286",
    "refs": [
@@ -1408,7 +1408,7 @@
   },
   "C2286/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:30+00:00",
    "kind": "stock",
    "lcsc": "C2286",
    "refs": [
@@ -1417,11 +1417,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C2286",
-   "value": "JLC can sell 6092434, build needs 10 (JLC lists 6770369, LCSC 4239000)"
+   "value": "JLC can sell 6014403, build needs 10 (JLC lists 6685352, LCSC 4206000)"
   },
   "C22961/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "lifecycle",
    "lcsc": "C22961",
    "refs": [
@@ -1434,7 +1434,7 @@
   },
   "C22961/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "part_match",
    "lcsc": "C22961",
    "refs": [
@@ -1447,7 +1447,7 @@
   },
   "C22961/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "stock",
    "lcsc": "C22961",
    "refs": [
@@ -1456,11 +1456,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C22961",
-   "value": "JLC can sell 993766, build needs 10 (JLC lists 1082190, LCSC 752400)"
+   "value": "JLC can sell 964721, build needs 10 (JLC lists 1056587, LCSC 737600)"
   },
   "C23/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -1470,7 +1470,7 @@
   },
   "C23/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "parts.json attributes of C14663",
@@ -1480,7 +1480,7 @@
   },
   "C24/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -1490,7 +1490,7 @@
   },
   "C24/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "parts.json attributes of C14663",
@@ -1500,7 +1500,7 @@
   },
   "C25/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C45783",
    "source": "EasyEDA/LCSC footprint model of C45783",
@@ -1510,7 +1510,7 @@
   },
   "C25/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C45783",
    "source": "parts.json attributes of C45783",
@@ -1520,7 +1520,7 @@
   },
   "C25803/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "lifecycle",
    "lcsc": "C25803",
    "refs": [
@@ -1541,7 +1541,7 @@
   },
   "C25803/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "part_match",
    "lcsc": "C25803",
    "refs": [
@@ -1562,7 +1562,7 @@
   },
   "C25803/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "stock",
    "lcsc": "C25803",
    "refs": [
@@ -1579,11 +1579,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C25803",
-   "value": "JLC can sell 14526235, build needs 90 (JLC lists 16870793, LCSC 7952600)"
+   "value": "JLC can sell 14100303, build needs 90 (JLC lists 16441820, LCSC 7774500)"
   },
   "C25804/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "lifecycle",
    "lcsc": "C25804",
    "refs": [
@@ -1613,7 +1613,7 @@
   },
   "C25804/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "part_match",
    "lcsc": "C25804",
    "refs": [
@@ -1643,7 +1643,7 @@
   },
   "C25804/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "stock",
    "lcsc": "C25804",
    "refs": [
@@ -1669,11 +1669,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C25804",
-   "value": "JLC can sell 34483239, build needs 180 (JLC lists 44806860, LCSC 5483500)"
+   "value": "JLC can sell 33292650, build needs 180 (JLC lists 43587207, LCSC 4900300)"
   },
   "C25808/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "lifecycle",
    "lcsc": "C25808",
    "refs": [
@@ -1687,7 +1687,7 @@
   },
   "C25808/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "part_match",
    "lcsc": "C25808",
    "refs": [
@@ -1701,7 +1701,7 @@
   },
   "C25808/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:12+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "stock",
    "lcsc": "C25808",
    "refs": [
@@ -1711,11 +1711,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C25808",
-   "value": "JLC can sell 1119749, build needs 20 (JLC lists 1221228, LCSC 839800)"
+   "value": "JLC can sell 1101069, build needs 20 (JLC lists 1204683, LCSC 834300)"
   },
   "C25819/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "lifecycle",
    "lcsc": "C25819",
    "refs": [
@@ -1730,7 +1730,7 @@
   },
   "C25819/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "part_match",
    "lcsc": "C25819",
    "refs": [
@@ -1745,7 +1745,7 @@
   },
   "C25819/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "stock",
    "lcsc": "C25819",
    "refs": [
@@ -1756,11 +1756,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C25819",
-   "value": "JLC can sell 2189121, build needs 30 (JLC lists 2867853, LCSC 239700)"
+   "value": "JLC can sell 2431122, build needs 30 (JLC lists 3099806, LCSC 538600)"
   },
   "C26/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C1622",
    "source": "EasyEDA/LCSC footprint model of C1622",
@@ -1770,7 +1770,7 @@
   },
   "C26/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C1622",
    "source": "",
@@ -1780,7 +1780,7 @@
   },
   "C28323/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "lifecycle",
    "lcsc": "C28323",
    "refs": [
@@ -1795,7 +1795,7 @@
   },
   "C28323/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "part_match",
    "lcsc": "C28323",
    "refs": [
@@ -1810,7 +1810,7 @@
   },
   "C28323/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:08+00:00",
+   "checked_at": "2026-11-05T15:52:27+00:00",
    "kind": "stock",
    "lcsc": "C28323",
    "refs": [
@@ -1821,11 +1821,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C28323",
-   "value": "JLC can sell 1747786, build needs 30 (JLC lists 2683962, LCSC 170)"
+   "value": "JLC can sell 2570030, build needs 30 (JLC lists 3508222, LCSC 951920)"
   },
   "C2836441/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "lifecycle",
    "lcsc": "C2836441",
    "refs": [
@@ -1838,7 +1838,7 @@
   },
   "C2836441/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "part_match",
    "lcsc": "C2836441",
    "refs": [
@@ -1851,7 +1851,7 @@
   },
   "C2836441/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "stock",
    "lcsc": "C2836441",
    "refs": [
@@ -1860,7 +1860,46 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C2836441",
-   "value": "JLC can sell 96390, build needs 10 (JLC lists 108360, LCSC 86280)"
+   "value": "JLC can sell 94913, build needs 10 (JLC lists 106703, LCSC 85580)"
+  },
+  "C2883765/lifecycle": {
+   "by": "stock_check",
+   "checked_at": "2026-11-05T15:52:33+00:00",
+   "kind": "lifecycle",
+   "lcsc": "C2883765",
+   "refs": [
+    "J8"
+   ],
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
+   "subject": "C2883765",
+   "value": "JLC sells it"
+  },
+  "C2883765/part_match": {
+   "by": "stock_check",
+   "checked_at": "2026-11-05T15:52:33+00:00",
+   "kind": "part_match",
+   "lcsc": "C2883765",
+   "refs": [
+    "J8"
+   ],
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
+   "subject": "C2883765",
+   "value": "BOM MPN X6511WVS-08H-C60D48R2 vs JLC model X6511WVS-08H-C60D48R2"
+  },
+  "C2883765/stock": {
+   "by": "stock_check",
+   "checked_at": "2026-11-05T15:52:33+00:00",
+   "kind": "stock",
+   "lcsc": "C2883765",
+   "refs": [
+    "J8"
+   ],
+   "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
+   "status": "verified",
+   "subject": "C2883765",
+   "value": "JLC can sell 2693, build needs 10 (JLC lists 2697, LCSC 2685)"
   },
   "C2915641/lifecycle": {
    "by": "stock_check",
@@ -1903,7 +1942,7 @@
   },
   "C2973667/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "lifecycle",
    "lcsc": "C2973667",
    "refs": [
@@ -1916,7 +1955,7 @@
   },
   "C2973667/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "part_match",
    "lcsc": "C2973667",
    "refs": [
@@ -1929,7 +1968,7 @@
   },
   "C2973667/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "stock",
    "lcsc": "C2973667",
    "refs": [
@@ -1938,11 +1977,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C2973667",
-   "value": "JLC can sell 3025, build needs 10 (JLC lists 4272, LCSC 1740)"
+   "value": "JLC can sell 2995, build needs 10 (JLC lists 4258, LCSC 1770)"
   },
   "C29823/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "lifecycle",
    "lcsc": "C29823",
    "refs": [
@@ -1955,7 +1994,7 @@
   },
   "C29823/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "part_match",
    "lcsc": "C29823",
    "refs": [
@@ -1968,7 +2007,7 @@
   },
   "C29823/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "stock",
    "lcsc": "C29823",
    "refs": [
@@ -1977,11 +2016,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C29823",
-   "value": "JLC can sell 554145, build needs 10 (JLC lists 703995, LCSC 147590)"
+   "value": "JLC can sell 532680, build needs 10 (JLC lists 681851, LCSC 119660)"
   },
   "C3/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C13585",
    "source": "EasyEDA/LCSC footprint model of C13585",
@@ -1991,7 +2030,7 @@
   },
   "C3/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C13585",
    "source": "parts.json attributes of C13585",
@@ -2001,7 +2040,7 @@
   },
   "C30/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -2011,7 +2050,7 @@
   },
   "C30/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "parts.json attributes of C14663",
@@ -2021,7 +2060,7 @@
   },
   "C305171/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:33+00:00",
    "kind": "lifecycle",
    "lcsc": "C305171",
    "refs": [
@@ -2034,7 +2073,7 @@
   },
   "C305171/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:33+00:00",
    "kind": "part_match",
    "lcsc": "C305171",
    "refs": [
@@ -2047,7 +2086,7 @@
   },
   "C305171/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:33+00:00",
    "kind": "stock",
    "lcsc": "C305171",
    "refs": [
@@ -2056,11 +2095,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C305171",
-   "value": "JLC can sell 4217, build needs 10 (JLC lists 4255, LCSC None)"
+   "value": "JLC can sell 4218, build needs 10 (JLC lists 4255, LCSC None)"
   },
   "C31/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -2070,7 +2109,7 @@
   },
   "C31/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "parts.json attributes of C14663",
@@ -2080,7 +2119,7 @@
   },
   "C311983/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "lifecycle",
    "lcsc": "C311983",
    "refs": [
@@ -2093,7 +2132,7 @@
   },
   "C311983/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "part_match",
    "lcsc": "C311983",
    "refs": [
@@ -2106,7 +2145,7 @@
   },
   "C311983/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "stock",
    "lcsc": "C311983",
    "refs": [
@@ -2115,11 +2154,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C311983",
-   "value": "JLC can sell 23342, build needs 10 (JLC lists 23294, LCSC 20340)"
+   "value": "JLC can sell 61957, build needs 10 (JLC lists 61920, LCSC 58965)"
   },
   "C31850/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "lifecycle",
    "lcsc": "C31850",
    "refs": [
@@ -2133,7 +2172,7 @@
   },
   "C31850/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "part_match",
    "lcsc": "C31850",
    "refs": [
@@ -2147,7 +2186,7 @@
   },
   "C31850/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "stock",
    "lcsc": "C31850",
    "refs": [
@@ -2157,11 +2196,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C31850",
-   "value": "JLC can sell 2472209, build needs 20 (JLC lists 2783444, LCSC 1602500)"
+   "value": "JLC can sell 2403905, build needs 20 (JLC lists 2714614, LCSC 1582000)"
   },
   "C318884/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "lifecycle",
    "lcsc": "C318884",
    "refs": [
@@ -2176,7 +2215,7 @@
   },
   "C318884/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "part_match",
    "lcsc": "C318884",
    "refs": [
@@ -2191,7 +2230,7 @@
   },
   "C318884/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "stock",
    "lcsc": "C318884",
    "refs": [
@@ -2202,11 +2241,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C318884",
-   "value": "JLC can sell 939785, build needs 30 (JLC lists 1013369, LCSC 762420)"
+   "value": "JLC can sell 893129, build needs 30 (JLC lists 965879, LCSC 743420)"
   },
   "C32/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C19666",
    "source": "EasyEDA/LCSC footprint model of C19666",
@@ -2216,7 +2255,7 @@
   },
   "C32/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C19666",
    "source": "parts.json attributes of C19666",
@@ -2226,7 +2265,7 @@
   },
   "C33/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -2236,7 +2275,7 @@
   },
   "C33/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "parts.json attributes of C14663",
@@ -2246,7 +2285,7 @@
   },
   "C34/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -2256,7 +2295,7 @@
   },
   "C34/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "parts.json attributes of C14663",
@@ -2266,7 +2305,7 @@
   },
   "C35/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
    "source": "EasyEDA/LCSC footprint model of C19702",
@@ -2276,7 +2315,7 @@
   },
   "C35/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C19702",
    "source": "",
@@ -2286,7 +2325,7 @@
   },
   "C36/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -2296,7 +2335,7 @@
   },
   "C36/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "",
@@ -2306,7 +2345,7 @@
   },
   "C365736/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:15+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "lifecycle",
    "lcsc": "C365736",
    "refs": [
@@ -2319,7 +2358,7 @@
   },
   "C365736/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:15+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "part_match",
    "lcsc": "C365736",
    "refs": [
@@ -2332,7 +2371,7 @@
   },
   "C365736/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:15+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "stock",
    "lcsc": "C365736",
    "refs": [
@@ -2341,11 +2380,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C365736",
-   "value": "JLC can sell 37543, build needs 10 (JLC lists 38038, LCSC 37728)"
+   "value": "JLC can sell 35106, build needs 10 (JLC lists 35596, LCSC 35286)"
   },
   "C37/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
    "source": "EasyEDA/LCSC footprint model of C19702",
@@ -2355,7 +2394,7 @@
   },
   "C37/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C19702",
    "source": "",
@@ -2365,7 +2404,7 @@
   },
   "C38/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -2375,7 +2414,7 @@
   },
   "C38/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "",
@@ -2385,7 +2424,7 @@
   },
   "C39/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
    "source": "EasyEDA/LCSC footprint model of C19702",
@@ -2395,7 +2434,7 @@
   },
   "C39/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C19702",
    "source": "",
@@ -2405,7 +2444,7 @@
   },
   "C4/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C29823",
    "source": "EasyEDA/LCSC footprint model of C29823",
@@ -2415,7 +2454,7 @@
   },
   "C4/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C29823",
    "source": "parts.json attributes of C29823",
@@ -2425,7 +2464,7 @@
   },
   "C40/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -2435,7 +2474,7 @@
   },
   "C40/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "",
@@ -2445,7 +2484,7 @@
   },
   "C41/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
    "source": "EasyEDA/LCSC footprint model of C15849",
@@ -2455,7 +2494,7 @@
   },
   "C41/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C15849",
    "source": "",
@@ -2465,7 +2504,7 @@
   },
   "C4184/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "lifecycle",
    "lcsc": "C4184",
    "refs": [
@@ -2478,7 +2517,7 @@
   },
   "C4184/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "part_match",
    "lcsc": "C4184",
    "refs": [
@@ -2491,7 +2530,7 @@
   },
   "C4184/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "stock",
    "lcsc": "C4184",
    "refs": [
@@ -2500,11 +2539,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C4184",
-   "value": "JLC can sell 5003125, build needs 10 (JLC lists 5968631, LCSC 2213200)"
+   "value": "JLC can sell 4876274, build needs 10 (JLC lists 5843076, LCSC 2161200)"
   },
   "C4190/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "lifecycle",
    "lcsc": "C4190",
    "refs": [
@@ -2518,7 +2557,7 @@
   },
   "C4190/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "part_match",
    "lcsc": "C4190",
    "refs": [
@@ -2532,7 +2571,7 @@
   },
   "C4190/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "stock",
    "lcsc": "C4190",
    "refs": [
@@ -2542,11 +2581,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C4190",
-   "value": "JLC can sell 4584342, build needs 20 (JLC lists 5306181, LCSC 2514600)"
+   "value": "JLC can sell 4451132, build needs 20 (JLC lists 5168016, LCSC 2464000)"
   },
   "C42/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14858",
    "source": "EasyEDA/LCSC footprint model of C14858",
@@ -2556,7 +2595,7 @@
   },
   "C42/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14858",
    "source": "",
@@ -2566,7 +2605,7 @@
   },
   "C4216/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "lifecycle",
    "lcsc": "C4216",
    "refs": [
@@ -2579,7 +2618,7 @@
   },
   "C4216/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "part_match",
    "lcsc": "C4216",
    "refs": [
@@ -2592,7 +2631,7 @@
   },
   "C4216/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:13+00:00",
+   "checked_at": "2026-11-05T15:52:35+00:00",
    "kind": "stock",
    "lcsc": "C4216",
    "refs": [
@@ -2601,11 +2640,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C4216",
-   "value": "JLC can sell 2891160, build needs 10 (JLC lists 3107102, LCSC 2268200)"
+   "value": "JLC can sell 2841967, build needs 10 (JLC lists 3053722, LCSC 2244600)"
   },
   "C42421366/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:15+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "lifecycle",
    "lcsc": "C42421366",
    "refs": [
@@ -2618,7 +2657,7 @@
   },
   "C42421366/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:15+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "part_match",
    "lcsc": "C42421366",
    "refs": [
@@ -2631,7 +2670,7 @@
   },
   "C42421366/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:15+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "stock",
    "lcsc": "C42421366",
    "refs": [
@@ -2640,11 +2679,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C42421366",
-   "value": "JLC can sell 95721, build needs 10 (JLC lists 95970, LCSC 95970)"
+   "value": "JLC can sell 93982, build needs 10 (JLC lists 94226, LCSC 94225)"
   },
   "C42459160/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "lifecycle",
    "lcsc": "C42459160",
    "refs": [
@@ -2657,7 +2696,7 @@
   },
   "C42459160/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "part_match",
    "lcsc": "C42459160",
    "refs": [
@@ -2670,7 +2709,7 @@
   },
   "C42459160/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "stock",
    "lcsc": "C42459160",
    "refs": [
@@ -2679,11 +2718,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C42459160",
-   "value": "JLC can sell 8095, build needs 10 (JLC lists 8304, LCSC 7973)"
+   "value": "JLC can sell 6945, build needs 10 (JLC lists 7156, LCSC 6876)"
   },
   "C44/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
    "source": "EasyEDA/LCSC footprint model of C15849",
@@ -2693,7 +2732,7 @@
   },
   "C44/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C15849",
    "source": "",
@@ -2703,7 +2742,7 @@
   },
   "C45/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14858",
    "source": "EasyEDA/LCSC footprint model of C14858",
@@ -2713,7 +2752,7 @@
   },
   "C45/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14858",
    "source": "",
@@ -2723,7 +2762,7 @@
   },
   "C45783/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "lifecycle",
    "lcsc": "C45783",
    "refs": [
@@ -2740,7 +2779,7 @@
   },
   "C45783/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "part_match",
    "lcsc": "C45783",
    "refs": [
@@ -2757,7 +2796,7 @@
   },
   "C45783/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:07+00:00",
+   "checked_at": "2026-11-05T15:52:25+00:00",
    "kind": "stock",
    "lcsc": "C45783",
    "refs": [
@@ -2770,11 +2809,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C45783",
-   "value": "JLC can sell 2549222, build needs 50 (JLC lists 3511614, LCSC 800)"
+   "value": "JLC can sell 2589063, build needs 50 (JLC lists 3483533, LCSC 0)"
   },
   "C46497/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:15+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "lifecycle",
    "lcsc": "C46497",
    "refs": [
@@ -2787,7 +2826,7 @@
   },
   "C46497/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:15+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "part_match",
    "lcsc": "C46497",
    "refs": [
@@ -2800,7 +2839,7 @@
   },
   "C46497/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:15+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "stock",
    "lcsc": "C46497",
    "refs": [
@@ -2809,11 +2848,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C46497",
-   "value": "JLC can sell 32026, build needs 10 (JLC lists 32598, LCSC 31637)"
+   "value": "JLC can sell 31844, build needs 10 (JLC lists 32404, LCSC 31474)"
   },
   "C46550472/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "lifecycle",
    "lcsc": "C46550472",
    "refs": [
@@ -2826,7 +2865,7 @@
   },
   "C46550472/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "part_match",
    "lcsc": "C46550472",
    "refs": [
@@ -2839,7 +2878,7 @@
   },
   "C46550472/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:09+00:00",
+   "checked_at": "2026-11-05T15:52:28+00:00",
    "kind": "stock",
    "lcsc": "C46550472",
    "refs": [
@@ -2848,11 +2887,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C46550472",
-   "value": "JLC can sell 71846, build needs 10 (JLC lists 72049, LCSC 72049)"
+   "value": "JLC can sell 71835, build needs 10 (JLC lists 72033, LCSC 72033)"
   },
   "C47/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
    "source": "EasyEDA/LCSC footprint model of C19702",
@@ -2862,7 +2901,7 @@
   },
   "C47/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C19702",
    "source": "",
@@ -2872,7 +2911,7 @@
   },
   "C479074/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "lifecycle",
    "lcsc": "C479074",
    "refs": [
@@ -2885,7 +2924,7 @@
   },
   "C479074/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "part_match",
    "lcsc": "C479074",
    "refs": [
@@ -2898,7 +2937,7 @@
   },
   "C479074/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:36+00:00",
    "kind": "stock",
    "lcsc": "C479074",
    "refs": [
@@ -2907,11 +2946,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C479074",
-   "value": "JLC can sell 49898, build needs 10 (JLC lists 52663, LCSC 51065)"
+   "value": "JLC can sell 59822, build needs 10 (JLC lists 62551, LCSC 60370)"
   },
   "C48/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C19702",
    "source": "EasyEDA/LCSC footprint model of C19702",
@@ -2921,7 +2960,7 @@
   },
   "C48/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C19702",
    "source": "",
@@ -2931,7 +2970,7 @@
   },
   "C48391614/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:33+00:00",
    "kind": "lifecycle",
    "lcsc": "C48391614",
    "refs": [
@@ -2947,7 +2986,7 @@
   },
   "C48391614/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:33+00:00",
    "kind": "part_match",
    "lcsc": "C48391614",
    "refs": [
@@ -2963,7 +3002,7 @@
   },
   "C48391614/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:33+00:00",
    "kind": "stock",
    "lcsc": "C48391614",
    "refs": [
@@ -2975,11 +3014,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C48391614",
-   "value": "JLC can sell 1491, build needs 40 (JLC lists 1575, LCSC 1575)"
+   "value": "JLC can sell 1490, build needs 40 (JLC lists 1575, LCSC 1575)"
   },
   "C5/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -2989,7 +3028,7 @@
   },
   "C5/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "parts.json attributes of C14663",
@@ -2999,7 +3038,7 @@
   },
   "C50/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
    "source": "EasyEDA/LCSC footprint model of C15849",
@@ -3009,7 +3048,7 @@
   },
   "C50/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C15849",
    "source": "",
@@ -3019,7 +3058,7 @@
   },
   "C51/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C28323",
    "source": "EasyEDA/LCSC footprint model of C28323",
@@ -3029,17 +3068,17 @@
   },
   "C51/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C28323",
-   "source": "parts.json attributes of C28323",
-   "status": "verified",
+   "source": "",
+   "status": "unknown",
    "subject": "C51",
-   "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
+   "value": "no pin of it sits on a net of known voltage"
   },
   "C5125949/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:33+00:00",
    "kind": "lifecycle",
    "lcsc": "C5125949",
    "refs": [
@@ -3052,7 +3091,7 @@
   },
   "C5125949/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:33+00:00",
    "kind": "part_match",
    "lcsc": "C5125949",
    "refs": [
@@ -3065,7 +3104,7 @@
   },
   "C5125949/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:33+00:00",
    "kind": "stock",
    "lcsc": "C5125949",
    "refs": [
@@ -3074,11 +3113,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C5125949",
-   "value": "JLC can sell 11320, build needs 10 (JLC lists 11458, LCSC 11455)"
+   "value": "JLC can sell 12272, build needs 10 (JLC lists 12408, LCSC 12405)"
   },
   "C52/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C28323",
    "source": "EasyEDA/LCSC footprint model of C28323",
@@ -3088,17 +3127,17 @@
   },
   "C52/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C28323",
-   "source": "parts.json attributes of C28323",
-   "status": "verified",
+   "source": "",
+   "status": "unknown",
    "subject": "C52",
-   "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
+   "value": "no pin of it sits on a net of known voltage"
   },
   "C53/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -3108,17 +3147,17 @@
   },
   "C53/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
-   "source": "parts.json attributes of C14663",
-   "status": "verified",
+   "source": "",
+   "status": "unknown",
    "subject": "C53",
-   "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
+   "value": "no pin of it sits on a net of known voltage"
   },
   "C54/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C1588",
    "source": "EasyEDA/LCSC footprint model of C1588",
@@ -3128,17 +3167,17 @@
   },
   "C54/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C1588",
-   "source": "parts.json attributes of C1588",
-   "status": "verified",
+   "source": "",
+   "status": "unknown",
    "subject": "C54",
-   "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
+   "value": "no pin of it sits on a net of known voltage"
   },
   "C55/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C28323",
    "source": "EasyEDA/LCSC footprint model of C28323",
@@ -3148,17 +3187,17 @@
   },
   "C55/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C28323",
-   "source": "parts.json attributes of C28323",
-   "status": "verified",
+   "source": "",
+   "status": "unknown",
    "subject": "C55",
-   "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
+   "value": "no pin of it sits on a net of known voltage"
   },
   "C56/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -3168,17 +3207,17 @@
   },
   "C56/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
-   "source": "parts.json attributes of C14663",
-   "status": "verified",
+   "source": "",
+   "status": "unknown",
    "subject": "C56",
-   "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
+   "value": "no pin of it sits on a net of known voltage"
   },
   "C57/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C1588",
    "source": "EasyEDA/LCSC footprint model of C1588",
@@ -3188,17 +3227,17 @@
   },
   "C57/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C1588",
-   "source": "parts.json attributes of C1588",
-   "status": "verified",
+   "source": "",
+   "status": "unknown",
    "subject": "C57",
-   "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
+   "value": "no pin of it sits on a net of known voltage"
   },
   "C58/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C46550472",
    "source": "EasyEDA/LCSC footprint model of C46550472",
@@ -3208,17 +3247,17 @@
   },
   "C58/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C46550472",
-   "source": "parts.json attributes of C46550472",
-   "status": "verified",
+   "source": "",
+   "status": "unknown",
    "subject": "C58",
-   "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
+   "value": "no pin of it sits on a net of known voltage"
   },
   "C59/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C2836441",
    "source": "EasyEDA/LCSC footprint model of C2836441",
@@ -3228,17 +3267,17 @@
   },
   "C59/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C2836441",
-   "source": "parts.json attributes of C2836441",
-   "status": "verified",
+   "source": "",
+   "status": "unknown",
    "subject": "C59",
-   "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
+   "value": "no pin of it sits on a net of known voltage"
   },
   "C6/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C14663",
    "source": "EasyEDA/LCSC footprint model of C14663",
@@ -3248,7 +3287,7 @@
   },
   "C6/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C14663",
    "source": "",
@@ -3258,7 +3297,7 @@
   },
   "C60/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
    "source": "EasyEDA/LCSC footprint model of C15849",
@@ -3268,7 +3307,7 @@
   },
   "C60/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C15849",
    "source": "",
@@ -3278,7 +3317,7 @@
   },
   "C61/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
    "source": "EasyEDA/LCSC footprint model of C15849",
@@ -3288,7 +3327,7 @@
   },
   "C61/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C15849",
    "source": "",
@@ -3298,7 +3337,7 @@
   },
   "C62/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
    "source": "EasyEDA/LCSC footprint model of C15849",
@@ -3308,7 +3347,7 @@
   },
   "C62/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C15849",
    "source": "",
@@ -3318,7 +3357,7 @@
   },
   "C63/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
    "source": "EasyEDA/LCSC footprint model of C15849",
@@ -3328,7 +3367,7 @@
   },
   "C63/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C15849",
    "source": "",
@@ -3338,7 +3377,7 @@
   },
   "C64/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C21120",
    "source": "EasyEDA/LCSC footprint model of C21120",
@@ -3348,7 +3387,7 @@
   },
   "C64/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C21120",
    "source": "",
@@ -3358,7 +3397,7 @@
   },
   "C65/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C21120",
    "source": "EasyEDA/LCSC footprint model of C21120",
@@ -3368,7 +3407,7 @@
   },
   "C65/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C21120",
    "source": "",
@@ -3378,7 +3417,7 @@
   },
   "C66/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C21120",
    "source": "EasyEDA/LCSC footprint model of C21120",
@@ -3388,7 +3427,7 @@
   },
   "C66/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C21120",
    "source": "",
@@ -3398,7 +3437,7 @@
   },
   "C67/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C21120",
    "source": "EasyEDA/LCSC footprint model of C21120",
@@ -3408,7 +3447,7 @@
   },
   "C67/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C21120",
    "source": "",
@@ -3418,7 +3457,7 @@
   },
   "C68/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C1848",
    "source": "EasyEDA/LCSC footprint model of C1848",
@@ -3428,7 +3467,7 @@
   },
   "C68/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C1848",
    "source": "",
@@ -3438,7 +3477,7 @@
   },
   "C69/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C1848",
    "source": "EasyEDA/LCSC footprint model of C1848",
@@ -3448,7 +3487,7 @@
   },
   "C69/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C1848",
    "source": "",
@@ -3458,7 +3497,7 @@
   },
   "C7/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C45783",
    "source": "EasyEDA/LCSC footprint model of C45783",
@@ -3468,7 +3507,7 @@
   },
   "C7/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C45783",
    "source": "parts.json attributes of C45783",
@@ -3478,7 +3517,7 @@
   },
   "C70/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C1848",
    "source": "EasyEDA/LCSC footprint model of C1848",
@@ -3488,7 +3527,7 @@
   },
   "C70/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C1848",
    "source": "",
@@ -3498,7 +3537,7 @@
   },
   "C71/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C1848",
    "source": "EasyEDA/LCSC footprint model of C1848",
@@ -3508,7 +3547,7 @@
   },
   "C71/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C1848",
    "source": "",
@@ -3518,7 +3557,7 @@
   },
   "C7437321/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:31+00:00",
    "kind": "lifecycle",
    "lcsc": "C7437321",
    "refs": [
@@ -3532,7 +3571,7 @@
   },
   "C7437321/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:31+00:00",
    "kind": "part_match",
    "lcsc": "C7437321",
    "refs": [
@@ -3546,7 +3585,7 @@
   },
   "C7437321/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:31+00:00",
    "kind": "stock",
    "lcsc": "C7437321",
    "refs": [
@@ -3556,11 +3595,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C7437321",
-   "value": "JLC can sell 5345, build needs 20 (JLC lists 5604, LCSC 5188)"
+   "value": "JLC can sell 4821, build needs 20 (JLC lists 5077, LCSC 4671)"
   },
   "C7437322/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:31+00:00",
    "kind": "lifecycle",
    "lcsc": "C7437322",
    "refs": [
@@ -3574,7 +3613,7 @@
   },
   "C7437322/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:31+00:00",
    "kind": "part_match",
    "lcsc": "C7437322",
    "refs": [
@@ -3588,7 +3627,7 @@
   },
   "C7437322/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:31+00:00",
    "kind": "stock",
    "lcsc": "C7437322",
    "refs": [
@@ -3598,11 +3637,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C7437322",
-   "value": "JLC can sell 2821, build needs 20 (JLC lists 2979, LCSC 2979)"
+   "value": "JLC can sell 2451, build needs 20 (JLC lists 2607, LCSC 2607)"
   },
   "C7527522/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:31+00:00",
    "kind": "lifecycle",
    "lcsc": "C7527522",
    "refs": [
@@ -3616,7 +3655,7 @@
   },
   "C7527522/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:31+00:00",
    "kind": "part_match",
    "lcsc": "C7527522",
    "refs": [
@@ -3630,7 +3669,7 @@
   },
   "C7527522/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:10+00:00",
+   "checked_at": "2026-11-05T15:52:31+00:00",
    "kind": "stock",
    "lcsc": "C7527522",
    "refs": [
@@ -3640,11 +3679,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C7527522",
-   "value": "JLC can sell 4176, build needs 20 (JLC lists 4292, LCSC 4290)"
+   "value": "JLC can sell 4169, build needs 20 (JLC lists 4287, LCSC 4285)"
   },
   "C79272/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:33+00:00",
    "kind": "lifecycle",
    "lcsc": "C79272",
    "refs": [
@@ -3657,7 +3696,7 @@
   },
   "C79272/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:33+00:00",
    "kind": "part_match",
    "lcsc": "C79272",
    "refs": [
@@ -3670,7 +3709,7 @@
   },
   "C79272/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:33+00:00",
    "kind": "stock",
    "lcsc": "C79272",
    "refs": [
@@ -3679,11 +3718,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C79272",
-   "value": "JLC can sell 21629, build needs 10 (JLC lists 22224, LCSC None)"
+   "value": "JLC can sell 21075, build needs 10 (JLC lists 21659, LCSC None)"
   },
   "C8/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C45783",
    "source": "EasyEDA/LCSC footprint model of C45783",
@@ -3693,7 +3732,7 @@
   },
   "C8/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C45783",
    "source": "parts.json attributes of C45783",
@@ -3703,7 +3742,7 @@
   },
   "C80/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C19666",
    "source": "EasyEDA/LCSC footprint model of C19666",
@@ -3713,7 +3752,7 @@
   },
   "C80/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C19666",
    "source": "parts.json attributes of C19666",
@@ -3723,7 +3762,7 @@
   },
   "C80670/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "lifecycle",
    "lcsc": "C80670",
    "refs": [
@@ -3736,7 +3775,7 @@
   },
   "C80670/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "part_match",
    "lcsc": "C80670",
    "refs": [
@@ -3749,7 +3788,7 @@
   },
   "C80670/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "stock",
    "lcsc": "C80670",
    "refs": [
@@ -3758,11 +3797,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C80670",
-   "value": "JLC can sell 55640, build needs 10 (JLC lists 58405, LCSC 57015)"
+   "value": "JLC can sell 54152, build needs 10 (JLC lists 57617, LCSC 55745)"
   },
   "C81/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C1620",
    "source": "EasyEDA/LCSC footprint model of C1620",
@@ -3772,7 +3811,7 @@
   },
   "C81/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C1620",
    "source": "",
@@ -3782,7 +3821,7 @@
   },
   "C81010/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "lifecycle",
    "lcsc": "C81010",
    "refs": [
@@ -3795,7 +3834,7 @@
   },
   "C81010/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "part_match",
    "lcsc": "C81010",
    "refs": [
@@ -3808,7 +3847,7 @@
   },
   "C81010/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:14+00:00",
+   "checked_at": "2026-11-05T15:52:37+00:00",
    "kind": "stock",
    "lcsc": "C81010",
    "refs": [
@@ -3817,11 +3856,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C81010",
-   "value": "JLC can sell 4313, build needs 10 (JLC lists 4636, LCSC 4309)"
+   "value": "JLC can sell 4158, build needs 10 (JLC lists 4503, LCSC 3975)"
   },
   "C82/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
    "source": "EasyEDA/LCSC footprint model of C15849",
@@ -3831,7 +3870,7 @@
   },
   "C82/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C15849",
    "source": "",
@@ -3841,7 +3880,7 @@
   },
   "C83/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C1620",
    "source": "EasyEDA/LCSC footprint model of C1620",
@@ -3851,7 +3890,7 @@
   },
   "C83/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C1620",
    "source": "",
@@ -3861,7 +3900,7 @@
   },
   "C84/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C15849",
    "source": "EasyEDA/LCSC footprint model of C15849",
@@ -3871,7 +3910,7 @@
   },
   "C84/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C15849",
    "source": "",
@@ -3881,7 +3920,7 @@
   },
   "C8545/lifecycle": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "lifecycle",
    "lcsc": "C8545",
    "refs": [
@@ -3896,7 +3935,7 @@
   },
   "C8545/part_match": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "part_match",
    "lcsc": "C8545",
    "refs": [
@@ -3911,7 +3950,7 @@
   },
   "C8545/stock": {
    "by": "stock_check",
-   "checked_at": "2026-11-04T07:29:11+00:00",
+   "checked_at": "2026-11-05T15:52:34+00:00",
    "kind": "stock",
    "lcsc": "C8545",
    "refs": [
@@ -3922,11 +3961,11 @@
    "source": "JLC parts library record (jlcpcb.com smtGood search) and LCSC product detail (wmsc.lcsc.com)",
    "status": "verified",
    "subject": "C8545",
-   "value": "JLC can sell 3970318, build needs 30 (JLC lists 4130997, LCSC 3560750)"
+   "value": "JLC can sell 3699644, build needs 30 (JLC lists 3858526, LCSC 3512950)"
   },
   "C9/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C1671",
    "source": "EasyEDA/LCSC footprint model of C1671",
@@ -3936,7 +3975,7 @@
   },
   "C9/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C1671",
    "source": "",
@@ -3946,7 +3985,7 @@
   },
   "C90/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C45783",
    "source": "EasyEDA/LCSC footprint model of C45783",
@@ -3955,21 +3994,18 @@
    "value": "board pads land on the LCSC model's by pad number"
   },
   "C90/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C45783",
-   "refs": [
-    "C90"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "C90",
-   "value": ""
+   "value": "no pin of it sits on a net of known voltage"
   },
   "D1/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C151920",
    "source": "EasyEDA/LCSC footprint model of C151920",
@@ -3979,7 +4015,7 @@
   },
   "D1/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C151920",
    "source": "parts.json attributes of C151920",
@@ -3989,7 +4025,7 @@
   },
   "D2/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C2286",
    "source": "EasyEDA/LCSC footprint model of C2286",
@@ -3999,7 +4035,7 @@
   },
   "D2/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C2286",
    "source": "",
@@ -4009,7 +4045,7 @@
   },
   "D3/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C110694",
    "source": "EasyEDA/LCSC footprint model of C110694",
@@ -4018,21 +4054,18 @@
    "value": "board pads land on the LCSC model's by pad number (no K/A or +/- names on both sides)"
   },
   "D3/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C110694",
-   "refs": [
-    "D3"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "D3",
-   "value": ""
+   "value": "no pin of it sits on a net of known voltage"
   },
   "D4/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C110694",
    "source": "EasyEDA/LCSC footprint model of C110694",
@@ -4041,21 +4074,18 @@
    "value": "board pads land on the LCSC model's by pad number (no K/A or +/- names on both sides)"
   },
   "D4/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C110694",
-   "refs": [
-    "D4"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "D4",
-   "value": ""
+   "value": "no pin of it sits on a net of known voltage"
   },
   "D5/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C110694",
    "source": "EasyEDA/LCSC footprint model of C110694",
@@ -4064,21 +4094,18 @@
    "value": "board pads land on the LCSC model's by pad number (no K/A or +/- names on both sides)"
   },
   "D5/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C110694",
-   "refs": [
-    "D5"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "D5",
-   "value": ""
+   "value": "no pin of it sits on a net of known voltage"
   },
   "D6/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C110694",
    "source": "EasyEDA/LCSC footprint model of C110694",
@@ -4087,21 +4114,18 @@
    "value": "board pads land on the LCSC model's by pad number (no K/A or +/- names on both sides)"
   },
   "D6/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C110694",
-   "refs": [
-    "D6"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "D6",
-   "value": ""
+   "value": "no pin of it sits on a net of known voltage"
   },
   "D7/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C110694",
    "source": "EasyEDA/LCSC footprint model of C110694",
@@ -4110,21 +4134,18 @@
    "value": "board pads land on the LCSC model's by pad number (no K/A or +/- names on both sides)"
   },
   "D7/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C110694",
-   "refs": [
-    "D7"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "D7",
-   "value": ""
+   "value": "no pin of it sits on a net of known voltage"
   },
   "D8/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C110694",
    "source": "EasyEDA/LCSC footprint model of C110694",
@@ -4133,21 +4154,18 @@
    "value": "board pads land on the LCSC model's by pad number (no K/A or +/- names on both sides)"
   },
   "D8/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C110694",
-   "refs": [
-    "D8"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "D8",
-   "value": ""
+   "value": "no pin of it sits on a net of known voltage"
   },
   "J1/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C165948",
    "source": "EasyEDA/LCSC footprint model of C165948",
@@ -4157,7 +4175,7 @@
   },
   "J1/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C165948",
    "source": "",
@@ -4167,7 +4185,7 @@
   },
   "J1/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C165948",
    "source": "",
@@ -4177,7 +4195,7 @@
   },
   "J2/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C7527522",
    "source": "EasyEDA/LCSC footprint model of C7527522",
@@ -4187,7 +4205,7 @@
   },
   "J2/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C7527522",
    "source": "",
@@ -4197,7 +4215,7 @@
   },
   "J2/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C7527522",
    "source": "",
@@ -4207,7 +4225,7 @@
   },
   "J3/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C7527522",
    "source": "EasyEDA/LCSC footprint model of C7527522",
@@ -4217,7 +4235,7 @@
   },
   "J3/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C7527522",
    "source": "",
@@ -4227,7 +4245,7 @@
   },
   "J3/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C7527522",
    "source": "",
@@ -4237,7 +4255,7 @@
   },
   "J4/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C7437321",
    "source": "EasyEDA/LCSC footprint model of C7437321",
@@ -4247,7 +4265,7 @@
   },
   "J4/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C7437321",
    "source": "",
@@ -4257,7 +4275,7 @@
   },
   "J4/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C7437321",
    "source": "",
@@ -4267,7 +4285,7 @@
   },
   "J5/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C7437322",
    "source": "EasyEDA/LCSC footprint model of C7437322",
@@ -4277,7 +4295,7 @@
   },
   "J5/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C7437322",
    "source": "",
@@ -4287,7 +4305,7 @@
   },
   "J5/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C7437322",
    "source": "",
@@ -4297,7 +4315,7 @@
   },
   "J6/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C7437321",
    "source": "EasyEDA/LCSC footprint model of C7437321",
@@ -4307,7 +4325,7 @@
   },
   "J6/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C7437321",
    "source": "",
@@ -4317,7 +4335,7 @@
   },
   "J6/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C7437321",
    "source": "",
@@ -4327,7 +4345,7 @@
   },
   "J7/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C7437322",
    "source": "EasyEDA/LCSC footprint model of C7437322",
@@ -4337,7 +4355,7 @@
   },
   "J7/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C7437322",
    "source": "",
@@ -4347,7 +4365,7 @@
   },
   "J7/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C7437322",
    "source": "",
@@ -4355,9 +4373,39 @@
    "subject": "J7",
    "value": "no pin of it sits on a net of known voltage"
   },
+  "J8/footprint": {
+   "by": "cpl_verify",
+   "checked_at": "2026-11-05T15:54:04+00:00",
+   "kind": "footprint",
+   "lcsc": "C2883765",
+   "source": "EasyEDA/LCSC footprint model of C2883765",
+   "status": "verified",
+   "subject": "J8",
+   "value": "board pads land on the LCSC model's by pad number"
+  },
+  "J8/pinout": {
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
+   "kind": "pinout",
+   "lcsc": "C2883765",
+   "source": "",
+   "status": "unknown",
+   "subject": "J8",
+   "value": "no datasheet extraction with a pinout"
+  },
+  "J8/rating": {
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
+   "kind": "rating",
+   "lcsc": "C2883765",
+   "source": "",
+   "status": "unknown",
+   "subject": "J8",
+   "value": "J8 (C2883765): no datasheet extraction"
+  },
   "L1/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C48391614",
    "source": "EasyEDA/LCSC footprint model of C48391614",
@@ -4367,7 +4415,7 @@
   },
   "L1/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C48391614",
    "source": "",
@@ -4377,7 +4425,7 @@
   },
   "L2/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C48391614",
    "source": "EasyEDA/LCSC footprint model of C48391614",
@@ -4387,7 +4435,7 @@
   },
   "L2/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C48391614",
    "source": "",
@@ -4397,7 +4445,7 @@
   },
   "L3/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C48391614",
    "source": "EasyEDA/LCSC footprint model of C48391614",
@@ -4407,7 +4455,7 @@
   },
   "L3/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C48391614",
    "source": "",
@@ -4417,7 +4465,7 @@
   },
   "L4/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C48391614",
    "source": "EasyEDA/LCSC footprint model of C48391614",
@@ -4427,7 +4475,7 @@
   },
   "L4/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C48391614",
    "source": "",
@@ -4437,7 +4485,7 @@
   },
   "L5/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C79272",
    "source": "EasyEDA/LCSC footprint model of C79272",
@@ -4447,7 +4495,7 @@
   },
   "L5/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C79272",
    "source": "",
@@ -4457,7 +4505,7 @@
   },
   "L6/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C305171",
    "source": "EasyEDA/LCSC footprint model of C305171",
@@ -4467,7 +4515,7 @@
   },
   "L6/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C305171",
    "source": "",
@@ -4477,7 +4525,7 @@
   },
   "Q1/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C5125949",
    "source": "EasyEDA/LCSC footprint model of C5125949",
@@ -4487,7 +4535,7 @@
   },
   "Q1/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C5125949",
    "source": "",
@@ -4497,7 +4545,7 @@
   },
   "Q1/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C5125949",
    "source": "",
@@ -4507,7 +4555,7 @@
   },
   "Q11/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C20526",
    "source": "EasyEDA/LCSC footprint model of C20526",
@@ -4516,34 +4564,28 @@
    "value": "board pads land on the LCSC model's by pad number"
   },
   "Q11/pinout": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C20526",
-   "refs": [
-    "Q11"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "Q11",
-   "value": ""
+   "value": "no datasheet extraction with a pinout"
   },
   "Q11/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C20526",
-   "refs": [
-    "Q11"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "Q11",
-   "value": ""
+   "value": "no datasheet extraction and no voltage-rated attribute in parts.json"
   },
   "Q12/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C20526",
    "source": "EasyEDA/LCSC footprint model of C20526",
@@ -4552,34 +4594,28 @@
    "value": "board pads land on the LCSC model's by pad number"
   },
   "Q12/pinout": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C20526",
-   "refs": [
-    "Q12"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "Q12",
-   "value": ""
+   "value": "no datasheet extraction with a pinout"
   },
   "Q12/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C20526",
-   "refs": [
-    "Q12"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "Q12",
-   "value": ""
+   "value": "Q12 (C20526): no datasheet extraction"
   },
   "Q13/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C8545",
    "source": "EasyEDA/LCSC footprint model of C8545",
@@ -4588,34 +4624,28 @@
    "value": "board pads land on the LCSC model's by pad number"
   },
   "Q13/pinout": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C8545",
-   "refs": [
-    "Q13"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "Q13",
-   "value": ""
+   "value": "no datasheet extraction with a pinout"
   },
   "Q13/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C8545",
-   "refs": [
-    "Q13"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "Q13",
-   "value": ""
+   "value": "Q13 (C8545): no datasheet extraction"
   },
   "Q14/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C8545",
    "source": "EasyEDA/LCSC footprint model of C8545",
@@ -4624,34 +4654,28 @@
    "value": "board pads land on the LCSC model's by pad number"
   },
   "Q14/pinout": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C8545",
-   "refs": [
-    "Q14"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "Q14",
-   "value": ""
+   "value": "no datasheet extraction with a pinout"
   },
   "Q14/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C8545",
-   "refs": [
-    "Q14"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "Q14",
-   "value": ""
+   "value": "Q14 (C8545): no datasheet extraction"
   },
   "Q15/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C8545",
    "source": "EasyEDA/LCSC footprint model of C8545",
@@ -4660,34 +4684,28 @@
    "value": "board pads land on the LCSC model's by pad number"
   },
   "Q15/pinout": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C8545",
-   "refs": [
-    "Q15"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "Q15",
-   "value": ""
+   "value": "no datasheet extraction with a pinout"
   },
   "Q15/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C8545",
-   "refs": [
-    "Q15"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "Q15",
-   "value": ""
+   "value": "Q15 (C8545): no datasheet extraction"
   },
   "Q2/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C20526",
    "source": "EasyEDA/LCSC footprint model of C20526",
@@ -4697,7 +4715,7 @@
   },
   "Q2/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C20526",
    "source": "",
@@ -4707,7 +4725,7 @@
   },
   "Q2/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C20526",
    "source": "",
@@ -4717,7 +4735,7 @@
   },
   "Q3/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C20526",
    "source": "EasyEDA/LCSC footprint model of C20526",
@@ -4727,7 +4745,7 @@
   },
   "Q3/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C20526",
    "source": "",
@@ -4737,7 +4755,7 @@
   },
   "Q3/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C20526",
    "source": "",
@@ -4747,7 +4765,7 @@
   },
   "Q4/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C20526",
    "source": "EasyEDA/LCSC footprint model of C20526",
@@ -4757,7 +4775,7 @@
   },
   "Q4/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C20526",
    "source": "",
@@ -4767,7 +4785,7 @@
   },
   "Q4/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C20526",
    "source": "",
@@ -4777,7 +4795,7 @@
   },
   "R1/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25808",
    "source": "EasyEDA/LCSC footprint model of C25808",
@@ -4787,7 +4805,7 @@
   },
   "R1/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25808",
    "source": "",
@@ -4797,7 +4815,7 @@
   },
   "R10/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C22797",
    "source": "EasyEDA/LCSC footprint model of C22797",
@@ -4807,7 +4825,7 @@
   },
   "R10/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C22797",
    "source": "",
@@ -4817,7 +4835,7 @@
   },
   "R11/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C22807",
    "source": "EasyEDA/LCSC footprint model of C22807",
@@ -4827,7 +4845,7 @@
   },
   "R11/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C22807",
    "source": "",
@@ -4837,7 +4855,7 @@
   },
   "R12/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C4216",
    "source": "EasyEDA/LCSC footprint model of C4216",
@@ -4847,7 +4865,7 @@
   },
   "R12/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C4216",
    "source": "",
@@ -4857,7 +4875,7 @@
   },
   "R13/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
    "source": "EasyEDA/LCSC footprint model of C25803",
@@ -4867,7 +4885,7 @@
   },
   "R13/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25803",
    "source": "",
@@ -4877,7 +4895,7 @@
   },
   "R14/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -4887,7 +4905,7 @@
   },
   "R14/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "",
@@ -4897,7 +4915,7 @@
   },
   "R15/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C21190",
    "source": "EasyEDA/LCSC footprint model of C21190",
@@ -4907,7 +4925,7 @@
   },
   "R15/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C21190",
    "source": "",
@@ -4917,7 +4935,7 @@
   },
   "R16/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C31850",
    "source": "EasyEDA/LCSC footprint model of C31850",
@@ -4927,17 +4945,17 @@
   },
   "R16/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C31850",
-   "source": "parts.json attributes of C31850",
-   "status": "verified",
+   "source": "",
+   "status": "unknown",
    "subject": "R16",
-   "value": "1 connected pin(s) within their datasheet rating at the board's rail voltages"
+   "value": "no pin of it sits on a net of known voltage"
   },
   "R17/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
    "source": "EasyEDA/LCSC footprint model of C25803",
@@ -4947,7 +4965,7 @@
   },
   "R17/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25803",
    "source": "",
@@ -4957,7 +4975,7 @@
   },
   "R18/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -4967,7 +4985,7 @@
   },
   "R18/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "",
@@ -4977,7 +4995,7 @@
   },
   "R2/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C21189",
    "source": "EasyEDA/LCSC footprint model of C21189",
@@ -4987,7 +5005,7 @@
   },
   "R2/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C21189",
    "source": "",
@@ -4997,7 +5015,7 @@
   },
   "R20/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5007,7 +5025,7 @@
   },
   "R20/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "parts.json attributes of C25804",
@@ -5017,7 +5035,7 @@
   },
   "R21/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5027,7 +5045,7 @@
   },
   "R21/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "parts.json attributes of C25804",
@@ -5037,7 +5055,7 @@
   },
   "R22/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C4190",
    "source": "EasyEDA/LCSC footprint model of C4190",
@@ -5047,7 +5065,7 @@
   },
   "R22/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C4190",
    "source": "",
@@ -5057,7 +5075,7 @@
   },
   "R23/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C4190",
    "source": "EasyEDA/LCSC footprint model of C4190",
@@ -5067,7 +5085,7 @@
   },
   "R23/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C4190",
    "source": "",
@@ -5077,7 +5095,7 @@
   },
   "R24/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5087,7 +5105,7 @@
   },
   "R24/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "",
@@ -5097,7 +5115,7 @@
   },
   "R25/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5107,7 +5125,7 @@
   },
   "R25/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "",
@@ -5117,7 +5135,7 @@
   },
   "R3/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C21189",
    "source": "EasyEDA/LCSC footprint model of C21189",
@@ -5127,7 +5145,7 @@
   },
   "R3/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C21189",
    "source": "",
@@ -5137,7 +5155,7 @@
   },
   "R30/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C22809",
    "source": "EasyEDA/LCSC footprint model of C22809",
@@ -5147,7 +5165,7 @@
   },
   "R30/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C22809",
    "source": "",
@@ -5157,7 +5175,7 @@
   },
   "R31/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5167,7 +5185,7 @@
   },
   "R31/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "",
@@ -5177,7 +5195,7 @@
   },
   "R33/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C22809",
    "source": "EasyEDA/LCSC footprint model of C22809",
@@ -5187,7 +5205,7 @@
   },
   "R33/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C22809",
    "source": "",
@@ -5197,7 +5215,7 @@
   },
   "R34/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5207,7 +5225,7 @@
   },
   "R34/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "",
@@ -5217,7 +5235,7 @@
   },
   "R36/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C21190",
    "source": "EasyEDA/LCSC footprint model of C21190",
@@ -5227,9 +5245,9 @@
   },
   "R36/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
-   "lcsc": "C22775",
+   "lcsc": "C21190",
    "source": "",
    "status": "unknown",
    "subject": "R36",
@@ -5237,7 +5255,7 @@
   },
   "R37/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25819",
    "source": "EasyEDA/LCSC footprint model of C25819",
@@ -5247,7 +5265,7 @@
   },
   "R37/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25819",
    "source": "",
@@ -5257,7 +5275,7 @@
   },
   "R38/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C21190",
    "source": "EasyEDA/LCSC footprint model of C21190",
@@ -5267,9 +5285,9 @@
   },
   "R38/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
-   "lcsc": "C22775",
+   "lcsc": "C21190",
    "source": "",
    "status": "unknown",
    "subject": "R38",
@@ -5277,7 +5295,7 @@
   },
   "R39/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25819",
    "source": "EasyEDA/LCSC footprint model of C25819",
@@ -5287,7 +5305,7 @@
   },
   "R39/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25819",
    "source": "",
@@ -5297,7 +5315,7 @@
   },
   "R4/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5307,7 +5325,7 @@
   },
   "R4/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "parts.json attributes of C25804",
@@ -5317,7 +5335,7 @@
   },
   "R5/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
    "source": "EasyEDA/LCSC footprint model of C25803",
@@ -5327,7 +5345,7 @@
   },
   "R5/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25803",
    "source": "",
@@ -5337,7 +5355,7 @@
   },
   "R50/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C4184",
    "source": "EasyEDA/LCSC footprint model of C4184",
@@ -5347,7 +5365,7 @@
   },
   "R50/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C4184",
    "source": "",
@@ -5357,7 +5375,7 @@
   },
   "R51/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
    "source": "EasyEDA/LCSC footprint model of C25803",
@@ -5367,7 +5385,7 @@
   },
   "R51/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25803",
    "source": "",
@@ -5377,7 +5395,7 @@
   },
   "R52/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
    "source": "EasyEDA/LCSC footprint model of C25803",
@@ -5387,7 +5405,7 @@
   },
   "R52/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25803",
    "source": "",
@@ -5397,7 +5415,7 @@
   },
   "R53/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5407,7 +5425,7 @@
   },
   "R53/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "parts.json attributes of C25804",
@@ -5417,7 +5435,7 @@
   },
   "R54/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5427,7 +5445,7 @@
   },
   "R54/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "",
@@ -5437,7 +5455,7 @@
   },
   "R6/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C22961",
    "source": "EasyEDA/LCSC footprint model of C22961",
@@ -5447,7 +5465,7 @@
   },
   "R6/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C22961",
    "source": "",
@@ -5457,7 +5475,7 @@
   },
   "R60/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5467,7 +5485,7 @@
   },
   "R60/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "parts.json attributes of C25804",
@@ -5477,7 +5495,7 @@
   },
   "R61/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5487,7 +5505,7 @@
   },
   "R61/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "parts.json attributes of C25804",
@@ -5497,7 +5515,7 @@
   },
   "R62/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5507,7 +5525,7 @@
   },
   "R62/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "parts.json attributes of C25804",
@@ -5517,7 +5535,7 @@
   },
   "R63/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5527,7 +5545,7 @@
   },
   "R63/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "parts.json attributes of C25804",
@@ -5537,7 +5555,7 @@
   },
   "R64/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C21190",
    "source": "EasyEDA/LCSC footprint model of C21190",
@@ -5547,7 +5565,7 @@
   },
   "R64/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C21190",
    "source": "",
@@ -5557,7 +5575,7 @@
   },
   "R65/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C22775",
    "source": "EasyEDA/LCSC footprint model of C22775",
@@ -5567,7 +5585,7 @@
   },
   "R65/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C22775",
    "source": "parts.json attributes of C22775",
@@ -5577,7 +5595,7 @@
   },
   "R66/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
    "source": "EasyEDA/LCSC footprint model of C25803",
@@ -5587,7 +5605,7 @@
   },
   "R66/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25803",
    "source": "",
@@ -5597,7 +5615,7 @@
   },
   "R67/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5607,7 +5625,7 @@
   },
   "R67/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "",
@@ -5617,7 +5635,7 @@
   },
   "R68/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
    "source": "EasyEDA/LCSC footprint model of C25803",
@@ -5627,7 +5645,7 @@
   },
   "R68/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25803",
    "source": "",
@@ -5637,7 +5655,7 @@
   },
   "R69/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5647,7 +5665,7 @@
   },
   "R69/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "",
@@ -5657,7 +5675,7 @@
   },
   "R7/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25804",
    "source": "EasyEDA/LCSC footprint model of C25804",
@@ -5667,7 +5685,7 @@
   },
   "R7/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25804",
    "source": "",
@@ -5677,7 +5695,7 @@
   },
   "R8/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
    "source": "EasyEDA/LCSC footprint model of C25803",
@@ -5687,7 +5705,7 @@
   },
   "R8/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25803",
    "source": "",
@@ -5697,7 +5715,7 @@
   },
   "R80/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25808",
    "source": "EasyEDA/LCSC footprint model of C25808",
@@ -5706,21 +5724,18 @@
    "value": "board pads land on the LCSC model's by pad number"
   },
   "R80/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25808",
-   "refs": [
-    "R80"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "R80",
-   "value": ""
+   "value": "no pin of it sits on a net of known voltage"
   },
   "R81/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C31850",
    "source": "EasyEDA/LCSC footprint model of C31850",
@@ -5729,21 +5744,18 @@
    "value": "board pads land on the LCSC model's by pad number"
   },
   "R81/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C31850",
-   "refs": [
-    "R81"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "R81",
-   "value": ""
+   "value": "no pin of it sits on a net of known voltage"
   },
   "R82/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25819",
    "source": "EasyEDA/LCSC footprint model of C25819",
@@ -5752,21 +5764,18 @@
    "value": "board pads land on the LCSC model's by pad number"
   },
   "R82/rating": {
-   "by": null,
-   "checked_at": null,
+   "by": "check_ratings",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25819",
-   "refs": [
-    "R82"
-   ],
    "source": "",
    "status": "unknown",
    "subject": "R82",
-   "value": ""
+   "value": "no pin of it sits on a net of known voltage"
   },
   "R9/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C25803",
    "source": "EasyEDA/LCSC footprint model of C25803",
@@ -5776,7 +5785,7 @@
   },
   "R9/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C25803",
    "source": "",
@@ -5786,7 +5795,7 @@
   },
   "SW1/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C318884",
    "source": "EasyEDA/LCSC footprint model of C318884",
@@ -5796,7 +5805,7 @@
   },
   "SW1/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C318884",
    "source": "",
@@ -5806,7 +5815,7 @@
   },
   "SW1/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C318884",
    "source": "parts.json attributes of C318884",
@@ -5816,7 +5825,7 @@
   },
   "SW2/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C318884",
    "source": "EasyEDA/LCSC footprint model of C318884",
@@ -5826,7 +5835,7 @@
   },
   "SW2/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C318884",
    "source": "",
@@ -5836,7 +5845,7 @@
   },
   "SW2/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C318884",
    "source": "parts.json attributes of C318884",
@@ -5846,7 +5855,7 @@
   },
   "SW3/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C318884",
    "source": "EasyEDA/LCSC footprint model of C318884",
@@ -5856,7 +5865,7 @@
   },
   "SW3/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C318884",
    "source": "",
@@ -5866,7 +5875,7 @@
   },
   "SW3/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C318884",
    "source": "parts.json attributes of C318884",
@@ -5876,7 +5885,7 @@
   },
   "U1/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C42459160",
    "source": "EasyEDA/LCSC footprint model of C42459160",
@@ -5886,7 +5895,7 @@
   },
   "U1/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C42459160",
    "source": "",
@@ -5896,7 +5905,7 @@
   },
   "U1/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C42459160",
    "source": "",
@@ -5906,7 +5915,7 @@
   },
   "U2/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C311983",
    "source": "EasyEDA/LCSC footprint model of C311983",
@@ -5916,7 +5925,7 @@
   },
   "U2/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C311983",
    "source": "",
@@ -5926,7 +5935,7 @@
   },
   "U2/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C311983",
    "source": "",
@@ -5936,7 +5945,7 @@
   },
   "U3/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C479074",
    "source": "EasyEDA/LCSC footprint model of C479074",
@@ -5946,7 +5955,7 @@
   },
   "U3/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C479074",
    "source": "",
@@ -5956,7 +5965,7 @@
   },
   "U3/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C479074",
    "source": "",
@@ -5966,7 +5975,7 @@
   },
   "U4/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C80670",
    "source": "EasyEDA/LCSC footprint model of C80670",
@@ -5976,7 +5985,7 @@
   },
   "U4/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C80670",
    "source": "",
@@ -5986,7 +5995,7 @@
   },
   "U4/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C80670",
    "source": "",
@@ -5996,7 +6005,7 @@
   },
   "U5/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C2973667",
    "source": "EasyEDA/LCSC footprint model of C2973667",
@@ -6006,7 +6015,7 @@
   },
   "U5/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C2973667",
    "source": "",
@@ -6016,7 +6025,7 @@
   },
   "U5/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C2973667",
    "source": "",
@@ -6026,7 +6035,7 @@
   },
   "U6/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C81010",
    "source": "EasyEDA/LCSC footprint model of C81010",
@@ -6036,7 +6045,7 @@
   },
   "U6/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C81010",
    "source": "",
@@ -6046,7 +6055,7 @@
   },
   "U6/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C81010",
    "source": "",
@@ -6056,7 +6065,7 @@
   },
   "U7/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C365736",
    "source": "EasyEDA/LCSC footprint model of C365736",
@@ -6066,7 +6075,7 @@
   },
   "U7/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C365736",
    "source": "",
@@ -6076,7 +6085,7 @@
   },
   "U7/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C365736",
    "source": "",
@@ -6086,7 +6095,7 @@
   },
   "U8/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C46497",
    "source": "EasyEDA/LCSC footprint model of C46497",
@@ -6096,7 +6105,7 @@
   },
   "U8/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C46497",
    "source": "",
@@ -6106,7 +6115,7 @@
   },
   "U8/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C46497",
    "source": "",
@@ -6116,7 +6125,7 @@
   },
   "U9/footprint": {
    "by": "cpl_verify",
-   "checked_at": "2026-11-04T07:30:29+00:00",
+   "checked_at": "2026-11-05T15:54:04+00:00",
    "kind": "footprint",
    "lcsc": "C42421366",
    "source": "EasyEDA/LCSC footprint model of C42421366",
@@ -6126,7 +6135,7 @@
   },
   "U9/pinout": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "pinout",
    "lcsc": "C42421366",
    "source": "",
@@ -6136,7 +6145,7 @@
   },
   "U9/rating": {
    "by": "check_ratings",
-   "checked_at": "2026-10-30T20:53:55+00:00",
+   "checked_at": "2026-11-05T15:28:39+00:00",
    "kind": "rating",
    "lcsc": "C42421366",
    "source": "",
@@ -6146,5 +6155,5 @@
   }
  },
  "schema": 1,
- "updated": "2026-11-04T07:30:29+00:00"
+ "updated": "2026-11-05T15:54:04+00:00"
 }
