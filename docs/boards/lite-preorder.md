@@ -108,3 +108,13 @@ than that channel has.
 
 **Finish.** OSP, the person's default for every board (`copper_finish` in the board file,
 so the Gerber job file says OSP too).
+
+## Full GND stitching (2026-11-05)
+
+The person looked at the render on the JLC cart and asked why so little ground stitching showed.
+The board had 130 GND vias, with large open areas of pour between them. `sh build.sh stitch` runs
+`stitch_vias` at the auto pitch (4.28 mm, from a 1 ns edge) and adds 273 more, for 403. They respect
+every keep-out, so none is in the widened antenna band.
+
+DRC, verify and DFM pass. Nothing has been built or measured. The vias are tented, so they show only
+faintly on a render.
