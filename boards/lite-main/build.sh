@@ -36,6 +36,7 @@ board)
 	cat kicad/gen/extra_rules.dru >>kicad/lite-main.kicad_dru
 	python3 kicad/gen/place.py >kicad/place-ops.json
 	h place_edit --pcb kicad/lite-main.kicad_pcb --ops kicad/place-ops.json --out-report reports/place-edit.json >/dev/null
+	kpy kicad/gen/h4_npth.py kicad/lite-main.kicad_pcb >/dev/null
 	kpy kicad/gen/keepout.py kicad/lite-main.kicad_pcb >/dev/null
 	python3 kicad/gen/power.py >/dev/null
 	h planes_gen --pcb kicad/lite-main.kicad_pcb --out-report route/planes_gen.json >/dev/null

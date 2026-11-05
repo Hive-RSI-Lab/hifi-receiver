@@ -75,3 +75,36 @@ was 0.30 mm. Plus's and Ultra's holes also match their sockets (J20 18.413 again
   was 5), the build size used in the stock check.
 - Spare header J8 and 5 more GND stitching vias were added after this round (2026-11-05):
   [`lite-header.md`](lite-header.md).
+
+## Antenna and crosstalk round (2026-11-05)
+
+All of it is checks and simulation; no board has been built and the antenna has
+not been measured.
+
+**Antenna (check_antenna).** Ground pour stopped 2.2 mm from both antenna ends, where
+Espressif asks for 15 mm. `kicad/gen/keepout.py` now runs ANT_KEEPOUT from 15 mm above
+the antenna to the bottom edge, and `kicad/gen/h4_npth.py` makes H4 a bare unplated hole
+in the same place, so the box still fits (43/43). check_antenna now reports nothing.
+
+- H4's GND via went with its ring. H1-H3 keep their ground bond.
+- The M3 screw in H4 is metal and about 8 mm from the antenna. The check counts copper
+  only. A nylon screw there would remove it, if Wi-Fi range turns out poor.
+- Below the antenna the board ends 11.8 mm away, so that side has less than 15 mm of
+  board to clear, and all of it is clear.
+
+**I2S crosstalk (check_si).** `kicad/gen/i2s_fcu.py` pulls DOUT and LRCK apart on F.Cu at
+the ESP32 end: DOUT drops to B.Cu at (47.3, 135.38), and LRCK stays at y 134.01 up to its via.
+
+| Pair (2 ns edge, no IBIS) | Before | After | Budget / margin |
+|---|---|---|---|
+| LRCK -> DOUT at U7.6 | 344 mV | 310 mV | 165 / 396 mV |
+| DOUT -> LRCK at U7.7 | 291 mV | below the top pairs, not reported | 165 / 396 mV |
+| BCLK -> DOUT at U7.6 | below the top pairs, not reported | 242 mV | 165 / 396 mV |
+
+Inside the noise margin and still over the budget, so check_si still warns. What is left is
+the 30 mm B.Cu run at 1.3 mm gaps, with SDA, SCL and MCLK on either side of it. Getting
+under 165 mV likely means rerouting those lines, or ground between them, which looks like more room
+than that channel has.
+
+**Finish.** OSP, the person's default for every board (`copper_finish` in the board file,
+so the Gerber job file says OSP too).

@@ -18,8 +18,8 @@ product.md's Boards row.
 
 ## What it is
 
-- **Board:** 2 layers, 1.6 mm FR-4, 1 oz, HASL, 118 x 90 mm, four M3 plated
-  holes, 2 mm corners. 154 parts, all on the top side. 147 are SMT; 7 are
+- **Board:** 2 layers, 1.6 mm FR-4, 1 oz, OSP, 118 x 90 mm, four M3 holes
+  (H1-H3 plated, H4 bare), 2 mm corners. 154 parts, all on the top side. 147 are SMT; 7 are
   through-hole (J2, J3, J4-J7 and U9). The 4 mounting holes are not BOM parts.
   JLC assembly with LCSC part numbers.
 - **Rear edge, left to right:**
@@ -37,8 +37,11 @@ product.md's Boards row.
 - **Front edge:** SW1 vol-, SW2 vol+, SW3 play/source (hold = BT pairing),
   the IR receiver U9 (an IRM-3638T standing at the edge with its lens facing
   forward through the front wall) and a red status LED D2.
-- **ESP32 antenna:** at the left edge. A copper keep-out on both layers sits
-  under it.
+- **ESP32 antenna:** at the left edge. A copper keep-out on both layers runs
+  from 15 mm above it to the bottom edge, and no copper is left in the check's
+  15 mm bands either side. H4, 8 mm below the antenna, is a bare unplated hole
+  for that reason, so a metal screw there sits near the antenna with no ground
+  bond (`docs/boards/lite-preorder.md`).
 
 | Block | Parts | Notes |
 |---|---|---|
