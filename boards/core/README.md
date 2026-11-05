@@ -43,7 +43,11 @@ Board facts:
 - **Size:** 4 layers, 154.4 x 113 mm overall, 1.6 mm. The right-hand 34.4 mm
   is a wing along the rear only (y < 150 in KiCad); the front right stays
   notched so the ESP32's antenna is still at the board edge.
-- **Stackup:** JLC04161H-1080B, 1 oz outer and 1 oz inner. Order it with
+- **Stackup:** 4 layers, 1.6 mm, 1 oz outer and 1 oz inner. JLC04161H-1080B
+  comes only with 0.5 oz inner, so leave Specify Stackup at no requirement
+  on the quote page: JLC then builds a 0.203 mm 7628 prepreg and a 1.03 mm
+  core, and a named 1 oz layup adds $51.20. No net here is impedance
+  controlled. Order it with
   epoxy filled and capped vias (`fab/ORDERING.md`), and inner copper 1 oz, not JLC's 0.5 oz default: the In2 VBUS/PVDD planes carry
   the full 5 A on their own (`power_trunk.py`).
 - **Vias:** 0.7/0.3 mm, plus a few 0.45/0.2 mm GND taps.
