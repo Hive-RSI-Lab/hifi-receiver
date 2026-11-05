@@ -63,3 +63,4 @@ tool briefs where they are hwde's:
 | 32 | `route_auto` on a routed board | Freerouting printed "job started" and nothing else for 25 min (machine load ~40), twice; the KRT fallback then made the board worse (243 violations). | New nets routed with `kicad/gen/miniroute.py` (from core) and short hand tracks; the KRT result was discarded. |
 | 33 | KiCad python | Iterating `GetTracks()`/`GraphicalItems()` after a `Remove()` raises `'SwigPyObject' object is not iterable`. | Collect first, remove after (`rip_at.py`, `silk_clear.py`). |
 | 34 | `find_spots.py` (board-local) | `GetCourtyard()` is empty until `BuildCourtyardCaches()`. | Called first. |
+| 35 | `check_antenna` | A bare NPTH pad with the stock footprint's `*.Cu` layers counts as copper beside the antenna. | `gen/h4_npth.py` leaves that pad on the mask layers only. |
