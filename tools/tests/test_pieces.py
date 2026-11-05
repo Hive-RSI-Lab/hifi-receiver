@@ -167,7 +167,8 @@ class Enclosure(Base):
 
     def test_a_stub_box_fails(self):
         for f in (self.t.root / "enclosure" / "out" / "lite").iterdir():
-            f.unlink()
+            if f.is_file():
+                f.unlink()
         self.t.put(self.OUT + "fit.md", "| check | result |\n|---|---|\n| fit | pass |\n")
         self.t.put(self.OUT + "base.stl", stl([((0, 0, 0), (1, 0, 0), (0, 1, 0))]))
         self.t.put(self.OUT + "base.step", "")
