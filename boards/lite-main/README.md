@@ -281,6 +281,7 @@ After routing, the committed board also went through:
 
 ```sh
 sh build.sh finish   # plane_repair, 45-degree snap, silk_place + kicad/gen/silk.py, outline snap
+sh build.sh stitch   # full GND stitching at the auto pitch (4.28 mm), 273 vias
 sh build.sh fab      # fab_export, bom_cpl (LCSC models cached in parts/easyeda/), dfm gate
 ```
 
