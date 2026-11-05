@@ -20,6 +20,8 @@ STEP moves it to Onshape later (see the end of this page).
 - **Files:** `out/lite/base.stl`, `lid.stl` and `btn_SW1-3.stl` are already
   in print orientation. `out/lite/enclosure.step` is the assembly with the
   board as a slab, for Onshape.
+- **Print files:** `out/lite/a1mini/lite-base.3mf` and `lite-lid-buttons.3mf`
+  are sliced for the A1 mini; see Printing.
 - **Fit:** `out/lite/fit.md` is the fit check's report against the board.
 - **Material:** about 110 g if printed solid, so about $2–3 of filament.
 
@@ -34,7 +36,45 @@ STEP moves it to Onshape later (see the end of this page).
   banana sockets) or bridge (USB-C, IR window). Each standoff has a 7.8 mm foot round its 6.2 mm
   counterbore, so the ring left round it is two nozzle lines. The foot joins
   the wall beside it.
-- **Bed:** both parts fit a 220 x 220 mm bed.
+- **Bed:** every part fits the A1 mini's 180 x 180 x 180 mm bed, but the base
+  and lid don't fit one plate, so there are two plates.
+- **A1 mini files** (`printer slice`, Bambu PETG Basic, Textured PEI Plate):
+
+  | Plate | File | Time | Filament | Brim |
+  |---|---|---|---|---|
+  | Base | `out/lite/a1mini/lite-base.3mf` | 1 h 48 | 63 g | none |
+  | Lid and 3 buttons | `out/lite/a1mini/lite-lid-buttons.3mf` | 1 h 33 | 31 g | 5 mm, for the 30 mm button stems |
+
+  Re-slice after any rebuild; `--set` carries the settings above:
+
+  ```
+  L=enclosure/out/lite
+  printer slice $L/base.stl --name lite-base --model a1mini --out $L/a1mini \
+    --filament "Bambu PETG Basic" --plate "Textured PEI Plate" \
+    --set wall_loops=4 --set sparse_infill_density=25% --set brim_type=no_brim
+  printer slice $L/lid.stl $L/btn_SW1.stl $L/btn_SW2.stl $L/btn_SW3.stl --name lite-lid-buttons --model a1mini --out $L/a1mini \
+    --filament "Bambu PETG Basic" --plate "Textured PEI Plate" \
+    --set wall_loops=4 --set sparse_infill_density=25% --set brim_type=outer_only --set brim_width=5
+  ```
+
+### Antenna
+
+The ESP32 module's antenna is at the west edge, so `lite.py` keeps the box out of
+its way:
+
+- **Wall:** 1.2 mm instead of 2.4 mm beside the module, 2 mm past it each way.
+  The cut is open at the top, so it prints without an overhang.
+- **Lid:** the locating lip stops over that stretch.
+- **Keep-out check:** the build fails if the base, lid or a button enters the
+  zone from the inner wall face to the antenna's inner end, between floor and
+  lid. The zone comes from U5's position, so it follows the module.
+- **Still near it:** 1.2 mm of PETG about 1.2 mm from the module's edge, the 2 mm
+  floor about 5 mm under the board, and the steel M3 in H4, 8.2 mm from the
+  module's corner (centre to edge).
+- **Not measured:** nobody has tested how the box detunes the antenna. Compare
+  Wi-Fi signal strength with the box on and off at bring-up. If the screw matters,
+  a nylon M3 in H4 is the first thing to try; cut the thread with a steel screw
+  first.
 
 ### What else it needs
 
@@ -327,9 +367,9 @@ drawings from. `mech onshape` uploads it once the person gives an API key
 
 ## Open points
 
-- **Button stems are long:** each Lite button is 37 mm tall with a 3 mm
-  stem, printed standing on its cap. That is printable, but untested. If it
-  wobbles, print it slower or add a brim.
+- **Button stems are long:** each Lite button is 30 mm tall with a 3 mm
+  stem, printed standing on its cap. That is printable, but untested, so the
+  A1 mini plate gives them a 5 mm brim. If one wobbles, print it slower.
 - **Board snapshot:** `lite-main.board.json` is read by `mech board` from
   the committed, routed `boards/lite-main` (main at fe17345, 2026-10-29).
   Re-run the commands above whenever the board changes.
