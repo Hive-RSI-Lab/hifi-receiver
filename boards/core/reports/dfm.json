@@ -4,7 +4,7 @@
   "phase": "P9",
   "tool": "dfm",
   "input": "kicad/core.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:deb1af30ae070b145dd1366569ddb7f8fe0252521c939760f94c1bde84d9f7bd",
+  "input_digest": "sexpr_no_uuid:382fc41d71321377f2a49ee00b12ea8736fe9cf2cd6d2076f234276df233e8d0",
   "status": "pass",
   "criteria": {
     "fail_severities": [
@@ -13,18 +13,18 @@
     "max_count": 0
   },
   "counts": {
-    "total": 22,
+    "total": 20,
     "by_severity": {
-      "warning": 18,
-      "error": 4
+      "warning": 20
     },
     "by_source": {
-      "check.dfm": 22
+      "check.dfm": 19,
+      "https://jlcpcb.com/capabilities/pcb-assembly-capabilities": 1
     }
   },
   "failing_count": 0,
   "failing": [],
-  "warnings_count": 18,
+  "warnings_count": 20,
   "warnings": [
     {
       "check": "dfm",
@@ -553,103 +553,65 @@
         "B.Cu",
         "F.Cu"
       ]
-    }
-  ],
-  "waived_count": 4,
-  "waived": [
-    {
-      "check": "dfm",
-      "severity": "error",
-      "pos": null,
-      "layer": null,
-      "net": null,
-      "refs": [
-        "D6"
-      ],
-      "msg": "D6 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
-      "source": "check.dfm",
-      "items": [
-        {
-          "msg": "D6 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
-          "pos": null
-        }
-      ],
-      "kind": "cpl_no_model",
-      "verdict": "bottom_unverified",
-      "lcsc": "C14486",
-      "cpl_rot": 90.0,
-      "expected_rot": null
     },
     {
       "check": "dfm",
-      "severity": "error",
+      "severity": "warning",
       "pos": null,
       "layer": null,
       "net": null,
       "refs": [
-        "D7"
-      ],
-      "msg": "D7 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
-      "source": "check.dfm",
-      "items": [
-        {
-          "msg": "D7 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
-          "pos": null
-        }
-      ],
-      "kind": "cpl_no_model",
-      "verdict": "bottom_unverified",
-      "lcsc": "C49338",
-      "cpl_rot": 270.0,
-      "expected_rot": null
-    },
-    {
-      "check": "dfm",
-      "severity": "error",
-      "pos": null,
-      "layer": null,
-      "net": null,
-      "refs": [
-        "D8"
-      ],
-      "msg": "D8 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
-      "source": "check.dfm",
-      "items": [
-        {
-          "msg": "D8 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
-          "pos": null
-        }
-      ],
-      "kind": "cpl_no_model",
-      "verdict": "bottom_unverified",
-      "lcsc": "C49338",
-      "cpl_rot": 180.0,
-      "expected_rot": null
-    },
-    {
-      "check": "dfm",
-      "severity": "error",
-      "pos": null,
-      "layer": null,
-      "net": null,
-      "refs": [
+        "C207",
+        "C208",
+        "C209",
+        "C210",
+        "C218",
+        "C220",
+        "C307",
+        "C308",
+        "C309",
+        "C310",
+        "D6",
+        "D7",
+        "D8",
         "D9"
       ],
-      "msg": "D9 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
+      "msg": "14 bottom part(s): bottom-side rotations follow (180 - kicad + correction), from two community exporters and the geometry, not from a JLC statement: check these parts' pin 1 in JLC's order preview before ordering",
       "source": "check.dfm",
       "items": [
         {
-          "msg": "D9 bottom_unverified: bottom-side part: JLC's bottom placement convention is not modelled, and a polarised part's pin 1 depends on the mirror - confirm it in JLC's preview",
+          "msg": "14 bottom part(s): bottom-side rotations follow (180 - kicad + correction), from two community exporters and the geometry, not from a JLC statement: check these parts' pin 1 in JLC's order preview before ordering",
           "pos": null
         }
       ],
-      "kind": "cpl_no_model",
-      "verdict": "bottom_unverified",
-      "lcsc": "C14486",
-      "cpl_rot": 0.0,
-      "expected_rot": null
+      "kind": "cpl_bottom_preview"
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        34.5875,
+        107.6975
+      ],
+      "layer": null,
+      "net": null,
+      "refs": [],
+      "msg": "CPL places parts on both sides, no 5 mm edge rails; 0 fiducials, wants 3: JLC's Economic PCBA is single sided, and Standard PCBA needs rails, fiducials and 70 mm a side, so assembly needs a panel",
+      "source": "https://jlcpcb.com/capabilities/pcb-assembly-capabilities",
+      "items": [
+        {
+          "msg": "CPL places parts on both sides, no 5 mm edge rails; 0 fiducials, wants 3: JLC's Economic PCBA is single sided, and Standard PCBA needs rails, fiducials and 70 mm a side, so assembly needs a panel",
+          "pos": [
+            34.5875,
+            107.6975
+          ]
+        }
+      ],
+      "kind": "both_sides_needs_panel"
     }
   ],
+  "waived_count": 0,
+  "waived": [],
   "coverage": {
     "strict": false,
     "required": [
@@ -691,15 +653,14 @@
       "hole_to_edge",
       "silk",
       "polarity",
+      "placement",
       "bom",
       "release",
       "castellation",
       "netlist",
       "teardrop"
     ],
-    "failed": [
-      "placement"
-    ],
+    "failed": [],
     "waived": [],
     "not_applicable": {},
     "skipped_error": {
@@ -709,12 +670,12 @@
   "record_result": {
     "ok": true,
     "recorded": true,
-    "workspace": "/home/hive2/projects/hifi-order-docs/boards/core",
+    "workspace": "/home/hive2/.cache/h2-tmp/a2446-core/boards/core",
     "gate": "dfm",
     "status": "pass",
-    "attempts": 14,
+    "attempts": 15,
     "inputs": {
-      "pcb": "sexpr_no_uuid:deb1af30ae070b145dd1366569ddb7f8fe0252521c939760f94c1bde84d9f7bd",
+      "pcb": "sexpr_no_uuid:382fc41d71321377f2a49ee00b12ea8736fe9cf2cd6d2076f234276df233e8d0",
       "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
       "parts": null
     }
