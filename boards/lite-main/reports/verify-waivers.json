@@ -6,6 +6,14 @@
    "refs": ["U8"],
    "reason": "hwde's copper-area model gives the TPA3118D2 ~47 C/W on this 2-layer board (2.0 W at 1/8 power into 4 ohm -> ~94 C rise). TI's datasheet (SLOS708G 6.4, note 3) gives 22 C/W for the TPA3118D2 DAP package on the TPA3118D2EVM, a 2-layer board: ~44 C rise. Both board sides are ground poured around the chip, with 16 solid-connected EP vias and B.Cu ground unbroken under it. The chip has its own over-temperature shutdown and FAULTZ, which the firmware governor reads. Bring-up MUST measure the case temperature at 1/8 power into 4 ohm (product.md, plan item 10) before Lite is called done; if it exceeds 100 C, add a stick-on heatsink to the package top (psi_JT 0.3 C/W) or lower the governor's limit.",
    "approved": "lite-main worker, as the person's delegate ('take care of everything yourself', 2026-10-14), 2026-10-28; open item for bring-up"
+  },
+  {
+   "check": "check_ratings",
+   "kind": "rating_over_voltage",
+   "net": "VBUS",
+   "refs": ["J1"],
+   "reason": "The HRO TYPE-C-31-M-12 drawing (2020.12.08 REV A, p.1 Note 4) gives 'VOLTAGE RATING: 20V': the contact working rating of a standard (SPR) USB Type-C receptacle, the class every 20 V PD contract is made on. PD lets the source sit at 20 V +5 % (21 V), and hwde takes that top of tolerance as the net's volts; it is not a semiconductor absolute max that breaks at 20.01 V. Lite asks for 20 V (CH224A, R1 120k) and never more. Rejected: a 15 V contract cuts the TPA3118's output power (a product change); a receptacle rated 21 V or more (EPR 48 V parts) is a copper and fab change on an order-ready board for no field gain. Core already uses a 48 V GCT USB4085. Issue #181.",
+   "approved": "af884, 2026-11-08 (person delegated sign-offs: 'go on with best judgement and record the choice')"
   }
  ]
 }

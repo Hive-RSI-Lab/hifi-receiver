@@ -146,6 +146,11 @@ was done about each finding is in
   TPS54302 and TPA3118. Same SMB footprint, pin 1 = cathode. No TVS can
   hold a 21 V bus under 30 V at its full rated surge; that residual risk is
   review-2 POWER-9 (PD attaches at 5 V, so real surge energy is small).
+- **J1 is rated 20 V, waived at 21 V.** The HRO TYPE-C-31-M-12 drawing gives
+  "VOLTAGE RATING: 20V", the standard Type-C class for 20 V PD; hwde checks it
+  against the 21 V top of PD tolerance. Kept the part and the 20 V contract
+  (15 V costs amp power; a 48 V EPR receptacle is a copper change) with a
+  waiver in `reports/verify-waivers.json` (issue #181).
 - **TPA3118 gain 26 dB.** The ES8388's full scale (~0.9 Vrms) x 20 clips at
   20 V into 4 ohm 3.7 dB before 0 dBFS, so firmware caps the codec volume.
   20 dB would leave only 20 W.
