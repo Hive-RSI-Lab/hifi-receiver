@@ -171,7 +171,8 @@ DATA, so the select comes from expander P17 and the front board's LCD_CS is
 held asserted by R57 (DIGITAL-16; firmware cs = -1).
 
 The changes went in as an ECO on the routed board: `board_update`, the
-reviewers' fixes in `kicad/gen/blocks*.py`, then `via_array.py`,
+reviewers' fixes in `kicad/gen/blocks*.py`, then the power patches (then
+`via_array.py`, now hwde's `zone_patch`),
 `ant_keepout.py`, `miniroute.py`, hwde's `route_auto` (its KRT fallback; Freerouting
 stalled), `stitch_vias`, `island_vias.py`/`gnd_via_drops.py` and hand tracks
 (`add_track.py`/`add_via.py`). IR_IN keeps a 25 mm hop on In1 (the GND plane)
@@ -286,8 +287,9 @@ routed `kicad/core.kicad_pcb` is the source of truth for copper.
   of them, reshapes their zones, moves three vias that walled them in, and
   gives each PVDD finger five plane vias and +5V's trunk layer changes two.
   Its docstring has the run order.
-- **`silk_clean.py`:** hides reference texts and deletes footprint silk that
-  ran over pads or the edge. The assembly drawing keeps every reference.
+- **Silk:** hwde's `silk_fix` (then `silk_clean.py`) hides reference texts
+  and deletes footprint silk that runs over pads or the edge. The assembly
+  drawing keeps every reference.
 
 **Current ratings:** `constraints.json` budgets the real currents: VBUS_IN,
 VBUS and PVDD at 5 A (the 28 V, 5 A PD contract), +5V at 1.1 A on its trunk and 0.4 A on its branches. hwde's
