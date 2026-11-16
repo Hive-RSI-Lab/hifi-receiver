@@ -1,0 +1,3 @@
+{"board": "hi-fi Lite", "driver": "esp32", "usb": ["1a86:7523"], "baud": 115200, "wifi": true,
+ "api": {"style": "json", "info": "info", "wifi": "wifi", "state": "state"},
+ "selftest": {"cmd": "api selftest \"{}\"", "pass": "API {\"pass\":true", "fail": "API {\"pass\":false", "timeout": 60}}
