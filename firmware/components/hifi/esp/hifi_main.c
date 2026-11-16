@@ -589,6 +589,24 @@ static void line_main(void *arg) {
 
 /* ------------------------------------------------------------------ ops */
 
+/*
+ * A task whose stack is in PSRAM, to leave internal RAM to Wi-Fi, Bluetooth
+ * and DMA (the Lite had 17 KB of it free with everything up). Only for tasks
+ * that never touch flash (NVS, OTA): IDF asserts on a flash operation from
+ * a PSRAM stack. Its TCB stays internal; IDF counts stacks in bytes. Falls back to an internal stack.
+ */
+static TaskHandle_t task_psram(TaskFunction_t fn, const char *name, uint32_t bytes, UBaseType_t prio, BaseType_t core) {
+	StackType_t *stack = heap_caps_malloc(bytes, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+	StaticTask_t *tcb = heap_caps_malloc(sizeof(StaticTask_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+	TaskHandle_t h = NULL;
+	if (stack && tcb) h = xTaskCreateStaticPinnedToCore(fn, name, bytes, NULL, prio, stack, tcb, core);
+	if (h) return h;
+	free(stack);
+	free(tcb);
+	xTaskCreatePinnedToCore(fn, name, bytes, NULL, prio, &h, core);
+	return h;
+}
+
 static void op_info(hifi_info_t *i) {
 	uint8_t mac[6];
 	i->model = HIFI_MODEL;
@@ -1162,8 +1180,8 @@ static bool hifi_init(void) {
 	free(s);
 
 	xTaskCreatePinnedToCore(power_task, "hifi_power", 3072, NULL, ESP_TASK_PRIO_MIN + 3, NULL, 0);
-	if (hifi_sink_start) xTaskCreatePinnedToCore(tone_main, "hifi_tone", 4096, NULL, ESP_TASK_PRIO_MIN + 2, &tone_task, 1);
-	if (board_line) xTaskCreatePinnedToCore(line_main, "hifi_line", 4096, NULL, ESP_TASK_PRIO_MIN + 4, NULL, 1);
+	if (hifi_sink_start) tone_task = task_psram(tone_main, "hifi_tone", 4096, ESP_TASK_PRIO_MIN + 2, 1);
+	if (board_line) task_psram(line_main, "hifi_line", 4096, ESP_TASK_PRIO_MIN + 4, 1);
 	xTaskCreate(services_task, "hifi_svc", 3072, NULL, ESP_TASK_PRIO_MIN + 1, NULL);
 	hifi_remote_start(&hifi_ops);
 	hifi_bsp_start();
