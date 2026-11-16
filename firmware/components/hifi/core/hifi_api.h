@@ -109,7 +109,7 @@ typedef struct {
 	char hostname[33];
 	char ip[16];        /* empty when not connected */
 	int rssi;           /* 0 when unknown */
-	uint32_t heap_free, psram_free;
+	uint32_t heap_free, heap_min, psram_free; /* internal now, internal lowest since boot, PSRAM */
 	const char *reset_reason; /* why it last restarted (power_on, panic...); NULL: unknown */
 	hifi_update_status_t update; /* the app's updates; idle: not reported */
 } hifi_snapshot_t;

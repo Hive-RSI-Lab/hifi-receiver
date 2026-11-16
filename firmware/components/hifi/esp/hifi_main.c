@@ -706,6 +706,7 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	esp_wifi_get_mode(&mode);
 	s->net_mode = !s->ip[0] && (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA) ? "ap" : "sta";
 	s->heap_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+	s->heap_min = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
 	s->reset_reason = hifi_crash_reset_reason();
 	s->psram_free = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
 	hifi_net_update_status(&s->update);
@@ -1221,7 +1222,20 @@ void hifi_dsp_process(uint8_t *buf, uint32_t frames, int bytes_per_frame, uint32
 
 void hifi_http_register(httpd_handle_t server) { hifi_http_start(server, &hifi_ops); }
 
+/* Every failed allocation goes to the console (and so to the crash log): a
+ * Bluetooth connect panicked in btu_start_timer when its timer couldn't be
+ * made, and this tells running out of internal RAM from other causes. */
+static void alloc_failed(size_t size, uint32_t caps, const char *fn) {
+	static int n;
+	if (n++ >= 20) return;
+	ESP_LOGE(TAG, "alloc of %u B failed in %s (caps 0x%x); internal %u B free, largest %u B, lowest %u B",
+		 (unsigned) size, fn ? fn : "?", (unsigned) caps, (unsigned) heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
+		 (unsigned) heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL),
+		 (unsigned) heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
+}
+
 static bool hifi_init(void) {
+	heap_caps_register_failed_alloc_callback(alloc_failed);
 	bt_test_boot();
 	lock = xSemaphoreCreateMutex();
 	tone_lock = xSemaphoreCreateMutex();

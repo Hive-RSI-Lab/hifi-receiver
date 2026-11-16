@@ -70,7 +70,7 @@ Everything the bench logs, in one read. Poll it at up to 10 Hz.
                        "album": "Mezzanine", "elapsed_s": 61, "duration_s": 330}},
  "net": {"mode": "sta", "ssid": "home", "hostname": "hifi-lite",
          "ip": "192.168.1.40", "rssi": -61},
- "sys": {"heap_free": 81234, "psram_free": 3912345},
+ "sys": {"heap_free": 81234, "heap_min": 60123, "psram_free": 3912345},
  "ir": {"learning": null, "learned": ["volup", "voldown", "mute"], "last_code": "0x00ff40bf"}}
 ```
 

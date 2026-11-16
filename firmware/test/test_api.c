@@ -78,6 +78,7 @@ static void m_snapshot(hifi_snapshot_t *s) {
 	snprintf(s->ip, sizeof(s->ip), "192.168.1.40");
 	s->rssi = -61;
 	s->heap_free = 81234;
+	s->heap_min = 60123;
 	s->psram_free = 3912345;
 }
 
@@ -169,7 +170,7 @@ static void info_and_state(void) {
 		  "\"sub\":{\"on\":false,\"level_db\":0.0},\"eq\":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"
 		  "\"volume\":35,\"mute\":false,\"max_volume\":100,\"playing\":null},"
 		  "\"net\":{\"mode\":\"sta\",\"ssid\":\"home\",\"hostname\":\"hifi-lite\",\"ip\":\"192.168.1.40\",\"rssi\":-61},"
-		  "\"sys\":{\"heap_free\":81234,\"psram_free\":3912345},"
+		  "\"sys\":{\"heap_free\":81234,\"heap_min\":60123,\"psram_free\":3912345},"
 		  "\"ir\":{\"learning\":null,\"learned\":[],\"last_code\":null}}");
 
 	CHECK(call("POST", "/api/v1/state", "{}") == 405);

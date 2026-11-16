@@ -163,6 +163,7 @@ void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) {
 
 	hj_obj(&j, "sys");
 	hj_int(&j, "heap_free", s->heap_free);
+	hj_int(&j, "heap_min", s->heap_min);
 	hj_int(&j, "psram_free", s->psram_free);
 	if (s->reset_reason) hj_str(&j, "reset_reason", s->reset_reason);
 	hj_obj_end(&j);
