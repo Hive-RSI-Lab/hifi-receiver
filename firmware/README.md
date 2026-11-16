@@ -194,3 +194,12 @@ Every hook is a weak symbol, so the patched tree still builds without our
 component. To move to a newer upstream: change `upstream.lock`, run
 `fetch.sh`, fix what doesn't apply, and regenerate the patch with
 `git -C ~/fw-build/squeezelite-esp32 -c core.fileMode=false diff -- . ':!sdkconfig' ':!sdkconfig.defaults' > firmware/patches/0001-hifi-receiver-hooks.patch` (the board's sdkconfig files are copied in, not patched).
+
+`patches/0003-console-read-whole-line.patch` is a fix, not a hook: upstream's
+`stdin_read` in `components/platform_console/platform_console.c` returned at
+most the bytes of one UART event, and linenoise reads one byte at a time, so a
+whole line sent at once (as `serialtab` and the API client do) lost all but its
+first byte or two until the next event. It now reads whatever the UART driver
+has buffered. The regenerate command above diffs the whole tree, so drop this
+file's hunk from 0001 when you regenerate.
+
