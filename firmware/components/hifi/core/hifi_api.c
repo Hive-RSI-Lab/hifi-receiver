@@ -494,8 +494,18 @@ static int r_selftest(const hifi_ops_t *ops, char *out, size_t cap) {
 /* ------------------------------------------------------------------ remote bring-up */
 
 #define CRASH_LOG_MAX 3072
-static int r_crash(const hifi_ops_t *ops, char *out, size_t cap) {
+/* a remote bench caps a console line at 1000 characters, so a POST reads the
+ * log a page at a time: {"from":N} gives the cleaned text from N on, as much
+ * as fits CRASH_PAGE escaped, with "next" (where the following page starts)
+ * and "len" (the whole log's) */
+#define CRASH_PAGE 700
+static size_t esc_len(char c) { return c == '\n' ? 6 : (c == '"' || c == '\\') ? 2 : 1; }
+
+static int r_crash(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
 	if (!ops->reset_reason || !ops->last_log) return error(out, cap, 404, "this build keeps no crash log");
+	double from_d = -1;
+	if (body && !hj_get_num(body, "from", &from_d)) return error(out, cap, 400, "from: a number, where the page starts");
+	if (body && from_d < 0) return error(out, cap, 400, "from: a number, where the page starts");
 	char *log = malloc(CRASH_LOG_MAX + 1);
 	if (!log) return error(out, cap, 503, "out of memory");
 	size_t n = ops->last_log(log, CRASH_LOG_MAX + 1), k = 0;
@@ -510,18 +520,25 @@ static int r_crash(const hifi_ops_t *ops, char *out, size_t cap) {
 		if (c == '\n' || (c >= 0x20 && c < 0x7f)) log[k++] = (char) c;
 	}
 	log[k] = '\0';
-	/* JSON-escaped it must fit the reply (hifi_api_reply_cap): drop the oldest */
-	size_t esc = 0, start = 0;
-	for (size_t i = 0; i < k; i++) esc += log[i] == '\n' ? 6 : (log[i] == '"' || log[i] == '\\') ? 2 : 1;
-	while (esc > 2 * CRASH_LOG_MAX && start < k) {
-		char c = log[start++];
-		esc -= c == '\n' ? 6 : (c == '"' || c == '\\') ? 2 : 1;
-	}
 	hj_t j;
 	hj_init(&j, out, cap);
 	hj_obj(&j, NULL);
 	hj_str(&j, "reset_reason", ops->reset_reason());
-	hj_str(&j, "log", log + start);
+	if (body) {
+		size_t from = from_d > k ? k : (size_t) from_d, end = from, esc = 0;
+		while (end < k && esc + esc_len(log[end]) <= CRASH_PAGE) esc += esc_len(log[end++]);
+		log[end] = '\0';
+		hj_num(&j, "len", (double) k, 0);
+		hj_num(&j, "from", (double) from, 0);
+		hj_num(&j, "next", (double) end, 0);
+		hj_str(&j, "log", log + from);
+	} else {
+		/* JSON-escaped it must fit the reply (hifi_api_reply_cap): drop the oldest */
+		size_t esc = 0, start = 0;
+		for (size_t i = 0; i < k; i++) esc += esc_len(log[i]);
+		while (esc > 2 * CRASH_LOG_MAX && start < k) esc -= esc_len(log[start++]);
+		hj_str(&j, "log", log + start);
+	}
 	hj_obj_end(&j);
 	free(log);
 	return 200;
@@ -896,7 +913,7 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "ir/forget")) status = post ? r_ir(ops, body, out, cap, false) : -1;
 	else if (!strcmp(route, "selftest")) status = post ? r_selftest(ops, out, cap) : -1;
 	else if (!strcmp(route, "ota")) status = get ? r_ota_get(ops, out, cap) : -1;
-	else if (!strcmp(route, "crash")) status = get ? r_crash(ops, out, cap) : -1;
+	else if (!strcmp(route, "crash")) status = get ? r_crash(ops, NULL, out, cap) : post ? r_crash(ops, body ? body : "{}", out, cap) : -1;
 	else if (!strcmp(route, "bttest")) status = post ? r_bttest(ops, body, out, cap) : -1;
 	else if (!strncmp(route, "ota/", 4)) status = post ? r_ota(ops, route + 4, body, out, cap) : -1;
 	else if (!strcmp(route, "capture")) status = post ? r_capture(ops, body, out, cap) : -1;
@@ -945,6 +962,11 @@ bool hifi_cli_request(int argc, const char *const *argv, const char **method,
 	if (argc < 1) return usage(out, cap);
 	const char *cmd = argv[0];
 
+	if (!strcmp(cmd, "crash") && argc == 2 && is_num(argv[1])) {
+		*path = PREFIX "crash";
+		snprintf(body, bc, "{\"from\":%s}", argv[1]);
+		return true;
+	}
 	if (!strcmp(cmd, "info") || !strcmp(cmd, "state") || !strcmp(cmd, "crash")) {
 		*method = "GET";
 		*path = !strcmp(cmd, "info") ? PREFIX "info" : !strcmp(cmd, "state") ? PREFIX "state" : PREFIX "crash";

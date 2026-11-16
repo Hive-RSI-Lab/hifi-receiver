@@ -663,6 +663,14 @@ static size_t x_log(char *o, size_t cap) {
 	return n;
 }
 
+static size_t x_long_log(char *o, size_t cap) {
+	/* 3000 bytes, a third of them newlines (6 escaped) */
+	size_t n = 3000 < cap - 1 ? 3000 : cap - 1;
+	for (size_t i = 0; i < n; i++) o[i] = i % 3 == 2 ? '\n' : 'a';
+	o[n] = '\0';
+	return n;
+}
+
 static void crash(void) {
 	CHECK(call("GET", "/api/v1/crash", NULL) == 404); /* no recorder */
 	hifi_ops_t x = ops;
@@ -670,13 +678,29 @@ static void crash(void) {
 	x.last_log = x_log;
 	CHECK(hifi_api_handle(&x, "GET", "/api/v1/crash", NULL, out, sizeof(out)) == 200);
 	CHECK_STR(out, "{\"reset_reason\":\"panic\",\"log\":\"E (1) bt: boom\\u000aBacktrace: 0x4008\\\"\\\\\\u000a\"}");
-	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{}", out, sizeof(out)) == 405);
 	CHECK(hifi_api_reply_cap("/api/v1/crash", NULL) > 6000);
+	/* a page at a time, for a bench that caps a console line */
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{}", out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":-1}", out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":15}", out, sizeof(out)) == 200);
+	CHECK_STR(out, "{\"reset_reason\":\"panic\",\"len\":35,\"from\":15,\"next\":35,"
+		       "\"log\":\"Backtrace: 0x4008\\\"\\\\\\u000a\"}");
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":99}", out, sizeof(out)) == 200);
+	CHECK_HAS(out, "\"from\":35,\"next\":35,\"log\":\"\"");
+	x.last_log = x_long_log;
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":0}", out, sizeof(out)) == 200);
+	CHECK(strlen(out) < 900);
+	CHECK_HAS(out, "\"len\":3000,\"from\":0,\"next\":");
 	const char *argv[] = {"crash"}, *method, *path;
 	char body[64];
 	CHECK(hifi_cli_request(1, argv, &method, &path, body, sizeof(body), out, sizeof(out)));
 	CHECK_STR(method, "GET");
 	CHECK_STR(path, "/api/v1/crash");
+	const char *argv2[] = {"crash", "700"};
+	CHECK(hifi_cli_request(2, argv2, &method, &path, body, sizeof(body), out, sizeof(out)));
+	CHECK_STR(method, "POST");
+	CHECK_STR(path, "/api/v1/crash");
+	CHECK_STR(body, "{\"from\":700}");
 }
 
 static char bt_sink[40];
