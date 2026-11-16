@@ -10,6 +10,7 @@
 #include "hifi_boot.h"
 #include "hifi_json.h"
 #include "hifi_remote.h"
+#include "hifi_ws_proto.h"
 #include "hifi_sha256.h"
 
 #ifdef HAVE_OPENSSL
@@ -86,7 +87,7 @@ static uint8_t flash[64 * 1024];
 static size_t flash_n;
 static bool committed, aborted, rebooted;
 static int captures;
-static char wifi_ssid[33], wifi_pw[65], relay_url[96];
+static char wifi_ssid[33], wifi_pw[65], relay_url[128], relay_key[66], relay_user[48];
 
 static int f_open(void *ctx, size_t size, const char **slot, const char **err) {
 	(void) ctx, (void) err, (void) size;
@@ -154,11 +155,14 @@ static void m_remote_status(hifi_remote_status_t *r) {
 	snprintf(r->url, sizeof(r->url), "%s", relay_url);
 	snprintf(r->prefix, sizeof(r->prefix), "hifi");
 	snprintf(r->dev, sizeof(r->dev), "240ac4123456");
+	r->has_key = relay_key[0];
 	r->keys = 1;
 }
-static int m_remote_set(const char *url, const char *user, const char *pw, const char *prefix) {
-	(void) user, (void) pw, (void) prefix;
+static int m_remote_set(const char *url, const char *user, const char *pw, const char *prefix, const char *key) {
+	(void) pw, (void) prefix;
 	snprintf(relay_url, sizeof(relay_url), "%s", url);
+	snprintf(relay_user, sizeof(relay_user), "%s", user);
+	snprintf(relay_key, sizeof(relay_key), "%s", key);
 	return 0;
 }
 
@@ -371,6 +375,114 @@ static void test_wifi_remote_api(void) {
 	CHECK(api("POST", "/api/v1/remote", "{\"url\":\"mqtts://b.example:8883\",\"user\":\"board\",\"password\":\"x\"}") == 200);
 	CHECK_HAS(out, "\"connected\":true");
 	CHECK_HAS(out, "\"dev\":\"240ac4123456\"");
+	CHECK_HAS(out, "\"transport\":\"mqtt\"");
+	CHECK_STR(relay_key, "");
+
+	/* the Hive's own endpoint over wss://, with the board's key and a service token */
+	const char *K = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+	char b[512];
+	snprintf(b, sizeof(b), "{\"url\":\"wss://bench.example.net/v1/dev\",\"key\":\"%s\",\"user\":\"abc.access\",\"password\":\"s3cret\"}", K);
+	CHECK(api("POST", "/api/v1/remote", b) == 200);
+	CHECK_STR(relay_key, K);
+	CHECK_STR(relay_user, "abc.access");
+	CHECK_HAS(out, "\"transport\":\"ws\"");
+	CHECK_HAS(out, "\"has_key\":true");
+	CHECK(!strstr(out, K) && !strstr(out, "s3cret")); /* never said back */
+	CHECK(api("GET", "/api/v1/remote", NULL) == 200);
+	CHECK(!strstr(out, K) && !strstr(out, "s3cret"));
+	/* no key, a short one, a bad host, plain ws:// */
+	relay_key[0] = '\0';
+	CHECK(api("POST", "/api/v1/remote", "{\"url\":\"wss://bench.example.net/v1/dev\"}") == 400);
+	CHECK(api("POST", "/api/v1/remote", "{\"url\":\"wss://bench.example.net/v1/dev\",\"key\":\"abcd\"}") == 400);
+	snprintf(b, sizeof(b), "{\"url\":\"wss://bad host/v1/dev\",\"key\":\"%s\"}", K);
+	CHECK(api("POST", "/api/v1/remote", b) == 400);
+	snprintf(b, sizeof(b), "{\"url\":\"ws://bench.example.net/v1/dev\",\"key\":\"%s\"}", K);
+	CHECK(api("POST", "/api/v1/remote", b) == 400);
+	/* a token that would add a header of its own */
+	snprintf(b, sizeof(b), "{\"url\":\"wss://bench.example.net/v1/dev\",\"key\":\"%s\",\"user\":\"a\\r\\nX-Evil: 1\",\"password\":\"p\"}", K);
+	CHECK(api("POST", "/api/v1/remote", b) == 400);
+	snprintf(b, sizeof(b), "{\"url\":\"wss://bench.example.net/v1/dev\",\"key\":\"%s\",\"user\":\"a\",\"password\":\"p\\tq\"}", K);
+	CHECK(api("POST", "/api/v1/remote", b) == 400);
+	snprintf(b, sizeof(b), "{\"url\":\"wss://bench.example.net/v1/dev\",\"key\":\"%s\",\"user\":\"a\"}", K);
+	CHECK(api("POST", "/api/v1/remote", b) == 400); /* an id without its secret */
+	/* a url too long for the board is refused, not cut off */
+	char longurl[300] = "{\"url\":\"wss://bench.example.net/";
+	for (int i = 0; i < 140; i++) strcat(longurl, "a");
+	strcat(longurl, "\",\"key\":\"");
+	strcat(longurl, K);
+	strcat(longurl, "\"}");
+	CHECK(api("POST", "/api/v1/remote", longurl) == 400);
+	CHECK_STR(relay_key, "");
+	/* MQTT again drops the key */
+	snprintf(b, sizeof(b), "{\"url\":\"mqtts://b.example:8883\",\"key\":\"%s\"}", K);
+	CHECK(api("POST", "/api/v1/remote", b) == 200);
+	CHECK_STR(relay_key, "");
+	CHECK(api("POST", "/api/v1/remote", "{\"url\":\"\"}") == 200);
+	CHECK_HAS(out, "\"configured\":false");
+	CHECK_HAS(out, "\"transport\":null");
+}
+
+static void test_ws_proto(void) {
+	char host[HIFI_WS_HOST_MAX], path[HIFI_WS_PATH_MAX];
+	int port = 0;
+	CHECK(hifi_ws_url_parse("wss://h2-bench.example.cc/v1/dev", host, &port, path) == 0);
+	CHECK_STR(host, "h2-bench.example.cc");
+	CHECK_STR(path, "/v1/dev");
+	CHECK(port == 443);
+	CHECK(hifi_ws_url_parse("wss://10.0.0.2:8443", host, &port, path) == 0);
+	CHECK(port == 8443);
+	CHECK_STR(path, "/");
+	CHECK(hifi_ws_url_parse("ws://h/v1", host, &port, path) == -1);
+	CHECK(hifi_ws_url_parse("wss://", host, &port, path) == -1);
+	CHECK(hifi_ws_url_parse("wss://h:0/", host, &port, path) == -1);
+	CHECK(hifi_ws_url_parse("wss://h:70000/", host, &port, path) == -1);
+	CHECK(hifi_ws_url_parse("wss://h:/", host, &port, path) == -1);
+	CHECK(hifi_ws_url_parse("wss://h@evil/", host, &port, path) == -1);
+	CHECK(hifi_ws_url_parse("wss://-h/", host, &port, path) == -1);
+	CHECK(hifi_ws_url_parse("wss://h/a b", host, &port, path) == -1);
+	CHECK(hifi_ws_url_parse("wss://h/a\r\nX: y", host, &port, path) == -1);
+	CHECK(hifi_ws_url_parse("wss://h?x", host, &port, path) == -1);
+
+	const char *K = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+	CHECK(hifi_ws_key_ok(K));
+	CHECK(!hifi_ws_key_ok("0123"));
+	CHECK(!hifi_ws_key_ok("g123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"));
+	CHECK(!hifi_ws_key_ok(NULL));
+
+	char hd[HIFI_WS_HEADERS_MAX];
+	int n = hifi_ws_headers(hd, sizeof(hd), "abc.access", "sec", "240ac4123456", K);
+	CHECK(n > 0 && (size_t) n == strlen(hd));
+	CHECK_STR(hd, "CF-Access-Client-Id: abc.access\r\nCF-Access-Client-Secret: sec\r\n"
+		      "X-Bench-Dev: 240ac4123456\r\nX-Bench-Key: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\r\n");
+	CHECK(hifi_ws_headers(hd, sizeof(hd), "", "", "240ac4123456", K) > 0); /* on a LAN, no token */
+	CHECK(!strstr(hd, "CF-Access"));
+	CHECK(hifi_ws_headers(hd, sizeof(hd), "a\r\nX: 1", "s", "240ac4123456", K) == -1);
+	CHECK(hd[0] == '\0');
+	CHECK(hifi_ws_headers(hd, sizeof(hd), "a", "s\n", "240ac4123456", K) == -1);
+	CHECK(hifi_ws_headers(hd, sizeof(hd), "a", "s\x7f", "240ac4123456", K) == -1);
+	CHECK(hifi_ws_headers(hd, sizeof(hd), "a", "", "240ac4123456", K) == -1);
+	CHECK(hifi_ws_headers(hd, sizeof(hd), "a", "s", "", K) == -1);
+	CHECK(hifi_ws_headers(hd, sizeof(hd), "a", "s", "240ac4123456", "nokey") == -1);
+	CHECK(hifi_ws_headers(hd, 40, "abc.access", "sec", "240ac4123456", K) == -1); /* too small: nothing half-written */
+	CHECK(hd[0] == '\0');
+
+	char b[64] = "{\"id\":7,\"status\":200}";
+	size_t l = hifi_ws_tag(b, strlen(b), sizeof(b), "reply");
+	CHECK_STR(b, "{\"t\":\"reply\",\"id\":7,\"status\":200}");
+	CHECK(l == strlen(b));
+	char e[13] = "{}";
+	CHECK(hifi_ws_tag(e, 2, sizeof(e), "event") == 0); /* no room */
+	CHECK_STR(e, "{}");
+	char e2[32] = "{}";
+	CHECK(hifi_ws_tag(e2, 2, sizeof(e2), "event") == strlen("{\"t\":\"event\"}"));
+	CHECK_STR(e2, "{\"t\":\"event\"}");
+	char x[32] = "[1]";
+	CHECK(hifi_ws_tag(x, 3, sizeof(x), "status") == 0);
+	char q[32] = "{\"a\":1}";
+	CHECK(hifi_ws_tag(q, strlen(q), sizeof(q), "x\"y") == 0);
+	CHECK(hifi_ws_tag(q, strlen(q), 7 + 13, "status") == 0); /* exactly one short */
+	CHECK(hifi_ws_tag(q, strlen(q), 7 + 14, "status") == 20);
+	CHECK_STR(q, "{\"t\":\"status\",\"a\":1}");
 }
 
 static hifi_remote_t rem;
@@ -475,6 +587,7 @@ int main(void) {
 	test_ota_api();
 	test_capture_api();
 	test_wifi_remote_api();
+	test_ws_proto();
 	test_remote();
 	test_trial();
 	return check_report("remote");

@@ -31,6 +31,7 @@ import json
 import math
 import os
 import queue
+import re
 import random
 import struct
 import threading
@@ -313,7 +314,8 @@ class Sim:
     def remote_status(self) -> dict:
         c = self.remote_cfg or {}
         return {"configured": bool(c.get("url")), "url": c.get("url"), "prefix": c.get("prefix", "hifi"),
-                "user": c.get("user"), "connected": bool(self.remote_connected()), "dev": relay.dev_id(self.mac)}
+                "user": c.get("user"), "connected": bool(self.remote_connected()), "dev": relay.dev_id(self.mac),
+                "has_key": bool(c.get("key"))}
 
     # ---- the API ---------------------------------------------------------
     def call(self, op: str, body: dict | None) -> tuple[int, dict]:
@@ -325,9 +327,14 @@ class Sim:
                 self.boot()   # over HTTP or the console the reboot just happens
             return code, out
         if op == "remote" and not get:
-            if not str(body.get("url", "")).startswith(("mqtt://", "mqtts://")):
-                return 400, {"error": "url must be mqtt:// or mqtts://"}
+            url = str(body.get("url", ""))
+            if not url.startswith(("mqtt://", "mqtts://", "wss://")):
+                return 400, {"error": "url must be wss://, mqtt:// or mqtts://"}
+            key = str(body.get("key") or "")
+            if url.startswith("wss://") and not re.fullmatch(r"[0-9a-fA-F]{64}", key):
+                return 400, {"error": "a wss:// link needs its key: 64 hex digits"}
             self.remote_cfg = {k: body.get(k) for k in ("url", "user", "password", "prefix")}
+            self.remote_cfg["key"] = key if url.startswith("wss://") else ""
             self.remote_cfg["prefix"] = self.remote_cfg["prefix"] or "hifi"
             if self.remote_hook:
                 self.remote_hook(self.remote_cfg)

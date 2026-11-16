@@ -1,0 +1,27 @@
+/*
+ * The board's WebSocket to the Hive's bench endpoint (docs/remote.md, "The
+ * bench endpoint over wss://"): one task that dials wss:// with the dial's
+ * headers (core/hifi_ws_proto.c), keeps the link with a ping every 20 s,
+ * hands each text message to the relay and redials with a backoff when the
+ * link drops. TLS is checked against the certificate bundle.
+ */
+#pragma once
+
+#include <stdbool.h>
+#include <stddef.h>
+
+/* A whole text message from the Hive, malloc'd and NUL-terminated: the
+ * callee frees it. */
+typedef void (*hifi_ws_msg_cb_t)(char *data, size_t len);
+/* Each time the link comes up (the board sends its status then). */
+typedef void (*hifi_ws_up_cb_t)(void);
+
+/* Starts the link; url and headers are copied. msg_max is the biggest
+ * message taken (a bigger one is read and dropped). False if it can't start. */
+bool hifi_ws_start(const char *url, const char *headers, size_t msg_max, hifi_ws_msg_cb_t on_msg, hifi_ws_up_cb_t on_up);
+/* Closes the link and waits for its task to end. */
+void hifi_ws_stop(void);
+/* True while the link is up. */
+bool hifi_ws_up(void);
+/* Sends one text message; false if the link is down or the send failed. */
+bool hifi_ws_send(const char *text, size_t len);

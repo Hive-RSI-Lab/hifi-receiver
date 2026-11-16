@@ -9,6 +9,7 @@
 #include "hifi_b64.h"
 #include "hifi_json.h"
 #include "hifi_vol.h"
+#include "hifi_ws_proto.h"
 
 #define PREFIX "/api/v1/"
 
@@ -677,16 +678,35 @@ static int r_wifi(const hifi_ops_t *ops, const char *body, char *out, size_t cap
 static int r_remote(const hifi_ops_t *ops, bool post, const char *body, char *out, size_t cap) {
 	if (!ops->remote_status) return error(out, cap, 404, "no relay in this build");
 	if (post) {
-		char url[96] = "", user[48] = "", pw[96] = "", prefix[24] = "hifi";
+		char url[128] = "", user[48] = "", pw[96] = "", prefix[24] = "hifi", key[66] = "";
 		if (!ops->remote_set) return error(out, cap, 404, "no relay in this build");
+		const char *sv;
+		size_t sl;
+		/* a cut-off url or token would dial somewhere else, or fail without saying why */
+		if ((hj_get_str_span(body, "url", &sv, &sl) && sl >= sizeof(url)) ||
+		    (hj_get_str_span(body, "user", &sv, &sl) && sl >= sizeof(user)) ||
+		    (hj_get_str_span(body, "password", &sv, &sl) && sl >= sizeof(pw)))
+			return error(out, cap, 400, "url, user or password is too long");
 		hj_get_str(body, "url", url, sizeof(url));
-		if (url[0] && strncmp(url, "mqtts://", 8) && strncmp(url, "mqtt://", 7))
-			return error(out, cap, 400, "url must be mqtts://host:port (or mqtt:// on a LAN), or empty to turn it off");
+		hj_get_str(body, "key", key, sizeof(key));
+		bool ws = !strncmp(url, "wss://", 6);
+		if (url[0] && !ws && strncmp(url, "mqtts://", 8) && strncmp(url, "mqtt://", 7))
+			return error(out, cap, 400, "url must be wss://host/path (the Hive's endpoint), mqtts://host:port "
+						    "(or mqtt:// on a LAN), or empty to turn it off");
+		char host[HIFI_WS_HOST_MAX], path[HIFI_WS_PATH_MAX];
+		int port;
+		if (ws && hifi_ws_url_parse(url, host, &port, path)) return error(out, cap, 400, "that wss:// url can't be dialled");
+		if (ws && !hifi_ws_key_ok(key)) return error(out, cap, 400, "a wss:// link needs its key: 64 hex digits");
+		if (!ws) key[0] = '\0';
 		hj_get_str(body, "user", user, sizeof(user));
 		hj_get_str(body, "password", pw, sizeof(pw));
 		hj_get_str(body, "prefix", prefix, sizeof(prefix));
 		if (!prefix[0] || strpbrk(prefix, "+#/ ")) return error(out, cap, 400, "prefix must be one topic level");
-		if (ops->remote_set(url, user, pw, prefix)) return error(out, cap, 500, "couldn't save the relay settings");
+		/* the service token goes into the dial's headers: nothing that could start another one */
+		char hd[HIFI_WS_HEADERS_MAX];
+		if (ws && hifi_ws_headers(hd, sizeof(hd), user, pw, "000000000000", key) < 0)
+			return error(out, cap, 400, "user and password must be printable, with a password when there is a user");
+		if (ops->remote_set(url, user, pw, prefix, key)) return error(out, cap, 500, "couldn't save the relay settings");
 	}
 	hifi_remote_status_t r = {0};
 	ops->remote_status(&r);
@@ -696,9 +716,11 @@ static int r_remote(const hifi_ops_t *ops, bool post, const char *body, char *ou
 	hj_bool(&j, "configured", r.configured);
 	hj_bool(&j, "connected", r.connected);
 	hj_str(&j, "url", r.url[0] ? r.url : NULL);
+	hj_str(&j, "transport", !r.url[0] ? NULL : strncmp(r.url, "wss://", 6) ? "mqtt" : "ws");
 	hj_str(&j, "user", r.user[0] ? r.user : NULL);
 	hj_str(&j, "prefix", r.prefix);
 	hj_str(&j, "dev", r.dev);
+	hj_bool(&j, "has_key", r.has_key);
 	hj_int(&j, "keys", r.keys);
 	hj_int(&j, "accepted", r.accepted);
 	hj_int(&j, "rejected", r.rejected);

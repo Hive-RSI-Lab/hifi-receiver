@@ -1,6 +1,7 @@
 /*
  * The remote channel on the board (docs/remote.md): an MQTT client that
- * dials out to the relay, takes signed commands through core/hifi_remote.c,
+ * dials out to the relay, or (a wss:// URL) a WebSocket to the Hive's bench
+ * endpoint (esp/hifi_ws.c), takes signed commands through core/hifi_remote.c,
  * and publishes replies, status and events. Also the OTA session's flash
  * writes (esp_ota_*) and the trial boot that keeps or rolls back a new image.
  */
@@ -30,6 +31,8 @@
 #include "hifi_esp.h"
 #include "hifi_json.h"
 #include "hifi_remote.h"
+#include "hifi_ws.h"
+#include "hifi_ws_proto.h"
 
 static const char TAG[] = "hifi_remote";
 
@@ -56,7 +59,9 @@ static const hifi_ops_t *ops;
 static hifi_remote_t rem;
 static esp_mqtt_client_handle_t client;
 static volatile bool connected;
-static char url[96], user[48], pass[96], prefix[24] = "hifi";
+static char url[128], user[48], pass[96], prefix[24] = "hifi";
+static char key[66]; /* the board's own key for a wss:// endpoint; never shown */
+static bool ws_on, ws_bad; /* the WebSocket is running; its settings won't dial */
 static char topic_cmd[64], topic_reply[64], topic_status[64], topic_event[64];
 static QueueHandle_t inbox;
 static char *rx;      /* a message arriving in pieces */
@@ -74,12 +79,13 @@ static void load_str(const char *key, const char *dflt, char *out, size_t n) {
 	free(s);
 }
 
-int hifi_remote_set(const char *u, const char *us, const char *pw, const char *pre) {
+int hifi_remote_set(const char *u, const char *us, const char *pw, const char *pre, const char *k) {
 	int err = 0;
 	err |= config_set_value(NVS_TYPE_STR, "hifi_relay_url", u) != ESP_OK;
 	err |= config_set_value(NVS_TYPE_STR, "hifi_relay_user", us) != ESP_OK;
 	err |= config_set_value(NVS_TYPE_STR, "hifi_relay_pass", pw) != ESP_OK;
 	err |= config_set_value(NVS_TYPE_STR, "hifi_relay_prefix", pre) != ESP_OK;
+	err |= config_set_value(NVS_TYPE_STR, "hifi_relay_key", k ? k : "") != ESP_OK;
 	if (err) return -1;
 	settings_changed = true; /* the relay task reconnects with them */
 	return 0;
@@ -90,6 +96,7 @@ static void load_settings(void) {
 	load_str("hifi_relay_user", HIFI_RELAY_USER, user, sizeof(user));
 	load_str("hifi_relay_pass", HIFI_RELAY_PASS, pass, sizeof(pass));
 	load_str("hifi_relay_prefix", "hifi", prefix, sizeof(prefix));
+	load_str("hifi_relay_key", "", key, sizeof(key));
 	snprintf(topic_cmd, sizeof(topic_cmd), "%s/%s/cmd", prefix, rem.dev);
 	snprintf(topic_reply, sizeof(topic_reply), "%s/%s/reply", prefix, rem.dev);
 	snprintf(topic_status, sizeof(topic_status), "%s/%s/status", prefix, rem.dev);
@@ -103,6 +110,7 @@ void hifi_remote_status(hifi_remote_status_t *r) {
 	snprintf(r->user, sizeof(r->user), "%s", user);
 	snprintf(r->prefix, sizeof(r->prefix), "%s", prefix);
 	snprintf(r->dev, sizeof(r->dev), "%s", rem.dev);
+	r->has_key = key[0] != 0;
 	r->keys = rem.nkeys;
 	r->accepted = rem.accepted;
 	r->rejected = rem.rejected;
@@ -110,8 +118,21 @@ void hifi_remote_status(hifi_remote_status_t *r) {
 
 /* ------------------------------------------------------------------ publishing */
 
-static void publish(const char *topic, const char *data, bool retain) {
-	if (client && connected) esp_mqtt_client_publish(client, topic, data, 0, 1, retain);
+/* t tags the message on the WebSocket, where one socket carries all three */
+static void publish(const char *topic, const char *t, const char *data, bool retain) {
+	if (client && connected) {
+		esp_mqtt_client_publish(client, topic, data, 0, 1, retain);
+		return;
+	}
+	if (!ws_on || !hifi_ws_up()) return;
+	size_t n = strlen(data), cap = n + 32;
+	char *b = heap_caps_malloc(cap, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+	if (!b) b = malloc(cap);
+	if (!b) return;
+	memcpy(b, data, n + 1);
+	n = hifi_ws_tag(b, n, cap, t);
+	if (n) hifi_ws_send(b, n);
+	free(b);
 }
 
 static void publish_status(void) {
@@ -142,7 +163,7 @@ static void publish_status(void) {
 	hj_str(&j, "state", o.state);
 	hj_obj_end(&j);
 	hj_obj_end(&j);
-	publish(topic_status, buf, true);
+	publish(topic_status, "status", buf, true);
 }
 
 static void publish_event(const char *event, const char *k1, const char *v1, const char *k2, const char *v2) {
@@ -155,7 +176,7 @@ static void publish_event(const char *event, const char *k1, const char *v1, con
 	if (k1) hj_str(&j, k1, v1);
 	if (k2) hj_str(&j, k2, v2);
 	hj_obj_end(&j);
-	publish(topic_event, buf, false);
+	publish(topic_event, "event", buf, false);
 }
 
 /* ------------------------------------------------------------------ commands */
@@ -183,7 +204,7 @@ static void worker(void *arg) {
 		if (!out) out = malloc(cap);
 		if (out) {
 			int st = hifi_remote_handle(&rem, ops, m.data, m.len, clock_s(), out, cap);
-			publish(topic_reply, out, false);
+			publish(topic_reply, "reply", out, false);
 			if (st != 200) ESP_LOGW(TAG, "command answered %d", st);
 			free(out);
 		}
@@ -228,6 +249,29 @@ static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data) {
 	default:
 		break;
 	}
+}
+
+static void on_ws_msg(char *data, size_t len) {
+	msg_t m = {.data = data, .len = len};
+	if (xQueueSend(inbox, &m, 0) != pdTRUE) free(data);
+}
+
+static void on_ws_up(void) {
+	connected = true;
+	ESP_LOGI(TAG, "bench endpoint connected: %s as %s", url, rem.dev);
+	publish_status();
+}
+
+static void ws_start(void) {
+	char h[HIFI_WS_HEADERS_MAX];
+	if (hifi_ws_headers(h, sizeof(h), user, pass, rem.dev, key) < 0) {
+		ESP_LOGE(TAG, "%s needs the board's key from the Hive (and a whole service token, if any)", url);
+		ws_bad = true;
+		return;
+	}
+	ws_on = hifi_ws_start(url, h, MSG_MAX, on_ws_msg, on_ws_up);
+	memset(h, 0, sizeof(h));
+	if (!ws_on) ws_bad = true;
 }
 
 static void client_start(void) {
@@ -328,9 +372,19 @@ static void relay_task(void *arg) {
 				client = NULL;
 				connected = false;
 			}
+			if (ws_on) {
+				hifi_ws_stop();
+				ws_on = false;
+				connected = false;
+			}
+			ws_bad = false;
 			load_settings();
 		}
-		if (up && url[0] && !client) client_start();
+		if (ws_on) connected = hifi_ws_up();
+		if (up && url[0] && !client && !ws_on && !ws_bad) {
+			if (!strncmp(url, "wss://", 6)) ws_start();
+			else client_start();
+		}
 
 		if (connected && !rollback_reported) {
 			hifi_ota_status_t o = {0};

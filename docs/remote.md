@@ -120,6 +120,41 @@ so both paths work and the box doesn't need to know which one the Hive uses:
   is down or not set up yet. The LAN path isn't signed (as in squeezelite-esp32; [firmware.md](firmware.md)), so it is
   only for a box on the person's own network.
 
+### The bench endpoint over wss://
+
+The Hive's bench (the H2 dashboard's Wi-Fi bring-up) takes boards without a
+broker: the board dials the Hive's own endpoint as a WebSocket, through
+Cloudflare, so the tower still opens no port. `POST /api/v1/remote` with a
+`wss://` URL picks it:
+
+```
+{"url": "wss://<the bench's device address>/v1/dev", "user": "<service token id>",
+ "password": "<service token secret>", "key": "<64 hex digits>"}
+```
+
+- **The dial** carries `CF-Access-Client-Id` / `-Secret` (the Cloudflare
+  Access service token, left out when `user` is empty), then `X-Bench-Dev`
+  (the board's `dev`) and `X-Bench-Key` (its own key, which the Hive minted
+  for it over USB and keeps only as a SHA-256). The headers are built in
+  `core/hifi_ws_proto.c`, which refuses any value holding CR, LF or another
+  control character.
+- **TLS** is checked against the IDF certificate bundle (`esp/hifi_ws.c`
+  uses `tcp_transport` with `esp_crt_bundle_attach`).
+- **Messages** are the same JSON as on the MQTT topics, one per text frame.
+  The Hive sends the signed two-line command; the board sends its status,
+  events and replies with a `"t"` member first (`"status"`, `"event"`,
+  `"reply"`) since one socket carries all three. The board pings every
+  20 s; the endpoint drops a board it hasn't heard from in 90 s, and that is
+  its "offline" (there is no last will).
+- **A refused dial** (a wrong or revoked key, no Access token) just fails:
+  IDF 4.4 doesn't give the HTTP status of a refused upgrade, so the board
+  backs off from 5 s, doubling to 5 minutes, and keeps its settings.
+- `GET /api/v1/remote` says `has_key` but never shows the key.
+
+The ESP side isn't built on the tower (no IDF toolchain there); the plain
+parts are host-tested in `firmware/test/test_remote.c`, and the endpoint's
+side with a fake board in the H2 dashboard's tests.
+
 ## Firmware updates the Hive pushes, with rollback
 
 **Partition table:** two app slots plus the factory recovery app, so a new

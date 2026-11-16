@@ -264,6 +264,19 @@ class Provision(unittest.TestCase):
         finally:
             br.close()
 
+    def test_wss_link_needs_its_key(self):
+        """The Hive's bench endpoint (docs/remote.md): wss:// is taken with the
+        board's key, which the status says is there but never shows."""
+        sim = mock.Sim("lite-main")
+        url = "wss://bench.example.test/dev"
+        self.assertEqual(sim.call("remote", {"url": url})[0], 400)
+        self.assertEqual(sim.call("remote", {"url": url, "key": "ab" * 31})[0], 400)
+        code, st = sim.call("remote", {"url": url, "key": "ab" * 32})
+        self.assertEqual(code, 200)
+        self.assertTrue(st["has_key"])
+        self.assertNotIn("ab" * 32, json.dumps(st))
+        self.assertEqual(sim.call("remote", {"url": "http://x/"})[0], 400)
+
     def test_no_board(self):
         out = []
         self.assertEqual(provision.main(["--port", "/nonexistent"] and [], say=out.append)
