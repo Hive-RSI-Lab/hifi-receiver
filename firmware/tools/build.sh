@@ -38,6 +38,22 @@ else
 fi
 unset sp_id sp_secret
 
+# The Hive's public key, which the board needs to take agent commands and
+# updates over Wi-Fi (hifi_relay.c): from HIFI_HIVE_PUBKEY, else the bench
+# endpoint's tool if this machine has one. A build without it can only be
+# flashed by USB, and the bench refuses to send it over the air.
+if [ -z "${HIFI_HIVE_PUBKEY:-}" ] && [ -r "$HOME/modules/dash/remote_bench.py" ]; then
+	HIFI_HIVE_PUBKEY=$(python3 "$HOME/modules/dash/remote_bench.py" pubkey 2>/dev/null || true)
+fi
+if [ -n "${HIFI_HIVE_PUBKEY:-}" ]; then
+	case "$HIFI_HIVE_PUBKEY" in *[!0-9a-fA-F,\ ]*) echo "build.sh: HIFI_HIVE_PUBKEY must be hex keys, comma-separated" >&2; exit 1 ;; esac
+	export HIFI_HIVE_PUBKEY
+	echo "build.sh: Hive key: set"
+else
+	unset HIFI_HIVE_PUBKEY
+	echo "build.sh: Hive key: missing, the board will refuse agent commands and Wi-Fi updates" >&2
+fi
+
 cd "$DEST"
 idf.py reconfigure >/dev/null
 nice -n 19 ninja -C build -j "${JOBS:-4}"
