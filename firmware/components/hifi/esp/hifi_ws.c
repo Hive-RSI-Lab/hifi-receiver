@@ -3,7 +3,11 @@
  * rather than esp_websocket_client: in IDF 4.4 that client can't take the
  * certificate bundle, and without a CA it doesn't check the server at all.
  * Here the SSL transport carries esp_crt_bundle_attach, so the Cloudflare
- * edge's certificate is checked like any https:// site's.
+ * edge's certificate is checked like any https:// site's. The WebSocket on
+ * top is our own (core/hifi_ws_proto.c), not transport_ws: that one reads
+ * the upgrade answer in one gulp and drops whatever followed it in the same
+ * TLS record, so a command sent the moment the board connected put every
+ * later frame out of step.
  *
  * mbedTLS isn't safe from two tasks at once, so every read and write on the
  * socket holds `lock`; the task waits for data (poll) without it.
@@ -12,11 +16,14 @@
 #include <string.h>
 
 #include "esp_crt_bundle.h"
+#include "mbedtls/base64.h"
+#include "mbedtls/sha1.h"
+#include "esp_heap_caps.h"
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "esp_transport.h"
 #include "esp_transport_ssl.h"
-#include "esp_transport_ws.h"
+#include "esp_random.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
@@ -30,10 +37,12 @@ static const char TAG[] = "hifi_ws";
 #define BACKOFF_MIN_S 5
 #define BACKOFF_MAX_S 300
 #define IO_MS 10000
+#define STACK 6144     /* bytes: a TLS handshake with the certificate bundle */
 
 static SemaphoreHandle_t lock;
-static SemaphoreHandle_t done;
-static esp_transport_handle_t ssl, ws;
+static SemaphoreHandle_t done, go; /* go: the parked task starts a link */
+static TaskHandle_t task;
+static esp_transport_handle_t ssl;
 static char url[128], *headers;
 static size_t msg_max;
 static hifi_ws_msg_cb_t on_msg;
@@ -46,128 +55,223 @@ static int64_t now_s(void) { return esp_timer_get_time() / 1000000; }
 static void drop(void) {
 	xSemaphoreTake(lock, portMAX_DELAY);
 	up = false;
-	if (ws) {
-		esp_transport_close(ws);
-		esp_transport_destroy(ws); /* frees only its own state, not the SSL under it */
+	if (ssl) {
+		esp_transport_close(ssl);
+		esp_transport_destroy(ssl);
 	}
-	if (ssl) esp_transport_destroy(ssl);
-	ws = ssl = NULL;
+	ssl = NULL;
 	xSemaphoreGive(lock);
+}
+
+/* n bytes or nothing: a short read mid-frame would put the stream out of step */
+static bool read_exact(void *b, size_t n) {
+	size_t got = 0;
+	while (got < n) {
+		int r = esp_transport_read(ssl, (char *) b + got, (int) (n - got), IO_MS);
+		if (r <= 0) return false;
+		got += (size_t) r;
+	}
+	return true;
+}
+
+static bool write_all(const void *b, size_t n) {
+	size_t put = 0;
+	while (put < n) {
+		int r = esp_transport_write(ssl, (const char *) b + put, (int) (n - put), IO_MS);
+		if (r <= 0) return false;
+		put += (size_t) r;
+	}
+	return true;
+}
+
+/* One masked frame, header and payload in one write (one TLS record). Holds no lock. */
+static bool write_frame(int op, const char *data, size_t len) {
+	uint8_t mask[4];
+	esp_fill_random(mask, sizeof(mask));
+	uint8_t *f = malloc(HIFI_WS_HEAD_MAX + len);
+	if (!f) return false;
+	size_t h = hifi_ws_head(f, op, len, mask);
+	for (size_t i = 0; i < len; i++) f[h + i] = (uint8_t) data[i] ^ mask[i & 3];
+	bool ok = write_all(f, h + len);
+	free(f);
+	return ok;
+}
+
+static bool upgrade(const char *host, int port, const char *path) {
+	uint8_t raw[16];
+	unsigned char key[32], acc[32], sha[20];
+	size_t kn = 0, an = 0;
+	esp_fill_random(raw, sizeof(raw));
+	if (mbedtls_base64_encode(key, sizeof(key), &kn, raw, sizeof(raw))) return false;
+	key[kn] = '\0';
+	char *req = malloc(512 + strlen(headers));
+	if (!req) return false;
+	int n = sprintf(req, "GET %s HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n"
+			"Sec-WebSocket-Key: %s\r\nSec-WebSocket-Version: 13\r\nUser-Agent: hifi-board\r\n%s\r\n",
+			path, host, (char *) key, headers);
+	bool ok = write_all(req, (size_t) n);
+	free(req);
+	if (!ok) return false;
+	/* the answer a byte at a time, so nothing after its blank line is read here */
+	char *resp = malloc(2048);
+	if (!resp) return false;
+	size_t got = 0;
+	while (got < 2047 && !(got >= 4 && !memcmp(resp + got - 4, "\r\n\r\n", 4))) {
+		if (!read_exact(resp + got, 1)) break;
+		got++;
+	}
+	resp[got] = '\0';
+	char magic[64];
+	snprintf(magic, sizeof(magic), "%s258EAFA5-E914-47DA-95CA-C5AB0DC85B11", (char *) key);
+	ok = got >= 4 && !memcmp(resp + got - 4, "\r\n\r\n", 4) && !mbedtls_sha1_ret((const unsigned char *) magic, strlen(magic), sha) &&
+	     !mbedtls_base64_encode(acc, sizeof(acc), &an, sha, sizeof(sha));
+	if (ok) {
+		acc[an] = '\0';
+		ok = hifi_ws_upgrade_ok(resp, (char *) acc);
+	}
+	if (!ok) {
+		char *e = strstr(resp, "\r\n");
+		if (e) *e = '\0';
+		ESP_LOGW(TAG, "the endpoint refused the link: %.60s", resp[0] ? resp : "(no answer)");
+	}
+	free(resp);
+	(void) port;
+	return ok;
 }
 
 static bool dial(void) {
 	char host[HIFI_WS_HOST_MAX], path[HIFI_WS_PATH_MAX];
 	int port;
 	if (hifi_ws_url_parse(url, host, &port, path)) return false;
+	xSemaphoreTake(lock, portMAX_DELAY);
 	ssl = esp_transport_ssl_init();
+	xSemaphoreGive(lock);
 	if (!ssl) return false;
 	esp_transport_ssl_crt_bundle_attach(ssl, esp_crt_bundle_attach);
 	esp_transport_keep_alive_t ka = {.keep_alive_enable = true, .keep_alive_idle = 30, .keep_alive_interval = 10, .keep_alive_count = 3};
 	esp_transport_ssl_set_keep_alive(ssl, &ka);
-	ws = esp_transport_ws_init(ssl);
-	if (!ws) return false;
-	esp_transport_ws_set_path(ws, path);
-	if (headers[0] && esp_transport_ws_set_headers(ws, headers) != ESP_OK) return false;
-	/* a refused key (403), a revoked one or no Access token all end here:
-	 * IDF 4.4 doesn't say the HTTP status, so each is just a failed dial */
-	if (esp_transport_connect(ws, host, port, IO_MS) < 0) return false;
-	return true;
+	if (esp_transport_connect(ssl, host, port, IO_MS) < 0) return false;
+	return upgrade(host, port, path);
 }
 
-/* One text frame in, whole; anything else (binary, too big) is read and dropped. */
+/* One frame in, whole. A text message goes to on_msg; a ping is answered; a
+ * close or a broken read ends the link; anything else is read and dropped. */
 static void read_frame(void) {
-	char first[256];
+	uint8_t hb[HIFI_WS_HEAD_MAX];
+	hifi_ws_head_t h;
+	char *m = NULL;
+	bool take = false;
 	xSemaphoreTake(lock, portMAX_DELAY);
-	int r = esp_transport_read(ws, first, sizeof(first), IO_MS);
-	if (r < 0) {
+	if (!read_exact(hb, 2) || !read_exact(hb + 2, hifi_ws_head_len(hb) - 2) || hifi_ws_head_parse(hb, &h)) {
 		broken = true;
-		xSemaphoreGive(lock);
-		return;
+		goto out;
 	}
-	ws_transport_opcodes_t op = esp_transport_ws_get_read_opcode(ws);
-	int total = esp_transport_ws_get_read_payload_len(ws);
-	if (r == 0 || op == WS_TRANSPORT_OPCODES_NONE) {
-		/* a ping or pong handled inside the transport, or the Hive's close
-		 * (answered there too); a closed socket shows up as a failed read next */
-		xSemaphoreGive(lock);
-		return;
-	}
-	bool take = (op & 0x0f) == WS_TRANSPORT_OPCODES_TEXT && total > 0 && (size_t) total <= msg_max;
-	char *m = take ? malloc((size_t) total + 1) : NULL;
-	if (m) memcpy(m, first, (size_t) r);
-	int got = r;
-	while (got < total) {
-		int n = m ? esp_transport_read(ws, m + got, total - got, IO_MS) : esp_transport_read(ws, first, sizeof(first) < (size_t) (total - got) ? (int) sizeof(first) : total - got, IO_MS);
-		if (n <= 0) {
+	take = h.op == 1 && h.fin && h.len > 0 && h.len <= msg_max;
+	bool ctl = h.op >= 8;
+	if (take || ctl) {
+		m = malloc((size_t) h.len + 1);
+		if (!m || !read_exact(m, (size_t) h.len)) {
 			broken = true;
-			break;
+			goto out;
 		}
-		got += n;
+		for (size_t i = 0; i < h.len; i++) m[i] ^= (char) h.mask[i & 3];
+		m[h.len] = '\0';
+	} else {
+		char sink[128];
+		for (uint64_t left = h.len; left;) {
+			size_t n = left < sizeof(sink) ? (size_t) left : sizeof(sink);
+			if (!read_exact(sink, n)) {
+				broken = true;
+				goto out;
+			}
+			left -= n;
+		}
+		ESP_LOGW(TAG, "dropped a %u-byte frame (opcode %d%s)", (unsigned) h.len, h.op, h.fin ? "" : ", split");
+		goto out;
 	}
+	if (h.op == 9) {
+		if (!write_frame(10, m, (size_t) h.len)) broken = true;
+		last_tx = now_s();
+	} else if (h.op == 8) {
+		unsigned code = h.len >= 2 ? (unsigned) ((uint8_t) m[0] << 8 | (uint8_t) m[1]) : 1005;
+		ESP_LOGW(TAG, "the endpoint closed the link (%u)", code);
+		write_frame(8, m, h.len >= 2 ? 2 : 0);
+		broken = true;
+	}
+out:
 	xSemaphoreGive(lock);
-	if (!m) {
-		if (!broken) ESP_LOGW(TAG, "dropped a %d-byte frame (opcode %d)", total, op & 0x0f);
+	if (m && take && !broken) {
+		on_msg(m, (size_t) h.len);
 		return;
 	}
-	if (broken) {
-		free(m);
-		return;
-	}
-	m[total] = '\0';
-	on_msg(m, (size_t) total);
+	free(m);
 }
 
+/* One task for the board's life, parked on `go` while the link is off: a
+ * task that exited and was made again would need a fresh 6 KB stack each
+ * time, and on a Lite with Bluetooth on, internal RAM can have no 6 KB block
+ * left, so the link never started and said nothing. Its stack is in PSRAM;
+ * nothing on it touches flash (messages go to the relay's worker, which
+ * has an internal stack). */
 static void ws_task(void *arg) {
-	int backoff = BACKOFF_MIN_S;
-	while (running) {
-		broken = false;
-		if (!dial()) {
-			drop();
-			ESP_LOGW(TAG, "couldn't reach %s; again in %d s", url, backoff);
-			for (int i = 0; i < backoff * 2 && running; i++) vTaskDelay(pdMS_TO_TICKS(500));
-			backoff = backoff * 2 > BACKOFF_MAX_S ? BACKOFF_MAX_S : backoff * 2;
-			continue;
-		}
-		backoff = BACKOFF_MIN_S;
-		ESP_LOGI(TAG, "up: %s", url);
-		last_tx = now_s();
-		up = true;
-		if (on_up) on_up();
-		int idle = 0; /* readable but nothing read: a socket the far end closed */
-		while (running && !broken) {
-			if (now_s() - last_tx >= PING_S) {
-				xSemaphoreTake(lock, portMAX_DELAY);
-				if (esp_transport_write(ws, NULL, 0, IO_MS) < 0) broken = true; /* zero bytes: a ping */
-				last_tx = now_s();
-				xSemaphoreGive(lock);
-			}
-			int p = esp_transport_poll_read(ws, 500);
-			if (p < 0) break;
-			if (p == 0) {
-				idle = 0;
+	for (;;) {
+		xSemaphoreTake(go, portMAX_DELAY);
+		int backoff = BACKOFF_MIN_S;
+		while (running) {
+			broken = false;
+			if (!dial()) {
+				drop();
+				ESP_LOGW(TAG, "couldn't reach %s; again in %d s", url, backoff);
+				for (int i = 0; i < backoff * 2 && running; i++) vTaskDelay(pdMS_TO_TICKS(500));
+				backoff = backoff * 2 > BACKOFF_MAX_S ? BACKOFF_MAX_S : backoff * 2;
 				continue;
 			}
-			bool was = broken;
-			read_frame();
-			idle = !was && !broken ? idle + 1 : 0;
-			if (esp_transport_ws_get_read_opcode(ws) != WS_TRANSPORT_OPCODES_NONE) idle = 0; /* a frame came */
-			if (idle >= 3) break;
+			backoff = BACKOFF_MIN_S;
+			ESP_LOGI(TAG, "up: %s", url);
+			last_tx = now_s();
+			up = true;
+			if (on_up) on_up();
+			while (running && !broken) {
+				if (now_s() - last_tx >= PING_S) {
+					xSemaphoreTake(lock, portMAX_DELAY);
+					if (!write_frame(9, NULL, 0)) broken = true;
+					last_tx = now_s();
+					xSemaphoreGive(lock);
+				}
+				int p = esp_transport_poll_read(ssl, 500);
+				if (p < 0) break;
+				if (p > 0) read_frame(); /* a socket the far end closed reads as broken */
+			}
+			drop();
+			if (running) {
+				ESP_LOGW(TAG, "link dropped; again in %d s", BACKOFF_MIN_S);
+				for (int i = 0; i < BACKOFF_MIN_S * 2 && running; i++) vTaskDelay(pdMS_TO_TICKS(500));
+			}
 		}
-		drop();
-		if (running) {
-			ESP_LOGW(TAG, "link dropped; again in %d s", BACKOFF_MIN_S);
-			for (int i = 0; i < BACKOFF_MIN_S * 2 && running; i++) vTaskDelay(pdMS_TO_TICKS(500));
-		}
+		xSemaphoreGive(done);
 	}
-	xSemaphoreGive(done);
-	vTaskDelete(NULL);
+}
+static bool task_make(void) {
+	StackType_t *stack = heap_caps_malloc(STACK, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+	StaticTask_t *tcb = heap_caps_malloc(sizeof(StaticTask_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+	if (stack && tcb) task = xTaskCreateStatic(ws_task, "hifi_ws", STACK, NULL, tskIDLE_PRIORITY + 2, stack, tcb);
+	if (task) return true;
+	free(stack);
+	free(tcb);
+	if (xTaskCreate(ws_task, "hifi_ws", STACK, NULL, tskIDLE_PRIORITY + 2, &task) == pdPASS) return true;
+	task = NULL;
+	ESP_LOGE(TAG, "no memory for the link's task (internal heap %u B free, largest block %u B)",
+		 (unsigned) heap_caps_get_free_size(MALLOC_CAP_INTERNAL), (unsigned) heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
+	return false;
 }
 
 bool hifi_ws_start(const char *u, const char *h, size_t max, hifi_ws_msg_cb_t m, hifi_ws_up_cb_t cb) {
 	if (running || !m || strlen(u) >= sizeof(url)) return false;
 	if (!lock) lock = xSemaphoreCreateMutex();
 	if (!done) done = xSemaphoreCreateBinary();
-	if (!lock || !done) return false;
+	if (!go) go = xSemaphoreCreateBinary();
+	if (!lock || !done || !go) return false;
+	if (!task && !task_make()) return false;
 	free(headers);
 	headers = strdup(h ? h : "");
 	if (!headers) return false;
@@ -176,10 +280,7 @@ bool hifi_ws_start(const char *u, const char *h, size_t max, hifi_ws_msg_cb_t m,
 	on_msg = m;
 	on_up = cb;
 	running = true;
-	if (xTaskCreate(ws_task, "hifi_ws", 6144, NULL, tskIDLE_PRIORITY + 2, NULL) != pdPASS) {
-		running = false;
-		return false;
-	}
+	xSemaphoreGive(go);
 	return true;
 }
 
@@ -195,14 +296,10 @@ bool hifi_ws_up(void) { return up; }
 
 bool hifi_ws_send(const char *text, size_t len) {
 	if (!up || !len) return false;
-	char *b = malloc(len); /* the transport masks it in place */
-	if (!b) return false;
-	memcpy(b, text, len);
 	xSemaphoreTake(lock, portMAX_DELAY);
-	bool ok = up && ws && esp_transport_ws_send_raw(ws, WS_TRANSPORT_OPCODES_TEXT | WS_TRANSPORT_OPCODES_FIN, b, (int) len, IO_MS) == (int) len;
+	bool ok = up && ssl && write_frame(1, text, len);
 	if (ok) last_tx = now_s();
 	else broken = up;
 	xSemaphoreGive(lock);
-	free(b);
 	return ok;
 }

@@ -882,7 +882,7 @@ static void op_selftest(hifi_selftest_t *t) {
 
 	size_t ps = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
 	hifi_selftest_add(t, "psram", ps >= 2u << 20, "%u KB mapped", (unsigned) (ps >> 10));
-	hifi_selftest_add(t, "heap", s->heap_free > 20000, "%u B free", (unsigned) s->heap_free);
+	hifi_selftest_add(t, "heap", s->heap_free > HIFI_HEAP_MIN, "%u B free", (unsigned) s->heap_free);
 	hifi_selftest_add(t, "network", s->ip[0] != 0, s->ip[0] ? "%s" : "not connected", s->ip);
 	free(s);
 }
@@ -1006,7 +1006,7 @@ bool hifi_net_ip(char *buf, size_t n) {
 void hifi_main_trial_inputs(hifi_trial_t *t) {
 	t->component_ok = lock != NULL;
 	t->i2c_ok = hifi_bsp_parts_ok();
-	t->heap_ok = heap_caps_get_free_size(MALLOC_CAP_INTERNAL) > 20000;
+	t->heap_ok = heap_caps_get_free_size(MALLOC_CAP_INTERNAL) > HIFI_HEAP_MIN;
 	wifi_config_t wc = {0};
 	t->wifi_configured = esp_wifi_get_config(WIFI_IF_STA, &wc) == ESP_OK && wc.sta.ssid[0];
 	t->wifi_ok = hifi_net_ip(NULL, 0);

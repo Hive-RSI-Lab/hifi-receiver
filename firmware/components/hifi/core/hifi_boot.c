@@ -9,7 +9,7 @@ hifi_trial_verdict_t hifi_trial_judge(const hifi_trial_t *t, uint32_t elapsed_s,
 		return HIFI_TRIAL_BAD; /* it won't start later either */
 	}
 	if (!t->i2c_ok) missing = "codec or PD sink not answering on I2C";
-	else if (!t->heap_ok) missing = "heap below 20 KB";
+	else if (!t->heap_ok) missing = "heap below 12 KB";
 	else if (t->wifi_configured && !t->wifi_ok) missing = "Wi-Fi not joined";
 	else if (t->relay_configured && !t->relay_ok) missing = "relay not reached";
 	if (!missing) {

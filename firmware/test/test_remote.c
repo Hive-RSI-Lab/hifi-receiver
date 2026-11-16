@@ -485,6 +485,42 @@ static void test_ws_proto(void) {
 	CHECK_STR(q, "{\"t\":\"status\",\"a\":1}");
 }
 
+static void test_ws_frames(void) {
+	const uint8_t mk[4] = {1, 2, 3, 4};
+	uint8_t h[HIFI_WS_HEAD_MAX];
+	hifi_ws_head_t p;
+	CHECK(hifi_ws_head(h, 1, 5, mk) == 6);
+	CHECK(h[0] == 0x81 && h[1] == 0x85 && h[2] == 1 && h[5] == 4);
+	CHECK(hifi_ws_head_len(h) == 6);
+	CHECK(hifi_ws_head_parse(h, &p) == 0 && p.op == 1 && p.fin && p.masked && p.len == 5 && p.mask[3] == 4);
+	CHECK(hifi_ws_head(h, 1, 200, mk) == 8); /* 200: a low byte with its top bit set */
+	CHECK(h[1] == (0x80 | 126) && h[2] == 0 && h[3] == 200);
+	CHECK(hifi_ws_head_len(h) == 8);
+	CHECK(hifi_ws_head_parse(h, &p) == 0 && p.len == 200);
+	CHECK(hifi_ws_head(h, 2, 70000, mk) == 14);
+	CHECK(hifi_ws_head_len(h) == 14 && hifi_ws_head_parse(h, &p) == 0 && p.len == 70000 && p.op == 2);
+	CHECK(hifi_ws_head(h, 9, 0, mk) == 6 && h[0] == 0x89 && h[1] == 0x80);
+	const uint8_t srv[] = {0x81, 126, 0x01, 0xc8}; /* the Hive's: unmasked, 456 bytes */
+	CHECK(hifi_ws_head_len(srv) == 4 && hifi_ws_head_parse(srv, &p) == 0 && !p.masked && p.len == 456 && p.op == 1);
+	const uint8_t rsv[] = {0xc1, 5};
+	CHECK(hifi_ws_head_parse(rsv, &p) == -1);
+	const uint8_t bigping[] = {0x89, 126, 0, 200};
+	CHECK(hifi_ws_head_parse(bigping, &p) == -1);
+	const uint8_t split[] = {0x08, 2};
+	CHECK(hifi_ws_head_parse(split, &p) == -1);
+	const uint8_t cont[] = {0x01, 3}; /* a text frame without FIN: parsed, the caller drops it */
+	CHECK(hifi_ws_head_parse(cont, &p) == 0 && !p.fin);
+
+	const char *ok = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nsec-websocket-accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n";
+	CHECK(hifi_ws_upgrade_ok(ok, "s3pPLMBiTxaQ9kYGzzhZRbK+xOo="));
+	CHECK(!hifi_ws_upgrade_ok(ok, "s3pPLMBiTxaQ9kYGzzhZRbK+xOo"));
+	CHECK(!hifi_ws_upgrade_ok(ok, "x"));
+	CHECK(!hifi_ws_upgrade_ok("HTTP/1.1 401 Unauthorized\r\nSec-WebSocket-Accept: a\r\n\r\n", "a"));
+	CHECK(!hifi_ws_upgrade_ok("HTTP/1.1 1010 x\r\nSec-WebSocket-Accept: a\r\n\r\n", "a"));
+	CHECK(!hifi_ws_upgrade_ok("HTTP/1.1 101 x\r\nX-Sec-WebSocket-Accept: a\r\n\r\n", "a"));
+	CHECK(hifi_ws_upgrade_ok("HTTP/1.1 101 x\r\nSec-WebSocket-Accept:a \r\n\r\n", "a"));
+}
+
 static hifi_remote_t rem;
 
 static int remote(const char *msg, int64_t now) {
@@ -588,6 +624,7 @@ int main(void) {
 	test_capture_api();
 	test_wifi_remote_api();
 	test_ws_proto();
+	test_ws_frames();
 	test_remote();
 	test_trial();
 	return check_report("remote");

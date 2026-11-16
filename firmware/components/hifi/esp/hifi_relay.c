@@ -68,6 +68,7 @@ static char *rx;      /* a message arriving in pieces */
 static size_t rx_len;
 static bool rollback_reported;
 static volatile bool settings_changed;
+static volatile bool announce; /* the link just came up: publish the status now */
 
 hifi_ota_t hifi_ota_session;
 
@@ -259,7 +260,7 @@ static void on_ws_msg(char *data, size_t len) {
 static void on_ws_up(void) {
 	connected = true;
 	ESP_LOGI(TAG, "bench endpoint connected: %s as %s", url, rem.dev);
-	publish_status();
+	announce = true; /* the relay task publishes: the status reads flash, and this runs on the link's PSRAM stack */
 }
 
 static void ws_start(void) {
@@ -271,7 +272,10 @@ static void ws_start(void) {
 	}
 	ws_on = hifi_ws_start(url, h, MSG_MAX, on_ws_msg, on_ws_up);
 	memset(h, 0, sizeof(h));
-	if (!ws_on) ws_bad = true;
+	if (!ws_on) {
+		ESP_LOGE(TAG, "couldn't start the link to %s", url);
+		ws_bad = true;
+	}
 }
 
 static void client_start(void) {
@@ -393,7 +397,8 @@ static void relay_task(void *arg) {
 			config_set_value(NVS_TYPE_STR, "hifi_rb_report", "0");
 			rollback_reported = true;
 		}
-		if (connected && now - last_status >= 60) {
+		if (connected && (announce || now - last_status >= 60)) {
+			announce = false;
 			publish_status();
 			last_status = now;
 		}
