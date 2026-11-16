@@ -146,7 +146,11 @@ Over the board's USB-C (the CH340C console; DTR/RTS do the boot-mode dance):
 cd ~/fw-build/squeezelite-esp32 && idf.py -p /dev/ttyUSB0 flash monitor
 ```
 
-That writes the bootloader, partition table, recovery and the main app. Later
+That writes the bootloader, partition table, recovery and the main app, and
+an otadata that boots the main app in `ota_0` (marked valid, so no trial
+boot). IDF's own otadata is blank, which boots recovery; `build.sh` replaces it
+with `tools/otadata.py`'s. Recovery stays the fallback: the `recovery` console
+command, a rollback, or squeezelite's crash counter. Later
 updates go over the network (`docs/test-api.md`, "squeezelite-esp32's own
 endpoints").
 

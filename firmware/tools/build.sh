@@ -22,6 +22,9 @@ fi
 cd "$DEST"
 idf.py reconfigure >/dev/null
 nice -n 19 ninja -C build -j "${JOBS:-4}"
+# boot the main app (ota_0) after a flash from scratch, not the recovery app
+# that IDF's all-0xff otadata selects (tools/otadata.py says why)
+python3 "$FW/tools/otadata.py" build/ota_data_initial.bin
 ls -l build/squeezelite.bin build/recovery.bin
 # squeezelite's build doesn't check the recovery image against its slot: do
 # it here for both, since an image that outgrows its slot can't be flashed

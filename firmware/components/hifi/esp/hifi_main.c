@@ -119,7 +119,23 @@ static uint32_t now_ms(void) { return (uint32_t) (esp_timer_get_time() / 1000); 
 
 /* ------------------------------------------------------------------ I2C */
 
+/*
+ * Until squeezelite's codec start (or hifi_i2c_ensure) installs the driver,
+ * every transfer fails and the driver logs an error for it. power_task probes
+ * the codec every 10 ms, which buried a boot log under ~700 such lines. While
+ * the driver is missing, ask again only every 250 ms and with its log quiet.
+ */
+static bool i2c_missing = true;
+static uint32_t i2c_probe_at;
+
 static esp_err_t i2c_xfer(uint8_t addr, uint8_t reg, uint8_t *val, bool write) {
+	bool probe = i2c_missing;
+	if (probe) {
+		uint32_t now = now_ms();
+		if (i2c_probe_at && (int32_t) (now - i2c_probe_at) < 250) return ESP_ERR_INVALID_STATE;
+		i2c_probe_at = now ? now : 1;
+		esp_log_level_set("i2c", ESP_LOG_NONE);
+	}
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, (addr << 1) | I2C_MASTER_WRITE, true);
@@ -134,6 +150,9 @@ static esp_err_t i2c_xfer(uint8_t addr, uint8_t reg, uint8_t *val, bool write) {
 	i2c_master_stop(cmd);
 	esp_err_t err = i2c_master_cmd_begin(I2C_PORT, cmd, pdMS_TO_TICKS(50));
 	i2c_cmd_link_delete(cmd);
+	if (probe) esp_log_level_set("i2c", CONFIG_LOG_DEFAULT_LEVEL);
+	/* ESP_ERR_INVALID_STATE: no driver (a missing part NACKs with ESP_FAIL) */
+	i2c_missing = err == ESP_ERR_INVALID_STATE;
 	return err;
 }
 
@@ -157,6 +176,7 @@ void hifi_i2c_ensure(void) {
 	};
 	i2c_param_config(I2C_PORT, &c);
 	i2c_driver_install(I2C_PORT, I2C_MODE_MASTER, 0, 0, 0);
+	i2c_probe_at = 0; /* the next transfer tries it at once */
 	ESP_LOGW(TAG, "codec driver didn't start; installed I2C %d ourselves", I2C_PORT);
 }
 

@@ -1404,7 +1404,7 @@ CONFIG_SPIFFS_USE_MTIME=y
 #
 # Websocket
 #
-# CONFIG_WS_TRANSPORT is not set
+CONFIG_WS_TRANSPORT=y
 # end of Websocket
 # end of TCP Transport
 
