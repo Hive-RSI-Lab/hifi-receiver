@@ -130,8 +130,12 @@ its way:
 - **Underside:** floor vents under the amplifier and the four feet. No label
   recess: its roof would be a 22 mm bridge off the bed.
 
-There are no embossed labels yet: build123d's text needs a font this machine
-doesn't have set up. Until then, use a printed sticker.
+Labels are debossed 0.5 mm into the lid's top face, which prints face down,
+so nothing overhangs: − + ▶ behind the three buttons, and along the rear edge
+SUB, 5V, L+ L− R+ R− over their ports, read from the front. The line-in pair
+is the one left unmarked (every name tried there left slivers too thin to
+print). The rear wall itself stays bare: letters cut into a wall that prints
+upright would each need support inside.
 
 ### How it is fitted
 

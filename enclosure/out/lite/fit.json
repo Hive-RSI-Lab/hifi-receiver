@@ -35,7 +35,7 @@
    "kind": "usb-c",
    "blocked_mm3": 0,
    "recess_mm": 2.97,
-   "max_recess_mm": 3.0
+   "max_recess_mm": 3.01
   },
   {
    "name": "port_J2l",
@@ -44,7 +44,7 @@
    "kind": "generic",
    "blocked_mm3": 0,
    "recess_mm": 3.0,
-   "max_recess_mm": 3.0
+   "max_recess_mm": 3.01
   },
   {
    "name": "port_J2u",
@@ -53,7 +53,7 @@
    "kind": "generic",
    "blocked_mm3": 0,
    "recess_mm": 3.0,
-   "max_recess_mm": 3.0
+   "max_recess_mm": 3.01
   },
   {
    "name": "port_J3l",
@@ -62,7 +62,7 @@
    "kind": "generic",
    "blocked_mm3": 0,
    "recess_mm": 3.0,
-   "max_recess_mm": 3.0
+   "max_recess_mm": 3.01
   },
   {
    "name": "port_J3u",
@@ -71,7 +71,7 @@
    "kind": "generic",
    "blocked_mm3": 0,
    "recess_mm": 3.0,
-   "max_recess_mm": 3.0
+   "max_recess_mm": 3.01
   },
   {
    "name": "port_J4",
@@ -80,7 +80,7 @@
    "kind": "generic",
    "blocked_mm3": 0,
    "recess_mm": 3.0,
-   "max_recess_mm": 3.0
+   "max_recess_mm": 3.01
   },
   {
    "name": "port_J5",
@@ -89,7 +89,7 @@
    "kind": "generic",
    "blocked_mm3": 0,
    "recess_mm": 3.0,
-   "max_recess_mm": 3.0
+   "max_recess_mm": 3.01
   },
   {
    "name": "port_J6",
@@ -98,7 +98,7 @@
    "kind": "generic",
    "blocked_mm3": 0,
    "recess_mm": 3.0,
-   "max_recess_mm": 3.0
+   "max_recess_mm": 3.01
   },
   {
    "name": "port_J7",
@@ -107,7 +107,7 @@
    "kind": "generic",
    "blocked_mm3": 0,
    "recess_mm": 3.0,
-   "max_recess_mm": 3.0
+   "max_recess_mm": 3.01
   },
   {
    "name": "port_U9",
@@ -223,9 +223,9 @@
   {
    "name": "bridge_lid",
    "ok": true,
-   "flat_faces": 0,
-   "worst_bridge_mm": 0.0,
-   "worst_ledge_mm": 0.0,
+   "flat_faces": 16,
+   "worst_bridge_mm": 2.25,
+   "worst_ledge_mm": 0.11,
    "max_bridge_mm": 15.0,
    "max_ledge_mm": 1.0,
    "unsupported": []

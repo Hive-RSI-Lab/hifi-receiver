@@ -23,7 +23,8 @@ from core_box import GAP, LID, T_PCB, banana_ports, base, block, cylinder, light
 
 BOARD = "lite-main.board.json"   # mech board ../boards/lite-main/kicad/lite-main.kicad_pcb --heights heights.json
 PRINT = {"lid": "flip"}
-FIT = {"max_recess": {"*": 3.0, "U9": 4.0},   # U9 is seen through its window, not plugged: its lens 3.5 mm in
+FIT = {"max_recess": {"*": 3.01,   # 3.0 plus the bbox slack the lid's text curves add
+        "U9": 4.0},   # U9 is seen through its window, not plugged: its lens 3.5 mm in
        "bed": (180, 180, 180)}                # A1 mini, the smallest printer here
 
 GAPS = {k: GAP["W"] for k in "WSEN"}      # 0.6 all round: nothing overhangs Lite's edges
@@ -43,6 +44,13 @@ KEY_ROOT = 22.0     # where the tongue joins the lid (y)
 KEY_PAD = 7.5       # full-thickness pad from the front edge back to here (y); the arm behind it is thinned
 KEY_ARM = 1.0       # the arm's thickness, kept at the lid's top face
 KEY_GAP = 0.4       # plunger tip above the switch top at rest
+# Labels, debossed so nothing overhangs: on the lid's top face (it prints face down, so they're the first layers).
+# Bold sans, DejaVu as shipped with the OS.
+FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+FONT_SMALL = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"   # port names: thinner strokes keep the islands in B, O, A, R printable
+DEBOSS = 0.5
+KEY_LABELS = {"SW1": "\u2212", "SW2": "+", "SW3": "\u25b6"}   # vol-, vol+, play/source
+KEY_LABEL_Y = 26.0  # label centre, behind the tongue roots
 
 
 def antenna_zone(board):
@@ -73,6 +81,34 @@ def keys(t, l, refs):
     return l
 
 
+def deboss(part, txt, size, origin, x_dir, normal, font=None):
+    """Cut `txt` DEBOSS deep into `part`'s face at `origin`, reading along x_dir, the face's outward normal `normal`."""
+    from build123d import Align, Plane, Text, extrude
+    pl = Plane(origin=origin, x_dir=x_dir, z_dir=normal)
+    t = pl * Text(txt, font_size=size, font_path=font or FONT, align=(Align.CENTER, Align.CENTER))
+    return part - extrude(t, amount=DEBOSS + 0.2, dir=tuple(-n for n in normal)).translate(
+        tuple(n * 0.2 for n in normal))
+
+
+def labels(t, board, lid_part):
+    """Debossed on the lid's top face, so they print as the first layers of the face-down lid and nothing
+    overhangs: each button's symbol behind its tongue, and along the rear edge each rear port's name over it,
+    read from the front. (Cut into the rear wall instead, every letter's roof is an overhang the base's
+    supports would fill.) The line-in pair goes unmarked: every name tried over it (IN, LINE, AUX) left
+    hairline slivers the slicer can't print, so the one unmarked pair is the input by elimination."""
+    zt = t.z_top + LID
+    for ref, txt in KEY_LABELS.items():
+        p = board.part(ref)
+        lid_part = deboss(lid_part, txt, 5.0, ((p.bbox[0] + p.bbox[2]) / 2, KEY_LABEL_Y, zt), (1, 0, 0), (0, 0, 1))
+    ports = {q.ref: q.opening() for q in board.ports}
+    row = t.inner[3] - 5.0   # clear of the lid's rear edge
+    rear = [("SUB", ports["J3l"]), ("5V", ports["J1"]),
+            ("L+", ports["J4"]), ("L\u2212", ports["J5"]), ("R+", ports["J6"]), ("R\u2212", ports["J7"])]
+    for txt, (x0, x1, _, _) in rear:
+        lid_part = deboss(lid_part, txt, 4.5, ((x0 + x1) / 2, row, zt), (1, 0, 0), (0, 0, 1), FONT_SMALL)
+    return lid_part
+
+
 def build(board):
     z_top = T_PCB + HEADROOM
     board.ports = [p for p in board.ports if p.ref in ("J1", "J4", "J5", "J6", "J7")]   # USB-C, sockets
@@ -99,7 +135,7 @@ def build(board):
     dy = max(0.0, -GAPS["S"] + od / 2 + 0.1 - (d2.bbox[1] + d2.bbox[3]) / 2)
     l = light_pipe(t, l, "D2", od=od, idd=2.6, dy=dy)
     parts = {"base": b}
-    parts["lid"] = keys(t, l, ("SW1", "SW2", "SW3"))
+    parts["lid"] = labels(t, board, keys(t, l, ("SW1", "SW2", "SW3")))
     # The ESP32's antenna sits at the west edge. Thin the wall beside it (open at the top, so nothing overhangs),
     # take the lid's lip away over it, and fail the build if any plastic of the box reaches into its zone between
     # floor and lid.

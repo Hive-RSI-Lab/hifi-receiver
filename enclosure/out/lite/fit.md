@@ -9,15 +9,15 @@
 | lid_covers | pass | open_mm2=0.0, where=[] |
 | parts_apart | pass | clashes=[] |
 | parts_clear | pass | hits=[] |
-| port_J1 | pass | edge=N, kind=usb-c, blocked_mm3=0, recess_mm=2.97, max_recess_mm=3.0 |
-| port_J2l | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.0 |
-| port_J2u | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.0 |
-| port_J3l | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.0 |
-| port_J3u | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.0 |
-| port_J4 | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.0 |
-| port_J5 | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.0 |
-| port_J6 | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.0 |
-| port_J7 | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.0 |
+| port_J1 | pass | edge=N, kind=usb-c, blocked_mm3=0, recess_mm=2.97, max_recess_mm=3.01 |
+| port_J2l | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.01 |
+| port_J2u | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.01 |
+| port_J3l | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.01 |
+| port_J3u | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.01 |
+| port_J4 | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.01 |
+| port_J5 | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.01 |
+| port_J6 | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.01 |
+| port_J7 | pass | edge=N, kind=generic, blocked_mm3=0, recess_mm=3.0, max_recess_mm=3.01 |
 | port_U9 | pass | edge=S, kind=generic, blocked_mm3=0, recess_mm=3.5, max_recess_mm=4.0 |
 | hole_H2 | pass | supported=1.0 |
 | screw_H2 | pass | axis_blocked_mm3=0, peg=False |
@@ -33,7 +33,7 @@
 | bridge_base | pass | flat_faces=16, worst_bridge_mm=12.01, worst_ledge_mm=0.11, max_bridge_mm=15.0, max_ledge_mm=1.0, unsupported=[] |
 | wall_base | pass | min_wall_mm=0.8, thin=[] |
 | overhang_lid | pass | steep_mm2=0, faces=[], max_deg=45.0 |
-| bridge_lid | pass | flat_faces=0, worst_bridge_mm=0.0, worst_ledge_mm=0.0, max_bridge_mm=15.0, max_ledge_mm=1.0, unsupported=[] |
+| bridge_lid | pass | flat_faces=16, worst_bridge_mm=2.25, worst_ledge_mm=0.11, max_bridge_mm=15.0, max_ledge_mm=1.0, unsupported=[] |
 | wall_lid | pass | min_wall_mm=0.8, thin=[] |
 
 ## Reached from above
@@ -54,6 +54,6 @@
 
 | part | filament g | support g | support cm3 | time | cost |
 |---|---|---|---|---|---|
-| base | 73.39 | 3.7 | 2.91 | 4h 30m 10s | 1.83 |
-| lid | 34.75 | 0.0 | 0.0 | 2h 12m 38s | 0.87 |
-| all | 108.14 | 3.7 | 2.91 | 6h 42m | 2.7 |
+| base | 73.39 | 3.7 | 2.91 | 4h 30m 12s | 1.83 |
+| lid | 34.96 | 0.0 | 0.0 | 2h 16m 31s | 0.87 |
+| all | 108.35 | 3.7 | 2.91 | 6h 46m | 2.7 |
