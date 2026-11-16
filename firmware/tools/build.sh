@@ -19,6 +19,25 @@ if [ -z "${IDF_PATH:-}" ]; then
 	set -u
 fi
 
+# Spotify Connect needs a Spotify developer app's client id and secret built in
+# (cspot fetches a Web API token with them; without one a track never starts):
+# from SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET, else files of those names in
+# HIFI_SECRETS_DIR (default ~/.config/h2/secrets). Never echoed.
+SECRETS_DIR=${HIFI_SECRETS_DIR:-$HOME/.config/h2/secrets}
+sp_id=${SPOTIFY_CLIENT_ID:-}
+sp_secret=${SPOTIFY_CLIENT_SECRET:-}
+[ -n "$sp_id" ] || { [ -r "$SECRETS_DIR/SPOTIFY_CLIENT_ID" ] && sp_id=$(tr -d ' \r\n' < "$SECRETS_DIR/SPOTIFY_CLIENT_ID"); } || true
+[ -n "$sp_secret" ] || { [ -r "$SECRETS_DIR/SPOTIFY_CLIENT_SECRET" ] && sp_secret=$(tr -d ' \r\n' < "$SECRETS_DIR/SPOTIFY_CLIENT_SECRET"); } || true
+if [ -n "$sp_id" ] && [ -n "$sp_secret" ]; then
+	case "$sp_id$sp_secret" in *[!A-Za-z0-9]*) echo "build.sh: the Spotify client id/secret must be letters and digits" >&2; exit 1 ;; esac
+	export SPOTIFY_SECRET="-DCLIENT_ID=\"$sp_id\" -DCLIENT_SECRET=\"$sp_secret\""
+	echo "build.sh: Spotify Connect key: set"
+else
+	unset SPOTIFY_SECRET
+	echo "build.sh: Spotify Connect key: missing, Spotify will connect but play nothing" >&2
+fi
+unset sp_id sp_secret
+
 cd "$DEST"
 idf.py reconfigure >/dev/null
 nice -n 19 ninja -C build -j "${JOBS:-4}"

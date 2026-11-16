@@ -71,6 +71,16 @@ uv venv --seed --python 3.10 ~/esp/tools/python_env/idf4.4_py3.10_env
 ~/esp/tools/python_env/idf4.4_py3.10_env/bin/pip install "setuptools<70" "protobuf>=3.20,<4" "grpcio-tools>=1.48,<1.49"   # cspot's nanopb generator
 ```
 
+**Spotify Connect needs a Spotify app key.** cspot fetches a Web API token
+with a Spotify developer app's client id and secret, and a track only starts
+once it has one; without them a phone connects, sets the volume, and then
+nothing plays (seen on the first Lite, 2026-11-16). Create a free app at
+developer.spotify.com (Dashboard, Create app, Web API), then give `build.sh`
+the pair as `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET`, either in the
+environment or as files of those names in `HIFI_SECRETS_DIR` (default
+`~/.config/h2/secrets`). It prints only whether the key is set. An image built
+with the key holds it, so keep such images to your own boards.
+
 `build.sh` finds that install by itself. The Hive's `hive-fw` module is
 making a shared copy; when it lands, set `IDF_PATH` and `build.sh` uses it.
 
