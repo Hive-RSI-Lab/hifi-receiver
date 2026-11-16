@@ -831,6 +831,74 @@ static void restart_later(bool erase) {
 static void op_reboot(void) { restart_later(false); }
 static void op_factory_reset(void) { restart_later(true); }
 
+/* The Bluetooth test (ops.bt_test): this boot's squeezelite command line
+ * (autoexec1) is kept in hifi_bt_save, the next boot runs it with "-o BT"
+ * (a Bluetooth source playing to sink, a2dp_sink_name), and hifi_bttest walks
+ * armed -> used -> off, so the boot after the test, crash or not, puts the
+ * saved line back (bt_test_boot). */
+static int op_bt_test(const char *sink, const char **err) {
+	char *flag = config_alloc_get_str("hifi_bttest", NULL, "off");
+	bool busy = flag && strcmp(flag, "off");
+	free(flag);
+	if (busy) {
+		*err = "a Bluetooth test is already set up; reboot to end it";
+		return -1;
+	}
+	char *ax = config_alloc_get_str("autoexec1", NULL, NULL);
+	if (!ax || !strstr(ax, "squeezelite")) {
+		free(ax);
+		*err = "no squeezelite command line to change";
+		return -1;
+	}
+	size_t n = strlen(ax) + 16;
+	char *line = malloc(n);
+	if (!line) {
+		free(ax);
+		*err = "out of memory";
+		return -1;
+	}
+	/* swap "-o <device>" for "-o BT", or add it */
+	const char *o = strstr(ax, " -o ");
+	if (o) {
+		const char *rest = o + 4;
+		while (*rest == ' ') rest++;
+		while (*rest && *rest != ' ') rest++;
+		snprintf(line, n, "%.*s -o BT%s", (int) (o - ax), ax, rest);
+	} else {
+		snprintf(line, n, "%s -o BT", ax);
+	}
+	bool bad = config_set_value(NVS_TYPE_STR, "hifi_bt_save", ax) != ESP_OK;
+	bad = bad || config_set_value(NVS_TYPE_STR, "a2dp_sink_name", sink) != ESP_OK;
+	bad = bad || config_set_value(NVS_TYPE_STR, "hifi_bttest", "armed") != ESP_OK;
+	bad = bad || config_set_value(NVS_TYPE_STR, "autoexec1", line) != ESP_OK;
+	ESP_LOGW(TAG, "Bluetooth test: next boot runs '%s'", line);
+	free(ax);
+	free(line);
+	if (bad) {
+		config_set_value(NVS_TYPE_STR, "hifi_bttest", "used"); /* the next boot puts it back */
+		*err = "couldn't save the settings";
+		return -1;
+	}
+	restart_later(false);
+	return 0;
+}
+
+/* at boot, before squeezelite reads autoexec1 */
+static void bt_test_boot(void) {
+	char *flag = config_alloc_get_str("hifi_bttest", NULL, "off");
+	if (flag && !strcmp(flag, "armed")) {
+		config_set_value(NVS_TYPE_STR, "hifi_bttest", "used");
+		ESP_LOGW(TAG, "Bluetooth test boot: this boot plays to another board over Bluetooth");
+	} else if (flag && !strcmp(flag, "used")) {
+		char *ax = config_alloc_get_str("hifi_bt_save", NULL, NULL);
+		if (ax && *ax) config_set_value(NVS_TYPE_STR, "autoexec1", ax);
+		free(ax);
+		config_set_value(NVS_TYPE_STR, "hifi_bttest", "off");
+		ESP_LOGW(TAG, "Bluetooth test over: the usual command line is back");
+	}
+	free(flag);
+}
+
 static int op_control(const char *a) {
 	if (!strcmp(a, "mute") || !strcmp(a, "input") || !strcmp(a, "volup") || !strcmp(a, "voldown")) {
 		do_action(hifi_ir_action_from(a)); /* the receiver's own when nothing streams */
@@ -1043,9 +1111,10 @@ const hifi_ops_t hifi_ops = {
 #endif
 #ifdef HIFI_HAS_BACKLIGHT
 	.set_backlight = hifi_bsp_set_backlight,
+#endif
 	.reset_reason = hifi_crash_reset_reason,
 	.last_log = hifi_crash_last_log,
-#endif
+	.bt_test = op_bt_test,
 };
 
 /* ------------------------------------------------------------------ console, mDNS */
@@ -1153,6 +1222,7 @@ void hifi_dsp_process(uint8_t *buf, uint32_t frames, int bytes_per_frame, uint32
 void hifi_http_register(httpd_handle_t server) { hifi_http_start(server, &hifi_ops); }
 
 static bool hifi_init(void) {
+	bt_test_boot();
 	lock = xSemaphoreCreateMutex();
 	tone_lock = xSemaphoreCreateMutex();
 

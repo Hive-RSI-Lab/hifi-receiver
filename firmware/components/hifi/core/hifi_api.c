@@ -527,6 +527,16 @@ static int r_crash(const hifi_ops_t *ops, char *out, size_t cap) {
 	return 200;
 }
 
+static int r_bttest(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	if (!ops->bt_test) return error(out, cap, 404, "this build has no Bluetooth test");
+	char sink[33];
+	if (!hj_get_str(body, "sink", sink, sizeof(sink)) || !sink[0])
+		return error(out, cap, 400, "sink (the other board's Bluetooth name) is required");
+	const char *err = NULL;
+	if (ops->bt_test(sink, &err)) return error(out, cap, 409, err ? err : "couldn't arm the test");
+	return r_state(ops, out, cap);
+}
+
 static int r_ota_get(const hifi_ops_t *ops, char *out, size_t cap) {
 	if (!ops->ota || !ops->ota_status) return error(out, cap, 404, "no OTA in this build");
 	hifi_ota_status_t st = {0};
@@ -887,6 +897,7 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "selftest")) status = post ? r_selftest(ops, out, cap) : -1;
 	else if (!strcmp(route, "ota")) status = get ? r_ota_get(ops, out, cap) : -1;
 	else if (!strcmp(route, "crash")) status = get ? r_crash(ops, out, cap) : -1;
+	else if (!strcmp(route, "bttest")) status = post ? r_bttest(ops, body, out, cap) : -1;
 	else if (!strncmp(route, "ota/", 4)) status = post ? r_ota(ops, route + 4, body, out, cap) : -1;
 	else if (!strcmp(route, "capture")) status = post ? r_capture(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "wifi")) status = post ? r_wifi(ops, body, out, cap) : -1;

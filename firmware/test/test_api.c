@@ -679,6 +679,30 @@ static void crash(void) {
 	CHECK_STR(path, "/api/v1/crash");
 }
 
+static char bt_sink[40];
+static int x_bt_test(const char *sink, const char **err) {
+	if (!strcmp(sink, "busy")) {
+		*err = "already set up";
+		return -1;
+	}
+	snprintf(bt_sink, sizeof(bt_sink), "%s", sink);
+	return 0;
+}
+
+static void bttest(void) {
+	CHECK(call("POST", "/api/v1/bttest", "{\"sink\":\"HiFi Lite 3\"}") == 404); /* no test */
+	hifi_ops_t x = ops;
+	x.bt_test = x_bt_test;
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/bttest", "{}", out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/bttest", "{\"sink\":\"\"}", out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/bttest", "{\"sink\":\"busy\"}", out, sizeof(out)) == 409);
+	CHECK_HAS(out, "already set up");
+	CHECK(hifi_api_handle(&x, "GET", "/api/v1/bttest", NULL, out, sizeof(out)) == 405);
+	CHECK(!bt_sink[0]);
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/bttest", "{\"sink\":\"HiFi Lite 3\"}", out, sizeof(out)) == 200);
+	CHECK_STR(bt_sink, "HiFi Lite 3");
+}
+
 int main(void) {
 	hifi_vol_init(&m.vol, 35, 100);
 	m.ir_learning = -1;
@@ -691,5 +715,6 @@ int main(void) {
 	core_routes();
 	i2c_console();
 	crash();
+	bttest();
 	return check_report("api");
 }

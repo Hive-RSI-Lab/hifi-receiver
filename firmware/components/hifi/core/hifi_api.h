@@ -207,6 +207,11 @@ typedef struct {
 	 * (printable text, at most cap - 1 bytes) for GET crash; NULL: 404 */
 	const char *(*reset_reason)(void);
 	size_t (*last_log)(char *out, size_t cap);
+	/* bring-up: for the next boot only, play to the Bluetooth speaker called
+	 * sink (another board) as a Bluetooth source, so pairing can be tested
+	 * with no phone; the boot after that is back to normal. Restarts the
+	 * board. 0, or -1 with *err set; NULL: 404 */
+	int (*bt_test)(const char *sink, const char **err);
 } hifi_ops_t;
 
 /* Returns the HTTP status; the reply (always a JSON object) is in out. */
