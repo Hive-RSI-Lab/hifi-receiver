@@ -1,5 +1,5 @@
 {
- "ok": true,
+ "ok": false,
  "checks": [
   {
    "name": "board_clear",
@@ -223,7 +223,7 @@
   {
    "name": "bridge_lid",
    "ok": true,
-   "flat_faces": 16,
+   "flat_faces": 10,
    "worst_bridge_mm": 2.25,
    "worst_ledge_mm": 0.11,
    "max_bridge_mm": 15.0,
@@ -232,9 +232,26 @@
   },
   {
    "name": "wall_lid",
-   "ok": true,
+   "ok": false,
    "min_wall_mm": 0.8,
-   "thin": []
+   "thin": [
+    [
+     23.5,
+     6.5,
+     0.2,
+     24.3,
+     8.1,
+     0.2
+    ],
+    [
+     22.8,
+     6.7,
+     0.2,
+     23.5,
+     8.3,
+     0.2
+    ]
+   ]
   }
  ],
  "top_access": [
@@ -289,5 +306,5 @@
    "solid_petg_g": 37.6
   }
  },
- "build_s": 2.9
+ "build_s": 2.0
 }

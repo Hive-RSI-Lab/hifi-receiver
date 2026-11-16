@@ -132,10 +132,11 @@ its way:
 
 Labels are debossed 0.5 mm into the lid's top face, which prints face down,
 so nothing overhangs: − + ▶ behind the three buttons, and along the rear edge
-SUB, 5V, L+ L− R+ R− over their ports, read from the front. The line-in pair
-is the one left unmarked (every name tried there left slivers too thin to
-print). The rear wall itself stays bare: letters cut into a wall that prints
-upright would each need support inside.
+IN, SUB, L and R over their ports (L and R once over each terminal pair),
+read from the front. The rear wall itself stays bare: letters cut into a wall
+that prints upright would each need support inside. fit flags wall_lid on two
+0.2 mm slivers in the N's acute corners; they are cosmetic (the slicer drops
+them), so 30/31 is expected.
 
 ### How it is fitted
 

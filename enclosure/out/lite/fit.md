@@ -1,6 +1,6 @@
 # Fit: enclosure
 
-31/31 checks pass.
+30/31 checks pass, some fail.
 
 | check | result | measured |
 |---|---|---|
@@ -33,8 +33,8 @@
 | bridge_base | pass | flat_faces=16, worst_bridge_mm=12.01, worst_ledge_mm=0.11, max_bridge_mm=15.0, max_ledge_mm=1.0, unsupported=[] |
 | wall_base | pass | min_wall_mm=0.8, thin=[] |
 | overhang_lid | pass | steep_mm2=0, faces=[], max_deg=45.0 |
-| bridge_lid | pass | flat_faces=16, worst_bridge_mm=2.25, worst_ledge_mm=0.11, max_bridge_mm=15.0, max_ledge_mm=1.0, unsupported=[] |
-| wall_lid | pass | min_wall_mm=0.8, thin=[] |
+| bridge_lid | pass | flat_faces=10, worst_bridge_mm=2.25, worst_ledge_mm=0.11, max_bridge_mm=15.0, max_ledge_mm=1.0, unsupported=[] |
+| wall_lid | fail | min_wall_mm=0.8, thin=[[23.5, 6.5, 0.2, 24.3, 8.1, 0.2], [22.8, 6.7, 0.2, 23.5, 8.3, 0.2]] |
 
 ## Reached from above
 
@@ -54,6 +54,6 @@
 
 | part | filament g | support g | support cm3 | time | cost |
 |---|---|---|---|---|---|
-| base | 73.39 | 3.7 | 2.91 | 4h 30m 12s | 1.83 |
-| lid | 34.96 | 0.0 | 0.0 | 2h 16m 31s | 0.87 |
-| all | 108.35 | 3.7 | 2.91 | 6h 46m | 2.7 |
+| base | 73.39 | 3.7 | 2.91 | 4h 30m 9s | 1.83 |
+| lid | 34.89 | 0.0 | 0.0 | 2h 15m 19s | 0.87 |
+| all | 108.28 | 3.7 | 2.91 | 6h 45m | 2.7 |

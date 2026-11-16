@@ -47,7 +47,6 @@ KEY_GAP = 0.4       # plunger tip above the switch top at rest
 # Labels, debossed so nothing overhangs: on the lid's top face (it prints face down, so they're the first layers).
 # Bold sans, DejaVu as shipped with the OS.
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-FONT_SMALL = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"   # port names: thinner strokes keep the islands in B, O, A, R printable
 DEBOSS = 0.5
 KEY_LABELS = {"SW1": "\u2212", "SW2": "+", "SW3": "\u25b6"}   # vol-, vol+, play/source
 KEY_LABEL_Y = 26.0  # label centre, behind the tongue roots
@@ -94,18 +93,17 @@ def labels(t, board, lid_part):
     """Debossed on the lid's top face, so they print as the first layers of the face-down lid and nothing
     overhangs: each button's symbol behind its tongue, and along the rear edge each rear port's name over it,
     read from the front. (Cut into the rear wall instead, every letter's roof is an overhang the base's
-    supports would fill.) The line-in pair goes unmarked: every name tried over it (IN, LINE, AUX) left
-    hairline slivers the slicer can't print, so the one unmarked pair is the input by elimination."""
+    supports would fill.)"""
     zt = t.z_top + LID
     for ref, txt in KEY_LABELS.items():
         p = board.part(ref)
         lid_part = deboss(lid_part, txt, 5.0, ((p.bbox[0] + p.bbox[2]) / 2, KEY_LABEL_Y, zt), (1, 0, 0), (0, 0, 1))
     ports = {q.ref: q.opening() for q in board.ports}
     row = t.inner[3] - 5.0   # clear of the lid's rear edge
-    rear = [("SUB", ports["J3l"]), ("5V", ports["J1"]),
-            ("L+", ports["J4"]), ("L\u2212", ports["J5"]), ("R+", ports["J6"]), ("R\u2212", ports["J7"])]
-    for txt, (x0, x1, _, _) in rear:
-        lid_part = deboss(lid_part, txt, 4.5, ((x0 + x1) / 2, row, zt), (1, 0, 0), (0, 0, 1), FONT_SMALL)
+    span = lambda a, b: (ports[a][0], ports[b][1], 0, 0)   # one label centred over a pair
+    rear = [("IN", ports["J2l"]), ("SUB", ports["J3l"]), ("L", span("J4", "J5")), ("R", span("J6", "J7"))]
+    for txt, (x0, x1, _, _) in rear:   # bold: the regular N's acute corners leave unprintable slivers
+        lid_part = deboss(lid_part, txt, 5.0, ((x0 + x1) / 2, row, zt), (1, 0, 0), (0, 0, 1))
     return lid_part
 
 
