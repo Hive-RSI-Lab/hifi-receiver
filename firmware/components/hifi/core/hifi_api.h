@@ -129,8 +129,9 @@ typedef struct {
 /* The relay link (docs/remote.md) */
 typedef struct {
 	bool configured, connected;
-	char url[96], user[48], prefix[24];
+	char url[128], user[48], prefix[24];
 	char dev[13];
+	bool has_key;               /* a wss:// link has its key from the Hive (never shown) */
 	int keys;                   /* trusted signing keys in this build */
 	uint32_t accepted, rejected; /* commands since boot */
 } hifi_remote_status_t;
@@ -180,7 +181,8 @@ typedef struct {
 	int (*capture)(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_info_t *info, const char **err);
 	int (*set_wifi)(const char *ssid, const char *password); /* 0: joining */
 	void (*remote_status)(hifi_remote_status_t *out);
-	int (*remote_set)(const char *url, const char *user, const char *password, const char *prefix);
+	/* key: the board's own key for the Hive's wss:// endpoint (64 hex), or "" for MQTT */
+	int (*remote_set)(const char *url, const char *user, const char *password, const char *prefix, const char *key);
 	hifi_ota_t *ota;   /* the update session, with the board's flash writes */
 	void (*ota_status)(hifi_ota_status_t *out);
 	/* the networks in range: how many it wrote, or -1 while the radio is busy */
