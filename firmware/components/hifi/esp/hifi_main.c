@@ -705,8 +705,8 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	wifi_mode_t mode = WIFI_MODE_NULL;
 	esp_wifi_get_mode(&mode);
 	s->net_mode = !s->ip[0] && (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA) ? "ap" : "sta";
-	s->heap_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
-	s->heap_min = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
+	s->heap_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+	s->heap_min = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 	s->reset_reason = hifi_crash_reset_reason();
 	s->psram_free = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
 	hifi_net_update_status(&s->update);
@@ -1085,7 +1085,7 @@ bool hifi_net_ip(char *buf, size_t n) {
 void hifi_main_trial_inputs(hifi_trial_t *t) {
 	t->component_ok = lock != NULL;
 	t->i2c_ok = hifi_bsp_parts_ok();
-	t->heap_ok = heap_caps_get_free_size(MALLOC_CAP_INTERNAL) > HIFI_HEAP_MIN;
+	t->heap_ok = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT) > HIFI_HEAP_MIN;
 	wifi_config_t wc = {0};
 	t->wifi_configured = esp_wifi_get_config(WIFI_IF_STA, &wc) == ESP_OK && wc.sta.ssid[0];
 	t->wifi_ok = hifi_net_ip(NULL, 0);
@@ -1229,9 +1229,9 @@ static void alloc_failed(size_t size, uint32_t caps, const char *fn) {
 	static int n;
 	if (n++ >= 20) return;
 	ESP_LOGE(TAG, "alloc of %u B failed in %s (caps 0x%x); internal %u B free, largest %u B, lowest %u B",
-		 (unsigned) size, fn ? fn : "?", (unsigned) caps, (unsigned) heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
-		 (unsigned) heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL),
-		 (unsigned) heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
+		 (unsigned) size, fn ? fn : "?", (unsigned) caps, (unsigned) heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT),
+		 (unsigned) heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT),
+		 (unsigned) heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
 }
 
 static bool hifi_init(void) {
