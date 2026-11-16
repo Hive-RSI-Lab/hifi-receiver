@@ -653,6 +653,32 @@ static void i2c_console(void) {
 	CHECK(bus.reads == r && bus.writes == w);
 }
 
+static const char *x_reason(void) { return "panic"; }
+static size_t x_log(char *o, size_t cap) {
+	/* colour codes and stray bytes dropped, newlines kept, cut to cap */
+	static const char log[] = "\x1b[0;31mE (1) bt: boom\x1b[0m\n\x01" "Backtrace: 0x4008\"\\\n";
+	size_t n = sizeof(log) - 1 < cap - 1 ? sizeof(log) - 1 : cap - 1;
+	memcpy(o, log, n);
+	o[n] = '\0';
+	return n;
+}
+
+static void crash(void) {
+	CHECK(call("GET", "/api/v1/crash", NULL) == 404); /* no recorder */
+	hifi_ops_t x = ops;
+	x.reset_reason = x_reason;
+	x.last_log = x_log;
+	CHECK(hifi_api_handle(&x, "GET", "/api/v1/crash", NULL, out, sizeof(out)) == 200);
+	CHECK_STR(out, "{\"reset_reason\":\"panic\",\"log\":\"E (1) bt: boom\\u000aBacktrace: 0x4008\\\"\\\\\\u000a\"}");
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{}", out, sizeof(out)) == 405);
+	CHECK(hifi_api_reply_cap("/api/v1/crash", NULL) > 6000);
+	const char *argv[] = {"crash"}, *method, *path;
+	char body[64];
+	CHECK(hifi_cli_request(1, argv, &method, &path, body, sizeof(body), out, sizeof(out)));
+	CHECK_STR(method, "GET");
+	CHECK_STR(path, "/api/v1/crash");
+}
+
 int main(void) {
 	hifi_vol_init(&m.vol, 35, 100);
 	m.ir_learning = -1;
@@ -664,5 +690,6 @@ int main(void) {
 	console();
 	core_routes();
 	i2c_console();
+	crash();
 	return check_report("api");
 }

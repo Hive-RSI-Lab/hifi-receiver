@@ -38,6 +38,7 @@
 #include "hifi_api.h"
 #include "hifi_board.h"
 #include "hifi_bsp.h"
+#include "hifi_crash.h"
 #include "hifi_esp.h"
 #include "hifi_gov.h"
 #include "hifi_http.h"
@@ -705,6 +706,7 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	esp_wifi_get_mode(&mode);
 	s->net_mode = !s->ip[0] && (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA) ? "ap" : "sta";
 	s->heap_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+	s->reset_reason = hifi_crash_reset_reason();
 	s->psram_free = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
 	hifi_net_update_status(&s->update);
 	hifi_bsp_snapshot(s); /* its sensors, zones and Ethernet */
@@ -1041,6 +1043,8 @@ const hifi_ops_t hifi_ops = {
 #endif
 #ifdef HIFI_HAS_BACKLIGHT
 	.set_backlight = hifi_bsp_set_backlight,
+	.reset_reason = hifi_crash_reset_reason,
+	.last_log = hifi_crash_last_log,
 #endif
 };
 

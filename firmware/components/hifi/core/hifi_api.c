@@ -164,6 +164,7 @@ void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) {
 	hj_obj(&j, "sys");
 	hj_int(&j, "heap_free", s->heap_free);
 	hj_int(&j, "psram_free", s->psram_free);
+	if (s->reset_reason) hj_str(&j, "reset_reason", s->reset_reason);
 	hj_obj_end(&j);
 
 	hj_obj(&j, "ir");
@@ -492,6 +493,40 @@ static int r_selftest(const hifi_ops_t *ops, char *out, size_t cap) {
 
 /* ------------------------------------------------------------------ remote bring-up */
 
+#define CRASH_LOG_MAX 3072
+static int r_crash(const hifi_ops_t *ops, char *out, size_t cap) {
+	if (!ops->reset_reason || !ops->last_log) return error(out, cap, 404, "this build keeps no crash log");
+	char *log = malloc(CRASH_LOG_MAX + 1);
+	if (!log) return error(out, cap, 503, "out of memory");
+	size_t n = ops->last_log(log, CRASH_LOG_MAX + 1), k = 0;
+	/* keep it plain text (no colour codes) so the escaped reply fits */
+	for (size_t i = 0; i < n; i++) {
+		unsigned char c = (unsigned char) log[i];
+		if (c == 0x1b) { /* ESC [ ... letter */
+			while (i + 1 < n && !((log[i + 1] >= 'A' && log[i + 1] <= 'Z') || (log[i + 1] >= 'a' && log[i + 1] <= 'z'))) i++;
+			i++;
+			continue;
+		}
+		if (c == '\n' || (c >= 0x20 && c < 0x7f)) log[k++] = (char) c;
+	}
+	log[k] = '\0';
+	/* JSON-escaped it must fit the reply (hifi_api_reply_cap): drop the oldest */
+	size_t esc = 0, start = 0;
+	for (size_t i = 0; i < k; i++) esc += log[i] == '\n' ? 6 : (log[i] == '"' || log[i] == '\\') ? 2 : 1;
+	while (esc > 2 * CRASH_LOG_MAX && start < k) {
+		char c = log[start++];
+		esc -= c == '\n' ? 6 : (c == '"' || c == '\\') ? 2 : 1;
+	}
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_str(&j, "reset_reason", ops->reset_reason());
+	hj_str(&j, "log", log + start);
+	hj_obj_end(&j);
+	free(log);
+	return 200;
+}
+
 static int r_ota_get(const hifi_ops_t *ops, char *out, size_t cap) {
 	if (!ops->ota || !ops->ota_status) return error(out, cap, 404, "no OTA in this build");
 	hifi_ota_status_t st = {0};
@@ -818,6 +853,7 @@ size_t hifi_api_reply_cap(const char *path, const char *body) {
 		if (f > HIFI_CAPTURE_FRAMES_MAX) f = HIFI_CAPTURE_FRAMES_MAX;
 		return hifi_b64_len((size_t) f * 4) + 1024;
 	}
+	if (path && strstr(path, PREFIX "crash") == path) return 2 * CRASH_LOG_MAX + 256;
 	return 4096;
 }
 
@@ -850,6 +886,7 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "ir/forget")) status = post ? r_ir(ops, body, out, cap, false) : -1;
 	else if (!strcmp(route, "selftest")) status = post ? r_selftest(ops, out, cap) : -1;
 	else if (!strcmp(route, "ota")) status = get ? r_ota_get(ops, out, cap) : -1;
+	else if (!strcmp(route, "crash")) status = get ? r_crash(ops, out, cap) : -1;
 	else if (!strncmp(route, "ota/", 4)) status = post ? r_ota(ops, route + 4, body, out, cap) : -1;
 	else if (!strcmp(route, "capture")) status = post ? r_capture(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "wifi")) status = post ? r_wifi(ops, body, out, cap) : -1;
@@ -872,7 +909,7 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 /* ------------------------------------------------------------------ console */
 
 static const char USAGE[] =
-	"usage: hifi info|state|selftest | tone sine <hz> <dBFS> [both|left|right] [s] | "
+	"usage: hifi info|state|crash|selftest | tone sine <hz> <dBFS> [both|left|right] [s] | "
 	"tone sweep <from> <to> <dBFS> [s] | tone noise <dBFS> [s] | tone silence [s] | tone stop | "
 	"amp on|off|reset | input stream|dj_direct|line | sub <dB> | control <action> | "
 	"volume <0-100> | mute on|off | maxvol <30-100> | ir learn <action> | ir forget [action] | "
@@ -897,9 +934,9 @@ bool hifi_cli_request(int argc, const char *const *argv, const char **method,
 	if (argc < 1) return usage(out, cap);
 	const char *cmd = argv[0];
 
-	if (!strcmp(cmd, "info") || !strcmp(cmd, "state")) {
+	if (!strcmp(cmd, "info") || !strcmp(cmd, "state") || !strcmp(cmd, "crash")) {
 		*method = "GET";
-		*path = !strcmp(cmd, "info") ? PREFIX "info" : PREFIX "state";
+		*path = !strcmp(cmd, "info") ? PREFIX "info" : !strcmp(cmd, "state") ? PREFIX "state" : PREFIX "crash";
 		return argc == 1 || usage(out, cap);
 	}
 	if (!strcmp(cmd, "selftest")) {
