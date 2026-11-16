@@ -19,10 +19,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from mech.kicad import Port  # noqa: E402
 
-from core_box import GAP, T_PCB, banana_ports, base, block, button, light_pipe, lid, rca_ports, tray  # noqa: E402
+from core_box import GAP, LID, T_PCB, banana_ports, base, block, cylinder, light_pipe, lid, rca_ports, tray  # noqa: E402
 
 BOARD = "lite-main.board.json"   # mech board ../boards/lite-main/kicad/lite-main.kicad_pcb --heights heights.json
-PRINT = {"lid": "flip", "btn_SW1": "flip", "btn_SW2": "flip", "btn_SW3": "flip"}
+PRINT = {"lid": "flip"}
 FIT = {"max_recess": {"*": 3.0, "U9": 4.0},   # U9 is seen through its window, not plugged: its lens 3.5 mm in
        "bed": (180, 180, 180)}                # A1 mini, the smallest printer here
 
@@ -33,12 +33,44 @@ IR_LENS_Z = T_PCB + 5.0
 ANT_LEN = 6.4       # the WROVER's antenna end, from its outer edge
 ANT_MARGIN = 2.0    # along the wall, past the module each way
 ANT_WALL = 1.2      # the west wall beside the antenna: half the usual 2.4
+# The buttons are spring tongues cut in the lid, one piece with it: nothing loose to fall into the box, and
+# each plunger hangs fixed over its switch. 1.0 mm PLA arm, 7 wide, ~15 long: ~1.8 N/mm, so the 0.65 mm
+# press (0.4 gap + the switch's 0.25 travel) takes ~1.2 N on top of the switch's own, at ~0.5 % strain.
+KEY_W = 7.0         # tongue width
+KEY_SLOT = 1.0      # the U-slot round it, through the lid
+KEY_FRONT = 0.5     # the tongue's front edge (y), just inside the front wall's inner face
+KEY_ROOT = 22.0     # where the tongue joins the lid (y)
+KEY_PAD = 7.5       # full-thickness pad from the front edge back to here (y); the arm behind it is thinned
+KEY_ARM = 1.0       # the arm's thickness, kept at the lid's top face
+KEY_GAP = 0.4       # plunger tip above the switch top at rest
 
 
 def antenna_zone(board):
     """(x0, y0, x1, y1) of the antenna's keep-out, from the module's bbox: inner wall face to the antenna's inner end."""
     x0, y0, _, y1 = board.part("U5").bbox
     return (-GAPS["W"], y0 - ANT_MARGIN, x0 + ANT_LEN, y1 + ANT_MARGIN)
+
+
+def keys(t, l, refs):
+    """Cut a spring tongue for each tact switch in `refs` into the lid `l`, with a plunger hanging from its pad
+    onto the switch. Prints with the lid, top face down: the arm and plunger grow straight off the bed."""
+    z_top = t.z_top
+    for ref in refs:
+        p = t.board.part(ref)
+        cx, cy = (p.bbox[0] + p.bbox[2]) / 2, (p.bbox[1] + p.bbox[3]) / 2
+        x0, x1 = cx - KEY_W / 2, cx + KEY_W / 2
+        s = KEY_SLOT
+        # the lip hangs where the tongue's front edge moves: take it away there
+        l = t.clear_lip(l, x0 - s - 0.5, t.inner[1] - 1, x1 + s + 0.5, KEY_FRONT + 3)
+        cut = (block(x0 - s, KEY_FRONT - s, z_top - 5, x0, KEY_ROOT, z_top + LID + 1)
+               + block(x1, KEY_FRONT - s, z_top - 5, x1 + s, KEY_ROOT, z_top + LID + 1)
+               + block(x0 - s, KEY_FRONT - s, z_top - 5, x1 + s, KEY_FRONT, z_top + LID + 1))
+        l -= cut
+        l -= block(x0 - 0.01, KEY_PAD, z_top - 1, x1 + 0.01, KEY_ROOT, z_top + LID - KEY_ARM)
+        tip = p.z[1] + KEY_GAP
+        l += cylinder(cx, cy, tip + 3.0, z_top + 0.5, 4.0)
+        l += cylinder(cx, cy, tip, tip + 3.0 + 0.01, 3.0)
+    return l
 
 
 def build(board):
@@ -67,10 +99,7 @@ def build(board):
     dy = max(0.0, -GAPS["S"] + od / 2 + 0.1 - (d2.bbox[1] + d2.bbox[3]) / 2)
     l = light_pipe(t, l, "D2", od=od, idd=2.6, dy=dy)
     parts = {"base": b}
-    for sw in ("SW1", "SW2", "SW3"):
-        l, btn = button(t, l, sw)
-        parts[f"btn_{sw}"] = btn
-    parts["lid"] = l
+    parts["lid"] = keys(t, l, ("SW1", "SW2", "SW3"))
     # The ESP32's antenna sits at the west edge. Thin the wall beside it (open at the top, so nothing overhangs),
     # take the lid's lip away over it, and fail the build if any plastic of the box reaches into its zone between
     # floor and lid.

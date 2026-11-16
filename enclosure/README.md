@@ -15,9 +15,9 @@ STEP moves it to Onshape later (see the end of this page).
 
 ![lid lifted](out/lite/iso.png)
 
-- **Box:** 124 x 96 x 39.8 mm: a base (the tray), a lid and three printed
-  buttons.
-- **Files:** `out/lite/base.stl`, `lid.stl` and `btn_SW1-3.stl` are already
+- **Box:** 124 x 96 x 39.8 mm: a base (the tray) and a lid. The three
+  buttons are spring tongues cut into the lid, one piece with it (see Buttons).
+- **Files:** `out/lite/base.stl` and `lid.stl` are already
   in print orientation. `out/lite/enclosure.step` is the assembly with the
   board as a slab, for Onshape.
 - **Print files:** `out/lite/a1mini/lite-base.3mf` and `lite-lid-buttons.3mf`
@@ -30,8 +30,8 @@ STEP moves it to Onshape later (see the end of this page).
 - **Material:** PETG or ASA, not PLA. The amp heats the inside, and PLA
   softens at about 55 °C.
 - **Settings:** 0.4 mm nozzle, 0.2 mm layers, 4 walls, 20–25 % infill.
-- **No supports.** The base prints on its floor, the lid on its top face and
-  each button on its cap. The holes in the walls are teardrops (RCA: cut
+- **No supports.** The base prints on its floor, the lid on its top face, so the
+  button tongues and plungers grow straight off the bed. The holes in the walls are teardrops (RCA: cut
   flat 1 mm over the hole, a 3 mm bridge), rounds with a 45-degree roof (the
   banana sockets) or bridge (USB-C, IR window). Each standoff has a 7.8 mm foot round its 6.2 mm
   counterbore, so the ring left round it is two nozzle lines. The foot joins
@@ -43,7 +43,7 @@ STEP moves it to Onshape later (see the end of this page).
   | Plate | File | Time | Filament | Brim |
   |---|---|---|---|---|
   | Base | `out/lite/a1mini/lite-base.3mf` | 1 h 48 | 63 g | none |
-  | Lid and 3 buttons | `out/lite/a1mini/lite-lid-buttons.3mf` | 1 h 33 | 31 g | 5 mm, for the 30 mm button stems |
+  | Lid with spring buttons (PLA Matte, supports on) | `out/lite/a1mini-pla/lite-lid-pla.3mf` | 1 h 18 | 34 g | none |
 
   Re-slice after any rebuild; `--set` carries the settings above:
 
@@ -52,10 +52,21 @@ STEP moves it to Onshape later (see the end of this page).
   printer slice $L/base.stl --name lite-base --model a1mini --out $L/a1mini \
     --filament "Bambu PETG Basic" --plate "Textured PEI Plate" \
     --set wall_loops=4 --set sparse_infill_density=25% --set brim_type=no_brim
-  printer slice $L/lid.stl $L/btn_SW1.stl $L/btn_SW2.stl $L/btn_SW3.stl --name lite-lid-buttons --model a1mini --out $L/a1mini \
-    --filament "Bambu PETG Basic" --plate "Textured PEI Plate" \
-    --set wall_loops=4 --set sparse_infill_density=25% --set brim_type=outer_only --set brim_width=5
+  printer slice $L/lid.stl --name lite-lid-pla --model a1mini --out $L/a1mini-pla \
+    --filament "Bambu PLA Matte" --plate "Textured PEI Plate" \
+    --set wall_loops=4 --set sparse_infill_density=25% --set enable_support=1 --set support_type="tree(auto)"
   ```
+
+### Buttons
+
+The loose buttons fell out of their holes and missed the switches, so Lite's
+are now part of the lid (`keys()` in `lite.py`). Each is a 7 mm tongue inside
+a 1 mm U-slot through the lid, rooted 22 mm back from the front edge. A
+full-thickness pad sits at the front, over the switch. Behind the pad the arm
+is thinned to 1 mm from underneath, so it flexes. A 4 mm plunger with a 3 mm
+tip hangs from the pad and stops 0.4 mm above the switch. Pressing the pad
+bends the arm about 0.65 mm and clicks the switch; the arm springs back. The
+lid's lip is cut away under each pad's front edge.
 
 ### Antenna
 
@@ -89,9 +100,8 @@ its way:
    wall: tilt it nose-first so the four banana sockets' round collars go into
    their round holes, then lay it down. The RCA and USB-C sockets line up
    with their holes. There is no wiring: the speaker sockets are on the board.
-2. Drop the three buttons into their holes in the lid from underneath, cap
-   up, then put the lid on, holding them in. Its lip locates it inside the
-   walls.
+2. Put the lid on: its lip locates it inside the walls, and each button's
+   plunger lands over its switch by itself.
 3. Fit the four screws from underneath. Each one goes through the base and
    the board's mounting hole into a lid pillar. Together they clamp the board
    and hold the lid. Don't overtighten them: the thread is plastic.
@@ -367,9 +377,8 @@ drawings from. `mech onshape` uploads it once the person gives an API key
 
 ## Open points
 
-- **Button stems are long:** each Lite button is 30 mm tall with a 3 mm
-  stem, printed standing on its cap. That is printable, but untested, so the
-  A1 mini plate gives them a 5 mm brim. If one wobbles, print it slower.
+- **Button feel:** the spring arm is 1.0 mm PLA (`KEY_ARM` in `lite.py`), about
+  1 N on top of the switch's own click. Thicker is stiffer; untested in PETG.
 - **Board snapshot:** `lite-main.board.json` is read by `mech board` from
   the committed, routed `boards/lite-main` (main at fe17345, 2026-10-29).
   Re-run the commands above whenever the board changes.
