@@ -792,6 +792,11 @@ static int op_set_eq(const float g[HIFI_EQ_BANDS]) {
 	return config_set_value(NVS_TYPE_STR, "equalizer", s) == ESP_OK ? 0 : -1;
 }
 
+static int discard_write(void *cookie, const char *buf, int n) {
+	(void) cookie; (void) buf;
+	return n;
+}
+
 /* The name people see in AirPlay, Bluetooth, Spotify and LMS. The hostname
  * stays the model's (hifi-lite) so hifi-lite.local keeps working. */
 static int op_set_name(const char *name) {
@@ -800,10 +805,13 @@ static int op_set_name(const char *name) {
 	err |= config_set_value(NVS_TYPE_STR, "airplay_name", name) != ESP_OK;
 	err |= config_set_value(NVS_TYPE_STR, "bt_name", name) != ESP_OK;
 	err |= config_set_value(NVS_TYPE_STR, "a2dp_dev_name", name) != ESP_OK;
-	FILE *f = fopen("/dev/null", "w");
+	/* upstream's setters fprintf their chatter to f unchecked, and IDF 4.4
+	 * has no /dev/null: fopen gave NULL and the board crashed on a rename */
+	FILE *f = funopen(NULL, NULL, discard_write, NULL, NULL);
+	if (!f) return -1;
 	if (set_squeezelite_player_name) err |= set_squeezelite_player_name(f, name) != 0;
 	if (set_cspot_player_name) err |= set_cspot_player_name(f, name) != 0;
-	if (f) fclose(f);
+	fclose(f);
 	return err ? -1 : 0; /* the services pick it up at the next restart */
 }
 
