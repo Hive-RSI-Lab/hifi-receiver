@@ -157,8 +157,10 @@ static void test_cookies(void) {
 	CHECK(alac_create_decoder(24, NULL, &size, &rate, &chans, &block) == NULL);
 }
 
-// Apple's encoder makes real packets; the patched decoder must return the input exactly
-static void roundtrip(uint32_t frames, int bits, int ch, int packets) {
+// Apple's encoder makes real packets; the patched decoder must return the input exactly.
+// noise: full-scale random samples, which the encoder can't compress, so every
+// packet takes the escape (uncompressed) path.
+static void roundtrip(uint32_t frames, int bits, int ch, int packets, bool noise = false) {
 	ALACEncoder enc;
 	enc.SetFrameSize(frames);
 	AudioFormatDescription in = {}, out = {};
@@ -187,8 +189,9 @@ static void roundtrip(uint32_t frames, int bits, int ch, int packets) {
 				seed = seed * 1103515245u + 12345u;
 				double t = (p * frames + f) / 44100.0;
 				// a tone, a quieter one, noise, and a silent stretch for the run-length path
-				int32_t v = p == 2 ? 0 : (int32_t) (0.4 * sin(2 * M_PI * (440 + 220 * c) * t) * (1 << (bits - 1)))
+				int32_t v = p == 2 ? 0 : (int32_t) (0.4 * sin(2 * M_PI * (440 + 220 * c) * t) * ldexp(1.0, bits - 1))
 					+ (int32_t) ((seed >> 16) & 0xff) - 128;
+				if (noise) v = (int32_t) (seed ^ (seed << 13) ^ (seed >> 7));
 				for (int b = 0; b < bps; b++) pcm[(f * ch + c) * bps + b] = (uint8_t) (v >> (8 * b));
 			}
 		int32_t n = (int32_t) pcm_len;
@@ -203,7 +206,8 @@ static void roundtrip(uint32_t frames, int bits, int ch, int packets) {
 				same &= !memcmp(dec + (f * (ch < 2 ? 2 : ch) + c) * bps, pcm + (f * ch + (ch < 2 ? 0 : c)) * bps, bps);
 		if (ch >= 2) CHECK(same);
 		if (!ok || got != frames || (ch >= 2 && !same))
-			printf("  roundtrip %u frames %d bits %d ch, packet %d (%d bytes)\n", frames, bits, ch, p, n);
+			printf("  roundtrip %u frames %d bits %d ch%s, packet %d (%d bytes)\n", frames, bits, ch,
+				   noise ? " noise" : "", p, n);
 	}
 	free(pcm); free(pkt); free(dec);
 	alac_delete_decoder(d);
@@ -215,6 +219,11 @@ int main(void) {
 	roundtrip(352, 16, 2, 6);		// AirPlay
 	roundtrip(4096, 16, 2, 4);		// an ALAC file through squeezelite
 	roundtrip(4096, 24, 2, 4);
+	roundtrip(4096, 32, 2, 4);		// 32-bit stereo: chanBits 33 when nothing is shifted
+	roundtrip(4096, 16, 1, 4);		// mono
+	roundtrip(352, 16, 2, 3, true);	// escape packets
+	roundtrip(4096, 24, 2, 3, true);
+	roundtrip(4096, 32, 2, 3, true);
 	printf("%s: test_up_alac (%d failures)\n", failures ? "FAIL" : "ok", failures);
 	return failures != 0;
 }
