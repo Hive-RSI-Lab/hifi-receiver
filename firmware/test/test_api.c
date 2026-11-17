@@ -402,7 +402,7 @@ static void state_parts(void) {
 	s.input = HIFI_INPUT_DJ_DIRECT;
 	s.dj_guard = true;
 	s.dj_guard_w = s.dj_guard_limit_w = 999.9f;
-	s.dj_guard_tripped = "thermal";
+	s.dj_guard_tripped = "contract";
 	s.tone_active = true;
 	s.tone = (hifi_tone_params_t) {.type = HIFI_TONE_SWEEP, .start_hz = 20000, .end_hz = 20000, .level_dbfs = -120, .duration_s = 3600, .channel = HIFI_CH_RIGHT};
 	s.level_dbfs = -120.5f;
@@ -439,8 +439,8 @@ static void state_parts(void) {
 	for (size_t i = 0; i < sizeof(all) / sizeof(all[0]); i++) {
 		hifi_api_write_state_part(&s, all[i], part, sizeof(part));
 		size_t n = strlen(part);
-		if (getenv("STATE_SIZES") || n >= 960) fprintf(stderr, "state/%s is %zu characters\n", all[i], n);
-		CHECK(n > 2 && n < 960 && part[n - 1] == '}');
+		if (getenv("STATE_SIZES") || n > 850) fprintf(stderr, "state/%s is %zu characters\n", all[i], n);
+		CHECK(n > 2 && n <= 850 && part[n - 1] == '}');
 	}
 	hifi_meta_idle(&m.playing);
 }
