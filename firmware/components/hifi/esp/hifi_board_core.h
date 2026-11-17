@@ -130,4 +130,5 @@
 
 /* what this board's firmware does besides the shared parts */
 #define HIFI_HAS_CHANNEL 0 /* the DSP plays both sides to the amps */
+#define HIFI_HAS_BOOST 0   /* no Boost: the TPA3220 has no heatsink (hifi_gov_cfg_core) */
 #define HIFI_HAS_CAPTURE 0 /* the API's capture is the ES8388's; core's ADC plays the line in instead */

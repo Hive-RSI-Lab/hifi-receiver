@@ -102,6 +102,10 @@ static volatile bool codec_dirty = true; /* re-apply input/sub to the codec */
 static volatile uint32_t amp_hold_until, route_at;
 static bool codec_up;
 static uint32_t otw_ms, otw_clear_ms, otw_high_ms; /* the OTW step-down (C2) */
+/* a trip taken as heat (Lite, cap above the default): the last one, the
+ * gain trim held until, and when the amp was last off (a short trips at once) */
+static uint32_t heat_trip_ms, trim_hold_until, amp_off_ms;
+static bool heat_trip_any;
 static volatile uint32_t selftest_hold_until; /* keeps the amp awake for the self-test */
 static volatile bool capture_busy;   /* the codec's ADC is ours until the capture ends */
 
@@ -258,7 +262,8 @@ static void power_task(void *arg) {
 				gov.trim = fmaxf(gov.trim * 0.708f, 0.25f);
 				ESP_LOGW(TAG, "amp too hot: gain ceiling %.1f dB", 20 * log10f(gov.trim));
 			}
-		} else if (gov.trim < 1.0f && now - otw_clear_ms >= 10000 && now - otw_ms >= 10000) {
+		} else if (gov.trim < 1.0f && now - otw_clear_ms >= 10000 && now - otw_ms >= 10000 &&
+			   (int32_t) (trim_hold_until - now) <= 0) {
 			otw_ms = now;
 			gov.trim = fminf(gov.trim * 1.122f, 1.0f);
 		}
@@ -293,18 +298,29 @@ static void power_task(void *arg) {
 		int faults_before = power.faults;
 		hifi_power_out_t o = *hifi_power_step(&power, &in);
 		/* Lite's TPA3118 has no warning pin: heat shows only as its 150 C
-		 * shutdown on FAULTZ. A trip with the heat cap over the default is
-		 * taken as heat: the cap drops 2 W (until a restart or a new
-		 * setting) and the gain 3 dB (back as above), and the trip doesn't
-		 * count towards the latch. At the default, trips latch as before. */
+		 * shutdown on FAULTZ, which also flags a short or DC. A trip is
+		 * taken as heat only when the heat cap is over the default, the
+		 * amps have played for 5 s (a short trips at once), the sustained
+		 * power is over the default, and no trip was forgiven in the last
+		 * fault window. Then the cap drops 2 W (saved), the gain 3 dB (held
+		 * 60 s), the amp rests 15 s, and the trip doesn't count towards the
+		 * latch. Every other trip latches as before. */
 		float cap_w = hifi_gov_heat_w(&gov), def_w = hifi_gov_heat_def_w(&gov);
-		if (power.faults > faults_before && def_w > 0 && cap_w > def_w + 0.25f) {
+		float heat_cap_saved = NAN;
+		if (power.faults > faults_before && def_w > 0 && cap_w > def_w + 0.25f &&
+		    now - amp_off_ms >= 5000 && hifi_gov_heat_now_w(&gov) > def_w &&
+		    (!heat_trip_any || now - heat_trip_ms > power.cfg.fault_window_ms)) {
 			float w = hifi_gov_set_heat_w(&gov, fmaxf(cap_w - 2.0f, def_w));
 			hifi_power_forgive_fault(&power, now);
 			gov.trim = fmaxf(gov.trim * 0.708f, 0.25f);
 			otw_ms = otw_clear_ms = now;
+			trim_hold_until = now + 60000;
+			amp_hold_until = now + 15000;
+			heat_trip_ms = now;
+			heat_trip_any = true;
+			heat_cap_saved = w;
 			ESP_LOGW(TAG, "amp tripped with the heat cap at %.1f W: taken as heat, cap now %.1f W, gain "
-				      "ceiling %.1f dB", cap_w, w, 20 * log10f(gov.trim));
+				      "ceiling %.1f dB, amp off 15 s", cap_w, w, 20 * log10f(gov.trim));
 		}
 		if (power.state != before)
 			ESP_LOGI(TAG, "power %s -> %s (VBUS %.2f V, PVDD %.2f V, PG %d)", hifi_power_state_name(before),
@@ -314,7 +330,13 @@ static void power_task(void *arg) {
 		 * remembered, so a restart after its OCP comes back governed */
 		if (dj_trip) input_changed(HIFI_INPUT_LINE, !strcmp(dj_trip, "contract"));
 		if (!codec_up || (int32_t) (amp_hold_until - now) > 0) o.amp_on = false;
+		if (!o.amp_on) amp_off_ms = now;
 		hifi_bsp_power_out(&o);
+		if (!isnan(heat_cap_saved)) {
+			char hv[12];
+			snprintf(hv, sizeof(hv), "%.1f", heat_cap_saved);
+			config_set_value(NVS_TYPE_STR, "hifi_heat_w", hv);
+		}
 		if (save_vol) {
 			char sv[8];
 			snprintf(sv, sizeof(sv), "%d", save_v);
@@ -707,8 +729,10 @@ static void op_info(hifi_info_t *i) {
 	free(s);
 	i->flash_mb = spi_flash_get_chip_size() >> 20;
 	hifi_bsp_info(i);
+#if HIFI_HAS_BOOST
 	i->caps.boost_max_db = HIFI_BOOST_MAX_DB;
-	if (hifi_gov_heat_max_w(&gov) > 0) {
+#endif
+	if (hifi_gov_heat_max_w(&gov) > hifi_gov_heat_def_w(&gov)) {
 		i->caps.heat_min_w = HIFI_GOV_HEAT_MIN_W;
 		i->caps.heat_max_w = hifi_gov_heat_max_w(&gov);
 		i->caps.heat_def_w = hifi_gov_heat_def_w(&gov);
@@ -905,6 +929,7 @@ static float op_set_sub(int on, float db) {
 static int op_set_channel(hifi_chan_t c) {
 	LOCK();
 	channel = c;
+	gov.chan = c;
 	UNLOCK();
 	hifi_bsp_channel(c);
 	config_set_value(NVS_TYPE_STR, "hifi_channel", hifi_chan_name(c));
@@ -1490,7 +1515,7 @@ static bool hifi_init(void) {
 	free(s);
 	hifi_boost_init(&boost);
 	s = config_alloc_get_str("hifi_boost_db", NULL, "0");
-	hifi_boost_set_db(&boost, s ? strtof(s, NULL) : 0);
+	hifi_boost_set_db(&boost, s && HIFI_HAS_BOOST ? strtof(s, NULL) : 0);
 	free(s);
 	s = config_alloc_get_str("hifi_heat_w", NULL, NULL);
 	if (s) hifi_gov_set_heat_w(&gov, strtof(s, NULL));
@@ -1502,6 +1527,7 @@ static bool hifi_init(void) {
 	s = config_alloc_get_str("hifi_channel", NULL, "stereo");
 	if (!s || !hifi_chan_parse(s, &channel)) channel = HIFI_CHAN_STEREO;
 	free(s);
+	gov.chan = channel;
 	hifi_bsp_channel(channel);
 #endif
 	char *sv = config_alloc_get_str("hifi_volume", NULL, "30");

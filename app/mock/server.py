@@ -47,8 +47,9 @@ PLAYING = {"state": "play", "title": "Teardrop", "artist": "Massive Attack", "al
 
 def initial_info(model: str) -> dict:
     caps = copy.deepcopy(CAPS[model])
-    caps.update(eq_bands=EQ_BANDS, eq_min=-12, eq_max=12,
-                loudness={"boost_max_db": 9.0, "heat_cap_w": {"min": 2.0, "max": 15.0, "default": 9.0}})
+    caps.update(eq_bands=EQ_BANDS, eq_min=-12, eq_max=12)
+    if model == "lite":  # Boost and the heat cap are Lite only (HIFI_HAS_BOOST)
+        caps["loudness"] = {"boost_max_db": 9.0, "heat_cap_w": {"min": 2.0, "max": 15.0, "default": 9.0}}
     return {"model": "hifi-" + model, "board": BOARDS[model], "fw": "0.1.0",
             "upstream": "squeezelite-esp32 (mock)", "api": 1, "mac": "24:0a:c4:12:34:56",
             "hostname": "hifi-" + model, "name": "HiFi " + model.capitalize(),
@@ -164,6 +165,8 @@ class Receiver:
                 self._sub(b, a["sub"], caps["sub"])
             elif path == "loudness":
                 # as the firmware: both checked before either is set
+                if "loudness" not in caps:
+                    raise KeyError(path)  # 404, as the firmware on a board without Boost
                 L = caps["loudness"]
                 bd = None if b.get("boost_db") is None else num(b, "boost_db")
                 hw = None if b.get("heat_cap_w") is None else num(b, "heat_cap_w")
@@ -301,7 +304,10 @@ class Receiver:
                 one["invert"] = boolean(b, "invert")
             return
         if "level_db" in b:  # the ES8388's LOUT2/ROUT2 in 1.5 dB steps on Lite (test-api.md)
-            sub["level_db"] = round(clamp(num(b, "level_db"), -30, c.get("max_db", 6), float) / 1.5) * 1.5
+            v = num(b, "level_db")
+            if not -30 <= v <= c["max_db"]:
+                raise ValueError(f"level_db must be -30 to {c['max_db']:+.1f} on this model")
+            sub["level_db"] = round(v / 1.5) * 1.5
         if "on" in b:
             sub["on"] = boolean(b, "on")
         for k, lo, hi in (("xover_hz", 40, 160),):

@@ -89,7 +89,6 @@ class API(unittest.TestCase):
             ("volume", {"mute": True}, lambda s: s["audio"]["mute"]),
             ("eq", {"gains": [3] * 10}, lambda s: s["audio"]["eq"] == [3] * 10),
             ("sub", {"level_db": -13, "on": False}, lambda s: (s["audio"]["sub"]["level_db"], s["audio"]["sub"]["on"]) == (-13.5, False)),
-            ("sub", {"level_db": 3}, lambda s: s["audio"]["sub"]["level_db"] == -9.0),  # Lite tops out at -9 dB
             ("ir/learn", {"action": "volup"}, lambda s: s["ir"]["learning"] == "volup"),
             ("ir/forget", {}, lambda s: s["ir"]["learned"] == []),
             ("loudness", {"boost_db": 6}, lambda s: s["audio"]["boost"]["db"] == 6),
@@ -122,7 +121,8 @@ class API(unittest.TestCase):
                            ("control", {"action": "skip"}), ("ir/learn", {"action": "eject"}),
                            ("loudness", {}), ("loudness", {"boost_db": 10}), ("loudness", {"boost_db": "6"}),
                            ("loudness", {"heat_cap_w": 1}), ("loudness", {"boost_db": 3, "heat_cap_w": 40}),
-                           ("channel", {}), ("channel", {"channel": "centre"})):
+                           ("channel", {}), ("channel", {"channel": "centre"}),
+                           ("sub", {"level_db": -8.5})):  # over Lite's caps.sub.max_db
             code, s = self.m.post(path, body)
             self.assertEqual(code, 400, (path, body))
             self.assertIn("error", s)
@@ -191,6 +191,9 @@ class Models(unittest.TestCase):
                 c = m.get("api/v1/info")["caps"]
                 self.assertEqual((c["channel"], c["led"], c["backlight"]), want, model)
                 self.assertEqual(m.post("channel", {"channel": "right"})[0], 200 if want[0] else 404)
+                # Boost and the heat cap are Lite only (review of #231)
+                self.assertEqual("loudness" in c, model == "lite")
+                self.assertEqual(m.post("loudness", {"boost_db": 3})[0], 200 if model == "lite" else 404)
                 code, r = m.post("led", {"mode": "test"})
                 self.assertEqual((code, r), (200, {"ok": True}) if want[1] else (404, r))
                 if want[2]:

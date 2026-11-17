@@ -219,7 +219,8 @@ subs apply, about 0.1 s behind.
 turns them off (either or both). Lite: the ES8388's LOUT2/ROUT2, 1.5 dB steps
 up to +4.5 dB, so the level it reports is the one it could set. Plus/Ultra:
 a digital gain on the sub DAC's stream, −40 to 0 dB in 0.5 dB steps (more
-would clip). Kept across restarts. Reply: the full `/state`.
+would clip). A level above the board's `info.caps.sub.max_db` is a 400, not
+clamped. Kept across restarts. Reply: the full `/state`.
 
 ## `POST /api/v1/channel`
 
@@ -249,7 +250,7 @@ Applied at once and kept. Reply: the full `/state`.
 
 `{"boost_db": 6}`, `{"heat_cap_w": 12}`, or both; each is optional, and a
 body with neither is a 400. Only boards whose `info.caps.loudness` is there
-take it (Lite).
+take it (Lite); elsewhere it is a 404 and `caps.loudness` is missing.
 - **`boost_db`:** 0 to `caps.loudness.boost_max_db` (9), a number. Digital
   gain before the power governor, with a lookahead peak limiter (1 ms
   lookahead at 48 kHz, 25 ms hold, 0.15 s release) that keeps the boosted
@@ -263,10 +264,15 @@ take it (Lite).
 - **`heat_cap_w`:** sustained watts a channel the governor allows, from
   `heat_min_w` to `heat_max_w` (15), default `heat_def_w` (9). Above 9 W
   the amp may cut out when it gets hot; a fan helps. Lite's TPA3118 has no
-  warning pin, so each trip with the cap above the default lowers the cap
-  by 2 W (shown in `heat_cap_w`, until a restart or a new setting) and the
-  gain by 3 dB for a while, and doesn't count towards the amp's 3-trips
-  latch. At the default, trips latch as before.
+  warning pin, so a trip is forgiven (not counted towards the amp's
+  3-trips latch) only when the cap is above the default, the amp had been
+  on at least 5 s, the governor's heat estimate is above the default, and
+  no other trip was forgiven in the last fault window. A forgiven trip
+  lowers the cap by 2 W (saved, shown in `heat_cap_w`), holds the gain 3 dB
+  down for 60 s and keeps the amp off 15 s. Any other trip (a short trips
+  at once, or again soon) counts and latches as before. The cap tops out
+  at 15 W: the thermal model reaches the 150 C shutdown near there, so
+  more needs a fan, a heatsink and a measurement.
 
 Both are checked before either is set, and kept across restarts. Shown as
 `audio.boost` (`db`, `limit_db`: the gain the limiter is taking off now,

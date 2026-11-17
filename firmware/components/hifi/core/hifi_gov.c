@@ -1,4 +1,5 @@
 #include "hifi_gov.h"
+#include "hifi_api.h" /* hifi_chan_t */
 
 #include <math.h>
 #include <string.h>
@@ -68,6 +69,9 @@ void hifi_gov_cfg_core(hifi_gov_cfg_t *cfg) {
 	 * heatsink-options.md). Plus splits its pair across both chips and
 	 * raises this in board_core.c. Peaks pass; the minute doesn't */
 	cfg->thermal_out_w = 9.0f;
+	/* no heat cap above the default: the TPA3220 has no heatsink, and its
+	 * OTW pin backs it off; the Lite's 15 W top is not for this amp */
+	cfg->thermal_max_w = 0;
 	cfg->thermal_out2_w = 17.0f;
 	cfg->thermal_tau_s = 60.0f;
 }
@@ -127,7 +131,10 @@ void hifi_gov_process(hifi_gov_t *g, void *buf, size_t frames, int bytes_per_fra
 	float msl = (float) (sl / frames), msr = (float) (sr / frames);
 	float dt = (float) frames / rate;
 	float a = 1.0f - expf(-dt / c->tau_s);
-	float p_now = (channel_w(g, msl) + channel_w(g, msr)) * g->amps;
+	/* left or right: the mixers play that side on both speakers after this,
+	 * so it draws twice its own power (mono sums at -6 dB: no more than stereo) */
+	float pl = channel_w(g, msl), pr = channel_w(g, msr);
+	float p_now = (g->chan == HIFI_CHAN_LEFT ? 2 * pl : g->chan == HIFI_CHAN_RIGHT ? 2 * pr : pl + pr) * g->amps;
 	g->p_out_pre += a * (p_now - g->p_out_pre);
 	if (c->thermal_out_w > 0 && c->thermal_tau_s > 0)
 		g->p_out_slow += (1.0f - expf(-dt / c->thermal_tau_s)) * (p_now - g->p_out_slow);

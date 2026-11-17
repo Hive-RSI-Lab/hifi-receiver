@@ -452,7 +452,14 @@ static int r_sub(const hifi_ops_t *ops, const char *body, char *out, size_t cap)
 	bool on, has_on = hj_get_bool(body, "on", &on), has_db = hj_get_num(body, "level_db", &db) ||
 	     hj_num_bad(body, "level_db");
 	if (!has_on && !has_db) return error(out, cap, 400, "send level_db and/or on");
-	if (has_db && !(db >= -30 && db <= 6)) return error(out, cap, 400, "level_db must be -30 to +6");
+	hifi_info_t i;
+	memset(&i, 0, sizeof(i));
+	ops->info(&i);
+	if (has_db && !(db >= -30 && db <= i.caps.sub_max_db)) {
+		char m[64];
+		snprintf(m, sizeof(m), "level_db must be -30 to %+.1f on this model", i.caps.sub_max_db);
+		return error(out, cap, 400, m);
+	}
 	ops->set_sub(has_on ? on : -1, (float) db);
 	return r_state(ops, NULL, out, cap);
 }

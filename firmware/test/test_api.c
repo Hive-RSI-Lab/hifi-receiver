@@ -50,7 +50,7 @@ static void m_info(hifi_info_t *i) {
 	if (m.loud) {
 		i->caps.boost_max_db = 9;
 		i->caps.heat_min_w = 2;
-		i->caps.heat_max_w = 22;
+		i->caps.heat_max_w = 15;
 		i->caps.heat_def_w = 9;
 	}
 }
@@ -89,7 +89,7 @@ static void m_snapshot(hifi_snapshot_t *s) {
 		s->gov_why = m.heat_w > 9 ? "heat" : "";
 		s->heat_cap_w = m.heat_w;
 		s->heat_w = 3.25f;
-		s->amp_hot = m.heat_w > 20;
+		s->amp_hot = m.heat_w > 12;
 		s->boost_db = m.boost_db;
 		s->boost_limit_db = m.boost_db > 0 ? -1.5f : 0;
 		s->boost_limiting = m.boost_db > 0;
@@ -292,10 +292,12 @@ static void amp_input_sub_control(void) {
 	m.core = m.dj_guard = false;
 	m.input = HIFI_INPUT_DJ_DIRECT;
 
-	CHECK(call("POST", "/api/v1/sub", "{\"level_db\":6}") == 200);
-	CHECK_HAS(out, "\"sub\":{\"on\":false,\"level_db\":4.5}"); /* what the codec could do */
+	CHECK(call("POST", "/api/v1/sub", "{\"level_db\":-8.5}") == 400); /* over caps.sub.max_db */
+	CHECK_HAS(out, "-30 to -9.0 on this model");
+	CHECK(call("POST", "/api/v1/sub", "{\"level_db\":-10.5}") == 200);
+	CHECK_HAS(out, "\"sub\":{\"on\":false,\"level_db\":-10.5}"); /* what the codec could do */
 	CHECK(call("POST", "/api/v1/sub", "{\"on\":true}") == 200);
-	CHECK(m.sub_on == 1 && m.sub_db == 4.5f);
+	CHECK(m.sub_on == 1 && m.sub_db == -10.5f);
 	CHECK(call("POST", "/api/v1/sub", "{\"level_db\":-40}") == 400);
 	CHECK(call("POST", "/api/v1/sub", "{}") == 400);
 
@@ -429,7 +431,7 @@ static void state_parts(void) {
 	m.power_on = true;
 	CHECK(call("GET", "/api/v1/state/audio", NULL) == 200);
 	CHECK_STR(out, "{\"audio\":{\"source\":\"lms\",\"input\":\"dj_direct\",\"tone\":null,\"level_dbfs\":-23.4,\"channel\":\"stereo\","
-		       "\"sub\":{\"on\":true,\"level_db\":4.5},\"eq\":[1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,-12.0],"
+		       "\"sub\":{\"on\":true,\"level_db\":-10.5},\"eq\":[1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,-12.0],"
 		       "\"volume\":20,\"mute\":false,\"max_volume\":100,\"playing\":null}}");
 	CHECK(call("GET", "/api/v1/state/sys", NULL) == 200);
 	CHECK_STR(out, "{\"sys\":{\"heap_free\":81234,\"heap_min\":60123,\"heap_boot\":17890,\"psram_free\":3912345}}");
@@ -986,14 +988,14 @@ static void loudness(void) {
 	m.loud = true;
 	m.heat_w = 9;
 	CHECK(call("GET", "/api/v1/info", NULL) == 200);
-	CHECK_HAS(out, "\"loudness\":{\"boost_max_db\":9.0,\"heat_cap_w\":{\"min\":2.0,\"max\":22.0,\"default\":9.0}}");
+	CHECK_HAS(out, "\"loudness\":{\"boost_max_db\":9.0,\"heat_cap_w\":{\"min\":2.0,\"max\":15.0,\"default\":9.0}}");
 	CHECK(call("GET", "/api/v1/loudness", NULL) == 405);
 	CHECK(call("POST", "/api/v1/loudness", "{}") == 400);
 	CHECK(call("POST", "/api/v1/loudness", "{\"boost_db\":9.5}") == 400);
 	CHECK(call("POST", "/api/v1/loudness", "{\"boost_db\":-1}") == 400);
 	CHECK(call("POST", "/api/v1/loudness", "{\"boost_db\":1e999}") == 400);
 	CHECK(call("POST", "/api/v1/loudness", "{\"heat_cap_w\":1}") == 400);
-	CHECK(call("POST", "/api/v1/loudness", "{\"heat_cap_w\":23}") == 400);
+	CHECK(call("POST", "/api/v1/loudness", "{\"heat_cap_w\":15.5}") == 400);
 	CHECK(call("POST", "/api/v1/loudness", "{\"boost_db\":\"6\"}") == 400);
 	CHECK(call("POST", "/api/v1/loudness", "{\"boost_db\":3,\"heat_cap_w\":30}") == 400);
 	CHECK(m.loud_calls == 0 && m.boost_db == 0); /* a bad half sets neither */
@@ -1002,9 +1004,9 @@ static void loudness(void) {
 	CHECK_HAS(out, "\"boost\":{\"db\":6.0,\"limit_db\":-1.5,\"limiting\":true,\"limit_events\":7}");
 	CHECK_HAS(out, "\"reason\":null,\"heat_cap_w\":9.0,\"heat_w\":3.2");
 	CHECK_HAS(out, "\"hot\":false");
-	CHECK(call("POST", "/api/v1/loudness", "{\"heat_cap_w\":21}") == 200);
-	CHECK(m.boost_db == 6 && m.heat_w == 21);
-	CHECK_HAS(out, "\"reason\":\"heat\",\"heat_cap_w\":21.0");
+	CHECK(call("POST", "/api/v1/loudness", "{\"heat_cap_w\":13}") == 200);
+	CHECK(m.boost_db == 6 && m.heat_w == 13);
+	CHECK_HAS(out, "\"reason\":\"heat\",\"heat_cap_w\":13.0");
 	CHECK_HAS(out, "\"hot\":true");
 	CHECK(call("POST", "/api/v1/loudness", "{\"boost_db\":0,\"heat_cap_w\":9}") == 200);
 	CHECK(m.boost_db == 0 && m.heat_w == 9 && m.loud_calls == 3);
