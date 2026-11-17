@@ -11,7 +11,9 @@
  * scan refuses a target off this board's own /24 (or narrower) subnet, this
  * board, the gateway and the network's broadcast, and touches nothing until
  * ARP says the target's MAC is the peer's: an address that has moved to
- * someone else's device on a DHCP renewal is never scanned.
+ * someone else's device on a DHCP renewal is never scanned. Both checks run
+ * again before every pass and every 10 s during one; a change ends the scan.
+ * A run whose ports can't all be probed inside its max_s is refused.
  *
  * Optional: tcp (ports, default "1-65535"), udp (ports, default the common
  * ones below), rate (probes a second, 20-1000, default 300), listen_s
@@ -64,6 +66,10 @@ static uint8_t *tcp_todo, *tcp_open, *tcp_closed, *udp_todo, *udp_closed, *udp_a
 static volatile bool run, alive;
 static uint32_t run_no;
 static uint32_t self_ip, target_ip, rate, listen_s, tcp_n, udp_n;
+static esp_netif_t *sta;
+static struct netif *sta_nif;
+static volatile bool moved;  /* the target or this board's address changed mid-scan */
+static bool have_result; /* the maps hold the last run's ports and answers */
 static uint8_t peer[6], seen_mac[6];
 static bool mac_ok;
 static uint16_t tcp_sport, udp_sport;
@@ -196,7 +202,7 @@ static void drain(const socks_t *s) {
 		uint16_t sp, dp, len;
 		uint32_t dst;
 		if (!hifi_scan_udp_seen(b, (size_t) r, target_ip, &sp, &dst, &dp, &len)) continue;
-		if (dst == self_ip && dp == udp_sport) hifi_scan_set(udp_answered, sp);
+		if (sp && dst == self_ip && dp == udp_sport) hifi_scan_set(udp_answered, sp);
 		heard_add(sp, dst, dp);
 	}
 	/* the plain UDP socket's queue (the answers land there too): emptied */
@@ -226,14 +232,48 @@ static void wait_drain(const socks_t *s, uint32_t ms) {
 	}
 }
 
-/* one pass over the ports in todo that have no answer yet in a or b */
-static void pass(const socks_t *s, bool tcp, const uint8_t *todo, const uint8_t *a, const uint8_t *b) {
+static bool fail(const char *why);
+
+/* still the same target: this board's address and subnet as at the start,
+ * the target still allowed on it, and ARP still giving the peer's MAC */
+static bool same_target(void) {
+	esp_netif_ip_info_t ip;
+	char e[64];
+	if (esp_netif_get_ip_info(sta, &ip) != ESP_OK || ntohl(ip.ip.addr) != self_ip ||
+	    !hifi_scan_target_ok(self_ip, ntohl(ip.netmask.addr), ntohl(ip.gw.addr), target_ip, e, sizeof(e))) {
+		moved = true;
+		return fail("this board's address or subnet changed");
+	}
+	if (!arp_lookup(sta_nif)) {
+		if (run) moved = true;
+		return run ? fail("the target stopped answering ARP") : false;
+	}
+	if (memcmp(seen_mac, peer, 6)) {
+		mac_ok = false;
+		moved = true;
+		return fail("the target's MAC changed");
+	}
+	return true;
+}
+
+#define RECHECK_US 10000000
+#define SEND_ERR_MAX 20 /* failed sends in a row: the link is gone */
+
+/* one pass over the ports in todo that have no answer yet in a or b;
+ * false when the scan has to end */
+static bool pass(const socks_t *s, bool tcp, const uint8_t *todo, const uint8_t *a, const uint8_t *b) {
 	struct sockaddr_in to = {.sin_family = AF_INET, .sin_addr.s_addr = htonl(target_ip)};
 	int64_t t0 = esp_timer_get_time();
 	uint32_t n = 0;
 	uint8_t pkt[200];
+	uint32_t errs = 0;
+	int64_t checked = t0;
 	uint16_t p = hifi_scan_next(todo, 1);
 	while (run && p) {
+		if (esp_timer_get_time() - checked > RECHECK_US) {
+			if (!same_target()) return false;
+			checked = esp_timer_get_time();
+		}
 		if (hifi_scan_bit(a, p) || hifi_scan_bit(b, p)) {
 			p = p == 65535 ? 0 : hifi_scan_next(todo, (uint32_t) p + 1);
 			continue;
@@ -255,28 +295,32 @@ static void pass(const socks_t *s, bool tcp, const uint8_t *todo, const uint8_t 
 		}
 		if (r < 0) { /* out of buffers: back off and send this one again */
 			send_err++;
+			if (++errs >= SEND_ERR_MAX) return fail("sends keep failing (Wi-Fi down?)");
 			wait_drain(s, 20);
 			continue;
 		}
+		errs = 0;
 		sent++;
 		n++;
 		p = p == 65535 ? 0 : hifi_scan_next(todo, (uint32_t) p + 1);
 	}
 	wait_drain(s, 1500); /* the last replies */
+	return run;
 }
 
 /* Wi-Fi loses a few % of probes or replies at a time, so the silent ports
  * are tried again, up to PASSES_MAX times in all, until a pass gets no new
  * answer: a port that never answers costs only one more probe for each pass */
 #define PASSES_MAX 4
-static void passes(const socks_t *s, bool tcp, const uint8_t *todo, const uint8_t *a, const uint8_t *b) {
+static bool passes(const socks_t *s, bool tcp, const uint8_t *todo, const uint8_t *a, const uint8_t *b) {
 	uint32_t got = hifi_scan_count(a) + hifi_scan_count(b);
 	for (int i = 0; i < PASSES_MAX && run; i++) {
-		pass(s, tcp, todo, a, b);
+		if (!same_target() || !pass(s, tcp, todo, a, b)) return false;
 		uint32_t now = hifi_scan_count(a) + hifi_scan_count(b);
 		if (i && now == got) break;
 		got = now;
 	}
+	return run;
 }
 
 static void join(int fd, uint32_t group) {
@@ -289,9 +333,9 @@ static bool fail(const char *why) {
 	return false;
 }
 
-static bool scan(struct netif *nif) {
+static bool scan(void) {
 	phase = "arp";
-	if (!arp_lookup(nif)) return fail(run ? "no ARP answer from the target" : "stopped");
+	if (!arp_lookup(sta_nif)) return fail(run ? "no ARP answer from the target" : "stopped");
 	mac_ok = !memcmp(seen_mac, peer, 6);
 	if (!mac_ok) return fail("the target's MAC isn't the peer's");
 
@@ -318,19 +362,20 @@ static bool scan(struct netif *nif) {
 		tcp_sport = (uint16_t) (40000 + esp_random() % 8000); /* under lwIP's own ephemeral range */
 		tcp_seq = esp_random();
 		phase = "tcp";
-		passes(&s, true, tcp_todo, tcp_open, tcp_closed);
+		ok = passes(&s, true, tcp_todo, tcp_open, tcp_closed);
 		phase = "udp";
-		passes(&s, false, udp_todo, udp_closed, udp_answered);
+		ok = ok && passes(&s, false, udp_todo, udp_closed, udp_answered);
 		phase = "listen";
 		/* the discovery requests once more, then only listen */
 		uint8_t pkt[200];
 		const uint16_t ask[] = {5353, 1900, 5355};
-		for (size_t i = 0; i < sizeof(ask) / sizeof(ask[0]) && run; i++) {
+		for (size_t i = 0; i < sizeof(ask) / sizeof(ask[0]) && run && ok; i++) {
 			t.sin_port = htons(ask[i]);
 			size_t len = udp_payload(ask[i], pkt, sizeof(pkt));
 			if (sendto(s.udp, pkt, len, 0, (struct sockaddr *) &t, sizeof(t)) >= 0) sent++;
 		}
-		wait_drain(&s, listen_s * 1000);
+		if (ok) wait_drain(&s, listen_s * 1000);
+		ok = ok && same_target();
 	}
 	if (s.tcp >= 0) close(s.tcp);
 	if (s.icmp >= 0) close(s.icmp);
@@ -343,9 +388,8 @@ static void task_main(void *arg) {
 	for (;;) {
 		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 		uint32_t my_run = run_no;
-		esp_netif_t *ni = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-		struct netif *nif = ni ? esp_netif_get_netif_impl(ni) : NULL;
-		bool ok = nif ? scan(nif) : fail("no Wi-Fi station");
+		sta_nif = sta ? esp_netif_get_netif_impl(sta) : NULL;
+		bool ok = sta_nif ? scan() : fail("no Wi-Fi station");
 		t_end = esp_timer_get_time();
 		bool ended_itself = run;
 		phase = ok ? "done" : run ? "failed" : "stopped";
@@ -368,17 +412,18 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		return 409;
 	}
 	char s[24];
-	if (!hj_get_str(body, "target", s, sizeof(s)) || !hifi_scan_parse_ip(s, &target_ip)) {
+	uint32_t tip;
+	uint8_t pmac[6];
+	if (!hj_get_str(body, "target", s, sizeof(s)) || !hifi_scan_parse_ip(s, &tip)) {
 		snprintf(err, n, "target (the other board's IPv4 address) is required");
 		return 400;
 	}
-	if (!hj_get_str(body, "peer", s, sizeof(s)) || !hifi_link_parse_mac(s, peer)) {
+	if (!hj_get_str(body, "peer", s, sizeof(s)) || !hifi_link_parse_mac(s, pmac)) {
 		snprintf(err, n, "peer (the target board's MAC or device id) is required");
 		return 400;
 	}
-	rate = num(body, "rate", 300);
-	listen_s = num(body, "listen_s", 20);
-	if (rate < 20 || rate > 1000 || listen_s > 300) {
+	uint32_t rt = num(body, "rate", 300), ls = num(body, "listen_s", 20);
+	if (rt < 20 || rt > 1000 || ls > 300) {
 		snprintf(err, n, "rate 20-1000, listen_s 0-300");
 		return 400;
 	}
@@ -388,11 +433,16 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		snprintf(err, n, "the Wi-Fi station has no address");
 		return 503;
 	}
-	self_ip = ntohl(ip.ip.addr);
-	if (!hifi_scan_target_ok(self_ip, ntohl(ip.netmask.addr), ntohl(ip.gw.addr), target_ip, err, n)) return 400;
+	if (!hifi_scan_target_ok(ntohl(ip.ip.addr), ntohl(ip.netmask.addr), ntohl(ip.gw.addr), tip, err, n)) return 400;
 
 	if (!worker) {
+		/* the stack in PSRAM only where the build allows it (the task never
+		 * touches flash), else internal */
+#if CONFIG_SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY
 		StackType_t *stack = heap_caps_malloc(STACK, MALLOC_CAP_SPIRAM);
+#else
+		StackType_t *stack = heap_caps_malloc(STACK, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+#endif
 		uint8_t *maps = heap_caps_calloc(6, HIFI_SCAN_BITS, MALLOC_CAP_SPIRAM);
 		if (!arp_done) arp_done = xSemaphoreCreateBinary();
 		if (!stack || !maps || !arp_done) {
@@ -417,17 +467,41 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 			return 503;
 		}
 	}
+	/* the worker is idle (alive is false); result() reads the maps, and from
+	 * here on they no longer match the last run's answers, so it shows
+	 * nothing until a run starts */
+	have_result = false;
 	char spec[160];
+	uint32_t tn, un;
 	if (!hj_get_str(body, "tcp", spec, sizeof(spec))) strlcpy(spec, "1-65535", sizeof(spec));
-	if (!hifi_scan_ports(spec, tcp_todo, &tcp_n)) {
+	if (!hifi_scan_ports(spec, tcp_todo, &tn)) {
 		snprintf(err, n, "tcp: ports like 1-1024,5000");
 		return 400;
 	}
 	if (!hj_get_str(body, "udp", spec, sizeof(spec))) strlcpy(spec, UDP_DEFAULT, sizeof(spec));
-	if (!hifi_scan_ports(spec, udp_todo, &udp_n)) {
+	if (!hifi_scan_ports(spec, udp_todo, &un)) {
 		snprintf(err, n, "udp: ports like 1-1024,5353");
 		return 400;
 	}
+	/* the first pass with 10 % for pacing and losses, 30 s for the ARP
+	 * checks and the 1.5 s after each pass, and the listening: a run its
+	 * deadline would cut short is refused */
+	double max_s = HIFI_LAB_DEFAULT_S;
+	hj_get_num(body, "max_s", &max_s);
+	uint32_t need = (uint32_t) ((uint64_t) (tn + un) * 11 / (rt * 10)) + 30 + ls;
+	if (need > max_s) {
+		snprintf(err, n, "max_s too short: these ports at %u/s need at least %u s", (unsigned) rt, (unsigned) need);
+		return 400;
+	}
+	target_ip = tip;
+	memcpy(peer, pmac, 6);
+	rate = rt;
+	listen_s = ls;
+	tcp_n = tn;
+	udp_n = un;
+	self_ip = ntohl(ip.ip.addr);
+	sta = ni;
+	moved = false;
 	memset(tcp_open, 0, HIFI_SCAN_BITS);
 	memset(tcp_closed, 0, HIFI_SCAN_BITS);
 	memset(udp_closed, 0, HIFI_SCAN_BITS);
@@ -445,6 +519,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	t_end = 0;
 	phase = "starting";
 	run_no = run_n;
+	have_result = true;
 	run = alive = true;
 	xTaskNotifyGive(worker);
 	char ts[16];
@@ -467,12 +542,13 @@ static void silent(uint8_t *out, const uint8_t *todo, const uint8_t *a, const ui
 
 static void result(void *hj) {
 	hj_t *j = hj;
-	if (!tcp_todo) return;
+	if (!tcp_todo || !have_result) return;
 	char s[40];
 	hifi_scan_ip_str(target_ip, s, sizeof(s));
 	hj_str(j, "target", s);
 	hj_str(j, "phase", phase);
 	if (error[0]) hj_str(j, "error", error);
+	if (moved) hj_bool(j, "moved", true);
 	if (!mac_ok && seen_mac[0] | seen_mac[1] | seen_mac[2]) {
 		snprintf(s, sizeof(s), "%02x%02x%02x%02x%02x%02x", seen_mac[0], seen_mac[1], seen_mac[2], seen_mac[3],
 			 seen_mac[4], seen_mac[5]);

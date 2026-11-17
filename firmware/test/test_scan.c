@@ -1,5 +1,6 @@
 /* The lab's LAN scan, its plain-C part (hifi_scan) */
 #include <stdlib.h>
+#include <string.h>
 
 #include "check.h"
 #include "hifi_json.h"
@@ -34,6 +35,21 @@ static void targets(void) {
 	CHECK(!hifi_scan_target_ok(s28, m28, IP(10, 0, 0, 17), IP(10, 0, 0, 16), err, sizeof(err)));
 	CHECK(!hifi_scan_target_ok(s28, m28, IP(10, 0, 0, 17), IP(10, 0, 0, 40), err, sizeof(err)));
 
+	/* a /31 and a /32: no other host to scan (/31 has its pair refused as
+	 * the "broadcast", which is the safe side) */
+	CHECK(!hifi_scan_target_ok(IP(10, 0, 0, 18), 0xfffffffeu, 0, IP(10, 0, 0, 19), err, sizeof(err)));
+	CHECK(!hifi_scan_target_ok(IP(10, 0, 0, 18), 0xffffffffu, 0, IP(10, 0, 0, 18), err, sizeof(err)));
+	CHECK(!hifi_scan_target_ok(IP(10, 0, 0, 18), 0xffffffffu, 0, IP(10, 0, 0, 19), err, sizeof(err)));
+	/* multicast and class E inside a (bogus) subnet of their own, loopback */
+	CHECK(!hifi_scan_target_ok(IP(224, 0, 0, 5), m24, 0, IP(224, 0, 0, 251), err, sizeof(err)));
+	CHECK_HAS(err, "unicast");
+	CHECK(!hifi_scan_target_ok(IP(240, 0, 0, 5), m24, 0, IP(240, 0, 0, 6), err, sizeof(err)));
+	CHECK(!hifi_scan_target_ok(IP(127, 0, 0, 5), m24, 0, IP(127, 0, 0, 6), err, sizeof(err)));
+	CHECK(!hifi_scan_target_ok(self, m24, gw, 0, err, sizeof(err)));
+	/* no gateway (0.0.0.0): the target is still checked as usual */
+	CHECK(hifi_scan_target_ok(self, m24, 0, IP(192, 168, 2, 1), err, sizeof(err)));
+	CHECK(!hifi_scan_target_ok(self, m24, 0, IP(192, 168, 2, 255), err, sizeof(err)));
+
 	uint32_t ip;
 	CHECK(hifi_scan_parse_ip("192.168.2.222", &ip) && ip == IP(192, 168, 2, 222));
 	CHECK(hifi_scan_parse_ip("0.0.0.0", &ip) && ip == 0);
@@ -64,6 +80,16 @@ static void ports(void) {
 	CHECK(!hifi_scan_ports("1,", b, &n));
 	CHECK(!hifi_scan_ports("1;2", b, &n));
 	CHECK(!hifi_scan_ports("99999999999", b, &n));
+	/* the top of the range: next() never wraps past 65535 */
+	CHECK(hifi_scan_ports("65528-65535", b, &n) && n == 8);
+	CHECK(hifi_scan_next(b, 1) == 65528 && hifi_scan_next(b, 65534) == 65534 && hifi_scan_next(b, 65535) == 65535);
+	CHECK(hifi_scan_next(b, 65536) == 0);
+	CHECK(hifi_scan_ports("65535", b, &n) && n == 1 && hifi_scan_next(b, 1) == 65535);
+	CHECK(hifi_scan_ports("65527,65529", b, &n) && hifi_scan_next(b, 65528) == 65529);
+	uint32_t walked = 0;
+	hifi_scan_ports("1-65535", b, &n);
+	for (uint16_t p = hifi_scan_next(b, 1); p; p = p == 65535 ? 0 : hifi_scan_next(b, (uint32_t) p + 1)) walked++;
+	CHECK(walked == 65535);
 
 	char out[300];
 	hj_t j;
@@ -74,6 +100,18 @@ static void ports(void) {
 	hifi_scan_ports_json(&j, "few", b, 10);
 	hj_obj_end(&j);
 	CHECK_STR(out, "{\"open\":[1,2,3],\"open_more\":3,\"few\":[1,2,3,4,5,65535]}");
+	/* a buffer too small: cut off and flagged, never written past */
+	char small[24 + 8];
+	memset(small, 0x5a, sizeof(small));
+	hj_init(&j, small, 24);
+	hj_obj(&j, NULL);
+	hifi_scan_ports("1-65535", b, &n);
+	hifi_scan_ports_json(&j, "silent", b, 24);
+	hj_obj_end(&j);
+	CHECK(j.overflow);
+	int intact = 1;
+	for (int i = 24; i < (int) sizeof(small); i++) intact &= small[i] == 0x5a;
+	CHECK(intact);
 	free(b);
 }
 
@@ -137,6 +175,12 @@ static void packets(void) {
 	CHECK(hifi_scan_tcp_reply(pk, 40, t, 41000, 0x12345677u, &port) == HIFI_SCAN_NONE); /* wrong ack */
 	CHECK(hifi_scan_tcp_reply(pk, 40, IP(192, 168, 2, 9), 41000, 0x12345678u, &port) == HIFI_SCAN_NONE);
 	CHECK(hifi_scan_tcp_reply(pk, 39, t, 41000, 0x12345678u, &port) == HIFI_SCAN_NONE); /* short */
+	put16(tc, 0); /* from port 0: never ours to count */
+	tc[13] = 0x12;
+	CHECK(hifi_scan_tcp_reply(pk, 40, t, 41000, 0x12345678u, &port) == HIFI_SCAN_NONE);
+	tc[13] = 0x14;
+	CHECK(hifi_scan_tcp_reply(pk, 40, t, 41000, 0x12345678u, &port) == HIFI_SCAN_NONE);
+	put16(tc, 80);
 	tc[13] = 0x10; /* a bare ACK */
 	CHECK(hifi_scan_tcp_reply(pk, 40, t, 41000, 0x12345678u, &port) == HIFI_SCAN_NONE);
 	tc[13] = 0x02; /* a SYN without the ACK */

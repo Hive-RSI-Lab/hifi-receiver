@@ -13,6 +13,10 @@ bool hifi_scan_target_ok(uint32_t self, uint32_t mask, uint32_t gw, uint32_t tar
 		snprintf(err, n, "the board's own network isn't a /24 or narrower");
 		return false;
 	}
+	if (target >= 0xe0000000u || self >= 0xe0000000u || (target >> 24) == 127 || (target >> 24) == 0) {
+		snprintf(err, n, "target must be a unicast address");
+		return false;
+	}
 	if ((target & mask) != (self & mask)) {
 		snprintf(err, n, "target must be on the board's own subnet");
 		return false;
