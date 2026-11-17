@@ -56,6 +56,9 @@ void hifi_ota_status(hifi_ota_status_t *out);
 /* the remote link's state and counters into n (link_*, tx/rx bytes), and
  * when it first came up, ms from power-up (0: not yet) */
 void hifi_remote_link(hifi_diag_net_t *n, uint32_t *first_up_ms);
+/* upstream's IP-change reboot asks here first (patch 0030): true while the
+ * image is on trial, and the restart then runs once the trial keeps it */
+bool hifi_restart_after_trial(const char *why);
 
 /* hifi_diag_esp.c: the board's side of `api diag` */
 extern const hifi_diag_ops_t hifi_diag_ops;

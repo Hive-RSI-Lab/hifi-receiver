@@ -45,3 +45,18 @@ bool hifi_heap_line(uint32_t now_free, uint32_t boot_free, char *out, size_t n) 
 			 (unsigned) HIFI_HEAP_MIN);
 	return now_free > HIFI_HEAP_MIN;
 }
+
+bool hifi_restart_hold(hifi_restart_hold_t *h, const char *why) {
+	if (!h->on_trial) return false;
+	h->why = why ? why : "held";
+	h->held = true;
+	return true;
+}
+
+bool hifi_restart_release(hifi_restart_hold_t *h, const char **why) {
+	h->on_trial = false;
+	if (!h->held) return false;
+	h->held = false;
+	if (why) *why = h->why;
+	return true;
+}

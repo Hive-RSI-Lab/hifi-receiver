@@ -48,3 +48,25 @@ bool hifi_heap_boot_due(uint32_t up_s, bool net_up, bool relay_configured, bool 
  * and the boot figure's margin over the floor. boot 0: not measured yet.
  * Returns the check's verdict, which is free now over the floor. */
 bool hifi_heap_line(uint32_t now_free, uint32_t boot_free, char *out, size_t n);
+
+/* A restart that something asks for while the image is on trial (upstream's
+ * reboot on an IP change, patch 0030) waits until the trial is over. With
+ * rollback on, any restart before the image is marked good puts the old one
+ * back, so a router handing out a new address during the first two minutes
+ * rolled every update back. Held, it runs once the image is marked good; a
+ * bad image rolls back anyway, which is a restart too.
+ * on_trial is kept in RAM, not read from otadata: marking the image good
+ * erases and rewrites otadata, and a read in between says "not on trial".
+ * The caller serialises both functions (hifi_relay.c: a critical section). */
+typedef struct {
+	bool on_trial; /* set at boot for an image waiting to be marked good */
+	bool held;
+	const char *why;
+} hifi_restart_hold_t;
+
+/* true: on trial, so the restart is held and the caller must not restart;
+ * false: restart now. */
+bool hifi_restart_hold(hifi_restart_hold_t *h, const char *why);
+/* once the image has been marked good (and only then): the trial is over,
+ * and true (with *why) when a held restart should run now. Once. */
+bool hifi_restart_release(hifi_restart_hold_t *h, const char **why);
