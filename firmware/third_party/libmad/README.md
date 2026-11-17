@@ -72,7 +72,9 @@ Patch 0029 adds those files to the codecs component and drops `libmad.a`.
   the way `mad.c` refills it, so bit-reservoir state across refills is only
   covered by `sine.mp3`.
 - On a lab Lite, the `crafted` experiment (codec `mp3`) decodes the frame
-  from `test_mad frame 511`. Without the fix this reboots the board; with it,
-  the frame is skipped. The fixed decoder reports it as `MAD_ERROR_LOSTSYNC`
+  from `test_mad frame 511` (2871 bytes, sent in pieces with `more` and
+  `offset`, the last with `repeat` 64). Without the fix this reboots the
+  board (Lite 5, 2026-11-17: `crashed_in` "crafted"); with it, the frames
+  are skipped (65 calls, 65 refused, heap intact, no restart). The fixed decoder reports it as `MAD_ERROR_LOSTSYNC`
   (recoverable); at the very end of a stream, `mad.c` treats that as the end
   of the track, so a refused last frame ends it quietly.
