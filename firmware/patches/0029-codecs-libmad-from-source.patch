@@ -1,0 +1,44 @@
+diff --git a/components/codecs/CMakeLists.txt b/components/codecs/CMakeLists.txt
+--- a/components/codecs/CMakeLists.txt
++++ b/components/codecs/CMakeLists.txt
+@@ -1,15 +1,25 @@
+ # hifi (patch 0021): ALAC is built from source with bounds fixes instead of lib/libalac.a
+ set(HIFI_ALAC_DIR ${CMAKE_CURRENT_LIST_DIR}/../spotify/cspot/bell/external/alac/codec)
++# hifi (patch 0029): libmad too, from firmware/third_party/libmad (Debian's
++# md_size and length-check fixes), instead of lib/libmad.a; fetch.sh copies
++# it to libmad/. Its structs must match inc/mad/mad.h, which the codecs use.
++set(HIFI_MAD_DIR ${CMAKE_CURRENT_LIST_DIR}/libmad)
++set(HIFI_MAD_SRCS ${HIFI_MAD_DIR}/bit.c ${HIFI_MAD_DIR}/decoder.c ${HIFI_MAD_DIR}/fixed.c ${HIFI_MAD_DIR}/frame.c
++	${HIFI_MAD_DIR}/huffman.c ${HIFI_MAD_DIR}/layer12.c ${HIFI_MAD_DIR}/layer3.c ${HIFI_MAD_DIR}/stream.c
++	${HIFI_MAD_DIR}/synth.c ${HIFI_MAD_DIR}/timer.c ${HIFI_MAD_DIR}/version.c)
+ idf_component_register(
+ 	   SRCS alac_wrapper.cpp
+ 	        ${HIFI_ALAC_DIR}/ALACDecoder.cpp ${HIFI_ALAC_DIR}/ALACBitUtilities.c ${HIFI_ALAC_DIR}/ag_dec.c
+ 	        ${HIFI_ALAC_DIR}/dp_dec.c ${HIFI_ALAC_DIR}/matrix_dec.c ${HIFI_ALAC_DIR}/EndianPortable.c
++	        ${HIFI_MAD_SRCS}
+ 	   INCLUDE_DIRS . ./inc inc/alac inc/helix-aac inc/mad inc/resample16 inc/soxr inc/vorbis inc/opus
+ 	   PRIV_INCLUDE_DIRS ${HIFI_ALAC_DIR}
+ )
+ target_compile_options(${COMPONENT_LIB} PRIVATE -O2 -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-function -Wno-implicit-fallthrough)
+ # EndianPortable.c only knows x86 and ARM as little-endian; the ESP32 is too
+ target_compile_definitions(${COMPONENT_LIB} PRIVATE TARGET_RT_LITTLE_ENDIAN=1)
++# libmad reads its own config.h (the shipped libmad.a's settings: FPM_DEFAULT)
++set_source_files_properties(${HIFI_MAD_SRCS} PROPERTIES COMPILE_DEFINITIONS HAVE_CONFIG_H)
+ 
+ if (DEFINED AAC_DISABLE_SBR)
+ add_prebuilt_library(libhelix-aac 	lib/libhelix-aac.a ) 
+@@ -17,14 +27,12 @@
+ add_prebuilt_library(libhelix-aac 	lib/libhelix-aac-sbr.a ) 
+ endif()
+ 
+-add_prebuilt_library(libmad 		lib/libmad.a)
+ add_prebuilt_library(libFLAC 		lib/libFLAC.a ) 
+ add_prebuilt_library(libvorbisidec 	lib/libvorbisidec.a ) 
+ add_prebuilt_library(libogg 		lib/libogg.a )
+ add_prebuilt_library(libresample16 	lib/libresample16.a ) 
+ add_prebuilt_library(libopus 		lib/libopus.a ) 
+ 
+-target_link_libraries(${COMPONENT_LIB} INTERFACE libmad)
+ target_link_libraries(${COMPONENT_LIB} INTERFACE libFLAC)
+ target_link_libraries(${COMPONENT_LIB} INTERFACE libhelix-aac)
+ target_link_libraries(${COMPONENT_LIB} INTERFACE libvorbisidec)

@@ -1,0 +1,239 @@
+Subject: Keep the decoder's work buffers inside its structs (the board's port)
+
+The libmad that squeezelite-esp32 shipped as lib/libmad.a was built from a
+copy that keeps main_data in struct mad_stream, and overlap, xr and tmp in
+struct mad_frame, instead of malloc'ing main_data and overlap on the first
+Layer III frame and putting xr (4.6 KB) and tmp on the stack. Its header
+(components/codecs/inc/mad/mad.h) describes those structs, and the codecs
+are built against that header, so building libmad from source has to match
+it. This patch makes that change and nothing else; firmware/test's
+`upstream` target (mad/layout.c) checks the structs against the header.
+
+--- a/frame.c
++++ b/frame.c
+@@ -94,7 +94,6 @@
+ 
+   frame->options = 0;
+ 
+-  frame->overlap = 0;
+   mad_frame_mute(frame);
+ }
+ 
+@@ -106,10 +105,6 @@
+ {
+   mad_header_finish(&frame->header);
+ 
+-  if (frame->overlap) {
+-    free(frame->overlap);
+-    frame->overlap = 0;
+-  }
+ }
+ 
+ /*
+@@ -492,12 +487,10 @@
+     }
+   }
+ 
+-  if (frame->overlap) {
+-    for (s = 0; s < 18; ++s) {
+-      for (sb = 0; sb < 32; ++sb) {
+-	(*frame->overlap)[0][sb][s] =
+-	(*frame->overlap)[1][sb][s] = 0;
+-      }
++  for (s = 0; s < 18; ++s) {
++    for (sb = 0; sb < 32; ++sb) {
++      frame->overlap[0][sb][s] =
++      frame->overlap[1][sb][s] = 0;
+     }
+   }
+ }
+--- a/frame.h
++++ b/frame.h
+@@ -70,7 +70,9 @@
+   int options;				/* decoding options (from stream) */
+ 
+   mad_fixed_t sbsample[2][36][32];	/* synthesis subband filter samples */
+-  mad_fixed_t (*overlap)[2][32][18];	/* Layer III block overlap data */
++  mad_fixed_t overlap[2][32][18];	/* Layer III block overlap data */
++  mad_fixed_t xr[2][576];
++  mad_fixed_t tmp[32][3][6];
+ };
+ 
+ # define MAD_NCHANNELS(header)		((header)->mode ? 2 : 1)
+--- a/layer3.c
++++ b/layer3.c
+@@ -1279,9 +1279,8 @@
+  */
+ static
+ void III_reorder(mad_fixed_t xr[576], struct channel const *channel,
+-		 unsigned char const sfbwidth[39])
++		 unsigned char const sfbwidth[39], mad_fixed_t tmp[32][3][6])
+ {
+-  mad_fixed_t tmp[32][3][6];
+   unsigned int sb, l, f, w, sbw[3], sw[3];
+ 
+   /* this is probably wrong for 8000 Hz mixed blocks */
+@@ -2376,7 +2375,7 @@
+   for (gr = 0; gr < ngr; ++gr) {
+     struct granule *granule = &si->gr[gr];
+     unsigned char const *sfbwidth[2];
+-    mad_fixed_t xr[2][576];
++    mad_fixed_t (*xr)[576] = frame->xr;
+     unsigned int ch;
+     enum mad_error error;
+ 
+@@ -2422,7 +2421,7 @@
+       mad_fixed_t output[36];
+ 
+       if (channel->block_type == 2) {
+-	III_reorder(xr[ch], channel, sfbwidth[ch]);
++	III_reorder(xr[ch], channel, sfbwidth[ch], frame->tmp);
+ 
+ # if !defined(OPT_STRICT)
+ 	/*
+@@ -2453,14 +2452,14 @@
+ 	/* long blocks */
+ 	for (sb = 0; sb < 2; ++sb, l += 18) {
+ 	  III_imdct_l(&xr[ch][l], output, block_type);
+-	  III_overlap(output, (*frame->overlap)[ch][sb], sample, sb);
++	  III_overlap(output, frame->overlap[ch][sb], sample, sb);
+ 	}
+       }
+       else {
+ 	/* short blocks */
+ 	for (sb = 0; sb < 2; ++sb, l += 18) {
+ 	  III_imdct_s(&xr[ch][l], output);
+-	  III_overlap(output, (*frame->overlap)[ch][sb], sample, sb);
++	  III_overlap(output, frame->overlap[ch][sb], sample, sb);
+ 	}
+       }
+ 
+@@ -2478,7 +2477,7 @@
+ 	/* long blocks */
+ 	for (sb = 2; sb < sblimit; ++sb, l += 18) {
+ 	  III_imdct_l(&xr[ch][l], output, channel->block_type);
+-	  III_overlap(output, (*frame->overlap)[ch][sb], sample, sb);
++	  III_overlap(output, frame->overlap[ch][sb], sample, sb);
+ 
+ 	  if (sb & 1)
+ 	    III_freqinver(sample, sb);
+@@ -2488,7 +2487,7 @@
+ 	/* short blocks */
+ 	for (sb = 2; sb < sblimit; ++sb, l += 18) {
+ 	  III_imdct_s(&xr[ch][l], output);
+-	  III_overlap(output, (*frame->overlap)[ch][sb], sample, sb);
++	  III_overlap(output, frame->overlap[ch][sb], sample, sb);
+ 
+ 	  if (sb & 1)
+ 	    III_freqinver(sample, sb);
+@@ -2498,7 +2497,7 @@
+       /* remaining (zero) subbands */
+ 
+       for (sb = sblimit; sb < 32; ++sb) {
+-	III_overlap_z((*frame->overlap)[ch][sb], sample, sb);
++	III_overlap_z(frame->overlap[ch][sb], sample, sb);
+ 
+ 	if (sb & 1)
+ 	  III_freqinver(sample, sb);
+@@ -2524,24 +2523,6 @@
+   enum mad_error error;
+   int result = 0;
+ 
+-  /* allocate Layer III dynamic structures */
+-
+-  if (stream->main_data == 0) {
+-    stream->main_data = malloc(MAD_BUFFER_MDLEN);
+-    if (stream->main_data == 0) {
+-      stream->error = MAD_ERROR_NOMEM;
+-      return -1;
+-    }
+-  }
+-
+-  if (frame->overlap == 0) {
+-    frame->overlap = calloc(2 * 32 * 18, sizeof(mad_fixed_t));
+-    if (frame->overlap == 0) {
+-      stream->error = MAD_ERROR_NOMEM;
+-      return -1;
+-    }
+-  }
+-
+   nch = MAD_NCHANNELS(header);
+   si_len = (header->flags & MAD_FLAG_LSF_EXT) ?
+     (nch == 1 ? 9 : 17) : (nch == 1 ? 17 : 32);
+@@ -2626,13 +2607,13 @@
+     }
+     else {
+       mad_bit_init(&ptr,
+-		   *stream->main_data + stream->md_len - si.main_data_begin);
++		   stream->main_data + stream->md_len - si.main_data_begin);
+ 
+       if (md_len > si.main_data_begin) {
+ 	assert(stream->md_len + md_len -
+ 	       si.main_data_begin <= MAD_BUFFER_MDLEN);
+ 
+-	memcpy(*stream->main_data + stream->md_len,
++	memcpy(stream->main_data + stream->md_len,
+ 	       mad_bit_nextbyte(&stream->ptr),
+ 	       frame_used = md_len - si.main_data_begin);
+ 	stream->md_len += frame_used;
+@@ -2668,7 +2649,7 @@
+   /* preload main_data buffer with up to 511 bytes for next frame(s) */
+ 
+   if (frame_free >= next_md_begin) {
+-    memcpy(*stream->main_data,
++    memcpy(stream->main_data,
+ 	   stream->next_frame - next_md_begin, next_md_begin);
+     stream->md_len = next_md_begin;
+   }
+@@ -2681,15 +2662,15 @@
+ 	extra = next_md_begin - frame_free;
+ 
+       if (extra < stream->md_len) {
+-	memmove(*stream->main_data,
+-		*stream->main_data + stream->md_len - extra, extra);
++	memmove(stream->main_data,
++		stream->main_data + stream->md_len - extra, extra);
+ 	stream->md_len = extra;
+       }
+     }
+     else
+       stream->md_len = 0;
+ 
+-    memcpy(*stream->main_data + stream->md_len,
++    memcpy(stream->main_data + stream->md_len,
+ 	   stream->next_frame - frame_free, frame_free);
+     stream->md_len += frame_free;
+   }
+--- a/stream.c
++++ b/stream.c
+@@ -50,7 +50,6 @@
+   mad_bit_init(&stream->anc_ptr, 0);
+   stream->anc_bitlen = 0;
+ 
+-  stream->main_data  = 0;
+   stream->md_len     = 0;
+ 
+   stream->options    = 0;
+@@ -63,11 +62,6 @@
+  */
+ void mad_stream_finish(struct mad_stream *stream)
+ {
+-  if (stream->main_data) {
+-    free(stream->main_data);
+-    stream->main_data = 0;
+-  }
+-
+   mad_bit_finish(&stream->anc_ptr);
+   mad_bit_finish(&stream->ptr);
+ }
+--- a/stream.h
++++ b/stream.h
+@@ -73,7 +73,7 @@
+   struct mad_bitptr anc_ptr;		/* ancillary bits pointer */
+   unsigned int anc_bitlen;		/* number of ancillary bits */
+ 
+-  unsigned char (*main_data)[MAD_BUFFER_MDLEN];
++  unsigned char main_data[MAD_BUFFER_MDLEN];
+ 					/* Layer III main_data() */
+   unsigned int md_len;			/* bytes in main_data */
+ 

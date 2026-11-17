@@ -32,6 +32,7 @@ $(BIN)/%: %.c $(SRCS) $(wildcard $(CORE)/*.h) check.h | $(BIN)
 run: $(addprefix $(BIN)/,$(TESTS))
 	@fail=0; for t in $(abspath $^); do $$t || fail=1; done; python3 test_otadata.py || fail=1; TEST_REMOTE=$(abspath $(BIN))/test_remote python3 test_sign_fw.py || fail=1; \
 	  $(MAKE) --no-print-directory upstream || fail=1; \
+	  $(MAKE) --no-print-directory mad || fail=1; \
 	  $(MAKE) --no-print-directory fuzz || fail=1; \
 	  $(MAKE) --no-print-directory qemu || fail=1; exit $$fail
 
@@ -47,7 +48,7 @@ NANOPB := $(CSPOT)/bell/external/nanopb
 UP_FILES = components/squeezelite/controls.c components/driver_bt/bt_app_sink.c \
 	components/driver_bt/bt_app_core.c components/spotify/Shim.cpp components/spotify/cspot/src/LoginBlob.cpp \
 	components/wifi-manager/network_manager_handlers.c components/raop/dmap_parser.c components/raop/dmap_parser.h \
-	components/raop/rtp.c $(ALAC_FILES) \
+	components/raop/rtp.c components/codecs/inc/mad/mad.h $(ALAC_FILES) \
 	$(BELL)/io/TLSSocket.cpp $(BELL)/io/include/TLSSocket.h $(BELL)/io/include/BellSocket.h \
 	$(BELL)/io/X509Bundle.cpp $(BELL)/io/include/X509Bundle.h \
 	$(BELL)/utilities/BellLogger.cpp $(BELL)/utilities/include/BellLogger.h \
@@ -92,11 +93,63 @@ upstream:
 	fail=0; $(UP)/test_up_controls || fail=1; $(UP)/test_up_bt || fail=1; $(UP)/test_up_dmap || fail=1; \
 	$(UP)/test_up_rtp || fail=1; \
 	$(UP)/test_up_alac || fail=1; \
+	$(CC) -std=gnu99 -w -DPUBLIC -I$(UP)/components/codecs/inc/mad -o $(UP)/mad_layout_h mad/layout.c && \
+	$(CC) -std=gnu99 -w -include mad/host_config.h -I$(MAD_SRC) -o $(UP)/mad_layout_lib mad/layout.c && \
+	$(UP)/mad_layout_h > $(UP)/mad_layout_h.txt && $(UP)/mad_layout_lib > $(UP)/mad_layout_lib.txt && \
+	diff $(UP)/mad_layout_h.txt $(UP)/mad_layout_lib.txt && \
+	echo "mad_layout   libmad's structs match codecs/inc/mad/mad.h ($$(wc -l < $(UP)/mad_layout_h.txt) sizes and offsets)" || \
+	{ echo "FAIL mad_layout: third_party/libmad's structs differ from components/codecs/inc/mad/mad.h"; fail=1; }; \
 	if [ "$(FUZZ_OK)" = 1 ]; then $(MAKE) --no-print-directory fuzz-alac || fail=1; \
 	else echo "SKIPPED fuzz_alac: no clang with libFuzzer"; fi; \
 	python3 upstream/test_up_source.py $(UP) || fail=1; \
 	python3 upstream/test_up_tls.py $(UP) || fail=1; python3 upstream/test_up_aphello.py $(UP) || fail=1; \
 	python3 upstream/test_up_shannon.py $(UP) || fail=1; exit $$fail
+
+# libmad as the board builds it (patch 0029: third_party/libmad, with
+# Debian's md_size and length-check fixes), with AddressSanitizer: the
+# crafted frames in mad/test_mad.c against that source (asserts on, as on
+# the board), and against a copy with those two patches taken back out
+# (stock 0.15.1b with the board's inline buffers; NDEBUG, so the overflow
+# shows rather than an assert), which must overflow, so the test is known to
+# catch it. Both must decode mad/sine.mp3 (a real LAME file that uses the
+# bit reservoir) to the same PCM: the fix changes no samples. With FUZZ_OK,
+# fuzz-mad then runs the decoder under libFuzzer for FUZZ_SECS.
+MAD_SRC := ../third_party/libmad/src
+MAD_PATCHES := ../third_party/libmad/patches
+MAD_C := bit.c fixed.c frame.c huffman.c layer12.c layer3.c stream.c synth.c timer.c version.c
+MAD := $(BIN)/mad
+MAD_FLAGS := -std=gnu99 -O1 -g -w -fno-omit-frame-pointer -include $(abspath mad/host_config.h)
+MAD_ASAN := ASAN_OPTIONS=detect_leaks=1:abort_on_error=0
+mad:
+	@rm -rf $(MAD) && mkdir -p $(MAD)/before && cp $(MAD_SRC)/*.c $(MAD_SRC)/*.h $(MAD_SRC)/*.dat $(MAD)/before/ && \
+	rm -f $(MAD)/before/config.h && \
+	patch -s -R -p1 --no-backup-if-mismatch -d $(MAD)/before < $(MAD_PATCHES)/03-length-check.patch && \
+	patch -s -R -p1 --no-backup-if-mismatch -d $(MAD)/before < $(MAD_PATCHES)/02-md_size.patch && \
+	$(CC) $(MAD_FLAGS) -fsanitize=address -I$(MAD_SRC) -o $(MAD)/after mad/test_mad.c \
+	  $(addprefix $(MAD_SRC)/,$(MAD_C)) && \
+	$(CC) $(MAD_FLAGS) -fsanitize=address -DNDEBUG -I$(MAD)/before -o $(MAD)/stock mad/test_mad.c \
+	  $(addprefix $(MAD)/before/,$(MAD_C)) || exit 1; \
+	fail=0; $(MAD_ASAN) $(MAD)/after || fail=1; \
+	for c in "511 511" "0 511 0 0 0 0"; do \
+	  if $(MAD_ASAN) $(MAD)/stock crafted $$c > $(MAD)/stock.log 2>&1 || \
+	     ! grep -q 'heap-buffer-overflow' $(MAD)/stock.log; then \
+	    echo "test_mad: stock libmad should overflow on crafted $$c, but:"; tail -20 $(MAD)/stock.log; fail=1; fi; \
+	done; \
+	a=$$($(MAD_ASAN) $(MAD)/after pcm mad/sine.mp3) && s=$$($(MAD_ASAN) $(MAD)/stock pcm mad/sine.mp3) || fail=1; \
+	case "$$a" in "frames 0 "*|"") echo "test_mad: sine.mp3 didn't decode: $$a"; fail=1;; esac; \
+	case "$$a" in *" errors 0 "*) ;; *) echo "test_mad: sine.mp3 decoded with errors: $$a"; fail=1;; esac; \
+	[ "$$a" = "$$s" ] || { echo "test_mad: sine.mp3 decodes differently: fixed $$a, stock $$s"; fail=1; }; \
+	[ $$fail = 0 ] && echo "mad          stock overflows on the crafted frames, fixed refuses them; sine.mp3 $$a"; \
+	if [ "$(FUZZ_OK)" = 1 ]; then $(MAKE) --no-print-directory fuzz-mad || fail=1; \
+	else echo "SKIPPED fuzz_mad: no clang with libFuzzer"; fi; exit $$fail
+fuzz-mad:
+	@mkdir -p $(FUZZ)/corpus/fuzz_mad && \
+	$(CLANG) $(MAD_FLAGS) -fsanitize=fuzzer,address -DMAD_FUZZ -I$(MAD_SRC) -o $(FUZZ)/fuzz_mad mad/test_mad.c \
+	  $(addprefix $(MAD_SRC)/,$(MAD_C)) && \
+	$(FUZZ)/fuzz_mad -max_total_time=$(FUZZ_SECS) -max_len=8192 -rss_limit_mb=1024 \
+	  -artifact_prefix=$(FUZZ)/crash-fuzz_mad- $(FUZZ)/corpus/fuzz_mad fuzz/seeds/fuzz_mad 2>$(FUZZ)/fuzz_mad.log && \
+	echo "fuzz_mad     $$(grep -o 'Done [0-9]* runs' $(FUZZ)/fuzz_mad.log | tail -1), no crash" || \
+	{ tail -40 $(FUZZ)/fuzz_mad.log; echo "FAIL fuzz_mad: see $(FUZZ)/crash-fuzz_mad-*"; exit 1; }
 
 # Line, branch and function coverage of core/ (gcov): each test is built
 # again with --coverage under build/cov and run there; `fw coverage` merges
@@ -198,4 +251,4 @@ qemu-run:
 clean:
 	rm -rf $(BIN)
 
-.PHONY: all run clean coverage upstream fuzz-alac fuzz fuzz-long fuzz-build qemu qemu-faults qemu-run
+.PHONY: all run clean coverage upstream mad fuzz-mad fuzz-alac fuzz fuzz-long fuzz-build qemu qemu-faults qemu-run
