@@ -896,7 +896,7 @@ static void factory_disarm(TimerHandle_t t) {
 	ESP_LOGW(TAG, "factory reset disarmed: not unplugged in time");
 }
 
-/* A FreeRTOS timer, not esp_timer: its task (3800 bytes) is the one that
+/* A FreeRTOS timer, not esp_timer: its task (3328 bytes) is the one that
  * already runs platform_config's own commits. The flag is committed before
  * the reply, so an unplug right after "armed" still finds it. */
 static int op_factory_arm(void) {
