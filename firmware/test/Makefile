@@ -41,9 +41,20 @@ run: $(addprefix $(BIN)/,$(TESTS))
 # the tests build against stubs. With no copy of upstream reachable they are
 # skipped, loudly; UPSTREAM_REQUIRED=1 makes that a failure.
 UP := $(BIN)/upstream
-UP_FILES := components/squeezelite/controls.c components/driver_bt/bt_app_sink.c \
+UP_FILES = components/squeezelite/controls.c components/driver_bt/bt_app_sink.c \
 	components/driver_bt/bt_app_core.c components/spotify/Shim.cpp components/spotify/cspot/src/LoginBlob.cpp \
-	components/wifi-manager/network_manager_handlers.c components/raop/dmap_parser.c components/raop/dmap_parser.h
+	components/wifi-manager/network_manager_handlers.c components/raop/dmap_parser.c components/raop/dmap_parser.h \
+	components/raop/rtp.c $(ALAC_FILES)
+# The ALAC decoder as the board builds it (patch 0021), and Apple's encoder to make real packets.
+# Address sanitizer only: Apple's code shifts signed values all over, which UBSan would stop on.
+ALAC_DIR := components/spotify/cspot/bell/external/alac/codec
+ALAC_C := ALACBitUtilities.c ag_dec.c dp_dec.c matrix_dec.c EndianPortable.c ag_enc.c dp_enc.c matrix_enc.c
+ALAC_CPP := ALACDecoder.cpp ALACEncoder.cpp
+ALAC_FILES := $(addprefix $(ALAC_DIR)/,$(ALAC_C) $(ALAC_CPP) ALACDecoder.h ALACEncoder.h ALACBitUtilities.h \
+	ALACAudioTypes.h EndianPortable.h aglib.h dplib.h matrixlib.h) \
+	components/codecs/alac_wrapper.cpp components/codecs/inc/alac/alac_wrapper.h
+ALAC_FLAGS := -g -O1 -w -fsanitize=address -DTARGET_RT_LITTLE_ENDIAN=1 -I$(abspath $(UP))/$(ALAC_DIR) -I$(abspath $(UP))/components/codecs/inc/alac
+ALAC_SRCS = $(addprefix $(UP)/$(ALAC_DIR)/,$(ALAC_CPP)) $(UP)/components/codecs/alac_wrapper.cpp
 UP_CFLAGS := -std=gnu11 -O1 -g -Wall -Wextra -Werror -Wno-unused-function -Wno-unused-parameter \
 	-Wno-unused-variable -Wno-unused-const-variable -fsanitize=address,undefined -fno-sanitize-recover=all -I$(UP)/gen
 upstream:
@@ -54,10 +65,19 @@ upstream:
 	  connect_cli_socket cli_send_cmd > $(UP)/gen/controls_fns.c && \
 	python3 upstream/upstream.py extract $(UP)/components/driver_bt/bt_app_sink.c \
 	  IDLE_RELEASE_S IDLE_CHECK_S idle_check bt_disconnect bt_av_hdl_a2d_evt > $(UP)/gen/bt_fns.c && \
+	python3 upstream/upstream.py extract $(UP)/components/raop/rtp.c \
+	  rtp_take_from rtp_check_stalled > $(UP)/gen/rtp_fns.c && \
 	$(CC) $(UP_CFLAGS) -o $(UP)/test_up_controls upstream/test_up_controls.c && \
 	$(CC) $(UP_CFLAGS) -o $(UP)/test_up_bt upstream/test_up_bt.c && \
-	$(CC) $(UP_CFLAGS) -I$(UP)/components/raop -o $(UP)/test_up_dmap upstream/test_up_dmap.c || exit 1; \
+	$(CC) $(UP_CFLAGS) -I$(UP)/components/raop -o $(UP)/test_up_dmap upstream/test_up_dmap.c && \
+	$(CC) $(UP_CFLAGS) -o $(UP)/test_up_rtp upstream/test_up_rtp.c || exit 1; \
+	mkdir -p $(UP)/alac && (cd $(UP)/alac && $(CC) $(ALAC_FLAGS) -c $(addprefix $(abspath $(UP))/$(ALAC_DIR)/,$(ALAC_C))) && \
+	$(CXX) $(ALAC_FLAGS) -o $(UP)/test_up_alac upstream/test_up_alac.cpp $(ALAC_SRCS) $(UP)/alac/*.o || exit 1; \
 	fail=0; $(UP)/test_up_controls || fail=1; $(UP)/test_up_bt || fail=1; $(UP)/test_up_dmap || fail=1; \
+	$(UP)/test_up_rtp || fail=1; \
+	$(UP)/test_up_alac || fail=1; \
+	if [ "$(FUZZ_OK)" = 1 ]; then $(MAKE) --no-print-directory fuzz-alac || fail=1; \
+	else echo "SKIPPED fuzz_alac: no clang with libFuzzer"; fi; \
 	python3 upstream/test_up_source.py $(UP) || fail=1; exit $$fail
 
 # Line, branch and function coverage of core/ (gcov): each test is built
@@ -71,6 +91,18 @@ coverage:
 	  (cd $(COV) && $(CC) -std=gnu11 -O0 -g --coverage -I$(abspath $(CORE)) -o $$t $(abspath $$t.c) \
 	    $(abspath $(SRCS)) $(LDLIBS) $$extra && ./$$t >/dev/null) || fail=1; \
 	done; exit $$fail
+
+# The ALAC decoder fuzzer (test_up_alac.cpp built with ALAC_FUZZ), on the files `upstream` fetched.
+comma := ,
+ALAC_FUZZ_FLAGS = $(subst -fsanitize=address,-fsanitize=fuzzer$(comma)address,$(ALAC_FLAGS)) -DALAC_FUZZ
+fuzz-alac:
+	@mkdir -p $(FUZZ)/alac $(FUZZ)/corpus/fuzz_alac && \
+	(cd $(FUZZ)/alac && $(CLANG) $(ALAC_FUZZ_FLAGS) -c $(addprefix $(abspath $(UP))/$(ALAC_DIR)/,$(ALAC_C))) && \
+	$(CLANG)++ $(ALAC_FUZZ_FLAGS) -o $(FUZZ)/fuzz_alac upstream/test_up_alac.cpp $(ALAC_SRCS) $(FUZZ)/alac/*.o && \
+	$(FUZZ)/fuzz_alac -max_total_time=$(FUZZ_SECS) -max_len=4096 -artifact_prefix=$(FUZZ)/crash-fuzz_alac- \
+	  $(FUZZ)/corpus/fuzz_alac fuzz/seeds/fuzz_alac 2>$(FUZZ)/fuzz_alac.log && \
+	echo "fuzz_alac    $$(grep -o 'Done [0-9]* runs' $(FUZZ)/fuzz_alac.log | tail -1), no crash" || \
+	{ tail -40 $(FUZZ)/fuzz_alac.log; echo "FAIL fuzz_alac: see $(FUZZ)/crash-fuzz_alac-*"; exit 1; }
 
 # libFuzzer harnesses (fuzz/): the console, the HTTP test API, the JSON
 # reader and writer, the relay's signed envelope, its websocket client, and
@@ -148,4 +180,4 @@ qemu-run:
 clean:
 	rm -rf $(BIN)
 
-.PHONY: all run clean coverage upstream fuzz fuzz-long fuzz-build qemu qemu-faults qemu-run
+.PHONY: all run clean coverage upstream fuzz-alac fuzz fuzz-long fuzz-build qemu qemu-faults qemu-run
