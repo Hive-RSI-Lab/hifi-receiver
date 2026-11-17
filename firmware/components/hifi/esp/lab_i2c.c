@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "esp_attr.h"
 #include "esp_log.h"
 
 #include "hifi_board.h"
@@ -46,18 +47,19 @@ typedef struct {
 	int probe, status_e, current_e, check_e;
 	uint8_t status, current;
 	char why[96];
-	char counts[96];
+	i2cdev_counts_t n;
 } pd_t;
 
 typedef struct {
 	bool done;
 	int probe, regs_e;
 	uint8_t regs[CODEC_REGS];
-	char counts[96];
+	i2cdev_counts_t n;
 } codec_t;
 
-static pd_t pd;
-static codec_t codec;
+/* in PSRAM: only this task touches them, and reads land on the stack first (the Lite is short of internal RAM) */
+static EXT_RAM_ATTR pd_t pd;
+static EXT_RAM_ATTR codec_t codec;
 static uint32_t runs;
 static int bus_e = I2CDEV_OK;
 
@@ -68,7 +70,12 @@ static const i2cdev_expect_t ch224_expect[] = {
 static void read_ch224(const i2cdev_bus_t *bus) {
 	i2cdev_dev_t d;
 	memset(&pd, 0, sizeof(pd));
-	if (i2cdev_init(&d, bus, CH224_I2C_ADDR, 50) != I2CDEV_OK) return;
+	int e = i2cdev_init(&d, bus, CH224_I2C_ADDR, 50);
+	if (e != I2CDEV_OK) {
+		pd.probe = pd.status_e = pd.current_e = pd.check_e = e; /* a failed init fails the run */
+		pd.done = true;
+		return;
+	}
 	d.nack_retries = 1; /* a chip busy for a moment */
 	pd.probe = i2cdev_probe(&d);
 	pd.status_e = i2cdev_read_u8(&d, CH224_REG_STATUS, &pd.status);
@@ -85,7 +92,7 @@ static void read_ch224(const i2cdev_bus_t *bus) {
 			snprintf(pd.why, sizeof(pd.why), "CH224 PD current 0x%02x is outside 50 mA to 5 A", pd.current);
 		}
 	}
-	i2cdev_counts_json(&d, pd.counts, sizeof(pd.counts));
+	pd.n = d.n;
 	pd.done = true;
 }
 
@@ -93,14 +100,19 @@ static void read_codec(const i2cdev_bus_t *bus) {
 	memset(&codec, 0, sizeof(codec));
 #ifdef ES8388_ADDR
 	i2cdev_dev_t d;
-	if (i2cdev_init(&d, bus, ES8388_ADDR, 50) != I2CDEV_OK) return;
+	int e = i2cdev_init(&d, bus, ES8388_ADDR, 50);
+	if (e != I2CDEV_OK) {
+		codec.probe = codec.regs_e = e;
+		codec.done = true;
+		return;
+	}
 	d.nack_retries = 1;
 	codec.probe = i2cdev_probe(&d);
 	/* one register at a time: the ES8388 doesn't promise auto-increment */
 	codec.regs_e = I2CDEV_OK;
 	for (int i = 0; i < CODEC_REGS && codec.regs_e == I2CDEV_OK; i++)
 		codec.regs_e = i2cdev_read_u8(&d, (uint8_t) i, &codec.regs[i]);
-	i2cdev_counts_json(&d, codec.counts, sizeof(codec.counts));
+	codec.n = d.n;
 	codec.done = true;
 #else
 	(void) bus;
@@ -119,7 +131,7 @@ static int start(uint32_t run, const char *body, char *err, size_t n) {
 	runs++;
 	read_ch224(&bus);
 	read_codec(&bus);
-	bool ok = pd.check_e == I2CDEV_OK && pd.current_e == I2CDEV_OK &&
+	bool ok = pd.done && pd.check_e == I2CDEV_OK && pd.current_e == I2CDEV_OK &&
 		  (!codec.done || (codec.probe == I2CDEV_OK && codec.regs_e == I2CDEV_OK));
 	ESP_LOGI(TAG, "CH224 status 0x%02x (%s), codec %s", pd.status, i2cdev_err_name(pd.check_e),
 		 codec.done ? i2cdev_err_name(codec.regs_e) : "none");
@@ -133,6 +145,16 @@ static void hex(hj_t *j, const char *key, uint8_t v) {
 	char s[8];
 	snprintf(s, sizeof(s), "0x%02x", v);
 	hj_str(j, key, s);
+}
+
+static void counts(hj_t *j, const i2cdev_counts_t *n) {
+	hj_obj(j, "counts");
+	hj_int(j, "ok", n->ok);
+	hj_int(j, "nack", n->nack);
+	hj_int(j, "timeout", n->timeout);
+	hj_int(j, "recovered", n->recovered);
+	hj_int(j, "stuck", n->stuck);
+	hj_obj_end(j);
 }
 
 static void result(void *hj) {
@@ -156,7 +178,7 @@ static void result(void *hj) {
 		hj_int(j, "current_ma", pd.current * 50);
 	} else
 		hj_str(j, "current_err", i2cdev_err_name(pd.current_e));
-	hj_str(j, "counts", pd.counts);
+	counts(j, &pd.n);
 	hj_obj_end(j);
 	if (!codec.done) return;
 	hj_obj(j, "codec");
@@ -171,7 +193,7 @@ static void result(void *hj) {
 		}
 		hj_arr_end(j);
 	}
-	hj_str(j, "counts", codec.counts);
+	counts(j, &codec.n);
 	hj_obj_end(j);
 }
 
