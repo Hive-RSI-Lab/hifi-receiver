@@ -153,7 +153,7 @@ whole state runs near 1000 characters on a Lite, which a serial line cuts
 at; a section stays at or under 850 even at its worst (`audio`, with the
 longest track text all in characters that need escaping; with plain text it
 is about 670), so a bench test reads the part it saves. Track text is kept
-to 63 bytes of title and 47 each of artist and album, cut at a whole
+to 59 bytes of title and 47 each of artist and album, cut at a whole
 character, and control characters in it are stored as spaces.
 Over the console: `api state/audio`, or `hifi state audio`.
 

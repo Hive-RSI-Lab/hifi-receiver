@@ -168,8 +168,8 @@ left. [TBD: Plus and Ultra rear panels: their enclosures aren't drawn yet]
 ### Two Lites as a stereo pair
 
 A Lite can play just one side, so two Lites make a stereo pair, one speaker
-each. Set the side in the app (**Play → Channel**), or with the API
-(`channel`): **Stereo** (the default), **Left**, **Right** or **Mono**
+each. Set the side with the API (`channel`) or the console command
+(`channel left`; the app has no control for it yet): **Stereo** (the default), **Left**, **Right** or **Mono**
 (both sides mixed). It applies to the speaker output on every input,
 including DJ direct, and is kept across restarts.
 
