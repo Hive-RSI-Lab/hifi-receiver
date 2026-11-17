@@ -48,6 +48,11 @@ foreach(v HIFI_HIVE_PUBKEY HIFI_RELAY_URL HIFI_RELAY_USER HIFI_RELAY_PASS HIFI_U
 	endif()
 endforeach()
 
+# the build number the LAN's updates are held to (hifi_relay.c, security.md L9)
+if(DEFINED ENV{HIFI_FW_BUILD})
+	target_compile_definitions(${COMPONENT_LIB} PRIVATE HIFI_FW_BUILD=$ENV{HIFI_FW_BUILD})
+endif()
+
 target_compile_options(${COMPONENT_LIB} PRIVATE -Wall -Wno-format-truncation)
 
 # esp/hifi_crash.c keeps a copy of everything the console prints (crash

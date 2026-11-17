@@ -1,0 +1,40 @@
+diff --git a/components/platform_console/cmd_config.c b/components/platform_console/cmd_config.c
+index 5599e83..cc67a18 100644
+--- a/components/platform_console/cmd_config.c
++++ b/components/platform_console/cmd_config.c
+@@ -214,6 +214,9 @@ int check_missing_parm(struct arg_int *int_parm, FILE *f) {
+     }
+     return res;
+ }
++/* hifi-receiver (components/hifi/core/hifi_gate.h): may this line run at every boot? */
++extern bool hifi_autoexec_ok(const char *line) __attribute__((weak));
++
+ char *strip_bt_name(char *opt_str) {
+     if (!opt_str || strlen(opt_str) == 0) {
+         ESP_LOGW(TAG, "strip_bt_name: opt_str is NULL");
+@@ -338,16 +341,22 @@ static int do_bt_source_cmd(int argc, char **argv) {
+         char *squeezelite_cmd = config_alloc_get_default(NVS_TYPE_STR, "autoexec1", NULL, 0);
+         if (squeezelite_cmd && strstr(squeezelite_cmd, " -o ")) {
+             char *new_cmd = strip_bt_name(squeezelite_cmd);
+-            if (strcmp(new_cmd, squeezelite_cmd) != 0) {
++            if (!new_cmd) new_cmd = squeezelite_cmd;
++            if (strcmp(new_cmd, squeezelite_cmd) != 0 && hifi_autoexec_ok && !hifi_autoexec_ok(new_cmd)) {
++                /* hifi-receiver: autoexec1 runs at every boot; never save a line the LAN may not set */
++                nerrors++;
++                fprintf(f, "Not saving squeezelite command [%s]: not allowed at boot.\n", new_cmd);
++            } else if (strcmp(new_cmd, squeezelite_cmd) != 0) {
+                 fprintf(f, "Replacing old squeezelite command [%s] with [%s].\n", squeezelite_cmd, new_cmd);
+-                config_set_value(NVS_TYPE_STR, "autoexec1", new_cmd);
++                err = config_set_value(NVS_TYPE_STR, "autoexec1", new_cmd);
+                 if (err != ESP_OK) {
+                     nerrors++;
+                     fprintf(f, "Error updating squeezelite command line options . %s\n", esp_err_to_name(err));
+                 }
+             }
++            /* strip_bt_name hands back its argument when out of memory */
++            if (new_cmd != squeezelite_cmd) free(new_cmd);
+             free(squeezelite_cmd);
+-            free(new_cmd);
+         }
+     }
+     if (bt_source_args.pin_code->count > 0) {

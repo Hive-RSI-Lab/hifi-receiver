@@ -240,6 +240,7 @@ static void net(hifi_diag_net_t *o) {
 	o->up_s = ip ? (uint32_t) ((esp_timer_get_time() - ip) / 1000000) : 0;
 	uint32_t first;
 	hifi_remote_link(o, &first);
+	hifi_listen_diag(o);
 }
 
 /* ------------------------------------------------------------------ audio */

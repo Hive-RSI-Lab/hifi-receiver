@@ -322,20 +322,38 @@ static void test_ota_core(void) {
 	fail_commit = false;
 }
 
-/* a signed image (firmware/tools/sign_fw.py): body, then "HIFISIG1" and an
- * Ed25519 signature over "hifi-fw-v1:" + the body's SHA-256 in hex */
-static void sign_image(uint8_t *img, size_t n) {
+/* an app description in the image: its project name (esp_app_desc_t) */
+static void set_desc(uint8_t *img, const char *proj) {
+	img[32] = 0x32, img[33] = 0x54, img[34] = 0xCD, img[35] = 0xAB;
+	memset(img + 80, 0, 32);
+	memcpy(img + 80, proj, strlen(proj));
+}
+
+#define PROJ "Squeezelite-ESP32"
+#define BUILD 1789000000ULL /* the running app's build number in these tests */
+
+/* a signed image (firmware/tools/sign_fw.py): body, then "HIFISIG2", the
+ * build number (8 bytes LE) and an Ed25519 signature over
+ * "hifi-fw-v2:<build>:" + the body's SHA-256 in hex */
+static void sign_build(uint8_t *img, size_t n, unsigned long long build) {
 	size_t body = n - HIFI_OTA_SIG_LEN;
 	uint8_t h[32];
 	hifi_sha256_t s;
 	hifi_sha256_init(&s);
 	hifi_sha256_update(&s, img, body);
 	hifi_sha256_final(&s, h);
-	char msg[11 + 65];
-	memcpy(msg, HIFI_OTA_SIG_CONTEXT, 11);
-	hexs(h, 32, msg + 11);
+	char msg[128];
+	int c = sprintf(msg, "hifi-fw-v2:%llu:", build);
+	hexs(h, 32, msg + c);
 	memcpy(img + body, HIFI_OTA_SIG_MAGIC, 8);
-	sign((const uint8_t *) msg, 11 + 64, img + body + 8);
+	for (int i = 0; i < 8; i++) img[body + 8 + i] = (uint8_t) (build >> (8 * i));
+	sign((const uint8_t *) msg, (size_t) c + 64, img + body + 16);
+}
+
+/* this project, the running build */
+static void sign_image(uint8_t *img, size_t n) {
+	set_desc(img, PROJ);
+	sign_build(img, n, BUILD);
 }
 
 static int feed(const uint8_t *img, size_t n, size_t step, const char **err) {
@@ -356,6 +374,7 @@ static void test_ota_sig(void) {
 
 	/* no key in the build: a signed-only update can't start */
 	hifi_ota_init(&ota, &io);
+	hifi_ota_set_running(&ota, PROJ, BUILD);
 	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 403);
 	CHECK(!ota.active);
 	hifi_ota_set_keys(&ota, (const uint8_t (*)[32]) pub, 1, verify);
@@ -433,17 +452,9 @@ static void test_ota_sig(void) {
 	CHECK(hifi_ota_begin_ex(&ota, 1024 + HIFI_OTA_SIG_LEN - 1, NULL, NULL, true, &err) == 400);
 }
 
-/* an app description in the image: project, build time, date (esp_app_desc_t) */
-static void set_desc(uint8_t *img, const char *proj, const char *date, const char *time) {
-	img[32] = 0x32, img[33] = 0x54, img[34] = 0xCD, img[35] = 0xAB;
-	memset(img + 80, 0, 64);
-	memcpy(img + 80, proj, strlen(proj));
-	memcpy(img + 112, time, strlen(time));
-	memcpy(img + 128, date, strlen(date));
-}
-
-/* no going back from the LAN: a signed image older than the running one,
- * or for another project, is refused; the relay isn't held to it */
+/* no going back from the LAN (L9): a signed image with a lower build number,
+ * or for another project, is refused, and so is everything when the running
+ * app has no build number; the relay isn't held to it */
 static void test_ota_age(void) {
 	static uint8_t img[10000];
 	char sha[65];
@@ -451,58 +462,77 @@ static void test_ota_age(void) {
 	uint8_t pub[32];
 	unhex(PUB_HEX, pub, 32);
 
-	CHECK(hifi_ota_build_stamp("Nov 17 2026", "02:20:07") == 20261117022007LL);
-	CHECK(hifi_ota_build_stamp("Jan  5 2027", "23:59:59") == 20270105235959LL);
-	CHECK(hifi_ota_build_stamp("Dec 31 2026", "00:00:00") < hifi_ota_build_stamp("Jan  1 2027", "00:00:00"));
-	CHECK(hifi_ota_build_stamp("Nov 17 2026", "02:20:07") < hifi_ota_build_stamp("Nov 17 2026", "02:20:08"));
-	CHECK(hifi_ota_build_stamp("Foo 17 2026", "02:20:07") == -1);
-	CHECK(hifi_ota_build_stamp("Nov 17 2026", "2:20:07") == -1);
-	CHECK(hifi_ota_build_stamp("Nov 17 2026", "24:00:00") == -1);
-	CHECK(hifi_ota_build_stamp("Nov 1x 2026", "02:20:07") == -1);
-	CHECK(hifi_ota_build_stamp("", "") == -1);
-	CHECK(hifi_ota_build_stamp(NULL, "02:20:07") == -1);
+	CHECK(hifi_ota_build_of("HIFI-BUILD:1789000000;") == 1789000000ULL);
+	CHECK(hifi_ota_build_of("HIFI-BUILD:18446744073709551615;") == 18446744073709551615ULL);
+	CHECK(hifi_ota_build_of("HIFI-BUILD:0;") == 0);
+	CHECK(hifi_ota_build_of("HIFI-BUILD:;") == 0);
+	CHECK(hifi_ota_build_of("HIFI-BUILD:12a;") == 0);
+	CHECK(hifi_ota_build_of("HIFI-BUILD:12") == 0);
+	CHECK(hifi_ota_build_of("HIFI-BUILD:12;x") == 0);
+	CHECK(hifi_ota_build_of("HIFI-BUILD:123456789012345678901;") == 0); /* 21 digits */
+	CHECK(hifi_ota_build_of("HIFI-BUILD:HIFI_FW_BUILD;") == 0);        /* built without one */
+	CHECK(hifi_ota_build_of("") == 0);
+	CHECK(hifi_ota_build_of(NULL) == 0);
 
 	hifi_ota_init(&ota, &io);
 	hifi_ota_set_keys(&ota, (const uint8_t (*)[32]) pub, 1, verify);
-	hifi_ota_set_running(&ota, "Squeezelite-ESP32", "Nov 17 2026", "02:20:07");
+	hifi_ota_set_running(&ota, PROJ, BUILD);
 
 	struct {
-		const char *proj, *date, *time;
+		const char *proj;
+		unsigned long long build;
 		int st;
 	} cases[] = {
-		{"Squeezelite-ESP32", "Nov 17 2026", "02:20:07", 200}, /* the same build again */
-		{"Squeezelite-ESP32", "Nov 17 2026", "02:20:08", 200}, /* newer */
-		{"Squeezelite-ESP32", "Jan  2 2027", "00:00:00", 200},
-		{"Squeezelite-ESP32", "Nov 17 2026", "02:20:06", 403}, /* older */
-		{"Squeezelite-ESP32", "Oct 30 2026", "12:00:00", 403},
-		{"recovery", "Dec  1 2026", "00:00:00", 403},          /* another project */
-		{"Squeezelite-ESP32", "Nov ?? 2026", "02:20:08", 403}, /* no readable time */
+		{PROJ, BUILD, 200},          /* the same build again */
+		{PROJ, BUILD + 1, 200},      /* newer */
+		{PROJ, BUILD + 86400, 200},
+		{PROJ, BUILD - 1, 403},      /* older */
+		{PROJ, 0, 403},
+		{"recovery", BUILD + 1, 403}, /* another project */
+		{"", BUILD + 1, 403},
 	};
 	for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
 		make_image(img, sizeof(img), sha);
-		set_desc(img, cases[i].proj, cases[i].date, cases[i].time);
-		sign_image(img, sizeof(img));
+		set_desc(img, cases[i].proj);
+		sign_build(img, sizeof(img), cases[i].build);
 		committed = aborted = false;
 		CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 200);
-		/* 7-byte chunks: the description arrives split across many */
+		/* 7-byte chunks: the description and the trailer arrive split */
 		int st = feed(img, sizeof(img), i % 2 ? 7 : 4096, &err);
 		CHECK(st == cases[i].st);
 		CHECK(committed == (cases[i].st == 200));
 		if (cases[i].st != 200) CHECK(aborted && !ota.active);
 	}
-	CHECK_STR(err, "the image's build time can't be read");
+	CHECK_STR(err, "the image is for another project");
+
+	/* the build number is signed: raising it in the trailer breaks the signature */
+	make_image(img, sizeof(img), sha);
+	set_desc(img, PROJ);
+	sign_build(img, sizeof(img), BUILD - 1);
+	img[sizeof(img) - HIFI_OTA_SIG_LEN + 8] += 2;
+	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 200);
+	CHECK(feed(img, sizeof(img), 4096, &err) == 403);
+	CHECK_STR(err, "the image's signature isn't the Hive's");
+
+	/* a v1 trailer (no build number) is refused, not let through */
+	make_image(img, sizeof(img), sha);
+	sign_image(img, sizeof(img));
+	memcpy(img + sizeof(img) - HIFI_OTA_SIG_LEN, "HIFISIG1", 8);
+	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 200);
+	CHECK(feed(img, sizeof(img), 4096, &err) == 403);
+	CHECK_STR(err, "the image isn't signed by the Hive");
 
 	/* no app description at all */
 	make_image(img, sizeof(img), sha);
-	sign_image(img, sizeof(img));
+	sign_build(img, sizeof(img), BUILD);
 	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 200);
 	CHECK(feed(img, sizeof(img), 4096, &err) == 403);
 	CHECK_STR(err, "the image has no app description");
 
 	/* an old image with a bad signature still says "signature" (the age is read only once it's the Hive's) */
 	make_image(img, sizeof(img), sha);
-	set_desc(img, "Squeezelite-ESP32", "Oct 30 2026", "12:00:00");
-	sign_image(img, sizeof(img));
+	set_desc(img, PROJ);
+	sign_build(img, sizeof(img), BUILD - 100);
 	img[500] ^= 1;
 	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 200);
 	CHECK(feed(img, sizeof(img), 4096, &err) == 403);
@@ -514,11 +544,15 @@ static void test_ota_age(void) {
 	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, false, &err) == 200);
 	CHECK(feed(img, sizeof(img), 4096, &err) == 200 && committed);
 
-	/* an unreadable running time: no age check, rather than no updates */
-	hifi_ota_set_running(&ota, "Squeezelite-ESP32", "", "");
+	/* a running app with no build number: nothing from the LAN, fail closed */
+	hifi_ota_set_running(&ota, PROJ, 0);
+	make_image(img, sizeof(img), sha);
+	set_desc(img, PROJ);
+	sign_build(img, sizeof(img), BUILD + 1);
 	committed = false;
 	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 200);
-	CHECK(feed(img, sizeof(img), 4096, &err) == 200 && committed);
+	CHECK(feed(img, sizeof(img), 4096, &err) == 403 && !committed);
+	CHECK_STR(err, "this firmware has no build number to check an update against: update it over USB");
 	hifi_ota_init(&ota, &io);
 }
 
@@ -541,6 +575,7 @@ static void test_lan_api(void) {
 	unhex(PUB_HEX, pub, 32);
 	hifi_ota_init(&ota, &io);
 	hifi_ota_set_keys(&ota, (const uint8_t (*)[32]) pub, 1, verify);
+	hifi_ota_set_running(&ota, PROJ, BUILD);
 
 	/* the relay: readable, not changeable */
 	CHECK(lan("GET", "/api/v1/remote", NULL) == 200);
@@ -645,6 +680,69 @@ static void test_ota_api(void) {
 	CHECK_HAS(out, "\"reboot\":true");
 	CHECK(rebooted && committed);
 	CHECK(api("POST", "/api/v1/ota/abort", NULL) == 200);
+}
+
+/* L10: the URL job and the upload hold the session; each API step runs under
+ * the lock, and nothing is left locked */
+static int lock_depth, lock_max, locks;
+static void f_lock(void *ctx) {
+	(void) ctx;
+	locks++;
+	if (++lock_depth > lock_max) lock_max = lock_depth;
+}
+static void f_unlock(void *ctx) {
+	(void) ctx;
+	lock_depth--;
+}
+static void test_ota_held(void) {
+	static uint8_t img[6000];
+	char sha[65], body[8192];
+	const char *err = NULL;
+	static const hifi_ota_io_t lio = {.open = f_open, .write = f_write, .commit = f_commit, .abort = f_abort,
+					  .lock = f_lock, .unlock = f_unlock, .slot_size = sizeof(flash)};
+	make_image(img, sizeof(img), sha);
+	hifi_ota_init(&ota, &lio);
+	lock_depth = lock_max = locks = 0;
+
+	/* the job claims, then begins; the API can't begin over it, from anywhere */
+	CHECK(hifi_ota_claim(&ota, &err) == 0);
+	CHECK(hifi_ota_claim(&ota, &err) == 409); /* nor can a second job */
+	CHECK(hifi_ota_begin_local(&ota, sizeof(img), NULL, &err) == 200);
+	snprintf(body, sizeof(body), "{\"size\":%zu,\"sha256\":\"%s\"}", sizeof(img), sha);
+	aborted = false;
+	CHECK(api("POST", "/api/v1/ota/begin", body) == 409);
+	CHECK_HAS(out, "already running");
+	CHECK(lan("POST", "/api/v1/ota/begin", body) == 409);
+	CHECK(api("POST", "/api/v1/ota/abort", NULL) == 409);
+	CHECK(lan("POST", "/api/v1/ota/finish", NULL) == 409);
+	int n = sprintf(body, "{\"off\":0,\"data\":\"");
+	hifi_b64_encode(img, 4096, body + n, sizeof(body) - n);
+	strcat(body, "\"}");
+	CHECK(api("POST", "/api/v1/ota/chunk", body) == 409);
+	CHECK(ota.active && ota.written == 0 && !aborted); /* untouched */
+	CHECK(api("GET", "/api/v1/ota", NULL) == 200); /* reading is fine */
+
+	/* the job writes and finishes; release frees it */
+	CHECK(hifi_ota_chunk(&ota, 0, img, 4096, &err) == 200);
+	CHECK(hifi_ota_chunk(&ota, 4096, img + 4096, sizeof(img) - 4096, &err) == 200);
+	CHECK(hifi_ota_finish(&ota, &err) == 200);
+	hifi_ota_release(&ota);
+	CHECK(!ota.held);
+	snprintf(body, sizeof(body), "{\"size\":%zu,\"sha256\":\"%s\"}", sizeof(img), sha);
+	CHECK(api("POST", "/api/v1/ota/begin", body) == 200);
+
+	/* a job can't claim while the API has one open */
+	CHECK(hifi_ota_claim(&ota, &err) == 409);
+	CHECK(api("POST", "/api/v1/ota/abort", NULL) == 200);
+	CHECK(hifi_ota_claim(&ota, &err) == 0);
+	/* a job that stops part way: release drops what it left open */
+	CHECK(hifi_ota_begin_local(&ota, sizeof(img), NULL, &err) == 200);
+	aborted = false;
+	hifi_ota_release(&ota);
+	CHECK(!ota.active && !ota.held && aborted);
+
+	CHECK(lock_depth == 0 && lock_max == 1 && locks > 10);
+	hifi_ota_init(&ota, &io);
 }
 
 static void test_capture_api(void) {
@@ -971,7 +1069,30 @@ static void test_trial(void) {
 	CHECK(hifi_trial_judge(&t, 1, why, sizeof(why)) == HIFI_TRIAL_BAD);
 }
 
-int main(void) {
+/* test_sign_fw.py: does an image tools/sign_fw.py signed (with SEED_HEX)
+ * install from the LAN on a board running build `running`? Prints the status
+ * and the error; 0 when it matches `want`. */
+static int check_file(const char *path, const char *running, int want) {
+	static uint8_t img[60000];
+	FILE *f = fopen(path, "rb");
+	if (!f) return 2;
+	size_t n = fread(img, 1, sizeof(img), f);
+	fclose(f);
+	const char *err = "";
+	uint8_t pub[32];
+	unhex(PUB_HEX, pub, 32);
+	hifi_ota_init(&ota, &io);
+	hifi_ota_set_keys(&ota, (const uint8_t (*)[32]) pub, 1, verify);
+	hifi_ota_set_running(&ota, PROJ, strtoull(running, NULL, 10));
+	committed = false;
+	int st = hifi_ota_begin_ex(&ota, n, NULL, NULL, true, &err);
+	if (st == 200) st = feed(img, n, 4096, &err);
+	printf("%d %s\n", st, st == 200 ? "" : err);
+	return st == want && committed == (want == 200) ? 0 : 1;
+}
+
+int main(int argc, char **argv) {
+	if (argc == 5 && !strcmp(argv[1], "--check-file")) return check_file(argv[2], argv[3], atoi(argv[4]));
 	test_b64();
 	test_sha256();
 	test_ota_core();
@@ -979,6 +1100,7 @@ int main(void) {
 	test_ota_sig();
 	test_ota_age();
 	test_lan_api();
+	test_ota_held();
 	test_capture_api();
 	test_wifi_remote_api();
 	test_ws_proto();

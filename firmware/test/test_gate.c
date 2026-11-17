@@ -1,6 +1,7 @@
 /* the LAN gate (core/hifi_gate.c): DNS rebinding and cross-site requests */
 #include "check.h"
 #include "hifi_gate.h"
+#include "../components/hifi/esp/hifi_board_lite.h" /* the Lite's HIFI_LAN_RESERVED_PINS */
 
 static const char *const names[] = {"hifi-lite-4", "squeezelite-a1b2c3"};
 #define ALLOW(h, o) CHECK(hifi_gate_allow(h, o, names, 2))
@@ -13,6 +14,11 @@ static uint32_t fake_rnd(void) {
 }
 
 int main(void) {
+	/* L6: an armed LAN reset erases only on a power-on start */
+	CHECK(hifi_reset_confirmed(true, true));
+	CHECK(!hifi_reset_confirmed(true, false));
+	CHECK(!hifi_reset_confirmed(false, true));
+	CHECK(!hifi_reset_confirmed(false, false));
 	/* IP literals, any port, no Origin */
 	ALLOW("192.168.1.50", NULL);
 	ALLOW("192.168.4.1:80", NULL);
@@ -62,6 +68,17 @@ int main(void) {
 	DENY("[fe80::1", NULL);
 	DENY(":80", NULL);
 	DENY("a:1:2", NULL);
+	/* a port is 1 to 5 digits (L12) */
+	ALLOW("192.168.1.50:65535", NULL);
+	ALLOW("[fe80::1]:8", NULL);
+	DENY("192.168.1.50:abc", NULL);
+	DENY("hifi-lite-4:80x", NULL);
+	DENY("192.168.1.50:", NULL);
+	DENY("[fe80::1]:", NULL);
+	DENY("192.168.1.50:123456", NULL);
+	DENY("192.168.1.50: 80", NULL);
+	DENY("[fe80::1]:8:0", NULL);
+	DENY("192.168.1.50:-1", NULL);
 	{
 		char longhost[300];
 		memset(longhost, 'a', sizeof(longhost) - 1);
@@ -90,7 +107,7 @@ int main(void) {
 	CHECK(!hifi_gate_allow("hifi-lite-4", NULL, NULL, 0));
 
 	/* squeezelite's UI from the LAN */
-	CHECK(hifi_lan_command_ok("cfg-hw-dac -m 1"));
+	CHECK(hifi_lan_command_ok("cfg-hw-dac --model_name ES8388"));
 	CHECK(hifi_lan_command_ok("  squeezelite -o I2S -n kitchen"));
 	CHECK(hifi_lan_command_ok("restart"));
 	CHECK(hifi_lan_command_ok("version"));
@@ -144,13 +161,19 @@ int main(void) {
 	CHECK(!hifi_lan_config_ok("autoexec1", "  restart"));
 	CHECK(!hifi_lan_config_ok("autoexec2", "version"));
 	CHECK(!hifi_lan_config_ok("autoexec2", "tasks"));
-	CHECK(hifi_lan_config_ok("autoexec2", "cfg-hw-dac -m 1"));
+	CHECK(hifi_lan_config_ok("autoexec2", "cfg-hw-dac --model_name ES8388"));
 	CHECK(hifi_autoexec_ok("squeezelite -o BT -n kitchen"));
 	CHECK(!hifi_autoexec_ok("restart"));
 	CHECK(!hifi_autoexec_ok("nvs_set hifi_relay_key str -v x"));
 	CHECK(!hifi_autoexec_ok("squeezelite\nrecovery"));
 	CHECK(!hifi_autoexec_ok(NULL));
 	CHECK(!hifi_autoexec_ok(""));
+	/* L15 (patches/0012): cfg-audio-bt_source -n rewrites autoexec1 with the BT
+	 * name stripped (strip_bt_name); the patch saves only what this passes */
+	CHECK(hifi_autoexec_ok("squeezelite -o \"BT\" -b 500:2000 -R -Z 96000 -r \"44100-44100\""));
+	CHECK(hifi_autoexec_ok("squeezelite -o BT -b 500:2000"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o BT -b 500:2000 -t")); /* -t prints the licence and exits */
+	CHECK(!hifi_autoexec_ok("squeezelite -o BT\nrestart"));
 	/* cfg-hw-preset stores any NVS key its JSON names: an explicit list */
 	CHECK(!hifi_lan_command_ok("cfg-hw-preset --model_config {\"name\":\"x\",\"config\":[{\"hifi_relay_url\":\"ws://evil\"}]}"));
 	CHECK(!hifi_autoexec_ok("cfg-hw-preset --model_config x"));
@@ -158,6 +181,65 @@ int main(void) {
 	CHECK(!hifi_lan_command_ok("cfg-anything"));
 	CHECK(hifi_lan_command_ok("cfg-syst-name -n kitchen"));
 	CHECK(hifi_lan_command_ok("cfg-syst-services --AirPlay"));
+
+	/* L8: cfg-hw-* takes its own options by exact long name, and no pin
+	 * option names a reserved pin. Always: flash 6-11, PSRAM 16-17 */
+	CHECK(hifi_lan_command_ok("cfg-hw-dac --model_name ES8388 --clock 27 --wordselect 25 --data 26 --dac_sda 33 --dac_scl 32 --dac_i2c 16"));
+	CHECK(hifi_lan_command_ok("cfg-hw-dac --model_name \"ES8388\" --clock=27 --mute_gpio -1 --mute_level"));
+	CHECK(hifi_lan_command_ok("cfg-hw-dac --clear"));
+	CHECK(hifi_lan_command_ok("cfg-hw-dac"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 7"));	   /* flash */
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data=11"));	   /* flash */
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --mute_gpio 16")); /* PSRAM */
+	CHECK(!hifi_lan_command_ok("cfg-hw-spdif --clock 1 --wordselect 2 --data 17"));
+	CHECK(hifi_lan_command_ok("cfg-hw-dac --dac_i2c 16")); /* an address, not a pin */
+	/* pins only in plain decimal: argtable reads 0x07, 0o7 and 7KB as numbers too */
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 0x07"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 0o7"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 7KB"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data +7"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data -7"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 64"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 40")); /* no GPIO 40-63 on the ESP32 */
+	CHECK(hifi_lan_command_ok("cfg-hw-dac --data 39"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 007"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data \"\""));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data"));	   /* no value */
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data="));
+	/* no short options (cfg-hw-display gives -b to cs and back), no
+	 * abbreviations (getopt_long takes --mute as --mute_gpio), no positionals */
+	CHECK(!hifi_lan_command_ok("cfg-hw-spi -d 7"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-display -b 7"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --mute 7"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --mute 20"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 26 x"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac -- --data 7"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --clear=1"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --A 5"));	   /* rotary's, not dac's */
+	/* a value option takes the next word whatever it is, as getopt does */
+	CHECK(hifi_lan_command_ok("cfg-hw-display --type SPI --depth -1 --cs 5 --back 2 --reset 15 --width 128 --height 64"));
+	CHECK(hifi_lan_command_ok("cfg-hw-ledvu --type WS2812 --length 8 --gpio 22"));
+	CHECK(hifi_lan_command_ok("cfg-hw-rotary --A 5 --B 13 --SW 15 --knobonly --timer 350"));
+	CHECK(hifi_lan_command_ok("cfg-hw-i2c --port 0 --speed 400000 --sda 33 --scl 32"));
+	CHECK(hifi_lan_command_ok("cfg-hw-spi --clk 14 --data 13 --miso 12 --dc 15 --host 1"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-ledvu --type WS2812 --length 8 --gpio 9"));
+	CHECK(!hifi_autoexec_ok("cfg-hw-dac --data 8")); /* autoexecN too */
+	CHECK(hifi_lan_config_ok("autoexec2", "cfg-hw-ledvu --type WS2812 --length 8 --gpio 22"));
+	CHECK(!hifi_lan_config_ok("autoexec2", "cfg-hw-ledvu --type WS2812 --length 8 --gpio 10"));
+	/* the Lite's own: the power path, the amp, the sense inputs */
+	CHECK(hifi_lan_command_ok("cfg-hw-ledvu --type WS2812 --length 8 --gpio 18"));
+	hifi_gate_reserve_pins(HIFI_LAN_RESERVED_PINS);
+	CHECK(!hifi_lan_command_ok("cfg-hw-ledvu --type WS2812 --length 8 --gpio 18")); /* PVDD_EN */
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --mute_gpio 21"));		     /* AMP_SDZ */
+	CHECK(!hifi_lan_command_ok("cfg-hw-rotary --A 4 --B 5"));		     /* PD PG */
+	CHECK(!hifi_lan_command_ok("cfg-hw-rotary --A 5 --B 13 --SW 23"));	     /* FAULTZ */
+	CHECK(!hifi_lan_command_ok("cfg-hw-i2c --sda 34 --scl 32"));		     /* VBUS sense */
+	CHECK(!hifi_lan_command_ok("cfg-hw-spi --clk 39"));			     /* PVDD sense */
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 9"));			     /* still flash */
+	/* the codec's own pins stay: the UI's DAC form sends them back */
+	CHECK(hifi_lan_command_ok("cfg-hw-dac --model_name ES8388 --clock 27 --wordselect 25 --data 26 --dac_sda 33 --dac_scl 32"));
+	/* the other cfg-* setters aren't hardware: unchanged */
+	CHECK(hifi_lan_command_ok("cfg-syst-name -n 18"));
 	CHECK(hifi_autoexec_ok("cfg-audio-general -v 50"));
 	/* squeezelite options that make it exit (and reboot the board 60 s later,
 	 * at every boot), or that this build doesn't know */
@@ -316,6 +398,33 @@ int main(void) {
 	CHECK(!hifi_lan_trial_refused("/config.jsonx", "POST"));
 	CHECK(!hifi_lan_trial_refused(NULL, "POST"));
 	CHECK(!hifi_lan_trial_refused("/reboot.json", NULL));
+	/* another update during the trial would replace the rollback copy (L16) */
+	CHECK(hifi_lan_trial_refused("/api/v1/update/upload", "POST"));
+	CHECK(hifi_lan_trial_refused("/api/v1/update", "POST"));
+	CHECK(hifi_lan_trial_refused("/api/v1/ota/begin", "POST"));
+	CHECK(hifi_lan_trial_refused("/api/v1/ota/finish?x", "POST"));
+	CHECK(!hifi_lan_trial_refused("/api/v1/update/check", "GET"));
+	CHECK(!hifi_lan_trial_refused("/api/v1/ota", "GET"));
+	/* GETs that start work: once per 5 s from the LAN (L7) */
+	{
+		long long last = 0, s = 1000000;
+		CHECK(!hifi_lan_throttled("/scan.json", "GET", 10 * s, &last));
+		CHECK(hifi_lan_throttled("/scan.json", "GET", 12 * s, &last));
+		CHECK(hifi_lan_throttled("/api/v1/wifi/scan?x=1", "GET", 13 * s, &last)); /* one budget for all */
+		CHECK(hifi_lan_throttled("/api/v1/update/check", "HEAD", 14 * s, &last));
+		CHECK(!hifi_lan_throttled("/api/v1/wifi/scan", "GET", 15 * s, &last));
+		CHECK(last == 15 * s);
+		CHECK(!hifi_lan_throttled("/api/v1/state", "GET", 15 * s, &last));      /* not costly */
+		CHECK(!hifi_lan_throttled("/scan.json", "POST", 15 * s, &last));        /* not a GET */
+		CHECK(!hifi_lan_throttled("/scan.jsonx", "GET", 15 * s, &last));
+		CHECK(last == 15 * s);
+		CHECK(!hifi_lan_throttled("/api/v1/update/check", "GET", 3 * s, &last)); /* the clock went back */
+		last = 0;
+		CHECK(!hifi_lan_throttled("/scan.json", "GET", 0, &last));
+		CHECK(last == 1);
+		CHECK(!hifi_lan_throttled(NULL, "GET", 0, &last));
+		CHECK(!hifi_lan_throttled("/scan.json", "GET", 0, NULL));
+	}
 	CHECK(hifi_lan_config_secret("hifi_relay_pass"));
 	CHECK(hifi_lan_config_secret("hifi_relay_key"));
 	CHECK(!hifi_lan_config_secret("hifi_relay_url"));

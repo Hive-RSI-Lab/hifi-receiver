@@ -1,0 +1,236 @@
+diff --git a/components/bt/host/bluedroid/api/esp_gap_bt_api.c b/components/bt/host/bluedroid/api/esp_gap_bt_api.c
+index 4bf58a6..5b697d5 100644
+--- a/components/bt/host/bluedroid/api/esp_gap_bt_api.c
++++ b/components/bt/host/bluedroid/api/esp_gap_bt_api.c
+@@ -142,7 +142,27 @@ uint8_t *esp_bt_gap_resolve_eir_data(uint8_t *eir, esp_bt_eir_type_t type, uint8
+         return NULL;
+     }
+ 
+-    return BTM_CheckEirData(eir, type, length);
++    switch (type) {
++        case ESP_BT_EIR_TYPE_FLAGS:
++        case ESP_BT_EIR_TYPE_INCMPL_16BITS_UUID:
++        case ESP_BT_EIR_TYPE_CMPL_16BITS_UUID:
++        case ESP_BT_EIR_TYPE_INCMPL_32BITS_UUID:
++        case ESP_BT_EIR_TYPE_CMPL_32BITS_UUID:
++        case ESP_BT_EIR_TYPE_INCMPL_128BITS_UUID:
++        case ESP_BT_EIR_TYPE_CMPL_128BITS_UUID:
++        case ESP_BT_EIR_TYPE_SHORT_LOCAL_NAME:
++        case ESP_BT_EIR_TYPE_CMPL_LOCAL_NAME:
++        case ESP_BT_EIR_TYPE_TX_POWER_LEVEL:
++        case ESP_BT_EIR_TYPE_URL:
++        case ESP_BT_EIR_TYPE_MANU_SPECIFIC: {
++            return BTM_CheckEirData(eir, type, length);
++        }
++        default:
++            /*Error type*/
++            break;
++    }
++
++    return NULL;
+ }
+ 
+ esp_err_t esp_bt_gap_config_eir_data(esp_bt_eir_data_t *eir_data)
+diff --git a/components/bt/host/bluedroid/api/include/api/esp_gap_bt_api.h b/components/bt/host/bluedroid/api/include/api/esp_gap_bt_api.h
+index 8e3eb58..8e36f07 100644
+--- a/components/bt/host/bluedroid/api/include/api/esp_gap_bt_api.h
++++ b/components/bt/host/bluedroid/api/include/api/esp_gap_bt_api.h
+@@ -95,7 +95,7 @@ typedef struct {
+ #define ESP_BT_EIR_TYPE_TX_POWER_LEVEL          0x0a      /*!< Tx power level, value is 1 octet ranging from  -127 to 127, unit is dBm*/
+ #define ESP_BT_EIR_TYPE_URL                     0x24      /*!< Uniform resource identifier */
+ #define ESP_BT_EIR_TYPE_MANU_SPECIFIC           0xff      /*!< Manufacturer specific data */
+-#define  ESP_BT_EIR_TYPE_MAX_NUM                12        /*!< MAX number of EIR type */
++#define ESP_BT_EIR_TYPE_MAX_NUM                 12        /*!< MAX number of EIR type */
+ 
+ typedef uint8_t esp_bt_eir_type_t;
+ 
+diff --git a/components/bt/host/bluedroid/stack/btm/btm_inq.c b/components/bt/host/bluedroid/stack/btm/btm_inq.c
+index 21ebe81..ba99336 100644
+--- a/components/bt/host/bluedroid/stack/btm/btm_inq.c
++++ b/components/bt/host/bluedroid/stack/btm/btm_inq.c
+@@ -2419,24 +2419,51 @@ tBTM_STATUS BTM_WriteEIR( BT_HDR *p_buff, BOOLEAN fec_required)
+ UINT8 *BTM_CheckEirData( UINT8 *p_eir, UINT8 type, UINT8 *p_length )
+ {
+     UINT8 *p = p_eir;
++    UINT8 *p_data_length = p_length;
+     UINT8 length;
+     UINT8 eir_type;
+     BTM_TRACE_API("BTM_CheckEirData type=0x%02X\n", type);
+ 
++    if (!p_length) {
++        if ((p_data_length = (UINT8 *)osi_malloc(sizeof(UINT8))) == NULL) {
++            BTM_TRACE_ERROR("%s: Memory allocation failed.", __func__);
++            return NULL;
++        }
++    }
++
+     STREAM_TO_UINT8(length, p);
+-    while ( length && (p - p_eir <= HCI_EXT_INQ_RESPONSE_LEN)) {
++    while ( length ) {
+         STREAM_TO_UINT8(eir_type, p);
+         if ( eir_type == type ) {
++            if ((p + length - 1) > (p_eir + HCI_EXT_INQ_RESPONSE_LEN)) {
++                /*avoid memory overflow*/
++                *p_data_length = 0;
++                p = NULL;
++                goto exit;
++            }
+             /* length doesn't include itself */
+-            *p_length = length - 1; /* minus the length of type */
+-            return p;
++            *p_data_length = length - 1; /* minus the length of type */
++            goto exit;
+         }
+         p += length - 1; /* skip the length of data */
++
++        /* Break loop if eir data is in an incorrect format,
++           as it may lead to memory overflow */
++        if ( p >= p_eir + HCI_EXT_INQ_RESPONSE_LEN - 1 ) {
++            break;
++        }
++
+         STREAM_TO_UINT8(length, p);
+     }
+ 
+-    *p_length = 0;
+-    return NULL;
++    *p_data_length = 0;
++    p = NULL;
++
++exit:
++    if (!p_length) {
++        osi_free(p_data_length);
++    }
++    return p;
+ }
+ 
+ /*******************************************************************************
+diff --git a/components/bt/host/bluedroid/stack/btm/btm_sec.c b/components/bt/host/bluedroid/stack/btm/btm_sec.c
+index e84d523..dc0cfa4 100644
+--- a/components/bt/host/bluedroid/stack/btm/btm_sec.c
++++ b/components/bt/host/bluedroid/stack/btm/btm_sec.c
+@@ -4257,7 +4257,6 @@ static void btm_sec_connect_after_reject_timeout (TIMER_LIST_ENT *p_tle)
+ #if (SMP_INCLUDED == TRUE)
+ void btm_sec_connected (UINT8 *bda, UINT16 handle, UINT8 status, UINT8 enc_mode)
+ {
+-    tBTM_SEC_DEV_REC *p_dev_rec = btm_find_dev (bda);
+     UINT8            res;
+     UINT8            sec_dev_rec_status;
+     BOOLEAN          is_pairing_device = FALSE;
+@@ -4266,6 +4265,8 @@ void btm_sec_connected (UINT8 *bda, UINT16 handle, UINT8 status, UINT8 enc_mode)
+ 
+     btm_acl_resubmit_page();
+ 
++    tBTM_SEC_DEV_REC *p_dev_rec = btm_find_dev (bda);
++
+     /* Commenting out trace due to obf/compilation problems.
+     */
+ #if (BT_USE_TRACES == TRUE && SMP_INCLUDED == TRUE)
+@@ -4588,7 +4589,6 @@ tBTM_STATUS btm_sec_disconnect (UINT16 handle, UINT8 reason)
+ *******************************************************************************/
+ void btm_sec_disconnected (UINT16 handle, UINT8 reason)
+ {
+-    tBTM_SEC_DEV_REC  *p_dev_rec = btm_find_dev_by_handle (handle);
+     UINT8             old_pairing_flags = btm_cb.pairing_flags;
+     int               result = HCI_ERR_AUTH_FAILURE;
+     tBTM_SEC_CALLBACK   *p_callback = NULL;
+@@ -4601,6 +4601,8 @@ void btm_sec_disconnected (UINT16 handle, UINT8 reason)
+     btm_acl_resubmit_page();
+ #endif
+ 
++    tBTM_SEC_DEV_REC  *p_dev_rec = btm_find_dev_by_handle (handle);
++
+     if (!p_dev_rec) {
+         return;
+     }
+@@ -6325,9 +6327,10 @@ void btm_sec_update_legacy_auth_state(tACL_CONN *p_acl_cb, UINT8 legacy_auth_sta
+ *******************************************************************************/
+ void btm_sec_handle_remote_legacy_auth_cmp(UINT16 handle)
+ {
+-    tBTM_SEC_DEV_REC  *p_dev_rec = btm_find_dev_by_handle (handle);
+-    tACL_CONN         *p_acl_cb  = btm_bda_to_acl(p_dev_rec->bd_addr, BT_TRANSPORT_BR_EDR);
+-    btm_sec_update_legacy_auth_state(p_acl_cb, BTM_ACL_LEGACY_AUTH_REMOTE);
++    tACL_CONN *p_acl_cb = btm_handle_to_acl(handle);
++    if (p_acl_cb) {
++        btm_sec_update_legacy_auth_state(p_acl_cb, BTM_ACL_LEGACY_AUTH_REMOTE);
++    }
+ }
+ #endif /// (CLASSIC_BT_INCLUDED == TRUE)
+ #endif  ///SMP_INCLUDED == TRUE
+diff --git a/components/bt/host/bluedroid/stack/smp/include/smp_int.h b/components/bt/host/bluedroid/stack/smp/include/smp_int.h
+index f3ab7ad..39c99cb 100644
+--- a/components/bt/host/bluedroid/stack/smp/include/smp_int.h
++++ b/components/bt/host/bluedroid/stack/smp/include/smp_int.h
+@@ -355,6 +355,8 @@ extern tSMP_CB  smp_cb;
+ extern tSMP_CB *smp_cb_ptr;
+ #define smp_cb (*smp_cb_ptr)
+ #endif
++/* SMP command sizes per spec, indexed by opcode (smp_utils.c) */
++extern const UINT8 smp_cmd_size_per_spec[];
+ 
+ #ifdef __cplusplus
+ }
+diff --git a/components/bt/host/bluedroid/stack/smp/smp_act.c b/components/bt/host/bluedroid/stack/smp/smp_act.c
+index 054b08d..6039ca3 100644
+--- a/components/bt/host/bluedroid/stack/smp/smp_act.c
++++ b/components/bt/host/bluedroid/stack/smp/smp_act.c
+@@ -1345,7 +1345,14 @@ void smp_key_distribution(tSMP_CB *p_cb, tSMP_INT_DATA *p_data)
+         /* state check to prevent re-entrant */
+         if (smp_get_state() == SMP_STATE_BOND_PENDING) {
+             if (p_cb->derive_lk) {
+-                smp_derive_link_key_from_long_term_key(p_cb, NULL);
++                tBTM_SEC_DEV_REC* p_dev_rec = btm_find_dev(p_cb->pairing_bda);
++                if (!(p_dev_rec->sec_flags & BTM_SEC_LE_LINK_KEY_AUTHED) &&
++                    (p_dev_rec->sec_flags & BTM_SEC_LINK_KEY_AUTHED)) {
++                    SMP_TRACE_DEBUG("%s BREDR key is higher security than existing LE keys, "
++                                    "don't derive LK from LTK", __func__);
++                } else {
++                    smp_derive_link_key_from_long_term_key(p_cb, NULL);
++                }
+                 p_cb->derive_lk = FALSE;
+             }
+ 
+diff --git a/components/bt/host/bluedroid/stack/smp/smp_l2c.c b/components/bt/host/bluedroid/stack/smp/smp_l2c.c
+index 67dd1ac..5ffcd71 100644
+--- a/components/bt/host/bluedroid/stack/smp/smp_l2c.c
++++ b/components/bt/host/bluedroid/stack/smp/smp_l2c.c
+@@ -304,6 +304,12 @@ static void smp_br_data_received(UINT16 channel, BD_ADDR bd_addr, BT_HDR *p_buf)
+     UINT8   cmd ;
+     SMP_TRACE_EVENT ("SMDBG l2c %s\n", __func__);
+ 
++    if (p_buf->len < 1) {
++        SMP_TRACE_WARNING( "Bogus l2cap packet, too short");
++        osi_free(p_buf);
++        return;
++    }
++
+     STREAM_TO_UINT8(cmd, p);
+ 
+     /* sanity check */
+@@ -313,6 +319,13 @@ static void smp_br_data_received(UINT16 channel, BD_ADDR bd_addr, BT_HDR *p_buf)
+         return;
+     }
+ 
++    /* Validate command length to prevent out-of-bounds read in handler functions */
++    if (p_buf->len != smp_cmd_size_per_spec[cmd]) {
++        SMP_TRACE_WARNING( "Ignore received command 0x%02x with invalid length %d", cmd, p_buf->len);
++        osi_free(p_buf);
++        return;
++    }
++
+     /* reject the pairing request if there is an on-going SMP pairing */
+     if (SMP_OPCODE_PAIRING_REQ == cmd) {
+         if ((p_cb->state == SMP_STATE_IDLE) && (p_cb->br_state == SMP_BR_STATE_IDLE)) {
+diff --git a/components/bt/host/bluedroid/stack/smp/smp_utils.c b/components/bt/host/bluedroid/stack/smp/smp_utils.c
+index 2e9fac7..d4b6efb 100644
+--- a/components/bt/host/bluedroid/stack/smp/smp_utils.c
++++ b/components/bt/host/bluedroid/stack/smp/smp_utils.c
+@@ -55,7 +55,7 @@
+ #define SMP_PAIR_KEYPR_NOTIF_SIZE       (1 /* opcode */ + 1 /*Notif Type*/)
+ 
+ /* SMP command sizes per spec */
+-static const UINT8 smp_cmd_size_per_spec[] = {
++const UINT8 smp_cmd_size_per_spec[] = {
+     0,
+     SMP_PAIRING_REQ_SIZE,       /* 0x01: pairing request */
+     SMP_PAIRING_REQ_SIZE,       /* 0x02: pairing response */

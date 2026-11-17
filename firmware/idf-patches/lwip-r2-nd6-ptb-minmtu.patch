@@ -1,0 +1,19 @@
+--- a/components/lwip/lwip/src/core/ipv6/nd6.c
++++ b/components/lwip/lwip/src/core/ipv6/nd6.c
+@@ -923,9 +923,14 @@
+       return;
+     }
+ 
++    pmtu = lwip_htonl(icmp6hdr->data) & 0xFFFF;
++    if (pmtu < IP6_MIN_MTU_LENGTH) {
++      /* MTU too small */
++      pbuf_free(p);
++      return;
++    }
+     /* Change the Path MTU. */
+-    pmtu = lwip_htonl(icmp6hdr->data);
+-    destination_cache[dest_idx].pmtu = (u16_t)LWIP_MIN(pmtu, 0xFFFF);
++    destination_cache[dest_idx].pmtu = (u16_t)pmtu;
+ 
+     break; /* ICMP6_TYPE_PTB */
+   }

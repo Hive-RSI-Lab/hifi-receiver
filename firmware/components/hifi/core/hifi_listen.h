@@ -43,3 +43,17 @@ bool hifi_listen_allowed(const hifi_sock_t *s, bool ap_on);
  * couldn't be read) counts as one stray. */
 int hifi_listen_check(const hifi_sock_t *prev, int nprev, const hifi_sock_t *cur, int ncur, bool ap_on, char *why,
 		      size_t nwhy);
+
+/* L4, the running report: the verdict of every pair of scans in normal
+ * running (not only in an OTA trial) goes through this. events counts each
+ * time strays appear or the stray list changes; open holds the newest list
+ * ("" while all clear). Returns true when the caller should log: a new or
+ * changed set of strays. */
+typedef struct {
+	uint32_t events; /* stray sets seen since boot */
+	int strays;      /* in the newest verdict; -1: no verdict yet */
+	char open[64];
+} hifi_listen_report_t;
+
+void hifi_listen_report_init(hifi_listen_report_t *r);
+bool hifi_listen_report(hifi_listen_report_t *r, int strays, const char *why);

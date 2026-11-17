@@ -438,11 +438,21 @@ static int r_name(const hifi_ops_t *ops, const char *body, char *out, size_t cap
 	return r_state(ops, NULL, out, cap);
 }
 
-static int r_reboot(const hifi_ops_t *ops, const char *body, char *out, size_t cap, bool reset) {
+static int r_reboot(const hifi_ops_t *ops, bool lan, const char *body, char *out, size_t cap, bool reset) {
 	if (reset) {
 		bool factory = false;
 		if (!hj_get_bool(body, "factory", &factory) || !factory)
 			return error(out, cap, 400, "send {\"factory\": true} to erase every setting");
+		/* L6: an erase from the LAN would bring the setup AP back on the
+		 * public password; from there it only arms, and someone with the
+		 * receiver in hand finishes it by unplugging it (security.md) */
+		if (lan) {
+			if (!ops->factory_arm || ops->factory_arm())
+				return error(out, cap, 403, "a factory reset needs the USB cable here");
+			snprintf(out, cap, "{\"armed\":true,\"within_s\":%d,\"next\":\"unplug the receiver and plug it back in\"}",
+				 (int) (HIFI_RESET_ARM_US / 1000000));
+			return 200;
+		}
 		ops->factory_reset();
 	} else {
 		ops->reboot();
@@ -735,9 +745,12 @@ static int ok_reply(char *out, size_t cap) {
 	return 200;
 }
 
-static int r_ota(const hifi_ops_t *ops, bool lan, const char *what, const char *body, char *out, size_t cap) {
+/* one step of an update over the API, under the session's lock (r_ota) */
+static int r_ota_step(const hifi_ops_t *ops, bool lan, const char *what, const char *body, char *out, size_t cap,
+		      bool *restart) {
 	hifi_ota_t *o = ops->ota;
-	if (!o) return error(out, cap, 404, "no OTA in this build");
+	/* the URL job or the app's upload is running one (L10) */
+	if (o->held) return error(out, cap, 409, "an update is already running");
 	/* the LAN can't touch an update the Hive started */
 	if (lan && o->active && !o->need_sig)
 		return error(out, cap, 403, "an update the Hive started is running");
@@ -789,7 +802,7 @@ static int r_ota(const hifi_ops_t *ops, bool lan, const char *what, const char *
 		bool reboot = true;
 		hj_get_bool(body, "reboot", &reboot);
 		if ((st = hifi_ota_finish(o, &err)) != 200) return error(out, cap, st, err);
-		if (reboot) ops->reboot(); /* after the reply has gone */
+		*restart = reboot;
 		hj_init(&j, out, cap);
 		hj_obj(&j, NULL);
 		hj_bool(&j, "ok", true);
@@ -803,6 +816,17 @@ static int r_ota(const hifi_ops_t *ops, bool lan, const char *what, const char *
 		return ok_reply(out, cap);
 	}
 	return error(out, cap, 404, "no such path");
+}
+
+static int r_ota(const hifi_ops_t *ops, bool lan, const char *what, const char *body, char *out, size_t cap) {
+	hifi_ota_t *o = ops->ota;
+	if (!o) return error(out, cap, 404, "no OTA in this build");
+	bool restart = false;
+	hifi_ota_lock(o);
+	int st = r_ota_step(ops, lan, what, body, out, cap, &restart);
+	hifi_ota_unlock(o);
+	if (restart) ops->reboot(); /* after the reply has gone */
+	return st;
 }
 
 static int capture_frames(const char *body) {
@@ -1075,8 +1099,8 @@ int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *meth
 	else if (!strcmp(route, "sub")) status = post ? r_sub(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "eq")) status = post ? r_eq(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "name")) status = post ? r_name(ops, body, out, cap) : -1;
-	else if (!strcmp(route, "reboot")) status = post ? r_reboot(ops, body, out, cap, false) : -1;
-	else if (!strcmp(route, "reset")) status = post ? r_reboot(ops, body, out, cap, true) : -1;
+	else if (!strcmp(route, "reboot")) status = post ? r_reboot(ops, lan, body, out, cap, false) : -1;
+	else if (!strcmp(route, "reset")) status = post ? r_reboot(ops, lan, body, out, cap, true) : -1;
 	else if (!strcmp(route, "control")) status = post ? r_control(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "volume")) status = post ? r_volume(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "ir/learn")) status = post ? r_ir(ops, body, out, cap, true) : -1;

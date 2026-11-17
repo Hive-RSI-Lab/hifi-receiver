@@ -1,0 +1,87 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -4,6 +4,13 @@
+ set(PROJECT_VER $ENV{PROJECT_VER})
+ add_definitions(-DMODEL_NAME=SqueezeESP32)
+ 
++# hifi-receiver (CVE-2023-53154 class): cJSON's default nesting limit is
++# 1000, and parse_value takes about 128 bytes of stack per level, so deeply
++# nested JSON (cspot's ParseWithLength callers, the web server's POST
++# bodies) could run past a task stack. 16 levels keeps it near 2 KB and
++# leaves room above our own JSON (4 levels) and Spotify's replies.
++add_definitions(-DCJSON_NESTING_LIMIT=16)
++
+ if(NOT DEFINED DEPTH)
+ 	set(DEPTH "16")
+ endif()	
+diff --git a/components/spotify/cspot/bell/external/nanopb/pb_decode.c b/components/spotify/cspot/bell/external/nanopb/pb_decode.c
+--- a/components/spotify/cspot/bell/external/nanopb/pb_decode.c
++++ b/components/spotify/cspot/bell/external/nanopb/pb_decode.c
+@@ -158,6 +158,9 @@
+ #ifndef PB_NO_ERRMSG
+     stream.errmsg = NULL;
+ #endif
++#ifdef PB_MESSAGE_NESTING_MAX
++    stream.depth = 0;
++#endif
+     return stream;
+ }
+ 
+@@ -364,6 +367,12 @@
+     if (substream->bytes_left < size)
+         PB_RETURN_ERROR(stream, "parent stream too short");
+     
++#ifdef PB_MESSAGE_NESTING_MAX
++    substream->depth++;
++    if (substream->depth > PB_MESSAGE_NESTING_MAX)
++        PB_RETURN_ERROR(stream, "max depth");
++#endif
++
+     substream->bytes_left = (size_t)size;
+     stream->bytes_left -= (size_t)size;
+     return true;
+diff --git a/components/spotify/cspot/bell/external/nanopb/pb_decode.h b/components/spotify/cspot/bell/external/nanopb/pb_decode.h
+--- a/components/spotify/cspot/bell/external/nanopb/pb_decode.h
++++ b/components/spotify/cspot/bell/external/nanopb/pb_decode.h
+@@ -43,12 +43,24 @@
+ #ifndef PB_NO_ERRMSG
+     const char *errmsg;
+ #endif
++
++#ifdef PB_MESSAGE_NESTING_MAX
++    pb_size_t depth;
++#endif
+ };
+ 
+-#ifndef PB_NO_ERRMSG
+-#define PB_ISTREAM_EMPTY {0,0,0,0}
++#ifdef PB_MESSAGE_NESTING_MAX
++# ifndef PB_NO_ERRMSG
++#  define PB_ISTREAM_EMPTY {0,0,0,0,0}
++# else
++#  define PB_ISTREAM_EMPTY {0,0,0,0}
++# endif
+ #else
+-#define PB_ISTREAM_EMPTY {0,0,0}
++# ifndef PB_NO_ERRMSG
++#  define PB_ISTREAM_EMPTY {0,0,0,0}
++# else
++#  define PB_ISTREAM_EMPTY {0,0,0}
++# endif
+ #endif
+ 
+ /***************************
+diff --git a/components/spotify/cspot/CMakeLists.txt b/components/spotify/cspot/CMakeLists.txt
+--- a/components/spotify/cspot/CMakeLists.txt
++++ b/components/spotify/cspot/CMakeLists.txt
+@@ -35,5 +35,9 @@
+ # PUBLIC to propagate includes from bell to cspot dependents
+ target_compile_definitions(bell PUBLIC PB_ENABLE_MALLOC)
+ target_compile_definitions(bell PUBLIC PB_FIELD_32BIT)
++# hifi-receiver (cve2 sweep): Track.alternative is a Track, so a crafted
++# metadata reply nested the decoder until the stack ran out
++# (GHSA-9w99-4pfq-6396). Backported limit from nanopb ea6a0548.
++target_compile_definitions(bell PUBLIC PB_MESSAGE_NESTING_MAX=10)
+ target_link_libraries(cspot PUBLIC ${EXTRA_LIBS})
+ target_include_directories(cspot PUBLIC "include" ${CMAKE_CURRENT_BINARY_DIR} ${NANOPB_INCLUDE_DIRS} ${EXTRA_INCLUDES})

@@ -154,6 +154,13 @@ static void writers(void) {
 	CHECK_HAS(out, "\"rssi\":-48,\"channel\":6");
 	CHECK_HAS(out, "\"last_reason\":8");
 	CHECK_HAS(out, "\"tx_bytes\":5000000000");
+	CHECK_HAS(out, "\"listeners\":{\"strays\":0,\"events\":0,\"open\":null}");
+	hifi_diag_net_t stray = {.listen_strays = 1, .listen_events = 3, .listen_open = "1 open: tcp/23"};
+	hifi_diag_write_net(&stray, out, sizeof(out));
+	CHECK(hj_valid_object(out));
+	CHECK_HAS(out, "\"listeners\":{\"strays\":1,\"events\":3,\"open\":\"1 open: tcp/23\"}");
+	hifi_diag_write_net(&(hifi_diag_net_t) {.listen_strays = -1}, out, sizeof(out));
+	CHECK_HAS(out, "\"listeners\":{\"strays\":null");
 	hifi_diag_net_t off = {0};
 	hifi_diag_write_net(&off, out, sizeof(out));
 	CHECK_HAS(out, "\"rssi\":null,\"channel\":null");

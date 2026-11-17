@@ -19,6 +19,7 @@ static struct {
 	float eq[HIFI_EQ_BANDS];
 	char name[65];
 	bool rebooted, reset;
+	int armed, arm_fail;
 	char action[16];
 	hifi_vol_t vol;
 	hifi_meta_t playing;
@@ -116,6 +117,11 @@ static int m_set_name(const char *n) {
 }
 static void m_reboot(void) { m.rebooted = true; }
 static void m_factory_reset(void) { m.reset = true; }
+static int m_factory_arm(void) {
+	if (m.arm_fail) return -1;
+	m.armed++;
+	return 0;
+}
 static int m_control(const char *a) {
 	snprintf(m.action, sizeof(m.action), "%s", a);
 	return strcmp(a, "volup") && strcmp(a, "toggle") ? -1 : 0;
@@ -277,6 +283,27 @@ static void amp_input_sub_control(void) {
 
 	CHECK(call("POST", "/api/v1/reset", "{}") == 400);
 	CHECK(!m.reset);
+	/* L6: from the LAN a factory reset only arms (the erase waits for a
+	 * power-on start); with no way to arm, the LAN can't reset at all */
+	CHECK(hifi_api_handle_from(&ops, HIFI_SRC_LAN, "POST", "/api/v1/reset", "{\"factory\":true}", out, sizeof(out)) == 403);
+	CHECK(!m.reset && strstr(out, "USB"));
+	{
+		hifi_ops_t armable = ops;
+		armable.factory_arm = m_factory_arm;
+		CHECK(hifi_api_handle_from(&armable, HIFI_SRC_LAN, "POST", "/api/v1/reset", "{}", out, sizeof(out)) == 400);
+		CHECK(m.armed == 0);
+		CHECK(hifi_api_handle_from(&armable, HIFI_SRC_LAN, "POST", "/api/v1/reset", "{\"factory\":true}", out, sizeof(out)) == 200);
+		CHECK(m.armed == 1 && !m.reset);
+		CHECK_STR(out, "{\"armed\":true,\"within_s\":600,\"next\":\"unplug the receiver and plug it back in\"}");
+		m.arm_fail = 1;
+		CHECK(hifi_api_handle_from(&armable, HIFI_SRC_LAN, "POST", "/api/v1/reset", "{\"factory\":true}", out, sizeof(out)) == 403);
+		m.arm_fail = 0;
+		CHECK(m.armed == 1 && !m.reset);
+		/* the USB console and the relay (trusted) erase at once */
+		CHECK(hifi_api_handle(&armable, "POST", "/api/v1/reset", "{\"factory\":true}", out, sizeof(out)) == 200);
+		CHECK(m.reset && m.armed == 1);
+		m.reset = false;
+	}
 	CHECK(call("POST", "/api/v1/reset", "{\"factory\":true}") == 200);
 	CHECK(m.reset);
 	CHECK(call("POST", "/api/v1/reboot", NULL) == 200);

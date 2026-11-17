@@ -89,6 +89,8 @@ def initial_state(model: str, ap: bool, pdo: tuple[float, float], fault: bool) -
     return s
 
 
+ARM_S = 600  # an armed factory reset waits this long for the unplug
+
 class Receiver:
     """The state and the rules the firmware keeps, with a lock for the
     threaded server."""
@@ -98,6 +100,7 @@ class Receiver:
         self.info = initial_info(model)
         self.s = initial_state(model, ap, pdo, fault)
         self.lock = threading.Lock()
+        self.armed = None  # when a factory reset was armed
         self.t0 = time.time() - (5 * 3600 + 17 * 60)
 
     def state(self) -> dict:
@@ -227,13 +230,23 @@ class Receiver:
             elif path == "reset":
                 if b.get("factory") is not True:
                     raise ValueError('send {"factory": true} to erase the settings')
-                self.info = initial_info(self.model)
-                self.s = initial_state(self.model, True, self.pdo, False)
-                self.t0 = time.time()
+                # from the LAN the firmware only arms it: unplugging the
+                # receiver within ARM_S finishes it (security.md L6)
+                self.armed = time.time()
+                return {"armed": True, "within_s": ARM_S, "next": "unplug the receiver and plug it back in"}
             else:
                 raise KeyError(path)
             self._tick()
             return self._public(self.s)
+
+    def unplug(self):
+        """Power off and on: an armed factory reset erases now."""
+        with self.lock:
+            if self.armed is not None and time.time() - self.armed < ARM_S:
+                self.info = initial_info(self.model)
+                self.s = initial_state(self.model, True, self.pdo, False)
+            self.armed = None
+            self.t0 = time.time()
 
     def _sub(self, b, sub, c):
         if "sub" in b:  # one sub's own settings
@@ -403,7 +416,9 @@ def handler(rx: Receiver):
 
 
 def serve(port=8080, host="127.0.0.1", **kw) -> ThreadingHTTPServer:
-    srv = ThreadingHTTPServer((host, port), handler(Receiver(**kw)))
+    rx = Receiver(**kw)
+    srv = ThreadingHTTPServer((host, port), handler(rx))
+    srv.rx = rx
     srv.daemon_threads = True
     return srv
 

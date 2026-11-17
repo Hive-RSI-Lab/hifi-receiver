@@ -1,0 +1,30 @@
+--- a/components/wpa_supplicant/esp_supplicant/src/esp_wpa3.c
++++ b/components/wpa_supplicant/esp_supplicant/src/esp_wpa3.c
+@@ -181,9 +181,15 @@
+     }
+ 
+     if (status == WLAN_STATUS_ANTI_CLOGGING_TOKEN_REQ) {
+-        if (g_sae_token)
++        if (g_sae_token) {
+             wpabuf_free(g_sae_token);
++            g_sae_token = NULL;
++        }
+         if (g_sae_data.h2e) {
++            if (len < 5) {
++                wpa_printf(MSG_ERROR, "Invalid SAE anti-clogging token length");
++                return ESP_FAIL;
++            }
+             if ((buf[2] != WLAN_EID_EXTENSION) ||
+                 (buf[3] == 0) ||
+                 (buf[3] > len - 4) ||
+@@ -193,6 +199,10 @@
+             }
+             g_sae_token = wpabuf_alloc_copy(buf + 5, len - 5);
+         } else {
++            if (len < 2) {
++                wpa_printf(MSG_ERROR, "Invalid SAE anti-clogging token length");
++                return ESP_FAIL;
++            }
+             g_sae_token = wpabuf_alloc_copy(buf + 2, len - 2);
+         }
+         return ESP_OK;

@@ -214,6 +214,10 @@ typedef struct {
 	 * with no phone; the boot after that is back to normal. Restarts the
 	 * board. 0, or -1 with *err set; NULL: 404 */
 	int (*bt_test)(const char *sink, const char **err);
+	/* The LAN's factory reset (L6): arm it (0, else -1); the erase happens
+	 * only if the board next starts from power-on (unplugged and plugged
+	 * back in) within HIFI_RESET_ARM_US. NULL: the LAN can't reset. */
+	int (*factory_arm)(void);
 	/* the lab build's experiments (hifi_lab.h): GET lists them, POST starts,
 	 * stops or reads one. Returns the HTTP status with the reply in out;
 	 * NULL outside a lab build: 404 */

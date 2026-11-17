@@ -21,6 +21,7 @@
 #include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
+#include "freertos/semphr.h"
 #include "freertos/task.h"
 #include "mqtt_client.h"
 #include "sodium.h"
@@ -363,7 +364,12 @@ static int f_commit(void *ctx, const char **err) {
 
 static void f_abort(void *ctx) { esp_ota_abort(ota_handle); }
 
-static hifi_ota_io_t ota_io = {.open = f_open, .write = f_write, .commit = f_commit, .abort = f_abort};
+/* the web server, the relay and the URL job share the session (L10) */
+static SemaphoreHandle_t ota_mux;
+static void f_lock(void *ctx) { xSemaphoreTake(ota_mux, portMAX_DELAY); }
+static void f_unlock(void *ctx) { xSemaphoreGive(ota_mux); }
+static hifi_ota_io_t ota_io = {.open = f_open, .write = f_write, .commit = f_commit, .abort = f_abort,
+			       .lock = f_lock, .unlock = f_unlock};
 
 void hifi_ota_status(hifi_ota_status_t *o) {
 	const esp_partition_t *run = esp_ota_get_running_partition();
@@ -405,6 +411,16 @@ void hifi_remote_link(hifi_diag_net_t *n, uint32_t *first_up_ms) {
 
 /* ------------------------------------------------------------------ the relay task */
 
+/* L11: recovery's "boot the app" reads this (firmware/patches/0013): the slot
+ * that last ran well, since otadata is wiped once recovery is booted */
+static void note_good_slot(void) {
+	const esp_partition_t *run = esp_ota_get_running_partition();
+	if (run->subtype == ESP_PARTITION_SUBTYPE_APP_FACTORY) return;
+	char saved[16];
+	load_str("hifi_good_slot", "", saved, sizeof(saved));
+	if (strcmp(saved, run->label)) config_set_value(NVS_TYPE_STR, "hifi_good_slot", run->label);
+}
+
 static void relay_task(void *arg) {
 	bool sntp = false, on_trial = false;
 	uint32_t trial_start = 0, last_status = 0;
@@ -412,6 +428,8 @@ static void relay_task(void *arg) {
 	if (esp_ota_get_state_partition(esp_ota_get_running_partition(), &st) == ESP_OK && st == ESP_OTA_IMG_PENDING_VERIFY) {
 		on_trial = true;
 		ESP_LOGW(TAG, "firmware %s is on trial: it has %d s to prove itself", HIFI_FW_VERSION, HIFI_TRIAL_LIMIT_S);
+	} else {
+		note_good_slot();
 	}
 	char pending[8];
 	load_str("hifi_rb_report", "0", pending, sizeof(pending));
@@ -476,6 +494,7 @@ static void relay_task(void *arg) {
 			hifi_trial_verdict_t v = hifi_trial_judge(&t, now - trial_start, why, sizeof(why));
 			if (v == HIFI_TRIAL_GOOD) {
 				esp_ota_mark_app_valid_cancel_rollback();
+				note_good_slot();
 				on_trial = false;
 				ESP_LOGI(TAG, "firmware %s kept: %s", HIFI_FW_VERSION, why);
 				publish_event("ota_valid", "why", why, NULL, NULL);
@@ -493,6 +512,16 @@ static void relay_task(void *arg) {
 	}
 }
 
+/* this build's number (firmware/tools/build.sh: seconds since 1970 at the
+ * build), also kept as text in the image, where firmware/tools/sign_fw.py
+ * reads it into the signature; 0: none, and the LAN can't update it (L9) */
+#ifndef HIFI_FW_BUILD
+#define HIFI_FW_BUILD 0
+#endif
+#define HIFI_XSTR_(x) #x
+#define HIFI_XSTR(x) HIFI_XSTR_(x)
+__attribute__((used)) const char hifi_fw_build_tag[] = HIFI_BUILD_TAG_PREFIX HIFI_XSTR(HIFI_FW_BUILD) ";";
+
 void hifi_remote_start(const hifi_ops_t *o) {
 	ops = o;
 	uint8_t mac[6];
@@ -506,12 +535,16 @@ void hifi_remote_start(const hifi_ops_t *o) {
 
 	const esp_partition_t *next = esp_ota_get_next_update_partition(NULL);
 	ota_io.slot_size = next ? next->size : 0;
+	ota_mux = xSemaphoreCreateMutex();
+	if (!ota_mux) ota_io.lock = ota_io.unlock = NULL; /* out of memory at boot: unlocked, as before */
 	hifi_ota_init(&hifi_ota_session, &ota_io);
 	/* the same keys sign the images the LAN may install (security.md) */
 	hifi_ota_set_keys(&hifi_ota_session, (const uint8_t (*)[32]) rem.keys, rem.nkeys, verify);
 	/* and the LAN may not put back an older build than this one */
 	const esp_app_desc_t *app = esp_ota_get_app_description();
-	hifi_ota_set_running(&hifi_ota_session, app->project_name, app->date, app->time);
+	unsigned long long build = hifi_ota_build_of(hifi_fw_build_tag);
+	if (!build) ESP_LOGW(TAG, "no build number in this build: updates from the LAN are refused");
+	hifi_ota_set_running(&hifi_ota_session, app->project_name, build);
 
 	inbox = xQueueCreate(4, sizeof(msg_t));
 	xTaskCreate(worker, "hifi_cmd", 6144, NULL, ESP_TASK_PRIO_MIN + 2, NULL);
