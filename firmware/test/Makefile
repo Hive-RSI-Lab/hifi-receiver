@@ -43,7 +43,7 @@ run: $(addprefix $(BIN)/,$(TESTS))
 UP := $(BIN)/upstream
 UP_FILES := components/squeezelite/controls.c components/driver_bt/bt_app_sink.c \
 	components/driver_bt/bt_app_core.c components/spotify/Shim.cpp components/spotify/cspot/src/LoginBlob.cpp \
-	components/wifi-manager/network_manager_handlers.c
+	components/wifi-manager/network_manager_handlers.c components/raop/dmap_parser.c components/raop/dmap_parser.h
 UP_CFLAGS := -std=gnu11 -O1 -g -Wall -Wextra -Werror -Wno-unused-function -Wno-unused-parameter \
 	-Wno-unused-variable -Wno-unused-const-variable -fsanitize=address,undefined -fno-sanitize-recover=all -I$(UP)/gen
 upstream:
@@ -55,8 +55,9 @@ upstream:
 	python3 upstream/upstream.py extract $(UP)/components/driver_bt/bt_app_sink.c \
 	  IDLE_RELEASE_S IDLE_CHECK_S idle_check bt_disconnect bt_av_hdl_a2d_evt > $(UP)/gen/bt_fns.c && \
 	$(CC) $(UP_CFLAGS) -o $(UP)/test_up_controls upstream/test_up_controls.c && \
-	$(CC) $(UP_CFLAGS) -o $(UP)/test_up_bt upstream/test_up_bt.c || exit 1; \
-	fail=0; $(UP)/test_up_controls || fail=1; $(UP)/test_up_bt || fail=1; \
+	$(CC) $(UP_CFLAGS) -o $(UP)/test_up_bt upstream/test_up_bt.c && \
+	$(CC) $(UP_CFLAGS) -I$(UP)/components/raop -o $(UP)/test_up_dmap upstream/test_up_dmap.c || exit 1; \
+	fail=0; $(UP)/test_up_controls || fail=1; $(UP)/test_up_bt || fail=1; $(UP)/test_up_dmap || fail=1; \
 	python3 upstream/test_up_source.py $(UP) || fail=1; exit $$fail
 
 # Line, branch and function coverage of core/ (gcov): each test is built
