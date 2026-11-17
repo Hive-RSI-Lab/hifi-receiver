@@ -118,8 +118,11 @@ static bool trace_ready(void) {
 	return true;
 }
 
-/* nothing else uses the tracer: with no records, heap_trace_start refuses
- * until trace_ready gives it a new buffer */
+/* only call with tracing stopped. On IDF v4.4 (what this builds on) a zero
+ * count makes heap_trace_start refuse until trace_ready registers a new
+ * buffer; IDF v5 rejects the zero count and keeps the freed buffer
+ * registered. Either way, nothing else in the firmware uses the tracer, and
+ * trace_ready always registers a fresh buffer before the next start */
 static void trace_release(void) {
 	if (!trace_buf) return;
 	heap_trace_init_standalone(trace_buf, 0);
