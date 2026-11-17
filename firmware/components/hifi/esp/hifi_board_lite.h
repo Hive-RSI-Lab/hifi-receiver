@@ -55,6 +55,7 @@
 #define TONE_RATE 48000
 
 /* what this board's firmware does besides the shared parts */
+#define HIFI_HAS_CHANNEL 1 /* the output mixers pick the side (core/hifi_chan.h) */
 #define HIFI_HAS_CAPTURE 1 /* the ES8388's ADC: line in and the loopback taps */
 
 /* ES8388 ADC, for the captures (docs/remote.md). Values from the datasheet,

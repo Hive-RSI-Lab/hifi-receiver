@@ -5,7 +5,7 @@ set(srcs
 	core/hifi_api.c core/hifi_b64.c core/hifi_boot.c core/hifi_capture.c core/hifi_diag.c core/hifi_exp.c core/hifi_gate.c
 	core/hifi_gov.c core/hifi_ir.c core/hifi_json.c core/hifi_lab.c core/hifi_line.c core/hifi_link.c core/hifi_listen.c core/hifi_meta.c core/hifi_ota.c core/hifi_pd.c
 	core/hifi_power.c core/hifi_remote.c core/hifi_scan.c core/hifi_sha256.c core/hifi_tap.c core/hifi_tone.c core/hifi_update.c
-	core/hifi_vol.c core/hifi_ws_proto.c esp/hifi_main.c esp/hifi_crash.c esp/hifi_diag_esp.c esp/hifi_http.c esp/hifi_listen_esp.c esp/hifi_net.c esp/hifi_relay.c esp/hifi_ws.c)
+	core/hifi_chan.c core/hifi_vol.c core/hifi_ws_proto.c esp/hifi_main.c esp/hifi_crash.c esp/hifi_diag_esp.c esp/hifi_http.c esp/hifi_listen_esp.c esp/hifi_net.c esp/hifi_relay.c esp/hifi_ws.c)
 
 # the board's own code (esp/hifi_bsp.h), from the Kconfig board choice
 if(CONFIG_HIFI_PLUS OR CONFIG_HIFI_ULTRA)

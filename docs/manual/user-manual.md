@@ -131,7 +131,8 @@ left. [TBD: Plus and Ultra rear panels: their enclosures aren't drawn yet]
 - **Lite:** **SUB OUT** carries the full-range left signal on the white jack
   and the right on the red one, the same as the speakers. Put a sub on each,
   or one sub on either jack. Set each subwoofer's own crossover to about
-  80 Hz. The app sets the level of both together.
+  80 Hz. The app sets the level of both together. If the Lite is set to
+  Left, Right or Mono (see "Two Lites as a stereo pair"), SUB OUT follows it.
 - **Plus and Ultra:** **SUB 1** and **SUB 2** carry the bass only. The
   receiver does the crossover, so set the subwoofer's crossover to its
   highest setting, or **LFE/bypass** if it has one. Then tune it in the app
@@ -163,6 +164,30 @@ left. [TBD: Plus and Ultra rear panels: their enclosures aren't drawn yet]
   direct, because it is analog. A deck at full level, played very loud into
   4 Ω, can make a 65 W charger cut out. Turn the deck's master down a little
   if it does.
+
+### Two Lites as a stereo pair
+
+A Lite can play just one side, so two Lites make a stereo pair, one speaker
+each. Set the side with the API (`channel`) or the console command
+(`channel left`; the app has no control for it yet): **Stereo** (the default), **Left**, **Right** or **Mono**
+(both sides mixed). It applies to the speaker output on every input,
+including DJ direct, and is kept across restarts.
+
+- **Streaming (Lyrion, AirPlay, Spotify):** set one Lite to **Left** and the
+  other to **Right**. With Lyrion, put both players in one sync group so
+  they play in step. The two Lites then give a stereo pair.
+- **From a deck or other line source:** feed the same source to both Lites
+  (a Y cable or splitter), with one on **Left** and one on **Right**. Or
+  take A's **SUB OUT** into B's **LINE IN** on **DJ direct**, which only
+  works while A is on **Stereo**: SUB OUT follows the channel mode
+  (below), so it cannot carry the full stereo signal once A is on Left,
+  Right or Mono.
+- **SUB OUT follows the mode:** on Lite the speaker and SUB OUT share the
+  codec's output mixers, so SUB OUT plays the same side as the speaker,
+  not full-range stereo. Leave a Lite on **Stereo** if a subwoofer needs
+  both sides.
+- **Mono** plays both sides mixed at half level each, so the sum does not
+  clip.
 
 ### Optical (Ultra)
 
