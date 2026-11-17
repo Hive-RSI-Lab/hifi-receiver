@@ -512,7 +512,7 @@ static void espnow_body(void) {
 	CHECK(hifi_link_espnow_body(a, n, mac) == 0);
 	n = espnow_air(a, mac, body, HIFI_LINK_MAX);
 	CHECK(n == HIFI_LINK_ESPNOW_MAX && hifi_link_espnow_body(a, n, mac) == HIFI_LINK_MAX);
-	CHECK(hifi_link_espnow_body(a, n + 1, mac) == 0); /* longer than any ESP-NOW frame */
+	CHECK(hifi_link_espnow_body(a, n + 8, mac) == HIFI_LINK_MAX); /* a full frame with trailing bytes */
 	/* one wrong byte in each field that marks it */
 	const size_t at[] = {0, 24, 25, 32, 34, 37};
 	for (size_t i = 0; i < sizeof(at) / sizeof(at[0]); i++) {

@@ -152,7 +152,7 @@ size_t hifi_link_forge(const hifi_link_key_t *k, const uint8_t *in, size_t n, ui
 size_t hifi_link_espnow_body(const uint8_t *p, size_t n, const uint8_t mac[6]) {
 	static const uint8_t oui[3] = {0x18, 0xfe, 0x34};
 	enum { HDR = 24 };
-	if (!p || !mac || n < HIFI_LINK_ESPNOW_BODY + HIFI_LINK_MIN || n > HIFI_LINK_ESPNOW_MAX) return 0;
+	if (!p || !mac || n < HIFI_LINK_ESPNOW_BODY + HIFI_LINK_MIN) return 0; /* trailing bytes are fine */
 	if (p[0] != 0xd0 || memcmp(p + 10, mac, 6)) return 0; /* an action frame, from mac */
 	if (p[HDR] != 127 || memcmp(p + HDR + 1, oui, 3)) return 0;
 	if (p[32] != 221 || memcmp(p + 34, oui, 3) || p[37] != 4) return 0;

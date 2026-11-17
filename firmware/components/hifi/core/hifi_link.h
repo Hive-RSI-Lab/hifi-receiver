@@ -129,7 +129,11 @@ typedef struct {
 	uint64_t bytes;
 	int64_t first_us, last_us;
 	hifi_link_seen_t seen;
-	uint32_t ping_session; /* the session of the PINGs in ping_seen */
+	/* the session of the PINGs in ping_seen. A PING from another session
+	 * resets it, so the dedup holds only while each run has a fresh key (the
+	 * lab's drivers make one per run): with a reused key, replays of two runs'
+	 * PINGs taken in turn would each be answered. */
+	uint32_t ping_session;
 	hifi_link_seen_t ping_seen;
 } hifi_link_rx_t;
 
