@@ -8,8 +8,9 @@
 // - Cookies that would size the buffers wrong are refused.
 // - Real audio still decodes bit-exact: Apple's own encoder (same tree, not
 //   patched) encodes a test signal, and the patched decoder must give it back.
-//   Each packet sits in a buffer of exactly its length, so a read past the
-//   packet is caught too.
+//   Each packet sits in a buffer of exactly its length, and the wrapper
+//   poisons its own copy past the packet and its zero pad under ASan, so a
+//   read past the packet is caught too.
 //
 // Built with -DALAC_FUZZ it is a libFuzzer harness instead: the first byte
 // picks a cookie (or the next 24 bytes are the cookie), the rest is a packet.

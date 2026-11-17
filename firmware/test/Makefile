@@ -44,7 +44,7 @@ UP := $(BIN)/upstream
 UP_FILES = components/squeezelite/controls.c components/driver_bt/bt_app_sink.c \
 	components/driver_bt/bt_app_core.c components/spotify/Shim.cpp components/spotify/cspot/src/LoginBlob.cpp \
 	components/wifi-manager/network_manager_handlers.c components/raop/dmap_parser.c components/raop/dmap_parser.h \
-	$(ALAC_FILES)
+	components/raop/rtp.c $(ALAC_FILES)
 # The ALAC decoder as the board builds it (patch 0021), and Apple's encoder to make real packets.
 # Address sanitizer only: Apple's code shifts signed values all over, which UBSan would stop on.
 ALAC_DIR := components/spotify/cspot/bell/external/alac/codec
@@ -65,12 +65,16 @@ upstream:
 	  connect_cli_socket cli_send_cmd > $(UP)/gen/controls_fns.c && \
 	python3 upstream/upstream.py extract $(UP)/components/driver_bt/bt_app_sink.c \
 	  IDLE_RELEASE_S IDLE_CHECK_S idle_check bt_disconnect bt_av_hdl_a2d_evt > $(UP)/gen/bt_fns.c && \
+	python3 upstream/upstream.py extract $(UP)/components/raop/rtp.c \
+	  rtp_take_from rtp_check_stalled > $(UP)/gen/rtp_fns.c && \
 	$(CC) $(UP_CFLAGS) -o $(UP)/test_up_controls upstream/test_up_controls.c && \
 	$(CC) $(UP_CFLAGS) -o $(UP)/test_up_bt upstream/test_up_bt.c && \
-	$(CC) $(UP_CFLAGS) -I$(UP)/components/raop -o $(UP)/test_up_dmap upstream/test_up_dmap.c || exit 1; \
+	$(CC) $(UP_CFLAGS) -I$(UP)/components/raop -o $(UP)/test_up_dmap upstream/test_up_dmap.c && \
+	$(CC) $(UP_CFLAGS) -o $(UP)/test_up_rtp upstream/test_up_rtp.c || exit 1; \
 	mkdir -p $(UP)/alac && (cd $(UP)/alac && $(CC) $(ALAC_FLAGS) -c $(addprefix $(abspath $(UP))/$(ALAC_DIR)/,$(ALAC_C))) && \
 	$(CXX) $(ALAC_FLAGS) -o $(UP)/test_up_alac upstream/test_up_alac.cpp $(ALAC_SRCS) $(UP)/alac/*.o || exit 1; \
 	fail=0; $(UP)/test_up_controls || fail=1; $(UP)/test_up_bt || fail=1; $(UP)/test_up_dmap || fail=1; \
+	$(UP)/test_up_rtp || fail=1; \
 	$(UP)/test_up_alac || fail=1; \
 	if [ "$(FUZZ_OK)" = 1 ]; then $(MAKE) --no-print-directory fuzz-alac || fail=1; \
 	else echo "SKIPPED fuzz_alac: no clang with libFuzzer"; fi; \
