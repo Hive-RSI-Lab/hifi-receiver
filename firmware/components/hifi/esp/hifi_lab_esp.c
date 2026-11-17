@@ -108,7 +108,7 @@ static void restart_why(uint32_t magic, const char *why) {
 	ESP_LOGE(TAG, "%s: restarting", why);
 	kept_offline = magic;
 	esp_task_wdt_add(NULL);
-	hifi_restart_note(why);
+	hifi_restart_note(magic == OFFLINE_MAGIC ? "lab_offline" : "lab_stuck");
 	esp_restart();
 }
 

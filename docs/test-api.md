@@ -376,7 +376,7 @@ fits a remote bench's reply line; the task list pages. On the console:
  "power": {"state": "on", "vbus_v": 20.08, "vbus_i_a": 0.31, "pvdd_v": 19.9, "pg": true,
            "proto": "pd", "contract_v": 20.0, "contract_a": 3.25,
            "amp_on": true, "amp_fault": false, "amp_faults": 0, "amp_temp_c": null},
- "restart_cause": "api_reboot by hifi_restart at 0x400d8a1f after 5321 s"}
+ "restart_cause": "api_reboot by esp_timer at 0x400e9a10 after 329 s"}
 ```
 
 - `boot_ms`: ms from the app's start (the `esp_timer` clock, which starts
@@ -402,7 +402,8 @@ fits a remote bench's reply line; the task list pages. On the console:
   `unrecorded` means a software restart that didn't pass the wrapper.
   `GET /api/v1/state/sys` carries it too; here it is left out when the reply
   would pass the page. Notes: `api_reboot`, `api_factory_reset`,
-  `factory_reset`, `update_done`, a lab experiment's reason, `ip_change` (the
+  `factory_reset`, `update_done`, `lab_offline` and `lab_stuck` (the lab's
+  own watchdog), `ip_change` (the
   station's address changed, `esp_app_main.c`) and `squeezelite_exit`.
 - `nvs` is each NVS partition's entries (32 bytes each): how full the flash
   key store is, for wear.

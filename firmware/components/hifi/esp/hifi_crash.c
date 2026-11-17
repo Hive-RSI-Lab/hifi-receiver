@@ -108,7 +108,12 @@ static void __attribute__((constructor)) crash_boot(void) {
 	cur_magic = MAGIC;
 	/* the last restart's note, if it left one; then clear it so a later
 	 * reset that isn't esp_restart (a panic, a watchdog) can't inherit it */
-	if (restart_rec.magic == RESTART_MAGIC) restart_last = restart_rec;
+	if (restart_rec.magic == RESTART_MAGIC) {
+		restart_last = restart_rec;
+		/* RTC garbage that happens to match the magic stays bounded */
+		restart_last.task[sizeof(restart_last.task) - 1] = '\0';
+		restart_last.note[sizeof(restart_last.note) - 1] = '\0';
+	}
 	memset(&restart_rec, 0, sizeof(restart_rec));
 }
 
