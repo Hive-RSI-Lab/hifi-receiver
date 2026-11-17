@@ -75,10 +75,31 @@
 #define HIFI_PARTY_FADE_IN 64
 #define HIFI_PARTY_SLIP_EVERY 2048
 
-typedef enum { HIFI_PARTY_AUDIO = 1, HIFI_PARTY_CLOCK = 2, HIFI_PARTY_NACK = 3 } hifi_party_type_t;
+/* ANNOUNCE and JOIN find and keep a group (hifi_party_group.h): ANNOUNCE
+ * (to the subnet's broadcast, under the announce key) has k the term, t the
+ * leader's TSF when sent, n its followers, flags F_PICKED, and a payload of
+ * HIFI_PARTY_ANNOUNCE_LEN (the leader's IPv4, three follower IPv4s, 0 for an
+ * empty place, and its name, 16 bytes, NUL padded); JOIN (to the leader,
+ * under the group key) has t the follower's TSF, flags F_LEAVE, and the
+ * follower's IPv4 as its payload. IPv4s are in network order. */
+typedef enum {
+	HIFI_PARTY_AUDIO = 1,
+	HIFI_PARTY_CLOCK = 2,
+	HIFI_PARTY_NACK = 3,
+	HIFI_PARTY_ANNOUNCE = 4,
+	HIFI_PARTY_JOIN = 5,
+} hifi_party_type_t;
+
+#define HIFI_PARTY_FOLLOWERS 3 /* the most a leader sends to (the airtime limit) */
+#define HIFI_PARTY_NAME 16
+#define HIFI_PARTY_ANNOUNCE_LEN (4 + 4 * HIFI_PARTY_FOLLOWERS + HIFI_PARTY_NAME)
+#define HIFI_PARTY_F_PICKED 1 /* ANNOUNCE: the lead was picked by hand */
+#define HIFI_PARTY_F_LEAVE 1  /* JOIN: the follower leaves */
 
 /* flags of an AUDIO packet */
-#define HIFI_PARTY_F_SILENCE 1 /* the leader sent silence (paused, or nothing playing) */
+#define HIFI_PARTY_F_SILENCE 1 /* silence (the leader's player paused or idle): n frames of it, no samples sent */
+/* flags of a CLOCK */
+#define HIFI_PARTY_F_NOAUDIO 1 /* the leader sends no audio (its output stopped, or a rate party can't carry) */
 
 typedef struct {
 	uint8_t type;
@@ -90,8 +111,10 @@ typedef struct {
 	uint16_t flags;
 } hifi_party_pkt_t;
 
-/* Writes the packet with its payload (AUDIO: n frames; CLOCK: the 6-byte
- * BSSID; NACK: n little-endian k values, 8 bytes each) and tag into buf.
+/* Writes the packet with its payload (AUDIO: n frames, none with
+ * F_SILENCE; CLOCK: the 6-byte
+ * BSSID; NACK: n little-endian k values, 8 bytes each; ANNOUNCE and JOIN:
+ * as above) and tag into buf.
  * Returns its length, or 0 if the key isn't ready, cap is too small or the
  * payload doesn't fit the type. */
 size_t hifi_party_encode(const hifi_link_key_t *key, const hifi_party_pkt_t *p, const void *payload, uint8_t *buf, size_t cap);
@@ -191,6 +214,7 @@ typedef struct {
 size_t hifi_party_jb_bytes(int nslots);
 /* lays the buffer out in mem (hifi_party_jb_bytes(nslots) bytes, 8-aligned) */
 void hifi_party_jb_init(hifi_party_jb_t *jb, void *mem, int nslots);
+/* frames NULL: a silence packet, held as n frames of zeros */
 int hifi_party_jb_put(hifi_party_jb_t *jb, int64_t k, const void *frames, int n, int64_t now_us);
 /* fills out with stream frames [k, k + n), concealing the missing ones;
  * returns how many were missing. Packets more than one behind k's are let go
