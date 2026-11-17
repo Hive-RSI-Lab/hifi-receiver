@@ -18,12 +18,30 @@
 #include "timer.h"
 #endif
 
+// The host is 64-bit and the board 32-bit, so a long in one header and a
+// long long or a pointer in the other would have the same size here and on
+// the board would not. Each field's type is printed too, to catch that.
+// (gcc -m32 can't link on the lab host: no 32-bit libc.)
+#define TYPE(x) _Generic((x), \
+	char: "char", signed char: "schar", unsigned char: "uchar", \
+	short: "short", unsigned short: "ushort", int: "int", unsigned int: "uint", \
+	long: "long", unsigned long: "ulong", long long: "llong", unsigned long long: "ullong", \
+	default: "other")
 #define S(s) printf("sizeof %s %zu\n", #s, sizeof(struct s));
-#define F(s, m) printf("%s.%s %zu %zu\n", #s, #m, offsetof(struct s, m), sizeof(((struct s *)0)->m));
+#define F(s, m) printf("%s.%s %zu %zu %s\n", #s, #m, offsetof(struct s, m), sizeof(((struct s *)0)->m), \
+	TYPE(((struct s *)0)->m));
 
 int main(void) {
-	printf("sizeof mad_fixed_t %zu\nsizeof mad_timer_t %zu\nMAD_BUFFER_MDLEN %d\nMAD_BUFFER_GUARD %d\n",
-	       sizeof(mad_fixed_t), sizeof(mad_timer_t), (int)MAD_BUFFER_MDLEN, (int)MAD_BUFFER_GUARD);
+	printf("sizeof mad_fixed_t %zu %s\nsizeof mad_timer_t %zu\nMAD_BUFFER_MDLEN %d\nMAD_BUFFER_GUARD %d\n",
+	       sizeof(mad_fixed_t), TYPE((mad_fixed_t)0), sizeof(mad_timer_t), (int)MAD_BUFFER_MDLEN, (int)MAD_BUFFER_GUARD);
+	// the fixed-point format the samples come out in
+	printf("MAD_F_FRACBITS %d\n", (int)MAD_F_FRACBITS);
+#if defined(FPM_FLOAT) || defined(FPM_64BIT) || defined(FPM_INTEL) || defined(FPM_ARM) || defined(FPM_MIPS) || \
+	defined(FPM_SPARC) || defined(FPM_PPC) || !defined(FPM_DEFAULT)
+	printf("fixed-point mode not FPM_DEFAULT\n");
+#else
+	printf("fixed-point mode FPM_DEFAULT\n");
+#endif
 	S(mad_bitptr) F(mad_bitptr, byte) F(mad_bitptr, cache) F(mad_bitptr, left)
 	S(mad_stream) F(mad_stream, buffer) F(mad_stream, bufend) F(mad_stream, skiplen) F(mad_stream, sync)
 	F(mad_stream, freerate) F(mad_stream, this_frame) F(mad_stream, next_frame) F(mad_stream, ptr)

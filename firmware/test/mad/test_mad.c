@@ -22,6 +22,11 @@
 // struct mad_stream, which is on the heap on the board (codecs/mad.c
 // mallocs it); the fixed libmad refuses the frame (MAD_ERROR_BADFRAMELEN or
 // BADDATAPTR, both recoverable) and goes on.
+// On the board only the lab's crafted experiment (lab_crafted.c, which
+// decodes a whole buffer at once) can hand libmad a frame this big:
+// squeezelite's mad.c reads at most 2048 bytes at a time (READBUF_SIZE). On
+// the playback path the risk is the over-reads Debian's length-check fixes,
+// which the fuzzer below covers.
 //
 // Built with -DMAD_FUZZ it is instead a libFuzzer target: any bytes, as an
 // MP3 stream, through the decoder and the synth.

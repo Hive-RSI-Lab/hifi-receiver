@@ -6,7 +6,7 @@ There are various cases where it attemps to read past the end of the buffer
 using mad_bit_read(). Most functions didn't even know the size of the buffer
 they were reading from.
 
-Origin: Debian libmad 0.15.1b-11, debian/patches/length-check.patch, refreshed onto 01.
+Origin: Debian libmad 0.15.1b-9 (still in -11), debian/patches/length-check.patch, refreshed onto 01.
 
 --- a/bit.c
 +++ b/bit.c

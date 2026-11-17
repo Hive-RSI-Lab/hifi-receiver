@@ -93,8 +93,8 @@ upstream:
 	fail=0; $(UP)/test_up_controls || fail=1; $(UP)/test_up_bt || fail=1; $(UP)/test_up_dmap || fail=1; \
 	$(UP)/test_up_rtp || fail=1; \
 	$(UP)/test_up_alac || fail=1; \
-	$(CC) -std=gnu99 -w -DPUBLIC -I$(UP)/components/codecs/inc/mad -o $(UP)/mad_layout_h mad/layout.c && \
-	$(CC) -std=gnu99 -w -include mad/host_config.h -I$(MAD_SRC) -o $(UP)/mad_layout_lib mad/layout.c && \
+	$(CC) -std=gnu11 -w -DPUBLIC -I$(UP)/components/codecs/inc/mad -o $(UP)/mad_layout_h mad/layout.c && \
+	$(CC) -std=gnu11 -w -include mad/host_config.h -I$(MAD_SRC) -o $(UP)/mad_layout_lib mad/layout.c && \
 	$(UP)/mad_layout_h > $(UP)/mad_layout_h.txt && $(UP)/mad_layout_lib > $(UP)/mad_layout_lib.txt && \
 	diff $(UP)/mad_layout_h.txt $(UP)/mad_layout_lib.txt && \
 	echo "mad_layout   libmad's structs match codecs/inc/mad/mad.h ($$(wc -l < $(UP)/mad_layout_h.txt) sizes and offsets)" || \

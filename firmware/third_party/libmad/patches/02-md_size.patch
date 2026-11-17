@@ -26,7 +26,7 @@ stream->md_len bytes. If stream->md_len is larger than the data we
 need from the previous frame (si.main_data_begin) it still wouldn't fit
 in the buffer, so just keep the data that we need.
 
-Origin: Debian libmad 0.15.1b-11, debian/patches/md_size.diff, refreshed onto 01.
+Origin: Debian libmad 0.15.1b-9 (still in -11), debian/patches/md_size.diff, refreshed onto 01.
 
 --- a/layer3.c
 +++ b/layer3.c
