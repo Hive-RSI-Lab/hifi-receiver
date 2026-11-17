@@ -43,7 +43,18 @@ fi
 
 # as upstream's CI does: the board's defaults become the starting sdkconfig
 # (upstream commits an sdkconfig of its own, which the reset above restores)
-cp "$FW/board/$BOARD/sdkconfig.defaults" "$DEST/sdkconfig.defaults"
-cp "$FW/board/$BOARD/sdkconfig.defaults" "$DEST/sdkconfig"
-cp "$FW/board/$BOARD/partitions.csv" "$DEST/partitions-hifi.csv"
+# A board folder with a 'base' file (board/lite-lab) is a variant: the base
+# board's defaults with its own sdkconfig.extra lines appended, and the
+# base's partition table, so the two images share bootloader and partitions.
+BASE=$BOARD
+if [ -f "$FW/board/$BOARD/base" ]; then
+	BASE=$(tr -d ' \r\n' < "$FW/board/$BOARD/base")
+	[ -f "$FW/board/$BASE/sdkconfig.defaults" ] || { echo "fetch.sh: $BOARD's base '$BASE' has no defaults" >&2; exit 1; }
+fi
+cp "$FW/board/$BASE/sdkconfig.defaults" "$DEST/sdkconfig.defaults"
+if [ "$BASE" != "$BOARD" ] && [ -f "$FW/board/$BOARD/sdkconfig.extra" ]; then
+	cat "$FW/board/$BOARD/sdkconfig.extra" >> "$DEST/sdkconfig.defaults"
+fi
+cp "$DEST/sdkconfig.defaults" "$DEST/sdkconfig"
+cp "$FW/board/$BASE/partitions.csv" "$DEST/partitions-hifi.csv"
 echo "$DEST"

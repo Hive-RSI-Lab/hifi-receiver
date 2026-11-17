@@ -1,0 +1,11 @@
+# The stuck-tick drill of the lab build (projects/hifi-lite-lab, lane
+# esp32-lab): lite-lab whose lab tick hangs holding the lab's lock 5 minutes
+# after a power-up (once), as a hung experiment stop would. The lab's watch
+# must restart the board within 3 minutes, and the self-test after it says
+# "the lab restarted it, its tick stuck". Its trial passes first (the hang
+# comes after the self-test), so this image stays. Flash it only to prove the
+# watch, then put lite-lab back.
+CONFIG_HIFI_LAB=y
+CONFIG_ESP_TASK_WDT_PANIC=y
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=15
+CONFIG_HIFI_LAB_DRILL_STUCK=y

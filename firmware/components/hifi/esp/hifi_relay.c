@@ -107,6 +107,12 @@ static void load_settings(void) {
 	snprintf(topic_event, sizeof(topic_event), "%s/%s/event", prefix, rem.dev);
 }
 
+/* only whether the dial-in is set and up: no copies, safe from any task */
+void hifi_remote_up(bool *configured, bool *up) {
+	*configured = url[0] != 0;
+	*up = connected;
+}
+
 void hifi_remote_status(hifi_remote_status_t *r) {
 	r->configured = url[0] != 0;
 	r->connected = connected;

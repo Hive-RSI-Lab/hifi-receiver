@@ -1,0 +1,6 @@
+# The rollback drill of the lab build (projects/hifi-lite-lab, lane esp32-lab):
+# lite-lab with the lab reporting itself broken. Its trial fails ("the lab
+# frame isn't up" after 120 s) and the board must go back to the image before
+# it by itself. Flash it only to prove that, then put lite-lab back.
+CONFIG_HIFI_LAB=y
+CONFIG_HIFI_LAB_DRILL=y

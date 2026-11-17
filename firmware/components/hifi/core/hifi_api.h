@@ -213,6 +213,10 @@ typedef struct {
 	 * with no phone; the boot after that is back to normal. Restarts the
 	 * board. 0, or -1 with *err set; NULL: 404 */
 	int (*bt_test)(const char *sink, const char **err);
+	/* the lab build's experiments (hifi_lab.h): GET lists them, POST starts,
+	 * stops or reads one. Returns the HTTP status with the reply in out;
+	 * NULL outside a lab build: 404 */
+	int (*lab)(bool post, const char *body, char *out, size_t cap);
 	/* on-board diagnostics (hifi_diag.h); NULL: diag answers 404 */
 	const hifi_diag_ops_t *diag;
 } hifi_ops_t;
