@@ -69,6 +69,9 @@ static size_t rx_len;
 static bool rollback_reported;
 static volatile bool settings_changed;
 static volatile bool announce; /* the link just came up: publish the status now */
+static volatile uint32_t mqtt_drops; /* for `api diag/net` */
+static int64_t mqtt_up_us, mqtt_first_us; /* 64-bit: under mqtt_mux */
+static portMUX_TYPE mqtt_mux = portMUX_INITIALIZER_UNLOCKED;
 
 hifi_ota_t hifi_ota_session;
 
@@ -218,12 +221,20 @@ static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data) {
 	switch ((esp_mqtt_event_id_t) id) {
 	case MQTT_EVENT_CONNECTED:
 		connected = true;
+		portENTER_CRITICAL(&mqtt_mux);
+		mqtt_up_us = esp_timer_get_time();
+		if (!mqtt_first_us) mqtt_first_us = mqtt_up_us;
+		portEXIT_CRITICAL(&mqtt_mux);
 		ESP_LOGI(TAG, "relay connected: %s as %s", url, rem.dev);
 		esp_mqtt_client_subscribe(client, topic_cmd, 1);
 		publish_status();
 		break;
 	case MQTT_EVENT_DISCONNECTED:
+		if (connected) mqtt_drops++;
 		connected = false;
+		portENTER_CRITICAL(&mqtt_mux);
+		mqtt_up_us = 0;
+		portEXIT_CRITICAL(&mqtt_mux);
 		break;
 	case MQTT_EVENT_DATA:
 		/* a message bigger than the client's buffer arrives in pieces */
@@ -307,20 +318,40 @@ static void client_start(void) {
 
 static esp_ota_handle_t ota_handle;
 static const esp_partition_t *ota_part;
+/* the update's timing, for `api diag/ota`: from open to commit, and the part
+ * of it in esp_ota_begin/write/end (the slot's erase and flash writes) */
+static int64_t ota_t0, ota_flash_us;
+static uint32_t ota_bytes;
 
 static int f_open(void *ctx, size_t size, const char **slot, const char **err) {
+	ota_t0 = esp_timer_get_time();
+	ota_flash_us = 0;
+	ota_bytes = 0;
 	ota_part = esp_ota_get_next_update_partition(NULL);
 	if (!ota_part) return *err = "no app slot to write", -1;
 	if (esp_ota_begin(ota_part, size, &ota_handle) != ESP_OK) return *err = "couldn't open the app slot", -1;
+	ota_flash_us += esp_timer_get_time() - ota_t0;
 	*slot = ota_part->label;
 	return 0;
 }
 
-static int f_write(void *ctx, const uint8_t *d, size_t n) { return esp_ota_write(ota_handle, d, n) == ESP_OK ? 0 : -1; }
+static int f_write(void *ctx, const uint8_t *d, size_t n) {
+	int64_t t = esp_timer_get_time();
+	esp_err_t e = esp_ota_write(ota_handle, d, n);
+	ota_flash_us += esp_timer_get_time() - t;
+	if (e != ESP_OK) return -1;
+	ota_bytes += n;
+	return 0;
+}
 
 static int f_commit(void *ctx, const char **err) {
+	int64_t t = esp_timer_get_time();
 	if (esp_ota_end(ota_handle) != ESP_OK) return *err = "image didn't validate", -1;
+	ota_flash_us += esp_timer_get_time() - t;
 	if (esp_ota_set_boot_partition(ota_part) != ESP_OK) return *err = "couldn't set the boot slot", -1;
+	esp_app_desc_t d;
+	const char *v = esp_ota_get_partition_description(ota_part, &d) == ESP_OK ? d.version : "";
+	hifi_diag_ota_done(ota_bytes, (uint32_t) ((esp_timer_get_time() - ota_t0) / 1000), (uint32_t) (ota_flash_us / 1000), v);
 	return 0;
 }
 
@@ -343,6 +374,29 @@ void hifi_ota_status(hifi_ota_status_t *o) {
 	load_str("hifi_rb_why", "", o->last_reason, sizeof(o->last_reason));
 }
 
+void hifi_remote_link(hifi_diag_net_t *n, uint32_t *first_up_ms) {
+	int64_t now = esp_timer_get_time(), up, first;
+	if (ws_on) {
+		hifi_ws_stats_t w;
+		hifi_ws_stats(&w);
+		n->tx_bytes = w.tx_bytes;
+		n->rx_bytes = w.rx_bytes;
+		n->link_drops = w.drops;
+		up = w.up_since_us;
+		first = w.first_up_us;
+	} else {
+		/* MQTT: no byte counts */
+		n->link_drops = mqtt_drops;
+		portENTER_CRITICAL(&mqtt_mux);
+		up = mqtt_up_us;
+		first = mqtt_first_us;
+		portEXIT_CRITICAL(&mqtt_mux);
+	}
+	n->link_up = connected && up;
+	n->link_up_s = n->link_up ? (uint32_t) ((now - up) / 1000000) : 0;
+	*first_up_ms = (uint32_t) (first / 1000);
+}
+
 /* ------------------------------------------------------------------ the relay task */
 
 static void relay_task(void *arg) {
@@ -359,6 +413,7 @@ static void relay_task(void *arg) {
 
 	for (;;) {
 		vTaskDelay(pdMS_TO_TICKS(2000));
+		hifi_diag_tick();
 		uint32_t now = esp_timer_get_time() / 1000000;
 		bool up = hifi_net_ip(NULL, 0);
 

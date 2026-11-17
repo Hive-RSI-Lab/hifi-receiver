@@ -8,6 +8,11 @@ set -eu
 FW=$(cd "$(dirname "$0")/.." && pwd)
 DEST=$("$FW/tools/fetch.sh" "${1:-${HOME}/fw-build/squeezelite-esp32}" | tail -1)
 
+# no IDF_PATH and no $HOME/esp: the fw tool's copy, pinned by firmware/fw.json
+FWTOOL=$(command -v fw || echo "$HOME/modules/fw/bin/fw")
+if [ -z "${IDF_PATH:-}" ] && [ ! -d "$HOME/esp/esp-idf-v4.4.8" ] && [ -x "$FWTOOL" ]; then
+	eval "$(cd "$FW" && "$FWTOOL" env .)"
+fi
 if [ -z "${IDF_PATH:-}" ]; then
 	export IDF_PATH="$HOME/esp/esp-idf-v4.4.8" IDF_TOOLS_PATH="$HOME/esp/tools"
 	for env in "$IDF_TOOLS_PATH"/python_env/idf4.4_py3.*_env; do

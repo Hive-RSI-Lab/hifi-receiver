@@ -9,6 +9,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 /* A whole text message from the Hive, malloc'd and NUL-terminated: the
  * callee frees it. */
@@ -25,3 +26,13 @@ void hifi_ws_stop(void);
 bool hifi_ws_up(void);
 /* Sends one text message; false if the link is down or the send failed. */
 bool hifi_ws_send(const char *text, size_t len);
+
+/* The link's counters since boot, for `api diag/net`: bytes on the TLS
+ * socket (frames and their headers; not the TLS overhead), the times an up
+ * link dropped, and when it came up (esp_timer µs; 0: not up). */
+typedef struct {
+	uint64_t tx_bytes, rx_bytes;
+	uint32_t drops;
+	int64_t up_since_us, first_up_us;
+} hifi_ws_stats_t;
+void hifi_ws_stats(hifi_ws_stats_t *out);
