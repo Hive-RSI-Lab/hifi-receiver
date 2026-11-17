@@ -142,8 +142,7 @@ static void post(ev_t ev, const uint8_t *data, size_t n) {
 	rx_item_t *it = cb_it;
 	it->ev = ev;
 	it->t_us = esp_timer_get_time();
-	it->len = (uint16_t) (n > PAYLOAD_MAX ? 0 : n);
-	if (data && it->len) memcpy(it->data, data, it->len);
+	it->len = (uint16_t) hifi_link_take(it->data, sizeof(it->data), data, n);
 	if (xQueueSend(q, it, 0) != pdTRUE) q_full++;
 }
 
@@ -488,22 +487,17 @@ static bool send_frame(hifi_link_frame_t *f) {
 }
 
 static void handle(const rx_item_t *it) {
-	hifi_link_frame_t f;
-	if (!hifi_link_decode(it->data, it->len, &f)) {
-		hifi_link_rx_bad(rx);
-		return;
-	}
-	if (role == ROLE_ECHO && f.type == HIFI_LINK_PING) {
-		hifi_link_frame_t pong;
-		hifi_link_pong_for(&f, it->t_us, 0, &pong);
-		rx->pings++;
+	hifi_link_frame_t pong;
+	switch (hifi_link_receive(rx, tx, role == ROLE_ECHO, role != ROLE_ECHO, it->data, it->len, it->t_us, &pong)) {
+	case HIFI_LINK_GOT_REPLY:
 		send_frame(&pong);
-	} else if (role == ROLE_ECHO && f.type == HIFI_LINK_DATA)
-		hifi_link_rx_data(rx, &f, it->t_us);
-	else if (role != ROLE_ECHO && f.type == HIFI_LINK_PONG)
-		hifi_link_tx_pong(tx, &f, it->t_us);
-	else
+		break;
+	case HIFI_LINK_GOT_OTHER:
 		other++;
+		break;
+	default:
+		break;
+	}
 }
 
 /* room in the stack's queue for one more write: not congested and a buffer
