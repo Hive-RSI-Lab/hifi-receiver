@@ -14,13 +14,21 @@
  * call; MP3: one stream of the copies end to end, so a crafted frame can
  * build on the one before it).
  * ALAC's stream parameters are AirPlay's (frame 352, 16 bits, 2 channels,
- * 44100 Hz) unless frame, bits and channels say otherwise; the decoder's
- * input buffer is the PCM block's size, zero past the data, as rtp.c's is.
+ * 44100 Hz) unless frame, bits and channels say otherwise. The packet goes
+ * in with its length (alac_to_pcm_len, as rtp.c's alac_decode calls it) on
+ * an image that has the bounds fix; an image without it has only
+ * alac_to_pcm, which reads a whole PCM block's worth, so the input buffer is
+ * that size, zero past the data, as rtp.c's is.
  *
- * The decode runs on its own task with a PSRAM stack, as the player's does,
- * and is over in milliseconds: the run ends "done" by itself. The result:
- * calls, the ones the decoder took (ok) and refused (refused), the frames
- * out, and heap_ok_before / heap_ok_after from heap_caps_check_integrity_all.
+ * The decode runs on one worker task with a PSRAM stack, as the player's
+ * does, made at the first start and woken for each run after; a run is over
+ * in milliseconds and ends "done" by itself. The result: calls, the ones the
+ * decoder took (ok) and refused (refused), the frames the taken ones gave
+ * (a refused ALAC packet's silence is not counted), and heap_ok_before /
+ * heap_ok_after from heap_caps_check_integrity_all. The heap check sees a
+ * broken block header or free list; heap poisoning is off in these images,
+ * so an overrun that lands inside live data shows as a restart (or
+ * nothing), not as heap_ok_after false.
  */
 #include <stdlib.h>
 #include <string.h>
@@ -40,6 +48,7 @@
 #pragma weak alac_create_decoder
 #pragma weak alac_delete_decoder
 #pragma weak alac_to_pcm
+#pragma weak alac_to_pcm_len
 #pragma weak mad_stream_init
 #pragma weak mad_stream_finish
 #pragma weak mad_stream_buffer
@@ -58,9 +67,9 @@ static const char *TAG = "lab_crafted";
 #define DATA_MAX 4096
 #define REPEAT_MAX 64
 
-static volatile bool alive, go; /* alive: the task is up; go: keep decoding */
-static StackType_t *stack;
-static StaticTask_t tcb;
+static volatile bool alive, go; /* alive: a run is on the worker; go: keep decoding */
+static TaskHandle_t worker;
+static StaticTask_t worker_tcb;
 static uint32_t run_no;
 static bool is_mp3;
 static uint8_t *data;
@@ -106,9 +115,14 @@ static void run_alac(void) {
 		for (uint32_t i = 0; i < repeat && go; i++) {
 			unsigned f = 0;
 			calls++;
-			if (alac_to_pcm(a, in, out, (char) channels, &f)) ok++;
-			else refused++;
-			frames_out += f;
+			bool took = alac_to_pcm_len ? alac_to_pcm_len(a, in, data_n, out, (char) channels, &f)
+						    : alac_to_pcm(a, in, out, (char) channels, &f);
+			if (took) {
+				ok++;
+				frames_out += f;
+			} else {
+				refused++;
+			}
 		}
 	}
 	free(in);
@@ -152,24 +166,28 @@ out:
 }
 
 static void task_main(void *arg) {
-	/* the lab keeps the running experiment's name (RTC memory, for the
-	 * restart's "crashed_in") only once start() has returned: a packet that
-	 * panics the board at once must not beat it there */
-	vTaskDelay(pdMS_TO_TICKS(250));
-	heap_before = heap_caps_check_integrity_all(true);
-	ESP_LOGW(TAG, "%s: %u bytes x %u", is_mp3 ? "mp3" : "alac", (unsigned) data_n, (unsigned) repeat);
-	if (is_mp3) run_mp3();
-	else run_alac();
-	heap_after = heap_caps_check_integrity_all(true);
-	ESP_LOGW(TAG, "%u calls, %u ok, %u refused, heap %s", (unsigned) calls, (unsigned) ok, (unsigned) refused,
-		 heap_after ? "intact" : "CORRUPT");
-	finished = go;
-	uint32_t r = run_no;
-	bool was_go = go;
-	go = false;
-	if (was_go) hifi_lab_esp_finished("crafted", r, heap_after);
-	alive = false;
-	vTaskDelete(NULL);
+	for (;;) {
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		/* the lab keeps the running experiment's name (RTC memory, for the
+		 * restart's "crashed_in") only once start() has returned: a packet
+		 * that panics the board at once must not beat it there */
+		vTaskDelay(pdMS_TO_TICKS(250));
+		heap_before = heap_caps_check_integrity_all(true);
+		ESP_LOGW(TAG, "%s: %u bytes x %u", is_mp3 ? "mp3" : "alac", (unsigned) data_n, (unsigned) repeat);
+		if (go) {
+			if (is_mp3) run_mp3();
+			else run_alac();
+		}
+		heap_after = heap_caps_check_integrity_all(true);
+		ESP_LOGW(TAG, "%u calls, %u ok, %u refused, heap %s", (unsigned) calls, (unsigned) ok,
+			 (unsigned) refused, heap_after ? "intact" : "CORRUPT");
+		finished = go;
+		uint32_t r = run_no;
+		bool was_go = go;
+		go = false;
+		if (was_go) hifi_lab_esp_finished("crafted", r, heap_after);
+		alive = false;
+	}
 }
 
 static int start(uint32_t run, const char *body, char *err, size_t n) {
@@ -203,9 +221,27 @@ static int start(uint32_t run, const char *body, char *err, size_t n) {
 		snprintf(err, n, "data: base64");
 		return 400;
 	}
+	/* everything that can fail with 503 comes before the decode into data:
+	 * after it, only a 400 can turn the run down (and data_n, the result's
+	 * "bytes", stays the last run's then) */
 	if (!data && !(data = malloc(DATA_MAX))) {
 		snprintf(err, n, "out of memory");
 		return 503;
+	}
+	if (!worker) {
+		/* the stack lives as long as the worker (PSRAM, as the player's) */
+		StackType_t *stack = heap_caps_malloc(STACK, MALLOC_CAP_SPIRAM);
+		if (!stack) {
+			snprintf(err, n, "out of PSRAM");
+			return 503;
+		}
+		worker = xTaskCreateStaticPinnedToCore(task_main, "lab_crafted", STACK, NULL, ESP_TASK_PRIO_MIN + 5,
+						       stack, &worker_tcb, 1);
+		if (!worker) {
+			free(stack);
+			snprintf(err, n, "no task");
+			return 503;
+		}
 	}
 	long got = hifi_b64_decode(b64, b64_n, data, DATA_MAX);
 	if (got <= 0) {
@@ -219,17 +255,8 @@ static int start(uint32_t run, const char *body, char *err, size_t n) {
 	heap_before = heap_after = finished = false;
 	why[0] = 0;
 	run_no = run;
-	/* the stack is kept for the next run (the board's PSRAM, as the player's) */
-	if (!stack && !(stack = heap_caps_malloc(STACK, MALLOC_CAP_SPIRAM))) {
-		snprintf(err, n, "out of PSRAM");
-		return 503;
-	}
 	alive = go = true;
-	if (!xTaskCreateStaticPinnedToCore(task_main, "lab_crafted", STACK, NULL, ESP_TASK_PRIO_MIN + 5, stack, &tcb, 1)) {
-		alive = go = false;
-		snprintf(err, n, "no task");
-		return 503;
-	}
+	xTaskNotifyGive(worker);
 	return 0;
 }
 
@@ -256,7 +283,8 @@ static void result(void *hj) {
 
 const hifi_lab_exp_t lab_crafted = {
 	.name = "crafted",
-	.help = "feeds a crafted packet or stream to the board's decoders: codec (alac|mp3), data (base64), repeat",
+	.help = "feeds a crafted packet or stream to the board's decoders: codec (alac|mp3), data (base64), repeat; "
+		"heap_ok_after sees a broken heap header, not every overrun (no heap poisoning)",
 	.start = start,
 	.stop = stop,
 	.result = result,
