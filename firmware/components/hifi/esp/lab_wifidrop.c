@@ -96,8 +96,10 @@ static bool trace_want, trace_ran;
 static uint32_t trace_count, trace_int_n, trace_int_bytes, trace_ngroups;
 static trace_group_t trace_groups[TRACE_GROUPS];
 
-/* the record buffer must be in internal RAM (esp_heap_trace.h); it is
- * taken once, before heap_start is read, so it isn't counted as a change */
+/* the record buffer must be in internal RAM (esp_heap_trace.h), about 6 KB:
+ * it is taken before heap_start is read, so it isn't counted as a change,
+ * and given back once the result is grouped (trace_end), so the board isn't
+ * left under the self-test's heap floor between runs */
 static bool trace_ready(void) {
 	if (!trace_want) return false;
 	if (!trace_buf) {
@@ -114,6 +116,15 @@ static bool trace_ready(void) {
 		}
 	}
 	return true;
+}
+
+/* nothing else uses the tracer: with no records, heap_trace_start refuses
+ * until trace_ready gives it a new buffer */
+static void trace_release(void) {
+	if (!trace_buf) return;
+	heap_trace_init_standalone(trace_buf, 0);
+	free(trace_buf);
+	trace_buf = NULL;
 }
 
 static void trace_begin(void) {
@@ -135,7 +146,10 @@ static bool trace_shown(void) {
  * the smallest group if its first record is bigger, so this is not exactly
  * the biggest four; an evicted group's bytes stay in trace_int_bytes only */
 static void trace_end(void) {
-	if (!trace_ran) return;
+	if (!trace_ran) {
+		trace_release();
+		return;
+	}
 	heap_trace_stop();
 	trace_count = heap_trace_get_count();
 	trace_int_n = trace_int_bytes = trace_ngroups = 0;
@@ -162,6 +176,7 @@ static void trace_end(void) {
 		trace_groups[g].n++;
 		trace_groups[g].bytes += r.size;
 	}
+	trace_release();
 }
 
 static void trace_result(hj_t *j) {
@@ -281,9 +296,11 @@ static bool drops(void) {
 		done_n = i + 1;
 		ESP_LOGI(TAG, "cycle %u/%u back in %u ms", (unsigned) i + 1, (unsigned) cycles, (unsigned) back_ms[i]);
 	}
-	/* the last reconnect's mDNS and dial-in work happens in this hold */
+	/* the last reconnect's mDNS and dial-in work happens in this hold; a
+	 * stop or the deadline inside it leaves no settled reading, so the run
+	 * is "stopped", not "done" */
 	phase = "settling";
-	hold(settle_s * 1000);
+	if (!hold(settle_s * 1000)) return false;
 	heap_at[heap_n++] = heap_int();
 	return true;
 }
