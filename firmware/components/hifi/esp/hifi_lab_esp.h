@@ -25,9 +25,10 @@ void hifi_lab_esp_finished(const char *name, uint32_t run, bool ok);
 /* the experiments (esp/lab_*.c) */
 extern const hifi_lab_exp_t lab_espnow;
 extern const hifi_lab_exp_t lab_forge; /* a stranger forging the espnow run's frames */
-/* lab_bt and lab_ble are weak: only the app pulls them in (patch 0017 adds
- * -u lab_bt/lab_ble to its link), so the recovery image leaves them out and,
+/* lab_bt, lab_a2dp and lab_ble are weak: only the app pulls them in (patch
+ * 0017 adds -u lab_bt/lab_a2dp/lab_ble to its link), so the recovery image leaves them out and,
  * with them, the Bluedroid host they reach (it would not fit its slot). */
 extern const hifi_lab_exp_t lab_bt __attribute__((weak));  /* images with Classic Bluetooth (CONFIG_BT_CLASSIC_ENABLED) */
+extern const hifi_lab_exp_t lab_a2dp __attribute__((weak)); /* the same images: a real A2DP stream between two boards */
 extern const hifi_lab_exp_t lab_lanscan;
 extern const hifi_lab_exp_t lab_ble __attribute__((weak)); /* the BLE lab image only (CONFIG_BT_BLE_ENABLED) */

@@ -1,0 +1,63 @@
+diff --git a/components/driver_bt/bt_app_sink.c b/components/driver_bt/bt_app_sink.c
+--- a/components/driver_bt/bt_app_sink.c
++++ b/components/driver_bt/bt_app_sink.c
+@@ -747,3 +747,18 @@
+ 
+ 
+ 
++
++
++/* hifi: the lab's A2DP source (components/hifi/esp/lab_a2dp.c) takes the
++ * board's one A2DP role for a run (esp_a2d_sink_deinit, then the source)
++ * and gives it back with this once the source is down: the sink's callbacks
++ * and its init, as bt_av_hdl_stack_evt does them. AVRCP and the GAP
++ * callback stay as they were. */
++esp_err_t hifi_bt_sink_rearm(void) {
++	esp_err_t e;
++	if (!s_sink_active || !bt_app_a2d_data_cb) return ESP_ERR_INVALID_STATE;
++	if ((e = esp_a2d_register_callback(&bt_app_a2d_cb)) != ESP_OK) return e;
++	if ((e = esp_a2d_sink_register_data_callback(bt_app_a2d_data_cb)) != ESP_OK) return e;
++	if ((e = esp_a2d_sink_init()) != ESP_OK) return e;
++	return esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
++}
+diff --git a/components/squeezelite/decode_external.c b/components/squeezelite/decode_external.c
+--- a/components/squeezelite/decode_external.c
++++ b/components/squeezelite/decode_external.c
+@@ -210,8 +210,13 @@
+  * BT sink data handler
+  */
+ #if CONFIG_BT_SINK
++/* hifi: the lab's A2DP experiment (components/hifi/esp/lab_a2dp.c) counts
++ * what arrives and what the output buffer couldn't take; weak, so only a
++ * lab image has it */
++extern void hifi_lab_a2dp_rx(u32_t len, u32_t written) __attribute__((weak));
+ static void bt_sink_data_handler(const uint8_t *data, uint32_t len) {
+-    sink_data_handler(data, len, 10);
++    u32_t written = sink_data_handler(data, len, 10);
++    if (hifi_lab_a2dp_rx) hifi_lab_a2dp_rx(len, written);
+ }    
+ 
+ /****************************************************************************************
+diff --git a/components/squeezelite/output.c b/components/squeezelite/output.c
+--- a/components/squeezelite/output.c
++++ b/components/squeezelite/output.c
+@@ -53,6 +53,10 @@
+ u32_t hifi_output_underruns;
+ bool hifi_output_flushed;
+ static u8_t hifi_underrun;
++/* hifi: the lab's A2DP experiment (components/hifi/esp/lab_a2dp.c) times
++ * the dry spells of a Bluetooth stream, which the count above leaves out;
++ * weak, so only a lab image has it */
++extern void hifi_lab_a2dp_out(bool running, u32_t frames) __attribute__((weak));
+ 
+ #define LOCK   mutex_lock(outputbuf->mutex)
+ #define UNLOCK mutex_unlock(outputbuf->mutex)
+@@ -133,6 +137,8 @@
+ 			hifi_output_underruns++;
+ 		hifi_output_flushed = false;
+ 	}
++	if (hifi_lab_a2dp_out && hifi_sink_source && hifi_sink_source() == 2)
++		hifi_lab_a2dp_out(output.state == OUTPUT_RUNNING, frames);
+ 	if (output.state <= OUTPUT_BUFFER || frames == 0) {
+ 		silence = true;
+ 		frames = min(avail, MAX_SILENCE_FRAMES);
