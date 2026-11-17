@@ -17,8 +17,10 @@
  * mode "quiet": Bluetooth stays up, but neither connectable nor discoverable
  * (no page or inquiry scans) and the coexistence prefers Wi-Fi: what a
  * product image could do while nothing is paired. The stop puts both back
- * (connectable, discoverable, balanced). A phone that connects or drops
- * during the run makes the sink set its own scan mode.
+ * (connectable, discoverable, balanced). It is for a board with no phone
+ * on it: refused while Bluetooth plays. The sink keeps no "connected" state
+ * the lab can read, so a phone connected but not playing at the stop leaves
+ * the board discoverable until it drops (the sink hides it on a connect).
  *
  * Nothing is sent or received; the run lasts until stopped or its deadline.
  */
@@ -37,6 +39,16 @@
 #include "hifi_lab_esp.h"
 
 static const char *TAG = "lab_bt";
+
+/* the mode the controller was set up in (bt_app_core.c, patch 0012):
+ * enabling it in another one fails */
+#if CONFIG_BTDM_CTRL_MODE_BTDM
+#define CTRL_MODE ESP_BT_MODE_BTDM
+#else
+#define CTRL_MODE ESP_BT_MODE_CLASSIC_BT
+#endif
+
+extern int hifi_sink_source(void) __attribute__((weak)); /* 2: Bluetooth plays (decode_external.c) */
 
 typedef enum { MODE_OFF, MODE_QUIET } mode_t_;
 
@@ -74,10 +86,13 @@ static int start(uint32_t run, const char *body, char *err, size_t n) {
 		snprintf(err, n, "already %s", mode == MODE_OFF ? "off" : "quiet");
 		return 409;
 	}
+	/* the last run's result stays as it was until this start succeeds */
 	char m[8] = "";
+	mode_t_ want;
+	char why[sizeof(err_start)] = "";
 	hj_get_str(body, "mode", m, sizeof(m));
-	if (!strcmp(m, "off")) mode = MODE_OFF;
-	else if (!strcmp(m, "quiet")) mode = MODE_QUIET;
+	if (!strcmp(m, "off")) want = MODE_OFF;
+	else if (!strcmp(m, "quiet")) want = MODE_QUIET;
 	else {
 		snprintf(err, n, "mode must be off or quiet");
 		return 400;
@@ -87,10 +102,8 @@ static int start(uint32_t run, const char *body, char *err, size_t n) {
 		snprintf(err, n, "Bluetooth isn't up (controller %s, Bluedroid %s)", status_str(), bd_str());
 		return 409;
 	}
-	err_start[0] = err_stop[0] = 0;
-	ps_fix = NULL;
 	esp_err_t e;
-	if (mode == MODE_OFF) {
+	if (want == MODE_OFF) {
 #if CONFIG_BT_BLE_ENABLED
 		snprintf(err, n, "not on the BLE image: lab_ble's GATT apps don't survive a Bluedroid restart");
 		return 409;
@@ -101,18 +114,26 @@ static int start(uint32_t run, const char *body, char *err, size_t n) {
 		}
 		vTaskDelay(pdMS_TO_TICKS(400)); /* the sink's shutdown waits too: the controller crashes otherwise */
 		if ((e = esp_bt_controller_disable()) != ESP_OK) {
-			note(err_start, sizeof(err_start), "esp_bt_controller_disable", e);
+			note(why, sizeof(why), "esp_bt_controller_disable", e);
 			/* Bluedroid is down already: the stop brings it back */
 		}
 #endif
 	} else {
+		if (hifi_sink_source && hifi_sink_source() == 2) {
+			snprintf(err, n, "Bluetooth is playing: quiet is for a board with no phone on it");
+			return 409;
+		}
 		if ((e = esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE)) != ESP_OK) {
 			snprintf(err, n, "esp_bt_gap_set_scan_mode: %s", esp_err_to_name(e));
 			return 503;
 		}
 		if ((e = esp_coex_preference_set(ESP_COEX_PREFER_WIFI)) != ESP_OK)
-			note(err_start, sizeof(err_start), "esp_coex_preference_set", e);
+			note(why, sizeof(why), "esp_coex_preference_set", e);
 	}
+	mode = want;
+	strlcpy(err_start, why, sizeof(err_start));
+	err_stop[0] = 0;
+	ps_fix = NULL;
 	started = active = true;
 	ESP_LOGI(TAG, "Bluetooth %s (controller %s)", mode == MODE_OFF ? "off" : "quiet", status_str());
 	return 0;
@@ -126,19 +147,26 @@ static bool stop(void) {
 			/* the coexistence aborts with the controller on and modem sleep
 			 * off (lab_espnow.c): turn it on first */
 			wifi_ps_type_t ps;
-			if (esp_wifi_get_ps(&ps) == ESP_OK && ps == WIFI_PS_NONE) {
-				esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
-				ps_fix = "min";
+			bool ps_ok = true;
+			if (esp_wifi_get_ps(&ps) != ESP_OK || ps == WIFI_PS_NONE) {
+				if ((e = esp_wifi_set_ps(WIFI_PS_MIN_MODEM)) == ESP_OK)
+					ps_fix = "min";
+				else {
+					ps_ok = false;
+					note(err_stop, sizeof(err_stop), "esp_wifi_set_ps min (Bluetooth left off)", e);
+				}
 			}
-			if ((e = esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)) != ESP_OK)
+			if (ps_ok && (e = esp_bt_controller_enable(CTRL_MODE)) != ESP_OK)
 				note(err_stop, sizeof(err_stop), "esp_bt_controller_enable", e);
 		}
-		if (esp_bluedroid_get_status() != ESP_BLUEDROID_STATUS_ENABLED &&
-		    (e = esp_bluedroid_enable()) != ESP_OK)
+		/* Bluedroid on a controller that is down would wait on HCI for ever,
+		 * holding the lab's lock */
+		if (esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_ENABLED &&
+		    esp_bluedroid_get_status() != ESP_BLUEDROID_STATUS_ENABLED && (e = esp_bluedroid_enable()) != ESP_OK)
 			note(err_stop, sizeof(err_stop), "esp_bluedroid_enable", e);
 	} else if ((e = esp_coex_preference_set(ESP_COEX_PREFER_BALANCE)) != ESP_OK)
 		note(err_stop, sizeof(err_stop), "esp_coex_preference_set", e);
-	if (esp_bluedroid_get_status() == ESP_BLUEDROID_STATUS_ENABLED &&
+	if (esp_bluedroid_get_status() == ESP_BLUEDROID_STATUS_ENABLED && !(hifi_sink_source && hifi_sink_source() == 2) &&
 	    (e = esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE)) != ESP_OK)
 		note(err_stop, sizeof(err_stop), "esp_bt_gap_set_scan_mode", e);
 	active = false;
