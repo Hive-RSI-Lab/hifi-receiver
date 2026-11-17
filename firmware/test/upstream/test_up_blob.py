@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression: the Spotify zeroconf login is not changed under a login (patch 0027).
+"""Regression: the Spotify zeroconf login is not changed under a login (patch 0028).
 
     test_up_blob.py UPSTREAM_DIR   (the patched tree upstream.py made)
 
@@ -10,7 +10,7 @@ to log in again. Nothing locked it, so a POST during a login changed the
 username and token while the session read them: a torn std::string or
 vector there is a use-after-free on the board. LoginBlob also set the
 account type before it knew the blob parsed, so a refused login still
-changed it. Patch 0027 puts the blob behind a lock, gives each session a
+changed it. Patch 0028 puts the blob behind a lock, gives each session a
 copy of its own, and sets nothing until the blob has parsed.
 
 The test builds upstream's Shim.cpp and LoginBlob.cpp, as patched, against
@@ -25,7 +25,7 @@ ThreadSanitizer, and runs blob/harness.cpp's two cases:
   snap    bob's POST lands while the cspot task copies alice's login out of
           the blob for a session: no data race, and the session is bob's
 
-It then builds the same two files with 0027 taken back out and checks that
+It then builds the same two files with 0028 taken back out and checks that
 keeps and race fail, and builds the patched Shim.cpp with the POST handler's
 lock taken out and checks that snap fails, so the test is known to catch
 each of them.
@@ -46,7 +46,7 @@ HERE = Path(__file__).resolve().parent
 FW = HERE.parents[1]
 SPOT = "components/spotify"
 CSPOT = f"{SPOT}/cspot"
-PATCH = "0027-spotify-loginblob-race.patch"
+PATCH = "0028-spotify-loginblob-race.patch"
 # headers Shim.cpp and LoginBlob.cpp include that fakes.h stands in for
 FAKED = ["Session.h", "PlainConnection.h", "ApResolve.h", "BellTask.h", "MDNSService.h", "TrackPlayer.h",
          "CSpotContext.h", "SpircHandler.h", "CentralAudioBuffer.h", "Logger.h", "Utils.h", "BellLogger.h",
@@ -91,7 +91,7 @@ def includes(inc: Path, up: Path) -> None:
 
 
 def unpatched(up: Path, out: Path) -> dict[str, Path] | None:
-    """Shim.cpp and LoginBlob.cpp as upstream.py made them, with 0027 reversed."""
+    """Shim.cpp and LoginBlob.cpp as upstream.py made them, with 0028 reversed."""
     text = (FW / "patches" / PATCH).read_text()
     got = {}
     for chunk in re.split(r"(?m)^(?=diff --git )", text):
