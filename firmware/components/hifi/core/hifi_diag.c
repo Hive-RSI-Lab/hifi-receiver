@@ -164,6 +164,8 @@ void hifi_diag_write_tasks(const hifi_diag_tasks_t *t, int from, char *out, size
 	hj_str(&j, NULL, "core");
 	hj_str(&j, NULL, "prio");
 	hj_str(&j, NULL, "cpu_pct");
+	hj_str(&j, NULL, "stack");
+	hj_str(&j, NULL, "ram");
 	hj_arr_end(&j);
 	hj_arr(&j, "rows");
 	int i = from;
@@ -179,6 +181,11 @@ void hifi_diag_write_tasks(const hifi_diag_tasks_t *t, int from, char *out, size
 		else hj_null(&j, NULL);
 		hj_int(&j, NULL, r->prio);
 		hj_num(&j, NULL, r->cpu_pct, 1);
+		if (r->stack_size) hj_int(&j, NULL, r->stack_size);
+		else hj_null(&j, NULL);
+		if (r->stack_ram == 'i') hj_str(&j, NULL, "int");
+		else if (r->stack_ram == 'p') hj_str(&j, NULL, "psram");
+		else hj_null(&j, NULL);
 		hj_arr_end(&j);
 		if (j.overflow || j.len + tail >= lim) {
 			j = keep;
