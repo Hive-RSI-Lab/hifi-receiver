@@ -46,6 +46,7 @@ static uint32_t now_ms(void) { return (uint32_t) (esp_timer_get_time() / 1000); 
 void hifi_diag_init(void) {
 	boot_app_ms = now_ms();
 	task_lock = xSemaphoreCreateMutex();
+	if (hifi_crash_restart_cause()) ESP_LOGW(TAG, "last restart: %s", hifi_crash_restart_cause());
 	nvs_handle_t h;
 	if (nvs_open(NS, NVS_READWRITE, &h) != ESP_OK) {
 		ESP_LOGW(TAG, "no NVS: no boot counter or reset history");
@@ -159,6 +160,7 @@ static void sys(hifi_diag_sys_t *o) {
 	heap(&o->internal, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 	heap(&o->psram, MALLOC_CAP_SPIRAM);
 	o->reset_reason = hifi_crash_reset_reason();
+	o->restart_cause = hifi_crash_restart_cause();
 	memcpy(o->reset_hist, hist, sizeof(hist));
 	o->boots = boots;
 	o->power_cuts = power_cuts;

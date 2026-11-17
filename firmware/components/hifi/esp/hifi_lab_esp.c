@@ -23,6 +23,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
+#include "hifi_crash.h"
 #include "hifi_esp.h"
 
 static const char *TAG = "hifi_lab";
@@ -107,6 +108,7 @@ static void restart_why(uint32_t magic, const char *why) {
 	ESP_LOGE(TAG, "%s: restarting", why);
 	kept_offline = magic;
 	esp_task_wdt_add(NULL);
+	hifi_restart_note(magic == OFFLINE_MAGIC ? "lab_offline" : "lab_stuck");
 	esp_restart();
 }
 

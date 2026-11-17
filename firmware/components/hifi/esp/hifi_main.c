@@ -769,6 +769,7 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	s->heap_min = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 	s->heap_boot = heap_boot;
 	s->reset_reason = hifi_crash_reset_reason();
+	s->restart_cause = hifi_crash_restart_cause();
 	s->psram_free = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
 	hifi_net_update_status(&s->update);
 	hifi_bsp_snapshot(s); /* its sensors, zones and Ethernet */
@@ -893,6 +894,7 @@ static int op_set_name(const char *name) {
 
 static void restart_cb(void *arg) {
 	if (arg) nvs_flash_erase();
+	hifi_restart_note(arg ? "api_factory_reset" : "api_reboot");
 	esp_restart();
 }
 
@@ -955,6 +957,7 @@ static void factory_boot(void) {
 	if (hifi_reset_confirmed(armed, esp_reset_reason() == ESP_RST_POWERON)) {
 		ESP_LOGW(TAG, "factory reset: unplugged while armed, erasing every setting");
 		nvs_flash_erase();
+		hifi_restart_note("factory_reset");
 		esp_restart();
 	}
 	config_set_value(NVS_TYPE_STR, "hifi_reset_armed", "0");
