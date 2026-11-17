@@ -31,7 +31,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define HIFI_LAB_EXP_MAX 8
+#define HIFI_LAB_EXP_MAX 12 /* 8 base and Bluetooth ones, and room: a lab build with both BT modes registers 9 */
 #define HIFI_LAB_MAX_S 3600       /* the longest run a command may ask for */
 #define HIFI_LAB_DEFAULT_S 60
 /* Internal RAM. The Lite runs with ~13 KB free (Wi-Fi, Bluetooth, player), so
