@@ -343,7 +343,7 @@ fits a remote bench's reply line; the task list pages. On the console:
  "boot_ms": {"app": 812, "ip": 4210, "link": 6034},
  "heap": {"free": 61234, "min": 38012, "largest": 31744, "total": 290000},
  "psram": {"free": 3911000, "min": 3700000, "largest": 3866624, "total": 4192000},
- "reset_reason": "sw", "resets": "sw,sw,power_on", "boots": 14,
+ "reset_reason": "restart", "resets": "restart,panic,power_on", "boots": 14,
  "nvs": {"nvs": {"used": 210, "free": 294, "total": 504, "namespaces": 6, "used_pct": 41.7},
          "settings": {"used": 96, "free": 1920, "total": 2016, "namespaces": 1, "used_pct": 4.8}},
  "power": {"state": "on", "vbus_v": 20.08, "vbus_i_a": 0.31, "pvdd_v": 19.9, "pg": true,
@@ -351,12 +351,17 @@ fits a remote bench's reply line; the task list pages. On the console:
            "amp_on": true, "amp_fault": false, "amp_faults": 0, "amp_temp_c": null}}
 ```
 
-- `boot_ms`: ms from power-up to the hifi code starting, the first IP and
-  the remote link first up; `null` until each happens.
+- `boot_ms`: ms from the app's start (the `esp_timer` clock, which starts
+  with the app: the ROM's and the bootloader's time before it isn't counted)
+  to the hifi code starting, the first IP and the
+  remote link first up; `null` until each happens.
 - `heap` is internal RAM, `psram` the PSRAM (`null` with none fitted): free
   now, the least free since boot, the largest free block and the size.
 - `resets` is the reset history, newest first, up to 8 reasons, kept in NVS
-  (namespace `hifi_diag`) with the `boots` counter.
+  (namespace `hifi_diag`) with the `boots` counter. The reasons are
+  `power_on`, `external`, `restart` (a software restart: an update, `restart`
+  from the API), `panic`, `interrupt_watchdog`, `task_watchdog`, `watchdog`,
+  `deep_sleep`, `brownout`, `sdio` and `unknown`.
 - `nvs` is each NVS partition's entries (32 bytes each): how full the flash
   key store is, for wear.
 - `power` is the snapshot's power fields (`GET /api/v1/state`); a
@@ -371,7 +376,9 @@ first. The first page takes a new 1 s sample (the call blocks for it); a page
 with `from` reads the same sample. `next` is where the next page starts, `n`
 when the list is done. `diag/tasks/N` is the page from N with no body, for a
 remote bench that takes only bodiless lines from a lane that doesn't hold the
-board; `diag/tasks/0` takes a new sample like the first page.
+board; `diag/tasks/0` takes a new sample like the first page. A start past 48
+(the most the list holds) is a 400; a board running more than 48 tasks
+answers 507 with the count in `error`.
 
 ```json
 {"n": 31, "from": 0, "sample_ms": 1000, "idle_pct": [71.2, 88.0],
@@ -391,7 +398,8 @@ core's idle task, so 100 minus it is that core's load.
  "link": {"up": true, "drops": 1, "up_s": 3990, "tx_bytes": 812345, "rx_bytes": 4123456}}
 ```
 
-`connects` and `disconnects` count the station's associations since the
+`rssi`, `channel`, `bssid` and `phy` are `null` while the station isn't
+associated. `connects` and `disconnects` count the station's associations since the
 handlers came up (a few seconds after boot); `last_reason` is the last
 disconnect's `wifi_err_reason_t`. `link` is the remote link: for wss:// the
 bytes on the socket, for MQTT `0` (not counted).
@@ -404,7 +412,8 @@ bytes on the socket, for MQTT `0` (not counted).
 ```
 
 `underruns` counts the times the output ran dry while a stream was playing
-(once per dry spell). `buffer_ms` is decoded audio waiting in the output
+(once per dry spell): an LMS (squeezelite), AirPlay or Spotify stream. A
+Bluetooth stream feeds the output its own way and isn't counted. `buffer_ms` is decoded audio waiting in the output
 buffer, `dma_ms` the I2S DMA's fixed delay; `latency_ms` is their sum, from
 decode to the pins. `played_s` is the output's total since boot. A build
 without the output's counters answers `{"underruns": null}`.
@@ -422,7 +431,9 @@ erasing and writing flash, `boot` the boot count when it was written.
 `{"bytes": N}` (1 to 1048576, default 131072): sends N bytes of filler up the
 wss:// bench link in 8 KB messages (`{"t":"sink",...}`, which the bench drops)
 and times it: `{"bytes", "ms", "kbps"}`. The board's upload throughput to the
-bench. 409 when the link isn't wss:// or isn't up.
+bench. The test stops after 20 s, so on a slow link `bytes` (what was sent)
+can be less than asked. 409 when the link isn't wss:// or isn't up, 503 when
+it drops during the test.
 
 ## Remote bring-up: `capture`, `ota`, `wifi`, `remote`
 

@@ -156,11 +156,11 @@ static void writers(void) {
 	CHECK_HAS(out, "\"tx_bytes\":5000000000");
 	hifi_diag_net_t off = {0};
 	hifi_diag_write_net(&off, out, sizeof(out));
-	CHECK_HAS(out, "\"rssi\":null");
+	CHECK_HAS(out, "\"rssi\":null,\"channel\":null");
 	CHECK_HAS(out, "\"bssid\":null");
 	CHECK_HAS(out, "\"last_reason\":null");
 
-	hifi_diag_audio_t a = {.known = true, .underruns = 2, .rate = 44100, .buffer_ms = 1800, .dma_ms = 46, .frames_ms = 65000};
+	hifi_diag_audio_t a = {.known = true, .underruns = 2, .rate = 44100, .buffer_ms = 1800, .dma_ms = 46, .played_s = 65};
 	hifi_diag_write_audio(&a, out, sizeof(out));
 	CHECK_STR(out, "{\"underruns\":2,\"rate\":44100,\"buffer_ms\":1800,\"dma_ms\":46,\"latency_ms\":1846,\"played_s\":65}");
 	hifi_diag_write_audio(&(hifi_diag_audio_t) {0}, out, sizeof(out));
@@ -177,6 +177,24 @@ static void writers(void) {
 	hifi_diag_write_echo(&(hifi_diag_echo_t) {0}, out, sizeof(out));
 	CHECK_HAS(out, "\"kbps\":null");
 
+	/* the widest sys reply there can be still fits a page whole */
+	hifi_diag_sys_t w = {
+		.uptime_s = UINT32_MAX, .boot_app_ms = UINT32_MAX, .boot_ip_ms = UINT32_MAX, .boot_link_ms = UINT32_MAX,
+		.internal = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX},
+		.psram = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX},
+		.reset_reason = "task_watchdog", .boots = UINT32_MAX,
+		.nvs = {{"nvs", UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX},
+			{"settings", UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}},
+		.power = {.known = true, .state = "fault_latched", .vbus_v = -99.99f, .vbus_i_a = -99.99f,
+			  .pvdd_v = -99.99f, .proto = "pd_pps", .contract_v = -99.9f, .contract_a = -99.99f, .pg = true,
+			  .amp_on = true, .amp_fault = true, .amp_faults = INT32_MIN, .amp_temp_c = -999.9f},
+	};
+	memset(w.reset_hist, 'x', sizeof(w.reset_hist) - 1);
+	w.reset_hist[sizeof(w.reset_hist) - 1] = '\0';
+	hifi_diag_write_sys(&w, out, sizeof(out));
+	CHECK(strlen(out) <= HIFI_DIAG_PAGE);
+	CHECK(hj_valid_object(out));
+
 	/* a small buffer never overflows, and still ends in a string */
 	char tiny[24];
 	hifi_diag_write_sys(&s, tiny, sizeof(tiny));
@@ -188,6 +206,7 @@ static void writers(void) {
 static struct {
 	bool fresh;
 	int tasks_calls;
+	int tasks_over; /* m_tasks reports this many tasks, too many */
 	uint32_t echo_bytes;
 	int echo_status;
 } md;
@@ -210,6 +229,7 @@ static void m_sys(hifi_diag_sys_t *s) {
 static int m_tasks(hifi_diag_tasks_t *t, bool fresh) {
 	md.fresh = fresh;
 	md.tasks_calls++;
+	if (md.tasks_over) return md.tasks_over;
 	t->n = 30;
 	t->sample_ms = 1000;
 	for (int i = 0; i < t->n; i++) t->t[i] = task("some_task_name", (uint32_t) i, 0, 0);
@@ -265,11 +285,21 @@ static void api(void) {
 	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/tasks/", NULL, out, sizeof(out)) == 400);
 	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/tasks/-1", NULL, out, sizeof(out)) == 400);
 	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/tasks/9999", NULL, out, sizeof(out)) == 400);
-	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/tasks/999", NULL, out, sizeof(out)) == 200);
+	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/tasks/48", NULL, out, sizeof(out)) == 200);
 	CHECK(hj_get_num(out, "next", &f2) && hj_get_num(out, "n", &n2) && f2 == n2);
 	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/tasks", "{\"from\":-1}", out, sizeof(out)) == 400);
 	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/tasks", "{\"from\":1.5}", out, sizeof(out)) == 400);
 	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/tasks", "{\"from\":\"x\"}", out, sizeof(out)) == 400);
+	/* a start past the list, or one too big for an int */
+	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/tasks/49", NULL, out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/tasks", "{\"from\":49}", out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/tasks", "{\"from\":1e12}", out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/tasks", "{\"from\":-1e12}", out, sizeof(out)) == 400);
+	/* more tasks than the list holds: says how many */
+	md.tasks_over = 60;
+	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/tasks", NULL, out, sizeof(out)) == 507);
+	CHECK_HAS(out, "60 tasks");
+	md.tasks_over = 0;
 
 	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/net", NULL, out, sizeof(out)) == 200);
 	CHECK_HAS(out, "\"rssi\":-50");

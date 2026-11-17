@@ -70,7 +70,8 @@ static bool rollback_reported;
 static volatile bool settings_changed;
 static volatile bool announce; /* the link just came up: publish the status now */
 static volatile uint32_t mqtt_drops; /* for `api diag/net` */
-static volatile int64_t mqtt_up_us, mqtt_first_us;
+static int64_t mqtt_up_us, mqtt_first_us; /* 64-bit: under mqtt_mux */
+static portMUX_TYPE mqtt_mux = portMUX_INITIALIZER_UNLOCKED;
 
 hifi_ota_t hifi_ota_session;
 
@@ -220,8 +221,10 @@ static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data) {
 	switch ((esp_mqtt_event_id_t) id) {
 	case MQTT_EVENT_CONNECTED:
 		connected = true;
+		portENTER_CRITICAL(&mqtt_mux);
 		mqtt_up_us = esp_timer_get_time();
 		if (!mqtt_first_us) mqtt_first_us = mqtt_up_us;
+		portEXIT_CRITICAL(&mqtt_mux);
 		ESP_LOGI(TAG, "relay connected: %s as %s", url, rem.dev);
 		esp_mqtt_client_subscribe(client, topic_cmd, 1);
 		publish_status();
@@ -229,7 +232,9 @@ static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data) {
 	case MQTT_EVENT_DISCONNECTED:
 		if (connected) mqtt_drops++;
 		connected = false;
+		portENTER_CRITICAL(&mqtt_mux);
 		mqtt_up_us = 0;
+		portEXIT_CRITICAL(&mqtt_mux);
 		break;
 	case MQTT_EVENT_DATA:
 		/* a message bigger than the client's buffer arrives in pieces */
@@ -382,8 +387,10 @@ void hifi_remote_link(hifi_diag_net_t *n, uint32_t *first_up_ms) {
 	} else {
 		/* MQTT: no byte counts */
 		n->link_drops = mqtt_drops;
+		portENTER_CRITICAL(&mqtt_mux);
 		up = mqtt_up_us;
 		first = mqtt_first_us;
+		portEXIT_CRITICAL(&mqtt_mux);
 	}
 	n->link_up = connected && up;
 	n->link_up_s = n->link_up ? (uint32_t) ((now - up) / 1000000) : 0;

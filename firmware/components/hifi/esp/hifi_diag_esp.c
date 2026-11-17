@@ -30,7 +30,8 @@ static uint32_t boot_app_ms, boot_ip_ms, boots;
 static char hist[HIFI_DIAG_HIST_CAP];
 static volatile uint32_t connects, disconnects;
 static volatile int last_reason;
-static volatile int64_t ip_since_us;
+static int64_t ip_since_us; /* 64-bit: under ip_mux */
+static portMUX_TYPE ip_mux = portMUX_INITIALIZER_UNLOCKED;
 static bool events_on;
 
 static SemaphoreHandle_t task_lock;
@@ -67,10 +68,15 @@ static void on_net(void *arg, esp_event_base_t base, int32_t id, void *data) {
 	} else if (base == WIFI_EVENT && id == WIFI_EVENT_STA_DISCONNECTED) {
 		disconnects++;
 		last_reason = ((wifi_event_sta_disconnected_t *) data)->reason;
+		portENTER_CRITICAL(&ip_mux);
 		ip_since_us = 0;
+		portEXIT_CRITICAL(&ip_mux);
 	} else if (base == IP_EVENT && id == IP_EVENT_STA_GOT_IP) {
-		ip_since_us = esp_timer_get_time();
-		if (!boot_ip_ms) boot_ip_ms = (uint32_t) (ip_since_us / 1000);
+		int64_t t = esp_timer_get_time();
+		portENTER_CRITICAL(&ip_mux);
+		ip_since_us = t;
+		portEXIT_CRITICAL(&ip_mux);
+		if (!boot_ip_ms) boot_ip_ms = (uint32_t) (t / 1000);
 	}
 }
 
@@ -80,10 +86,17 @@ void hifi_diag_tick(void) {
 		esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, on_net, NULL);
 		events_on = true;
 	}
-	/* an address that came before the handlers did */
-	if (hifi_net_ip(NULL, 0)) {
+	/* an address that came before the handlers did: once, while associated
+	 * (later losses and gains reach on_net) */
+	static bool caught_up;
+	wifi_ap_record_t ap;
+	if (events_on && !caught_up && hifi_net_ip(NULL, 0) && esp_wifi_sta_get_ap_info(&ap) == ESP_OK) {
+		caught_up = true;
 		if (!boot_ip_ms) boot_ip_ms = now_ms();
-		if (!ip_since_us) ip_since_us = esp_timer_get_time();
+		int64_t t = esp_timer_get_time();
+		portENTER_CRITICAL(&ip_mux);
+		if (!ip_since_us) ip_since_us = t;
+		portEXIT_CRITICAL(&ip_mux);
 	}
 }
 
@@ -128,7 +141,10 @@ static void sys(hifi_diag_sys_t *o) {
 /* One sample into out (unsorted, no CPU figures); the run-time total in *total. */
 static bool sample(hifi_diag_tasks_t *out, TaskStatus_t *st, uint32_t *total) {
 	UBaseType_t n = uxTaskGetSystemState(st, HIFI_DIAG_TASKS_MAX, total);
-	if (!n) return false;
+	if (!n) {
+		out->n = -(int) uxTaskGetNumberOfTasks(); /* more than fit */
+		return false;
+	}
 	out->n = (int) n;
 	for (UBaseType_t i = 0; i < n; i++) {
 		hifi_diag_task_t *t = &out->t[i];
@@ -136,8 +152,12 @@ static bool sample(hifi_diag_tasks_t *out, TaskStatus_t *st, uint32_t *total) {
 		t->num = st[i].xTaskNumber;
 		t->runtime = st[i].ulRunTimeCounter;
 		t->stack_free = st[i].usStackHighWaterMark; /* bytes on ESP-IDF */
-		BaseType_t c = xTaskGetAffinity(st[i].xHandle);
-		t->core = c == tskNO_AFFINITY ? -1 : (int) c;
+#ifdef CONFIG_FREERTOS_VTASKLIST_INCLUDE_COREID
+		/* from the snapshot: the handle may belong to a task gone since */
+		t->core = st[i].xCoreID == tskNO_AFFINITY ? -1 : (int) st[i].xCoreID;
+#else
+		t->core = -1;
+#endif
 		t->prio = (int) st[i].uxCurrentPriority;
 		t->cpu_pct = NAN;
 	}
@@ -168,13 +188,14 @@ static int tasks(hifi_diag_tasks_t *out, bool fresh) {
 				r = -1;
 			}
 		} else {
-			r = -1;
+			r = b && b->n < 0 ? -b->n : -1;
 		}
 		free(st);
 		free(a);
 		free(b);
 	}
 	if (!last) r = -1;
+	if (!r && !last->n) r = -1;
 	if (!r) *out = *last;
 	xSemaphoreGive(task_lock);
 	return r;
@@ -194,7 +215,9 @@ static void net(hifi_diag_net_t *o) {
 	o->connects = connects;
 	o->disconnects = disconnects;
 	o->last_reason = last_reason;
+	portENTER_CRITICAL(&ip_mux);
 	int64_t ip = ip_since_us;
+	portEXIT_CRITICAL(&ip_mux);
 	o->up_s = ip ? (uint32_t) ((esp_timer_get_time() - ip) / 1000000) : 0;
 	uint32_t first;
 	hifi_remote_link(o, &first);
@@ -203,12 +226,12 @@ static void net(hifi_diag_net_t *o) {
 /* ------------------------------------------------------------------ audio */
 
 /* patches/0009: squeezelite's output (absent in a build without it) */
-extern void hifi_output_stats(uint32_t *underruns, uint32_t *rate, uint32_t *buffer_ms, uint32_t *dma_ms, uint32_t *played_ms)
+extern void hifi_output_stats(uint32_t *underruns, uint32_t *rate, uint32_t *buffer_ms, uint32_t *dma_ms, uint32_t *played_s)
 	__attribute__((weak));
 
 static void audio(hifi_diag_audio_t *o) {
 	if (!hifi_output_stats) return;
-	hifi_output_stats(&o->underruns, &o->rate, &o->buffer_ms, &o->dma_ms, &o->frames_ms);
+	hifi_output_stats(&o->underruns, &o->rate, &o->buffer_ms, &o->dma_ms, &o->played_s);
 	o->known = true;
 }
 
@@ -267,6 +290,7 @@ static int echo(uint32_t bytes, hifi_diag_echo_t *o, const char **err) {
 	int64_t t0 = esp_timer_get_time();
 	int st = 0;
 	while (sent < bytes) {
+		if (esp_timer_get_time() - t0 > HIFI_DIAG_ECHO_BUDGET_S * 1000000LL) break; /* a slow link: what went, in the time */
 		uint32_t n = bytes - sent < ECHO_FRAME ? bytes - sent : ECHO_FRAME;
 		if (n < hl + 2) n = hl + 2;
 		f[n - 2] = '"';

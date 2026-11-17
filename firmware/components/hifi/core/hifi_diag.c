@@ -182,7 +182,8 @@ void hifi_diag_write_net(const hifi_diag_net_t *n, char *out, size_t cap) {
 	hj_obj(&j, "wifi");
 	if (n->rssi) hj_int(&j, "rssi", n->rssi);
 	else hj_null(&j, "rssi");
-	hj_int(&j, "channel", n->channel);
+	if (n->channel) hj_int(&j, "channel", n->channel);
+	else hj_null(&j, "channel");
 	hj_str(&j, "bssid", n->bssid[0] ? n->bssid : NULL);
 	hj_str(&j, "phy", n->phy);
 	hj_int(&j, "connects", n->connects);
@@ -211,7 +212,7 @@ void hifi_diag_write_audio(const hifi_diag_audio_t *a, char *out, size_t cap) {
 		hj_int(&j, "buffer_ms", a->buffer_ms);
 		hj_int(&j, "dma_ms", a->dma_ms);
 		hj_int(&j, "latency_ms", (long long) a->buffer_ms + a->dma_ms);
-		hj_int(&j, "played_s", a->frames_ms / 1000);
+		hj_int(&j, "played_s", a->played_s);
 	} else {
 		hj_null(&j, "underruns");
 	}

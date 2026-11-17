@@ -593,6 +593,7 @@ static int r_diag(const hifi_ops_t *ops, const char *what, bool post, const char
 		if (post && hj_get_raw(body, "from", &(const char *) {0}, &(size_t) {0}) &&
 		    (!hj_get_num(body, "from", &from) || from < 0 || from != floor(from)))
 			return error(out, cap, 400, "from: a whole number, where the page starts");
+		if (from > HIFI_DIAG_TASKS_MAX) return error(out, cap, 400, "from: past the last task");
 		if (!d->tasks) return error(out, cap, 404, "this build keeps no task stats");
 		hifi_diag_tasks_t *t = calloc(1, sizeof(*t));
 		if (!t) return error(out, cap, 503, "out of memory");
@@ -600,6 +601,11 @@ static int r_diag(const hifi_ops_t *ops, const char *what, bool post, const char
 		int rc = d->tasks(t, from == 0);
 		if (!rc) hifi_diag_write_tasks(t, (int) from, out, cap);
 		free(t);
+		if (rc > 0) {
+			char m[64];
+			snprintf(m, sizeof(m), "%d tasks, more than the %d the list holds", rc, HIFI_DIAG_TASKS_MAX);
+			return error(out, cap, 507, m);
+		}
 		return rc ? error(out, cap, 404, "this build keeps no task stats") : 200;
 	}
 	if (!strcmp(what, "/net") && d->net) {

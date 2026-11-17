@@ -103,7 +103,7 @@ typedef struct {
 	uint32_t rate;         /* Hz now at the output */
 	uint32_t buffer_ms;    /* decoded audio waiting in the output buffer */
 	uint32_t dma_ms;       /* in the I2S DMA: the pipeline's fixed latency */
-	uint32_t frames_ms;    /* the output's total played, ms since boot */
+	uint32_t played_s;     /* the output's total played, s since boot */
 } hifi_diag_audio_t;
 
 typedef struct {
@@ -119,17 +119,20 @@ typedef struct {
 
 #define HIFI_DIAG_ECHO_MAX (1024u * 1024u)
 #define HIFI_DIAG_ECHO_DEFAULT (128u * 1024u)
+#define HIFI_DIAG_ECHO_BUDGET_S 20
 
 typedef struct {
 	void (*sys)(hifi_diag_sys_t *out);
 	/* fresh: take a new CPU sample (blocks about 1 s), else the last one.
-	 * 0, or -1 when there are no task stats */
+	 * 0; -1 when there are no task stats; the task count when there are
+	 * more than HIFI_DIAG_TASKS_MAX */
 	int (*tasks)(hifi_diag_tasks_t *out, bool fresh);
 	void (*net)(hifi_diag_net_t *out);
 	void (*audio)(hifi_diag_audio_t *out);
 	void (*ota)(hifi_diag_ota_t *out);
 	/* sends bytes of filler up the remote link and times it: 0, or an HTTP
-	 * status with *err set. NULL: 404 */
+	 * status with *err set. Stops after HIFI_DIAG_ECHO_BUDGET_S, with out
+	 * holding what was sent by then. NULL: 404 */
 	int (*echo)(uint32_t bytes, hifi_diag_echo_t *out, const char **err);
 } hifi_diag_ops_t;
 
