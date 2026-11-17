@@ -47,7 +47,7 @@ UP_CFLAGS := -std=gnu11 -O1 -g -Wall -Wextra -Werror -Wno-unused-function -Wno-u
 upstream:
 	@mkdir -p $(UP)/gen; python3 upstream/upstream.py files $(UP) $(UP_FILES); rc=$$?; \
 	if [ $$rc = 3 ]; then echo "SKIPPED upstream regressions: no copy of upstream (set HIFI_UPSTREAM)"; \
-	  exit $(if $(UPSTREAM_REQUIRED),1,0); fi; [ $$rc = 0 ] || exit 1; \
+	  exit $(if $(filter-out 0,$(UPSTREAM_REQUIRED)),1,0); fi; [ $$rc = 0 ] || exit 1; \
 	python3 upstream/upstream.py extract $(UP)/components/squeezelite/controls.c \
 	  connect_cli_socket cli_send_cmd > $(UP)/gen/controls_fns.c && \
 	python3 upstream/upstream.py extract $(UP)/components/driver_bt/bt_app_sink.c \
@@ -114,7 +114,7 @@ fuzz-one-%:
 	    $(FUZZ)/$*-$(SECS)s.log | head -50; exit 1; }
 else
 fuzz fuzz-long fuzz-build:
-	@echo "SKIPPED fuzzing: no clang with libFuzzer (set CLANG)"; exit $(if $(FUZZ_REQUIRED),1,0)
+	@echo "SKIPPED fuzzing: no clang with libFuzzer (set CLANG)"; exit $(if $(filter-out 0,$(FUZZ_REQUIRED)),1,0)
 endif
 
 clean:

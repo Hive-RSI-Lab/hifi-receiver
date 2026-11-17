@@ -9,7 +9,10 @@
 The upstream file comes from $HIFI_UPSTREAM (a git checkout that has the
 pinned commit, such as a build tree from tools/fetch.sh), else from GitHub
 at the pinned commit; either is kept in OUT/.pristine, so it is fetched once.
-Exit 3 when neither is reachable: the caller skips the upstream tests then.
+Exit 3 only when GitHub can't be reached and no HIFI_UPSTREAM is set: the
+caller skips the upstream tests then. A HIFI_UPSTREAM without the pinned
+commit, or a GitHub answer other than the file (a wrong path or commit), is
+an error (exit 1), not a skip.
 
 `extract` lets a test build upstream's own functions, as patched, against
 stubs of the ESP-IDF calls they make, instead of a copy of them that would
@@ -21,10 +24,15 @@ import os
 import re
 import subprocess
 import sys
+import urllib.error
 import urllib.request
 from pathlib import Path
 
 FW = Path(__file__).resolve().parents[2]
+
+
+class Broken(Exception):
+    """Upstream was reached but hasn't the pinned file: a failure, not a skip."""
 
 
 def lock() -> dict[str, str]:
@@ -45,14 +53,17 @@ def pristine(path: str, cache: Path) -> bytes | None:
     up = os.environ.get("HIFI_UPSTREAM")
     if up:
         r = subprocess.run(["git", "-C", up, "show", f"{lk['commit']}:{path}"], capture_output=True)
-        if r.returncode == 0:
-            data = r.stdout
+        if r.returncode:
+            raise Broken(f"HIFI_UPSTREAM={up} has no {lk['commit']}:{path}: {r.stderr.decode().strip()}")
+        data = r.stdout
     if data is None:
         slug = lk["url"].removeprefix("https://github.com/").removesuffix(".git")
         url = f"https://raw.githubusercontent.com/{slug}/{lk['commit']}/{path}"
         try:
             with urllib.request.urlopen(url, timeout=30) as resp:
                 data = resp.read()
+        except urllib.error.HTTPError as e:
+            raise Broken(f"GitHub has no {path} at {lk['commit']} ({e})") from e
         except OSError as e:
             print(f"upstream.py: can't get {path} ({e}); set HIFI_UPSTREAM to a checkout", file=sys.stderr)
             return None
@@ -73,7 +84,11 @@ def file_patches(path: str) -> list[str]:
 
 def files(out: Path, paths: list[str]) -> int:
     for path in paths:
-        data = pristine(path, out / ".pristine")
+        try:
+            data = pristine(path, out / ".pristine")
+        except Broken as e:
+            print(f"upstream.py: {e}", file=sys.stderr)
+            return 1
         if data is None:
             return 3
         dest = out / path

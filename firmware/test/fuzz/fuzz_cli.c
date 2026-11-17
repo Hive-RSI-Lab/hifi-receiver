@@ -32,6 +32,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t n) {
 			FUZZ_ASSERT(method && path && strlen(body) < 256);
 			hifi_api_handle(ops, method, path, body, out, CAP);
 			FUZZ_ASSERT(hj_valid_object(out));
+		} else {
+			FUZZ_ASSERT(out[0]); /* a console that refuses says how to use it */
 		}
 	}
 	FUZZ_ASSERT(strlen(out) < CAP);

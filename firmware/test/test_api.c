@@ -683,6 +683,15 @@ static void crash(void) {
 	/* a page at a time, for a bench that caps a console line */
 	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{}", out, sizeof(out)) == 400);
 	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":-1}", out, sizeof(out)) == 400);
+	/* fuzzing: NaN passed from < 0 and was cast and used as an offset into the log */
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":-nan}", out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":1e300}", out, sizeof(out)) == 200);
+	CHECK_HAS(out, "\"log\":\"\"");
+	/* frames past int were cast before the 64..16384 check */
+	CHECK(hifi_api_reply_cap("/api/v1/capture", "{\"frames\":1e30}") ==
+	      hifi_api_reply_cap("/api/v1/capture", "{\"frames\":16384}"));
+	CHECK(hifi_api_reply_cap("/api/v1/capture", "{\"frames\":-1e30}") ==
+	      hifi_api_reply_cap("/api/v1/capture", "{\"frames\":64}"));
 	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":15}", out, sizeof(out)) == 200);
 	CHECK_STR(out, "{\"reset_reason\":\"panic\",\"len\":35,\"from\":15,\"next\":35,"
 		       "\"log\":\"Backtrace: 0x4008\\\"\\\\\\u000a\"}");

@@ -56,6 +56,17 @@ static void reader(void) {
 	CHECK(!hj_get_num(body, "type", &d));
 	CHECK(!hj_get_str(body, "missing", s, sizeof(s)));
 	CHECK(!hj_get_num(body, "a", &d)); /* nested keys aren't top-level */
+	/* strtod reads these, JSON has none of them, and NaN slips every range
+	 * check after (found by fuzzing): refused, *out untouched */
+	d = 7;
+	CHECK(!hj_get_num("{\"n\":-nan}", "n", &d) && d == 7);
+	CHECK(!hj_get_num("{\"n\":-inf}", "n", &d) && d == 7);
+	CHECK(!hj_get_num("{\"n\":-infinity}", "n", &d) && d == 7);
+	CHECK(!hj_get_num("{\"n\":1e999}", "n", &d) && d == 7);
+	CHECK(hj_get_num("{\"n\":1e300}", "n", &d) && d == 1e300);
+	double arr[3];
+	CHECK(hj_get_num_array("{\"a\":[1,-nan,2]}", "a", arr, 3) == -1);
+	CHECK(hj_get_num_array("{\"a\":[1,2e999]}", "a", arr, 3) == -1);
 	CHECK(hj_get_str(body, "esc", s, sizeof(s)));
 	CHECK_STR(s, "x\"y");
 	/* truncation keeps a terminated string */

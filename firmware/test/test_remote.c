@@ -345,6 +345,10 @@ static void test_ota_api(void) {
 	CHECK(api("POST", "/api/v1/ota/begin", "{\"size\":1e122}") == 400);
 	CHECK_HAS(out, "larger than the app slot");
 	CHECK(api("POST", "/api/v1/ota/begin", "{\"size\":4294967296}") == 400);
+	CHECK(api("POST", "/api/v1/ota/begin", "{\"size\":-nan}") == 400);
+	/* the chunk offset too, and before any update is open */
+	CHECK(api("POST", "/api/v1/ota/chunk", "{\"off\":1e30,\"data\":\"AAAA\"}") == 400);
+	CHECK(api("POST", "/api/v1/ota/chunk", "{\"off\":-nan,\"data\":\"AAAA\"}") == 400);
 
 	snprintf(body, sizeof(body), "{\"size\":%zu,\"sha256\":\"%s\",\"version\":\"0.2.0\"}", sizeof(img), sha);
 	CHECK(api("POST", "/api/v1/ota/begin", body) == 200);
@@ -637,6 +641,7 @@ static void test_remote(void) {
 	 * undefined cast (fuzzing found it), just a rejection */
 	CHECK(remote("{\"v\":1,\"id\":1e30}\nAAAA", 0) == 401);
 	CHECK(remote("{\"v\":1,\"id\":-1e300}\nAAAA", 0) == 401);
+	CHECK(remote("{\"v\":1,\"id\":-nan}\nAAAA", 0) == 401);
 	CHECK(remote("{\"v\":1,\"id\":18446744073709551616}\nAAAA", 0) == 401);
 	m = signed_msg("{\"v\":1,\"dev\":\"240ac4123456\",\"id\":1e30,\"ts\":1761700004,\"method\":\"GET\",\"path\":\"/api/v1/info\",\"body\":null}");
 	unsigned long long last = rem.last_id;
@@ -655,8 +660,10 @@ static void test_remote(void) {
 	/* a reply buffer too small for even the envelope */
 	m = signed_msg("{\"v\":1,\"dev\":\"240ac4123456\",\"id\":1761700001700,\"ts\":1761700005,\"method\":\"GET\",\"path\":\"/api/v1/info\",\"body\":{}}");
 	char small[48];
+	unsigned long acc = rem.accepted, rej = rem.rejected;
 	CHECK(hifi_remote_handle(&rem, &ops, m, strlen(m), 0, small, sizeof(small)) == 500);
 	CHECK(strlen(small) < sizeof(small));
+	CHECK(rem.accepted == acc && rem.rejected == rej + 1); /* counted once, as rejected */
 	free(m);
 }
 

@@ -1,6 +1,6 @@
-#include <string.h>
 /* The core board's (Plus/Ultra) logic: the expander's knob and buttons, the
  * PD request, its power and governor numbers, and the update manifest. */
+#include <string.h>
 #include "check.h"
 #include "hifi_exp.h"
 #include "hifi_gov.h"

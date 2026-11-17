@@ -207,6 +207,9 @@ static hifi_ota_t fuzz_ota;
 
 static hifi_ops_t fuzz_ops_v;
 
+/* the sha256 an OTA the fuzzer opens says it has */
+#define FUZZ_SHA "abababababababababababababababababababababababababababababababab"
+
 /* a fresh board for each input, so one input never depends on another */
 static const hifi_ops_t *fuzz_ops(bool full) {
 	memset(&m, 0, sizeof(m));

@@ -121,8 +121,7 @@ int hifi_remote_handle(hifi_remote_t *r, const hifi_ops_t *ops, const char *msg,
 		st = reject(r, id, 409, "ts too far from the board's clock", out, cap);
 		goto done;
 	}
-	r->last_id = id;
-	r->accepted++;
+	r->last_id = id; /* taken even if it fails below: a replay of it is still stale */
 
 	const char *braw = NULL;
 	size_t blen = 0;
@@ -141,6 +140,7 @@ int hifi_remote_handle(hifi_remote_t *r, const hifi_ops_t *ops, const char *msg,
 		st = reject(r, id, 500, "reply buffer too small", out, cap);
 		goto done;
 	}
+	r->accepted++; /* counted once, as accepted or as rejected */
 	st = hifi_api_handle(ops, method, path, body, out + pre, cap - pre - 20);
 	size_t used = strlen(out);
 	snprintf(out + used, cap - used, ",\"status\":%d}", st);

@@ -1,2 +1,2 @@
 /api/v1/tone
-{"type":"noise","level_dbfs":-30,"duration_s":8}
+{"type":"sine","freq_hz":1000,"level_dbfs":-20,"channel":"both","duration_s":5}
