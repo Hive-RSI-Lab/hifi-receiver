@@ -375,7 +375,8 @@ fits a remote bench's reply line; the task list pages. On the console:
          "settings": {"used": 96, "free": 1920, "total": 2016, "namespaces": 1, "used_pct": 4.8}},
  "power": {"state": "on", "vbus_v": 20.08, "vbus_i_a": 0.31, "pvdd_v": 19.9, "pg": true,
            "proto": "pd", "contract_v": 20.0, "contract_a": 3.25,
-           "amp_on": true, "amp_fault": false, "amp_faults": 0, "amp_temp_c": null}}
+           "amp_on": true, "amp_fault": false, "amp_faults": 0, "amp_temp_c": null},
+ "restart_cause": "api_reboot by hifi_restart at 0x400d8a1f after 5321 s"}
 ```
 
 - `boot_ms`: ms from the app's start (the `esp_timer` clock, which starts
@@ -392,6 +393,17 @@ fits a remote bench's reply line; the task list pages. On the console:
   `power_on`, `external`, `restart` (a software restart: an update, `restart`
   from the API), `panic`, `interrupt_watchdog`, `task_watchdog`, `watchdog`,
   `deep_sleep`, `brownout`, `sdio` and `unknown`.
+- `restart_cause` (only when `reset_reason` is `restart`) names who restarted
+  it: every `esp_restart` is link-wrapped to keep, in RTC memory across the
+  restart, a note of why (when the path set one), the calling task, the
+  call's address and the uptime: `<note> by <task> at 0x<pc> after <n> s`.
+  With no note it reads `esp_restart by ...`: feed the address to
+  `xtensa-esp32-elf-addr2line -e squeezelite.elf` to name the caller.
+  `unrecorded` means a software restart that didn't pass the wrapper.
+  `GET /api/v1/state/sys` carries it too; here it is left out when the reply
+  would pass the page. Notes: `api_reboot`, `api_factory_reset`,
+  `factory_reset`, `update_done`, a lab experiment's reason, `ip_change` (the
+  station's address changed, `esp_app_main.c`) and `squeezelite_exit`.
 - `nvs` is each NVS partition's entries (32 bytes each): how full the flash
   key store is, for wear.
 - `power` is the snapshot's power fields (`GET /api/v1/state`); a
