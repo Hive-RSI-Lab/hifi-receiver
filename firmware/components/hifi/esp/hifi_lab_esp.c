@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "esp_attr.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
 #include "esp_system.h"
@@ -26,7 +27,8 @@
 
 static const char *TAG = "hifi_lab";
 
-static hifi_lab_t lab;
+/* plain data, only touched from tasks: in PSRAM to spare the boot heap */
+static EXT_RAM_ATTR hifi_lab_t lab;
 static SemaphoreHandle_t lab_lock;
 
 /* what ran when the board went down: survives a panic or watchdog restart */
@@ -174,6 +176,7 @@ void hifi_lab_esp_init(void) {
 	kept_magic = KEPT_MAGIC;
 	kept_name[0] = 0;
 	hifi_lab_register(&lab, &lab_espnow);
+	hifi_lab_register(&lab, &lab_lanscan);
 #if CONFIG_BT_CLASSIC_ENABLED
 	hifi_lab_register(&lab, &lab_bt);
 #endif
