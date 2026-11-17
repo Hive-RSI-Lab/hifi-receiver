@@ -59,6 +59,13 @@ void hifi_diag_hist_push(char *hist, size_t cap, const char *reason) {
 	memcpy(hist, next, keep + 1);
 }
 
+void hifi_restart_cause_fmt(char *out, size_t cap, const char *note, const char *task, uint32_t pc,
+			    uint32_t up_s) {
+	if (!cap) return;
+	snprintf(out, cap, "%s by %s at 0x%08x after %u s", note && note[0] ? note : "esp_restart",
+		 task && task[0] ? task : "?", (unsigned) pc, (unsigned) up_s);
+}
+
 bool hifi_diag_is_power_cut(const char *reason, uint32_t boots_before) {
 	if (!reason || !boots_before) return false;
 	return !strcmp(reason, "power_on") || !strcmp(reason, "brownout");
@@ -147,6 +154,17 @@ void hifi_diag_write_sys(const hifi_diag_sys_t *s, char *out, size_t cap) {
 		hj_obj_end(&j);
 	} else {
 		hj_null(&j, "power");
+	}
+	/* last, and only when it still fits the page with the closing brace: a
+	 * reply as wide as sys can get leaves it out rather than cut the reply
+	 * (GET /api/v1/state/sys always has it) */
+	if (s->restart_cause) {
+		hj_t keep = j;
+		hj_str(&j, "restart_cause", s->restart_cause);
+		if (j.overflow || j.len + 1 >= j.cap) {
+			j = keep;
+			j.buf[j.len] = '\0';
+		}
 	}
 	hj_obj_end(&j);
 }

@@ -1,0 +1,35 @@
+diff --git a/components/platform_console/app_squeezelite/cmd_squeezelite.c b/components/platform_console/app_squeezelite/cmd_squeezelite.c
+index 2dd3e44..575b40d 100644
+--- a/components/platform_console/app_squeezelite/cmd_squeezelite.c
++++ b/components/platform_console/app_squeezelite/cmd_squeezelite.c
+@@ -87,6 +87,9 @@ static void squeezelite_thread(void *arg){
+         vTaskDelay( pdMS_TO_TICKS(wait * 1000));
+         ESP_LOGW(TAG, "Deliberate Squeezelite restart; resetting boot-loop counter");
+         halSTORAGE_RebootCounterUpdate(0);
++        /* hifi: name this restart (api diag restart_cause) */
++        extern void hifi_restart_note(const char *why) __attribute__((weak));
++        if (hifi_restart_note) hifi_restart_note("squeezelite_exit");
+         esp_restart();
+     } else {
+ 		cmd_send_messaging("cfg-audio-tmpl",MESSAGING_ERROR,"Correct command line and reboot\n");
+diff --git a/main/esp_app_main.c b/main/esp_app_main.c
+index e727499..e6cefe4 100644
+--- a/main/esp_app_main.c
++++ b/main/esp_app_main.c
+@@ -151,6 +151,7 @@ bool is_recovery_running;
+ bool is_network_connected(){
+ 	return bNetworkConnected;
+ }
++extern void hifi_restart_note(const char *why) __attribute__((weak));
+ void cb_connection_got_ip(nm_state_t new_state, int sub_state){
+ 	const char *hostname;
+ 	static ip4_addr_t ip;
+@@ -163,6 +164,8 @@ void cb_connection_got_ip(nm_state_t new_state, int sub_state){
+ 		if(!wait_for_commit()){
+ 			ESP_LOGW(TAG,"Unable to commit configuration. ");
+ 		}
++		/* hifi: name this restart (api diag restart_cause) */
++		if (hifi_restart_note) hifi_restart_note("ip_change");
+ 		esp_restart();
+ 	}
+ 	/* hifi: remember the address, or the reboot above never fires. AirPlay

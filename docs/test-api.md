@@ -321,7 +321,7 @@ Reply: `{"ok": true}`.
 
 ## `POST /api/v1/selftest`
 
-Runs every check the board can do on itself in about 2 s and returns them.
+Runs every check the board can do on itself in about 3 s and returns them.
 Nothing in it needs a speaker or a load.
 
 ```json
@@ -334,6 +334,7 @@ Nothing in it needs a speaker or a load.
   {"name": "pvdd_on",       "pass": true,  "value": "on"},
   {"name": "pvdd_sensed",   "pass": true,  "value": "PVDD 19.95 V of VBUS 20.12 V"},
   {"name": "amp_no_fault",  "pass": true,  "value": "FAULTZ high after 200 ms enabled"},
+  {"name": "loopback",      "pass": true,  "value": "stereo: L +0.1/-43.4, R -42.1/-0.1 dB"},
   {"name": "psram",         "pass": true,  "value": "8 MB"},
   {"name": "heap",          "pass": true,  "value": "81234 B free"},
   {"name": "network",       "pass": false, "value": "not connected"}]}
@@ -346,6 +347,24 @@ expected, and the bench script knows it.
 After a remote link drop since boot, a `link_drop` check follows `network`:
 it always passes, and its value is how long ago and why
 (`"120s ago: TCP gave up: keepalive or resends"`, see `diag/net`).
+
+On a board with loopback taps (the Lite; see `capture`), `loopback` checks
+the speaker path end to end: a 1 kHz tone at -50 dBFS on the left side, then
+the right, each read back on both taps. A speaker plugged in gives a faint
+beep. Its value is the channel mode, then for the left tone and the right
+tone what the left and right taps read, in dB against the level the path
+should give (`"stereo: L +0.1/-43.4, R -42.1/-0.1 dB"`: the left tone reaches
+the left output only, the right tone the right). An output the channel mode
+feeds must read within 3 dB of its gain (0 dB, or -6 dB per side in mono);
+one it doesn't feed must read 20 dB down or more. The quiet legs read the
+taps' noise in the 1 kHz bin, so expect about -40 to -60 dB, and once in a
+while about -28 dB on the first run after boot. With the EQ not flat, the
+3 dB widens by the largest band's gain and the value ends in `", EQ 6 dB"`.
+With a stream, a test tone, a connected source or DJ direct playing, the
+check is skipped and passes (`"skipped: a stream plays"`, `"skipped: a source
+is connected"`), and the same if a source connects while it runs; a second
+self-test that starts while one runs skips it too (`"skipped: another
+self-test runs it"`). With the amp off it fails (`"amp not on"`).
 
 Plus and Ultra have no `vbus_matches` or `codec_i2c`; their board checks
 are `expander_i2c` (the I/O expander at 0x20, or 0x74–0x77 for the
@@ -375,7 +394,8 @@ fits a remote bench's reply line; the task list pages. On the console:
          "settings": {"used": 96, "free": 1920, "total": 2016, "namespaces": 1, "used_pct": 4.8}},
  "power": {"state": "on", "vbus_v": 20.08, "vbus_i_a": 0.31, "pvdd_v": 19.9, "pg": true,
            "proto": "pd", "contract_v": 20.0, "contract_a": 3.25,
-           "amp_on": true, "amp_fault": false, "amp_faults": 0, "amp_temp_c": null}}
+           "amp_on": true, "amp_fault": false, "amp_faults": 0, "amp_temp_c": null},
+ "restart_cause": "api_reboot by esp_timer at 0x400e9a10 after 329 s"}
 ```
 
 - `boot_ms`: ms from the app's start (the `esp_timer` clock, which starts
@@ -392,6 +412,18 @@ fits a remote bench's reply line; the task list pages. On the console:
   `power_on`, `external`, `restart` (a software restart: an update, `restart`
   from the API), `panic`, `interrupt_watchdog`, `task_watchdog`, `watchdog`,
   `deep_sleep`, `brownout`, `sdio` and `unknown`.
+- `restart_cause` (only when `reset_reason` is `restart`) names who restarted
+  it: every `esp_restart` is link-wrapped to keep, in RTC memory across the
+  restart, a note of why (when the path set one), the calling task, the
+  call's address and the uptime: `<note> by <task> at 0x<pc> after <n> s`.
+  With no note it reads `esp_restart by ...`: feed the address to
+  `xtensa-esp32-elf-addr2line -e squeezelite.elf` to name the caller.
+  `unrecorded` means a software restart that didn't pass the wrapper.
+  `GET /api/v1/state/sys` carries it too; here it is left out when the reply
+  would pass the page. Notes: `api_reboot`, `api_factory_reset`,
+  `factory_reset`, `update_done`, `lab_offline` and `lab_stuck` (the lab's
+  own watchdog), `ip_change` (the
+  station's address changed, `esp_app_main.c`) and `squeezelite_exit`.
 - `nvs` is each NVS partition's entries (32 bytes each): how full the flash
   key store is, for wear.
 - `power` is the snapshot's power fields (`GET /api/v1/state`); a

@@ -11,7 +11,7 @@ LDLIBS := -lm
 
 SRCS := $(wildcard $(CORE)/*.c)
 BIN := build
-TESTS := test_json_pd test_power test_gov_tone test_vol_ir_meta test_api test_remote test_core test_line test_tap test_gate test_listen test_diag test_lab test_scan
+TESTS := test_json_pd test_power test_gov_tone test_vol_ir_meta test_api test_remote test_core test_line test_tap test_gate test_listen test_diag test_lab test_scan test_party sim_party
 
 # test_remote signs and checks commands with real Ed25519 where the host has
 # OpenSSL's libcrypto, and with a stand-in signature where it doesn't.
@@ -49,7 +49,7 @@ UP_FILES = components/squeezelite/controls.c components/driver_bt/bt_app_sink.c 
 	components/driver_bt/bt_app_core.c components/spotify/Shim.cpp components/spotify/cspot/src/LoginBlob.cpp \
 	components/spotify/cspot_private.h components/spotify/cspot_sink.h $(CSPOT)/include/LoginBlob.h \
 	$(CSPOT)/include/ConstantParameters.h $(CSPOT)/bell/external/cJSON/cJSON.c $(CSPOT)/bell/external/cJSON/cJSON.h \
-	components/wifi-manager/network_manager_handlers.c components/raop/dmap_parser.c components/raop/dmap_parser.h \
+	components/wifi-manager/network_manager_handlers.c components/raop/dmap_parser.c components/raop/dmap_parser.h main/esp_app_main.c \
 	components/raop/rtp.c components/codecs/inc/mad/mad.h $(ALAC_FILES) \
 	$(BELL)/io/TLSSocket.cpp $(BELL)/io/include/TLSSocket.h $(BELL)/io/include/BellSocket.h \
 	$(BELL)/io/X509Bundle.cpp $(BELL)/io/include/X509Bundle.h \

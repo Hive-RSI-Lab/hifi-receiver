@@ -53,6 +53,12 @@ void hifi_diag_hist_push(char *hist, size_t cap, const char *reason);
 /* A restart that looks like the power went: reason power_on or brownout on a
  * board whose counter says it had booted before (a first boot is a plug-in). */
 bool hifi_diag_is_power_cut(const char *reason, uint32_t boots_before);
+/* What esp_restart's wrapper kept (esp/hifi_crash.c) in words:
+ * "<note> by <task> at 0x<pc> after <n> s"; with no note, "esp_restart by ...".
+ * The address names the caller (addr2line on the build's ELF). */
+#define HIFI_RESTART_CAUSE_CAP 80
+void hifi_restart_cause_fmt(char *out, size_t cap, const char *note, const char *task, uint32_t pc,
+			    uint32_t up_s);
 
 /*
  * The output's underrun count, one step per output call (patch 0009, in
@@ -97,6 +103,7 @@ typedef struct {
 	uint32_t boot_app_ms, boot_ip_ms, boot_link_ms;
 	hifi_diag_heap_t internal, psram;
 	const char *reset_reason;
+	const char *restart_cause; /* who called esp_restart (hifi_crash_restart_cause); NULL: not a restart */
 	char reset_hist[HIFI_DIAG_HIST_CAP];
 	uint32_t boots; /* since the counter was first written */
 	uint32_t power_cuts; /* restarts that looked like a power cut (hifi_diag_is_power_cut), kept in NVS */

@@ -29,6 +29,7 @@
 #include "platform_config.h"
 
 #include "hifi_board.h"
+#include "hifi_crash.h"
 #include "hifi_esp.h"
 #include "hifi_json.h"
 #include "hifi_remote.h"
@@ -426,11 +427,26 @@ static void note_good_slot(void) {
 	if (strcmp(saved, run->label)) config_set_value(NVS_TYPE_STR, "hifi_good_slot", run->label);
 }
 
+static hifi_restart_hold_t restart_hold; /* hifi_boot.h; under restart_mux */
+static portMUX_TYPE restart_mux = portMUX_INITIALIZER_UNLOCKED;
+
+/* hifi_esp.h: called from upstream's IP-change reboot (patch 0030). It reads
+ * only RAM: restart_hold.on_trial is set at boot and cleared by the relay task
+ * after the image is marked good, in the same critical section that takes
+ * a held restart, so a restart is either held and then run by the relay task,
+ * or run here with otadata already rewritten. */
+bool hifi_restart_after_trial(const char *why) {
+	portENTER_CRITICAL(&restart_mux);
+	bool held = hifi_restart_hold(&restart_hold, why);
+	portEXIT_CRITICAL(&restart_mux);
+	if (held) ESP_LOGW(TAG, "%s: restart held until firmware %s is kept", why ? why : "restart", HIFI_FW_VERSION);
+	return held;
+}
+
 static void relay_task(void *arg) {
 	bool sntp = false, on_trial = false, boot_heap_taken = false;
 	uint32_t trial_start = 0, last_status = 0;
-	esp_ota_img_states_t st;
-	if (esp_ota_get_state_partition(esp_ota_get_running_partition(), &st) == ESP_OK && st == ESP_OTA_IMG_PENDING_VERIFY) {
+	if (restart_hold.on_trial) { /* set by hifi_remote_start */
 		on_trial = true;
 		ESP_LOGW(TAG, "firmware %s is on trial: it has %d s to prove itself", HIFI_FW_VERSION, HIFI_TRIAL_LIMIT_S);
 	} else {
@@ -502,13 +518,33 @@ static void relay_task(void *arg) {
 			hifi_listen_trial(&t);
 			char why[96];
 			hifi_trial_verdict_t v = hifi_trial_judge(&t, now - trial_start, why, sizeof(why));
-			if (v == HIFI_TRIAL_GOOD) {
-				esp_ota_mark_app_valid_cancel_rollback();
+			esp_err_t valid = ESP_FAIL;
+			if (v == HIFI_TRIAL_GOOD && (valid = esp_ota_mark_app_valid_cancel_rollback()) != ESP_OK) {
+				/* not kept yet: a held restart now would roll it back. Try
+				 * again on the next pass */
+				ESP_LOGE(TAG, "firmware %s passed its trial but couldn't be marked good: %s", HIFI_FW_VERSION,
+					 esp_err_to_name(valid));
+			} else if (v == HIFI_TRIAL_GOOD) {
 				note_good_slot();
 				on_trial = false;
 				ESP_LOGI(TAG, "firmware %s kept: %s", HIFI_FW_VERSION, why);
 				publish_event("ota_valid", "why", why, NULL, NULL);
 				publish_status();
+				const char *held = NULL;
+				portENTER_CRITICAL(&restart_mux);
+				bool go = hifi_restart_release(&restart_hold, &held);
+				portEXIT_CRITICAL(&restart_mux);
+				if (go) {
+					/* AirPlay stayed bound to the old address until now */
+					ESP_LOGW(TAG, "restarting for the held %s", held);
+					publish_event("restart", "why", held, NULL, NULL);
+					vTaskDelay(pdMS_TO_TICKS(500));
+					/* the good slot, and any setting changed meanwhile, as
+					 * upstream's own restart does */
+					if (!wait_for_commit()) ESP_LOGW(TAG, "settings not committed before the restart");
+					hifi_restart_note(held);
+					esp_restart();
+				}
 			} else if (v == HIFI_TRIAL_BAD) {
 				ESP_LOGE(TAG, "firmware %s failed its trial: %s; rolling back", HIFI_FW_VERSION, why);
 				config_set_value(NVS_TYPE_STR, "hifi_rb_from", HIFI_FW_VERSION);
@@ -542,6 +578,11 @@ void hifi_remote_start(const hifi_ops_t *o) {
 	if (!hifi_remote_set_keys(&rem, HIFI_HIVE_PUBKEY)) ESP_LOGW(TAG, "no Hive key in this build: relay commands are refused");
 
 	load_settings();
+
+	/* read once, before anything can mark the image good (hifi_boot.h) */
+	esp_ota_img_states_t st;
+	restart_hold.on_trial = esp_ota_get_state_partition(esp_ota_get_running_partition(), &st) == ESP_OK &&
+				st == ESP_OTA_IMG_PENDING_VERIFY;
 
 	const esp_partition_t *next = esp_ota_get_next_update_partition(NULL);
 	ota_io.slot_size = next ? next->size : 0;

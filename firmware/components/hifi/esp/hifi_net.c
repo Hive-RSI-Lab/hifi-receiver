@@ -17,6 +17,7 @@
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "hifi_crash.h"
 
 #include "network_manager.h"
 #include "network_status.h"
@@ -79,6 +80,7 @@ static void fail(const char *why) {
 
 static void restart_soon(void *arg) {
 	vTaskDelay(pdMS_TO_TICKS(1500)); /* the app sees "done" first */
+	hifi_restart_note("update_done");
 	esp_restart();
 }
 

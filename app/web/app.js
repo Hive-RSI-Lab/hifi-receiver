@@ -27,7 +27,7 @@ const IR_ACTIONS = { volup: 'Volume up', voldown: 'Volume down', mute: 'Mute', t
   next: 'Next', prev: 'Previous', input: 'Input', power: 'Standby' };
 // The firmware's self-test names (docs/test-api.md), as a person reads them.
 const CHECKS = { pd_sink_i2c: 'Charger chip', pd_contract: 'Charger contract', vbus_matches: 'Supply voltage',
-  codec_i2c: 'Audio chip', dac_i2c: 'DAC', pvdd_on: 'Amplifier supply', amp_no_fault: 'Amplifier',
+  codec_i2c: 'Audio chip', dac_i2c: 'DAC', pvdd_on: 'Amplifier supply', amp_no_fault: 'Amplifier', loopback: 'Speaker path',
   psram: 'Memory', heap: 'Free memory', network: 'Network' };
 
 let I = null;          // GET info: what the box is

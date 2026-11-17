@@ -16,7 +16,8 @@ endif()
 
 # the lab build (board/lite-lab): experiments a signed command starts and stops
 if(CONFIG_HIFI_LAB)
-	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c esp/lab_forge.c esp/lab_wifidrop.c esp/lab_crafted.c)
+	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c esp/lab_forge.c esp/lab_wifidrop.c esp/lab_crafted.c
+		core/hifi_party.c core/hifi_party_sync.c esp/lab_party.c)
 	# reads the board's I2C chips through hive-fw's i2c-device driver (esp/i2cdev)
 	list(APPEND srcs esp/lab_i2c.c esp/i2cdev/i2cdev.c esp/i2cdev/i2cdev_esp.c)
 	set(lab_inc esp/i2cdev)
@@ -77,12 +78,15 @@ target_compile_options(${COMPONENT_LIB} PRIVATE -Wall -Wno-format-truncation)
 # esp/hifi_crash.c keeps a copy of everything the console prints (crash
 # reports included) across a restart, by wrapping the UART's FIFO write
 target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=uart_hal_write_txfifo")
+# and notes who called esp_restart, so a clean restart names its cause
+target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=esp_restart")
 
 # squeezelite reaches the LAN gate's hooks through weak references
 # (firmware/patches/0009), which don't pull an object out of an archive by
 # themselves: name them here so a link-order change can't silently drop the
 # gate and leave port 80 open (security.md L1)
 foreach(sym hifi_lan_register hifi_lan_command_ok hifi_lan_config_ok hifi_lan_config_secret
-	    hifi_ap_password_pick hifi_ap_password_make hifi_ap_due hifi_http_register)
+	    hifi_ap_password_pick hifi_ap_password_make hifi_ap_due hifi_http_register
+	    hifi_restart_note)
 	target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,-u,${sym}")
 endforeach()
