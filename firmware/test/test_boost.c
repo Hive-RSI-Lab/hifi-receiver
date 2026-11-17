@@ -352,6 +352,48 @@ static void ceiling_drop_eases(void) {
 	CHECK(pk <= 0.6 + 1.0 / 32768);
 }
 
+/* a test tone bypasses the boost at +9 dB: back in, it ramps up from unity
+ * again, so the first loud cycles are limited, not cut flat */
+static void after_bypass_ramps_again(void) {
+	hifi_boost_t b;
+	hifi_boost_init(&b);
+	hifi_boost_set_db(&b, 9);
+	phase = 0;
+	run16(&b, -3, 200, 0.5, NULL);
+	hifi_boost_bypass(&b);
+	CHECK(b.gain == 1.0f);
+	int run = 0, longest = 0;
+	for (int k = 0; k < 4; k++) {
+		sine16(-3, 200);
+		hifi_boost_process(&b, b16, BLOCK, 4, RATE);
+		for (int i = 0; i < BLOCK; i++) {
+			run = abs(b16[2 * i]) >= 32766 ? run + 1 : 0;
+			longest = run > longest ? run : longest;
+		}
+	}
+	CHECK(longest <= 2);
+}
+
+/* PVDD read noise (1% each 10 ms) on music well under the ceiling never
+ * turns into gain reduction */
+static void ceiling_noise_ignored(void) {
+	hifi_boost_t b;
+	hifi_boost_init(&b);
+	hifi_boost_set_db(&b, 6);
+	hifi_boost_set_ceiling(&b, 0.9f);
+	phase = 0;
+	unsigned x = 1;
+	double gr = 1;
+	for (int k = 0; k < RATE / BLOCK * 2; k++) {
+		x = x * 1103515245u + 12345u;
+		hifi_boost_set_ceiling(&b, 0.9f * (1 + 0.01f * ((int) (x >> 16 & 0xff) - 128) / 128));
+		sine16(-12, 200); /* +6 dB: 0.5, far under 0.9 */
+		hifi_boost_process(&b, b16, BLOCK, 4, RATE);
+		if (k > RATE / BLOCK / 2) gr = fmin(gr, b.gr_min);
+	}
+	CHECK(gr > 0.999);
+}
+
 static void heat_cap(void) {
 	hifi_gov_cfg_t cfg;
 	hifi_gov_cfg_lite(&cfg);
@@ -464,6 +506,8 @@ int main(void) {
 	release_reaches_unity();
 	coming_in_has_no_gap();
 	ceiling_drop_eases();
+	after_bypass_ramps_again();
+	ceiling_noise_ignored();
 	heat_cap();
 	boost_then_governor();
 	return check_report("boost");

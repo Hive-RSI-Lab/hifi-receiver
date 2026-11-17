@@ -243,8 +243,9 @@ take it (Lite).
   without hard clipping. While Boost is on, the audio runs 48 frames late;
   turning Boost up from 0 crossfades into that delay over 4 ms, with no
   gap. The ceiling is the amp's clip point from the lower of the charger
-  contract and the measured PVDD, 0.5 dB under the datasheet swing. Test
-  tones and line-in at unity skip it.
+  contract and the measured PVDD, 0.5 dB under the datasheet swing; while
+  audio plays it ignores moves under 2% (PVDD read noise). Test tones and
+  line-in at unity skip it, and after one Boost ramps up from unity again.
 - **`heat_cap_w`:** sustained watts a channel the governor allows, from
   `heat_min_w` to `heat_max_w` (15), default `heat_def_w` (9). Above 9 W
   the amp may cut out when it gets hot; a fan helps. Lite's TPA3118 has no

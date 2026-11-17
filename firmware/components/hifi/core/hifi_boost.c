@@ -11,6 +11,7 @@
 #define LA HIFI_BOOST_LA
 #define XF (4 * LA)    /* the crossfade into the delayed path as it comes in */
 #define SNAP 1e-6f     /* a request this close to 1 is 1 */
+#define CEIL_HYST 0.02f /* ceiling moves smaller than this are ADC noise */
 
 static void unprime(hifi_boost_t *b) {
 	b->req = 1.0f;
@@ -38,6 +39,8 @@ void hifi_boost_init(hifi_boost_t *b) {
 
 void hifi_boost_bypass(hifi_boost_t *b) {
 	if (b->primed) unprime(b);
+	/* back in, the boost ramps up from unity again, not from where it was */
+	b->gain = 1.0f;
 }
 
 float hifi_boost_set_db(hifi_boost_t *b, float db) {
@@ -50,8 +53,13 @@ float hifi_boost_set_db(hifi_boost_t *b, float db) {
 void hifi_boost_set_ceiling(hifi_boost_t *b, float ceiling) {
 	if (!(ceiling > 0.05f)) ceiling = 0.05f;
 	if (ceiling > 1.0f) ceiling = 1.0f;
-	/* a lower ceiling (the supply sagged) rescales what is already judged,
-	 * so the frames in the delay ease down to it instead of being clamped */
+	/* while it plays, the PVDD reading (8 ADC samples every 10 ms) jitters
+	 * by about 1%: moves within 2% are noise, which clip_fs's 0.5 dB margin
+	 * covers. Following them would pile up rescales below */
+	if (b->primed && fabsf(ceiling - b->ceiling) <= CEIL_HYST * b->ceiling) return;
+	/* a real drop (the supply sagged) rescales what is already judged, so
+	 * the frames in the delay stay under the new ceiling: one gain step of
+	 * the drop's size instead of clamped peaks */
 	if (ceiling < b->ceiling && b->primed) {
 		float k = ceiling / b->ceiling;
 		b->req *= k;
@@ -121,11 +129,13 @@ static inline void frame(hifi_boost_t *b, float *l, float *r, float rel, uint32_
 	if (b->fill < LA + XF) {
 		/* coming in: the live frame until the delay is full, then a
 		 * crossfade to the delayed one, instead of 1 ms of silence. The
-		 * boost is still ramping up from unity here; the clamp holds the
-		 * ceiling */
+		 * live frame takes this frame's own request (no lookahead, but at
+		 * or below what it needs), so both sides and their blend stay
+		 * under the ceiling */
 		float a = b->fill < LA ? 0.0f : (float) (b->fill - LA) / XF;
-		ol = *l + (ol - *l) * a;
-		or_ = *r + (or_ - *r) * a;
+		float ll = *l * b->req, lr = *r * b->req;
+		ol = ll + (ol - ll) * a;
+		or_ = lr + (or_ - lr) * a;
 		b->fill++;
 	}
 	b->delay[p][0] = *l;
