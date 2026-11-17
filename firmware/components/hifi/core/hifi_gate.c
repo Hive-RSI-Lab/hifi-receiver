@@ -417,3 +417,7 @@ void hifi_ap_password_make(char *out, size_t n, uint32_t (*rnd)(void)) {
 bool hifi_ap_due(long long now_us, long long lost_at_us) {
 	return now_us - lost_at_us >= HIFI_AP_AFTER_US;
 }
+
+bool hifi_reset_confirmed(bool armed, bool power_on) {
+	return armed && power_on;
+}

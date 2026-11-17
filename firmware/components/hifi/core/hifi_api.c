@@ -409,11 +409,21 @@ static int r_name(const hifi_ops_t *ops, const char *body, char *out, size_t cap
 	return r_state(ops, out, cap);
 }
 
-static int r_reboot(const hifi_ops_t *ops, const char *body, char *out, size_t cap, bool reset) {
+static int r_reboot(const hifi_ops_t *ops, bool lan, const char *body, char *out, size_t cap, bool reset) {
 	if (reset) {
 		bool factory = false;
 		if (!hj_get_bool(body, "factory", &factory) || !factory)
 			return error(out, cap, 400, "send {\"factory\": true} to erase every setting");
+		/* L6: an erase from the LAN would bring the setup AP back on the
+		 * public password; from there it only arms, and someone with the
+		 * receiver in hand finishes it by unplugging it (security.md) */
+		if (lan) {
+			if (!ops->factory_arm || ops->factory_arm())
+				return error(out, cap, 403, "a factory reset needs the USB cable here");
+			snprintf(out, cap, "{\"armed\":true,\"within_s\":%d,\"next\":\"unplug the receiver and plug it back in\"}",
+				 (int) (HIFI_RESET_ARM_US / 1000000));
+			return 200;
+		}
 		ops->factory_reset();
 	} else {
 		ops->reboot();
@@ -1059,8 +1069,8 @@ int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *meth
 	else if (!strcmp(route, "sub")) status = post ? r_sub(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "eq")) status = post ? r_eq(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "name")) status = post ? r_name(ops, body, out, cap) : -1;
-	else if (!strcmp(route, "reboot")) status = post ? r_reboot(ops, body, out, cap, false) : -1;
-	else if (!strcmp(route, "reset")) status = post ? r_reboot(ops, body, out, cap, true) : -1;
+	else if (!strcmp(route, "reboot")) status = post ? r_reboot(ops, lan, body, out, cap, false) : -1;
+	else if (!strcmp(route, "reset")) status = post ? r_reboot(ops, lan, body, out, cap, true) : -1;
 	else if (!strcmp(route, "control")) status = post ? r_control(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "volume")) status = post ? r_volume(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "ir/learn")) status = post ? r_ir(ops, body, out, cap, true) : -1;

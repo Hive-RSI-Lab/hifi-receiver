@@ -13,6 +13,11 @@ static uint32_t fake_rnd(void) {
 }
 
 int main(void) {
+	/* L6: an armed LAN reset erases only on a power-on start */
+	CHECK(hifi_reset_confirmed(true, true));
+	CHECK(!hifi_reset_confirmed(true, false));
+	CHECK(!hifi_reset_confirmed(false, true));
+	CHECK(!hifi_reset_confirmed(false, false));
 	/* IP literals, any port, no Origin */
 	ALLOW("192.168.1.50", NULL);
 	ALLOW("192.168.4.1:80", NULL);

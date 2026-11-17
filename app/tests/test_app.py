@@ -131,9 +131,22 @@ class API(unittest.TestCase):
 
     def test_factory_reset_goes_back_to_setup(self):
         self.m.post("name", {"name": "Lounge"})
-        code, s = self.m.post("reset", {"factory": True})
-        self.assertEqual((code, s["net"]["mode"]), (200, "ap"))
+        code, r = self.m.post("reset", {"factory": True})
+        # from the LAN it only arms; nothing is erased until the unplug
+        self.assertEqual((code, r["armed"], r["within_s"]), (200, True, 600))
+        self.assertEqual(self.m.get("api/v1/info")["name"], "Lounge")
+        self.m.srv.rx.unplug()
+        self.assertEqual(self.m.get("api/v1/state")["net"]["mode"], "ap")
         self.assertEqual(self.m.get("api/v1/info")["name"], "HiFi Lite")
+
+    def test_factory_reset_unarmed_unplug_keeps_settings(self):
+        self.m.post("name", {"name": "Lounge"})
+        self.m.srv.rx.unplug()
+        self.assertEqual(self.m.get("api/v1/info")["name"], "Lounge")
+        self.m.post("reset", {"factory": True})
+        self.m.srv.rx.armed -= 601  # the window has gone by
+        self.m.srv.rx.unplug()
+        self.assertEqual(self.m.get("api/v1/info")["name"], "Lounge")
 
     def test_selftest(self):
         code, r = self.m.post("selftest", {})

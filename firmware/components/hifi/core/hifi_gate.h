@@ -90,4 +90,14 @@ void hifi_ap_password_make(char *out, size_t n, uint32_t (*rnd)(void));
 #define HIFI_AP_AFTER_US (10LL * 60 * 1000 * 1000)
 bool hifi_ap_due(long long now_us, long long lost_at_us);
 
+/* ---- a factory reset from the LAN (L6) ----
+ * An erase wipes the saved Wi-Fi and the AP's own password, so the setup AP
+ * comes back on the public one: from the LAN a reset only arms (hifi_reset_armed
+ * in NVS), and it happens only if the board next starts from power-on, which
+ * takes a hand on the plug. Any other start (a reboot, a crash, an update)
+ * disarms it, and so does HIFI_RESET_ARM_US going by. USB and the relay
+ * reset at once. true: erase now. */
+#define HIFI_RESET_ARM_US (10LL * 60 * 1000 * 1000)
+bool hifi_reset_confirmed(bool armed, bool power_on);
+
 #endif

@@ -885,6 +885,41 @@ static void restart_later(bool erase) {
 static void op_reboot(void) { restart_later(false); }
 static void op_factory_reset(void) { restart_later(true); }
 
+/* L6 (hifi_reset_confirmed): the LAN's reset arms, a power-on start finishes
+ * it. The flag is a hifi_* key, which squeezelite's settings page can't set. */
+static void factory_disarm(void *arg) {
+	config_set_value(NVS_TYPE_STR, "hifi_reset_armed", "0");
+	ESP_LOGW(TAG, "factory reset disarmed: not unplugged in time");
+}
+
+static int op_factory_arm(void) {
+	static esp_timer_handle_t t;
+	if (!t) {
+		esp_timer_create_args_t a = {.callback = factory_disarm, .name = "hifi_disarm"};
+		if (esp_timer_create(&a, &t) != ESP_OK) return -1;
+	}
+	if (config_set_value(NVS_TYPE_STR, "hifi_reset_armed", "1") != ESP_OK) return -1;
+	esp_timer_stop(t); /* a second arm starts the window again */
+	esp_timer_start_once(t, HIFI_RESET_ARM_US);
+	ESP_LOGW(TAG, "factory reset armed from the LAN: unplug the receiver and plug it back in to finish");
+	return 0;
+}
+
+/* at boot: an armed reset erases on a power-on start, any other disarms */
+static void factory_boot(void) {
+	char *f = config_alloc_get_str("hifi_reset_armed", NULL, "0");
+	bool armed = f && !strcmp(f, "1");
+	free(f);
+	if (!armed) return;
+	if (hifi_reset_confirmed(armed, esp_reset_reason() == ESP_RST_POWERON)) {
+		ESP_LOGW(TAG, "factory reset: unplugged while armed, erasing every setting");
+		nvs_flash_erase();
+		esp_restart();
+	}
+	config_set_value(NVS_TYPE_STR, "hifi_reset_armed", "0");
+	ESP_LOGW(TAG, "factory reset disarmed: this start wasn't from power-on");
+}
+
 /* The Bluetooth test (ops.bt_test): this boot's squeezelite command line
  * (autoexec1) is kept in hifi_bt_save, the next boot runs it with "-o BT"
  * (a Bluetooth source playing to sink, a2dp_sink_name), and hifi_bttest walks
@@ -1159,7 +1194,7 @@ const hifi_ops_t hifi_ops = {
 	.info = op_info, .snapshot = op_snapshot, .tone_start = op_tone_start, .tone_stop = op_tone_stop,
 	.amp_enable = op_amp_enable, .amp_reset = op_amp_reset, .set_input = op_set_input,
 	.set_sub = op_set_sub, .set_eq = op_set_eq, .set_name = op_set_name, .reboot = op_reboot,
-	.factory_reset = op_factory_reset, .control = op_control, .selftest = op_selftest,
+	.factory_reset = op_factory_reset, .factory_arm = op_factory_arm, .control = op_control, .selftest = op_selftest,
 	.set_volume = op_set_volume, .ir_learn = op_ir_learn, .ir_forget = op_ir_forget,
 #if HIFI_HAS_CAPTURE
 	.capture = op_capture,
@@ -1305,6 +1340,7 @@ static void alloc_failed(size_t size, uint32_t caps, const char *fn) {
 static bool hifi_init(void) {
 	heap_caps_register_failed_alloc_callback(alloc_failed);
 	hifi_diag_init();
+	factory_boot();
 	bt_test_boot();
 	lock = xSemaphoreCreateMutex();
 	tone_lock = xSemaphoreCreateMutex();

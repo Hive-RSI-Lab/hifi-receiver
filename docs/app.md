@@ -78,7 +78,8 @@ what is playing; it doesn't choose it.
   uptime.
   - **Run self-test:** the firmware's self-test, with each check named in
     plain words.
-  - **Restart** and **Factory reset**.
+  - **Restart** and **Factory reset** (it asks you to unplug the receiver and
+    plug it back in to finish: a page on the network can't erase it alone).
 
 **Notices** sit at the top of Play when something needs the user:
 - **"Speakers off: charger too weak":** a 5 V port, so the amplifier is held
@@ -190,7 +191,7 @@ On Plus, `line_modes` is `["dj_direct", "line"]`, and `crossover` and
 | `POST update` | `{url}` |
 | `POST update/upload` | a raw `.bin` body |
 | `POST reboot` | |
-| `POST reset` | `{factory: true}` |
+| `POST reset` | `{factory: true}`: from the LAN it replies `{armed, within_s, next}`, and the erase happens only if the receiver is unplugged and plugged back in within `within_s` |
 
 If `update/check` returns 404, the app offers only "From a file".
 
