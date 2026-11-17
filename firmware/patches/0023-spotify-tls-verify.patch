@@ -1,0 +1,54 @@
+diff --git a/components/spotify/cspot/bell/main/io/TLSSocket.cpp b/components/spotify/cspot/bell/main/io/TLSSocket.cpp
+index 489748d..9747754 100644
+--- a/components/spotify/cspot/bell/main/io/TLSSocket.cpp
++++ b/components/spotify/cspot/bell/main/io/TLSSocket.cpp
+@@ -9,6 +9,14 @@
+ 
+ #include "BellLogger.h"  // for AbstractLogger, BELL_LOG
+ #include "X509Bundle.h"  // for shouldVerify, attach
++#ifdef ESP_PLATFORM
++// hifi: on the board every TLS connection (Spotify's apresolve, login5,
++// spclient, the CDN) is checked against ESP-IDF's certificate bundle, the
++// one the relay and the updater use. Bell's own X509Bundle was never
++// initialised, so cspot connected with MBEDTLS_SSL_VERIFY_NONE: anyone on
++// the path could read the Spotify tokens.
++#include "esp_crt_bundle.h"
++#endif
+ 
+ /**
+  * Platform TLSSocket implementation for the mbedtls
+@@ -19,9 +27,11 @@ bell::TLSSocket::TLSSocket() {
+   mbedtls_ssl_init(&ssl);
+   mbedtls_ssl_config_init(&conf);
+ 
++#ifndef ESP_PLATFORM
+   if (bell::X509Bundle::shouldVerify()) {
+     bell::X509Bundle::attach(&conf);
+   }
++#endif
+ 
+   mbedtls_ctr_drbg_init(&ctr_drbg);
+   mbedtls_entropy_init(&entropy);
+@@ -53,12 +63,22 @@ void bell::TLSSocket::open(const std::string& hostUrl, uint16_t port) {
+     throw std::runtime_error("mbedtls_ssl_config_defaults failed");
+   }
+ 
++#ifdef ESP_PLATFORM
++  // hifi: always verify, against the IDF bundle (see the include above)
++  if ((ret = esp_crt_bundle_attach(&conf)) != ESP_OK) {
++    BELL_LOG(error, "http_tls", "failed! certificate bundle returned %d\n",
++             ret);
++    throw std::runtime_error("esp_crt_bundle_attach failed");
++  }
++  mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_REQUIRED);
++#else
+   // Only verify if the X509 bundle is present
+   if (bell::X509Bundle::shouldVerify()) {
+     mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_REQUIRED);
+   } else {
+     mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_NONE);
+   }
++#endif
+ 
+   mbedtls_ssl_conf_rng(&conf, mbedtls_ctr_drbg_random, &ctr_drbg);
+   mbedtls_ssl_setup(&ssl, &conf);
