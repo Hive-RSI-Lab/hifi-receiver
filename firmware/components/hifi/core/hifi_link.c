@@ -6,7 +6,7 @@
 
 #define MAGIC0 'H'
 #define MAGIC1 'L'
-#define VERSION 2
+#define VERSION 3 /* 3: the tag */
 
 static void put32(uint8_t *p, uint32_t v) {
 	for (int i = 0; i < 4; i++) p[i] = (uint8_t) (v >> (8 * i));
@@ -34,9 +34,66 @@ static uint8_t pattern(uint32_t seq, size_t i) {
 	return (uint8_t) ((h >> (8 * (i % 4))) ^ (i * 7u) ^ 0x5a);
 }
 
-size_t hifi_link_encode(const hifi_link_frame_t *f, uint8_t *buf, size_t cap) {
+/* ------------------------------------------------------------------- tag */
+
+void hifi_link_key_init(hifi_link_key_t *k, const uint8_t key[HIFI_LINK_KEY]) {
+	uint8_t pad[64];
+	memset(pad, 0x36, sizeof(pad));
+	for (int i = 0; i < HIFI_LINK_KEY; i++) pad[i] ^= key[i];
+	hifi_sha256_init(&k->in);
+	hifi_sha256_update(&k->in, pad, sizeof(pad));
+	memset(pad, 0x5c, sizeof(pad));
+	for (int i = 0; i < HIFI_LINK_KEY; i++) pad[i] ^= key[i];
+	hifi_sha256_init(&k->out);
+	hifi_sha256_update(&k->out, pad, sizeof(pad));
+	hifi_link_wipe(pad, sizeof(pad));
+	/* a whole block went through each: the buffers hold key bytes, not data */
+	hifi_link_wipe(k->in.buf, sizeof(k->in.buf));
+	hifi_link_wipe(k->out.buf, sizeof(k->out.buf));
+	k->ready = true;
+}
+
+void hifi_link_wipe(void *p, size_t n) {
+	volatile uint8_t *v = p;
+	while (n--) *v++ = 0;
+}
+
+void hifi_link_key_wipe(hifi_link_key_t *k) {
+	if (k) hifi_link_wipe(k, sizeof(*k));
+}
+
+static int hexval(char c);
+
+bool hifi_link_parse_key(const char *s, uint8_t key[HIFI_LINK_KEY]) {
+	if (!s || strlen(s) != 2 * HIFI_LINK_KEY) return false;
+	uint8_t k[HIFI_LINK_KEY];
+	for (int i = 0; i < HIFI_LINK_KEY; i++) {
+		int hi = hexval(s[2 * i]), lo = hexval(s[2 * i + 1]);
+		if (hi < 0 || lo < 0) {
+			hifi_link_wipe(k, sizeof(k));
+			return false;
+		}
+		k[i] = (uint8_t) (hi << 4 | lo);
+	}
+	memcpy(key, k, sizeof(k));
+	hifi_link_wipe(k, sizeof(k));
+	return true;
+}
+
+void hifi_link_tag(const hifi_link_key_t *k, const uint8_t *hdr, uint8_t tag[HIFI_LINK_TAG]) {
+	hifi_sha256_t s = k->in;
+	uint8_t d[32];
+	hifi_sha256_update(&s, hdr, HIFI_LINK_HDR);
+	hifi_sha256_final(&s, d);
+	s = k->out;
+	hifi_sha256_update(&s, d, sizeof(d));
+	hifi_sha256_final(&s, d);
+	memcpy(tag, d, HIFI_LINK_TAG);
+}
+
+size_t hifi_link_encode(const hifi_link_key_t *k, const hifi_link_frame_t *f, uint8_t *buf, size_t cap) {
 	size_t n = f->len;
-	if (n < HIFI_LINK_HDR || n > HIFI_LINK_MAX || n > cap) return 0;
+	if (!k || !k->ready || n < HIFI_LINK_MIN || n > HIFI_LINK_MAX || n > cap) return 0;
 	buf[0] = MAGIC0;
 	buf[1] = MAGIC1;
 	buf[2] = VERSION;
@@ -48,17 +105,23 @@ size_t hifi_link_encode(const hifi_link_frame_t *f, uint8_t *buf, size_t cap) {
 	put64(buf + 14, f->t1);
 	put64(buf + 22, f->t2);
 	put64(buf + 30, f->t3);
-	for (size_t i = HIFI_LINK_HDR; i < n; i++) buf[i] = pattern(f->seq, i);
+	for (size_t i = HIFI_LINK_HDR; i < n - HIFI_LINK_TAG; i++) buf[i] = pattern(f->seq, i);
+	hifi_link_tag(k, buf, buf + n - HIFI_LINK_TAG);
 	return n;
 }
 
-bool hifi_link_decode(const uint8_t *buf, size_t n, hifi_link_frame_t *f) {
-	if (!buf || n < HIFI_LINK_HDR || n > HIFI_LINK_MAX) return false;
+bool hifi_link_decode(const hifi_link_key_t *k, const uint8_t *buf, size_t n, hifi_link_frame_t *f) {
+	if (!k || !k->ready || !buf || n < HIFI_LINK_MIN || n > HIFI_LINK_MAX) return false;
+	/* the tag first: nothing of a frame that fails it is believed */
+	uint8_t tag[HIFI_LINK_TAG], diff = 0;
+	hifi_link_tag(k, buf, tag);
+	for (int i = 0; i < HIFI_LINK_TAG; i++) diff |= tag[i] ^ buf[n - HIFI_LINK_TAG + i];
+	if (diff) return false;
 	if (buf[0] != MAGIC0 || buf[1] != MAGIC1 || buf[2] != VERSION) return false;
 	if (buf[3] < HIFI_LINK_PING || buf[3] > HIFI_LINK_DATA) return false;
 	if ((size_t) (buf[4] | buf[5] << 8) != n) return false; /* truncated (or padded) */
 	uint32_t seq = get32(buf + 10);
-	for (size_t i = HIFI_LINK_HDR; i < n; i++)
+	for (size_t i = HIFI_LINK_HDR; i < n - HIFI_LINK_TAG; i++)
 		if (buf[i] != pattern(seq, i)) return false;
 	f->type = buf[3];
 	f->session = get32(buf + 6);
@@ -68,6 +131,35 @@ bool hifi_link_decode(const uint8_t *buf, size_t n, hifi_link_frame_t *f) {
 	f->t3 = get64(buf + 30);
 	f->len = (uint16_t) n;
 	return true;
+}
+
+size_t hifi_link_forge(const hifi_link_key_t *k, const uint8_t *in, size_t n, uint32_t jump, uint8_t *out, size_t cap) {
+	if (!k || !k->ready || !in || !out || n < HIFI_LINK_MIN || n > HIFI_LINK_MAX || n > cap) return 0;
+	if (in[0] != MAGIC0 || in[1] != MAGIC1 || in[2] != VERSION) return 0;
+	if ((size_t) (in[4] | in[5] << 8) != n) return 0;
+	if (!jump) { /* a replay */
+		memcpy(out, in, n);
+		return n;
+	}
+	memcpy(out, in, HIFI_LINK_HDR);
+	uint32_t seq = get32(in + 10) + jump;
+	put32(out + 10, seq);
+	for (size_t i = HIFI_LINK_HDR; i < n - HIFI_LINK_TAG; i++) out[i] = pattern(seq, i);
+	hifi_link_tag(k, out, out + n - HIFI_LINK_TAG);
+	return n;
+}
+
+size_t hifi_link_espnow_body(const uint8_t *p, size_t n, const uint8_t mac[6]) {
+	static const uint8_t oui[3] = {0x18, 0xfe, 0x34};
+	enum { HDR = 24 };
+	if (!p || !mac || n < HIFI_LINK_ESPNOW_BODY + HIFI_LINK_MIN) return 0; /* trailing bytes are fine */
+	if (p[0] != 0xd0 || memcmp(p + 10, mac, 6)) return 0; /* an action frame, from mac */
+	if (p[HDR] != 127 || memcmp(p + HDR + 1, oui, 3)) return 0;
+	if (p[32] != 221 || memcmp(p + 34, oui, 3) || p[37] != 4) return 0;
+	if (p[33] < 5) return 0; /* the element's length counts OUI, type and version */
+	size_t body = (size_t) p[33] - 5;
+	if (body < HIFI_LINK_MIN || body > HIFI_LINK_MAX || HIFI_LINK_ESPNOW_BODY + body > n) return 0;
+	return body;
 }
 
 /* --------------------------------------------------------------- dup check */
@@ -110,11 +202,16 @@ void hifi_link_rx_data(hifi_link_rx_t *r, const hifi_link_frame_t *f, int64_t no
 		return;
 	}
 	if (r->rx == 0 || f->session != r->session) {
-		uint32_t bad = r->bad, pings = r->pings, stray = r->stray;
+		/* the DATA counts start again; the echo's side stays */
+		uint32_t bad = r->bad, pings = r->pings, ping_dup = r->ping_dup, stray = r->stray, ps = r->ping_session;
+		hifi_link_seen_t pseen = r->ping_seen;
 		hifi_link_rx_init(r);
 		r->bad = bad;
 		r->pings = pings;
+		r->ping_dup = ping_dup;
 		r->stray = stray;
+		r->ping_session = ps;
+		r->ping_seen = pseen;
 		r->session = f->session;
 		r->first_us = now_us;
 	}
@@ -158,6 +255,7 @@ void hifi_link_rx_json(const hifi_link_rx_t *r, void *hj) {
 	hj_int(j, "bad", r->bad);
 	hj_int(j, "stray", r->stray);
 	hj_int(j, "pings", r->pings);
+	hj_int(j, "ping_dup", r->ping_dup);
 	hj_int(j, "bytes", (long long) r->bytes);
 	hj_num(j, "seconds", r->rx > 1 ? (r->last_us - r->first_us) / 1e6 : 0, 3);
 	hj_num(j, "kbps", hifi_link_rx_kbps(r), 1);
@@ -358,14 +456,23 @@ size_t hifi_link_take(uint8_t *dst, size_t cap, const uint8_t *src, size_t n) {
 	return n;
 }
 
-hifi_link_got_t hifi_link_receive(hifi_link_rx_t *rx, hifi_link_tx_t *tx, bool echo, bool pongs, const uint8_t *buf,
-                                  size_t n, int64_t t_us, hifi_link_frame_t *pong) {
+hifi_link_got_t hifi_link_receive(const hifi_link_key_t *k, hifi_link_rx_t *rx, hifi_link_tx_t *tx, bool echo, bool pongs,
+                                  const uint8_t *buf, size_t n, int64_t t_us, hifi_link_frame_t *pong) {
 	hifi_link_frame_t f;
-	if (!hifi_link_decode(buf, n, &f)) {
+	if (!hifi_link_decode(k, buf, n, &f)) {
 		hifi_link_rx_bad(rx);
 		return HIFI_LINK_GOT_BAD;
 	}
 	if (echo && f.type == HIFI_LINK_PING) {
+		/* one answer per PING: a replayed one gets none */
+		if (f.session != rx->ping_session || !rx->pings) {
+			memset(&rx->ping_seen, 0, sizeof(rx->ping_seen));
+			rx->ping_session = f.session;
+		}
+		if (hifi_link_seen(&rx->ping_seen, f.seq) != 0) {
+			rx->ping_dup++;
+			return HIFI_LINK_GOT_OTHER;
+		}
 		hifi_link_pong_for(&f, t_us, 0, pong);
 		rx->pings++;
 		return HIFI_LINK_GOT_REPLY;

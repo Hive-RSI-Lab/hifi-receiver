@@ -24,6 +24,7 @@ void hifi_lab_esp_finished(const char *name, uint32_t run, bool ok);
 
 /* the experiments (esp/lab_*.c) */
 extern const hifi_lab_exp_t lab_espnow;
+extern const hifi_lab_exp_t lab_forge; /* a stranger forging the espnow run's frames */
 /* lab_bt and lab_ble are weak: only the app pulls them in (patch 0017 adds
  * -u lab_bt/lab_ble to its link), so the recovery image leaves them out and,
  * with them, the Bluedroid host they reach (it would not fit its slot). */

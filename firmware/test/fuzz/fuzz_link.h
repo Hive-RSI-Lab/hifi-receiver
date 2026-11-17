@@ -1,8 +1,10 @@
 /* What the radio fuzzers share: a reader that turns the input into a stream
  * of received frames, and the checks on the link's counts after each one.
  * A frame is either raw bytes (anything a nearby radio sends) or built with
- * hifi_link_encode from fields in the input, so the fuzzer gets past the
- * header and payload checks into the counting. */
+ * hifi_link_encode from fields in the input, under the run's key so the
+ * fuzzer gets past the tag, header and payload checks into the counting, or
+ * under another key: a forger's frame, which must be counted bad and move
+ * nothing else. */
 #pragma once
 
 #include <math.h>
@@ -41,12 +43,27 @@ static bool fz_more(const fz_t *z) { return z->at < z->n; }
 
 #define FZ_SESSION 0x5e55107u
 
+/* the run's key and a forger's, one bit apart */
+static hifi_link_key_t fz_key, fz_forger;
+static void fz_keys(void) {
+	static bool done;
+	if (done) return;
+	uint8_t k[HIFI_LINK_KEY];
+	for (int i = 0; i < HIFI_LINK_KEY; i++) k[i] = (uint8_t) (0xa0 + i);
+	hifi_link_key_init(&fz_key, k);
+	k[0] ^= 1;
+	hifi_link_key_init(&fz_forger, k);
+	done = true;
+}
+
 /* One frame from the input into buf (cap bytes): its length (it may be 0, or
  * longer than any radio carries: the receive side mustn't trust it). Times
- * near now_us when the input asks, raw 64-bit values otherwise. */
-static size_t fz_frame(fz_t *z, uint8_t *buf, size_t cap, int64_t now_us, uint32_t rx_session) {
+ * near now_us when the input asks, raw 64-bit values otherwise. *forged: built
+ * under the forger's key (flag bit 5). */
+static size_t fz_frame(fz_t *z, uint8_t *buf, size_t cap, int64_t now_us, uint32_t rx_session, bool *forged) {
 	uint8_t k = fz_u8(z);
 	size_t n;
+	*forged = false;
 	if (k & 1) { /* built */
 		hifi_link_frame_t f = {0};
 		f.type = (uint8_t) (1 + fz_u8(z) % 3);
@@ -64,13 +81,16 @@ static size_t fz_frame(fz_t *z, uint8_t *buf, size_t cap, int64_t now_us, uint32
 			f.t2 = fz_i64(z);
 			f.t3 = fz_i64(z);
 		}
-		f.len = (uint16_t) (HIFI_LINK_HDR + fz_u8(z) % (HIFI_LINK_MAX - HIFI_LINK_HDR + 1));
-		n = hifi_link_encode(&f, buf, cap);
+		f.len = (uint16_t) (HIFI_LINK_MIN + fz_u8(z) % (HIFI_LINK_MAX - HIFI_LINK_MIN + 1));
+		*forged = k & 32;
+		const hifi_link_key_t *key = *forged ? &fz_forger : &fz_key;
+		n = hifi_link_encode(key, &f, buf, cap);
 		FUZZ_ASSERT(n == f.len);
 		hifi_link_frame_t back;
-		FUZZ_ASSERT(hifi_link_decode(buf, n, &back));
+		FUZZ_ASSERT(hifi_link_decode(key, buf, n, &back));
 		FUZZ_ASSERT(back.type == f.type && back.session == f.session && back.seq == f.seq && back.t1 == f.t1 &&
 		            back.t2 == f.t2 && back.t3 == f.t3 && back.len == f.len);
+		if (*forged) FUZZ_ASSERT(!hifi_link_decode(&fz_key, buf, n, &back));
 		if (k & 8) { /* damaged in the air: one byte, or the length */
 			uint8_t at = fz_u8(z), x = fz_u8(z);
 			if (k & 16)
@@ -91,15 +111,27 @@ static size_t fz_frame(fz_t *z, uint8_t *buf, size_t cap, int64_t now_us, uint32
  * received frame is ignored */
 static void fz_canonical(const uint8_t *buf, size_t n) {
 	hifi_link_frame_t f;
-	if (!hifi_link_decode(buf, n, &f)) return;
+	if (!hifi_link_decode(&fz_key, buf, n, &f)) return;
 	uint8_t again[HIFI_LINK_MAX];
-	FUZZ_ASSERT(hifi_link_encode(&f, again, sizeof(again)) == n && !memcmp(again, buf, n));
+	FUZZ_ASSERT(hifi_link_encode(&fz_key, &f, again, sizeof(again)) == n && !memcmp(again, buf, n));
 }
 
 typedef struct {
 	uint32_t bad, reply, used, other; /* what hifi_link_receive said */
 	uint32_t pongs_in;                /* PONGs handed to tx */
 } fz_counts_t;
+
+/* A forged frame: refused, counted bad, and nothing else in either end moved
+ * (rx0 and tx0: the ends just before it) */
+static void fz_refused(hifi_link_got_t g, const hifi_link_rx_t *rx0, const hifi_link_tx_t *tx0, const hifi_link_rx_t *rx,
+                       const hifi_link_tx_t *tx) {
+	FUZZ_ASSERT(g == HIFI_LINK_GOT_BAD && rx->bad == rx0->bad + 1);
+	hifi_link_rx_t r;
+	memcpy(&r, rx, sizeof(r));
+	r.bad = rx0->bad;
+	FUZZ_ASSERT(!memcmp(&r, rx0, sizeof(r)));
+	FUZZ_ASSERT(!memcmp(tx, tx0, sizeof(*tx)));
+}
 
 /* after every frame */
 static void fz_check(const hifi_link_rx_t *rx, const hifi_link_tx_t *tx, const fz_counts_t *c) {
@@ -141,7 +173,7 @@ static void fz_json(const hifi_link_rx_t *rx, const hifi_link_tx_t *tx) {
 static void fz_got(hifi_link_got_t g, const uint8_t *buf, size_t n, bool echo, bool pongs, const hifi_link_frame_t *pong,
                    int64_t now_us, fz_counts_t *c) {
 	hifi_link_frame_t f;
-	bool ok = hifi_link_decode(buf, n, &f);
+	bool ok = hifi_link_decode(&fz_key, buf, n, &f);
 	switch (g) {
 	case HIFI_LINK_GOT_BAD:
 		FUZZ_ASSERT(!ok);
@@ -155,7 +187,7 @@ static void fz_got(hifi_link_got_t g, const uint8_t *buf, size_t n, bool echo, b
 		hifi_link_frame_t out = *pong;
 		out.t3 = now_us + 1;
 		uint8_t b[HIFI_LINK_MAX];
-		FUZZ_ASSERT(hifi_link_encode(&out, b, sizeof(b)) == out.len);
+		FUZZ_ASSERT(hifi_link_encode(&fz_key, &out, b, sizeof(b)) == out.len);
 		c->reply++;
 		break;
 	}

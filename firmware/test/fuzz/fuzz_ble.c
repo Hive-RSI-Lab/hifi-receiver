@@ -25,6 +25,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t n) {
 	static hifi_link_tx_t tx;
 	hifi_link_rx_init(&rx);
 	hifi_link_tx_init(&tx, FZ_SESSION);
+	fz_keys();
+	static hifi_link_rx_t rx0;
+	static hifi_link_tx_t tx0;
 	fz_counts_t c = {0};
 	struct {
 		uint16_t len;
@@ -37,7 +40,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t n) {
 		uint16_t handle = e & 3 ? H_VAL : e & 4 ? H_CCCD : (uint16_t) fz_u8(&z);
 		uint16_t from = e & 8 ? 1 : conn_id; /* another connection's write */
 		if (pongs && e & 32) hifi_link_tx_sent(&tx, HIFI_LINK_HDR, true, now);
-		size_t len = fz_frame(&z, air, sizeof(air), now, rx.session);
+		bool forged;
+		size_t len = fz_frame(&z, air, sizeof(air), now, rx.session, &forged);
 
 		bool is_prep = e & 64; /* a long (prepared) write: dropped, counted as other */
 		if (echo) { /* ESP_GATTS_WRITE_EVT */
@@ -52,7 +56,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t n) {
 		/* the worker's handle() */
 		fz_canonical(it.data, it.len);
 		hifi_link_frame_t pong;
-		hifi_link_got_t g = hifi_link_receive(&rx, &tx, echo, pongs, it.data, it.len, now, &pong);
+		memcpy(&rx0, &rx, sizeof(rx));
+		memcpy(&tx0, &tx, sizeof(tx));
+		hifi_link_got_t g = hifi_link_receive(&fz_key, &rx, &tx, echo, pongs, it.data, it.len, now, &pong);
+		if (forged) fz_refused(g, &rx0, &tx0, &rx, &tx);
 		fz_got(g, it.data, it.len, echo, pongs, &pong, now, &c);
 		fz_check(&rx, &tx, &c);
 	}
