@@ -1,0 +1,75 @@
+diff --git a/components/spotify/cspot_sink.c b/components/spotify/cspot_sink.c
+index 03eddb1..8f6812e 100644
+--- a/components/spotify/cspot_sink.c
++++ b/components/spotify/cspot_sink.c
+@@ -162,6 +162,13 @@ static bool cmd_handler(cspot_event_t event, ...) {
+ static void cspot_sink_start(nm_state_t state_id, int sub_state) {
+     const char *hostname;
+ 
++	/* hifi: once per boot. This runs on every (re)connection, and each call
++	 * made a whole new player (a task, its mutexes and semaphores, about 730 B
++	 * of internal RAM and a 32 KB PSRAM stack) beside the old one, which never
++	 * stops: Wi-Fi drops walked the heap down. The first player stays, and its
++	 * session reconnects by itself (MercurySession::reconnect). */
++	if (cspot) return;
++
+ 	cmd_handler_chain = cspot_cbs.cmd;
+ 	network_get_hostname(&hostname);
+ 	
+diff --git a/components/raop/raop_sink.c b/components/raop/raop_sink.c
+index e5fe0fb..f7e46a7 100644
+--- a/components/raop/raop_sink.c
++++ b/components/raop/raop_sink.c
+@@ -159,6 +159,7 @@ static bool cmd_handler(raop_event_t event, ...) {
+  */
+ void raop_sink_deinit(void) {
+ 	raop_delete(raop);
++	raop = NULL; /* hifi: so the next connection can start it again */
+ }	
+ 
+ /****************************************************************************************
+@@ -168,7 +169,15 @@ static void raop_sink_start(nm_state_t state_id, int sub_state) {
+ 	esp_netif_t* netif;
+ 	esp_netif_ip_info_t ipInfo = { }; 
+ 	uint8_t mac[6];	
+-    char* sink_name = (char*) config_alloc_get_default(NVS_TYPE_STR, "airplay_name", CONFIG_AIRPLAY_NAME, 0);
++    char* sink_name;
++
++	/* hifi: once per boot, as for Spotify. A second raop_create() can't bind
++	 * port 5000 (the first listener still has it), so it returned NULL and
++	 * lost the running instance's pointer. The listener is bound to this
++	 * address: an IP change reboots the board (cb_connection_got_ip in esp_app_main.c,
++	 * which this patch makes remember the address), so it stays right. */
++	if (raop) return;
++	sink_name = (char*) config_alloc_get_default(NVS_TYPE_STR, "airplay_name", CONFIG_AIRPLAY_NAME, 0);
+ 
+     netif = network_get_active_interface();
+ 	esp_netif_get_ip_info(netif, &ipInfo);
+diff --git a/main/esp_app_main.c b/main/esp_app_main.c
+--- a/main/esp_app_main.c
++++ b/main/esp_app_main.c
+@@ -154,15 +154,21 @@ bool is_network_connected(){
+ void cb_connection_got_ip(nm_state_t new_state, int sub_state){
+ 	const char *hostname;
+ 	static ip4_addr_t ip;
+-	tcpip_adapter_ip_info_t ipInfo; 
+-	network_get_ip_info(&ipInfo);
+-	if (ip.addr && ipInfo.ip.addr != ip.addr) {
++	tcpip_adapter_ip_info_t ipInfo = { 0 };
++	/* hifi: a failed read (the link dropped again) leaves ipInfo empty, so
++	 * it neither reboots nor replaces the address kept below */
++	if (network_get_ip_info(&ipInfo) != ESP_OK) ipInfo.ip.addr = 0;
++	if (ip.addr && ipInfo.ip.addr && ipInfo.ip.addr != ip.addr) {
+ 		ESP_LOGW(TAG, "IP change, need to reboot");
+ 		if(!wait_for_commit()){
+ 			ESP_LOGW(TAG,"Unable to commit configuration. ");
+ 		}
+ 		esp_restart();
+ 	}
++	/* hifi: remember the address, or the reboot above never fires. AirPlay
++	 * starts once per boot and its listener is bound to this address
++	 * (raop_sink_start), so a new one needs the restart. */
++	if (ipInfo.ip.addr) ip.addr = ipInfo.ip.addr;
+ 
+ 	// initializing mDNS
+ 	network_get_hostname(&hostname);

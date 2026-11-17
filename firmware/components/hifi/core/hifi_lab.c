@@ -45,7 +45,8 @@ static void stop_slot(hifi_lab_slot_t *s, uint32_t now_ms, const char *why) {
 static void write_slot(hj_t *j, const hifi_lab_slot_t *s, uint32_t now_ms, bool with_result) {
 	hj_obj(j, NULL);
 	hj_str(j, "name", s->exp->name);
-	if (s->exp->help) hj_str(j, "help", s->exp->help);
+	/* help in the list only: a result has to fit one console line */
+	if (s->exp->help && !with_result) hj_str(j, "help", s->exp->help);
 	hj_bool(j, "running", s->running);
 	hj_int(j, "runs", s->runs);
 	if (s->runs) {
