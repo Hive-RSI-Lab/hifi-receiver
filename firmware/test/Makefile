@@ -46,6 +46,8 @@ BELL := $(CSPOT)/bell/main
 NANOPB := $(CSPOT)/bell/external/nanopb
 UP_FILES = components/squeezelite/controls.c components/driver_bt/bt_app_sink.c \
 	components/driver_bt/bt_app_core.c components/spotify/Shim.cpp components/spotify/cspot/src/LoginBlob.cpp \
+	components/spotify/cspot_private.h components/spotify/cspot_sink.h $(CSPOT)/include/LoginBlob.h \
+	$(CSPOT)/include/ConstantParameters.h $(CSPOT)/bell/external/cJSON/cJSON.c $(CSPOT)/bell/external/cJSON/cJSON.h \
 	components/wifi-manager/network_manager_handlers.c components/raop/dmap_parser.c components/raop/dmap_parser.h \
 	components/raop/rtp.c $(ALAC_FILES) \
 	$(BELL)/io/TLSSocket.cpp $(BELL)/io/include/TLSSocket.h $(BELL)/io/include/BellSocket.h \
@@ -96,7 +98,7 @@ upstream:
 	else echo "SKIPPED fuzz_alac: no clang with libFuzzer"; fi; \
 	python3 upstream/test_up_source.py $(UP) || fail=1; \
 	python3 upstream/test_up_tls.py $(UP) || fail=1; python3 upstream/test_up_aphello.py $(UP) || fail=1; \
-	python3 upstream/test_up_shannon.py $(UP) || fail=1; exit $$fail
+	python3 upstream/test_up_shannon.py $(UP) || fail=1; python3 upstream/test_up_blob.py $(UP) || fail=1; exit $$fail
 
 # Line, branch and function coverage of core/ (gcov): each test is built
 # again with --coverage under build/cov and run there; `fw coverage` merges
