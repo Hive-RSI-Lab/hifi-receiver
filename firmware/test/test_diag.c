@@ -275,7 +275,7 @@ static void api(void) {
 	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag", NULL, out, sizeof(out)) == 404);
 	ops.diag = &m_diag;
 	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag", NULL, out, sizeof(out)) == 200);
-	CHECK_HAS(out, "\"resets\":\"sw,power_on\",\"boots\":5");
+	CHECK_HAS(out, "\"resets\":\"sw,power_on\",\"boots\":5,\"power_cuts\":0");
 	CHECK_HAS(out, "\"power\":{\"state\":");
 	CHECK_HAS(out, "\"contract_v\":20.0,\"contract_a\":1.50");
 	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag", "{}", out, sizeof(out)) == 200);
@@ -430,7 +430,25 @@ static void underruns(void) {
 	CHECK(st == 0);
 }
 
+static void power_cuts(void) {
+	CHECK(hifi_diag_is_power_cut("power_on", 7));
+	CHECK(hifi_diag_is_power_cut("brownout", 1));
+	CHECK(!hifi_diag_is_power_cut("power_on", 0)); /* the first boot is a plug-in */
+	CHECK(!hifi_diag_is_power_cut("restart", 9));
+	CHECK(!hifi_diag_is_power_cut("panic", 9));
+	CHECK(!hifi_diag_is_power_cut("external", 9));
+	CHECK(!hifi_diag_is_power_cut(NULL, 9));
+	hifi_diag_sys_t s = {0};
+	s.reset_reason = "power_on";
+	s.boots = 5;
+	s.power_cuts = 2;
+	char out[2048];
+	hifi_diag_write_sys(&s, out, sizeof(out));
+	CHECK_HAS(out, "\"boots\":5,\"power_cuts\":2");
+}
+
 int main(void) {
+	power_cuts();
 	history();
 	underruns();
 	cpu();

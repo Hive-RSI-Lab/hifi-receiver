@@ -28,7 +28,7 @@
 static const char TAG[] = "hifi_diag";
 #define NS "hifi_diag"
 
-static uint32_t boot_app_ms, boot_ip_ms, boots;
+static uint32_t boot_app_ms, boot_ip_ms, boots, power_cuts;
 static char hist[HIFI_DIAG_HIST_CAP];
 static volatile uint32_t connects, disconnects;
 static volatile int last_reason;
@@ -55,6 +55,12 @@ void hifi_diag_init(void) {
 	size_t n = sizeof(hist);
 	if (nvs_get_str(h, "resets", hist, &n) != ESP_OK) hist[0] = '\0';
 	nvs_get_u32(h, "boots", &boots);
+	nvs_get_u32(h, "pwr_cuts", &power_cuts);
+	if (hifi_diag_is_power_cut(hifi_crash_reset_reason(), boots)) {
+		power_cuts++;
+		nvs_set_u32(h, "pwr_cuts", power_cuts);
+		ESP_LOGW(TAG, "restarted by a power cut (%s); %u so far", hifi_crash_reset_reason(), (unsigned) power_cuts);
+	}
 	boots++;
 	hifi_diag_hist_push(hist, sizeof(hist), hifi_crash_reset_reason());
 	nvs_set_u32(h, "boots", boots);
@@ -153,6 +159,7 @@ static void sys(hifi_diag_sys_t *o) {
 	o->reset_reason = hifi_crash_reset_reason();
 	memcpy(o->reset_hist, hist, sizeof(hist));
 	o->boots = boots;
+	o->power_cuts = power_cuts;
 	nvs(&o->nvs[0], NULL, "nvs");
 	nvs(&o->nvs[1], "settings", "settings");
 }
