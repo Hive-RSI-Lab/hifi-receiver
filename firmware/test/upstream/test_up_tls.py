@@ -12,10 +12,11 @@ the board against ESP-IDF's certificate bundle, as the relay and the updater
 do.
 
 The test builds upstream's TLSSocket.cpp, as patched and as the board
-compiles it (ESP_PLATFORM), against IDF 4.4.8's own mbedTLS and its
-esp_crt_bundle.c, with the IDF bundle (cacrt_all.pem) plus a test CA made
-here. A Python TLS server on 127.0.0.1 then shows it three certificates:
-the test CA's for localhost (must connect), a self-signed one for localhost
+compiles it (ESP_PLATFORM), against the board's mbedTLS: IDF 4.4.8's
+mbedtls component with our idf-patches/mbedtls-*.patch applied, as
+tools/fetch.sh puts it in the tree (its x509_crt.c, its esp_crt_bundle.c and
+its bundle, cacrt_all.pem), plus a test CA made here. A Python TLS server
+on 127.0.0.1 then shows it three certificates: the test CA's for localhost (must connect), a self-signed one for localhost
 (must be refused), and the test CA's again under a name it isn't for
 (must be refused). --tls FILE builds FILE in place of the patched socket:
 with upstream's pristine TLSSocket.cpp the two bad cases connect, which is
@@ -26,6 +27,7 @@ or the fw tool's copy); UPSTREAM_REQUIRED=1 makes that a failure.
 """
 from __future__ import annotations
 
+import hashlib
 import os
 import shutil
 import socket
@@ -69,19 +71,38 @@ def find_idf() -> Path | None:
     return None
 
 
-def mbedtls(idf: Path, out: Path) -> Path:
-    """IDF's mbedTLS 2.28, built for the host once (out/lib/*.a)."""
+def board_mbedtls(idf: Path, out: Path) -> Path:
+    """IDF's mbedtls component as the board builds it: copied out of the IDF
+    and our idf-patches/mbedtls-*.patch applied (tools/fetch.sh does the same).
+    Made again when the patches change."""
+    pats = sorted((HERE.parents[1] / "idf-patches").glob("mbedtls-*.patch"))
+    stamp = hashlib.sha256(b"".join(p.name.encode() + p.read_bytes() for p in pats)).hexdigest()
+    comp = out / "components/mbedtls"
+    if (out / "stamp").is_file() and (out / "stamp").read_text() == stamp:
+        return comp
+    shutil.rmtree(out, ignore_errors=True)
+    shutil.copytree(idf / "components/mbedtls", comp, ignore=shutil.ignore_patterns(".git"))
+    for p in pats:
+        run(["patch", "-p1", "-s", "--no-backup-if-mismatch", "-d", out, "-i", p])
+    (out / "stamp").write_text(stamp)
+    return comp
+
+
+def mbedtls(comp: Path, out: Path) -> Path:
+    """The board's mbedTLS 2.28, built for the host once per copy (out/build/library/*.a)."""
     lib = out / "build/library"
-    if (lib / "libmbedtls.a").is_file():
+    tag = out / "built-from"
+    if (lib / "libmbedtls.a").is_file() and tag.is_file() and tag.read_text() == (comp.parent.parent / "stamp").read_text():
         return lib
     shutil.rmtree(out / "build", ignore_errors=True)
-    src = idf / "components/mbedtls/mbedtls"
+    src = comp / "mbedtls"
     run(["cmake", "-S", src, "-B", out / "build", "-DENABLE_TESTING=OFF", "-DENABLE_PROGRAMS=OFF",
          "-DCMAKE_BUILD_TYPE=Release", "-DUSE_SHARED_MBEDTLS_LIBRARY=OFF", "-DMBEDTLS_FATAL_WARNINGS=OFF",
          # mbedTLS 2.28 asks for CMake 2.8.12; CMake 4 refuses that unless told
          "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"])
     run(["cmake", "--build", out / "build", "-j", str(min(8, os.cpu_count() or 1)),
          "--target", "mbedtls", "mbedx509", "mbedcrypto"])
+    tag.write_text((comp.parent.parent / "stamp").read_text())
     return lib
 
 
@@ -104,21 +125,22 @@ def certs(d: Path) -> None:
              "-keyout", d / "self.key", "-out", d / "self.pem"])
 
 
-def bundle(idf: Path, ca: Path, d: Path) -> Path:
-    """The board's bundle (cacrt_all.pem, as CERTIFICATE_BUNDLE_DEFAULT_FULL) plus the test CA."""
+def bundle(comp: Path, ca: Path, d: Path) -> Path:
+    """The board's bundle (its cacrt_all.pem, as CERTIFICATE_BUNDLE_DEFAULT_FULL) plus the test CA."""
     out = d / "x509_crt_bundle"
-    if out.is_file():
+    if out.is_file() and (d / "built-from").is_file() and (d / "built-from").read_text() == (comp.parent.parent / "stamp").read_text():
         return out
     d.mkdir(parents=True, exist_ok=True)
-    gen = idf / "components/mbedtls/esp_crt_bundle"
+    gen = comp / "esp_crt_bundle"
     run([sys.executable, gen / "gen_crt_bundle.py", "--quiet", "--input", gen / "cacrt_all.pem", ca], cwd=d)
+    (d / "built-from").write_text((comp.parent.parent / "stamp").read_text())
     return out
 
 
-def build(idf: Path, up: Path, tls: Path, lib: Path, bun: Path, exe: Path) -> None:
+def build(comp: Path, up: Path, tls: Path, lib: Path, bun: Path, exe: Path) -> None:
     bell = up / BELL
     inc = ["-I", HERE / "tls", "-I", bell / "io/include", "-I", bell / "utilities/include",
-           "-I", idf / "components/mbedtls/mbedtls/include", "-I", idf / "components/mbedtls/esp_crt_bundle/include"]
+           "-I", comp / "mbedtls/include", "-I", comp / "esp_crt_bundle/include"]
     san = ["-g", "-O1", "-fsanitize=address,undefined", "-fno-sanitize-recover=all"]
     o = exe.parent / (exe.name + ".o")
     o.mkdir(parents=True, exist_ok=True)
@@ -130,7 +152,7 @@ def build(idf: Path, up: Path, tls: Path, lib: Path, bun: Path, exe: Path) -> No
         run([cxx, "-std=c++17", "-c", *san, *inc, *extra, src, "-o", obj])
         objs.append(obj)
     obj = o / "esp_crt_bundle.o"
-    run([cc, "-std=gnu11", "-c", *san, *inc, idf / "components/mbedtls/esp_crt_bundle/esp_crt_bundle.c", "-o", obj])
+    run([cc, "-std=gnu11", "-c", *san, *inc, comp / "esp_crt_bundle/esp_crt_bundle.c", "-o", obj])
     objs.append(obj)
     obj = o / "bundle.o"
     run([cc, "-c", f'-DBUNDLE="{bun}"', HERE / "tls/bundle.S", "-o", obj])
@@ -190,15 +212,16 @@ def main() -> int:
     up = Path(args[0]).resolve()  # the bundle generator runs in its own directory
     tls = Path(args[args.index("--tls") + 1]).resolve() if "--tls" in args else up / BELL / "io/TLSSocket.cpp"
     idf = find_idf()
-    if not idf or not shutil.which("cmake") or not shutil.which("openssl"):
-        print("SKIPPED test_up_tls: needs ESP-IDF v4.4.8 (IDF_PATH), cmake and openssl")
+    if not idf or not all(shutil.which(t) for t in ("cmake", "openssl", "patch")):
+        print("SKIPPED test_up_tls: needs ESP-IDF v4.4.8 (IDF_PATH), cmake, openssl and patch")
         return 1 if os.environ.get("UPSTREAM_REQUIRED", "0") != "0" else 0
     work = up / "tls"
-    lib = mbedtls(idf, work / "mbedtls")
+    comp = board_mbedtls(idf, work / "idf")
+    lib = mbedtls(comp, work / "mbedtls")
     certs(work / "certs")
-    bun = bundle(idf, work / "certs/ca.pem", work / "bundle")
+    bun = bundle(comp, work / "certs/ca.pem", work / "bundle")
     exe = work / ("client" if "--tls" not in args else "client-other")
-    build(idf, up, tls, lib, bun, exe)
+    build(comp, up, tls, lib, bun, exe)
 
     c = work / "certs"
     good, selfs = Server(c / "good.pem", c / "good.key"), Server(c / "self.pem", c / "self.key")

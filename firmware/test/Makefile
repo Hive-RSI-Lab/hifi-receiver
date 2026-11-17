@@ -41,13 +41,23 @@ run: $(addprefix $(BIN)/,$(TESTS))
 # the tests build against stubs. With no copy of upstream reachable they are
 # skipped, loudly; UPSTREAM_REQUIRED=1 makes that a failure.
 UP := $(BIN)/upstream
-BELL := components/spotify/cspot/bell/main
+CSPOT := components/spotify/cspot
+BELL := $(CSPOT)/bell/main
+NANOPB := $(CSPOT)/bell/external/nanopb
 UP_FILES := components/squeezelite/controls.c components/driver_bt/bt_app_sink.c \
 	components/driver_bt/bt_app_core.c components/spotify/Shim.cpp components/spotify/cspot/src/LoginBlob.cpp \
 	components/wifi-manager/network_manager_handlers.c components/raop/dmap_parser.c components/raop/dmap_parser.h \
 	$(BELL)/io/TLSSocket.cpp $(BELL)/io/include/TLSSocket.h $(BELL)/io/include/BellSocket.h \
 	$(BELL)/io/X509Bundle.cpp $(BELL)/io/include/X509Bundle.h \
-	$(BELL)/utilities/BellLogger.cpp $(BELL)/utilities/include/BellLogger.h
+	$(BELL)/utilities/BellLogger.cpp $(BELL)/utilities/include/BellLogger.h \
+	$(CSPOT)/src/AuthChallenges.cpp $(CSPOT)/include/AuthChallenges.h \
+	$(CSPOT)/protobuf/keyexchange.proto $(CSPOT)/protobuf/keyexchange.options \
+	$(CSPOT)/protobuf/authentication.proto $(CSPOT)/protobuf/authentication.options \
+	$(BELL)/utilities/Crypto.cpp $(BELL)/utilities/include/Crypto.h $(BELL)/utilities/aes.c \
+	$(BELL)/utilities/include/aes.h $(BELL)/utilities/NanoPBHelper.cpp $(BELL)/utilities/include/NanoPBHelper.h \
+	$(addprefix $(NANOPB)/,pb.h pb_common.c pb_common.h pb_decode.c pb_decode.h pb_encode.c pb_encode.h \
+	  generator/nanopb_generator.py generator/proto/__init__.py generator/proto/_utils.py \
+	  generator/proto/nanopb.proto generator/proto/google/protobuf/descriptor.proto)
 UP_CFLAGS := -std=gnu11 -O1 -g -Wall -Wextra -Werror -Wno-unused-function -Wno-unused-parameter \
 	-Wno-unused-variable -Wno-unused-const-variable -fsanitize=address,undefined -fno-sanitize-recover=all -I$(UP)/gen
 upstream:
@@ -63,7 +73,7 @@ upstream:
 	$(CC) $(UP_CFLAGS) -I$(UP)/components/raop -o $(UP)/test_up_dmap upstream/test_up_dmap.c || exit 1; \
 	fail=0; $(UP)/test_up_controls || fail=1; $(UP)/test_up_bt || fail=1; $(UP)/test_up_dmap || fail=1; \
 	python3 upstream/test_up_source.py $(UP) || fail=1; \
-	python3 upstream/test_up_tls.py $(UP) || fail=1; exit $$fail
+	python3 upstream/test_up_tls.py $(UP) || fail=1; python3 upstream/test_up_aphello.py $(UP) || fail=1; exit $$fail
 
 # Line, branch and function coverage of core/ (gcov): each test is built
 # again with --coverage under build/cov and run there; `fw coverage` merges
