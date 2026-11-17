@@ -42,3 +42,16 @@ int hifi_listen_check(const hifi_sock_t *prev, int nprev, const hifi_sock_t *s, 
 	else snprintf(why, nwhy, "%d sockets, all allowed", n);
 	return bad;
 }
+
+void hifi_listen_report_init(hifi_listen_report_t *r) {
+	memset(r, 0, sizeof(*r));
+	r->strays = -1;
+}
+
+bool hifi_listen_report(hifi_listen_report_t *r, int strays, const char *why) {
+	bool fresh = strays > 0 && (strays != r->strays || strcmp(why, r->open));
+	if (fresh) r->events++;
+	r->strays = strays;
+	snprintf(r->open, sizeof(r->open), "%s", strays > 0 ? why : "");
+	return fresh;
+}

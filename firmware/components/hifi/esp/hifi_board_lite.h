@@ -25,6 +25,12 @@
 #define VBUS_DIVIDER 11.0f
 #define ADC_PVDD ADC1_CHANNEL_3 /* GPIO39 (SENSOR_VN), PVDD_SENSE: PVDD / 11 (R17 100k over R18 10k) */
 #define PVDD_DIVIDER 11.0f
+/* what a LAN page's cfg-hw-* setting may not point squeezelite at (L8,
+ * hifi_gate.h): the power path, the amp and the two sense inputs. The codec's
+ * I2S and I2C pins stay allowed: the UI's DAC form sends them back. */
+#define HIFI_LAN_RESERVED_PINS                                                                          \
+	(1ULL << PIN_PD_PG | 1ULL << PIN_PVDD_EN | 1ULL << PIN_AMP_SDZ | 1ULL << PIN_AMP_FAULTZ | 1ULL << 34 | \
+	 1ULL << 39)
 
 #define I2C_PORT 0       /* shared with squeezelite's codec driver */
 #define I2C_SDA 33

@@ -213,3 +213,12 @@ first byte or two until the next event. It now reads whatever the UART driver
 has buffered. The regenerate command above diffs the whole tree, so drop this
 file's hunk from 0001 when you regenerate.
 
+`patches/0011-wifi-events-from-the-start.patch` is a hook in
+`components/wifi-manager/network_manager_handlers.c`. Right after network_manager
+creates the default event loop, and before Wi-Fi or Ethernet can start, it calls
+`hifi_net_loop_ready`. That lets `diag net` count the boot's first connect and
+`diag sys` record when the first address came. Before this, the handlers went on
+from the relay's tick, after the board had already joined. The tick still registers
+them as a fallback. `test/upstream/test_up_source.py` checks where the call sits.
+Like 0003, drop this file's hunk from 0001 when you regenerate.
+

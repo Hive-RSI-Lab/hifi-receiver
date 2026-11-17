@@ -27,6 +27,7 @@ typedef struct {
 	 * outside the allow list ("1 open: tcp/23"), NULL when nothing is */
 	bool listen_wait;
 	const char *listen_open;
+	bool lab_on, lab_ok;   /* a lab build (CONFIG_HIFI_LAB), and its frame is up */
 } hifi_trial_t;
 
 typedef enum { HIFI_TRIAL_WAIT = 0, HIFI_TRIAL_GOOD, HIFI_TRIAL_BAD } hifi_trial_verdict_t;

@@ -6,40 +6,30 @@
 void hifi_ota_init(hifi_ota_t *o, const hifi_ota_io_t *io) {
 	memset(o, 0, sizeof(*o));
 	o->io = io;
-	o->run_stamp = -1;
 }
 
-long long hifi_ota_build_stamp(const char *date, const char *time) {
-	static const char mon[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
-	if (!date || !time || strlen(date) != 11 || strlen(time) != 8) return -1;
-	int m = 0;
-	for (; m < 12; m++)
-		if (!strncmp(date, mon + 3 * m, 3)) break;
-	if (m == 12 || date[3] != ' ' || date[6] != ' ' || time[2] != ':' || time[5] != ':') return -1;
-	int dd = 0, y = 0, hh = 0, mi = 0, ss = 0;
-	for (int i = 4; i < 6; i++) {
-		if (date[i] == ' ' && i == 4) continue; /* __DATE__ pads the day with a space */
-		if (date[i] < '0' || date[i] > '9') return -1;
-		dd = dd * 10 + (date[i] - '0');
+unsigned long long hifi_ota_build_of(const char *tag) {
+	size_t k = sizeof(HIFI_BUILD_TAG_PREFIX) - 1;
+	if (!tag || strncmp(tag, HIFI_BUILD_TAG_PREFIX, k)) return 0;
+	unsigned long long v = 0;
+	const char *p = tag + k;
+	for (; *p >= '0' && *p <= '9'; p++) {
+		unsigned d = (unsigned) (*p - '0');
+		if (v > (~0ULL - d) / 10) return 0; /* more than a 64-bit number holds */
+		v = v * 10 + d;
 	}
-	for (int i = 7; i < 11; i++) {
-		if (date[i] < '0' || date[i] > '9') return -1;
-		y = y * 10 + (date[i] - '0');
-	}
-	for (int i = 0; i < 8; i++) {
-		if (i == 2 || i == 5) continue;
-		if (time[i] < '0' || time[i] > '9') return -1;
-	}
-	hh = (time[0] - '0') * 10 + time[1] - '0';
-	mi = (time[3] - '0') * 10 + time[4] - '0';
-	ss = (time[6] - '0') * 10 + time[7] - '0';
-	if (dd < 1 || dd > 31 || hh > 23 || mi > 59 || ss > 60) return -1;
-	return ((((y * 100LL + m + 1) * 100 + dd) * 100 + hh) * 100 + mi) * 100 + ss;
+	return p > tag + k && *p == ';' && !p[1] ? v : 0;
 }
 
-void hifi_ota_set_running(hifi_ota_t *o, const char *project, const char *date, const char *time) {
+void hifi_ota_set_running(hifi_ota_t *o, const char *project, unsigned long long build) {
 	snprintf(o->run_project, sizeof(o->run_project), "%s", project ? project : "");
-	o->run_stamp = hifi_ota_build_stamp(date, time);
+	o->run_build = build;
+}
+
+static unsigned long long tail_build(const uint8_t *tail) {
+	unsigned long long v = 0;
+	for (int i = 7; i >= 0; i--) v = v << 8 | tail[8 + i];
+	return v;
 }
 
 /* a field of the incoming app descriptor, as a C string */
@@ -48,20 +38,18 @@ static void desc_str(const uint8_t *head, size_t at, size_t n, char *out) {
 	out[n] = 0;
 }
 
-/* 0, or 403: the image isn't this project, or is older than the running app */
+/* 0, or 403: the image isn't this project, or is an older build than the
+ * running app, or the running app doesn't know its own build (L9) */
 static int check_age(const hifi_ota_t *o, const char **err) {
-	if (o->run_stamp < 0) return 0;
+	if (!o->run_build) return *err = "this firmware has no build number to check an update against: update it over USB", 403;
 	const uint8_t *h = o->head;
 	uint32_t magic = (uint32_t) h[32] | (uint32_t) h[33] << 8 | (uint32_t) h[34] << 16 | (uint32_t) h[35] << 24;
 	if (magic != HIFI_OTA_DESC_MAGIC) return *err = "the image has no app description", 403;
-	char proj[33], tm[17], dt[17];
+	char proj[33];
 	desc_str(h, 80, 32, proj);
-	desc_str(h, 112, 16, tm);
-	desc_str(h, 128, 16, dt);
-	if (o->run_project[0] && strcmp(proj, o->run_project)) return *err = "the image is for another project", 403;
-	long long st = hifi_ota_build_stamp(dt, tm);
-	if (st < 0) return *err = "the image's build time can't be read", 403;
-	if (st < o->run_stamp) return *err = "the image is older than the running firmware: install it over USB", 403;
+	if (strcmp(proj, o->run_project)) return *err = "the image is for another project", 403;
+	if (tail_build(o->tail) < o->run_build)
+		return *err = "the image is an older build than the running firmware: install it over USB", 403;
 	return 0;
 }
 
@@ -78,6 +66,30 @@ void hifi_ota_set_keys(hifi_ota_t *o, const uint8_t (*keys)[32], int nkeys, hifi
 	for (int k = 0; k < nkeys; k++) memcpy(o->keys[k], keys[k], 32);
 	o->nkeys = nkeys;
 	o->verify = verify;
+}
+
+void hifi_ota_lock(hifi_ota_t *o) {
+	if (o->io && o->io->lock) o->io->lock(o->io->ctx);
+}
+
+void hifi_ota_unlock(hifi_ota_t *o) {
+	if (o->io && o->io->unlock) o->io->unlock(o->io->ctx);
+}
+
+int hifi_ota_claim(hifi_ota_t *o, const char **err) {
+	int st = 0;
+	hifi_ota_lock(o);
+	if (o->held || o->active) st = 409, *err = "an update is already running";
+	else o->held = true;
+	hifi_ota_unlock(o);
+	return st;
+}
+
+void hifi_ota_release(hifi_ota_t *o) {
+	hifi_ota_lock(o);
+	hifi_ota_abort(o); /* an update the holder left open is abandoned */
+	o->held = false;
+	hifi_ota_unlock(o);
 }
 
 void hifi_ota_abort(hifi_ota_t *o) {
@@ -142,15 +154,15 @@ int hifi_ota_check_sig(const hifi_ota_t *o, const uint8_t body_sha[32], const ui
 	static const char hx[] = "0123456789abcdef";
 	if (memcmp(tail, HIFI_OTA_SIG_MAGIC, 8)) return *err = "the image isn't signed by the Hive", 403;
 	if (!o->nkeys || !o->verify) return *err = "this build has no Hive key to check an image with", 403;
-	char msg[sizeof(HIFI_OTA_SIG_CONTEXT) - 1 + 64];
-	size_t c = sizeof(HIFI_OTA_SIG_CONTEXT) - 1;
-	memcpy(msg, HIFI_OTA_SIG_CONTEXT, c);
+	/* "hifi-fw-v2:" + up to 20 digits + ":" + 64 hex */
+	char msg[sizeof(HIFI_OTA_SIG_CONTEXT) - 1 + 21 + 64 + 1];
+	int c = snprintf(msg, sizeof(msg), "%s%llu:", HIFI_OTA_SIG_CONTEXT, tail_build(tail));
 	for (int i = 0; i < 32; i++) {
 		msg[c + 2 * i] = hx[body_sha[i] >> 4];
 		msg[c + 2 * i + 1] = hx[body_sha[i] & 15];
 	}
 	for (int k = 0; k < o->nkeys; k++)
-		if (o->verify(o->keys[k], (const uint8_t *) msg, sizeof(msg), tail + 8)) return 0;
+		if (o->verify(o->keys[k], (const uint8_t *) msg, (size_t) c + 64, tail + 16)) return 0;
 	return *err = "the image's signature isn't the Hive's", 403;
 }
 

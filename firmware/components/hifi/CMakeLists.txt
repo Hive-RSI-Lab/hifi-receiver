@@ -3,7 +3,7 @@
 # host-tested (firmware/test); esp/ ties it to ESP-IDF and squeezelite-esp32.
 set(srcs
 	core/hifi_api.c core/hifi_b64.c core/hifi_boot.c core/hifi_capture.c core/hifi_diag.c core/hifi_exp.c core/hifi_gate.c
-	core/hifi_gov.c core/hifi_ir.c core/hifi_json.c core/hifi_line.c core/hifi_listen.c core/hifi_meta.c core/hifi_ota.c core/hifi_pd.c
+	core/hifi_gov.c core/hifi_ir.c core/hifi_json.c core/hifi_lab.c core/hifi_line.c core/hifi_link.c core/hifi_listen.c core/hifi_meta.c core/hifi_ota.c core/hifi_pd.c
 	core/hifi_power.c core/hifi_remote.c core/hifi_sha256.c core/hifi_tap.c core/hifi_tone.c core/hifi_update.c
 	core/hifi_vol.c core/hifi_ws_proto.c esp/hifi_main.c esp/hifi_crash.c esp/hifi_diag_esp.c esp/hifi_http.c esp/hifi_listen_esp.c esp/hifi_net.c esp/hifi_relay.c esp/hifi_ws.c)
 
@@ -12,6 +12,15 @@ if(CONFIG_HIFI_PLUS OR CONFIG_HIFI_ULTRA)
 	list(APPEND srcs esp/board_core.c)
 else()
 	list(APPEND srcs esp/board_lite.c)
+endif()
+
+# the lab build (board/lite-lab): experiments a signed command starts and stops
+if(CONFIG_HIFI_LAB)
+	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c)
+	# the BLE lab image (board/lite-lab-ble): a GATT link beside A2DP
+	if(CONFIG_BT_BLE_ENABLED)
+		list(APPEND srcs esp/lab_ble.c)
+	endif()
 endif()
 
 # app/build.py writes the web app here (firmware/tools/fetch.sh runs it);
@@ -32,7 +41,7 @@ idf_component_register(
 	PRIV_REQUIRES driver esp_adc_cal mdns console nvs_flash esp_wifi
 		      platform_config services wifi-manager tools
 		      app_update mqtt libsodium mbedtls lwip esp_http_client json
-		      tcp_transport esp-tls)
+		      tcp_transport esp-tls bt)
 
 # The Hive's signing key(s), an optional built-in relay and update manifest,
 # from the build's environment (firmware/tools/build.sh; docs/remote.md).
@@ -42,6 +51,11 @@ foreach(v HIFI_HIVE_PUBKEY HIFI_RELAY_URL HIFI_RELAY_USER HIFI_RELAY_PASS HIFI_U
 		target_compile_definitions(${COMPONENT_LIB} PRIVATE ${v}="$ENV{${v}}")
 	endif()
 endforeach()
+
+# the build number the LAN's updates are held to (hifi_relay.c, security.md L9)
+if(DEFINED ENV{HIFI_FW_BUILD})
+	target_compile_definitions(${COMPONENT_LIB} PRIVATE HIFI_FW_BUILD=$ENV{HIFI_FW_BUILD})
+endif()
 
 target_compile_options(${COMPONENT_LIB} PRIVATE -Wall -Wno-format-truncation)
 

@@ -92,5 +92,34 @@ int main(void) {
 	CHECK(hifi_listen_check(planted, N(planted), planted, N(planted), false, tiny, sizeof(tiny)) == 2);
 	CHECK(strlen(tiny) == 7);
 
+	/* L4, the running report: logs and counts each new stray set, not every scan */
+	hifi_listen_report_t r;
+	hifi_listen_report_init(&r);
+	CHECK(r.strays == -1 && r.events == 0 && !r.open[0]);
+	CHECK(!hifi_listen_report(&r, 0, "7 sockets, all allowed"));
+	CHECK(r.strays == 0 && r.events == 0 && !r.open[0]);
+	CHECK(hifi_listen_report(&r, 1, "1 open: tcp/23"));          /* telnet opens after the trial */
+	CHECK(r.events == 1 && r.strays == 1);
+	CHECK_STR(r.open, "1 open: tcp/23");
+	CHECK(!hifi_listen_report(&r, 1, "1 open: tcp/23"));         /* still there: no new log */
+	CHECK(r.events == 1);
+	CHECK(hifi_listen_report(&r, 1, "1 open: udp/1900"));        /* a different one, same count */
+	CHECK(r.events == 2);
+	CHECK(hifi_listen_report(&r, 2, "2 open: tcp/23 udp/1900")); /* one more */
+	CHECK(r.events == 3);
+	CHECK(!hifi_listen_report(&r, 0, "9 sockets, all allowed")); /* closed again */
+	CHECK(r.strays == 0 && r.events == 3 && !r.open[0]);
+	CHECK(hifi_listen_report(&r, 1, "1 open: tcp/23"));          /* and back: counts again */
+	CHECK(r.events == 4);
+	/* the unreadable list is a stray set too */
+	CHECK(hifi_listen_report(&r, 1, "socket list unreadable"));
+	CHECK(r.events == 5);
+	/* a long list stays inside open */
+	char longwhy[200];
+	memset(longwhy, 'x', sizeof(longwhy) - 1);
+	longwhy[sizeof(longwhy) - 1] = 0;
+	CHECK(hifi_listen_report(&r, 9, longwhy));
+	CHECK(strlen(r.open) == sizeof(r.open) - 1);
+
 	return check_report("listen");
 }

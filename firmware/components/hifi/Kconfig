@@ -1,0 +1,26 @@
+menu "hifi-receiver lab"
+	config HIFI_LAB
+		bool "Lab build: experiments a signed command starts and stops"
+		default n
+		help
+			Adds the "lab" API (esp/hifi_lab_esp.c) and its experiments
+			(esp/lab_*.c). Set by board/lite-lab; off in a product image.
+	config HIFI_LAB_DRILL
+		bool "Rollback drill: the lab reports itself broken"
+		depends on HIFI_LAB
+		default n
+		help
+			The image's trial then fails ("the lab frame isn't up") and the
+			board must roll back to the image before it by itself. Set only by
+			board/lite-lab-drill, to prove that it does.
+	config HIFI_LAB_DRILL_STUCK
+		bool "Stuck-tick drill: the lab's tick hangs holding its lock"
+		depends on HIFI_LAB
+		default n
+		help
+			Once per power-up, 5 minutes after boot, the lab's tick hangs
+			holding the lab's lock (as a stuck experiment stop would). The
+			watch must restart the board within HIFI_LAB_STUCK_MS, and the
+			self-test after it says "the lab restarted it, its tick stuck".
+			Set only by board/lite-lab-stuck, to prove that.
+endmenu

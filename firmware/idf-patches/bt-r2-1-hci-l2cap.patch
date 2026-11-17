@@ -1,0 +1,572 @@
+diff --git a/components/bt/host/bluedroid/hci/hci_hal_h4.c b/components/bt/host/bluedroid/hci/hci_hal_h4.c
+index e2b90a5..09d8b21 100644
+--- a/components/bt/host/bluedroid/hci/hci_hal_h4.c
++++ b/components/bt/host/bluedroid/hci/hci_hal_h4.c
+@@ -436,6 +436,10 @@ static void hci_hal_h4_hdl_rx_packet(BT_HDR *packet)
+     packet->len--;
+     if (type == HCI_BLE_EVENT) {
+ #if (!CONFIG_BT_STACK_NO_LOG)
++        if (packet->len < 1) {
++            osi_free(packet);
++            return;
++        }
+         uint8_t len = 0;
+         STREAM_TO_UINT8(len, stream);
+ #endif
+diff --git a/components/bt/host/bluedroid/hci/hci_layer.c b/components/bt/host/bluedroid/hci/hci_layer.c
+index cd7119e..6d05f43 100644
+--- a/components/bt/host/bluedroid/hci/hci_layer.c
++++ b/components/bt/host/bluedroid/hci/hci_layer.c
+@@ -439,12 +439,26 @@ static bool filter_incoming_event(BT_HDR *packet)
+     uint8_t event_code;
+     command_opcode_t opcode;
+ 
++    if (packet == NULL) {
++        return true;
++    }
++
++    if (packet->len < HCI_EVENT_PREAMBLE_SIZE) {
++        HCI_TRACE_WARNING("dropping too short HCI event (len=%u)", packet->len);
++        osi_free(packet);
++        return true;
++    }
+     STREAM_TO_UINT8(event_code, stream);
+     STREAM_SKIP_UINT8(stream); // Skip the parameter total length field
+ 
+     HCI_TRACE_DEBUG("Receive packet event_code=0x%x\n", event_code);
+ 
+     if (event_code == HCI_COMMAND_COMPLETE_EVT) {
++        if (packet->len < HCI_EVENT_PREAMBLE_SIZE + HCI_CC_EVENT_MIN_PARAM_LEN) {
++            HCI_TRACE_WARNING("dropping too short Command Complete (len=%u)", packet->len);
++            osi_free(packet);
++            return true;
++        }
+         STREAM_TO_UINT8(hci_host_env.command_credits, stream);
+         STREAM_TO_UINT16(opcode, stream);
+         wait_entry = get_waiting_command(opcode);
+@@ -471,6 +485,11 @@ static bool filter_incoming_event(BT_HDR *packet)
+         goto intercepted;
+     } else if (event_code == HCI_COMMAND_STATUS_EVT) {
+         uint8_t status;
++        if (packet->len < HCI_EVENT_PREAMBLE_SIZE + HCI_CS_EVENT_MIN_PARAM_LEN) {
++            HCI_TRACE_WARNING("dropping too short Command Status (len=%u)", packet->len);
++            osi_free(packet);
++            return true;
++        }
+         STREAM_TO_UINT8(status, stream);
+         STREAM_TO_UINT8(hci_host_env.command_credits, stream);
+         STREAM_TO_UINT16(opcode, stream);
+diff --git a/components/bt/host/bluedroid/hci/include/hci/hci_internals.h b/components/bt/host/bluedroid/hci/include/hci/hci_internals.h
+index 41c792c..7d336e8 100644
+--- a/components/bt/host/bluedroid/hci/include/hci/hci_internals.h
++++ b/components/bt/host/bluedroid/hci/include/hci/hci_internals.h
+@@ -27,5 +27,9 @@
+ #define HCI_SCO_PREAMBLE_SIZE 3
+ // 1 byte for event code, 1 byte for parameter length (Volume 2, Part E, 5.4.4)
+ #define HCI_EVENT_PREAMBLE_SIZE 2
++// 1 byte for Num_HCI_Command_Packets, 2 bytes for Commnad_Opcode (Volume 4, Part E, 7.7.14)
++#define HCI_CC_EVENT_MIN_PARAM_LEN 3
++// 1 byte for status, 1 byte for Num_HCI_Command_Packets, 2 bytes for Commnad_Opcode (Volume 4, Part E, 7.7.15)
++#define HCI_CS_EVENT_MIN_PARAM_LEN 4
+ 
+ #endif /* _HCI_INTERNALS_H_ */
+diff --git a/components/bt/host/bluedroid/hci/packet_fragmenter.c b/components/bt/host/bluedroid/hci/packet_fragmenter.c
+index 78b6151..efd2984 100644
+--- a/components/bt/host/bluedroid/hci/packet_fragmenter.c
++++ b/components/bt/host/bluedroid/hci/packet_fragmenter.c
+@@ -37,6 +37,7 @@
+ #define START_PACKET_BOUNDARY 2
+ #define CONTINUATION_PACKET_BOUNDARY 1
+ #define L2CAP_HEADER_SIZE       4
++#define L2CAP_LENGTH_SIZE       2
+ 
+ // TODO(zachoverflow): find good value for this
+ #define NUMBER_OF_BUCKETS 42
+@@ -81,6 +82,11 @@ static void fragment_and_dispatch(BT_HDR *packet)
+         callbacks->fragmented(packet, true);
+         return;
+     }
++    if (packet->len < HCI_ACL_PREAMBLE_SIZE) {
++        HCI_TRACE_ERROR("ACL packet too short for preamble (len=%u)", packet->len);
++        callbacks->fragmented(packet, true);
++        return;
++    }
+ 
+     max_data_size =
+         SUB_EVENT(packet->event) == LOCAL_BR_EDR_CONTROLLER_ID ?
+@@ -143,15 +149,33 @@ static void reassemble_and_dispatch(BT_HDR *packet)
+         uint16_t l2cap_length;
+         uint16_t acl_length __attribute__((unused));
+ 
++        /* All ACL packets need at least the 4-byte HCI ACL preamble (handle + length) */
++        if (packet->len < HCI_ACL_PREAMBLE_SIZE) {
++            HCI_TRACE_ERROR("ACL packet too short (len=%u)\n", packet->len);
++            osi_free(packet);
++            return;
++        }
++
+         STREAM_TO_UINT16(handle, stream);
+         STREAM_TO_UINT16(acl_length, stream);
+-        STREAM_TO_UINT16(l2cap_length, stream);
+-
+-        assert(acl_length == packet->len - HCI_ACL_PREAMBLE_SIZE);
+ 
+         uint8_t boundary_flag = GET_BOUNDARY_FLAG(handle);
+         handle = handle & HANDLE_MASK;
+ 
++        assert(acl_length == packet->len - HCI_ACL_PREAMBLE_SIZE);
++
++        if (boundary_flag == START_PACKET_BOUNDARY) {
++            /* START packets must also contain the L2CAP header (length field) */
++            if (packet->len < HCI_ACL_PREAMBLE_SIZE + L2CAP_LENGTH_SIZE) {
++                HCI_TRACE_ERROR("ACL START packet too short for L2CAP header (len=%u)\n", packet->len);
++                osi_free(packet);
++                return;
++            }
++            STREAM_TO_UINT16(l2cap_length, stream);
++        } else {
++            l2cap_length = 0; /* Not used for continuation packets */
++        }
++
+         BT_HDR *partial_packet = (BT_HDR *)hash_map_get(partial_packets, (void *)(uintptr_t)handle);
+ 
+         if (boundary_flag == START_PACKET_BOUNDARY) {
+diff --git a/components/bt/host/bluedroid/stack/l2cap/l2c_csm.c b/components/bt/host/bluedroid/stack/l2cap/l2c_csm.c
+index 9abe72e..fc5f5b0 100644
+--- a/components/bt/host/bluedroid/stack/l2cap/l2c_csm.c
++++ b/components/bt/host/bluedroid/stack/l2cap/l2c_csm.c
+@@ -695,7 +695,7 @@ static void l2c_csm_config (tL2C_CCB *p_ccb, UINT16 event, void *p_data)
+         l2cu_process_peer_cfg_rsp (p_ccb, p_cfg);
+ 
+         if (p_cfg->result != L2CAP_CFG_PENDING) {
+-            /* TBD: When config options grow beyong minimum MTU (48 bytes)
++            /* TBD: When config options grow beyond minimum MTU (48 bytes)
+              *      logic needs to be added to handle responses with
+              *      continuation bit set in flags field.
+              *       1. Send additional config request out until C-bit is cleared in response
+@@ -885,7 +885,7 @@ static void l2c_csm_open (tL2C_CCB *p_ccb, UINT16 event, void *p_data)
+     tL2CAP_CFG_INFO         *p_cfg;
+     tL2C_CHNL_STATE         tempstate;
+     UINT8                   tempcfgdone;
+-    UINT8                   cfg_result;
++    UINT8                   cfg_result = L2CAP_PEER_CFG_DISCONNECT;
+ 
+ #if (BT_TRACE_VERBOSE == TRUE)
+     L2CAP_TRACE_EVENT ("L2CAP - LCID: 0x%04x  st: OPEN  evt: %s",
+@@ -931,7 +931,11 @@ static void l2c_csm_open (tL2C_CCB *p_ccb, UINT16 event, void *p_data)
+ 
+         btu_start_timer (&p_ccb->timer_entry, BTU_TTYPE_L2CAP_CHNL, L2CAP_CHNL_CFG_TIMEOUT);
+ 
+-        if ((cfg_result = l2cu_process_peer_cfg_req (p_ccb, p_cfg)) == L2CAP_PEER_CFG_OK) {
++        if (p_cfg) {
++            cfg_result = l2cu_process_peer_cfg_req (p_ccb, p_cfg);
++        }
++
++        if (cfg_result == L2CAP_PEER_CFG_OK) {
+             (*p_ccb->p_rcb->api.pL2CA_ConfigInd_Cb)(p_ccb->local_cid, p_cfg);
+         }
+ 
+@@ -968,7 +972,7 @@ static void l2c_csm_open (tL2C_CCB *p_ccb, UINT16 event, void *p_data)
+     break;
+ 
+     case L2CEVT_L2CAP_DATA:                         /* Peer data packet rcvd    */
+-        if ((p_ccb->p_rcb) && (p_ccb->p_rcb->api.pL2CA_DataInd_Cb)) {
++        if (p_data && (p_ccb->p_rcb) && (p_ccb->p_rcb->api.pL2CA_DataInd_Cb)) {
+             (*p_ccb->p_rcb->api.pL2CA_DataInd_Cb)(p_ccb->local_cid, (BT_HDR *)p_data);
+         }
+         break;
+@@ -988,16 +992,20 @@ static void l2c_csm_open (tL2C_CCB *p_ccb, UINT16 event, void *p_data)
+     break;
+ 
+     case L2CEVT_L2CA_DATA_WRITE:                    /* Upper layer data to send */
+-        l2c_enqueue_peer_data (p_ccb, (BT_HDR *)p_data);
+-        l2c_link_check_send_pkts (p_ccb->p_lcb, NULL, NULL);
++        if (p_data) {
++            l2c_enqueue_peer_data (p_ccb, (BT_HDR *)p_data);
++            l2c_link_check_send_pkts (p_ccb->p_lcb, NULL, NULL);
++        }
+         break;
+ 
+     case L2CEVT_L2CA_CONFIG_REQ:                   /* Upper layer config req   */
+-        p_ccb->chnl_state = CST_CONFIG;
+-        p_ccb->config_done &= ~CFG_DONE_MASK;
+-        l2cu_process_our_cfg_req (p_ccb, (tL2CAP_CFG_INFO *)p_data);
+-        l2cu_send_peer_config_req (p_ccb, (tL2CAP_CFG_INFO *)p_data);
+-        btu_start_timer (&p_ccb->timer_entry, BTU_TTYPE_L2CAP_CHNL, L2CAP_CHNL_CFG_TIMEOUT);
++        if (p_data) {
++            p_ccb->chnl_state = CST_CONFIG;
++            p_ccb->config_done &= ~CFG_DONE_MASK;
++            l2cu_process_our_cfg_req (p_ccb, (tL2CAP_CFG_INFO *)p_data);
++            l2cu_send_peer_config_req (p_ccb, (tL2CAP_CFG_INFO *)p_data);
++            btu_start_timer (&p_ccb->timer_entry, BTU_TTYPE_L2CAP_CHNL, L2CAP_CHNL_CFG_TIMEOUT);
++        }
+         break;
+ 
+     case L2CEVT_TIMEOUT:
+diff --git a/components/bt/host/bluedroid/stack/l2cap/l2c_fcr.c b/components/bt/host/bluedroid/stack/l2cap/l2c_fcr.c
+index a890d6a..be71a0d 100644
+--- a/components/bt/host/bluedroid/stack/l2cap/l2c_fcr.c
++++ b/components/bt/host/bluedroid/stack/l2cap/l2c_fcr.c
+@@ -352,6 +352,10 @@ BT_HDR *l2c_fcr_clone_buf (BT_HDR *p_buf, UINT16 new_offset, UINT16 no_of_bytes)
+     buf_size += sizeof(uint32_t);
+ #endif
+     BT_HDR *p_buf2 = (BT_HDR *)osi_malloc(buf_size);
++    if (!p_buf2) {
++        L2CAP_TRACE_ERROR ("l2c_fcr_clone_buf() malloc failed");
++        return NULL;
++    }
+ 
+     p_buf2->offset = new_offset;
+     p_buf2->len = no_of_bytes;
+@@ -986,7 +990,7 @@ static void process_s_frame (tL2C_CCB *p_ccb, BT_HDR *p_buf, UINT16 ctrl_word)
+ #endif
+ 
+     if (ctrl_word & L2CAP_FCR_P_BIT) {
+-        p_fcrb->rej_sent   = FALSE;             /* After checkpoint, we can send anoher REJ */
++        p_fcrb->rej_sent   = FALSE;             /* After checkpoint, we can send another REJ */
+         p_fcrb->send_f_rsp = TRUE;              /* Set a flag in case an I-frame is pending */
+     }
+ 
+@@ -1157,7 +1161,7 @@ static void process_i_frame (tL2C_CCB *p_ccb, BT_HDR *p_buf, UINT16 ctrl_word, B
+         return;
+     }
+ 
+-    /* Seq number is the next expected. Clear possible reject exception in case it occured */
++    /* Seq number is the next expected. Clear possible reject exception in case it occurred */
+     p_fcrb->rej_sent = p_fcrb->srej_sent = FALSE;
+ 
+     /* Adjust the next_seq, so that if the upper layer sends more data in the callback
+@@ -1836,7 +1840,7 @@ void l2c_fcr_adj_monitor_retran_timeout (tL2C_CCB *p_ccb)
+     /* adjust our monitor/retran timeout */
+     if (p_ccb->out_cfg_fcr_present) {
+         /*
+-        ** if we requestd ERTM or accepted ERTM
++        ** if we requested ERTM or accepted ERTM
+         ** We may accept ERTM even if we didn't request ERTM, in case of requesting STREAM
+         */
+         if ((p_ccb->our_cfg.fcr.mode == L2CAP_FCR_ERTM_MODE)
+@@ -1857,7 +1861,7 @@ void l2c_fcr_adj_monitor_retran_timeout (tL2C_CCB *p_ccb)
+ **
+ ** Function         l2c_fcr_adj_our_rsp_options
+ **
+-** Description      Overrides any neccesary FCR options passed in from
++** Description      Overrides any necessary FCR options passed in from
+ **                  L2CA_ConfigRsp based on our FCR options.
+ **                  Only makes adjustments if channel is in ERTM mode.
+ **
+@@ -1934,7 +1938,7 @@ BOOLEAN l2c_fcr_renegotiate_chan(tL2C_CCB *p_ccb, tL2CAP_CFG_INFO *p_cfg)
+ 
+             /* Try another supported mode if available based on our last attempted channel */
+             switch (p_ccb->our_cfg.fcr.mode) {
+-            /* Our Streaming mode request was unnacceptable; try ERTM or Basic */
++            /* Our Streaming mode request was unacceptable; try ERTM or Basic */
+             case L2CAP_FCR_STREAM_MODE:
+                 /* Peer wants ERTM and we support it */
+                 if ( (peer_mode == L2CAP_FCR_ERTM_MODE) && (p_ccb->ertm_info.allowed_modes & L2CAP_FCR_CHAN_OPT_ERTM) ) {
+diff --git a/components/bt/host/bluedroid/stack/l2cap/l2c_main.c b/components/bt/host/bluedroid/stack/l2cap/l2c_main.c
+index 2974314..57f11ed 100644
+--- a/components/bt/host/bluedroid/stack/l2cap/l2c_main.c
++++ b/components/bt/host/bluedroid/stack/l2cap/l2c_main.c
+@@ -335,14 +335,14 @@ void l2c_rcv_acl_data (BT_HDR *p_msg)
+ #if (CLASSIC_BT_INCLUDED == TRUE)
+ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+ {
+-    UINT8           *p_pkt_end, *p_next_cmd, *p_cfg_end, *p_cfg_start, *p_cfg_opt_end;
++    UINT8           *p_pkt_end, *p_next_cmd, *p_cfg_end, *p_cfg_start, *p_cfg_opt_end, *p_info_end;
+     UINT8           cmd_code, cfg_code, cfg_len, id;
+     tL2C_CONN_INFO  con_info;
+     tL2CAP_CFG_INFO cfg_info;
+     UINT16          rej_reason, rej_mtu, lcid, rcid, info_type;
+     tL2C_CCB        *p_ccb;
+     tL2C_RCB        *p_rcb;
+-    BOOLEAN         cfg_rej, pkt_size_rej = FALSE;
++    BOOLEAN         cfg_rej, cfg_bad, info_bad, pkt_size_rej = FALSE;
+     UINT16          cfg_rej_len, cmd_len;
+     UINT16          result;
+     tL2C_CONN_INFO  ci;
+@@ -438,6 +438,10 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+             break;
+ 
+         case L2CAP_CMD_CONN_REQ:
++            if (cmd_len < L2CAP_CONN_REQ_LEN) {
++                L2CAP_TRACE_WARNING ("L2CAP - cmd conn req too short, cmd_len: %d", cmd_len);
++                break;
++            }
+             STREAM_TO_UINT16 (con_info.psm, p);
+             STREAM_TO_UINT16 (rcid, p);
+             if ((p_rcb = l2cu_find_rcb_by_psm (con_info.psm)) == NULL) {
+@@ -464,6 +468,10 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+             break;
+ 
+         case L2CAP_CMD_CONN_RSP:
++            if (cmd_len < L2CAP_CONN_RSP_LEN) {
++                L2CAP_TRACE_WARNING ("L2CAP - cmd conn rsp too short, cmd_len: %d", cmd_len);
++                break;
++            }
+             STREAM_TO_UINT16 (con_info.remote_cid, p);
+             STREAM_TO_UINT16 (lcid, p);
+             STREAM_TO_UINT16 (con_info.l2cap_result, p);
+@@ -491,14 +499,14 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+             break;
+ 
+         case L2CAP_CMD_CONFIG_REQ:
+-            if (cmd_len < L2CAP_CONFIG_REQ_LEN) {
+-                L2CAP_TRACE_WARNING ("L2CAP - cfg req too short, cmd_len: %d", cmd_len);
+-                break;
+-            }
+             p_cfg_end = p + cmd_len;
+             cfg_rej = FALSE;
+             cfg_rej_len = 0;
+ 
++            if ((p_cfg_end - p) < L2CAP_CONFIG_REQ_LEN) {
++                L2CAP_TRACE_WARNING ("L2CAP - cfg req too short, cmd_len: %d", cmd_len);
++                break;
++            }
+             STREAM_TO_UINT16 (lcid, p);
+             STREAM_TO_UINT16 (cfg_info.flags, p);
+ 
+@@ -623,11 +631,13 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+             break;
+ 
+         case L2CAP_CMD_CONFIG_RSP:
+-            if (cmd_len < L2CAP_CONFIG_RSP_LEN) {
++            p_cfg_end = p + cmd_len;
++            cfg_bad = FALSE;
++
++            if ((p_cfg_end - p) < L2CAP_CONFIG_RSP_LEN) {
+                 L2CAP_TRACE_WARNING ("L2CAP - cfg rsp too short, cmd_len: %d", cmd_len);
+                 break;
+             }
+-            p_cfg_end = p + cmd_len;
+             STREAM_TO_UINT16 (lcid, p);
+             STREAM_TO_UINT16 (cfg_info.flags, p);
+             STREAM_TO_UINT16 (cfg_info.result, p);
+@@ -637,6 +647,7 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+ 
+             while (p < p_cfg_end) {
+                 if ((p_cfg_end - p) < L2CAP_CFG_OPTION_OVERHEAD) {
++                    cfg_bad = TRUE;
+                     break;
+                 }
+ 
+@@ -644,6 +655,7 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                 STREAM_TO_UINT8 (cfg_len, p);
+                 if (cfg_len > (p_cfg_end - p)) {
+                     p = p_cfg_end;
++                    cfg_bad = TRUE;
+                     break;
+                 }
+                 p_cfg_opt_end = p + cfg_len;
+@@ -652,6 +664,7 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                 case L2CAP_CFG_TYPE_MTU:
+                     if (cfg_len != L2CAP_CFG_MTU_OPTION_LEN) {
+                         p = p_cfg_end;
++                        cfg_bad = TRUE;
+                         break;
+                     }
+                     cfg_info.mtu_present = TRUE;
+@@ -661,6 +674,7 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                 case L2CAP_CFG_TYPE_FLUSH_TOUT:
+                     if (cfg_len != L2CAP_CFG_FLUSH_OPTION_LEN) {
+                         p = p_cfg_end;
++                        cfg_bad = TRUE;
+                         break;
+                     }
+                     cfg_info.flush_to_present = TRUE;
+@@ -670,6 +684,7 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                 case L2CAP_CFG_TYPE_QOS:
+                     if (cfg_len != L2CAP_CFG_QOS_OPTION_LEN) {
+                         p = p_cfg_end;
++                        cfg_bad = TRUE;
+                         break;
+                     }
+                     cfg_info.qos_present = TRUE;
+@@ -685,6 +700,7 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                 case L2CAP_CFG_TYPE_FCR:
+                     if (cfg_len != L2CAP_CFG_FCR_OPTION_LEN) {
+                         p = p_cfg_end;
++                        cfg_bad = TRUE;
+                         break;
+                     }
+                     cfg_info.fcr_present = TRUE;
+@@ -699,6 +715,7 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                 case L2CAP_CFG_TYPE_FCS:
+                     if (cfg_len != L2CAP_CFG_FCS_OPTION_LEN) {
+                         p = p_cfg_end;
++                        cfg_bad = TRUE;
+                         break;
+                     }
+                     cfg_info.fcs_present = TRUE;
+@@ -708,6 +725,7 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                 case L2CAP_CFG_TYPE_EXT_FLOW:
+                     if (cfg_len != L2CAP_CFG_EXT_FLOW_OPTION_LEN) {
+                         p = p_cfg_end;
++                        cfg_bad = TRUE;
+                         break;
+                     }
+                     cfg_info.ext_flow_spec_present = TRUE;
+@@ -718,6 +736,16 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                     STREAM_TO_UINT32 (cfg_info.ext_flow_spec.access_latency, p);
+                     STREAM_TO_UINT32 (cfg_info.ext_flow_spec.flush_timeout, p);
+                     break;
++
++                case L2CAP_CFG_TYPE_EXT_WIN_SIZE:
++                    if (cfg_len != L2CAP_CFG_EXT_WIN_SIZE_LEN) {
++                        p = p_cfg_end;
++                        cfg_bad = TRUE;
++                        break;
++                    }
++                    p = p_cfg_opt_end;
++                    break;
++
+                 default:
+                     p = p_cfg_opt_end;
+                     break;
+@@ -725,6 +753,10 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+             }
+ 
+             if ((p_ccb = l2cu_find_ccb_by_cid (p_lcb, lcid)) != NULL) {
++                if (cfg_bad) {
++                    L2CAP_TRACE_WARNING ("L2CAP - cfg rsp ignored due to malformed options, CID: 0x%04x", lcid);
++                    break;
++                }
+                 if (p_ccb->local_id != id) {
+                     L2CAP_TRACE_WARNING ("L2CAP - cfg rsp - bad ID. Exp: %d Got: %d",
+                                          p_ccb->local_id, id);
+@@ -742,6 +774,11 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+ 
+ 
+         case L2CAP_CMD_DISC_REQ:
++            if (cmd_len < L2CAP_DISC_REQ_LEN) {
++                L2CAP_TRACE_WARNING ("L2CAP - cmd disc req too short, cmd_len: %d", cmd_len);
++                break;
++            }
++
+             STREAM_TO_UINT16 (lcid, p);
+             STREAM_TO_UINT16 (rcid, p);
+ 
+@@ -757,6 +794,11 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+             break;
+ 
+         case L2CAP_CMD_DISC_RSP:
++            if (cmd_len < L2CAP_DISC_RSP_LEN) {
++                L2CAP_TRACE_WARNING ("L2CAP - cmd disc rsp too short, cmd_len: %d", cmd_len);
++                break;
++            }
++
+             STREAM_TO_UINT16 (rcid, p);
+             STREAM_TO_UINT16 (lcid, p);
+ 
+@@ -783,11 +825,23 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+             break;
+ 
+         case L2CAP_CMD_INFO_REQ:
++            if (cmd_len < L2CAP_INFO_REQ_LEN) {
++                L2CAP_TRACE_WARNING ("L2CAP - cmd info req too short, cmd_len: %d", cmd_len);
++                break;
++            }
+             STREAM_TO_UINT16 (info_type, p);
+             l2cu_send_peer_info_rsp (p_lcb, id, info_type);
+             break;
+ 
+         case L2CAP_CMD_INFO_RSP:
++            info_bad = FALSE;
++            p_info_end = p + cmd_len;
++
++            if ((p_info_end - p) < L2CAP_INFO_RSP_LEN) {
++                L2CAP_TRACE_WARNING ("L2CAP - cmd info rsp too short, cmd_len: %d", cmd_len);
++                break;
++            }
++
+             /* Stop the link connect timer if sent before L2CAP connection is up */
+             if (p_lcb->w4_info_rsp) {
+                 btu_stop_timer (&p_lcb->info_timer_entry);
+@@ -799,44 +853,67 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+ 
+             p_lcb->info_rx_bits |= (1 << info_type);
+ 
+-            if ( (info_type == L2CAP_EXTENDED_FEATURES_INFO_TYPE)
+-                    && (result == L2CAP_INFO_RESP_RESULT_SUCCESS) ) {
+-                STREAM_TO_UINT32( p_lcb->peer_ext_fea, p );
++            if ((info_type == L2CAP_EXTENDED_FEATURES_INFO_TYPE)
++                    && (result == L2CAP_INFO_RESP_RESULT_SUCCESS)) {
++                if ((p + L2CAP_EXTENDED_FEATURES_ARRAY_SIZE) > p_info_end) {
++                    L2CAP_TRACE_WARNING ("L2CAP - info rsp ext features truncated, cmd_len: %d", cmd_len);
++                    info_bad = TRUE;
++                } else {
++                    STREAM_TO_UINT32 (p_lcb->peer_ext_fea, p);
+ 
+ #if (L2CAP_NUM_FIXED_CHNLS > 0)
+-                if (p_lcb->peer_ext_fea & L2CAP_EXTFEA_FIXED_CHNLS) {
+-                    l2cu_send_peer_info_req (p_lcb, L2CAP_FIXED_CHANNELS_INFO_TYPE);
+-                    break;
+-                } else {
+-                    l2cu_process_fixed_chnl_resp (p_lcb);
+-                }
++                    if (p_lcb->peer_ext_fea & L2CAP_EXTFEA_FIXED_CHNLS) {
++                        l2cu_send_peer_info_req (p_lcb, L2CAP_FIXED_CHANNELS_INFO_TYPE);
++                        break;
++                    } else {
++                        l2cu_process_fixed_chnl_resp (p_lcb);
++                    }
+ #endif
++                }
+             }
+ 
+-
++            if (!info_bad) {
+ #if (L2CAP_NUM_FIXED_CHNLS > 0)
+-            if (info_type == L2CAP_FIXED_CHANNELS_INFO_TYPE) {
+-                if (result == L2CAP_INFO_RESP_RESULT_SUCCESS) {
+-                    memcpy (p_lcb->peer_chnl_mask, p, L2CAP_FIXED_CHNL_ARRAY_SIZE);
+-                }
++                if (info_type == L2CAP_FIXED_CHANNELS_INFO_TYPE) {
++                    if (result == L2CAP_INFO_RESP_RESULT_SUCCESS) {
++                        if ((p + L2CAP_FIXED_CHNL_ARRAY_SIZE) > p_info_end) {
++                            L2CAP_TRACE_WARNING ("L2CAP - info rsp fixed chnl truncated, cmd_len: %d", cmd_len);
++                            info_bad = TRUE;
++                        } else {
++                            memcpy (p_lcb->peer_chnl_mask, p, L2CAP_FIXED_CHNL_ARRAY_SIZE);
++                            p += L2CAP_FIXED_CHNL_ARRAY_SIZE;
++                        }
++                    }
+ 
+-                l2cu_process_fixed_chnl_resp (p_lcb);
+-            }
++                    if (!info_bad) {
++                        l2cu_process_fixed_chnl_resp (p_lcb);
++                    }
++                }
+ #endif
+ #if (L2CAP_UCD_INCLUDED == TRUE)
+-            else if (info_type == L2CAP_CONNLESS_MTU_INFO_TYPE) {
+-                if (result == L2CAP_INFO_RESP_RESULT_SUCCESS) {
+-                    STREAM_TO_UINT16 (p_lcb->ucd_mtu, p);
++                else if (info_type == L2CAP_CONNLESS_MTU_INFO_TYPE) {
++                    if (result == L2CAP_INFO_RESP_RESULT_SUCCESS) {
++                        if ((p + L2CAP_CONNLESS_MTU_INFO_SIZE) > p_info_end) {
++                            L2CAP_TRACE_WARNING ("L2CAP - info rsp connless mtu truncated, cmd_len: %d", cmd_len);
++                            info_bad = TRUE;
++                        } else {
++                            STREAM_TO_UINT16 (p_lcb->ucd_mtu, p);
++                        }
++                    }
+                 }
+-            }
+ #endif
+ 
++            if (info_bad) {
++                break;
++            }
++
+             ci.status = HCI_SUCCESS;
+             memcpy (ci.bd_addr, p_lcb->remote_bd_addr, sizeof(BD_ADDR));
+             for (p_ccb = p_lcb->ccb_queue.p_first_ccb; p_ccb; p_ccb = p_ccb->p_next_ccb) {
+                 l2c_csm_execute (p_ccb, L2CEVT_L2CAP_INFO_RSP, &ci);
+             }
+-            break;
++        }
++        break;
+ 
+         default:
+             L2CAP_TRACE_WARNING ("L2CAP - bad cmd code: %d", cmd_code);

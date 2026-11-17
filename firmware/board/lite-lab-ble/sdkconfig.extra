@@ -1,0 +1,44 @@
+# The BLE lab image (lane esp32-lab): the lab image with the Bluetooth
+# controller in dual mode (Classic + BLE) and Bluedroid's GATT server and
+# client, for the lab's "ble" experiment (components/hifi/esp/lab_ble.c):
+# a GATT link between two boards beside Wi-Fi and the A2DP sink.
+# patches/0012 keeps the BLE half of the controller when this is set.
+CONFIG_HIFI_LAB=y
+CONFIG_ESP_TASK_WDT_PANIC=y
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=15
+CONFIG_BTDM_CTRL_MODE_BTDM=y
+CONFIG_BTDM_CTRL_BLE_MAX_CONN=1
+CONFIG_BT_BLE_ENABLED=y
+CONFIG_BT_GATTS_ENABLE=y
+CONFIG_BT_GATTC_ENABLE=y
+# BLE with GATT server and client adds ~190 KB of flash and 13 KB of IRAM:
+# the full Lite image no longer fits its 3.06 MB app slot. The BLE lab image
+# drops Spotify Connect (cspot and most of libstdc++) to make room; AirPlay,
+# Bluetooth A2DP and LMS stay, so BLE beside A2DP can still be measured.
+# CONFIG_CSPOT_SINK is not set
+# Internal RAM: ble4 (dual mode, nothing trimmed) failed its boot trial on both
+# boards (fleet f19d2c9d), most likely the 12 KB internal-heap floor: lab10
+# boots with ~14.9 KB free and dual mode keeps the BLE controller's memory.
+# Win back internal RAM for this image only. Static Wi-Fi TX buffers are
+# ~1.6 KB of internal RAM each and the board mostly receives (audio streams
+# in, the dial-in is light), so 8 -> 4 gives back ~6.4 KB. The BLE cuts are
+# small: a short duplicate-scan cache,
+# the minimum adv-report queue, and a GATT table sized for one service.
+CONFIG_ESP32_WIFI_STATIC_TX_BUFFER_NUM=4
+# No BLE pairing (the lab link is open). With Classic on, CONFIG_BT_SMP_ENABLE
+# stays set, so in this image the line below saves nothing; it says the intent.
+# CONFIG_BT_BLE_SMP_ENABLE is not set
+CONFIG_BTDM_SCAN_DUPL_CACHE_SIZE=20
+CONFIG_BTDM_BLE_ADV_REPORT_FLOW_CTRL_NUM=50
+CONFIG_BT_GATT_MAX_SR_PROFILES=4
+CONFIG_BT_GATT_MAX_SR_ATTRIBUTES=30
+CONFIG_BT_ACL_CONNECTIONS=3
+# ble5 (TX buffers 8 -> 4 plus the BLE cuts) still failed its trial on both
+# boards (fleet 71a23552): 9.1-9.4 KB internal free at 123 s (min 8.2 KB),
+# against lab10's 14.9 KB, so dual mode costs ~12 KB of internal RAM. More cuts,
+# again for this image only: static Wi-Fi RX buffers 8 -> 5 (~4.8 KB; the 40
+# dynamic RX buffers stay in PSRAM), Wi-Fi mgmt short buffers 32 -> 12, and one
+# classic BT ACL link in the controller (the A2DP sink takes one source).
+CONFIG_ESP32_WIFI_STATIC_RX_BUFFER_NUM=5
+CONFIG_ESP32_WIFI_MGMT_SBUF_NUM=12
+CONFIG_BTDM_CTRL_BR_EDR_MAX_ACL_CONN=1

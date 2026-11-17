@@ -1,0 +1,113 @@
+--- a/components/mbedtls/esp_crt_bundle/esp_crt_bundle.c	2026-11-17 05:13:00.030806485 -0500
++++ b/components/mbedtls/esp_crt_bundle/esp_crt_bundle.c	2026-11-17 05:13:38.833450772 -0500
+@@ -14,6 +14,7 @@
+ 
+ 
+ #include <string.h>
++#include <sys/param.h>
+ #include <esp_system.h>
+ #include "esp_crt_bundle.h"
+ #include "esp_log.h"
+@@ -85,11 +86,41 @@
+ }
+ 
+ 
++/* Binary search on the DER subject name; returns the bundle entry or NULL.
++ * The compare is bounded by both lengths so it never reads past either name. */
++static const uint8_t *esp_crt_find_cert(const unsigned char *name, size_t name_len)
++{
++    if (name == NULL || name_len == 0) {
++        return NULL;
++    }
++
++    int start = 0;
++    int end = s_crt_bundle.num_certs - 1;
++    int middle = (end - start) / 2;
++
++    while (start <= end) {
++        const uint8_t *cert = s_crt_bundle.crts[middle];
++        size_t cert_name_len = cert[0] << 8 | cert[1];
++
++        int cmp_res = memcmp(name, cert + CRT_HEADER_OFFSET, MIN(name_len, cert_name_len));
++        if (cmp_res == 0) {
++            return cert;
++        } else if (cmp_res < 0) {
++            end = middle - 1;
++        } else {
++            start = middle + 1;
++        }
++        middle = (start + end) / 2;
++    }
++    return NULL;
++}
++
+ /* This callback is called for every certificate in the chain. If the chain
+  * is proper each intermediate certificate is validated through its parent
+- * in the x509_crt_verify_chain() function. So this callback should
+- * only verify the first untrusted link in the chain is signed by the
+- * root certificate in the trusted bundle
++ * in the x509_crt_verify_chain() function. So this callback only has to
++ * decide about the first untrusted link in the chain: either it is a
++ * cross-signed copy of a root in the trusted bundle, or it must be signed
++ * by a root in the trusted bundle.
+ */
+ int esp_crt_verify_callback(void *buf, mbedtls_x509_crt *crt, int depth, uint32_t *flags)
+ {
+@@ -111,35 +142,32 @@
+ 
+     ESP_LOGD(TAG, "%d certificates in bundle", s_crt_bundle.num_certs);
+ 
+-    size_t name_len = 0;
+-    const uint8_t *crt_name;
+-
+-    bool crt_found = false;
+-    int start = 0;
+-    int end = s_crt_bundle.num_certs - 1;
+-    int middle = (end - start) / 2;
+-
+-    /* Look for the certificate using binary search on subject name */
+-    while (start <= end) {
+-        name_len = s_crt_bundle.crts[middle][0] << 8 | s_crt_bundle.crts[middle][1];
+-        crt_name = s_crt_bundle.crts[middle] + CRT_HEADER_OFFSET;
+-
+-        int cmp_res = memcmp(child->issuer_raw.p, crt_name, name_len );
+-        if (cmp_res == 0) {
+-            crt_found = true;
+-            break;
+-        } else if (cmp_res < 0) {
+-            end = middle - 1;
+-        } else {
+-            start = middle + 1;
++    /* A certificate mbedtls could not chain to a trusted CA may be a
++       cross-signed copy of a root the bundle already trusts. Its subject and
++       public key then match a bundle entry, and mbedtls has already verified
++       the chain below it against that key, so the cross-signer need not be
++       in the bundle. Limit: mbedtls has no CA list here and cannot stop at a
++       trusted certificate, so if the server also sends the cross-signer's
++       root, the path extends to that untrusted root and verification fails. */
++    const uint8_t *self = esp_crt_find_cert(child->subject_raw.p, child->subject_raw.len);
++    if (self != NULL) {
++        size_t self_name_len = self[0] << 8 | self[1];
++        size_t self_key_len = self[2] << 8 | self[3];
++        if (child->subject_raw.len == self_name_len && child->pk_raw.len == self_key_len &&
++                memcmp(child->pk_raw.p, self + CRT_HEADER_OFFSET + self_name_len, self_key_len) == 0) {
++            ESP_LOGI(TAG, "Certificate validated (cross-signed copy of a trusted root)");
++            *flags = 0;
++            return 0;
+         }
+-        middle = (start + end) / 2;
+     }
+ 
++    /* Otherwise the certificate must be signed by a root in the bundle */
+     int ret = MBEDTLS_ERR_X509_FATAL_ERROR;
+-    if (crt_found) {
+-        size_t key_len = s_crt_bundle.crts[middle][2] << 8 | s_crt_bundle.crts[middle][3];
+-        ret = esp_crt_check_signature(child, s_crt_bundle.crts[middle] + CRT_HEADER_OFFSET + name_len, key_len);
++    const uint8_t *cert = esp_crt_find_cert(child->issuer_raw.p, child->issuer_raw.len);
++    if (cert != NULL) {
++        size_t name_len = cert[0] << 8 | cert[1];
++        size_t key_len = cert[2] << 8 | cert[3];
++        ret = esp_crt_check_signature(child, cert + CRT_HEADER_OFFSET + name_len, key_len);
+     }
+ 
+     if (ret == 0) {

@@ -214,6 +214,14 @@ typedef struct {
 	 * with no phone; the boot after that is back to normal. Restarts the
 	 * board. 0, or -1 with *err set; NULL: 404 */
 	int (*bt_test)(const char *sink, const char **err);
+	/* The LAN's factory reset (L6): arm it (0, else -1); the erase happens
+	 * only if the board next starts from power-on (unplugged and plugged
+	 * back in) within HIFI_RESET_ARM_US. NULL: the LAN can't reset. */
+	int (*factory_arm)(void);
+	/* the lab build's experiments (hifi_lab.h): GET lists them, POST starts,
+	 * stops or reads one. Returns the HTTP status with the reply in out;
+	 * NULL outside a lab build: 404 */
+	int (*lab)(bool post, const char *body, char *out, size_t cap);
 	/* on-board diagnostics (hifi_diag.h); NULL: diag answers 404 */
 	const hifi_diag_ops_t *diag;
 } hifi_ops_t;
@@ -236,6 +244,12 @@ size_t hifi_api_reply_cap(const char *path, const char *body);
 
 /* Shared by /state and the console */
 void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap);
+
+/* /state/<part>: one top-level section (power, amp, governor, audio, net,
+ * sys, ir, controls, update), or the whole state when part is NULL. A short
+ * answer for a serial line: the whole state runs near 1000 characters. */
+void hifi_api_write_state_part(const hifi_snapshot_t *s, const char *part, char *out, size_t cap);
+bool hifi_api_state_part_known(const char *part);
 
 /* Adds a check to a self-test result. */
 void hifi_selftest_add(hifi_selftest_t *t, const char *name, bool pass, const char *fmt, ...);

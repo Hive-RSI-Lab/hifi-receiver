@@ -3,6 +3,8 @@
 #include "hifi_json.h"
 #include "hifi_vol.h"
 
+#include <stdlib.h>
+
 /* ------------------------------------------------------------ mock board */
 
 static struct {
@@ -17,6 +19,7 @@ static struct {
 	float eq[HIFI_EQ_BANDS];
 	char name[65];
 	bool rebooted, reset;
+	int armed, arm_fail;
 	char action[16];
 	hifi_vol_t vol;
 	hifi_meta_t playing;
@@ -114,6 +117,11 @@ static int m_set_name(const char *n) {
 }
 static void m_reboot(void) { m.rebooted = true; }
 static void m_factory_reset(void) { m.reset = true; }
+static int m_factory_arm(void) {
+	if (m.arm_fail) return -1;
+	m.armed++;
+	return 0;
+}
 static int m_control(const char *a) {
 	snprintf(m.action, sizeof(m.action), "%s", a);
 	return strcmp(a, "volup") && strcmp(a, "toggle") ? -1 : 0;
@@ -275,6 +283,27 @@ static void amp_input_sub_control(void) {
 
 	CHECK(call("POST", "/api/v1/reset", "{}") == 400);
 	CHECK(!m.reset);
+	/* L6: from the LAN a factory reset only arms (the erase waits for a
+	 * power-on start); with no way to arm, the LAN can't reset at all */
+	CHECK(hifi_api_handle_from(&ops, HIFI_SRC_LAN, "POST", "/api/v1/reset", "{\"factory\":true}", out, sizeof(out)) == 403);
+	CHECK(!m.reset && strstr(out, "USB"));
+	{
+		hifi_ops_t armable = ops;
+		armable.factory_arm = m_factory_arm;
+		CHECK(hifi_api_handle_from(&armable, HIFI_SRC_LAN, "POST", "/api/v1/reset", "{}", out, sizeof(out)) == 400);
+		CHECK(m.armed == 0);
+		CHECK(hifi_api_handle_from(&armable, HIFI_SRC_LAN, "POST", "/api/v1/reset", "{\"factory\":true}", out, sizeof(out)) == 200);
+		CHECK(m.armed == 1 && !m.reset);
+		CHECK_STR(out, "{\"armed\":true,\"within_s\":600,\"next\":\"unplug the receiver and plug it back in\"}");
+		m.arm_fail = 1;
+		CHECK(hifi_api_handle_from(&armable, HIFI_SRC_LAN, "POST", "/api/v1/reset", "{\"factory\":true}", out, sizeof(out)) == 403);
+		m.arm_fail = 0;
+		CHECK(m.armed == 1 && !m.reset);
+		/* the USB console and the relay (trusted) erase at once */
+		CHECK(hifi_api_handle(&armable, "POST", "/api/v1/reset", "{\"factory\":true}", out, sizeof(out)) == 200);
+		CHECK(m.reset && m.armed == 1);
+		m.reset = false;
+	}
 	CHECK(call("POST", "/api/v1/reset", "{\"factory\":true}") == 200);
 	CHECK(m.reset);
 	CHECK(call("POST", "/api/v1/reboot", NULL) == 200);
@@ -347,6 +376,102 @@ static void volume_playing_ir(void) {
 	hifi_meta_idle(&m.playing);
 }
 
+/* /state/<part>: one section, so a serial line (the bench cuts at 1000
+ * characters) holds what a test saves even as the whole state grows */
+static void state_parts(void) {
+	m.power_on = true;
+	CHECK(call("GET", "/api/v1/state/audio", NULL) == 200);
+	CHECK_STR(out, "{\"audio\":{\"source\":\"lms\",\"input\":\"dj_direct\",\"tone\":null,\"level_dbfs\":-23.4,"
+		       "\"sub\":{\"on\":true,\"level_db\":4.5},\"eq\":[1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,-12.0],"
+		       "\"volume\":20,\"mute\":false,\"max_volume\":100,\"playing\":null}}");
+	CHECK(call("GET", "/api/v1/state/sys", NULL) == 200);
+	CHECK_STR(out, "{\"sys\":{\"heap_free\":81234,\"heap_min\":60123,\"psram_free\":3912345}}");
+	CHECK(call("GET", "/api/v1/state/amp?x=1", NULL) == 200);
+	CHECK_HAS(out, "{\"amp\":{\"enabled\":");
+	/* a section this board doesn't have now: an empty answer */
+	CHECK(call("GET", "/api/v1/state/update", NULL) == 200);
+	CHECK_STR(out, "{}");
+	CHECK(call("GET", "/api/v1/state/uptime_s", NULL) == 404);
+	CHECK(call("GET", "/api/v1/state/", NULL) == 404);
+	CHECK(call("GET", "/api/v1/state/audio/x", NULL) == 404);
+	CHECK(call("POST", "/api/v1/state/audio", "{}") == 405);
+
+	/* every section on its own makes up the whole state */
+	hifi_snapshot_t s;
+	m_snapshot(&s);
+	static char whole[4096], part[1024];
+	hifi_api_write_state(&s, whole, sizeof(whole));
+	static const char *const parts[] = {"power", "amp", "governor", "audio", "net", "sys", "ir"};
+	for (size_t i = 0; i < sizeof(parts) / sizeof(parts[0]); i++) {
+		hifi_api_write_state_part(&s, parts[i], part, sizeof(part));
+		size_t n = strlen(part);
+		CHECK(n > 2 && part[0] == '{' && part[n - 1] == '}');
+		part[n - 1] = '\0';
+		CHECK_HAS(whole, part + 1);
+	}
+
+	/* the size guard: with every field at its longest (track text at
+	 * its limit, a tone, the DJ guard, both zones, every IR action, the
+	 * controls, an update with an error), each section stays under 800
+	 * characters, leaving the bench's 1000-character line room to grow */
+	memset(&s, 0, sizeof(s));
+	s.uptime_s = 4294967295u;
+	s.pwr_state = HIFI_PWR_NO_PVDD;
+	s.vbus_v = s.pvdd_v = 48.88f;
+	s.vbus_i_a = 5.55f;
+	s.contract = (hifi_contract_t) {.known = true, .proto = HIFI_PROTO_PD, .epr = true, .v = 48.0f, .i_max_a = 5.0f, .w = 240.0f};
+	s.amp_faults = 2147483647;
+	s.amp_temp_c = -100.5f;
+	s.gov_budget_w = s.gov_in_w = s.gov_out_w = -999.9f;
+	s.gov_gain_db = -99.9f;
+	s.gov_events = 4294967295u;
+	s.source = "spotify";
+	s.input = HIFI_INPUT_DJ_DIRECT;
+	s.dj_guard = true;
+	s.dj_guard_w = s.dj_guard_limit_w = 999.9f;
+	s.dj_guard_tripped = "contract";
+	s.tone_active = true;
+	s.tone = (hifi_tone_params_t) {.type = HIFI_TONE_SWEEP, .start_hz = 20000, .end_hz = 20000, .level_dbfs = -120, .duration_s = 3600, .channel = HIFI_CH_RIGHT};
+	s.level_dbfs = -120.5f;
+	s.sub_db = -12.5f;
+	for (int i = 0; i < HIFI_EQ_BANDS; i++) s.eq[i] = -12.5f;
+	s.volume = s.max_volume = 100;
+	s.zones = 2;
+	s.playing.state = HIFI_PLAY_PAUSE;
+	/* '"' escapes to two characters, the most any track text can cost now
+	 * that hifi_utf8_copy turns control characters into spaces */
+	memset(s.playing.title, '"', sizeof(s.playing.title) - 1);
+	memset(s.playing.artist, '"', sizeof(s.playing.artist) - 1);
+	memset(s.playing.album, '"', sizeof(s.playing.album) - 1);
+	s.playing.elapsed_ms = s.playing.duration_ms = 2147483647;
+	s.ir_learning = 0;
+	for (int a = 0; a < HIFI_IR_N; a++) s.ir_learned[a] = true;
+	s.ir_have_last = true;
+	s.ir_last_code = 0xffffffffu;
+	s.exp_present = s.front_present = true;
+	memset(s.last_control, 'c', sizeof(s.last_control) - 1);
+	s.last_control_ago_s = 4294967295u;
+	s.backlight = "auto";
+	s.net_mode = "sta";
+	s.eth_present = s.eth_up = true;
+	memset(s.ssid, 's', sizeof(s.ssid) - 1);
+	memset(s.hostname, 'h', sizeof(s.hostname) - 1);
+	snprintf(s.ip, sizeof(s.ip), "255.255.255.255");
+	s.rssi = -100;
+	s.heap_free = s.heap_min = s.psram_free = 4294967295u;
+	s.reset_reason = "task_watchdog";
+	s.update = (hifi_update_status_t) {.state = HIFI_UPD_ERROR, .progress = 100};
+	memset(s.update.error, 'e', sizeof(s.update.error) - 1);
+	static const char *const all[] = {"power", "amp", "governor", "audio", "net", "sys", "ir", "controls", "update"};
+	for (size_t i = 0; i < sizeof(all) / sizeof(all[0]); i++) {
+		hifi_api_write_state_part(&s, all[i], part, sizeof(part));
+		size_t n = strlen(part);
+		if (getenv("STATE_SIZES") || n > 850) fprintf(stderr, "state/%s is %zu characters\n", all[i], n);
+		CHECK(n > 2 && n <= 850 && part[n - 1] == '}');
+	}
+	hifi_meta_idle(&m.playing);
+}
+
 static void selftest(void) {
 	m.power_on = true;
 	CHECK(call("POST", "/api/v1/selftest", NULL) == 200);
@@ -369,6 +494,10 @@ static void console(void) {
 	CHECK(CLI("state"));
 	CHECK_STR(method, "GET");
 	CHECK_STR(path, "/api/v1/state");
+	CHECK(CLI("state", "audio"));
+	CHECK_STR(method, "GET");
+	CHECK_STR(path, "/api/v1/state/audio");
+	CHECK(!CLI("state", "nope"));
 
 	CHECK(CLI("tone", "sine", "1000", "-20"));
 	CHECK_STR(method, "POST");
@@ -791,6 +920,7 @@ int main(void) {
 	tones();
 	amp_input_sub_control();
 	volume_playing_ir();
+	state_parts();
 	selftest();
 	console();
 	core_routes();

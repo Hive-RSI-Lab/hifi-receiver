@@ -58,6 +58,22 @@ void hifi_diag_hist_push(char *hist, size_t cap, const char *reason) {
 	memcpy(hist, next, keep + 1);
 }
 
+/* ------------------------------------------------------------------ underruns */
+
+int hifi_diag_underrun_step(uint8_t *state, bool running, uint32_t frames, bool live, bool flushed) {
+	if (!running || flushed) {
+		*state = 0;
+		return 0;
+	}
+	if (frames) {
+		*state = HIFI_UNDERRUN_ARMED;
+		return 0;
+	}
+	if (!(*state & HIFI_UNDERRUN_ARMED) || (*state & HIFI_UNDERRUN_DRY) || !live) return 0;
+	*state |= HIFI_UNDERRUN_DRY;
+	return 1;
+}
+
 /* ------------------------------------------------------------------ writers */
 
 static void heap(hj_t *j, const char *key, const hifi_diag_heap_t *h) {
@@ -198,6 +214,12 @@ void hifi_diag_write_net(const hifi_diag_net_t *n, char *out, size_t cap) {
 	hj_int(&j, "up_s", n->link_up_s);
 	hj_int(&j, "tx_bytes", (long long) n->tx_bytes);
 	hj_int(&j, "rx_bytes", (long long) n->rx_bytes);
+	hj_obj_end(&j);
+	hj_obj(&j, "listeners");
+	if (n->listen_strays >= 0) hj_int(&j, "strays", n->listen_strays);
+	else hj_null(&j, "strays");
+	hj_int(&j, "events", n->listen_events);
+	hj_str(&j, "open", n->listen_open[0] ? n->listen_open : NULL);
 	hj_obj_end(&j);
 	hj_obj_end(&j);
 }

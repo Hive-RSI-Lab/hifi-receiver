@@ -28,11 +28,13 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
+#include "freertos/timers.h"
 #include "mdns.h"
 #include "nvs_flash.h"
 
 #include "audio_controls.h"
 #include "network_manager.h"
+#include "nvs_utilities.h"
 #include "platform_config.h"
 
 #include "hifi_api.h"
@@ -44,6 +46,9 @@
 #include "hifi_gov.h"
 #include "hifi_http.h"
 #include "hifi_ir.h"
+#ifdef CONFIG_HIFI_LAB
+#include "hifi_lab_esp.h"
+#endif
 #include "hifi_json.h"
 #include "hifi_line.h"
 #include "hifi_meta.h"
@@ -882,6 +887,62 @@ static void restart_later(bool erase) {
 static void op_reboot(void) { restart_later(false); }
 static void op_factory_reset(void) { restart_later(true); }
 
+/* L6 (hifi_reset_confirmed): the LAN's reset arms, a power-on start finishes
+ * it. The flag is a hifi_* key, which squeezelite's settings page can't set. */
+static void factory_disarm(TimerHandle_t t) {
+	config_set_value(NVS_TYPE_STR, "hifi_reset_armed", "0");
+	ESP_LOGW(TAG, "factory reset disarmed: not unplugged in time");
+}
+
+/* A FreeRTOS timer, not esp_timer: its task (3800 bytes) is the one that
+ * already runs platform_config's own commits. The flag is committed before
+ * the reply, so an unplug right after "armed" still finds it. */
+static int op_factory_arm(void) {
+	static TimerHandle_t t; /* the HTTP task and the relay's hifi_cmd task both arm */
+	TimerHandle_t mine = NULL, none = NULL;
+	if (!__atomic_load_n(&t, __ATOMIC_ACQUIRE)) {
+		mine = xTimerCreate("hifi_disarm", pdMS_TO_TICKS(HIFI_RESET_ARM_US / 1000), pdFALSE, NULL, factory_disarm);
+		if (!mine) return -1;
+		if (!__atomic_compare_exchange_n(&t, &none, mine, false, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE))
+			xTimerDelete(mine, 0); /* the other task won; use its timer */
+	}
+	/* the disarm window runs before the flag is set, so the flag never
+	 * outlives a timer that failed to start */
+	if (xTimerReset(t, pdMS_TO_TICKS(1000)) != pdPASS) return -1; /* a second arm starts the window again */
+	bool ok = config_set_value(NVS_TYPE_STR, "hifi_reset_armed", "1") == ESP_OK;
+	if (ok) {
+		config_commit_to_nvs();
+		/* read it back from flash: the commit clears its change flag even
+		 * when a store fails, so only this shows an unplug would finish it */
+		char *v = get_nvs_value_alloc(NVS_TYPE_STR, "hifi_reset_armed");
+		ok = v && !strcmp(v, "1");
+		free(v);
+	}
+	if (!ok) { /* refused: leave nothing armed behind the 403 */
+		xTimerStop(t, pdMS_TO_TICKS(1000));
+		config_set_value(NVS_TYPE_STR, "hifi_reset_armed", "0");
+		config_commit_to_nvs();
+		return -1;
+	}
+	ESP_LOGW(TAG, "factory reset armed from the LAN: unplug the receiver and plug it back in to finish");
+	return 0;
+}
+
+/* at boot: an armed reset erases on a power-on start, any other disarms */
+static void factory_boot(void) {
+	char *f = config_alloc_get_str("hifi_reset_armed", NULL, "0");
+	bool armed = f && !strcmp(f, "1");
+	free(f);
+	if (!armed) return;
+	if (hifi_reset_confirmed(armed, esp_reset_reason() == ESP_RST_POWERON)) {
+		ESP_LOGW(TAG, "factory reset: unplugged while armed, erasing every setting");
+		nvs_flash_erase();
+		esp_restart();
+	}
+	config_set_value(NVS_TYPE_STR, "hifi_reset_armed", "0");
+	ESP_LOGW(TAG, "factory reset disarmed: this start wasn't from power-on");
+}
+
 /* The Bluetooth test (ops.bt_test): this boot's squeezelite command line
  * (autoexec1) is kept in hifi_bt_save, the next boot runs it with "-o BT"
  * (a Bluetooth source playing to sink, a2dp_sink_name), and hifi_bttest walks
@@ -1017,6 +1078,9 @@ static void op_selftest(hifi_selftest_t *t) {
 	char why[64];
 	int strays = hifi_listen_now(why, sizeof(why));
 	hifi_selftest_add(t, "listeners", strays == 0, "%s", why);
+#ifdef CONFIG_HIFI_LAB
+	hifi_lab_esp_selftest(t);
+#endif
 	free(s);
 }
 
@@ -1143,13 +1207,17 @@ void hifi_main_trial_inputs(hifi_trial_t *t) {
 	wifi_config_t wc = {0};
 	t->wifi_configured = esp_wifi_get_config(WIFI_IF_STA, &wc) == ESP_OK && wc.sta.ssid[0];
 	t->wifi_ok = hifi_net_ip(NULL, 0);
+#ifdef CONFIG_HIFI_LAB
+	t->lab_on = true;
+	t->lab_ok = hifi_lab_esp_ok();
+#endif
 }
 
 const hifi_ops_t hifi_ops = {
 	.info = op_info, .snapshot = op_snapshot, .tone_start = op_tone_start, .tone_stop = op_tone_stop,
 	.amp_enable = op_amp_enable, .amp_reset = op_amp_reset, .set_input = op_set_input,
 	.set_sub = op_set_sub, .set_eq = op_set_eq, .set_name = op_set_name, .reboot = op_reboot,
-	.factory_reset = op_factory_reset, .control = op_control, .selftest = op_selftest,
+	.factory_reset = op_factory_reset, .factory_arm = op_factory_arm, .control = op_control, .selftest = op_selftest,
 	.set_volume = op_set_volume, .ir_learn = op_ir_learn, .ir_forget = op_ir_forget,
 #if HIFI_HAS_CAPTURE
 	.capture = op_capture,
@@ -1162,6 +1230,9 @@ const hifi_ops_t hifi_ops = {
 	.set_zone = hifi_bsp_set_zone,
 #endif
 	.update_check = hifi_net_update_check, .update_start = hifi_net_update_start,
+#ifdef CONFIG_HIFI_LAB
+	.lab = hifi_lab_esp_op,
+#endif
 #ifdef HIFI_HAS_LED_TEST
 	.set_led = hifi_bsp_set_led,
 #endif
@@ -1275,7 +1346,10 @@ void hifi_dsp_process(uint8_t *buf, uint32_t frames, int bytes_per_frame, uint32
 	hifi_bsp_audio(buf, frames, bytes_per_frame);
 }
 
-void hifi_http_register(httpd_handle_t server) { hifi_http_start(server, &hifi_ops); }
+void hifi_http_register(httpd_handle_t server) {
+	hifi_gate_reserve_pins(HIFI_LAN_RESERVED_PINS); /* whichever starts first (L8) */
+	hifi_http_start(server, &hifi_ops);
+}
 
 /* Every failed allocation goes to the console (and so to the crash log): a
  * Bluetooth connect panicked in btu_start_timer when its timer couldn't be
@@ -1290,8 +1364,10 @@ static void alloc_failed(size_t size, uint32_t caps, const char *fn) {
 }
 
 static bool hifi_init(void) {
+	hifi_gate_reserve_pins(HIFI_LAN_RESERVED_PINS); /* first: bt_test_boot checks a line (L8) */
 	heap_caps_register_failed_alloc_callback(alloc_failed);
 	hifi_diag_init();
+	factory_boot();
 	bt_test_boot();
 	lock = xSemaphoreCreateMutex();
 	tone_lock = xSemaphoreCreateMutex();
@@ -1337,6 +1413,9 @@ static bool hifi_init(void) {
 	if (board_line) task_psram(line_main, "hifi_line", 4096, ESP_TASK_PRIO_MIN + 4, 1);
 	xTaskCreate(services_task, "hifi_svc", 3072, NULL, ESP_TASK_PRIO_MIN + 1, NULL);
 	tap_task = task_psram(tap_main, "hifi_tap", 4096, ESP_TASK_PRIO_MIN + 2, tskNO_AFFINITY);
+#ifdef CONFIG_HIFI_LAB
+	hifi_lab_esp_init();
+#endif
 	hifi_remote_start(&hifi_ops);
 	hifi_bsp_start();
 	ESP_LOGI(TAG, "%s on %s, firmware %s", HIFI_MODEL, HIFI_BOARD, HIFI_FW_VERSION);

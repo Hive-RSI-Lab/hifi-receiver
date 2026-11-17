@@ -1,0 +1,292 @@
+diff --git a/components/raop/dmap_parser.c b/components/raop/dmap_parser.c
+index b013ad1..bc7b06b 100644
+--- a/components/raop/dmap_parser.c
++++ b/components/raop/dmap_parser.c
+@@ -388,7 +388,7 @@ static int64_t dmap_read_i64(const char *buf) {
+ 	return (int64_t)dmap_read_u64(buf);
+ }
+ 
+-static int dmap_parse_internal(const dmap_settings *settings, const char *buf, size_t len, const dmap_field *parent) {
++static int dmap_parse_internal(const dmap_settings *settings, const char *buf, size_t len, const dmap_field *parent, int depth) {
+ 	const dmap_field *field;
+ 	DMAP_TYPE field_type;
+ 	size_t field_len;
+@@ -397,7 +397,7 @@ static int dmap_parse_internal(const dmap_settings *settings, const char *buf, s
+ 	const char *end = buf + len;
+ 	char code[5] = {0};
+ 
+-	if (!settings || !buf)
++	if (!settings || !buf || depth > 16)
+ 		return -1;
+ 
+ 	while (end - p >= 8) {
+@@ -408,7 +408,7 @@ static int dmap_parse_internal(const dmap_settings *settings, const char *buf, s
+ 		field_len = dmap_read_u32(p);
+ 		p += 4;
+ 
+-		if (p + field_len > end)
++		if (field_len > (size_t)(end - p))
+ 			return -1;
+ 
+ 		if (field) {
+@@ -526,7 +526,7 @@ static int dmap_parse_internal(const dmap_settings *settings, const char *buf, s
+ 			case DMAP_DICT:
+ 				if (settings->on_dict_start)
+ 					settings->on_dict_start(settings->ctx, code, field_name);
+-				if (dmap_parse_internal(settings, p, field_len, field) != 0)
++				if (dmap_parse_internal(settings, p, field_len, field, depth + 1) != 0)
+ 					return -1;
+ 				if (settings->on_dict_end)
+ 					settings->on_dict_end(settings->ctx, code, field_name);
+@@ -548,5 +548,5 @@ static int dmap_parse_internal(const dmap_settings *settings, const char *buf, s
+ }
+ 
+ int dmap_parse(const dmap_settings *settings, const char *buf, size_t len) {
+-	return dmap_parse_internal(settings, buf, len, NULL);
++	return dmap_parse_internal(settings, buf, len, NULL, 0);
+ }
+diff --git a/components/raop/raop.c b/components/raop/raop.c
+index 9814549..453a497 100644
+--- a/components/raop/raop.c
++++ b/components/raop/raop.c
+@@ -453,7 +453,10 @@ static bool handle_rtsp(raop_ctx_t *ctx, int sock)
+ 		// need to pad the base64 string as apple device don't
+ 		base64_pad(buf, &buf_pad);
+ 
+-		p = data + min(base64_decode(buf_pad, data), 32-10);
++		// at most 40 base64 chars (30 bytes) fit in data[32]; Apple sends 16 bytes
++		n = strlen(buf_pad) <= 40 ? base64_decode(buf_pad, data) : -1;
++		if (n < 0) n = 0;
++		p = data + min(n, 32-10);
+ 		p = (char*) memcpy(p, &S_ADDR(ctx->host), 4) + 4;
+ 		p = (char*) memcpy(p, ctx->mac, 6) + 6;
+ 		memset(p, 0, 32 - (p - data));
+@@ -476,45 +479,59 @@ static bool handle_rtsp(raop_ctx_t *ctx, int sock)
+ 
+ 	} else if (!strcmp(method, "ANNOUNCE")) {
+ 		char *padded, *p;
++		bool bad = false;
+ 
+ 		NFREE(ctx->rtsp.aeskey);
+ 		NFREE(ctx->rtsp.aesiv);
+ 		NFREE(ctx->rtsp.fmtp);
+ 
+-		if ((p = strcasestr(body, "rsaaeskey")) != NULL) {
++		if (body && (p = strcasestr(body, "rsaaeskey")) != NULL && (p = strextract(p, ":", "\r\n")) != NULL) {
+ 			unsigned char *aeskey;
+ 			int len, outlen;
+ 
+-			p = strextract(p, ":", "\r\n");
+ 			base64_pad(p, &padded);
+-			aeskey = malloc(strlen(padded));
+-			len = base64_decode(padded, aeskey);
+-			ctx->rtsp.aeskey = rsa_apply(aeskey, len, &outlen, RSA_MODE_KEY);
++			aeskey = malloc(strlen(padded) + 1);
++			len = aeskey ? base64_decode(padded, aeskey) : -1;
++			// RSA decrypt reads a full 2048-bit block; anything else is bogus
++			if (len == 256) ctx->rtsp.aeskey = rsa_apply(aeskey, len, &outlen, RSA_MODE_KEY);
++			else LOG_ERROR("[%p]: bad rsaaeskey length %d", ctx, len);
++			if (!ctx->rtsp.aeskey) bad = true;
+ 
+ 			NFREE(p);
+ 			NFREE(aeskey);
+ 			NFREE(padded);
+ 		}
+ 
+-		if ((p = strcasestr(body, "aesiv")) != NULL) {
+-			p = strextract(p, ":", "\r\n");
++		if (body && (p = strcasestr(body, "aesiv")) != NULL && (p = strextract(p, ":", "\r\n")) != NULL) {
+ 			base64_pad(p, &padded);
+-			ctx->rtsp.aesiv = malloc(strlen(padded));
+-			base64_decode(padded, ctx->rtsp.aesiv);
++			ctx->rtsp.aesiv = malloc(strlen(padded) + 16);
++			// rtp_init copies exactly 16 bytes of IV
++			if (!ctx->rtsp.aesiv || base64_decode(padded, ctx->rtsp.aesiv) != 16) {
++				LOG_ERROR("[%p]: bad aesiv", ctx);
++				NFREE(ctx->rtsp.aesiv);
++				bad = true;
++			}
+ 
+ 			NFREE(p);
+ 			NFREE(padded);
+ 		}
+ 
+-		if ((p = strcasestr(body, "fmtp")) != NULL) {
+-			p = strextract(p, ":", "\r\n");
++		if (body && (p = strcasestr(body, "fmtp")) != NULL && (p = strextract(p, ":", "\r\n")) != NULL) {
+ 			ctx->rtsp.fmtp = strdup(p);
+ 			NFREE(p);
+ 		}
+ 
++		// a key or IV that was sent but is bad, or a key without an IV (or the
++		// reverse), would leave the stream undecrypted: refuse
++		if (!ctx->rtsp.aeskey != !ctx->rtsp.aesiv) bad = true;
++		if (bad) {
++			NFREE(ctx->rtsp.aeskey);
++			NFREE(ctx->rtsp.aesiv);
++			success = false;
++		} else {
+ 		// on announce, search remote
+-		if ((buf = kd_lookup(headers, "DACP-ID")) != NULL) strcpy(ctx->active_remote.DACPid, buf);
+-		if ((buf = kd_lookup(headers, "Active-Remote")) != NULL) strcpy(ctx->active_remote.id, buf);
++		if ((buf = kd_lookup(headers, "DACP-ID")) != NULL) snprintf(ctx->active_remote.DACPid, sizeof(ctx->active_remote.DACPid), "%s", buf);
++		if ((buf = kd_lookup(headers, "Active-Remote")) != NULL) snprintf(ctx->active_remote.id, sizeof(ctx->active_remote.id), "%s", buf);
+ 
+ #ifdef WIN32	
+ 		ctx->active_remote.handle = init_mDNS(false, ctx->host);
+@@ -527,6 +544,7 @@ static bool handle_rtsp(raop_ctx_t *ctx, int sock)
+ 																	ESP_TASK_PRIO_MIN + 2, ctx->active_remote.xStack, ctx->active_remote.xTaskBuffer,
+ 																	CONFIG_PTHREAD_TASK_CORE_DEFAULT );
+ #endif		
++		}
+ 
+ 	} else if (!strcmp(method, "SETUP") && ((buf = kd_lookup(headers, "Transport")) != NULL)) {
+ 		char *p;
+@@ -583,8 +601,8 @@ static bool handle_rtsp(raop_ctx_t *ctx, int sock)
+ 		char *p;
+ 
+ 		buf = kd_lookup(headers, "RTP-Info");
+-		if ((p = strcasestr(buf, "seq")) != NULL) sscanf(p, "%*[^=]=%hu", &seqno);
+-		if ((p = strcasestr(buf, "rtptime")) != NULL) sscanf(p, "%*[^=]=%u", &rtptime);
++		if (buf && (p = strcasestr(buf, "seq")) != NULL) sscanf(p, "%*[^=]=%hu", &seqno);
++		if (buf && (p = strcasestr(buf, "rtptime")) != NULL) sscanf(p, "%*[^=]=%u", &rtptime);
+ 
+ 		// only send FLUSH if useful (discards frames above buffer head and top)
+ 		if (ctx->rtp && rtp_flush(ctx->rtp, seqno, rtptime, true)) {
+@@ -648,7 +666,7 @@ static bool handle_rtsp(raop_ctx_t *ctx, int sock)
+ 
+ 	// don't need to free "buf" because kd_lookup return a pointer, not a strdup
+ 	kd_add(resp, "Audio-Jack-Status", "connected; type=analog");
+-	kd_add(resp, "CSeq", kd_lookup(headers, "CSeq"));
++	if ((buf = kd_lookup(headers, "CSeq")) != NULL) kd_add(resp, "CSeq", buf);
+ 
+ 	if (success) {
+ 		buf = http_send(sock, "RTSP/1.0 200 OK", resp);
+@@ -848,7 +866,11 @@ static char *rsa_apply(unsigned char *input, int inlen, int *outlen, int mode)
+ 	case RSA_MODE_KEY:
+ 		mbedtls_rsa_set_padding(trsa, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA1);
+ 		outbuf = malloc(trsa->len);
+-		mbedtls_rsa_pkcs1_decrypt(trsa, NULL, NULL, MBEDTLS_RSA_PRIVATE, &olen, input, outbuf, trsa->len);
++		// a failed OAEP decrypt leaves outbuf and olen unset: no key, not garbage
++		if (!outbuf || mbedtls_rsa_pkcs1_decrypt(trsa, NULL, NULL, MBEDTLS_RSA_PRIVATE, &olen, input, outbuf, trsa->len) != 0 || olen != 16) {
++			NFREE(outbuf);
++			olen = 0;
++		}
+ 		*outlen = olen;
+ 		break;
+ 	}
+@@ -968,8 +990,8 @@ static int base64_decode(const char *str, void *data)
+ static void on_dmap_string(void *ctx, const char *code, const char *name, const char *buf, size_t len) {
+ 	struct metadata_s *metadata = (struct metadata_s *) ctx;
+     // to gain space, most of the code have been removed from dmap_parser.c (define DMAP_FULL
+-	if (!strcasecmp(code, "asar")) metadata->artist = strndup(buf, len);
+-	else if (!strcasecmp(code, "asal")) metadata->album = strndup(buf, len);
+-	else if (!strcasecmp(code, "minm")) metadata->title = strndup(buf, len);
++	if (!strcasecmp(code, "asar")) { free(metadata->artist); metadata->artist = strndup(buf, len); }
++	else if (!strcasecmp(code, "asal")) { free(metadata->album); metadata->album = strndup(buf, len); }
++	else if (!strcasecmp(code, "minm")) { free(metadata->title); metadata->title = strndup(buf, len); }
+ }
+ 
+diff --git a/components/raop/rtp.c b/components/raop/rtp.c
+index 398b44c..feb857e 100644
+--- a/components/raop/rtp.c
++++ b/components/raop/rtp.c
+@@ -252,13 +252,20 @@ rtp_resp_t rtp_init(struct in_addr host, int latency, char *aeskey, char *aesiv,
+ 	}
+ 
+ 	memset(fmtp, 0, sizeof(fmtp));
+-	while ((arg = strsep(&fmtpstr, " \t")) != NULL) fmtp[i++] = atoi(arg);
++	while (i < 12 && (arg = strsep(&fmtpstr, " \t")) != NULL) fmtp[i++] = atoi(arg);
++
++	// AirPlay 1 ALAC is 352 frames, 16 bits, stereo; buffers and silence_frame are sized for that
++	if (fmtp[1] <= 0 || fmtp[1] > 352 || fmtp[3] != 16 || fmtp[7] != 2) {
++		LOG_ERROR("[%p]: unsupported fmtp (frames:%d bits:%d channels:%d)", ctx, fmtp[1], fmtp[3], fmtp[7]);
++		fmtp[1] = 352;
++		rc = false;
++	}
+ 
+ 	ctx->frame_size = fmtp[1];
+ 	ctx->frame_duration = (ctx->frame_size * 1000) / RAOP_SAMPLE_RATE;
+ 
+ 	// alac decoder
+-	ctx->alac_codec = alac_init(fmtp);
++	if (rc) ctx->alac_codec = alac_init(fmtp);
+ 	rc &= ctx->alac_codec != NULL;
+ 
+ 	buffer_alloc(ctx->audio_buffer, ctx->frame_size*4, buffer, size);
+diff --git a/components/raop/util.c b/components/raop/util.c
+index 7c63747..e8e5ade 100644
+--- a/components/raop/util.c
++++ b/components/raop/util.c
+@@ -367,7 +367,8 @@ bool http_parse(int sock, char *method, key_data_t *rkd, char **body, int *len)
+ 		return false;
+ 	}
+ 
+-	if (!sscanf(line, "%s", method)) {
++	// method is char[16] in the caller (raop.c handle_rtsp)
++	if (sscanf(line, "%15s", method) != 1) {
+ 		LOG_ERROR("missing method", NULL);
+ 		return false;
+ 	}
+@@ -386,6 +387,13 @@ bool http_parse(int sock, char *method, key_data_t *rkd, char **body, int *len)
+ 			continue;
+ 		}
+ 
++		// rkd is key_data_t[16] in the caller: keep room for the NULL end marker
++		if (i >= 15) {
++			LOG_ERROR("Request failed, too many headers", NULL);
++			kd_free(rkd);
++			return false;
++		}
++
+ 		dp = strstr(line,":");
+ 
+ 		if (!dp){
+@@ -398,7 +406,18 @@ bool http_parse(int sock, char *method, key_data_t *rkd, char **body, int *len)
+ 		rkd[i].key = strdup(line);
+ 		rkd[i].data = strdup(ltrim(dp + 1));
+ 
+-		if (!strcasecmp(rkd[i].key, "Content-Length")) *len = atol(rkd[i].data);
++		if (!strcasecmp(rkd[i].key, "Content-Length")) {
++			long cl = atol(rkd[i].data);
++			// reject negative and oversized bodies (largest legit body is cover art)
++			if (cl < 0 || cl > 1024*1024) {
++				LOG_ERROR("Request failed, bad Content-Length %ld", cl);
++				i++;
++				rkd[i].key = NULL;
++				kd_free(rkd);
++				return false;
++			}
++			*len = cl;
++		}
+ 
+ 		i++;
+ 		rkd[i].key = NULL;
+@@ -408,16 +427,24 @@ bool http_parse(int sock, char *method, key_data_t *rkd, char **body, int *len)
+ 		int size = 0;
+ 
+ 		*body = malloc(*len + 1);
+-		while (*body && size < *len) {
++		if (!*body) {
++			LOG_ERROR("cannot allocate body of %d bytes", *len);
++			*len = 0;
++			kd_free(rkd);
++			return false;
++		}
++
++		while (size < *len) {
+ 			int bytes = recv(sock, *body + size, *len - size, 0);
+ 			if (bytes <= 0) break;
+ 			size += bytes;
+ 		}
+ 
+-		(*body)[*len] = '\0';
++		(*body)[size] = '\0';
+ 
+-		if (!*body || size != *len) {
++		if (size != *len) {
+ 			LOG_ERROR("content length receive error %d %d", *len, size);
++			*len = size;
+ 		}
+ 	}
+ 

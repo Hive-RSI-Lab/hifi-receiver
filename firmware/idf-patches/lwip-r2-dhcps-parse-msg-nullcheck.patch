@@ -1,0 +1,23 @@
+--- a/components/lwip/apps/dhcpserver/dhcpserver.c
++++ b/components/lwip/apps/dhcpserver/dhcpserver.c
+@@ -904,12 +904,20 @@
+             pnode = NULL;
+         } else {
+             pdhcps_pool = (struct dhcps_pool *)mem_malloc(sizeof(struct dhcps_pool));
++            if (pdhcps_pool == NULL) {
++                return 0;
++            }
+             memset(pdhcps_pool , 0x00 , sizeof(struct dhcps_pool));
+ 
+             pdhcps_pool->ip.addr = client_address.addr;
+             memcpy(pdhcps_pool->mac, m->chaddr, sizeof(pdhcps_pool->mac));
+             pdhcps_pool->lease_timer = lease_timer;
+             pnode = (list_node *)mem_malloc(sizeof(list_node));
++            if (pnode == NULL) {
++                mem_free(pdhcps_pool);
++                pdhcps_pool = NULL;
++                return 0;
++            }
+             memset(pnode , 0x00 , sizeof(list_node));
+ 
+             pnode->pnode = pdhcps_pool;

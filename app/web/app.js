@@ -56,10 +56,10 @@ function h(tag, attrs, ...kids) {
   return el;
 }
 
-function toast(msg) {
+function toast(msg, ms = 3000) {
   const t = $('#toast');
   t.textContent = msg; t.hidden = false;
-  clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 3000);
+  clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, ms);
 }
 
 async function api(path, body) {
@@ -387,8 +387,15 @@ function diagCard() {
       try { selftest = await api('selftest', {}); draw(); } catch (e) { toast(e.message); }
     } }, 'Run self-test'),
     h('button', { onclick: () => confirm('Restart the receiver?') && set('reboot', {}).then(() => toast('Restarting…')) }, 'Restart'),
-    h('button', { onclick: () => confirm('Erase Wi-Fi, name, remote and sound settings and start again from setup?') &&
-      set('reset', { factory: true }).then(() => toast('Reset. Join the HiFi-… Wi-Fi to set it up again.')) }, 'Factory reset')));
+    h('button', { onclick: async () => {
+      if (!confirm('Erase Wi-Fi, name, remote and sound settings and start again from setup?')) return;
+      // the receiver only erases once someone unplugs it (a page on the network can't)
+      try {
+        const r = await api('reset', { factory: true });
+        toast(r.armed ? `To finish, unplug the receiver and plug it back in within ${Math.round(r.within_s / 60)} minutes. ` +
+          'Then join the HiFi-… Wi-Fi to set it up again.' : 'Reset. Join the HiFi-… Wi-Fi to set it up again.', 20000);
+      } catch (e) { toast(e.message); }
+    } }, 'Factory reset')));
 }
 
 function uptime(s) {

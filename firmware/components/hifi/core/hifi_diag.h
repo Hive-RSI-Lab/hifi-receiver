@@ -49,6 +49,21 @@ void hifi_diag_cpu(const hifi_diag_task_t *a, int na, hifi_diag_tasks_t *b, uint
  * reasons: adds reason at the front of hist (cap bytes). */
 void hifi_diag_hist_push(char *hist, size_t cap, const char *reason);
 
+/*
+ * The output's underrun count, one step per output call (patch 0009, in
+ * squeezelite's output.c). running: the output is playing; frames: what it
+ * has to play now; live: a stream is still coming in; flushed: the buffer
+ * was emptied on purpose since the last step (a seek). *state holds the
+ * HIFI_UNDERRUN_ bits between steps, 0 at boot. Returns 1 when this step
+ * starts a dry spell to count: the output is running, dry, the stream live,
+ * and it has played since it last started or was flushed, so a start that
+ * is still filling (Spotify's play comes before its data) or a seek isn't
+ * one. One count per dry spell, not per call.
+ */
+#define HIFI_UNDERRUN_ARMED 1u
+#define HIFI_UNDERRUN_DRY 2u
+int hifi_diag_underrun_step(uint8_t *state, bool running, uint32_t frames, bool live, bool flushed);
+
 typedef struct {
 	uint32_t free, min, largest, total; /* bytes; total 0: none fitted */
 } hifi_diag_heap_t;
@@ -95,6 +110,10 @@ typedef struct {
 	bool link_up;
 	uint32_t link_drops, link_up_s;
 	uint64_t tx_bytes, rx_bytes;
+	/* L4: the listener scan in normal running (core/hifi_listen.h) */
+	int listen_strays;       /* -1: no verdict yet */
+	uint32_t listen_events;  /* stray sets seen since boot */
+	char listen_open[64];    /* "N open: tcp/23 ..."; "": none */
 } hifi_diag_net_t;
 
 typedef struct {
@@ -124,7 +143,8 @@ typedef struct {
 typedef struct {
 	void (*sys)(hifi_diag_sys_t *out);
 	/* fresh: take a new CPU sample (blocks about 1 s), else the last one.
-	 * 0; -1 when there are no task stats; the task count when there are
+	 * 0; -1 when there are no task stats; -2 when a sample failed (out of
+	 * memory, or the second read): try again; the task count when there are
 	 * more than HIFI_DIAG_TASKS_MAX */
 	int (*tasks)(hifi_diag_tasks_t *out, bool fresh);
 	void (*net)(hifi_diag_net_t *out);

@@ -9,6 +9,7 @@
 #include "esp_log.h"
 #include "esp_netif.h"
 #include "esp_ota_ops.h"
+#include "esp_timer.h"
 
 #include "hifi_esp.h"
 #include "hifi_gate.h"
@@ -82,6 +83,15 @@ static esp_err_t gate_trampoline(httpd_req_t *req) {
 		static const char msg[] = "{\"error\":\"new firmware is on trial; try again in a few minutes\"}";
 		httpd_resp_set_status(req, status_line(409));
 		httpd_resp_set_type(req, "application/json");
+		return httpd_resp_send(req, msg, sizeof(msg) - 1);
+	}
+	/* one server task: the last time needs no lock */
+	static long long last_costly;
+	if (hifi_lan_throttled(req->uri, http_method_str(req->method), esp_timer_get_time(), &last_costly)) {
+		static const char msg[] = "{\"error\":\"busy: try again in a few seconds\"}";
+		httpd_resp_set_status(req, status_line(503));
+		httpd_resp_set_type(req, "application/json");
+		httpd_resp_set_hdr(req, "Retry-After", "5");
 		return httpd_resp_send(req, msg, sizeof(msg) - 1);
 	}
 	req->user_ctx = g->ctx; /* the server sets it again on every request */

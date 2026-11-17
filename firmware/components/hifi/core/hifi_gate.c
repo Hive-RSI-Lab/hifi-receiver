@@ -15,17 +15,25 @@ static const char *const home_suffixes[] = {"local", "home.arpa", "internal"};
 static bool host_part(const char *host, char *out, size_t cap, bool *v6) {
 	*v6 = false;
 	size_t n;
+	const char *port;
 	if (host[0] == '[') {
 		const char *e = strchr(host, ']');
 		if (!e) return false;
 		if (e[1] && e[1] != ':') return false;
+		port = e[1] ? e + 2 : NULL;
 		host++;
 		n = (size_t) (e - host);
 		*v6 = true;
 	} else {
 		const char *c = strchr(host, ':');
 		n = c ? (size_t) (c - host) : strlen(host);
-		if (c && strchr(c + 1, ':')) return false; /* bare IPv6 is not a Host */
+		port = c ? c + 1 : NULL;
+	}
+	/* a port is 1 to 5 digits, nothing else (L12): "host:abc" or a second
+	 * ':' (bare IPv6 is not a Host) is not a header a browser sends */
+	if (port) {
+		size_t d = strspn(port, "0123456789");
+		if (!d || d > 5 || port[d]) return false;
 	}
 	if (n == 0 || n >= cap) return false;
 	memcpy(out, host, n);
@@ -304,6 +312,108 @@ static bool word_in(const char *w, size_t n, const char *const *list, size_t cou
 	return false;
 }
 
+/* ---- cfg-hw-*: the hardware settings (L8) ----
+ * squeezelite's UI draws a form for every option of every cfg-hw command,
+ * so the LAN may still set them all; what it may not do is point one at a
+ * pin this board's own firmware holds (the power path, the amp, the sense
+ * inputs) or at the flash and PSRAM. Each option is checked by its exact
+ * long name (the UI sends "--name value"): no short options (several
+ * commands give one letter to two options) and no abbreviations, which the
+ * console's getopt_long would otherwise take as any option they begin. */
+#define PIN_BIT(p) (1ULL << (p))
+static uint64_t reserved_pins = HIFI_GATE_PINS_ALWAYS;
+
+void hifi_gate_reserve_pins(uint64_t mask) {
+	reserved_pins |= mask;
+}
+
+enum { OPT_FLAG, OPT_VALUE, OPT_PIN };
+typedef struct {
+	const char *name;
+	unsigned char kind;
+} hw_opt_t;
+typedef struct {
+	const char *cmd;
+	const hw_opt_t *opts;
+	size_t n;
+} hw_cmd_t;
+
+/* from components/platform_console/cmd_config.c and cmd_i2ctools.c */
+static const hw_opt_t dac_opts[] = {
+	{"model_name", OPT_VALUE}, {"clear", OPT_FLAG},	  {"clock", OPT_PIN},	{"wordselect", OPT_PIN},
+	{"data", OPT_PIN},	   {"mute_gpio", OPT_PIN}, {"mute_level", OPT_FLAG}, {"dac_sda", OPT_PIN},
+	{"dac_scl", OPT_PIN},	   {"dac_i2c", OPT_VALUE},
+};
+static const hw_opt_t display_opts[] = {
+	{"width", OPT_VALUE}, {"height", OPT_VALUE}, {"address", OPT_VALUE}, {"reset", OPT_PIN},
+	{"hf", OPT_FLAG},     {"vf", OPT_FLAG},	     {"driver", OPT_VALUE},  {"cs", OPT_PIN},
+	{"speed", OPT_VALUE}, {"back", OPT_PIN},     {"depth", OPT_VALUE},   {"type", OPT_VALUE},
+	{"rotate", OPT_FLAG}, {"invert", OPT_FLAG},  {"clear", OPT_FLAG},    {"mode", OPT_VALUE},
+};
+static const hw_opt_t i2c_opts[] = {
+	{"clear", OPT_FLAG}, {"port", OPT_VALUE}, {"speed", OPT_VALUE}, {"sda", OPT_PIN}, {"scl", OPT_PIN},
+};
+static const hw_opt_t ledvu_opts[] = {
+	{"type", OPT_VALUE}, {"length", OPT_VALUE}, {"gpio", OPT_PIN}, {"scale", OPT_VALUE}, {"clear", OPT_FLAG},
+};
+static const hw_opt_t rotary_opts[] = {
+	{"A", OPT_PIN},		{"B", OPT_PIN},		{"SW", OPT_PIN},     {"knobonly", OPT_FLAG}, {"timer", OPT_VALUE},
+	{"volume_lock", OPT_FLAG}, {"longpress", OPT_FLAG}, {"clear", OPT_FLAG}, {"raw_mode", OPT_FLAG},
+};
+static const hw_opt_t spdif_opts[] = {
+	{"clear", OPT_FLAG}, {"clock", OPT_PIN}, {"wordselect", OPT_PIN}, {"data", OPT_PIN},
+};
+static const hw_opt_t spi_opts[] = {
+	{"clear", OPT_FLAG}, {"clk", OPT_PIN}, {"data", OPT_PIN}, {"miso", OPT_PIN}, {"dc", OPT_PIN}, {"host", OPT_VALUE},
+};
+#define HW(c, o) {c, o, sizeof(o) / sizeof(o[0])}
+static const hw_cmd_t hw_cmds[] = {
+	HW("cfg-hw-dac", dac_opts),	HW("cfg-hw-display", display_opts), HW("cfg-hw-i2c", i2c_opts),
+	HW("cfg-hw-ledvu", ledvu_opts), HW("cfg-hw-rotary", rotary_opts),   HW("cfg-hw-spdif", spdif_opts),
+	HW("cfg-hw-spi", spi_opts),
+};
+
+/* a pin value: decimal only ("0x12" or "18KB" would reach argtable as 18
+ * past a check that read it otherwise); -1 is "none" */
+static bool pin_ok(const char *v) {
+	if (!strcmp(v, "-1")) return true;
+	int pin = 0, d = 0;
+	for (; *v; v++) {
+		if (*v < '0' || *v > '9' || ++d > 2) return false;
+		pin = pin * 10 + (*v - '0');
+	}
+	return d && pin < 40 && !(reserved_pins & PIN_BIT(pin)); /* the ESP32 has GPIO 0-39 */
+}
+
+/* NULL: not a cfg-hw command this gate knows */
+static const hw_cmd_t *hw_cmd(const char *name) {
+	for (size_t i = 0; i < sizeof(hw_cmds) / sizeof(hw_cmds[0]); i++)
+		if (!strcmp(name, hw_cmds[i].cmd)) return &hw_cmds[i];
+	return NULL;
+}
+
+static bool hw_args_ok(const hw_cmd_t *c, char **argv, int argc) {
+	for (int i = 1; i < argc; i++) {
+		const char *a = argv[i];
+		if (strncmp(a, "--", 2) || !a[2]) return false;
+		a += 2;
+		const char *eq = strchr(a, '=');
+		size_t n = eq ? (size_t) (eq - a) : strlen(a);
+		const hw_opt_t *o = NULL;
+		for (size_t k = 0; k < c->n && !o; k++)
+			if (strlen(c->opts[k].name) == n && !strncmp(a, c->opts[k].name, n)) o = &c->opts[k];
+		if (!o) return false;
+		if (o->kind == OPT_FLAG) {
+			if (eq) return false;
+			continue;
+		}
+		const char *v = eq ? eq + 1 : (i + 1 < argc ? argv[++i] : NULL);
+		if (!v) return false;
+		if (o->kind == OPT_PIN && !pin_ok(v)) return false;
+	}
+	return true;
+}
+
 /* boot: lines kept in autoexecN run on the console at every boot, so only
  * squeezelite's own command line and the cfg-* setters may live there
  * ("restart" in autoexec1 would reboot the board forever).
@@ -327,7 +437,10 @@ static bool command_ok(const char *line, bool boot) {
 	if (!argc) return false;
 	line = argv[0];
 	size_t n = strlen(line);
-	if (word_in(line, n, cfg_ok, sizeof(cfg_ok) / sizeof(cfg_ok[0]))) return true;
+	if (word_in(line, n, cfg_ok, sizeof(cfg_ok) / sizeof(cfg_ok[0]))) {
+		const hw_cmd_t *hw = hw_cmd(line);
+		return !hw || hw_args_ok(hw, argv, argc);
+	}
 	if (n == 11 && !strncmp(line, "squeezelite", 11)) return squeezelite_args_ok(argv, argc);
 	static const char *const ok[] = {"restart", "version", "free", "heap", "tasks"};
 	return !boot && word_in(line, n, ok, sizeof(ok) / sizeof(ok[0]));
@@ -358,7 +471,8 @@ bool hifi_lan_config_ok(const char *key, const char *strval) {
 /* during an OTA trial, what may roll the new firmware back: a reboot (the
  * bootloader then goes back to the old image), a Wi-Fi change or forget (no
  * Wi-Fi at the verdict), an erase, or squeezelite's settings and console,
- * which reach all three */
+ * which reach all three; and another update, which would write over the
+ * slot holding the image to roll back to */
 bool hifi_lan_trial_refused(const char *path, const char *method) {
 	if (!path || !method || !strcmp(method, "GET") || !strcmp(method, "HEAD")) return false;
 	/* the server routes on the parsed path: an absolute-form target
@@ -368,8 +482,21 @@ bool hifi_lan_trial_refused(const char *path, const char *method) {
 	static const char *const paths[] = {
 		"/api/v1/wifi", "/api/v1/wifi/forget", "/api/v1/reset", "/api/v1/reboot", "/api/v1/bttest",
 		"/connect.json", "/reboot.json", "/reboot_ota.json", "/commands.json", "/config.json",
+		/* another update would replace the rollback copy (L16) */
+		"/api/v1/update", "/api/v1/update/upload", "/api/v1/ota/begin", "/api/v1/ota/finish",
 	};
 	return word_in(path, n, paths, sizeof(paths) / sizeof(paths[0]));
+}
+
+bool hifi_lan_throttled(const char *path, const char *method, long long now_us, long long *last_us) {
+	if (!path || !method || !last_us || (strcmp(method, "GET") && strcmp(method, "HEAD"))) return false;
+	static const char *const costly[] = {"/scan.json", "/api/v1/wifi/scan", "/api/v1/update/check"};
+	/* the paths the server routes on (see hifi_lan_trial_refused): a
+	 * spelling that isn't one of them reaches none of these handlers */
+	if (!word_in(path, strcspn(path, "?"), costly, sizeof(costly) / sizeof(costly[0]))) return false;
+	if (*last_us && now_us - *last_us < HIFI_LAN_GAP_US && now_us >= *last_us) return true;
+	*last_us = now_us ? now_us : 1;
+	return false;
 }
 
 bool hifi_lan_config_secret(const char *key) {
@@ -394,4 +521,8 @@ void hifi_ap_password_make(char *out, size_t n, uint32_t (*rnd)(void)) {
 
 bool hifi_ap_due(long long now_us, long long lost_at_us) {
 	return now_us - lost_at_us >= HIFI_AP_AFTER_US;
+}
+
+bool hifi_reset_confirmed(bool armed, bool power_on) {
+	return armed && power_on;
 }

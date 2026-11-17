@@ -1,0 +1,45 @@
+diff --git a/components/bt/host/bluedroid/stack/avdt/avdt_scb_act.c b/components/bt/host/bluedroid/stack/avdt/avdt_scb_act.c
+index 1211c98..59e8be3 100644
+--- a/components/bt/host/bluedroid/stack/avdt/avdt_scb_act.c
++++ b/components/bt/host/bluedroid/stack/avdt/avdt_scb_act.c
+@@ -317,10 +317,10 @@ void avdt_scb_hdl_pkt_no_frag(tAVDT_SCB *p_scb, tAVDT_SCB_EVT *p_data)
+ #if AVDT_MULTIPLEXING == TRUE
+             if ((p_scb->cs.p_media_cback != NULL)
+                     && (p_scb->p_media_buf != NULL)
+-                    && (p_scb->media_buf_len > len)) {
++                    && (p_scb->media_buf_len > p_data->p_pkt->len)) {
+                 /* media buffer enough length is assigned by application. Lets use it*/
+                 memcpy(p_scb->p_media_buf, (UINT8 *)(p_data->p_pkt + 1) + p_data->p_pkt->offset,
+-                       len);
++                       p_data->p_pkt->len);
+                 (*p_scb->cs.p_media_cback)(avdt_scb_to_hdl(p_scb), p_scb->p_media_buf,
+                                            p_scb->media_buf_len, time_stamp, seq, m_pt, marker);
+             }
+diff --git a/components/bt/host/bluedroid/stack/avrc/avrc_pars_ct.c b/components/bt/host/bluedroid/stack/avrc/avrc_pars_ct.c
+index 43e1f8b..137ca0a 100644
+--- a/components/bt/host/bluedroid/stack/avrc/avrc_pars_ct.c
++++ b/components/bt/host/bluedroid/stack/avrc/avrc_pars_ct.c
+@@ -137,8 +137,8 @@ static tAVRC_STS avrc_pars_vendor_rsp(tAVRC_MSG_VENDOR *p_msg, tAVRC_RESPONSE *p
+             if (p_result->get_caps.count > AVRC_CAP_MAX_NUM_COMP_ID) {
+                 status = AVRC_STS_INTERNAL_ERR;
+             } else {
+-                if (len < 2 + p_result->get_caps.count * 6) {
+-                    AVRC_TRACE_WARNING("invalid message length %u: must be at least %d", len, 2 + p_result->get_caps.count * 6);
++                if (len < 2 + p_result->get_caps.count * 3) {
++                    AVRC_TRACE_WARNING("invalid message length %u: must be at least %d", len, 2 + p_result->get_caps.count * 3);
+                     return AVRC_STS_INTERNAL_ERR;
+                 }
+                 for (int i = 0; i < p_result->get_caps.count; ++i) {
+diff --git a/components/bt/host/bluedroid/stack/smp/smp_act.c b/components/bt/host/bluedroid/stack/smp/smp_act.c
+index 6039ca3..37b1b2c 100644
+--- a/components/bt/host/bluedroid/stack/smp/smp_act.c
++++ b/components/bt/host/bluedroid/stack/smp/smp_act.c
+@@ -1346,7 +1346,7 @@ void smp_key_distribution(tSMP_CB *p_cb, tSMP_INT_DATA *p_data)
+         if (smp_get_state() == SMP_STATE_BOND_PENDING) {
+             if (p_cb->derive_lk) {
+                 tBTM_SEC_DEV_REC* p_dev_rec = btm_find_dev(p_cb->pairing_bda);
+-                if (!(p_dev_rec->sec_flags & BTM_SEC_LE_LINK_KEY_AUTHED) &&
++                if (p_dev_rec && !(p_dev_rec->sec_flags & BTM_SEC_LE_LINK_KEY_AUTHED) &&
+                     (p_dev_rec->sec_flags & BTM_SEC_LINK_KEY_AUTHED)) {
+                     SMP_TRACE_DEBUG("%s BREDR key is higher security than existing LE keys, "
+                                     "don't derive LK from LTK", __func__);

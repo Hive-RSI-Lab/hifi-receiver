@@ -1,0 +1,426 @@
+diff --git a/components/bt/host/bluedroid/btc/profile/std/avrc/btc_avrc.c b/components/bt/host/bluedroid/btc/profile/std/avrc/btc_avrc.c
+index 4f7c65e..6e36346 100644
+--- a/components/bt/host/bluedroid/btc/profile/std/avrc/btc_avrc.c
++++ b/components/bt/host/bluedroid/btc/profile/std/avrc/btc_avrc.c
+@@ -549,27 +549,39 @@ static void handle_rc_attributes_rsp (tAVRC_MSG_VENDOR *vendor_msg)
+         return;
+     }
+ 
+-    esp_avrc_ct_cb_param_t param[attr_count];
+-    memset(&param[0], 0, sizeof(esp_avrc_ct_cb_param_t) * attr_count);
++    /* attr_count comes from the peer (up to 255); keep the array off the BTC task stack */
++    esp_avrc_ct_cb_param_t *param = (esp_avrc_ct_cb_param_t *)osi_calloc(attr_count * sizeof(esp_avrc_ct_cb_param_t));
++    if (param == NULL) {
++        BTC_TRACE_ERROR("handle_rc_attributes_rsp ENOMEM");
++        return;
++    }
+ 
+     for (int i = 0; i < attr_count; i++) {
+         if (vendor_msg->vendor_len < attr_index + 8) {
+-            return;
++            goto error;
+         }
+ 
+-        attr_length = (int) vendor_msg->p_vendor_data[7 + attr_index] | vendor_msg->p_vendor_data[6 + attr_index] << 8;
++        attr_length = (int)(((uint16_t)vendor_msg->p_vendor_data[7 + attr_index]) |
++                             ((uint16_t)vendor_msg->p_vendor_data[6 + attr_index] << 8));
+ 
+         if (vendor_msg->vendor_len < attr_index + attr_length + 8) {
+-            return;
++            goto error;
+         }
+ 
+         //Received attribute text is not null terminated, so it's useful to know it's length
+         param[i].meta_rsp.attr_length = attr_length;
+         param[i].meta_rsp.attr_text = &vendor_msg->p_vendor_data[8 + attr_index];
+ 
+-        attr_id = vendor_msg->p_vendor_data[3 + attr_index] |
+-                  vendor_msg->p_vendor_data[2 + attr_index] << 8 | vendor_msg->p_vendor_data[1 + attr_index] << 16 |
+-                  vendor_msg->p_vendor_data[attr_index] << 24;
++        attr_id = ((uint32_t)vendor_msg->p_vendor_data[3 + attr_index]) |
++                  ((uint32_t)vendor_msg->p_vendor_data[2 + attr_index] << 8) |
++                  ((uint32_t)vendor_msg->p_vendor_data[1 + attr_index] << 16) |
++                  ((uint32_t)vendor_msg->p_vendor_data[attr_index] << 24);
++
++        if (!AVRC_IS_VALID_MEDIA_ATTRIBUTE(attr_id)) {
++            BTC_TRACE_WARNING("invalid attr_id 0x%x, skip", attr_id);
++            attr_index += attr_length + 8;
++            continue;
++        }
+ 
+         //Convert to mask id
+         param[i].meta_rsp.attr_id = (1 << (attr_id - 1));
+@@ -578,6 +590,9 @@ static void handle_rc_attributes_rsp (tAVRC_MSG_VENDOR *vendor_msg)
+ 
+         attr_index += attr_length + 8;
+     }
++
++error:
++    osi_free(param);
+ }
+ 
+ static void handle_rc_notification_rsp (tAVRC_MSG_VENDOR *vendor_msg)
+diff --git a/components/bt/host/bluedroid/stack/avct/avct_ccb.c b/components/bt/host/bluedroid/stack/avct/avct_ccb.c
+index 8cc9fc3..d7b552a 100644
+--- a/components/bt/host/bluedroid/stack/avct/avct_ccb.c
++++ b/components/bt/host/bluedroid/stack/avct/avct_ccb.c
+@@ -92,7 +92,9 @@ void avct_ccb_dealloc(tAVCT_CCB *p_ccb, UINT8 event, UINT16 result, BD_ADDR bd_a
+ #endif
+ 
+     if (event != AVCT_NO_EVT) {
+-        (*p_cback)(avct_ccb_to_idx(p_ccb), event, result, bd_addr);
++        if (p_cback) {
++            (*p_cback)(avct_ccb_to_idx(p_ccb), event, result, bd_addr);
++        }
+     }
+ }
+ 
+diff --git a/components/bt/host/bluedroid/stack/avct/avct_lcb_act.c b/components/bt/host/bluedroid/stack/avct/avct_lcb_act.c
+index b83219d..7eef811 100644
+--- a/components/bt/host/bluedroid/stack/avct/avct_lcb_act.c
++++ b/components/bt/host/bluedroid/stack/avct/avct_lcb_act.c
+@@ -86,6 +86,11 @@ static BT_HDR *avct_lcb_msg_asmbl(tAVCT_LCB *p_lcb, BT_HDR *p_buf)
+             AVCT_TRACE_WARNING("Got start during reassembly");
+         }
+         osi_free(p_lcb->p_rx_msg);
++        p_lcb->p_rx_msg = NULL;
++        if (sizeof(BT_HDR) + p_buf->offset + p_buf->len > BT_DEFAULT_BUFFER_SIZE) {
++            osi_free(p_buf);
++            return NULL;
++        }
+         /* Allocate bigger buffer for reassembly. As lower layers are
+          * not aware of possible packet size after reassembly they
+          * would have allocated smaller buffer.
+@@ -231,8 +236,10 @@ void avct_lcb_open_ind(tAVCT_LCB *p_lcb, tAVCT_LCB_EVT *p_data)
+             if (p_ccb->p_lcb == p_lcb) {
+                 bind = TRUE;
+                 L2CA_SetTxPriority(p_lcb->ch_lcid, L2CAP_CHNL_PRIORITY_HIGH);
+-                p_ccb->cc.p_ctrl_cback(avct_ccb_to_idx(p_ccb), AVCT_CONNECT_CFM_EVT,
+-                                       0, p_lcb->peer_addr);
++                if (p_ccb->cc.p_ctrl_cback) {
++                    p_ccb->cc.p_ctrl_cback(avct_ccb_to_idx(p_ccb), AVCT_CONNECT_CFM_EVT,
++                                        0, p_lcb->peer_addr);
++                }
+             }
+             /* if unbound acceptor and lcb doesn't already have a ccb for this PID */
+             else if ((p_ccb->p_lcb == NULL) && (p_ccb->cc.role == AVCT_ACP) &&
+@@ -241,8 +248,10 @@ void avct_lcb_open_ind(tAVCT_LCB *p_lcb, tAVCT_LCB_EVT *p_data)
+                 bind = TRUE;
+                 p_ccb->p_lcb = p_lcb;
+                 L2CA_SetTxPriority(p_lcb->ch_lcid, L2CAP_CHNL_PRIORITY_HIGH);
+-                p_ccb->cc.p_ctrl_cback(avct_ccb_to_idx(p_ccb), AVCT_CONNECT_IND_EVT,
+-                                       0, p_lcb->peer_addr);
++                if (p_ccb->cc.p_ctrl_cback) {
++                    p_ccb->cc.p_ctrl_cback(avct_ccb_to_idx(p_ccb), AVCT_CONNECT_IND_EVT,
++                                        0, p_lcb->peer_addr);
++                }
+             }
+         }
+     }
+@@ -301,8 +310,10 @@ void avct_lcb_close_ind(tAVCT_LCB *p_lcb, tAVCT_LCB_EVT *p_data)
+                                  0, p_lcb->peer_addr);
+             } else {
+                 p_ccb->p_lcb = NULL;
+-                (*p_ccb->cc.p_ctrl_cback)(avct_ccb_to_idx(p_ccb), AVCT_DISCONNECT_IND_EVT,
+-                                          0, p_lcb->peer_addr);
++                if (p_ccb->cc.p_ctrl_cback) {
++                    (*p_ccb->cc.p_ctrl_cback)(avct_ccb_to_idx(p_ccb), AVCT_DISCONNECT_IND_EVT,
++                                            0, p_lcb->peer_addr);
++                }
+             }
+         }
+     }
+@@ -339,8 +350,10 @@ void avct_lcb_close_cfm(tAVCT_LCB *p_lcb, tAVCT_LCB_EVT *p_data)
+                 avct_ccb_dealloc(p_ccb, event, p_data->result, p_lcb->peer_addr);
+             } else {
+                 p_ccb->p_lcb = NULL;
+-                (*p_ccb->cc.p_ctrl_cback)(avct_ccb_to_idx(p_ccb), event,
+-                                          p_data->result, p_lcb->peer_addr);
++                if (p_ccb->cc.p_ctrl_cback) {
++                    (*p_ccb->cc.p_ctrl_cback)(avct_ccb_to_idx(p_ccb), event,
++                                            p_data->result, p_lcb->peer_addr);
++                }
+             }
+         }
+     }
+@@ -359,8 +372,10 @@ void avct_lcb_close_cfm(tAVCT_LCB *p_lcb, tAVCT_LCB_EVT *p_data)
+ void avct_lcb_bind_conn(tAVCT_LCB *p_lcb, tAVCT_LCB_EVT *p_data)
+ {
+     p_data->p_ccb->p_lcb = p_lcb;
+-    (*p_data->p_ccb->cc.p_ctrl_cback)(avct_ccb_to_idx(p_data->p_ccb),
+-                                      AVCT_CONNECT_CFM_EVT, 0, p_lcb->peer_addr);
++    if (p_data->p_ccb->cc.p_ctrl_cback) {
++        (*p_data->p_ccb->cc.p_ctrl_cback)(avct_ccb_to_idx(p_data->p_ccb),
++                                        AVCT_CONNECT_CFM_EVT, 0, p_lcb->peer_addr);
++    }
+ }
+ 
+ /*******************************************************************************
+@@ -461,7 +476,9 @@ void avct_lcb_cong_ind(tAVCT_LCB *p_lcb, tAVCT_LCB_EVT *p_data)
+     /* send event to all ccbs on this lcb */
+     for (i = 0; i < AVCT_NUM_CONN; i++, p_ccb++) {
+         if (p_ccb->allocated && (p_ccb->p_lcb == p_lcb)) {
+-            (*p_ccb->cc.p_ctrl_cback)(avct_ccb_to_idx(p_ccb), event, 0, p_lcb->peer_addr);
++            if (p_ccb->cc.p_ctrl_cback) {
++                (*p_ccb->cc.p_ctrl_cback)(avct_ccb_to_idx(p_ccb), event, 0, p_lcb->peer_addr);
++            }
+         }
+     }
+ }
+@@ -661,7 +678,12 @@ void avct_lcb_msg_ind(tAVCT_LCB *p_lcb, tAVCT_LCB_EVT *p_data)
+         /* PID found; send msg up, adjust bt hdr and call msg callback */
+         p_data->p_buf->offset += AVCT_HDR_LEN_SINGLE;
+         p_data->p_buf->len -= AVCT_HDR_LEN_SINGLE;
+-        (*p_ccb->cc.p_msg_cback)(avct_ccb_to_idx(p_ccb), label, cr_ipid, p_data->p_buf);
++        if (p_ccb->cc.p_msg_cback) {
++            (*p_ccb->cc.p_msg_cback)(avct_ccb_to_idx(p_ccb), label, cr_ipid, p_data->p_buf);
++        } else {
++            osi_free(p_data->p_buf);
++            p_data->p_buf = NULL;
++        }
+     } else {
+         /* PID not found; drop message */
+         AVCT_TRACE_WARNING("No ccb for PID=%x", pid);
+diff --git a/components/bt/host/bluedroid/stack/avrc/avrc_api.c b/components/bt/host/bluedroid/stack/avrc/avrc_api.c
+index f7e3102..880c638 100644
+--- a/components/bt/host/bluedroid/stack/avrc/avrc_api.c
++++ b/components/bt/host/bluedroid/stack/avrc/avrc_api.c
+@@ -403,18 +403,17 @@ static UINT8 avrc_proc_far_msg(UINT8 handle, UINT8 label, UINT8 cr, BT_HDR **pp_
+                     /* Free original START packet, replace with pointer to reassembly buffer  */
+                     osi_free(p_pkt);
+                     *pp_pkt = p_rcb->p_rmsg;
++
++                    /* set offset to point to where to copy next - use the same re-asm logic as AVCT */
++                    p_rcb->p_rmsg->offset += p_rcb->p_rmsg->len;
++                    req_continue = TRUE;
+                 } else {
+-                    /* Unable to allocate buffer for fragmented avrc message. Reuse START
+-                                      buffer for reassembly (re-assembled message may fit into ACL buf) */
+-                    AVRC_TRACE_DEBUG ("Unable to allocate buffer for fragmented avrc message, \
+-                                       reusing START buffer for reassembly");
+-                    p_rcb->rasm_offset = p_pkt->offset;
+-                    p_rcb->p_rmsg = p_pkt;
++                    /* do not reuse START buffer; it is smaller than BT_DEFAULT_BUFFER_SIZE */
++                    AVRC_TRACE_ERROR("Unable to allocate buffer for fragmented avrc message");
++                    drop_code = 5;
++                    osi_free(p_pkt);
++                    *pp_pkt = NULL;
+                 }
+-
+-                /* set offset to point to where to copy next - use the same re-asm logic as AVCT */
+-                p_rcb->p_rmsg->offset += p_rcb->p_rmsg->len;
+-                req_continue = TRUE;
+             } else if (p_rcb->p_rmsg == NULL) {
+                 /* Received a CONTINUE/END, but no corresponding START
+                               (or previous fragmented response was dropped) */
+diff --git a/components/bt/host/bluedroid/stack/avrc/avrc_bld_tg.c b/components/bt/host/bluedroid/stack/avrc/avrc_bld_tg.c
+index 7962382..7c7a0b1 100644
+--- a/components/bt/host/bluedroid/stack/avrc/avrc_bld_tg.c
++++ b/components/bt/host/bluedroid/stack/avrc/avrc_bld_tg.c
+@@ -289,12 +289,6 @@ static tAVRC_STS avrc_bld_app_setting_text_rsp (tAVRC_GET_APP_ATTR_TXT_RSP *p_rs
+     p_start = (UINT8 *)(p_pkt + 1) + p_pkt->offset;
+     p_data = p_len = p_start + 2; /* pdu + rsvd */
+ 
+-    /*
+-     * NOTE: The buffer is allocated within avrc_bld_init_rsp_buffer(), and is
+-     * always of size BT_DEFAULT_BUFFER_SIZE.
+-     */
+-    len_left = BT_DEFAULT_BUFFER_SIZE - BT_HDR_SIZE - p_pkt->offset - p_pkt->len;
+-
+     BE_STREAM_TO_UINT16(len, p_data);
+     p_count = p_data;
+ 
+@@ -306,6 +300,7 @@ static tAVRC_STS avrc_bld_app_setting_text_rsp (tAVRC_GET_APP_ATTR_TXT_RSP *p_rs
+     }
+ 
+     for (xx = 0; xx < p_rsp->num_attr; xx++) {
++        len_left = (UINT16)(((UINT8 *)p_pkt + BT_DEFAULT_BUFFER_SIZE) - p_data);
+         if  (len_left < (p_rsp->p_attrs[xx].str_len + 4)) {
+             AVRC_TRACE_ERROR("avrc_bld_app_setting_text_rsp out of room %d(str_len:%d, left:%d)",
+                              xx, p_rsp->p_attrs[xx].str_len, len_left);
+diff --git a/components/bt/host/bluedroid/stack/avrc/avrc_pars_ct.c b/components/bt/host/bluedroid/stack/avrc/avrc_pars_ct.c
+index f185e7b..43e1f8b 100644
+--- a/components/bt/host/bluedroid/stack/avrc/avrc_pars_ct.c
++++ b/components/bt/host/bluedroid/stack/avrc/avrc_pars_ct.c
+@@ -55,13 +55,27 @@ static tAVRC_STS avrc_pars_vendor_rsp(tAVRC_MSG_VENDOR *p_msg, tAVRC_RESPONSE *p
+     if (p_msg->p_vendor_data == NULL) {
+         return AVRC_STS_INTERNAL_ERR;
+     }
++    if (p_msg->vendor_len < 4) {
++        AVRC_TRACE_WARNING("message length %u too short: must be at least 4", p_msg->vendor_len);
++        return AVRC_STS_INTERNAL_ERR;
++    }
+ 
+     p = p_msg->p_vendor_data;
+     BE_STREAM_TO_UINT8 (p_result->pdu, p);
+     p++; /* skip the reserved/packe_type byte */
+     BE_STREAM_TO_UINT16 (len, p);
+     AVRC_TRACE_DEBUG("avrc_pars_vendor_rsp() ctype:0x%x pdu:0x%x, len:%d/0x%x", p_msg->hdr.ctype, p_result->pdu, len, len);
++
++    if (p_msg->vendor_len < len + 4) {
++        AVRC_TRACE_WARNING("message length %u too short: must be at least %u", p_msg->vendor_len, len + 4);
++        return AVRC_STS_INTERNAL_ERR;
++    }
++
+     if (p_msg->hdr.ctype == AVRC_RSP_REJ) {
++        if (len < 1) {
++            AVRC_TRACE_WARNING("invalid message length %u: must be at least 1", len);
++            return AVRC_STS_INTERNAL_ERR;
++        }
+         p_result->rsp.status = *p;
+         return p_result->rsp.status;
+     }
+@@ -82,10 +96,18 @@ static tAVRC_STS avrc_pars_vendor_rsp(tAVRC_MSG_VENDOR *p_msg, tAVRC_RESPONSE *p
+ 
+     case AVRC_PDU_REGISTER_NOTIFICATION:    /* 0x31 */
+ #if (AVRC_ADV_CTRL_INCLUDED == TRUE)
++        if (len < 1) {
++            AVRC_TRACE_WARNING("invalid message length %u: must be at least 1", len);
++            return AVRC_STS_INTERNAL_ERR;
++        }
+         BE_STREAM_TO_UINT8 (eventid, p);
+         if (AVRC_EVT_VOLUME_CHANGE == eventid
+                 && (AVRC_RSP_CHANGED == p_msg->hdr.ctype || AVRC_RSP_INTERIM == p_msg->hdr.ctype
+                     || AVRC_RSP_REJ == p_msg->hdr.ctype || AVRC_RSP_NOT_IMPL == p_msg->hdr.ctype)) {
++            if (len < 2) {
++                AVRC_TRACE_WARNING("invalid message length %u: must be at least 2", len);
++                return AVRC_STS_INTERNAL_ERR;
++            }
+             p_result->reg_notif.status = p_msg->hdr.ctype;
+             p_result->reg_notif.event_id = eventid;
+             BE_STREAM_TO_UINT8 (p_result->reg_notif.param.volume, p);
+@@ -95,18 +117,30 @@ static tAVRC_STS avrc_pars_vendor_rsp(tAVRC_MSG_VENDOR *p_msg, tAVRC_RESPONSE *p
+         break;
+ #endif /* (AVRC_ADV_CTRL_INCLUDED == TRUE) */
+     case AVRC_PDU_GET_CAPABILITIES:        /* 0x10 */
++        if (len < 2) {
++            AVRC_TRACE_WARNING("invalid message length %u: must be at least 2", len);
++            return AVRC_STS_INTERNAL_ERR;
++        }
+         BE_STREAM_TO_UINT8 (p_result->get_caps.capability_id, p);
+         BE_STREAM_TO_UINT8 (p_result->get_caps.count, p);
+         if (p_result->get_caps.capability_id == AVRC_CAP_EVENTS_SUPPORTED) {
+             if (p_result->get_caps.count > AVRC_CAP_MAX_NUM_EVT_ID) {
+                 status = AVRC_STS_INTERNAL_ERR;
+             } else {
++                if (len < 2 + p_result->get_caps.count) {
++                    AVRC_TRACE_WARNING("invalid message length %u: must be at least %d", len, 2 + p_result->get_caps.count);
++                    return AVRC_STS_INTERNAL_ERR;
++                }
+                 BE_STREAM_TO_ARRAY(p, p_result->get_caps.param.event_id, p_result->get_caps.count);
+             }
+         } else if (p_result->get_caps.capability_id == AVRC_CAP_COMPANY_ID) {
+             if (p_result->get_caps.count > AVRC_CAP_MAX_NUM_COMP_ID) {
+                 status = AVRC_STS_INTERNAL_ERR;
+             } else {
++                if (len < 2 + p_result->get_caps.count * 6) {
++                    AVRC_TRACE_WARNING("invalid message length %u: must be at least %d", len, 2 + p_result->get_caps.count * 6);
++                    return AVRC_STS_INTERNAL_ERR;
++                }
+                 for (int i = 0; i < p_result->get_caps.count; ++i) {
+                     BE_STREAM_TO_UINT24(p_result->get_caps.param.company_id[i], p);
+                 }
+diff --git a/components/bt/host/bluedroid/stack/avrc/avrc_pars_tg.c b/components/bt/host/bluedroid/stack/avrc/avrc_pars_tg.c
+index 01d6a47..ebb38fe 100644
+--- a/components/bt/host/bluedroid/stack/avrc/avrc_pars_tg.c
++++ b/components/bt/host/bluedroid/stack/avrc/avrc_pars_tg.c
+@@ -110,46 +110,54 @@ static tAVRC_STS avrc_pars_vendor_cmd(tAVRC_MSG_VENDOR *p_msg, tAVRC_COMMAND *p_
+ 
+     case AVRC_PDU_GET_CUR_PLAYER_APP_VALUE: /* 0x13 */
+     case AVRC_PDU_GET_PLAYER_APP_ATTR_TEXT: /* 0x15 */
+-        BE_STREAM_TO_UINT8 (p_result->get_cur_app_val.num_attr, p);
+-        if (len != (p_result->get_cur_app_val.num_attr + 1)) {
++        if (len < 1) {
+             status = AVRC_STS_INTERNAL_ERR;
+-            break;
+-        }
+-        p_u8 = p_result->get_cur_app_val.attrs;
+-        for (xx = 0, yy = 0; xx < p_result->get_cur_app_val.num_attr; xx++) {
+-            /* only report the valid player app attributes */
+-            if (AVRC_IsValidPlayerAttr(*p)) {
+-                p_u8[yy++] = *p;
++        } else {
++            BE_STREAM_TO_UINT8 (p_result->get_cur_app_val.num_attr, p);
++            if (len != (p_result->get_cur_app_val.num_attr + 1)) {
++                status = AVRC_STS_INTERNAL_ERR;
++                break;
++            }
++            p_u8 = p_result->get_cur_app_val.attrs;
++            for (xx = 0, yy = 0; xx < p_result->get_cur_app_val.num_attr; xx++) {
++                /* only report the valid player app attributes */
++                if (AVRC_IsValidPlayerAttr(*p)) {
++                    p_u8[yy++] = *p;
++                }
++                p++;
++            }
++            p_result->get_cur_app_val.num_attr = yy;
++            if (yy == 0) {
++                status = AVRC_STS_BAD_PARAM;
+             }
+-            p++;
+-        }
+-        p_result->get_cur_app_val.num_attr = yy;
+-        if (yy == 0) {
+-            status = AVRC_STS_BAD_PARAM;
+         }
+         break;
+ 
+     case AVRC_PDU_SET_PLAYER_APP_VALUE:     /* 0x14 */
+-        BE_STREAM_TO_UINT8 (p_result->set_app_val.num_val, p);
+-        size_needed = sizeof(tAVRC_APP_SETTING);
+-        if (p_buf && (len == ((p_result->set_app_val.num_val << 1) + 1))) {
+-            p_result->set_app_val.p_vals = (tAVRC_APP_SETTING *)p_buf;
+-            p_app_set = p_result->set_app_val.p_vals;
+-            for (xx = 0; ((xx < p_result->set_app_val.num_val) && (buf_len > size_needed)); xx++) {
+-                p_app_set[xx].attr_id = *p++;
+-                p_app_set[xx].attr_val = *p++;
+-                if (!avrc_is_valid_player_attrib_value(p_app_set[xx].attr_id, p_app_set[xx].attr_val)) {
+-                    status = AVRC_STS_BAD_PARAM;
++        if (len < 1) {
++            status = AVRC_STS_INTERNAL_ERR;
++        } else {
++            BE_STREAM_TO_UINT8 (p_result->set_app_val.num_val, p);
++            size_needed = sizeof(tAVRC_APP_SETTING);
++            if (p_buf && (len == ((p_result->set_app_val.num_val << 1) + 1))) {
++                p_result->set_app_val.p_vals = (tAVRC_APP_SETTING *)p_buf;
++                p_app_set = p_result->set_app_val.p_vals;
++                for (xx = 0; ((xx < p_result->set_app_val.num_val) && (buf_len > size_needed)); xx++) {
++                    p_app_set[xx].attr_id = *p++;
++                    p_app_set[xx].attr_val = *p++;
++                    if (!avrc_is_valid_player_attrib_value(p_app_set[xx].attr_id, p_app_set[xx].attr_val)) {
++                        status = AVRC_STS_BAD_PARAM;
++                    }
+                 }
++                if (xx != p_result->set_app_val.num_val) {
++                    AVRC_TRACE_ERROR("AVRC_PDU_SET_PLAYER_APP_VALUE not enough room:%d orig num_val:%d",
++                                    xx, p_result->set_app_val.num_val);
++                    p_result->set_app_val.num_val = xx;
++                }
++            } else {
++                AVRC_TRACE_ERROR("AVRC_PDU_SET_PLAYER_APP_VALUE NULL decode buffer or bad len");
++                status = AVRC_STS_INTERNAL_ERR;
+             }
+-            if (xx != p_result->set_app_val.num_val) {
+-                AVRC_TRACE_ERROR("AVRC_PDU_SET_PLAYER_APP_VALUE not enough room:%d orig num_val:%d",
+-                                 xx, p_result->set_app_val.num_val);
+-                p_result->set_app_val.num_val = xx;
+-            }
+-        } else {
+-            AVRC_TRACE_ERROR("AVRC_PDU_SET_PLAYER_APP_VALUE NULL decode buffer or bad len");
+-            status = AVRC_STS_INTERNAL_ERR;
+         }
+         break;
+ 
+@@ -246,7 +254,11 @@ static tAVRC_STS avrc_pars_vendor_cmd(tAVRC_MSG_VENDOR *p_msg, tAVRC_COMMAND *p_
+             status = AVRC_STS_INTERNAL_ERR;
+         } else {
+             BE_STREAM_TO_UINT8 (p_result->reg_notif.event_id, p);
+-            BE_STREAM_TO_UINT32 (p_result->reg_notif.param, p);
++            if (AVRC_IS_VALID_EVENT_ID(p_result->reg_notif.event_id)) {
++                BE_STREAM_TO_UINT32 (p_result->reg_notif.param, p);
++            } else {
++                status = AVRC_STS_BAD_PARAM;
++            }
+         }
+         break;
+ 

@@ -1,0 +1,156 @@
+diff --git a/components/squeezelite/opus.c b/components/squeezelite/opus.c
+index 27c8a35..b626ebe 100644
+--- a/components/squeezelite/opus.c
++++ b/components/squeezelite/opus.c
+@@ -133,6 +133,7 @@ static opus_uint32 parse_uint32(const unsigned char* _data) {
+ 
+ static int get_audio_packet(void) {
+ 	int status, packet = -1;
++	bool oom = false;
+ 
+ 	LOCK_S;
+ 	size_t bytes = min(_buf_used(streambuf), _buf_cont_read(streambuf));
+@@ -143,6 +144,8 @@ static int get_audio_packet(void) {
+ 		while (!(status = OG(&go, sync_pageout, &u->sync, &u->page)) && bytes) {
+ 			size_t consumed = min(bytes, 4096);
+ 			char* buffer = OG(&go, sync_buffer, &u->sync, consumed);
++			// no memory: stop feeding (bytes = 0 ends the outer loop too)
++			if (!buffer) { bytes = 0; oom = true; break; }
+ 			memcpy(buffer, streambuf->readp, consumed);
+ 			OG(&go, sync_wrote, &u->sync, consumed);
+ 
+@@ -159,8 +162,10 @@ static int get_audio_packet(void) {
+ 
+ 	/* discard header packets. With no packet, we return a negative value 
+ 	 * when there is really nothing more to proceed */
+-	if (status > 0 && memcmp(u->packet.packet, "OpusHead", 8) && memcmp(u->packet.packet, "OpusTags", 8)) packet = status;
+-	else if (stream.state > DISCONNECT || _buf_used(streambuf)) packet = 0;
++	// audio packets can be shorter than the 8-byte header tags
++	if (status > 0 && (u->packet.bytes < 8 || (memcmp(u->packet.packet, "OpusHead", 8) && memcmp(u->packet.packet, "OpusTags", 8)))) packet = status;
++	// no memory for the sync buffer: end the track rather than retry forever
++	else if (!oom && (stream.state > DISCONNECT || _buf_used(streambuf))) packet = 0;
+ 
+ 	UNLOCK_S;
+ 	return packet;
+@@ -181,6 +186,11 @@ static int read_opus_header(void) {
+ 			size_t consumed = min(bytes, 4096);
+ 
+ 			char* buffer = OG(&go, sync_buffer, &u->sync, consumed);
++			if (!buffer) {
++				done = -100;
++				status = 0;
++				break;
++			}
+ 			memcpy(buffer, streambuf->readp, consumed);
+ 			OG(&go, sync_wrote, &u->sync, consumed);
+ 
+@@ -218,7 +228,9 @@ static int read_opus_header(void) {
+ 				u->decoder = OP(&gu, decoder_create, 48000, u->channels, &status);
+ 				fetch = false;
+ 				if (!u->decoder || status != OPUS_OK) {
++					// e.g. channel count 0: opus_decode() would later run on a NULL decoder
+ 					LOG_ERROR("can't create decoder %d (channels:%u)", status, u->channels);
++					done = -100;
+ 				}
+ 				else {
+ 					LOG_INFO("codec up and running");
+@@ -293,7 +305,7 @@ static decode_state opus_decompress(void) {
+ 				u->overframes = n - min(n, frames);
+ 				n = min(n, frames);
+ 				memcpy(write_buf, u->overbuf, n * BYTES_PER_FRAME);
+-				memmove(u->overbuf, u->overbuf + n, u->overframes);
++				memmove(u->overbuf, u->overbuf + n * BYTES_PER_FRAME, u->overframes * BYTES_PER_FRAME); /* frames, not bytes */
+ 			}
+ 		} else {
+ 			/* we just do one packet at a time, although we could loop on packets but that means locking the 
+diff --git a/components/squeezelite/slimproto.c b/components/squeezelite/slimproto.c
+index b377964..8181695 100644
+--- a/components/squeezelite/slimproto.c
++++ b/components/squeezelite/slimproto.c
+@@ -494,11 +494,13 @@ static void process_setd(u8_t *pkt, int len) {
+ 				sendSETDName(player_name);
+ 			}
+ 		} else if (len > 5) {
+-			strncpy(player_name, setd->data, PLAYER_NAME_LEN);
+-			player_name[PLAYER_NAME_LEN] = '\0';
+-			LOG_INFO("set name: %s", setd->data);
++			// data is not NUL terminated when the packet fills the receive buffer
++			size_t n = strnlen(setd->data, min(len - 5, PLAYER_NAME_LEN));
++			memcpy(player_name, setd->data, n);
++			player_name[n] = '\0';
++			LOG_INFO("set name: %s", player_name);
+ 			// confirm change to server
+-			sendSETDName(setd->data);
++			sendSETDName(player_name);
+ #if EMBEDDED
+ 			set_name(player_name);
+ #endif			
+diff --git a/components/squeezelite/stream.c b/components/squeezelite/stream.c
+index f4731de..6150b5d 100644
+--- a/components/squeezelite/stream.c
++++ b/components/squeezelite/stream.c
+@@ -259,6 +259,8 @@ static void stream_ogg(size_t n) {
+ 			} else {
+ 				ogg.state = OGG_PAGE;
+ 				ogg.data = malloc(ogg.want);
++				// no memory: skip the page like a foreign serial
++				if (!ogg.data) ogg.state = OGG_SYNC;
+ 			}
+ 			break;
+ 		case OGG_PAGE: {
+@@ -269,27 +271,38 @@ static void stream_ogg(size_t n) {
+ 			 * and except with vorbis, comment packet starts a new page but even in vorbis, it won't span
+ 			 * accross multiple pages */
+ 			if (ogg.flac) ofs = 4;
+-			else if (!memcmp(ogg.data, "\x7f""FLAC", 5)) ogg.flac = true;
++			else if (ogg.want >= 5 && !memcmp(ogg.data, "\x7f""FLAC", 5)) ogg.flac = true;
+ 			else for (size_t n = 0; *tag; tag++, ofs = 0) if ((ofs = memfind(ogg.data, ogg.want, *tag, strlen(*tag), &n)) && n == strlen(*tag)) break;
+ 	
+ 			if (ofs) {			
+ 				// u32:len,char[]:vendorId, u32:N, N x (u32:len,char[]:comment)
++				// every length comes from the stream: bound it by the page we hold
+ 				char* p = (char*) ogg.data + ofs;
+-				p += read_le32(p) + 4;
+-				u32_t count = read_le32(p);
+-				p += 4;
++				char* end = (char*) ogg.data + ogg.want;
++				u32_t count = 0;
++				if (ofs + 4 <= ogg.want) {
++					u32_t vlen = read_le32(p);
++					p += 4;
++					if (vlen <= (size_t) (end - p) && (size_t) (end - p) - vlen >= 4) {
++						p += vlen;
++						count = read_le32(p);
++						p += 4;
++					}
++				}
+ 
+ 				// LMS metadata format for Ogg is "Ogg", N x (u16:len,char[]:comment)
+ 				memcpy(stream.header, "Ogg", 3);
+ 				stream.header_len = 3;
+ 
+-				for (u32_t len; count--; p += len) {
++				for (u32_t len; count-- && end - p >= 4; p += len) {
+ 					len = read_le32(p);
+ 					p += 4;
++					if (len > (size_t) (end - p)) break;
+ 
+ 					// only report what we use and don't overflow (network byte order)
+-					if (!strncasecmp(p, "TITLE=", 6) || !strncasecmp(p, "ARTIST=", 7) || !strncasecmp(p, "ALBUM=", 6)) {
+-						if (stream.header_len + len + 2 > MAX_HEADER) break;
++					if ((len >= 6 && (!strncasecmp(p, "TITLE=", 6) || !strncasecmp(p, "ALBUM=", 6))) ||
++						(len >= 7 && !strncasecmp(p, "ARTIST=", 7))) {
++						if (len + 2 > MAX_HEADER - stream.header_len) break;
+ 						stream.header[stream.header_len++] = len >> 8;
+ 						stream.header[stream.header_len++] = len;
+ 						memcpy(stream.header + stream.header_len, p, len);
+@@ -413,6 +426,9 @@ static void *stream_thread() {
+ 					if (stream.header_len > MAX_HEADER - 1) {
+ 						LOG_ERROR("received headers too long: %u", stream.header_len);
+ 						_disconnect(DISCONNECT, LOCAL_DISCONNECT);
++						// header is full: do not fall through and write header[MAX_HEADER]
++						UNLOCK;
++						continue;
+ 					}
+ 
+ 					if (stream.header_len > 1 && (c == '\r' || c == '\n')) {

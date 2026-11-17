@@ -80,19 +80,36 @@ static void on_net(void *arg, esp_event_base_t base, int32_t id, void *data) {
 	}
 }
 
+/* Registers on_net with the default event loop, which network_manager
+ * creates (with ESP_ERROR_CHECK, so it can't be made earlier here). Safe to
+ * run twice at once: IDF replaces a handler registered again rather than
+ * adding it twice. */
+static void events_register(void) {
+	static volatile bool wifi_on, ip_on;
+	if (!wifi_on) wifi_on = esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, on_net, NULL) == ESP_OK;
+	if (!ip_on) ip_on = esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, on_net, NULL) == ESP_OK;
+	events_on = wifi_on && ip_on;
+}
+
+/* The hook in patches/0010: network_manager calls it right after it creates
+ * the default event loop, before Wi-Fi or Ethernet start, so the first
+ * connect and the first address reach on_net. */
+void hifi_net_loop_ready(void) {
+	events_register();
+	if (!events_on) ESP_LOGW(TAG, "Wi-Fi events not registered at loop start; retrying from the tick");
+}
+
 void hifi_diag_tick(void) {
-	/* the default event loop comes up with the network, after hifi_init */
-	if (!events_on && esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, on_net, NULL) == ESP_OK) {
-		esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, on_net, NULL);
-		events_on = true;
-	}
-	/* an address that came before the handlers did: once, while associated
-	 * (later losses and gains reach on_net) */
+	/* a fallback: a tree without patch 0010, or a register that failed */
+	events_register();
+	/* an association and an address that came before the handlers did (only
+	 * by the fallback): once (later losses and gains reach on_net). The
+	 * connect it missed counts; boot_ip_ms stays 0 (unknown). */
 	static bool caught_up;
 	wifi_ap_record_t ap;
 	if (events_on && !caught_up && hifi_net_ip(NULL, 0) && esp_wifi_sta_get_ap_info(&ap) == ESP_OK) {
 		caught_up = true;
-		if (!boot_ip_ms) boot_ip_ms = now_ms();
+		if (!connects) connects = 1;
 		int64_t t = esp_timer_get_time();
 		portENTER_CRITICAL(&ip_mux);
 		if (!ip_since_us) ip_since_us = t;
@@ -127,7 +144,9 @@ static void sys(hifi_diag_sys_t *o) {
 	o->boot_ip_ms = boot_ip_ms;
 	hifi_diag_net_t n = {0};
 	hifi_remote_link(&n, &o->boot_link_ms);
-	heap(&o->internal, MALLOC_CAP_INTERNAL);
+	/* byte-addressable internal RAM, as `state` and the self-test count it
+	 * (MALLOC_CAP_INTERNAL alone adds IRAM that takes only 32-bit access) */
+	heap(&o->internal, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 	heap(&o->psram, MALLOC_CAP_SPIRAM);
 	o->reset_reason = hifi_crash_reset_reason();
 	memcpy(o->reset_hist, hist, sizeof(hist));
@@ -185,10 +204,10 @@ static int tasks(hifi_diag_tasks_t *out, bool fresh) {
 				hifi_diag_cpu(a, na, b, el);
 				*last = *b;
 			} else {
-				r = -1;
+				r = b->n < 0 ? -b->n : -2;
 			}
 		} else {
-			r = b && b->n < 0 ? -b->n : -1;
+			r = !(st && a && b) ? -2 : b->n < 0 ? -b->n : -1;
 		}
 		free(st);
 		free(a);
@@ -221,6 +240,7 @@ static void net(hifi_diag_net_t *o) {
 	o->up_s = ip ? (uint32_t) ((esp_timer_get_time() - ip) / 1000000) : 0;
 	uint32_t first;
 	hifi_remote_link(o, &first);
+	hifi_listen_diag(o);
 }
 
 /* ------------------------------------------------------------------ audio */

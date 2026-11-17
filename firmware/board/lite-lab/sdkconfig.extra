@@ -1,0 +1,14 @@
+# The lab build of the Lite (projects/hifi-lite-lab, lane esp32-lab): the
+# lite-main image with the experiment frame. fetch.sh appends these lines to
+# board/lite-main/sdkconfig.defaults and keeps lite-main's partition table,
+# so the bootloader and partitions match and a Wi-Fi update can carry it.
+CONFIG_HIFI_LAB=y
+# A hung lab board must come back by itself: nobody can reach its power
+# switch. The plain image's task watchdog only logs; this one panics, the
+# board restarts, and the lab names the experiment that ran (hifi_lab.h).
+CONFIG_ESP_TASK_WDT_PANIC=y
+# 15 s, not the default 5: the panic must catch a hang, not a slow but live
+# product path (a flash write, a long TLS handshake) that the plain image
+# only logged. No Lite self-test report so far shows a watchdog reset; the
+# margin is for paths the bench didn't exercise.
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=15
