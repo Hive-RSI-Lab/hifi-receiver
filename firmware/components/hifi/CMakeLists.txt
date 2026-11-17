@@ -29,6 +29,12 @@ if(CONFIG_HIFI_LAB)
 	if(CONFIG_BT_BLE_ENABLED)
 		list(APPEND srcs esp/lab_ble.c)
 	endif()
+	# the lab-radio image (board/lite-lab-radio): 96/24 FLAC decoded on a
+	# PSRAM stack beside the radios, from a clip in the image
+	if(CONFIG_HIFI_LAB_PSRAM_STACKS)
+		list(APPEND srcs esp/lab_flac.c)
+		set(lab_embed esp/lab_assets/clip96k24.flac)
+	endif()
 endif()
 
 # app/build.py writes the web app here (firmware/tools/fetch.sh runs it);
@@ -45,8 +51,9 @@ idf_component_register(
 	SRCS ${srcs}
 	INCLUDE_DIRS core
 	PRIV_INCLUDE_DIRS esp ${webapp_dir} ${lab_inc}
+	EMBED_FILES ${lab_embed}
 	REQUIRES esp_http_server
-	PRIV_REQUIRES driver esp_adc_cal mdns console nvs_flash esp_wifi
+	PRIV_REQUIRES driver esp_adc_cal mdns console nvs_flash esp_wifi pthread
 		      platform_config services wifi-manager tools
 		      app_update mqtt libsodium mbedtls lwip esp_http_client json
 		      tcp_transport esp-tls bt codecs)
