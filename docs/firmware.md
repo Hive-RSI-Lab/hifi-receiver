@@ -38,7 +38,7 @@ GPIOs and squeezelite.
 | Function | Pins | Owner |
 |---|---|---|
 | ES8388 I2S (MCLK 0, BCLK 27, LRCK 25, DOUT 26, DIN 35), I2C (SDA 33, SCL 32) | | squeezelite (`dac_config`, `dac_controlset` in the Kconfig patch) |
-| Buttons: vol+ 13, vol− 36, play 19 | | squeezelite (`actrls_config`): short = vol+/vol−/play-pause, long = next/previous/power |
+| Buttons: vol+ 13, vol− 36, play 19 | | squeezelite (`actrls_config`): vol+/vol− short = volume, long = next/previous. Play works like headphones (`hifi_tap` in `hifi_main.c`): 1 tap = play/pause, 2 = next, 3 = previous, hold 1 s = Bluetooth pairing (drops the connected phone so a new one can pair) |
 | IR receiver | 14 | squeezelite decodes (`set_GPIO 14=ir:nec`); `hifi` sees each code first and keeps the learned ones |
 | Status LED | 22 | squeezelite (`set_GPIO 22=green:1`): blinks during Wi-Fi setup |
 | PD contract: CH224A at I2C 0x22, PG | 4 | `hifi` |

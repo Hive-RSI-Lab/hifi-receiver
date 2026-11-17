@@ -46,6 +46,7 @@
 #include "hifi_json.h"
 #include "hifi_line.h"
 #include "hifi_meta.h"
+#include "hifi_tap.h"
 #include "hifi_pd.h"
 #include "hifi_power.h"
 #include "hifi_tone.h"
@@ -63,6 +64,7 @@ extern int hifi_sink_source(void) __attribute__((weak));
 extern void equalizer_set_gain(int8_t *gain) __attribute__((weak));
 extern int set_squeezelite_player_name(FILE *f, const char *name) __attribute__((weak));
 extern int set_cspot_player_name(FILE *f, const char *name) __attribute__((weak));
+extern bool bt_sink_pair_mode(void) __attribute__((weak));
 extern bool hifi_output_gain(unsigned left, unsigned right) __attribute__((weak));
 
 /* ------------------------------------------------------------------ state */
@@ -93,6 +95,8 @@ static bool vol_dirty, vol_from_source;
 static uint32_t vol_changed_ms;
 static hifi_meta_t meta;
 static hifi_ir_t ir;
+static hifi_tap_t taps;           /* the play button's taps; under lock */
+static TaskHandle_t tap_task;
 static char last_ctl[24];            /* the last button, knob step or remote action */
 static uint32_t last_ctl_ms;
 
@@ -432,8 +436,53 @@ void hifi_main_knob(int detents) {
 	for (int i = 0; h && i < abs(detents); i++) h(true);
 }
 
+/*
+ * The play button's taps, acted on once they're counted (hifi_tap.h): 1
+ * play/pause, 2 next, 3 previous. Its stack is in PSRAM like the buttons
+ * task's, so what it calls must not touch flash either.
+ */
+static void tap_main(void *arg) {
+	(void) arg;
+	for (;;) {
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		for (;;) {
+			LOCK();
+			int n = hifi_tap_poll(&taps, now_ms());
+			bool pending = hifi_tap_pending(&taps);
+			UNLOCK();
+			if (n) {
+				int a = n == 1 ? HIFI_IR_TOGGLE : n == 2 ? HIFI_IR_NEXT : HIFI_IR_PREV;
+				control_seen_locked("button", hifi_ir_action_name(a));
+				actrls_handler h = get_ctrl_handler(IR_TO_ACTRLS[a]);
+				if (h) h(true);
+			}
+			if (!pending) break;
+			ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(20));
+		}
+	}
+}
+
 /* A button press on the board (squeezelite's audio controls). */
 bool hifi_button_hook(int action, bool pressed) {
+	/* play: counted as headphone taps (a short press arrives on release) */
+	if (action == ACTRLS_TOGGLE && tap_task) {
+		if (pressed) {
+			LOCK();
+			hifi_tap_press(&taps, now_ms());
+			UNLOCK();
+			xTaskNotifyGive(tap_task);
+		}
+		return true;
+	}
+	/* play held: let a new phone pair over Bluetooth */
+	if (action == ACTRLS_POWER && bt_sink_pair_mode) {
+		static bool pairing; /* the release goes where the press went */
+		if (pressed) pairing = bt_sink_pair_mode();
+		if (pairing) {
+			if (pressed) control_seen_locked("button", "pair");
+			return true;
+		}
+	}
 	for (int a = 0; pressed && a < HIFI_IR_N; a++)
 		if (IR_TO_ACTRLS[a] == action && action != ACTRLS_NONE) control_seen_locked("button", hifi_ir_action_name(a));
 	if (action == ACTRLS_VOLUP) return local_action(HIFI_IR_VOLUP, pressed);
@@ -1271,6 +1320,7 @@ static bool hifi_init(void) {
 	free(s);
 	hifi_meta_init(&meta);
 	hifi_ir_init(&ir);
+	hifi_tap_init(&taps);
 	s = config_alloc_get_str("hifi_ir", NULL, "");
 	hifi_ir_load(&ir, s);
 	free(s);
@@ -1279,6 +1329,7 @@ static bool hifi_init(void) {
 	if (hifi_sink_start) tone_task = task_psram(tone_main, "hifi_tone", 4096, ESP_TASK_PRIO_MIN + 2, 1);
 	if (board_line) task_psram(line_main, "hifi_line", 4096, ESP_TASK_PRIO_MIN + 4, 1);
 	xTaskCreate(services_task, "hifi_svc", 3072, NULL, ESP_TASK_PRIO_MIN + 1, NULL);
+	tap_task = task_psram(tap_main, "hifi_tap", 4096, ESP_TASK_PRIO_MIN + 2, tskNO_AFFINITY);
 	hifi_remote_start(&hifi_ops);
 	hifi_bsp_start();
 	ESP_LOGI(TAG, "%s on %s, firmware %s", HIFI_MODEL, HIFI_BOARD, HIFI_FW_VERSION);
