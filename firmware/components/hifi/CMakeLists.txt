@@ -16,7 +16,7 @@ endif()
 
 # the lab build (board/lite-lab): experiments a signed command starts and stops
 if(CONFIG_HIFI_LAB)
-	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c)
+	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c esp/lab_forge.c)
 	# Bluetooth off or quiet for a while, to measure what it costs Wi-Fi
 	if(CONFIG_BT_CLASSIC_ENABLED)
 		list(APPEND srcs esp/lab_bt.c)

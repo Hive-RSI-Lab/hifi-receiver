@@ -76,19 +76,27 @@ def main() -> None:
     # the radios (fuzz_link.h): byte 0 the role (0 echo, 1 ping, 2 flood) and bit 2 a clock
     # from boot; then per frame a gap, a byte of flags (fuzz_espnow: bit 0 a ping of ours
     # went out; fuzz_ble: the event, 1 a value write or notification) and a frame built from
-    # fields: 3 (plausible times), type (0 PING, 1 PONG, 2 DATA), session (0 ours), seq, the
-    # time back (4 bytes), the echo's turnaround (/50 us), its clock offset (4), length - 38
-    def frame(typ: int, seq: int, size: int = 100) -> bytes:
-        return bytes([3, typ, 0, seq]) + (2000).to_bytes(4, "little") + bytes([4]) + \
+    # fields: 3 (plausible times; | 32 under the forger's key, | 4 a 4-byte seq), type (0 PING,
+    # 1 PONG, 2 DATA), session (0 ours, 1 the receiver's live one), seq, the time back (4 bytes),
+    # the echo's turnaround (/50 us), its clock offset (4), length - HIFI_LINK_MIN (46)
+    def frame(typ: int, seq: int, size: int = 100, forged: bool = False, session: int = 0) -> bytes:
+        k = 3 | (32 | 4 if forged else 0)
+        s = seq.to_bytes(4, "little") if forged else bytes([seq])
+        return bytes([k, typ, session]) + s + (2000).to_bytes(4, "little") + bytes([4]) + \
             (1500).to_bytes(4, "little") + bytes([size])
-    # full frames: 250 - 38 on ESP-NOW, HIFI_LINK_BLE_PAYLOAD (244) - HIFI_LINK_HDR (38) on BLE
-    raw = bytes([0, 40]) + b"HL\x02\x01" + bytes(36)  # a raw frame whose payload fails
+    # full frames: 250 - 46 on ESP-NOW, HIFI_LINK_BLE_PAYLOAD (244) - HIFI_LINK_MIN (46) on BLE
+    raw = bytes([0, 40]) + b"HL\x02\x01" + bytes(36)  # an untagged frame of the last version
     for name, flag in (("fuzz_espnow", 1), ("fuzz_ble", 1)):
         write(name, [bytes([0]) + b"".join(bytes([3, flag]) + frame(0, q) for q in range(8)),
-                     bytes([0]) + b"".join(bytes([1, flag]) + frame(2, q, 212 if name == "fuzz_espnow" else 206) for q in range(16)),
+                     bytes([0]) + b"".join(bytes([1, flag]) + frame(2, q, 204 if name == "fuzz_espnow" else 198) for q in range(16)),
                      bytes([1]) + b"".join(bytes([20, flag]) + frame(1, q) for q in range(24)),
                      bytes([2 | 4]) + b"".join(bytes([5, flag]) + frame(1, q) for q in range(4)),
-                     bytes([0]) + bytes([3, flag]) + raw])
+                     bytes([0]) + bytes([3, flag]) + raw,
+                     # a stranger's frames at an echo mid-run: the live session, a jump in seq,
+                     # then the next seq, a PING and the same seq; all bad, nothing else moves
+                     bytes([0]) + b"".join(bytes([1, flag]) + frame(2, q) for q in range(8)) +
+                     b"".join(bytes([1, flag]) + frame(t, q, forged=True, session=1)
+                              for t, q in ((2, 1000000), (2, 8), (0, 9), (2, 7)))])
 
 
 if __name__ == "__main__":

@@ -236,49 +236,172 @@ static void lab_route(void) {
 
 /* ------------------------------------------------------------ link frames */
 
+/* a test key; the boards' keys come from the run's start op, never the code */
+static const uint8_t KEY[HIFI_LINK_KEY] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+static hifi_link_key_t K;
+
 static void frames(void) {
 	uint8_t buf[HIFI_LINK_MAX];
 	hifi_link_frame_t f = {HIFI_LINK_PING, 7, 12345, -5, 1LL << 40, INT64_MAX, 100}, g;
-	CHECK(hifi_link_encode(&f, buf, sizeof(buf)) == 100);
-	CHECK(hifi_link_decode(buf, 100, &g));
+	CHECK(hifi_link_encode(&K, &f, buf, sizeof(buf)) == 100);
+	CHECK(hifi_link_decode(&K, buf, 100, &g));
 	CHECK(g.type == HIFI_LINK_PING && g.session == 7 && g.seq == 12345);
 	CHECK(g.t1 == -5 && g.t2 == (1LL << 40) && g.t3 == INT64_MAX && g.len == 100);
 
-	/* damage anywhere is caught */
-	for (int i = 0; i < 100; i += 13) {
-		if (i >= 14 && i < HIFI_LINK_HDR) continue; /* the times are free */
-		if (i >= 6 && i < 10) continue;             /* so is the session */
+	/* damage anywhere is caught: the header (times and session too) by the
+	 * tag, the payload by its pattern, the tag by itself */
+	for (int i = 0; i < 100; i++) {
 		uint8_t c[HIFI_LINK_MAX];
 		memcpy(c, buf, 100);
 		c[i] ^= 0x10;
 		hifi_link_frame_t h;
-		bool ok = hifi_link_decode(c, 100, &h);
-		/* a flipped seq byte breaks the payload's pattern; a flipped type
-		 * byte makes an unknown type, a flipped length byte a length that
-		 * isn't the frame's */
-		CHECK(!ok);
+		CHECK(!hifi_link_decode(&K, c, 100, &h));
 	}
-	CHECK(!hifi_link_decode(buf, HIFI_LINK_HDR - 1, &g));
+	CHECK(!hifi_link_decode(&K, buf, HIFI_LINK_MIN - 1, &g));
 	/* a frame cut short (or padded) is caught by its length */
-	for (size_t n = HIFI_LINK_HDR; n < 100; n += 7) CHECK(!hifi_link_decode(buf, n, &g));
-	CHECK(!hifi_link_decode(buf, 101, &g));
-	CHECK(hifi_link_decode(buf, 100, &g));
-	{
-		uint8_t c[HIFI_LINK_MAX];
-		memcpy(c, buf, 100);
-		c[4] = 99; /* the length says 99: still caught at 100 bytes */
-		CHECK(!hifi_link_decode(c, 100, &g));
-	}
+	for (size_t n = HIFI_LINK_MIN; n < 100; n += 7) CHECK(!hifi_link_decode(&K, buf, n, &g));
+	CHECK(!hifi_link_decode(&K, buf, 101, &g));
+	CHECK(hifi_link_decode(&K, buf, 100, &g));
+	CHECK(!hifi_link_decode(NULL, buf, 100, &g));
+	CHECK(hifi_link_encode(NULL, &f, buf, sizeof(buf)) == 0);
 
 	/* sizes */
-	f.len = HIFI_LINK_HDR;
-	CHECK(hifi_link_encode(&f, buf, sizeof(buf)) == HIFI_LINK_HDR);
+	f.len = HIFI_LINK_MIN;
+	CHECK(hifi_link_encode(&K, &f, buf, sizeof(buf)) == HIFI_LINK_MIN);
+	CHECK(hifi_link_decode(&K, buf, HIFI_LINK_MIN, &g));
+	f.len = HIFI_LINK_MIN - 1;
+	CHECK(hifi_link_encode(&K, &f, buf, sizeof(buf)) == 0);
 	f.len = HIFI_LINK_MAX + 1;
-	CHECK(hifi_link_encode(&f, buf, sizeof(buf)) == 0);
+	CHECK(hifi_link_encode(&K, &f, buf, sizeof(buf)) == 0);
 	f.len = 200;
-	CHECK(hifi_link_encode(&f, buf, 150) == 0);
-	buf[3] = 9;
-	CHECK(!hifi_link_decode(buf, HIFI_LINK_HDR, &g));
+	CHECK(hifi_link_encode(&K, &f, buf, 150) == 0);
+}
+
+/* the tag is HMAC-SHA256 (RFC 2104), cut to 8 bytes: one answer worked out
+ * with Python's hmac module, and the key parser */
+static void tag(void) {
+	uint8_t hdr[HIFI_LINK_HDR], t[HIFI_LINK_TAG];
+	static const uint8_t want[HIFI_LINK_TAG] = {0x1d, 0x52, 0x7f, 0x43, 0xb4, 0xea, 0x00, 0xa2};
+	for (int i = 0; i < HIFI_LINK_HDR; i++) hdr[i] = (uint8_t) (100 + i);
+	hifi_link_tag(&K, hdr, t);
+	CHECK(!memcmp(t, want, sizeof(t)));
+	hifi_link_tag(&K, hdr, t); /* the key's states are not used up */
+	CHECK(!memcmp(t, want, sizeof(t)));
+
+	uint8_t k[HIFI_LINK_KEY], z[HIFI_LINK_KEY] = {0};
+	CHECK(hifi_link_parse_key("000102030405060708090a0B0c0D0e0F", k) && !memcmp(k, KEY, sizeof(k)));
+	memset(k, 0, sizeof(k));
+	CHECK(!hifi_link_parse_key("000102030405060708090a0b0c0d0e0", k));   /* 31 */
+	CHECK(!hifi_link_parse_key("000102030405060708090a0b0c0d0e0f0", k)); /* 33 */
+	CHECK(!hifi_link_parse_key("000102030405060708090a0b0c0d0e0g", k));
+	CHECK(!hifi_link_parse_key("", k) && !hifi_link_parse_key(NULL, k));
+	CHECK(!memcmp(k, z, sizeof(k))); /* untouched by a refusal */
+}
+
+/* A stranger in radio range, with any MAC, can't move the counts: frames
+ * under another key (a live session, a jump in seq, a PONG for our ping)
+ * are counted bad and change nothing else, and an old-version frame with
+ * no tag is bad too. */
+static void forged(void) {
+	hifi_link_key_t other;
+	uint8_t ok_key[HIFI_LINK_KEY];
+	memcpy(ok_key, KEY, sizeof(ok_key));
+	ok_key[15] ^= 1;
+	hifi_link_key_init(&other, ok_key);
+
+	hifi_link_rx_t rx;
+	static hifi_link_tx_t tx;
+	hifi_link_rx_init(&rx);
+	hifi_link_tx_init(&tx, 5);
+	uint8_t buf[HIFI_LINK_MAX];
+	hifi_link_frame_t pong;
+	int64_t now = 1000000;
+	for (uint32_t q = 0; q < 10; q++) {
+		hifi_link_frame_t f = {HIFI_LINK_DATA, 5, q, 0, 0, 0, 250};
+		CHECK(hifi_link_encode(&K, &f, buf, sizeof(buf)) == 250);
+		CHECK(hifi_link_receive(&K, &rx, &tx, true, false, buf, 250, now += 1000, &pong) == HIFI_LINK_GOT_USED);
+	}
+	CHECK(rx.rx == 10 && hifi_link_rx_expected(&rx) == 10 && rx.bad == 0);
+
+	hifi_link_rx_t before = rx;
+	/* the live session, a seq far ahead: would show 10^6 lost */
+	hifi_link_frame_t jump = {HIFI_LINK_DATA, 5, 1000000, 0, 0, 0, 250};
+	CHECK(hifi_link_encode(&other, &jump, buf, sizeof(buf)) == 250);
+	CHECK(hifi_link_receive(&K, &rx, &tx, true, false, buf, 250, now += 1000, &pong) == HIFI_LINK_GOT_BAD);
+	/* the next seq, which would be counted as received */
+	hifi_link_frame_t next = {HIFI_LINK_DATA, 5, 10, 0, 0, 0, 250};
+	CHECK(hifi_link_encode(&other, &next, buf, sizeof(buf)) == 250);
+	CHECK(hifi_link_receive(&K, &rx, &tx, true, false, buf, 250, now += 1000, &pong) == HIFI_LINK_GOT_BAD);
+	/* a genuine frame with its tag cut off and the length mended */
+	CHECK(hifi_link_encode(&K, &next, buf, sizeof(buf)) == 250);
+	buf[4] = 250 - HIFI_LINK_TAG;
+	CHECK(hifi_link_receive(&K, &rx, &tx, true, false, buf, 250 - HIFI_LINK_TAG, now += 1000, &pong) == HIFI_LINK_GOT_BAD);
+	/* a version 2 frame (no tag) */
+	CHECK(hifi_link_encode(&K, &next, buf, sizeof(buf)) == 250);
+	buf[2] = 2;
+	CHECK(hifi_link_receive(&K, &rx, &tx, true, false, buf, 250, now += 1000, &pong) == HIFI_LINK_GOT_BAD);
+	/* a PING under the wrong key gets no answer */
+	hifi_link_frame_t ping = {HIFI_LINK_PING, 5, 1, now, 0, 0, 64};
+	CHECK(hifi_link_encode(&other, &ping, buf, sizeof(buf)) == 64);
+	CHECK(hifi_link_receive(&K, &rx, &tx, true, false, buf, 64, now += 1000, &pong) == HIFI_LINK_GOT_BAD);
+	CHECK(rx.bad == 5);
+	rx.bad = before.bad;
+	CHECK(!memcmp(&rx, &before, sizeof(rx))); /* nothing else moved */
+
+	/* the pinger: a forged PONG adds no round trip */
+	hifi_link_tx_sent(&tx, 64, true, now);
+	hifi_link_frame_t fp = {HIFI_LINK_PONG, 5, 0, now, now + 10, now + 20, 64};
+	CHECK(hifi_link_encode(&other, &fp, buf, sizeof(buf)) == 64);
+	CHECK(hifi_link_receive(&K, &rx, &tx, false, true, buf, 64, now + 500, &pong) == HIFI_LINK_GOT_BAD);
+	CHECK(tx.pongs == 0 && tx.bad == 0 && rx.bad == before.bad + 1);
+	/* and the same PONG under the run's key is taken: the check above is the tag */
+	CHECK(hifi_link_encode(&K, &fp, buf, sizeof(buf)) == 64);
+	CHECK(hifi_link_receive(&K, &rx, &tx, false, true, buf, 64, now + 500, &pong) == HIFI_LINK_GOT_USED);
+	CHECK(tx.pongs == 1);
+}
+
+/* The forger lab_forge.c runs on a third board: a frame it heard, the seq
+ * jumped, re-tagged under its own key, is refused; the same under the run's
+ * key (the control) is taken and shows the jump as lost frames. */
+static void forger(void) {
+	hifi_link_key_t other;
+	uint8_t ok_key[HIFI_LINK_KEY];
+	memcpy(ok_key, KEY, sizeof(ok_key));
+	ok_key[0] ^= 0x80;
+	hifi_link_key_init(&other, ok_key);
+	hifi_link_rx_t rx;
+	static hifi_link_tx_t tx;
+	hifi_link_rx_init(&rx);
+	hifi_link_tx_init(&tx, 9);
+	uint8_t heard[HIFI_LINK_MAX], out[HIFI_LINK_MAX];
+	hifi_link_frame_t pong, g;
+	int64_t now = 1000000;
+	for (uint32_t q = 0; q < 10; q++) {
+		hifi_link_frame_t f = {HIFI_LINK_DATA, 9, q, 0, 0, 0, 200};
+		CHECK(hifi_link_encode(&K, &f, heard, sizeof(heard)) == 200);
+		CHECK(hifi_link_receive(&K, &rx, &tx, true, false, heard, 200, now += 1000, &pong) == HIFI_LINK_GOT_USED);
+	}
+	/* heard: seq 9. Forged under the forger's own key */
+	CHECK(hifi_link_forge(&other, heard, 200, 1000, out, sizeof(out)) == 200);
+	CHECK(hifi_link_decode(&other, out, 200, &g) && g.seq == 1009 && g.session == 9 && g.len == 200);
+	CHECK(!hifi_link_decode(&K, out, 200, &g));
+	hifi_link_rx_t before = rx;
+	CHECK(hifi_link_receive(&K, &rx, &tx, true, false, out, 200, now += 1000, &pong) == HIFI_LINK_GOT_BAD);
+	CHECK(rx.bad == before.bad + 1);
+	rx.bad = before.bad;
+	CHECK(!memcmp(&rx, &before, sizeof(rx)));
+	CHECK(hifi_link_rx_expected(&rx) == 10);
+	/* the control: the run's key, and the jump is taken as 999 lost */
+	CHECK(hifi_link_forge(&K, heard, 200, 1000, out, sizeof(out)) == 200);
+	CHECK(hifi_link_receive(&K, &rx, &tx, true, false, out, 200, now += 1000, &pong) == HIFI_LINK_GOT_USED);
+	CHECK(hifi_link_rx_expected(&rx) == 1010 && rx.rx == 11);
+	/* not shaped like ours: refused, nothing written */
+	CHECK(hifi_link_forge(&K, heard, 199, 1, out, sizeof(out)) == 0);
+	CHECK(hifi_link_forge(&K, heard, 200, 1, out, 199) == 0);
+	CHECK(hifi_link_forge(&K, heard, HIFI_LINK_MIN - 1, 1, out, sizeof(out)) == 0);
+	CHECK(hifi_link_forge(NULL, heard, 200, 1, out, sizeof(out)) == 0);
+	heard[2] = 2;
+	CHECK(hifi_link_forge(&K, heard, 200, 1, out, sizeof(out)) == 0);
 }
 
 static void seen(void) {
@@ -384,7 +507,7 @@ static void sender(void) {
 		int64_t out_us = (q % 10 == 9) ? 9000 : 950, back_us = (q % 10 == 9) ? 900 : 950;
 		int64_t t2 = (int64_t) ((a + out_us) * (1 + 20e-6)) + 5000000;
 		hifi_link_pong_for(&ping, t2, t2 + 100, &pong);
-		CHECK(hifi_link_encode(&pong, buf, sizeof(buf)) == 64 && hifi_link_decode(buf, 64, &got));
+		CHECK(hifi_link_encode(&K, &pong, buf, sizeof(buf)) == 64 && hifi_link_decode(&K, buf, 64, &got));
 		int64_t t4 = a + out_us + 100 + back_us;
 		hifi_link_tx_pong(t, &got, t4);
 		if (q == 7) hifi_link_tx_pong(t, &got, t4 + 5); /* duplicated */
@@ -513,11 +636,15 @@ static void link_watch(void) {
 }
 
 int main(void) {
+	hifi_link_key_init(&K, KEY);
 	macs();
 	link_watch();
 	lab_frame();
 	lab_route();
 	frames();
+	tag();
+	forged();
+	forger();
 	seen();
 	receiver();
 	sender();

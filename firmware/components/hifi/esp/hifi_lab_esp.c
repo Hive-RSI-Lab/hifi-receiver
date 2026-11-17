@@ -177,6 +177,7 @@ void hifi_lab_esp_init(void) {
 	kept_name[0] = 0;
 	hifi_lab_register(&lab, &lab_espnow);
 	hifi_lab_register(&lab, &lab_lanscan);
+	hifi_lab_register(&lab, &lab_forge);
 #if CONFIG_BT_CLASSIC_ENABLED
 	if (&lab_bt) hifi_lab_register(&lab, &lab_bt); /* NULL in recovery */
 #endif
