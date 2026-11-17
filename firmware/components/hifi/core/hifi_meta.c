@@ -23,7 +23,12 @@ void hifi_utf8_copy(char *dst, size_t cap, const char *src) {
 		while (start > 0 && ((unsigned char) src[start] & 0xC0) == 0x80) start--;
 		n = start;
 	}
-	if (n) memcpy(dst, src, n);
+	/* control characters become spaces: they mean nothing on a display, and
+	 * each would cost six characters escaped in the state answer */
+	for (size_t i = 0; i < n; i++) {
+		unsigned char c = (unsigned char) src[i];
+		dst[i] = c < 0x20 || c == 0x7f ? ' ' : (char) c;
+	}
 	dst[n] = '\0';
 }
 

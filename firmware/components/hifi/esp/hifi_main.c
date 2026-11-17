@@ -38,6 +38,7 @@
 #include "hifi_api.h"
 #include "hifi_board.h"
 #include "hifi_bsp.h"
+#include "hifi_gate.h"
 #include "hifi_crash.h"
 #include "hifi_esp.h"
 #include "hifi_gov.h"
@@ -944,7 +945,8 @@ static void bt_test_boot(void) {
 		ESP_LOGW(TAG, "Bluetooth test boot: this boot plays to another board over Bluetooth");
 	} else if (flag && !strcmp(flag, "used")) {
 		char *ax = config_alloc_get_str("hifi_bt_save", NULL, NULL);
-		if (ax && *ax) config_set_value(NVS_TYPE_STR, "autoexec1", ax);
+		if (ax && *ax && hifi_autoexec_ok(ax)) config_set_value(NVS_TYPE_STR, "autoexec1", ax);
+		else if (ax && *ax) ESP_LOGE(TAG, "the saved command line isn't squeezelite's: not put back");
 		free(ax);
 		config_set_value(NVS_TYPE_STR, "hifi_bttest", "off");
 		ESP_LOGW(TAG, "Bluetooth test over: the usual command line is back");
@@ -1015,6 +1017,9 @@ static void op_selftest(hifi_selftest_t *t) {
 	hifi_selftest_add(t, "psram", ps >= 2u << 20, "%u KB mapped", (unsigned) (ps >> 10));
 	hifi_selftest_add(t, "heap", s->heap_free > HIFI_HEAP_MIN, "%u B free", (unsigned) s->heap_free);
 	hifi_selftest_add(t, "network", s->ip[0] != 0, s->ip[0] ? "%s" : "not connected", s->ip);
+	char why[64];
+	int strays = hifi_listen_now(why, sizeof(why));
+	hifi_selftest_add(t, "listeners", strays == 0, "%s", why);
 #ifdef CONFIG_HIFI_LAB
 	hifi_lab_esp_selftest(t);
 #endif

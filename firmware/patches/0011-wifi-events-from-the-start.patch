@@ -1,0 +1,24 @@
+diff --git a/components/wifi-manager/network_manager_handlers.c b/components/wifi-manager/network_manager_handlers.c
+index 22a621a..95539a1 100644
+--- a/components/wifi-manager/network_manager_handlers.c
++++ b/components/wifi-manager/network_manager_handlers.c
+@@ -252,6 +252,11 @@ static state_machine_result_t NETWORK_INSTANTIATED_STATE_exit_handler(state_mach
+ /********************************************************************************************* 
+  * INITIALIZING_STATE
+  */
++/* hifi-receiver: the receiver counts Wi-Fi connects and times the first address
++ * (components/hifi), so it registers its handlers as soon as the loop exists,
++ * before Wi-Fi or Ethernet can start */
++extern void hifi_net_loop_ready(void) __attribute__((weak));
++
+ static state_machine_result_t NETWORK_INITIALIZING_STATE_entry_handler(state_machine_t* const State_Machine) {
+     network_handler_entry_print(State_Machine,true);    
+     
+@@ -259,6 +264,7 @@ static state_machine_result_t NETWORK_INITIALIZING_STATE_entry_handler(state_mac
+     esp_netif_init();
+     MEMTRACE_PRINT_DELTA_MESSAGE(" Creating the default event loop");
+     ESP_ERROR_CHECK(esp_event_loop_create_default());
++    if (hifi_net_loop_ready) hifi_net_loop_ready();
+     MEMTRACE_PRINT_DELTA_MESSAGE("Initializing network status");
+     init_network_status();
+     MEMTRACE_PRINT_DELTA_MESSAGE("Loading wifi global configuration");

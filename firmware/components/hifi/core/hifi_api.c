@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "hifi_b64.h"
+#include "hifi_gate.h"
 #include "hifi_json.h"
 #include "hifi_vol.h"
 #include "hifi_ws_proto.h"
@@ -84,106 +85,132 @@ static void write_playing(hj_t *j, const hifi_meta_t *m) {
 	hj_obj_end(j);
 }
 
-void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) {
+static const char *const STATE_PARTS[] = {"power", "amp", "governor", "audio", "net", "sys", "ir", "controls", "update"};
+
+bool hifi_api_state_part_known(const char *part) {
+	if (!part) return true;
+	for (size_t i = 0; i < sizeof(STATE_PARTS) / sizeof(STATE_PARTS[0]); i++)
+		if (!strcmp(part, STATE_PARTS[i])) return true;
+	return false;
+}
+
+void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) { hifi_api_write_state_part(s, NULL, out, cap); }
+
+/* part NULL: the whole state; else only that top-level section, as
+ * {"<part>":{...}}, or {} when the board has none of it now (controls, update) */
+void hifi_api_write_state_part(const hifi_snapshot_t *s, const char *part, char *out, size_t cap) {
+#define WANT(name) (!part || !strcmp(part, name))
 	hj_t j;
 	hj_init(&j, out, cap);
 	hj_obj(&j, NULL);
-	hj_int(&j, "uptime_s", s->uptime_s);
+	if (!part) hj_int(&j, "uptime_s", s->uptime_s);
 
-	hj_obj(&j, "power");
-	hj_str(&j, "state", hifi_power_state_name(s->pwr_state));
-	hj_num(&j, "vbus_v", s->vbus_v, 2);
-	hj_bool(&j, "pg", s->pg);
-	hj_obj(&j, "contract");
-	if (s->contract.known) hj_str(&j, "protocol", hifi_proto_name(s->contract.proto));
-	else hj_null(&j, "protocol");
-	hj_bool(&j, "epr", s->contract.epr);
-	hj_num(&j, "v", s->contract.v, 1);
-	hj_num(&j, "i_max_a", s->contract.i_max_a, 2);
-	hj_num(&j, "w", s->contract.w, 1);
-	hj_obj_end(&j);
-	hj_bool(&j, "pvdd_on", s->pvdd_on);
-	hj_num(&j, "pvdd_v", s->pvdd_v, 2);
-	hj_num(&j, "vbus_i_a", s->vbus_i_a, 2);
-	hj_obj_end(&j);
-
-	write_amp(&j, "amp", s);
-
-	hj_obj(&j, "governor");
-	hj_num(&j, "budget_w", s->gov_budget_w, 1);
-	hj_num(&j, "in_w", s->gov_in_w, 1);
-	hj_num(&j, "out_w", s->gov_out_w, 1);
-	hj_num(&j, "gain_db", s->gov_gain_db, 1);
-	hj_bool(&j, "limiting", s->gov_limiting);
-	hj_int(&j, "limit_events", s->gov_events);
-	hj_obj_end(&j);
-
-	hj_obj(&j, "audio");
-	hj_str(&j, "source", s->source ? s->source : "idle");
-	hj_str(&j, "input", hifi_input_name(s->input));
-	if (s->dj_guard) {
-		hj_obj(&j, "dj_guard");
-		hj_num(&j, "in_w", s->dj_guard_w, 1);
-		hj_num(&j, "limit_w", s->dj_guard_limit_w, 1);
-		if (s->dj_guard_tripped) hj_str(&j, "tripped", s->dj_guard_tripped);
-		else hj_null(&j, "tripped");
+	if (WANT("power")) {
+		hj_obj(&j, "power");
+		hj_str(&j, "state", hifi_power_state_name(s->pwr_state));
+		hj_num(&j, "vbus_v", s->vbus_v, 2);
+		hj_bool(&j, "pg", s->pg);
+		hj_obj(&j, "contract");
+		if (s->contract.known) hj_str(&j, "protocol", hifi_proto_name(s->contract.proto));
+		else hj_null(&j, "protocol");
+		hj_bool(&j, "epr", s->contract.epr);
+		hj_num(&j, "v", s->contract.v, 1);
+		hj_num(&j, "i_max_a", s->contract.i_max_a, 2);
+		hj_num(&j, "w", s->contract.w, 1);
+		hj_obj_end(&j);
+		hj_bool(&j, "pvdd_on", s->pvdd_on);
+		hj_num(&j, "pvdd_v", s->pvdd_v, 2);
+		hj_num(&j, "vbus_i_a", s->vbus_i_a, 2);
 		hj_obj_end(&j);
 	}
-	if (s->tone_active) write_tone(&j, "tone", &s->tone);
-	else hj_null(&j, "tone");
-	hj_num(&j, "level_dbfs", s->level_dbfs, 1);
-	hj_obj(&j, "sub");
-	hj_bool(&j, "on", s->sub_on);
-	hj_num(&j, "level_db", s->sub_db, 1);
-	hj_obj_end(&j);
-	hj_arr(&j, "eq");
-	for (int i = 0; i < HIFI_EQ_BANDS; i++) hj_num(&j, NULL, s->eq[i], 1);
-	hj_arr_end(&j);
-	hj_int(&j, "volume", s->volume);
-	hj_bool(&j, "mute", s->mute);
-	hj_int(&j, "max_volume", s->max_volume);
-	write_playing(&j, &s->playing);
-	if (s->zones > 1) {
-		hj_obj(&j, "zone_b");
-		hj_bool(&j, "on", s->zone_b_on);
-		hj_null(&j, "volume"); /* it plays at the main volume */
+
+	if (WANT("amp")) write_amp(&j, "amp", s);
+
+	if (WANT("governor")) {
+		hj_obj(&j, "governor");
+		hj_num(&j, "budget_w", s->gov_budget_w, 1);
+		hj_num(&j, "in_w", s->gov_in_w, 1);
+		hj_num(&j, "out_w", s->gov_out_w, 1);
+		hj_num(&j, "gain_db", s->gov_gain_db, 1);
+		hj_bool(&j, "limiting", s->gov_limiting);
+		hj_int(&j, "limit_events", s->gov_events);
 		hj_obj_end(&j);
 	}
-	hj_obj_end(&j);
 
-	hj_obj(&j, "net");
-	hj_str(&j, "mode", s->net_mode ? s->net_mode : "sta");
-	hj_str(&j, "ssid", s->ssid[0] ? s->ssid : NULL);
-	hj_str(&j, "hostname", s->hostname);
-	hj_str(&j, "ip", s->ip[0] ? s->ip : NULL);
-	if (s->rssi) hj_int(&j, "rssi", s->rssi);
-	else hj_null(&j, "rssi");
-	if (s->eth_present) hj_bool(&j, "eth", s->eth_up);
-	hj_obj_end(&j);
-
-	hj_obj(&j, "sys");
-	hj_int(&j, "heap_free", s->heap_free);
-	hj_int(&j, "heap_min", s->heap_min);
-	hj_int(&j, "psram_free", s->psram_free);
-	if (s->reset_reason) hj_str(&j, "reset_reason", s->reset_reason);
-	hj_obj_end(&j);
-
-	hj_obj(&j, "ir");
-	hj_str(&j, "learning", s->ir_learning >= 0 ? hifi_ir_action_name(s->ir_learning) : NULL);
-	hj_arr(&j, "learned");
-	for (int a = 0; a < HIFI_IR_N; a++)
-		if (s->ir_learned[a]) hj_str(&j, NULL, hifi_ir_action_name(a));
-	hj_arr_end(&j);
-	if (s->ir_have_last) {
-		char code[11];
-		snprintf(code, sizeof(code), "0x%08lx", (unsigned long) s->ir_last_code);
-		hj_str(&j, "last_code", code);
-	} else {
-		hj_null(&j, "last_code");
+	if (WANT("audio")) {
+		hj_obj(&j, "audio");
+		hj_str(&j, "source", s->source ? s->source : "idle");
+		hj_str(&j, "input", hifi_input_name(s->input));
+		if (s->dj_guard) {
+			hj_obj(&j, "dj_guard");
+			hj_num(&j, "in_w", s->dj_guard_w, 1);
+			hj_num(&j, "limit_w", s->dj_guard_limit_w, 1);
+			if (s->dj_guard_tripped) hj_str(&j, "tripped", s->dj_guard_tripped);
+			else hj_null(&j, "tripped");
+			hj_obj_end(&j);
+		}
+		if (s->tone_active) write_tone(&j, "tone", &s->tone);
+		else hj_null(&j, "tone");
+		hj_num(&j, "level_dbfs", s->level_dbfs, 1);
+		hj_obj(&j, "sub");
+		hj_bool(&j, "on", s->sub_on);
+		hj_num(&j, "level_db", s->sub_db, 1);
+		hj_obj_end(&j);
+		hj_arr(&j, "eq");
+		for (int i = 0; i < HIFI_EQ_BANDS; i++) hj_num(&j, NULL, s->eq[i], 1);
+		hj_arr_end(&j);
+		hj_int(&j, "volume", s->volume);
+		hj_bool(&j, "mute", s->mute);
+		hj_int(&j, "max_volume", s->max_volume);
+		write_playing(&j, &s->playing);
+		if (s->zones > 1) {
+			hj_obj(&j, "zone_b");
+			hj_bool(&j, "on", s->zone_b_on);
+			hj_null(&j, "volume"); /* it plays at the main volume */
+			hj_obj_end(&j);
+		}
+		hj_obj_end(&j);
 	}
-	hj_obj_end(&j);
 
-	if (s->exp_present || s->front_present || s->last_control[0] || s->backlight) {
+	if (WANT("net")) {
+		hj_obj(&j, "net");
+		hj_str(&j, "mode", s->net_mode ? s->net_mode : "sta");
+		hj_str(&j, "ssid", s->ssid[0] ? s->ssid : NULL);
+		hj_str(&j, "hostname", s->hostname);
+		hj_str(&j, "ip", s->ip[0] ? s->ip : NULL);
+		if (s->rssi) hj_int(&j, "rssi", s->rssi);
+		else hj_null(&j, "rssi");
+		if (s->eth_present) hj_bool(&j, "eth", s->eth_up);
+		hj_obj_end(&j);
+	}
+
+	if (WANT("sys")) {
+		hj_obj(&j, "sys");
+		hj_int(&j, "heap_free", s->heap_free);
+		hj_int(&j, "heap_min", s->heap_min);
+		hj_int(&j, "psram_free", s->psram_free);
+		if (s->reset_reason) hj_str(&j, "reset_reason", s->reset_reason);
+		hj_obj_end(&j);
+	}
+
+	if (WANT("ir")) {
+		hj_obj(&j, "ir");
+		hj_str(&j, "learning", s->ir_learning >= 0 ? hifi_ir_action_name(s->ir_learning) : NULL);
+		hj_arr(&j, "learned");
+		for (int a = 0; a < HIFI_IR_N; a++)
+			if (s->ir_learned[a]) hj_str(&j, NULL, hifi_ir_action_name(a));
+		hj_arr_end(&j);
+		if (s->ir_have_last) {
+			char code[11];
+			snprintf(code, sizeof(code), "0x%08lx", (unsigned long) s->ir_last_code);
+			hj_str(&j, "last_code", code);
+		} else {
+			hj_null(&j, "last_code");
+		}
+		hj_obj_end(&j);
+	}
+
+	if (WANT("controls") && (s->exp_present || s->front_present || s->last_control[0] || s->backlight)) {
 		char hex[8];
 		hj_obj(&j, "controls");
 		if (s->exp_present) {
@@ -204,7 +231,7 @@ void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) {
 		hj_obj_end(&j);
 	}
 
-	if (s->update.state != HIFI_UPD_IDLE) {
+	if (WANT("update") && s->update.state != HIFI_UPD_IDLE) {
 		hj_obj(&j, "update");
 		hj_str(&j, "state", hifi_update_state_name(s->update.state));
 		hj_int(&j, "progress", s->update.progress);
@@ -213,6 +240,7 @@ void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) {
 	}
 
 	hj_obj_end(&j);
+#undef WANT
 }
 
 void hifi_selftest_add(hifi_selftest_t *t, const char *name, bool pass, const char *fmt, ...) {
@@ -267,11 +295,13 @@ static int r_info(const hifi_ops_t *ops, char *out, size_t cap) {
 	return 200;
 }
 
-static int r_state(const hifi_ops_t *ops, char *out, size_t cap) {
+static int r_state(const hifi_ops_t *ops, const char *part, char *out, size_t cap) {
+	if (!hifi_api_state_part_known(part))
+		return error(out, cap, 404, "no such state section; try power, amp, governor, audio, net, sys, ir, controls or update");
 	hifi_snapshot_t *s = calloc(1, sizeof(*s));
 	if (!s) return error(out, cap, 500, "out of memory");
 	ops->snapshot(s);
-	hifi_api_write_state(s, out, cap);
+	hifi_api_write_state_part(s, part, out, cap);
 	free(s);
 	return 200;
 }
@@ -376,7 +406,7 @@ static int r_sub(const hifi_ops_t *ops, const char *body, char *out, size_t cap)
 	if (!has_on && !has_db) return error(out, cap, 400, "send level_db and/or on");
 	if (has_db && !(db >= -30 && db <= 6)) return error(out, cap, 400, "level_db must be -30 to +6");
 	ops->set_sub(has_on ? on : -1, (float) db);
-	return r_state(ops, out, cap);
+	return r_state(ops, NULL, out, cap);
 }
 
 static int r_eq(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
@@ -391,17 +421,21 @@ static int r_eq(const hifi_ops_t *ops, const char *body, char *out, size_t cap) 
 		f[b] = (float) g[b];
 	}
 	if (ops->set_eq(f)) return error(out, cap, 500, "couldn't save the equalizer");
-	return r_state(ops, out, cap);
+	return r_state(ops, NULL, out, cap);
 }
 
 static int r_name(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
 	char name[65];
 	if (!hj_get_str(body, "name", name, sizeof(name)) || !name[0]) return error(out, cap, 400, "name is required");
 	if (strlen(name) > 32) return error(out, cap, 400, "name must be 32 characters or fewer");
-	for (const char *c = name; *c; c++)
-		if ((unsigned char) *c < 0x20) return error(out, cap, 400, "name has a control character");
+	/* the name goes into squeezelite's command line (autoexec1, -n "<name>"):
+	 * a quote or backslash there would end the word and add options */
+	for (const char *c = name; *c; c++) {
+		if ((unsigned char) *c < 0x20 || *c == 0x7f) return error(out, cap, 400, "name has a control character");
+		if (*c == '"' || *c == '\\') return error(out, cap, 400, "name may not have \" or \\ in it");
+	}
 	if (ops->set_name(name)) return error(out, cap, 500, "couldn't save the name");
-	return r_state(ops, out, cap);
+	return r_state(ops, NULL, out, cap);
 }
 
 static int r_reboot(const hifi_ops_t *ops, const char *body, char *out, size_t cap, bool reset) {
@@ -413,7 +447,7 @@ static int r_reboot(const hifi_ops_t *ops, const char *body, char *out, size_t c
 	} else {
 		ops->reboot();
 	}
-	return r_state(ops, out, cap);
+	return r_state(ops, NULL, out, cap);
 }
 
 static int r_control(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
@@ -457,7 +491,7 @@ static int r_volume(const hifi_ops_t *ops, const char *body, char *out, size_t c
 		return error(out, cap, 400, "max_volume must be a whole number 30 to 100");
 	if (vol == -1 && max == -1 && m == -1) return error(out, cap, 400, "send volume, mute and/or max_volume");
 	if (ops->set_volume(vol, m, max)) return error(out, cap, 400, "volume out of range");
-	return r_state(ops, out, cap);
+	return r_state(ops, NULL, out, cap);
 }
 
 static int r_ir(const hifi_ops_t *ops, const char *body, char *out, size_t cap, bool learn) {
@@ -468,7 +502,7 @@ static int r_ir(const hifi_ops_t *ops, const char *body, char *out, size_t cap, 
 		return error(out, cap, 400, "action must be volup, voldown, mute, toggle, next, prev, input or power");
 	if (learn) ops->ir_learn(a);
 	else ops->ir_forget(a);
-	return r_state(ops, out, cap);
+	return r_state(ops, NULL, out, cap);
 }
 
 static int r_selftest(const hifi_ops_t *ops, char *out, size_t cap) {
@@ -570,7 +604,7 @@ static void diag_power(const hifi_ops_t *ops, hifi_diag_power_t *p) {
 /* diag, diag/tasks, diag/net, diag/audio, diag/ota (GET or POST) and
  * POST diag/echo; tasks takes {"from":N} or diag/tasks/N to page, echo
  * {"bytes":N} */
-static int r_diag(const hifi_ops_t *ops, const char *what, bool post, const char *body, char *out, size_t cap) {
+static int r_diag(const hifi_ops_t *ops, const char *what, bool post, bool lan, const char *body, char *out, size_t cap) {
 	const hifi_diag_ops_t *d = ops->diag;
 	if (!d) return error(out, cap, 404, "this build has no diagnostics");
 	if (!*what) {
@@ -609,6 +643,7 @@ static int r_diag(const hifi_ops_t *ops, const char *what, bool post, const char
 			snprintf(m, sizeof(m), "%d tasks, more than the %d the list holds", rc, HIFI_DIAG_TASKS_MAX);
 			return error(out, cap, 507, m);
 		}
+		if (rc == -2) return error(out, cap, 503, "the CPU sample failed, try again");
 		return rc ? error(out, cap, 404, "this build keeps no task stats") : 200;
 	}
 	if (!strcmp(what, "/net") && d->net) {
@@ -631,10 +666,13 @@ static int r_diag(const hifi_ops_t *ops, const char *what, bool post, const char
 	}
 	if (!strcmp(what, "/echo")) {
 		if (!post) return -1;
+		/* it sends up to 1 MB over the Hive's link: a test for the bench, not the LAN */
+		if (lan) return error(out, cap, 403, "the throughput test runs over USB or the relay, not from the LAN");
 		if (!d->echo) return error(out, cap, 404, "this build has no throughput test");
 		double bytes = HIFI_DIAG_ECHO_DEFAULT;
 		if (hj_get_raw(body, "bytes", &(const char *) {0}, &(size_t) {0}) &&
-		    (!hj_get_num(body, "bytes", &bytes) || bytes < 1 || bytes > HIFI_DIAG_ECHO_MAX))
+		    (!hj_get_num(body, "bytes", &bytes) || !(bytes >= 1 && bytes <= HIFI_DIAG_ECHO_MAX) ||
+		     bytes != floor(bytes)))
 			return error(out, cap, 400, "bytes: 1 to 1048576");
 		hifi_diag_echo_t e = {0};
 		const char *err = "the test failed";
@@ -653,7 +691,7 @@ static int r_bttest(const hifi_ops_t *ops, const char *body, char *out, size_t c
 		return error(out, cap, 400, "sink (the other board's Bluetooth name) is required");
 	const char *err = NULL;
 	if (ops->bt_test(sink, &err)) return error(out, cap, 409, err ? err : "couldn't arm the test");
-	return r_state(ops, out, cap);
+	return r_state(ops, NULL, out, cap);
 }
 
 static int r_ota_get(const hifi_ops_t *ops, char *out, size_t cap) {
@@ -697,9 +735,12 @@ static int ok_reply(char *out, size_t cap) {
 	return 200;
 }
 
-static int r_ota(const hifi_ops_t *ops, const char *what, const char *body, char *out, size_t cap) {
+static int r_ota(const hifi_ops_t *ops, bool lan, const char *what, const char *body, char *out, size_t cap) {
 	hifi_ota_t *o = ops->ota;
 	if (!o) return error(out, cap, 404, "no OTA in this build");
+	/* the LAN can't touch an update the Hive started */
+	if (lan && o->active && !o->need_sig)
+		return error(out, cap, 403, "an update the Hive started is running");
 	const char *err = "update failed";
 	int st;
 	hj_t j;
@@ -711,7 +752,9 @@ static int r_ota(const hifi_ops_t *ops, const char *what, const char *body, char
 		if (!(size <= 4294967295.0)) return error(out, cap, 400, "image is larger than the app slot");
 		hj_get_str(body, "sha256", sha, sizeof(sha));
 		hj_get_str(body, "version", version, sizeof(version));
-		if ((st = hifi_ota_begin(o, (size_t) size, sha, version, &err)) != 200) return error(out, cap, st, err);
+		if ((st = lan ? hifi_ota_begin_ex(o, (size_t) size, sha[0] ? sha : NULL, version, true, &err)
+			      : hifi_ota_begin(o, (size_t) size, sha, version, &err)) != 200)
+			return error(out, cap, st, err);
 		hj_init(&j, out, cap);
 		hj_obj(&j, NULL);
 		hj_bool(&j, "ok", true);
@@ -970,14 +1013,14 @@ static int r_update_check(const hifi_ops_t *ops, char *out, size_t cap) {
 	return 200;
 }
 
-static int r_update(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+static int r_update(const hifi_ops_t *ops, bool lan, const char *body, char *out, size_t cap) {
 	if (!ops->update_start) return error(out, cap, 404, "no updates from a URL in this build");
 	char url[192] = "", sha[72] = "";
 	if (!hj_get_str(body, "url", url, sizeof(url)) || (strncmp(url, "http://", 7) && strncmp(url, "https://", 8)))
 		return error(out, cap, 400, "url (http:// or https://) is required");
 	hj_get_str(body, "sha256", sha, sizeof(sha));
 	const char *err = "couldn't start the update";
-	int st = ops->update_start(url, sha[0] ? sha : NULL, &err);
+	int st = ops->update_start(url, sha[0] ? sha : NULL, lan, &err);
 	if (st) return error(out, cap, st, err);
 	return ok_reply(out, cap);
 }
@@ -995,6 +1038,12 @@ size_t hifi_api_reply_cap(const char *path, const char *body) {
 
 int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 		    const char *body, char *out, size_t cap) {
+	return hifi_api_handle_from(ops, HIFI_SRC_TRUSTED, method, path, body, out, cap);
+}
+
+int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *method, const char *path,
+			 const char *body, char *out, size_t cap) {
+	bool lan = src != HIFI_SRC_TRUSTED;
 	char route[32];
 	size_t plen = strlen(PREFIX);
 	if (strncmp(path, PREFIX, plen)) return error(out, cap, 404, "no such path");
@@ -1005,9 +1054,21 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	if (post && (!body || !*body)) body = "{}";
 	if (post && !hj_valid_object(body)) return error(out, cap, 400, "body must be a JSON object");
 
+	/* while new firmware is on trial, a reboot or a lost Wi-Fi rolls it back:
+	 * the LAN may not reboot, change or forget the Wi-Fi, or erase settings,
+	 * until it is kept (hifi_lan_trial_refused; esp/hifi_http.c applies the
+	 * same list to squeezelite's pages) */
+	if (lan && ops->ota_status && hifi_lan_trial_refused(path, method)) {
+		hifi_ota_status_t o = {0};
+		ops->ota_status(&o);
+		if (o.state && !strcmp(o.state, "pending_verify"))
+			return error(out, cap, 409, "new firmware is on trial; try again in a few minutes");
+	}
+
 	int status;
 	if (!strcmp(route, "info")) status = get ? r_info(ops, out, cap) : -1;
-	else if (!strcmp(route, "state")) status = get ? r_state(ops, out, cap) : -1;
+	else if (!strcmp(route, "state")) status = get ? r_state(ops, NULL, out, cap) : -1;
+	else if (!strncmp(route, "state/", 6)) status = get ? r_state(ops, route + 6, out, cap) : -1;
 	else if (!strcmp(route, "tone")) status = post ? r_tone(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "amp")) status = post ? r_amp(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "input")) status = post ? r_input(ops, body, out, cap) : -1;
@@ -1024,7 +1085,7 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "ota")) status = get ? r_ota_get(ops, out, cap) : -1;
 	else if (!strcmp(route, "crash")) status = get ? r_crash(ops, NULL, out, cap) : post ? r_crash(ops, body ? body : "{}", out, cap) : -1;
 	else if (!strcmp(route, "bttest")) status = post ? r_bttest(ops, body, out, cap) : -1;
-	else if (!strncmp(route, "ota/", 4)) status = post ? r_ota(ops, route + 4, body, out, cap) : -1;
+	else if (!strncmp(route, "ota/", 4)) status = post ? r_ota(ops, lan, route + 4, body, out, cap) : -1;
 	else if (!strcmp(route, "capture")) status = post ? r_capture(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "wifi")) status = post ? r_wifi(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "wifi/scan")) status = get ? r_wifi_scan(ops, out, cap) : -1;
@@ -1035,12 +1096,16 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "backlight"))
 		status = post ? r_mode(ops->set_backlight, "this model has no backlight", "on, off or auto", body, out, cap) : -1;
 	else if (!strcmp(route, "update/check")) status = get ? r_update_check(ops, out, cap) : -1;
-	else if (!strcmp(route, "update")) status = post ? r_update(ops, body, out, cap) : -1;
-	else if (!strcmp(route, "remote")) status = r_remote(ops, post, body, out, cap);
+	else if (!strcmp(route, "update")) status = post ? r_update(ops, lan, body, out, cap) : -1;
+	else if (!strcmp(route, "remote"))
+		status = lan && post ? error(out, cap, 403, "the relay is set over USB or by the Hive, not from the LAN")
+				     : r_remote(ops, post, body, out, cap);
 	else if (!strcmp(route, "lab"))
-		status = ops->lab ? ops->lab(post, body, out, cap) : error(out, cap, 404, "this build has no lab");
+		status = !ops->lab ? error(out, cap, 404, "this build has no lab")
+			 : lan && post ? error(out, cap, 403, "lab runs are started over USB or by the Hive, not from the LAN")
+			 : ops->lab(post, body, out, cap);
 	else if (!strncmp(route, "diag", 4) && (!route[4] || route[4] == '/'))
-		status = get || post ? r_diag(ops, route + 4, post, body, out, cap) : -1;
+		status = get || post ? r_diag(ops, route + 4, post, lan, body, out, cap) : -1;
 	else return error(out, cap, 404, "no such path");
 
 	if (status < 0) return error(out, cap, 405, "wrong method for this path");
@@ -1050,7 +1115,7 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 /* ------------------------------------------------------------------ console */
 
 static const char USAGE[] =
-	"usage: hifi info|state|crash|selftest | diag [tasks [from]|net|audio|ota|echo [bytes]] | tone sine <hz> <dBFS> [both|left|right] [s] | "
+	"usage: hifi info|state [section]|crash|selftest | diag [tasks [from]|net|audio|ota|echo [bytes]] | tone sine <hz> <dBFS> [both|left|right] [s] | "
 	"tone sweep <from> <to> <dBFS> [s] | tone noise <dBFS> [s] | tone silence [s] | tone stop | "
 	"amp on|off|reset | input stream|dj_direct|line | sub <dB> | control <action> | "
 	"volume <0-100> | mute on|off | maxvol <30-100> | ir learn <action> | ir forget [action] | "
@@ -1079,6 +1144,15 @@ bool hifi_cli_request(int argc, const char *const *argv, const char **method,
 		*path = PREFIX "crash";
 		snprintf(body, bc, "{\"from\":%s}", argv[1]);
 		return true;
+	}
+	if (!strcmp(cmd, "state") && argc == 2) {
+		static const char *const paths[] = {PREFIX "state/power", PREFIX "state/amp", PREFIX "state/governor",
+						    PREFIX "state/audio", PREFIX "state/net", PREFIX "state/sys",
+						    PREFIX "state/ir", PREFIX "state/controls", PREFIX "state/update"};
+		*method = "GET";
+		for (size_t i = 0; i < sizeof(paths) / sizeof(paths[0]); i++)
+			if (!strcmp(argv[1], paths[i] + strlen(PREFIX "state/"))) return *path = paths[i], true;
+		return usage(out, cap);
 	}
 	if (!strcmp(cmd, "info") || !strcmp(cmd, "state") || !strcmp(cmd, "crash")) {
 		*method = "GET";

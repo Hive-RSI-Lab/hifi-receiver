@@ -11,7 +11,7 @@ LDLIBS := -lm
 
 SRCS := $(wildcard $(CORE)/*.c)
 BIN := build
-TESTS := test_json_pd test_power test_gov_tone test_vol_ir_meta test_api test_remote test_core test_line test_tap test_diag test_lab
+TESTS := test_json_pd test_power test_gov_tone test_vol_ir_meta test_api test_remote test_core test_line test_tap test_gate test_listen test_diag test_lab
 
 # test_remote signs and checks commands with real Ed25519 where the host has
 # OpenSSL's libcrypto, and with a stand-in signature where it doesn't.
@@ -32,7 +32,8 @@ $(BIN)/%: %.c $(SRCS) $(wildcard $(CORE)/*.h) check.h | $(BIN)
 run: $(addprefix $(BIN)/,$(TESTS))
 	@fail=0; for t in $(abspath $^); do $$t || fail=1; done; python3 test_otadata.py || fail=1; \
 	  $(MAKE) --no-print-directory upstream || fail=1; \
-	  $(MAKE) --no-print-directory fuzz || fail=1; exit $$fail
+	  $(MAKE) --no-print-directory fuzz || fail=1; \
+	  $(MAKE) --no-print-directory qemu || fail=1; exit $$fail
 
 # Regressions for the bring-up bugs fixed in upstream's code (patches/):
 # upstream/upstream.py fetches the pinned files once (from $$HIFI_UPSTREAM or
@@ -41,7 +42,8 @@ run: $(addprefix $(BIN)/,$(TESTS))
 # skipped, loudly; UPSTREAM_REQUIRED=1 makes that a failure.
 UP := $(BIN)/upstream
 UP_FILES := components/squeezelite/controls.c components/driver_bt/bt_app_sink.c \
-	components/driver_bt/bt_app_core.c components/spotify/Shim.cpp components/spotify/cspot/src/LoginBlob.cpp
+	components/driver_bt/bt_app_core.c components/spotify/Shim.cpp components/spotify/cspot/src/LoginBlob.cpp \
+	components/wifi-manager/network_manager_handlers.c
 UP_CFLAGS := -std=gnu11 -O1 -g -Wall -Wextra -Werror -Wno-unused-function -Wno-unused-parameter \
 	-Wno-unused-variable -Wno-unused-const-variable -fsanitize=address,undefined -fno-sanitize-recover=all -I$(UP)/gen
 upstream:
@@ -117,7 +119,31 @@ fuzz fuzz-long fuzz-build:
 	@echo "SKIPPED fuzzing: no clang with libFuzzer (set CLANG)"; exit $(if $(filter-out 0,$(FUZZ_REQUIRED)),1,0)
 endif
 
+# The real Lite image booted in QEMU (`fw qemu`, from the hive's fw module),
+# with the faults of fw.json qemu.scenarios: the self-test (part of `run`),
+# and with `qemu-faults` a brown-out, a lost PD contract, an I2S stall, a full
+# settings flash and a heap squeeze. Each boots its own image; logs go to
+# the QEMU build dir's fw-qemu-NAME.log. They need the QEMU build, which
+# takes a while: `fw build .. --qemu` (with HIFI_HIVE_PUBKEY set, through
+# heavy). With no fw or no QEMU build: skipped, loudly; QEMU_REQUIRED=1
+# makes that a failure.
+FW ?= $(shell command -v fw 2>/dev/null)
+QEMU_SCENARIOS ?= selftest
+QEMU_BUILD := $(wildcard ../.fw-src/build-qemu/flasher_args.json)
+qemu:
+	@$(MAKE) --no-print-directory qemu-run SCEN="$(QEMU_SCENARIOS)"
+qemu-faults:
+	@$(MAKE) --no-print-directory qemu-run SCEN=all
+qemu-run:
+	@if [ -z "$(FW)" ] || [ -z "$(QEMU_BUILD)" ]; then \
+	  echo "SKIPPED QEMU scenarios: $(if $(FW),no QEMU build (fw build .. --qemu),no fw on PATH)"; \
+	  exit $(if $(filter-out 0,$(QEMU_REQUIRED)),1,0); fi; \
+	if [ -n "$$(find ../components ../patches ../fw.json -newer "$(QEMU_BUILD)" -type f -print -quit)" ]; then \
+	  echo "WARNING: the QEMU build is older than the sources: rebuild with fw build .. --qemu"; fi; \
+	H=$$(command -v heavy >/dev/null && echo heavy); \
+	$$H timeout 3000 "$(FW)" qemu .. $(foreach s,$(SCEN),--scenario '$(s)')
+
 clean:
 	rm -rf $(BIN)
 
-.PHONY: all run clean coverage upstream fuzz fuzz-long fuzz-build
+.PHONY: all run clean coverage upstream fuzz fuzz-long fuzz-build qemu qemu-faults qemu-run

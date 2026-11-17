@@ -32,6 +32,26 @@ for p in "$FW"/patches/*.patch; do
 	g apply --whitespace=nowarn "$p"
 done
 
+# ESP-IDF 4.4.8 security backports (idf-patches/README.md): a patched copy of
+# each IDF component goes into the tree, where it overrides the IDF's own
+IDF=${IDF_PATH:-$HOME/esp/esp-idf-v4.4.8}
+if [ -n "$(ls "$FW"/idf-patches/*.patch 2>/dev/null)" ]; then
+	grep -q "IDF_VERSION_PATCH 8)" "$IDF/tools/cmake/version.cmake" 2>/dev/null &&
+		grep -q "IDF_VERSION_MINOR 4)" "$IDF/tools/cmake/version.cmake" || {
+		echo "fetch.sh: idf-patches need ESP-IDF v4.4.8 at IDF_PATH ($IDF)" >&2
+		exit 1
+	}
+	for comp in $(grep -h '^+++ b/components/' "$FW"/idf-patches/*.patch | cut -d/ -f3 | sort -u); do
+		rm -rf "$DEST/components/$comp"
+		cp -R "$IDF/components/$comp" "$DEST/components/$comp"
+		# submodule .git files point into the IDF's own .git; drop them
+		find "$DEST/components/$comp" -name .git -exec rm -rf {} +
+	done
+	for p in "$FW"/idf-patches/*.patch; do
+		g apply --whitespace=nowarn "$p"
+	done
+fi
+
 rm -rf "$DEST/components/hifi"
 cp -R "$FW/components/hifi" "$DEST/components/hifi"
 

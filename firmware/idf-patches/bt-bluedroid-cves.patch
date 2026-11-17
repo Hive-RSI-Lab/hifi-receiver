@@ -1,0 +1,1237 @@
+diff --git a/components/bt/common/include/bt_common.h b/components/bt/common/include/bt_common.h
+index 56723f7..d9fa09b 100644
+--- a/components/bt/common/include/bt_common.h
++++ b/components/bt/common/include/bt_common.h
+@@ -218,6 +218,7 @@ typedef uint64_t UINT64;
+ typedef bool BOOLEAN;
+ /* Maximum UUID size - 16 bytes, and structure to hold any type of UUID. */
+ #define MAX_UUID_SIZE              16
++#define MAX_UUID_NUM               32
+ 
+ typedef struct {
+ #define LEN_UUID_16     2
+diff --git a/components/bt/host/bluedroid/bta/av/bta_av_act.c b/components/bt/host/bluedroid/bta/av/bta_av_act.c
+index 13a5750..5b317a5 100644
+--- a/components/bt/host/bluedroid/bta/av/bta_av_act.c
++++ b/components/bt/host/bluedroid/bta/av/bta_av_act.c
+@@ -680,11 +680,18 @@ static tAVRC_STS bta_av_chk_notif_evt_id(tAVRC_MSG_VENDOR *p_vendor)
+ {
+     tAVRC_STS   status = BTA_AV_STS_NO_RSP;
+     UINT16      u16;
+-    UINT8       *p = p_vendor->p_vendor_data + 2;
++    UINT8       *p = NULL;
++
++    if (!p_vendor || !p_vendor->p_vendor_data ||
++        (p_vendor->vendor_len != AVRC_REGISTER_NOTIFICATION_CMD_SIZE)) {
++        return AVRC_STS_INTERNAL_ERR;
++    }
++
++    p = p_vendor->p_vendor_data + AVRC_CMD_PARAM_LENGTH_OFFSET;
+ 
+     BE_STREAM_TO_UINT16 (u16, p);
+     /* double check the fixed length */
+-    if ((u16 != 5) || (p_vendor->vendor_len != 9)) {
++    if (u16 != 5) {
+         status = AVRC_STS_INTERNAL_ERR;
+     } else {
+         /* make sure the event_id is valid */
+@@ -717,6 +724,12 @@ tBTA_AV_EVT bta_av_proc_meta_cmd(tAVRC_RESPONSE  *p_rc_rsp, tBTA_AV_RC_MSG *p_ms
+ 
+ #if (AVRC_METADATA_INCLUDED == TRUE)
+ 
++    if (!p_vendor || !p_vendor->p_vendor_data || (p_vendor->vendor_len == 0)) {
++        evt = 0;
++        p_rc_rsp->rsp.status = AVRC_STS_BAD_CMD;
++        return evt;
++    }
++
+     pdu = *(p_vendor->p_vendor_data);
+     p_rc_rsp->pdu = pdu;
+     *p_ctype = AVRC_RSP_REJ;
+@@ -736,12 +749,16 @@ tBTA_AV_EVT bta_av_proc_meta_cmd(tAVRC_RESPONSE  *p_rc_rsp, tBTA_AV_RC_MSG *p_ms
+         switch (pdu) {
+         case AVRC_PDU_GET_CAPABILITIES:
+             /* process GetCapabilities command without reporting the event to app */
++            if (p_vendor->vendor_len != AVRC_GET_CAPABILITIES_CMD_SIZE) {
++                p_rc_rsp->get_caps.status = AVRC_STS_INTERNAL_ERR;
++                break;
++            }
+             evt = 0;
+-            u8 = *(p_vendor->p_vendor_data + 4);
+-            p = p_vendor->p_vendor_data + 2;
++            u8 = *(p_vendor->p_vendor_data + AVRC_CMD_PARAM_VALUE_OFFSET);
++            p = p_vendor->p_vendor_data + AVRC_CMD_PARAM_LENGTH_OFFSET;
+             p_rc_rsp->get_caps.capability_id = u8;
+             BE_STREAM_TO_UINT16 (u16, p);
+-            if ((u16 != 1) || (p_vendor->vendor_len != 5)) {
++            if (u16 != 1) {
+                 p_rc_rsp->get_caps.status = AVRC_STS_INTERNAL_ERR;
+             } else {
+                 p_rc_rsp->get_caps.status = AVRC_STS_NO_ERROR;
+diff --git a/components/bt/host/bluedroid/bta/dm/bta_dm_act.c b/components/bt/host/bluedroid/bta/dm/bta_dm_act.c
+index ddbf8cc..7b4beb6 100644
+--- a/components/bt/host/bluedroid/bta/dm/bta_dm_act.c
++++ b/components/bt/host/bluedroid/bta/dm/bta_dm_act.c
+@@ -1933,7 +1933,7 @@ void bta_dm_sdp_result (tBTA_DM_MSG *p_data)
+ #endif
+ 
+     UINT32 num_uuids = 0;
+-    UINT8  uuid_list[32][MAX_UUID_SIZE]; // assuming a max of 32 services
++    UINT8  uuid_list[MAX_UUID_NUM][MAX_UUID_SIZE]; // assuming a max of MAX_UUID_NUM services
+ 
+     if ((p_data->sdp_event.sdp_result == SDP_SUCCESS)
+             || (p_data->sdp_event.sdp_result == SDP_NO_RECS_MATCH)
+@@ -1996,8 +1996,12 @@ void bta_dm_sdp_result (tBTA_DM_MSG *p_data)
+                             (tBTA_SERVICE_MASK)(BTA_SERVICE_ID_TO_SERVICE_MASK(bta_dm_search_cb.service_index - 1));
+                         tmp_svc = bta_service_id_to_uuid_lkup_tbl[bta_dm_search_cb.service_index - 1];
+                         /* Add to the list of UUIDs */
+-                        sdpu_uuid16_to_uuid128(tmp_svc, uuid_list[num_uuids]);
+-                        num_uuids++;
++                        if (num_uuids < MAX_UUID_NUM) {
++                            sdpu_uuid16_to_uuid128(tmp_svc, uuid_list[num_uuids]);
++                            num_uuids++;
++                        } else {
++                            APPL_TRACE_WARNING("only process the first %d records\n", MAX_UUID_NUM);
++                        }
+                     }
+                 }
+             }
+@@ -2031,8 +2035,13 @@ void bta_dm_sdp_result (tBTA_DM_MSG *p_data)
+                 p_sdp_rec = SDP_FindServiceInDb_128bit(bta_dm_search_cb.p_sdp_db, p_sdp_rec);
+                 if (p_sdp_rec) {
+                     if (SDP_FindServiceUUIDInRec_128bit(p_sdp_rec, &temp_uuid)) {
+-                        memcpy(uuid_list[num_uuids], temp_uuid.uu.uuid128, MAX_UUID_SIZE);
+-                        num_uuids++;
++                        if (num_uuids < MAX_UUID_NUM) {
++                            memcpy(uuid_list[num_uuids], temp_uuid.uu.uuid128, MAX_UUID_SIZE);
++                            num_uuids++;
++                        } else {
++                            APPL_TRACE_WARNING("only process the first %d records\n", MAX_UUID_NUM);
++                            break;
++                        }
+                     }
+                 }
+             } while (p_sdp_rec);
+diff --git a/components/bt/host/bluedroid/btc/profile/std/avrc/btc_avrc.c b/components/bt/host/bluedroid/btc/profile/std/avrc/btc_avrc.c
+index 72e207d..4f7c65e 100644
+--- a/components/bt/host/bluedroid/btc/profile/std/avrc/btc_avrc.c
++++ b/components/bt/host/bluedroid/btc/profile/std/avrc/btc_avrc.c
+@@ -534,13 +534,18 @@ static void handle_rc_disconnect (tBTA_AV_RC_CLOSE *p_rc_close)
+ 
+ static void handle_rc_attributes_rsp (tAVRC_MSG_VENDOR *vendor_msg)
+ {
+-    uint8_t attr_count = vendor_msg->p_vendor_data[4];
++    uint8_t attr_count = 0;
+     int attr_index = 5;
+     int attr_length = 0;
+     uint32_t attr_id = 0;
+ 
++    if (!vendor_msg || !vendor_msg->p_vendor_data ||
++        (vendor_msg->vendor_len < AVRC_GET_ELEMENT_ATTR_RSP_SIZE_MIN)) {
++        return;
++    }
++
+     //Check if there are any attributes
+-    if (attr_count < 1) {
++    if ((attr_count = vendor_msg->p_vendor_data[AVRC_RSP_PARAM_VALUE_OFFSET]) < 1) {
+         return;
+     }
+ 
+@@ -548,8 +553,16 @@ static void handle_rc_attributes_rsp (tAVRC_MSG_VENDOR *vendor_msg)
+     memset(&param[0], 0, sizeof(esp_avrc_ct_cb_param_t) * attr_count);
+ 
+     for (int i = 0; i < attr_count; i++) {
++        if (vendor_msg->vendor_len < attr_index + 8) {
++            return;
++        }
++
+         attr_length = (int) vendor_msg->p_vendor_data[7 + attr_index] | vendor_msg->p_vendor_data[6 + attr_index] << 8;
+ 
++        if (vendor_msg->vendor_len < attr_index + attr_length + 8) {
++            return;
++        }
++
+         //Received attribute text is not null terminated, so it's useful to know it's length
+         param[i].meta_rsp.attr_length = attr_length;
+         param[i].meta_rsp.attr_text = &vendor_msg->p_vendor_data[8 + attr_index];
+@@ -572,30 +585,52 @@ static void handle_rc_notification_rsp (tAVRC_MSG_VENDOR *vendor_msg)
+     esp_avrc_ct_cb_param_t param;
+     memset(&param, 0, sizeof(esp_avrc_ct_cb_param_t));
+ 
+-    param.change_ntf.event_id = vendor_msg->p_vendor_data[4];
++    if (!vendor_msg || !vendor_msg->p_vendor_data ||
++        (vendor_msg->vendor_len < AVRC_REGISTER_NOTIFICATION_RSP_SIZE_MIN)) {
++        return;
++    }
++
++    param.change_ntf.event_id = vendor_msg->p_vendor_data[AVRC_RSP_PARAM_VALUE_OFFSET];
+ 
+-    uint8_t *data = &vendor_msg->p_vendor_data[5];
++    uint8_t *data = &vendor_msg->p_vendor_data[AVRC_RSP_PARAM_VALUE_OFFSET + 1];
+     if (!btc_avrc_ct_rn_evt_supported(param.change_ntf.event_id)) {
+         BTC_TRACE_WARNING("%s unsupported notification on CT, event id 0x%x", __FUNCTION__,
+                           param.change_ntf.event_id);
+         return;
+     }
+ 
++
++    bool notif = false;
+     switch (param.change_ntf.event_id) {
+     case ESP_AVRC_RN_PLAY_STATUS_CHANGE:
+-        BE_STREAM_TO_UINT8(param.change_ntf.event_parameter.playback, data);
++        if (vendor_msg->vendor_len >= AVRC_RN_PLAY_STATUS_CHANGE_EVT_SIZE) {
++            BE_STREAM_TO_UINT8(param.change_ntf.event_parameter.playback, data);
++            notif = true;
++        }
+         break;
+     case ESP_AVRC_RN_TRACK_CHANGE:
+-        memcpy(param.change_ntf.event_parameter.elm_id, data, 8);
++        if (vendor_msg->vendor_len >= AVRC_RN_TRACK_CHANGE_EVT_SIZE) {
++            memcpy(param.change_ntf.event_parameter.elm_id, data, 8);
++            notif = true;
++        }
+         break;
+     case ESP_AVRC_RN_PLAY_POS_CHANGED:
+-        BE_STREAM_TO_UINT32(param.change_ntf.event_parameter.play_pos, data);
++        if (vendor_msg->vendor_len >= AVRC_RN_PLAY_POS_CHANGED_EVT_SIZE) {
++            BE_STREAM_TO_UINT32(param.change_ntf.event_parameter.play_pos, data);
++            notif = true;
++        }
+         break;
+     case ESP_AVRC_RN_BATTERY_STATUS_CHANGE:
+-        BE_STREAM_TO_UINT8(param.change_ntf.event_parameter.batt, data);
++        if (vendor_msg->vendor_len >= AVRC_RN_BATTERY_STATUS_CHANGE_EVT_SIZE) {
++            BE_STREAM_TO_UINT8(param.change_ntf.event_parameter.batt, data);
++            notif = true;
++        }
+         break;
+     case ESP_AVRC_RN_VOLUME_CHANGE:
+-        BE_STREAM_TO_UINT8(param.change_ntf.event_parameter.volume, data);
++        if (vendor_msg->vendor_len >= AVRC_RN_VOLUME_CHANGE_EVT_SIZE) {
++            BE_STREAM_TO_UINT8(param.change_ntf.event_parameter.volume, data);
++            notif = true;
++        }
+         break;
+     // for non-parameter event response
+     case ESP_AVRC_RN_TRACK_REACHED_END:
+@@ -613,7 +648,10 @@ static void handle_rc_notification_rsp (tAVRC_MSG_VENDOR *vendor_msg)
+                           param.change_ntf.event_id);
+         break;
+     }
+-    btc_avrc_ct_cb_to_app(ESP_AVRC_CT_CHANGE_NOTIFY_EVT, &param);
++
++    if (notif) {
++        btc_avrc_ct_cb_to_app(ESP_AVRC_CT_CHANGE_NOTIFY_EVT, &param);
++    }
+ }
+ 
+ static void handle_rc_get_caps_rsp (tAVRC_GET_CAPS_RSP *rsp)
+@@ -792,7 +830,7 @@ static void handle_rc_metamsg_rsp (tBTA_AV_META_MSG *p_meta_msg)
+     tAVRC_RESPONSE avrc_response = {0};
+     tAVRC_STS status;
+     tAVRC_MSG_VENDOR *vendor_msg = &p_meta_msg->p_msg->vendor;
+-    BTC_TRACE_DEBUG("%s: opcode %d, pdu 0x%x, code %d", __FUNCTION__, p_meta_msg->p_msg->hdr.opcode, vendor_msg->p_vendor_data[0],
++    BTC_TRACE_DEBUG("%s: opcode %d, pdu 0x%x, code %d", __FUNCTION__, p_meta_msg->p_msg->hdr.opcode, vendor_msg->p_vendor_data[AVRC_RSP_OPCODE_OFFSET],
+                     p_meta_msg->code);
+     if ( p_meta_msg->p_msg->hdr.opcode != AVRC_OP_VENDOR) {
+         return;
+@@ -808,7 +846,7 @@ static void handle_rc_metamsg_rsp (tBTA_AV_META_MSG *p_meta_msg)
+ 
+     // handle GET_ELEMENT_ATTR response
+     if (p_meta_msg->code == AVRC_RSP_IMPL_STBL &&
+-            vendor_msg->p_vendor_data[0] == AVRC_PDU_GET_ELEMENT_ATTR) {
++            vendor_msg->p_vendor_data[AVRC_RSP_OPCODE_OFFSET] == AVRC_PDU_GET_ELEMENT_ATTR) {
+         handle_rc_attributes_rsp(vendor_msg);
+         return;
+     }
+diff --git a/components/bt/host/bluedroid/stack/avrc/avrc_api.c b/components/bt/host/bluedroid/stack/avrc/avrc_api.c
+index 9972bbf..f7e3102 100644
+--- a/components/bt/host/bluedroid/stack/avrc/avrc_api.c
++++ b/components/bt/host/bluedroid/stack/avrc/avrc_api.c
+@@ -545,7 +545,22 @@ static void avrc_msg_cback(UINT8 handle, UINT8 label, UINT8 cr,
+ 
+     p_data  = (UINT8 *)(p_pkt + 1) + p_pkt->offset;
+     memset(&msg, 0, sizeof(tAVRC_MSG) );
+-    {
++
++    if (p_pkt->layer_specific == AVCT_DATA_BROWSE) {
++        // opcode = AVRC_OP_BROWSE;
++        // msg.browse.hdr.ctype = cr;
++        // msg.browse.p_browse_data = p_data;
++        // msg.browse.browse_len = p_pkt->len;
++        // msg.browse.p_browse_pkt = p_pkt;
++        AVRC_TRACE_ERROR("BROWSE CHANNEL NOT SUPPORTED NOW!");
++        osi_free(p_pkt);
++        return;
++    } else {
++        if (p_pkt->len < AVRC_AVC_HDR_SIZE) {
++            AVRC_TRACE_WARNING("Bad message length:%d (< %d)", p_pkt->len, AVRC_AVC_HDR_SIZE);
++            osi_free(p_pkt);
++            return;
++        }
+         msg.hdr.ctype           = p_data[0] & AVRC_CTYPE_MASK;
+         AVRC_TRACE_DEBUG("avrc_msg_cback handle:%d, ctype:%d, offset:%d, len: %d",
+                          handle, msg.hdr.ctype, p_pkt->offset, p_pkt->len);
+@@ -578,6 +593,14 @@ static void avrc_msg_cback(UINT8 handle, UINT8 label, UINT8 cr,
+                 p_drop_msg = "auto respond";
+ #endif
+             } else {
++                if (p_pkt->len < AVRC_OP_UNIT_INFO_RSP_LEN) {
++                    AVRC_TRACE_WARNING("Bad message length:%d (< %d)", p_pkt->len, AVRC_OP_UNIT_INFO_RSP_LEN);
++                    drop = TRUE;
++#if (BT_USE_TRACES == TRUE)
++                    p_drop_msg = "UNIT_INFO_RSP too short";
++#endif
++                    break;
++                }
+                 /* parse response */
+                 p_data += 4; /* 3 bytes: ctype, subunit*, opcode + octet 3 (is 7)*/
+                 msg.unit.unit_type  = (*p_data & AVRC_SUBTYPE_MASK) >> AVRC_SUBTYPE_SHIFT;
+@@ -594,7 +617,7 @@ static void avrc_msg_cback(UINT8 handle, UINT8 label, UINT8 cr,
+                 p_rsp_data = avrc_get_data_ptr(p_rsp);
+                 *p_rsp_data = AVRC_RSP_IMPL_STBL;
+                 /* check & set the offset. set response code, set (subunit_type & subunit_id),
+-                   set AVRC_OP_SUB_INFO, set (page & extention code) */
++                   set AVRC_OP_SUB_INFO, set (page & extension code) */
+                 p_rsp_data      += 4;
+                 /* Panel subunit & id=0 */
+                 *p_rsp_data++   = (AVRC_SUB_PANEL << AVRC_SUBTYPE_SHIFT);
+@@ -606,6 +629,14 @@ static void avrc_msg_cback(UINT8 handle, UINT8 label, UINT8 cr,
+                 p_drop_msg = "auto responded";
+ #endif
+             } else {
++                if (p_pkt->len < AVRC_OP_SUB_UNIT_INFO_RSP_LEN) {
++                    AVRC_TRACE_WARNING("Bad message length:%d (< %d)", p_pkt->len, AVRC_OP_SUB_UNIT_INFO_RSP_LEN);
++                    drop = TRUE;
++#if (BT_USE_TRACES == TRUE)
++                    p_drop_msg = "UNIT_INFO_RSP too short";
++#endif
++                    break;
++                }
+                 /* parse response */
+                 p_data += AVRC_AVC_HDR_SIZE; /* 3 bytes: ctype, subunit*, opcode */
+                 msg.sub.page    = (*p_data++ >> AVRC_SUB_PAGE_SHIFT) & AVRC_SUB_PAGE_MASK;
+diff --git a/components/bt/host/bluedroid/stack/avrc/avrc_opt.c b/components/bt/host/bluedroid/stack/avrc/avrc_opt.c
+index 6f0663c..cd933df 100644
+--- a/components/bt/host/bluedroid/stack/avrc/avrc_opt.c
++++ b/components/bt/host/bluedroid/stack/avrc/avrc_opt.c
+@@ -48,17 +48,28 @@
+ ******************************************************************************/
+ static BT_HDR   *avrc_vendor_msg(tAVRC_MSG_VENDOR *p_msg)
+ {
+-    BT_HDR  *p_cmd;
++    BT_HDR  *p_cmd = NULL;
+     UINT8   *p_data;
+ 
+-    assert(p_msg != NULL);
++/*
++  A vendor dependent command consists of at least of:
++  - A BT_HDR, plus
++  - AVCT_MSG_OFFSET, plus
++  - 3 bytes for ctype, subunit_type and op_vendor, plus
++  - 3 bytes for company_id
++*/
++#define AVRC_MIN_VENDOR_CMD_LEN (BT_HDR_SIZE + AVCT_MSG_OFFSET + AVRC_VENDOR_HDR_SIZE)
++
++    if (!p_msg) {
++        return NULL;
++    }
+ 
+ #if AVRC_METADATA_INCLUDED == TRUE
+-    assert(AVRC_META_CMD_BUF_SIZE > (AVRC_MIN_CMD_LEN + p_msg->vendor_len));
+-    if ((p_cmd = (BT_HDR *) osi_malloc(AVRC_META_CMD_BUF_SIZE)) != NULL)
++    if ((AVRC_META_CMD_BUF_SIZE > AVRC_MIN_VENDOR_CMD_LEN + p_msg->vendor_len) &&
++        ((p_cmd = (BT_HDR *) osi_malloc(AVRC_META_CMD_BUF_SIZE)) != NULL))
+ #else
+-    assert(AVRC_CMD_BUF_SIZE > (AVRC_MIN_CMD_LEN + p_msg->vendor_len));
+-    if ((p_cmd = (BT_HDR *) osi_malloc(AVRC_CMD_BUF_SIZE)) != NULL)
++    if ((AVRC_CMD_BUF_SIZE > (AVRC_MIN_VENDOR_CMD_LEN + p_msg->vendor_len)) &&
++        (p_cmd = (BT_HDR *) osi_malloc(AVRC_CMD_BUF_SIZE)) != NULL)
+ #endif
+     {
+         p_cmd->offset   = AVCT_MSG_OFFSET;
+diff --git a/components/bt/host/bluedroid/stack/avrc/avrc_pars_tg.c b/components/bt/host/bluedroid/stack/avrc/avrc_pars_tg.c
+index c30bf94..01d6a47 100644
+--- a/components/bt/host/bluedroid/stack/avrc/avrc_pars_tg.c
++++ b/components/bt/host/bluedroid/stack/avrc/avrc_pars_tg.c
+@@ -56,7 +56,7 @@ static tAVRC_STS avrc_pars_vendor_cmd(tAVRC_MSG_VENDOR *p_msg, tAVRC_COMMAND *p_
+     if (p_msg->vendor_len == 0) {
+         return AVRC_STS_NO_ERROR;
+     }
+-    if (p_msg->p_vendor_data == NULL) {
++    if ((p_msg->p_vendor_data == NULL) || (p_msg->vendor_len < AVRC_CMD_FIXED_SIZE)) {
+         return AVRC_STS_INTERNAL_ERR;
+     }
+ 
+@@ -80,11 +80,13 @@ static tAVRC_STS avrc_pars_vendor_cmd(tAVRC_MSG_VENDOR *p_msg, tAVRC_COMMAND *p_
+ 
+     switch (p_result->pdu) {
+     case AVRC_PDU_GET_CAPABILITIES:         /* 0x10 */
+-        p_result->get_caps.capability_id = *p++;
+-        if (!AVRC_IS_VALID_CAP_ID(p_result->get_caps.capability_id)) {
+-            status = AVRC_STS_BAD_PARAM;
+-        } else if (len != 1) {
++        if (len < 1) {
+             status = AVRC_STS_INTERNAL_ERR;
++        } else {
++            p_result->get_caps.capability_id = *p++;
++            if (!AVRC_IS_VALID_CAP_ID(p_result->get_caps.capability_id)) {
++                status = AVRC_STS_BAD_PARAM;
++            }
+         }
+         break;
+ 
+@@ -96,11 +98,13 @@ static tAVRC_STS avrc_pars_vendor_cmd(tAVRC_MSG_VENDOR *p_msg, tAVRC_COMMAND *p_
+         break;
+ 
+     case AVRC_PDU_LIST_PLAYER_APP_VALUES:   /* 0x12 */
+-        p_result->list_app_values.attr_id = *p++;
+-        if (!AVRC_IS_VALID_ATTRIBUTE(p_result->list_app_values.attr_id)) {
+-            status = AVRC_STS_BAD_PARAM;
+-        } else if (len != 1) {
++        if (len < 1) {
+             status = AVRC_STS_INTERNAL_ERR;
++        } else {
++            p_result->list_app_values.attr_id = *p++;
++            if (!AVRC_IS_VALID_ATTRIBUTE(p_result->list_app_values.attr_id)) {
++                status = AVRC_STS_BAD_PARAM;
++            }
+         }
+         break;
+ 
+diff --git a/components/bt/host/bluedroid/stack/include/stack/avrc_defs.h b/components/bt/host/bluedroid/stack/include/stack/avrc_defs.h
+index 7619aa2..2b71db6 100644
+--- a/components/bt/host/bluedroid/stack/include/stack/avrc_defs.h
++++ b/components/bt/host/bluedroid/stack/include/stack/avrc_defs.h
+@@ -212,6 +212,55 @@
+ #define AVRC_PDU_ADD_TO_NOW_PLAYING             0x90
+ #define AVRC_PDU_GENERAL_REJECT                 0xA0
+ 
++/* Define the length of vendor dependent PDUs
++*/
++#define AVRC_CMD_PARAM_LENGTH_OFFSET                 2
++#define AVRC_CMD_PARAM_VALUE_OFFSET                  4
++#define AVRC_CMD_FIXED_SIZE                          4
++
++#define AVRC_GET_CAPABILITIES_CMD_SIZE               (AVRC_CMD_FIXED_SIZE + 1)
++#define AVRC_LIST_PLAYER_APP_ATTR_CMD_SIZE           (AVRC_CMD_FIXED_SIZE + 0)
++#define AVRC_LIST_PLAYER_APP_VALUES_CMD_SIZE         (AVRC_CMD_FIXED_SIZE + 1)
++#define AVRC_GET_CUR_PLAYER_APP_VALUE_CMD_SIZE       (AVRC_CMD_FIXED_SIZE + 2)
++#define AVRC_SET_PLAYER_APP_VALUE_CMD_SIZE           (AVRC_CMD_FIXED_SIZE + 3)
++#define AVRC_GET_PLAYER_APP_ATTR_TEXT_CMD_SIZE       (AVRC_CMD_FIXED_SIZE + 2)
++#define AVRC_GET_PLAYER_APP_VALUE_TEXT_CMD_SIZE      (AVRC_CMD_FIXED_SIZE + 3)
++#define AVRC_INFORM_DISPLAY_CHARSET_CMD_SIZE         (AVRC_CMD_FIXED_SIZE + 3)
++#define AVRC_INFORM_BATTERY_STAT_OF_CT_CMD_SIZE      (AVRC_CMD_FIXED_SIZE + 1)
++#define AVRC_GET_ELEMENT_ATTR_CMD_SIZE               (AVRC_CMD_FIXED_SIZE + 13)
++#define AVRC_GET_PLAY_STATUS_CMD_SIZE                (AVRC_CMD_FIXED_SIZE + 0)
++#define AVRC_REGISTER_NOTIFICATION_CMD_SIZE          (AVRC_CMD_FIXED_SIZE + 5)
++#define AVRC_REQUEST_CONTINUATION_RSP_CMD_SIZE       (AVRC_CMD_FIXED_SIZE + 1)
++#define AVRC_ABORT_CONTINUATION_RSP_CMD_SIZE         (AVRC_CMD_FIXED_SIZE + 1)
++
++/* Define the length of response of vendor dependent PDUs
++*/
++#define AVRC_RSP_OPCODE_OFFSET                       0
++#define AVRC_RSP_PARAM_LENGTH_OFFSET                 2
++#define AVRC_RSP_PARAM_VALUE_OFFSET                  4
++#define AVRC_RSP_FIXED_SIZE                          4
++
++#define AVRC_GET_CAPABILITIES_RSP_SIZE_MIN           (AVRC_RSP_FIXED_SIZE + 1)
++#define AVRC_LIST_PLAYER_APP_ATTR_RSP_SIZE           (AVRC_RSP_FIXED_SIZE + 2)
++#define AVRC_LIST_PLAYER_APP_VALUES_RSP_SIZE         (AVRC_RSP_FIXED_SIZE + 2)
++#define AVRC_GET_CUR_PLAYER_APP_VALUE_RSP_SIZE       (AVRC_RSP_FIXED_SIZE + 3)
++#define AVRC_SET_PLAYER_APP_VALUE_RSP_SIZE           (AVRC_RSP_FIXED_SIZE + 2)
++#define AVRC_GET_PLAYER_APP_ATTR_TEXT_RSP_SIZE_MIN   (AVRC_RSP_FIXED_SIZE + 6)
++#define AVRC_GET_PLAYER_APP_VALUE_TEXT_RSP_SIZE_MIN  (AVRC_RSP_FIXED_SIZE + 6)
++#define AVRC_INFORM_DISPLAY_CHARSET_RSP_SIZE         (AVRC_RSP_FIXED_SIZE + 0)
++#define AVRC_INFORM_BATTERY_STAT_OF_CT_RSP_SIZE      (AVRC_RSP_FIXED_SIZE + 0)
++#define AVRC_GET_ELEMENT_ATTR_RSP_SIZE_MIN           (AVRC_RSP_FIXED_SIZE + 1)
++#define AVRC_GET_PLAY_STATUS_RSP_SIZE                (AVRC_RSP_FIXED_SIZE + 9)
++#define AVRC_REGISTER_NOTIFICATION_RSP_SIZE_MIN      (AVRC_RSP_FIXED_SIZE + 2)
++#define AVRC_RN_PLAY_STATUS_CHANGE_EVT_SIZE          (AVRC_REGISTER_NOTIFICATION_RSP_SIZE_MIN)
++#define AVRC_RN_TRACK_CHANGE_EVT_SIZE                (AVRC_REGISTER_NOTIFICATION_RSP_SIZE_MIN + 7)
++#define AVRC_RN_PLAY_POS_CHANGED_EVT_SIZE            (AVRC_REGISTER_NOTIFICATION_RSP_SIZE_MIN + 3)
++#define AVRC_RN_BATTERY_STATUS_CHANGE_EVT_SIZE       (AVRC_REGISTER_NOTIFICATION_RSP_SIZE_MIN)
++#define AVRC_RN_SYSTEM_STATUS_CHANGE_EVT_SIZE        (AVRC_REGISTER_NOTIFICATION_RSP_SIZE_MIN)
++#define AVRC_RN_APP_SETTING_CHANGE_EVT_SIZE          (AVRC_REGISTER_NOTIFICATION_RSP_SIZE_MIN + 2)
++#define AVRC_RN_VOLUME_CHANGE_EVT_SIZE               (AVRC_REGISTER_NOTIFICATION_RSP_SIZE_MIN)
++#define AVRC_ABORT_CONTINUATION_RSP_RSP_SIZE         (AVRC_RSP_FIXED_SIZE + 0)
++
+ /* Define the vendor unique id carried in the pass through data
+ */
+ #define AVRC_PDU_NEXT_GROUP                     0x00
+diff --git a/components/bt/host/bluedroid/stack/include/stack/rfcdefs.h b/components/bt/host/bluedroid/stack/include/stack/rfcdefs.h
+index dcc37bc..b6bda55 100644
+--- a/components/bt/host/bluedroid/stack/include/stack/rfcdefs.h
++++ b/components/bt/host/bluedroid/stack/include/stack/rfcdefs.h
+@@ -42,7 +42,7 @@
+ #define RFCOMM_UIH                      0xEF
+ 
+ /*
+-** Defenitions for the TS control frames
++** Definitions for the TS control frames
+ */
+ #define RFCOMM_CTRL_FRAME_LEN           3
+ #define RFCOMM_MIN_OFFSET               5 /* ctrl 2 , len 1 or 2 bytes, credit 1 byte */
+@@ -90,13 +90,6 @@
+     pf   = (*p_data++ & RFCOMM_PF_MASK) >> RFCOMM_PF_OFFSET;\
+ }
+ 
+-#define RFCOMM_PARSE_LEN_FIELD(ea, length, p_data)          \
+-{                                                           \
+-    ea = (*p_data & RFCOMM_EA);                             \
+-    length = (*p_data++ >> RFCOMM_SHIFT_LENGTH1);           \
+-    if (!ea) length += (*p_data++ << RFCOMM_SHIFT_LENGTH2); \
+-}
+-
+ #define RFCOMM_FRAME_IS_CMD(initiator, cr)                  \
+     (( (initiator) && !(cr)) || (!(initiator) &&  (cr)))
+ 
+@@ -139,7 +132,7 @@
+ #define RFCOMM_MSC_FC               0x02          /* Flow control*/
+ #define RFCOMM_MSC_RTC              0x04          /* Ready to communicate*/
+ #define RFCOMM_MSC_RTR              0x08          /* Ready to receive*/
+-#define RFCOMM_MSC_IC               0x40          /* Incomming call indicator*/
++#define RFCOMM_MSC_IC               0x40          /* Incoming call indicator*/
+ #define RFCOMM_MSC_DV               0x80          /* Data Valid*/
+ 
+ #define RFCOMM_MSC_SHIFT_BREAK          4
+diff --git a/components/bt/host/bluedroid/stack/l2cap/l2c_main.c b/components/bt/host/bluedroid/stack/l2cap/l2c_main.c
+index 364aac8..2974314 100644
+--- a/components/bt/host/bluedroid/stack/l2cap/l2c_main.c
++++ b/components/bt/host/bluedroid/stack/l2cap/l2c_main.c
+@@ -335,7 +335,7 @@ void l2c_rcv_acl_data (BT_HDR *p_msg)
+ #if (CLASSIC_BT_INCLUDED == TRUE)
+ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+ {
+-    UINT8           *p_pkt_end, *p_next_cmd, *p_cfg_end, *p_cfg_start;
++    UINT8           *p_pkt_end, *p_next_cmd, *p_cfg_end, *p_cfg_start, *p_cfg_opt_end;
+     UINT8           cmd_code, cfg_code, cfg_len, id;
+     tL2C_CONN_INFO  con_info;
+     tL2CAP_CFG_INFO cfg_info;
+@@ -491,6 +491,10 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+             break;
+ 
+         case L2CAP_CMD_CONFIG_REQ:
++            if (cmd_len < L2CAP_CONFIG_REQ_LEN) {
++                L2CAP_TRACE_WARNING ("L2CAP - cfg req too short, cmd_len: %d", cmd_len);
++                break;
++            }
+             p_cfg_end = p + cmd_len;
+             cfg_rej = FALSE;
+             cfg_rej_len = 0;
+@@ -504,21 +508,47 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                                             cfg_info.fcr_present = cfg_info.fcs_present = FALSE;
+ 
+             while (p < p_cfg_end) {
++                if ((p_cfg_end - p) < L2CAP_CFG_OPTION_OVERHEAD) {
++                    cfg_rej = TRUE;
++                    break;
++                }
++
+                 STREAM_TO_UINT8 (cfg_code, p);
+                 STREAM_TO_UINT8 (cfg_len, p);
++                if (cfg_len > (p_cfg_end - p)) {
++                    p = p_cfg_end;
++                    cfg_rej = TRUE;
++                    break;
++                }
++                p_cfg_opt_end = p + cfg_len;
+ 
+                 switch (cfg_code & 0x7F) {
+                 case L2CAP_CFG_TYPE_MTU:
++                    if (cfg_len != L2CAP_CFG_MTU_OPTION_LEN) {
++                        p = p_cfg_end;
++                        cfg_rej = TRUE;
++                        break;
++                    }
+                     cfg_info.mtu_present = TRUE;
+                     STREAM_TO_UINT16 (cfg_info.mtu, p);
+                     break;
+ 
+                 case L2CAP_CFG_TYPE_FLUSH_TOUT:
++                    if (cfg_len != L2CAP_CFG_FLUSH_OPTION_LEN) {
++                        p = p_cfg_end;
++                        cfg_rej = TRUE;
++                        break;
++                    }
+                     cfg_info.flush_to_present = TRUE;
+                     STREAM_TO_UINT16 (cfg_info.flush_to, p);
+                     break;
+ 
+                 case L2CAP_CFG_TYPE_QOS:
++                    if (cfg_len != L2CAP_CFG_QOS_OPTION_LEN) {
++                        p = p_cfg_end;
++                        cfg_rej = TRUE;
++                        break;
++                    }
+                     cfg_info.qos_present = TRUE;
+                     STREAM_TO_UINT8  (cfg_info.qos.qos_flags, p);
+                     STREAM_TO_UINT8  (cfg_info.qos.service_type, p);
+@@ -530,6 +560,11 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                     break;
+ 
+                 case L2CAP_CFG_TYPE_FCR:
++                    if (cfg_len != L2CAP_CFG_FCR_OPTION_LEN) {
++                        p = p_cfg_end;
++                        cfg_rej = TRUE;
++                        break;
++                    }
+                     cfg_info.fcr_present = TRUE;
+                     STREAM_TO_UINT8 (cfg_info.fcr.mode, p);
+                     STREAM_TO_UINT8 (cfg_info.fcr.tx_win_sz, p);
+@@ -540,11 +575,21 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                     break;
+ 
+                 case L2CAP_CFG_TYPE_FCS:
++                    if (cfg_len != L2CAP_CFG_FCS_OPTION_LEN) {
++                        p = p_cfg_end;
++                        cfg_rej = TRUE;
++                        break;
++                    }
+                     cfg_info.fcs_present = TRUE;
+                     STREAM_TO_UINT8 (cfg_info.fcs, p);
+                     break;
+ 
+                 case L2CAP_CFG_TYPE_EXT_FLOW:
++                    if (cfg_len != L2CAP_CFG_EXT_FLOW_OPTION_LEN) {
++                        p = p_cfg_end;
++                        cfg_rej = TRUE;
++                        break;
++                    }
+                     cfg_info.ext_flow_spec_present = TRUE;
+                     STREAM_TO_UINT8  (cfg_info.ext_flow_spec.id, p);
+                     STREAM_TO_UINT8  (cfg_info.ext_flow_spec.stype, p);
+@@ -555,17 +600,9 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                     break;
+ 
+                 default:
+-                    /* sanity check option length */
+-                    if ((cfg_len + L2CAP_CFG_OPTION_OVERHEAD) <= cmd_len) {
+-                        p += cfg_len;
+-                        if ((cfg_code & 0x80) == 0) {
+-                            cfg_rej_len += cfg_len + L2CAP_CFG_OPTION_OVERHEAD;
+-                            cfg_rej = TRUE;
+-                        }
+-                    }
+-                    /* bad length; force loop exit */
+-                    else {
+-                        p = p_cfg_end;
++                    p = p_cfg_opt_end;
++                    if ((cfg_code & 0x80) == 0) {
++                        cfg_rej_len += cfg_len + L2CAP_CFG_OPTION_OVERHEAD;
+                         cfg_rej = TRUE;
+                     }
+                     break;
+@@ -586,6 +623,10 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+             break;
+ 
+         case L2CAP_CMD_CONFIG_RSP:
++            if (cmd_len < L2CAP_CONFIG_RSP_LEN) {
++                L2CAP_TRACE_WARNING ("L2CAP - cfg rsp too short, cmd_len: %d", cmd_len);
++                break;
++            }
+             p_cfg_end = p + cmd_len;
+             STREAM_TO_UINT16 (lcid, p);
+             STREAM_TO_UINT16 (cfg_info.flags, p);
+@@ -595,21 +636,42 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                                             cfg_info.fcr_present = cfg_info.fcs_present = FALSE;
+ 
+             while (p < p_cfg_end) {
++                if ((p_cfg_end - p) < L2CAP_CFG_OPTION_OVERHEAD) {
++                    break;
++                }
++
+                 STREAM_TO_UINT8 (cfg_code, p);
+                 STREAM_TO_UINT8 (cfg_len, p);
++                if (cfg_len > (p_cfg_end - p)) {
++                    p = p_cfg_end;
++                    break;
++                }
++                p_cfg_opt_end = p + cfg_len;
+ 
+                 switch (cfg_code & 0x7F) {
+                 case L2CAP_CFG_TYPE_MTU:
++                    if (cfg_len != L2CAP_CFG_MTU_OPTION_LEN) {
++                        p = p_cfg_end;
++                        break;
++                    }
+                     cfg_info.mtu_present = TRUE;
+                     STREAM_TO_UINT16 (cfg_info.mtu, p);
+                     break;
+ 
+                 case L2CAP_CFG_TYPE_FLUSH_TOUT:
++                    if (cfg_len != L2CAP_CFG_FLUSH_OPTION_LEN) {
++                        p = p_cfg_end;
++                        break;
++                    }
+                     cfg_info.flush_to_present = TRUE;
+                     STREAM_TO_UINT16 (cfg_info.flush_to, p);
+                     break;
+ 
+                 case L2CAP_CFG_TYPE_QOS:
++                    if (cfg_len != L2CAP_CFG_QOS_OPTION_LEN) {
++                        p = p_cfg_end;
++                        break;
++                    }
+                     cfg_info.qos_present = TRUE;
+                     STREAM_TO_UINT8  (cfg_info.qos.qos_flags, p);
+                     STREAM_TO_UINT8  (cfg_info.qos.service_type, p);
+@@ -621,6 +683,10 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                     break;
+ 
+                 case L2CAP_CFG_TYPE_FCR:
++                    if (cfg_len != L2CAP_CFG_FCR_OPTION_LEN) {
++                        p = p_cfg_end;
++                        break;
++                    }
+                     cfg_info.fcr_present = TRUE;
+                     STREAM_TO_UINT8 (cfg_info.fcr.mode, p);
+                     STREAM_TO_UINT8 (cfg_info.fcr.tx_win_sz, p);
+@@ -631,11 +697,19 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                     break;
+ 
+                 case L2CAP_CFG_TYPE_FCS:
++                    if (cfg_len != L2CAP_CFG_FCS_OPTION_LEN) {
++                        p = p_cfg_end;
++                        break;
++                    }
+                     cfg_info.fcs_present = TRUE;
+                     STREAM_TO_UINT8 (cfg_info.fcs, p);
+                     break;
+ 
+                 case L2CAP_CFG_TYPE_EXT_FLOW:
++                    if (cfg_len != L2CAP_CFG_EXT_FLOW_OPTION_LEN) {
++                        p = p_cfg_end;
++                        break;
++                    }
+                     cfg_info.ext_flow_spec_present = TRUE;
+                     STREAM_TO_UINT8  (cfg_info.ext_flow_spec.id, p);
+                     STREAM_TO_UINT8  (cfg_info.ext_flow_spec.stype, p);
+@@ -644,6 +718,9 @@ static void process_l2cap_cmd (tL2C_LCB *p_lcb, UINT8 *p, UINT16 pkt_len)
+                     STREAM_TO_UINT32 (cfg_info.ext_flow_spec.access_latency, p);
+                     STREAM_TO_UINT32 (cfg_info.ext_flow_spec.flush_timeout, p);
+                     break;
++                default:
++                    p = p_cfg_opt_end;
++                    break;
+                 }
+             }
+ 
+diff --git a/components/bt/host/bluedroid/stack/l2cap/l2c_utils.c b/components/bt/host/bluedroid/stack/l2cap/l2c_utils.c
+index f80a148..e6fd7e0 100644
+--- a/components/bt/host/bluedroid/stack/l2cap/l2c_utils.c
++++ b/components/bt/host/bluedroid/stack/l2cap/l2c_utils.c
+@@ -878,7 +878,7 @@ void l2cu_send_peer_config_rsp (tL2C_CCB *p_ccb, tL2CAP_CFG_INFO *p_cfg)
+ void l2cu_send_peer_config_rej (tL2C_CCB *p_ccb, UINT8 *p_data, UINT16 data_len, UINT16 rej_len)
+ {
+     BT_HDR  *p_buf;
+-    UINT16  len, cfg_len, buf_space, len1;
++    UINT16  len, cfg_len, buf_space, len1, opt_len;
+     UINT8   *p, *p_hci_len, *p_data_end;
+     UINT8   cfg_code;
+ 
+@@ -935,38 +935,42 @@ void l2cu_send_peer_config_rej (tL2C_CCB *p_ccb, UINT8 *p_data, UINT16 data_len,
+     /* Now, put the rejected options */
+     p_data_end = p_data + data_len;
+     while (p_data < p_data_end) {
++        if ((p_data_end - p_data) < L2CAP_CFG_OPTION_OVERHEAD) {
++            break;
++        }
+         cfg_code = *p_data;
+         cfg_len = *(p_data + 1);
++        opt_len = cfg_len + L2CAP_CFG_OPTION_OVERHEAD;
++        if (opt_len > (UINT16)(p_data_end - p_data)) {
++            p_data = p_data_end;
++            break;
++        }
+ 
+         switch (cfg_code & 0x7F) {
+         /* skip known options */
+         case L2CAP_CFG_TYPE_MTU:
+         case L2CAP_CFG_TYPE_FLUSH_TOUT:
+         case L2CAP_CFG_TYPE_QOS:
+-            p_data += cfg_len + L2CAP_CFG_OPTION_OVERHEAD;
++        case L2CAP_CFG_TYPE_FCR:
++        case L2CAP_CFG_TYPE_FCS:
++        case L2CAP_CFG_TYPE_EXT_FLOW:
++            p_data += opt_len;
+             break;
+ 
+         /* unknown options; copy into rsp if not hints */
+         default:
+-            /* sanity check option length */
+-            if ((cfg_len + L2CAP_CFG_OPTION_OVERHEAD) <= data_len) {
+-                if ((cfg_code & 0x80) == 0) {
+-                    if (buf_space >= (cfg_len + L2CAP_CFG_OPTION_OVERHEAD)) {
+-                        memcpy(p, p_data, cfg_len + L2CAP_CFG_OPTION_OVERHEAD);
+-                        p += cfg_len + L2CAP_CFG_OPTION_OVERHEAD;
+-                        buf_space -= (cfg_len + L2CAP_CFG_OPTION_OVERHEAD);
+-                    } else {
+-                        L2CAP_TRACE_WARNING("L2CAP - cfg_rej exceeds allocated buffer");
+-                        p_data = p_data_end; /* force loop exit */
+-                        break;
+-                    }
++            if ((cfg_code & 0x80) == 0) {
++                if (buf_space >= opt_len) {
++                    memcpy(p, p_data, opt_len);
++                    p += opt_len;
++                    buf_space -= opt_len;
++                } else {
++                    L2CAP_TRACE_WARNING("L2CAP - cfg_rej exceeds allocated buffer");
++                    p_data = p_data_end; /* force loop exit */
++                    break;
+                 }
+-                p_data += cfg_len + L2CAP_CFG_OPTION_OVERHEAD;
+-            }
+-            /* bad length; force loop exit */
+-            else {
+-                p_data = p_data_end;
+             }
++            p_data += opt_len;
+             break;
+         }
+     }
+diff --git a/components/bt/host/bluedroid/stack/rfcomm/rfc_ts_frames.c b/components/bt/host/bluedroid/stack/rfcomm/rfc_ts_frames.c
+index 0640c67..80cc080 100644
+--- a/components/bt/host/bluedroid/stack/rfcomm/rfc_ts_frames.c
++++ b/components/bt/host/bluedroid/stack/rfcomm/rfc_ts_frames.c
+@@ -602,7 +602,17 @@ UINT8 rfc_parse_data (tRFC_MCB *p_mcb, MX_FRAME *p_frame, BT_HDR *p_buf)
+         return (RFC_EVENT_BAD_FRAME);
+     }
+     RFCOMM_PARSE_TYPE_FIELD (p_frame->type, p_frame->pf, p_data);
+-    RFCOMM_PARSE_LEN_FIELD (eal, len, p_data);
++
++    eal = *(p_data) & RFCOMM_EA;
++    len = *(p_data)++ >> RFCOMM_SHIFT_LENGTH1;
++    if (eal == 0) {
++        if (p_buf->len > RFCOMM_CTRL_FRAME_LEN) {
++            len += (*(p_data)++ << RFCOMM_SHIFT_LENGTH2);
++        } else {
++            RFCOMM_TRACE_ERROR("Bad Length when EAL = 0: %d", p_buf->len);
++            return RFC_EVENT_BAD_FRAME;
++        }
++    }
+ 
+     p_buf->len      -= (3 + !ead + !eal + 1);  /* Additional 1 for FCS */
+     p_buf->offset   += (3 + !ead + !eal);
+@@ -626,7 +636,7 @@ UINT8 rfc_parse_data (tRFC_MCB *p_mcb, MX_FRAME *p_frame, BT_HDR *p_buf)
+ 
+     /* All control frames that we are sending are sent with P=1, expect */
+     /* reply with F=1 */
+-    /* According to TS 07.10 spec ivalid frames are discarded without */
++    /* According to TS 07.10 spec invalid frames are discarded without */
+     /* notification to the sender */
+     switch (p_frame->type) {
+     case RFCOMM_SABME:
+@@ -705,6 +715,12 @@ void rfc_process_mx_message (tRFC_MCB *p_mcb, BT_HDR *p_buf)
+     UINT8        ea, cr, mx_len;
+     BOOLEAN      is_command;
+ 
++    if (length < 2) {
++        RFCOMM_TRACE_ERROR("Illegal MX Frame len:%d < 2", length);
++        osi_free(p_buf);
++        return;
++  }
++
+     p_rx_frame->ea   = *p_data & RFCOMM_EA;
+     p_rx_frame->cr   = (*p_data & RFCOMM_CR_MASK) >> RFCOMM_SHIFT_CR;
+     p_rx_frame->type = *p_data++ & ~(RFCOMM_CR_MASK | RFCOMM_EA_MASK);
+@@ -725,6 +741,11 @@ void rfc_process_mx_message (tRFC_MCB *p_mcb, BT_HDR *p_buf)
+     length--;
+ 
+     if (!ea) {
++        if (length < 1) {
++            RFCOMM_TRACE_ERROR("Illegal MX Frame len:%d < 1 when ea = 0", length);
++            osi_free(p_buf);
++            return;
++        }
+         mx_len += *p_data++ << RFCOMM_SHIFT_LENGTH2;
+         length --;
+     }
+@@ -803,6 +824,12 @@ void rfc_process_mx_message (tRFC_MCB *p_mcb, BT_HDR *p_buf)
+         return;
+ 
+     case RFCOMM_MX_MSC:
++        if (length != RFCOMM_MX_MSC_LEN_WITH_BREAK &&
++            length != RFCOMM_MX_MSC_LEN_NO_BREAK) {
++            RFCOMM_TRACE_ERROR("Illegal MX MSC Frame len:%d", length);
++            osi_free(p_buf);
++            return;
++        }
+ 
+         ea                   = *p_data & RFCOMM_EA;
+         cr                   = (*p_data & RFCOMM_CR_MASK) >> RFCOMM_SHIFT_CR;
+diff --git a/components/bt/host/bluedroid/stack/sdp/include/sdpint.h b/components/bt/host/bluedroid/stack/sdp/include/sdpint.h
+index 9c0e604..1753dda 100644
+--- a/components/bt/host/bluedroid/stack/sdp/include/sdpint.h
++++ b/components/bt/host/bluedroid/stack/sdp/include/sdpint.h
+@@ -274,7 +274,7 @@ extern void      sdpu_build_n_send_error (tCONN_CB *p_ccb, UINT16 trans_num, UIN
+ extern UINT8    *sdpu_extract_attr_seq (UINT8 *p, UINT16 param_len, tSDP_ATTR_SEQ *p_seq);
+ extern UINT8    *sdpu_extract_uid_seq (UINT8 *p, UINT16 param_len, tSDP_UUID_SEQ *p_seq);
+ 
+-extern UINT8    *sdpu_get_len_from_type (UINT8 *p, UINT8 type, UINT32 *p_len);
++extern UINT8    *sdpu_get_len_from_type (UINT8 *p, UINT8 *p_end, UINT8 type, UINT32 *p_len);
+ extern BOOLEAN  sdpu_is_base_uuid (UINT8 *p_uuid);
+ extern BOOLEAN  sdpu_compare_uuid_arrays (UINT8 *p_uuid1, UINT32 len1, UINT8 *p_uuid2, UINT16 len2);
+ extern BOOLEAN  sdpu_compare_bt_uuids (tBT_UUID *p_uuid1, tBT_UUID *p_uuid2);
+diff --git a/components/bt/host/bluedroid/stack/sdp/sdp_db.c b/components/bt/host/bluedroid/stack/sdp/sdp_db.c
+index a9b3daa..2013fdd 100644
+--- a/components/bt/host/bluedroid/stack/sdp/sdp_db.c
++++ b/components/bt/host/bluedroid/stack/sdp/sdp_db.c
+@@ -139,7 +139,11 @@ static BOOLEAN find_uuid_in_seq (UINT8 *p , UINT32 seq_len, UINT8 *p_uuid,
+ 
+     while (p < p_end) {
+         type = *p++;
+-        p = sdpu_get_len_from_type (p, type, &len);
++        p = sdpu_get_len_from_type (p, p_end, type, &len);
++        if ((p == NULL) || (p + len) > p_end) {
++            SDP_TRACE_WARNING("bad length\n");
++            return (FALSE);
++        }
+         type = type >> 3;
+         if (type == UUID_DESC_TYPE) {
+             if (sdpu_compare_uuid_arrays (p, len, p_uuid, uuid_len)) {
+diff --git a/components/bt/host/bluedroid/stack/sdp/sdp_discovery.c b/components/bt/host/bluedroid/stack/sdp/sdp_discovery.c
+index d63b164..51a069e 100644
+--- a/components/bt/host/bluedroid/stack/sdp/sdp_discovery.c
++++ b/components/bt/host/bluedroid/stack/sdp/sdp_discovery.c
+@@ -50,7 +50,7 @@ static void          process_service_attr_rsp (tCONN_CB *p_ccb, UINT8 *p_reply);
+ static void          process_service_search_attr_rsp (tCONN_CB *p_ccb, UINT8 *p_reply);
+ static UINT8         *save_attr_seq (tCONN_CB *p_ccb, UINT8 *p, UINT8 *p_msg_end);
+ static tSDP_DISC_REC *add_record (tSDP_DISCOVERY_DB *p_db, BD_ADDR p_bda);
+-static UINT8         *add_attr (UINT8 *p, tSDP_DISCOVERY_DB *p_db, tSDP_DISC_REC *p_rec,
++static UINT8         *add_attr (UINT8 *p, UINT8 *p_end, tSDP_DISCOVERY_DB *p_db, tSDP_DISC_REC *p_rec,
+                                 UINT16 attr_id, tSDP_DISC_ATTR *p_parent_attr, UINT8 nest_level);
+ 
+ /* Safety check in case we go crazy */
+@@ -333,6 +333,7 @@ static void sdp_copy_raw_data (tCONN_CB *p_ccb, BOOLEAN offset)
+     unsigned int    cpy_len;
+     UINT32          list_len;
+     UINT8           *p;
++    UINT8           *p_end;
+     UINT8           type;
+ 
+ #if (SDP_DEBUG_RAW == TRUE)
+@@ -349,10 +350,22 @@ static void sdp_copy_raw_data (tCONN_CB *p_ccb, BOOLEAN offset)
+         cpy_len = p_ccb->p_db->raw_size - p_ccb->p_db->raw_used;
+         list_len = p_ccb->list_len;
+         p = &p_ccb->rsp_list[0];
++        p_end = &p_ccb->rsp_list[0] + list_len;
+ 
+         if (offset) {
+             type = *p++;
+-            p = sdpu_get_len_from_type (p, type, &list_len);
++            cpy_len--;
++            uint8_t *p_old = p;
++            p = sdpu_get_len_from_type (p, p_end, type, &list_len);
++            if ((p == NULL) || (p + list_len) > p_end) {
++                SDP_TRACE_WARNING("bad length\n");
++                return;
++            }
++            if ((int)cpy_len < (p - p_old)) {
++                SDP_TRACE_WARNING("no bytes left for data\n");
++                return;
++            }
++            cpy_len -= (p - p_old);
+         }
+         if (list_len < cpy_len ) {
+             cpy_len = list_len;
+@@ -671,7 +684,11 @@ static void process_service_search_attr_rsp (tCONN_CB *p_ccb, UINT8 *p_reply)
+         SDP_TRACE_WARNING ("SDP - Wrong type: 0x%02x in attr_rsp\n", type);
+         return;
+     }
+-    p = sdpu_get_len_from_type (p, type, &seq_len);
++    p = sdpu_get_len_from_type (p, p + p_ccb->list_len, type, &seq_len);
++    if (p == NULL || (p + seq_len) > (p + p_ccb->list_len)) {
++        sdp_disconnect(p_ccb, SDP_ILLEGAL_PARAMETER);
++        return;
++    }
+ 
+     p_end = &p_ccb->rsp_list[p_ccb->list_len];
+ 
+@@ -716,8 +733,8 @@ static UINT8 *save_attr_seq (tCONN_CB *p_ccb, UINT8 *p, UINT8 *p_msg_end)
+         return (NULL);
+     }
+ 
+-    p = sdpu_get_len_from_type (p, type, &seq_len);
+-    if ((p + seq_len) > p_msg_end) {
++    p = sdpu_get_len_from_type (p, p_msg_end, type, &seq_len);
++    if ((p == NULL) || (p + seq_len) > p_msg_end) {
+         SDP_TRACE_WARNING ("SDP - Bad len in attr_rsp %d\n", seq_len);
+         return (NULL);
+     }
+@@ -734,7 +751,11 @@ static UINT8 *save_attr_seq (tCONN_CB *p_ccb, UINT8 *p, UINT8 *p_msg_end)
+     while (p < p_seq_end) {
+         /* First get the attribute ID */
+         type = *p++;
+-        p = sdpu_get_len_from_type (p, type, &attr_len);
++        p = sdpu_get_len_from_type (p, p_msg_end, type, &attr_len);
++        if ((p == NULL) || (p + attr_len) > p_seq_end) {
++            SDP_TRACE_WARNING ("SDP - Bad len in attr_rsp %d\n", attr_len);
++            return (NULL);
++        }
+         if (((type >> 3) != UINT_DESC_TYPE) || (attr_len != 2)) {
+             SDP_TRACE_WARNING ("SDP - Bad type: 0x%02x or len: %d in attr_rsp\n", type, attr_len);
+             return (NULL);
+@@ -742,7 +763,7 @@ static UINT8 *save_attr_seq (tCONN_CB *p_ccb, UINT8 *p, UINT8 *p_msg_end)
+         BE_STREAM_TO_UINT16 (attr_id, p);
+ 
+         /* Now, add the attribute value */
+-        p = add_attr (p, p_ccb->p_db, p_rec, attr_id, NULL, 0);
++        p = add_attr (p, p_seq_end, p_ccb->p_db, p_rec, attr_id, NULL, 0);
+ 
+         if (!p) {
+             SDP_TRACE_WARNING ("SDP - DB full add_attr\n");
+@@ -808,7 +829,7 @@ tSDP_DISC_REC *add_record (tSDP_DISCOVERY_DB *p_db, BD_ADDR p_bda)
+ ** Returns          pointer to next byte in data stream
+ **
+ *******************************************************************************/
+-static UINT8 *add_attr (UINT8 *p, tSDP_DISCOVERY_DB *p_db, tSDP_DISC_REC *p_rec,
++static UINT8 *add_attr (UINT8 *p, UINT8 *p_end, tSDP_DISCOVERY_DB *p_db, tSDP_DISC_REC *p_rec,
+                         UINT16 attr_id, tSDP_DISC_ATTR *p_parent_attr, UINT8 nest_level)
+ {
+     tSDP_DISC_ATTR  *p_attr;
+@@ -817,14 +838,19 @@ static UINT8 *add_attr (UINT8 *p, tSDP_DISCOVERY_DB *p_db, tSDP_DISC_REC *p_rec,
+     UINT16          attr_type;
+     UINT16          id;
+     UINT8           type;
+-    UINT8           *p_end;
++    UINT8           *p_attr_end;
+     UINT8           is_additional_list = nest_level & SDP_ADDITIONAL_LIST_MASK;
+ 
+     nest_level &= ~(SDP_ADDITIONAL_LIST_MASK);
+ 
+     type = *p++;
+-    p = sdpu_get_len_from_type (p, type, &attr_len);
++    p = sdpu_get_len_from_type (p, p_end, type, &attr_len);
++    if ((p == NULL) || (p + attr_len > p_end)) {
++        SDP_TRACE_WARNING ("SDP - Bad len in attr_rsp %d\n", attr_len);
++        return NULL;
++    }
+ 
++    p_attr_end = p + attr_len;
+     attr_len &= SDP_DISC_ATTR_LEN_MASK;
+     attr_type = (type >> 3) & 0x0f;
+ 
+@@ -859,17 +885,16 @@ static UINT8 *add_attr (UINT8 *p, tSDP_DISCOVERY_DB *p_db, tSDP_DISC_REC *p_rec,
+                 /* Reserve the memory for the attribute now, as we need to add sub-attributes */
+                 p_db->p_free_mem += sizeof (tSDP_DISC_ATTR);
+                 p_db->mem_free   -= sizeof (tSDP_DISC_ATTR);
+-                p_end             = p + attr_len;
+                 total_len         = 0;
+ 
+                 /* SDP_TRACE_DEBUG ("SDP - attr nest level:%d(list)", nest_level); */
+                 if (nest_level >= MAX_NEST_LEVELS) {
+                     SDP_TRACE_ERROR ("SDP - attr nesting too deep\n");
+-                    return (p_end);
++                    return (p_attr_end);
+                 }
+ 
+                 /* Now, add the list entry */
+-                p = add_attr (p, p_db, p_rec, ATTR_ID_PROTOCOL_DESC_LIST, p_attr, (UINT8)(nest_level + 1));
++                p = add_attr (p, p_end, p_db, p_rec, ATTR_ID_PROTOCOL_DESC_LIST, p_attr, (UINT8)(nest_level + 1));
+ 
+                 break;
+             }
+@@ -942,22 +967,21 @@ static UINT8 *add_attr (UINT8 *p, tSDP_DISCOVERY_DB *p_db, tSDP_DISC_REC *p_rec,
+         /* Reserve the memory for the attribute now, as we need to add sub-attributes */
+         p_db->p_free_mem += sizeof (tSDP_DISC_ATTR);
+         p_db->mem_free   -= sizeof (tSDP_DISC_ATTR);
+-        p_end             = p + attr_len;
+         total_len         = 0;
+ 
+         /* SDP_TRACE_DEBUG ("SDP - attr nest level:%d", nest_level); */
+         if (nest_level >= MAX_NEST_LEVELS) {
+             SDP_TRACE_ERROR ("SDP - attr nesting too deep\n");
+-            return (p_end);
++            return (p_attr_end);
+         }
+         if (is_additional_list != 0 || attr_id == ATTR_ID_ADDITION_PROTO_DESC_LISTS) {
+             nest_level |= SDP_ADDITIONAL_LIST_MASK;
+         }
+         /* SDP_TRACE_DEBUG ("SDP - attr nest level:0x%x(finish)", nest_level); */
+ 
+-        while (p < p_end) {
++        while (p < p_attr_end) {
+             /* Now, add the list entry */
+-            p = add_attr (p, p_db, p_rec, 0, p_attr, (UINT8)(nest_level + 1));
++            p = add_attr (p, p_end, p_db, p_rec, 0, p_attr, (UINT8)(nest_level + 1));
+ 
+             if (!p) {
+                 return (NULL);
+@@ -977,7 +1001,7 @@ static UINT8 *add_attr (UINT8 *p, tSDP_DISCOVERY_DB *p_db, tSDP_DISC_REC *p_rec,
+             break;
+         default:
+             SDP_TRACE_WARNING ("SDP - bad len in boolean attr: %d\n", attr_len);
+-            return (p + attr_len);
++            return (p_attr_end);
+         }
+         break;
+ 
+diff --git a/components/bt/host/bluedroid/stack/sdp/sdp_server.c b/components/bt/host/bluedroid/stack/sdp/sdp_server.c
+index 856aba7..d6f9819 100644
+--- a/components/bt/host/bluedroid/stack/sdp/sdp_server.c
++++ b/components/bt/host/bluedroid/stack/sdp/sdp_server.c
+@@ -355,6 +355,7 @@ static void process_service_attr_req (tCONN_CB *p_ccb, UINT16 trans_num,
+         /* Free and reallocate buffer */
+         if (p_ccb->rsp_list) {
+             osi_free(p_ccb->rsp_list);
++            p_ccb->rsp_list = NULL;
+         }
+ 
+         p_ccb->rsp_list = (UINT8 *)osi_malloc(max_list_len);
+@@ -457,7 +458,7 @@ static void process_service_attr_req (tCONN_CB *p_ccb, UINT16 trans_num,
+             }
+         }
+     }
+-    /* If all the attributes have been accomodated in p_rsp,
++    /* If all the attributes have been accommodated in p_rsp,
+        reset next_attr_index */
+     if (xx == attr_seq.num_attr) {
+         p_ccb->cont_info.next_attr_index = 0;
+@@ -590,6 +591,7 @@ static void process_service_search_attr_req (tCONN_CB *p_ccb, UINT16 trans_num,
+         /* Free and reallocate buffer */
+         if (p_ccb->rsp_list) {
+             osi_free (p_ccb->rsp_list);
++            p_ccb->rsp_list = NULL;
+         }
+ 
+         p_ccb->rsp_list = (UINT8 *)osi_malloc (max_list_len);
+@@ -623,6 +625,7 @@ static void process_service_search_attr_req (tCONN_CB *p_ccb, UINT16 trans_num,
+         /* Free and reallocate if the earlier allocated buffer is small */
+         if (p_ccb->rsp_list) {
+             osi_free (p_ccb->rsp_list);
++            p_ccb->rsp_list = NULL;
+         }
+ 
+         p_ccb->rsp_list = (UINT8 *)osi_malloc (max_list_len);
+diff --git a/components/bt/host/bluedroid/stack/sdp/sdp_utils.c b/components/bt/host/bluedroid/stack/sdp/sdp_utils.c
+index cd14158..dad93a2 100644
+--- a/components/bt/host/bluedroid/stack/sdp/sdp_utils.c
++++ b/components/bt/host/bluedroid/stack/sdp/sdp_utils.c
+@@ -575,7 +575,7 @@ UINT8 *sdpu_extract_attr_seq (UINT8 *p, UINT16 param_len, tSDP_ATTR_SEQ *p_seq)
+ ** Returns          void
+ **
+ *******************************************************************************/
+-UINT8 *sdpu_get_len_from_type (UINT8 *p, UINT8 type, UINT32 *p_len)
++UINT8 *sdpu_get_len_from_type (UINT8 *p, UINT8 *p_end, UINT8 type, UINT32 *p_len)
+ {
+     UINT8   u8;
+     UINT16  u16;
+@@ -598,14 +598,26 @@ UINT8 *sdpu_get_len_from_type (UINT8 *p, UINT8 type, UINT32 *p_len)
+         *p_len = 16;
+         break;
+     case SIZE_IN_NEXT_BYTE:
++        if (p + 1 > p_end) {
++            *p_len = 0;
++            return NULL;
++        }
+         BE_STREAM_TO_UINT8 (u8, p);
+         *p_len = u8;
+         break;
+     case SIZE_IN_NEXT_WORD:
++        if (p + 2 > p_end) {
++            *p_len = 0;
++            return NULL;
++        }
+         BE_STREAM_TO_UINT16 (u16, p);
+         *p_len = u16;
+         break;
+     case SIZE_IN_NEXT_LONG:
++        if (p + 4 > p_end) {
++            *p_len = 0;
++            return NULL;
++        }
+         BE_STREAM_TO_UINT32 (u32, p);
+         *p_len = (UINT16) u32;
+         break;
+@@ -753,7 +765,7 @@ BOOLEAN sdpu_compare_bt_uuids (tBT_UUID *p_uuid1, tBT_UUID *p_uuid2)
+ **
+ ** NOTE           - it is assumed that BT UUID structures are compressed to the
+ **                  smallest possible UUIDs (by removing the base SDP UUID).
+-**                - it is also assumed that the discovery atribute is compressed
++**                - it is also assumed that the discovery attribute is compressed
+ **                  to the smallest possible
+ **
+ ** Returns          TRUE if matched, else FALSE
+@@ -768,21 +780,13 @@ BOOLEAN sdpu_compare_uuid_with_attr (tBT_UUID *p_btuuid, tSDP_DISC_ATTR *p_attr)
+         return (FALSE);
+     }
+ 
+-    if (p_btuuid->len == 2) {
++    if (p_btuuid->len == LEN_UUID_16) {
+         return (BOOLEAN)(p_btuuid->uu.uuid16 == p_attr->attr_value.v.u16);
+-    } else if (p_btuuid->len == 4) {
++    } else if (p_btuuid->len == LEN_UUID_32) {
+         return (BOOLEAN)(p_btuuid->uu.uuid32 == p_attr->attr_value.v.u32);
+     }
+-    /* coverity[overrun-buffer-arg] */
+-    /*
+-       Event overrun-buffer-arg: Overrun of static array "&p_attr->attr_value.v.array" of size 4 bytes by passing it to a function which indexes it with argument "16U" at byte position 15
+-       FALSE-POSITIVE error from Coverity test tool. Please do NOT remove following comment.
+-       False-positive: SDP uses scratch buffer to hold the attribute value.
+-       The actual size of tSDP_DISC_ATVAL does not matter.
+-       If the array size in tSDP_DISC_ATVAL is increase, we would increase the system RAM usage unnecessarily
+-    */
+-    else if (!memcmp (p_btuuid->uu.uuid128, (void *) p_attr->attr_value.v.array, MAX_UUID_SIZE)) {
+-        return (TRUE);
++    else if (p_btuuid->len == LEN_UUID_128) {
++        return (BOOLEAN)(!memcmp(p_btuuid->uu.uuid128, (void *) p_attr->attr_value.v.array, LEN_UUID_128));
+     }
+ 
+     return (FALSE);
+diff --git a/components/bt/host/bluedroid/stack/smp/smp_act.c b/components/bt/host/bluedroid/stack/smp/smp_act.c
+index 0e7dcd5..054b08d 100644
+--- a/components/bt/host/bluedroid/stack/smp/smp_act.c
++++ b/components/bt/host/bluedroid/stack/smp/smp_act.c
+@@ -1013,6 +1013,14 @@ void smp_proc_enc_info(tSMP_CB *p_cb, tSMP_INT_DATA *p_data)
+     UINT8   *p = (UINT8 *)p_data;
+ 
+     SMP_TRACE_DEBUG("%s\n", __func__);
++
++    if (smp_command_has_invalid_parameters(p_cb)) {
++        tSMP_INT_DATA smp_int_data = {0};
++        smp_int_data.reason = SMP_INVALID_PARAMETERS;
++        smp_sm_event(p_cb, SMP_AUTH_CMPL_EVT, &smp_int_data);
++        return;
++    }
++
+     STREAM_TO_ARRAY(p_cb->ltk, p, BT_OCTET16_LEN);
+ 
+     smp_key_distribution(p_cb, NULL);
+@@ -1030,6 +1038,11 @@ void smp_proc_master_id(tSMP_CB *p_cb, tSMP_INT_DATA *p_data)
+ 
+     SMP_TRACE_DEBUG("%s\np_cb->peer_auth_req = %d,p_cb->loc_auth_req= %d\n", __func__,
+                     p_cb->peer_auth_req, p_cb->loc_auth_req);
++
++    if (p_cb->rcvd_cmd_len < 11) {  // 1(Code) + 2(EDIV) + 8(Rand)
++        SMP_TRACE_ERROR("Invalid command length: %d, should be at least 11", p_cb->rcvd_cmd_len);
++        return;
++    }
+     smp_update_key_mask (p_cb, SMP_SEC_KEY_TYPE_ENC, TRUE);
+ 
+     STREAM_TO_UINT16(le_key.ediv, p);
+@@ -1052,7 +1065,7 @@ void smp_proc_master_id(tSMP_CB *p_cb, tSMP_INT_DATA *p_data)
+ }
+ 
+ /*******************************************************************************
+-** Function     smp_proc_enc_info
++** Function     smp_proc_id_info
+ ** Description  process identity information from peer device
+ *******************************************************************************/
+ void smp_proc_id_info(tSMP_CB *p_cb, tSMP_INT_DATA *p_data)
+@@ -1060,6 +1073,14 @@ void smp_proc_id_info(tSMP_CB *p_cb, tSMP_INT_DATA *p_data)
+     UINT8   *p = (UINT8 *)p_data;
+ 
+     SMP_TRACE_DEBUG("%s", __func__);
++
++    if (smp_command_has_invalid_parameters(p_cb)) {
++        tSMP_INT_DATA smp_int_data = {0};
++        smp_int_data.reason = SMP_INVALID_PARAMETERS;
++        smp_sm_event(p_cb, SMP_AUTH_CMPL_EVT, &smp_int_data);
++        return;
++  }
++
+     STREAM_TO_ARRAY (p_cb->tk, p, BT_OCTET16_LEN);   /* reuse TK for IRK */
+     smp_key_distribution_by_transport(p_cb, NULL);
+ }

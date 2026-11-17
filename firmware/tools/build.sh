@@ -4,9 +4,8 @@
 #   firmware/tools/build.sh [DEST]
 # Needs ESP-IDF v4.4.8: IDF_PATH set, or an install at $HOME/esp (see
 # firmware/README.md), or hive-fw's 'fw' tool.
-set -eu
+set -euo pipefail
 FW=$(cd "$(dirname "$0")/.." && pwd)
-DEST=$("$FW/tools/fetch.sh" "${1:-${HOME}/fw-build/squeezelite-esp32}" | tail -1)
 
 # no IDF_PATH and no $HOME/esp: the fw tool's copy, pinned by firmware/fw.json
 FWTOOL=$(command -v fw || echo "$HOME/modules/fw/bin/fw")
@@ -23,6 +22,9 @@ if [ -z "${IDF_PATH:-}" ]; then
 	. "$IDF_PATH/export.sh" >/dev/null
 	set -u
 fi
+
+# fetch.sh needs IDF_PATH too (idf-patches/)
+DEST=$("$FW/tools/fetch.sh" "${1:-${HOME}/fw-build/squeezelite-esp32}" | tail -1)
 
 # Spotify Connect needs a Spotify developer app's client id and secret built in
 # (cspot fetches a Web API token with them; without one a track never starts):
@@ -62,9 +64,18 @@ fi
 cd "$DEST"
 idf.py reconfigure >/dev/null
 nice -n 19 ninja -C build -j "${JOBS:-4}"
+# "cannot open the home network": no port-mapping client (UPnP IGD, NAT-PMP,
+# PCP, SSDP) may be linked into either image (security.md)
+if grep -i -E -l 'upnp|natpmp|nat_pmp|ssdp|pcp_client' build/squeezelite.map build/recovery.map; then
+	echo "build.sh: a port-mapping client is linked in (the maps above); refused" >&2
+	exit 1
+fi
 # boot the main app (ota_0) after a flash from scratch, not the recovery app
 # that IDF's all-0xff otadata selects (tools/otadata.py says why)
 python3 "$FW/tools/otadata.py" build/ota_data_initial.bin
+# sign the app for updates from the LAN, which the board refuses unsigned
+# (tools/sign_fw.py; security.md). The relay and USB don't need it.
+python3 "$FW/tools/sign_fw.py" build/squeezelite.bin ${HIFI_SIGN_KEY:+--key "$HIFI_SIGN_KEY"}
 ls -l build/squeezelite.bin build/recovery.bin
 # squeezelite's build doesn't check the recovery image against its slot: do
 # it here for both, since an image that outgrows its slot can't be flashed

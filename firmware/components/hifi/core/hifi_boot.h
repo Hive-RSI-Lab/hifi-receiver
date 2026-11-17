@@ -22,6 +22,11 @@ typedef struct {
 	bool relay_configured, relay_ok;
 	bool i2c_ok;          /* the codec and the PD sink answer */
 	bool heap_ok;
+	/* the listener scan (hifi_listen.h): listen_wait while the two scans
+	 * after the network came up aren't in; listen_open names what is open
+	 * outside the allow list ("1 open: tcp/23"), NULL when nothing is */
+	bool listen_wait;
+	const char *listen_open;
 	bool lab_on, lab_ok;   /* a lab build (CONFIG_HIFI_LAB), and its frame is up */
 } hifi_trial_t;
 
