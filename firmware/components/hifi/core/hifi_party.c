@@ -134,6 +134,10 @@ void hifi_party_fit_init(hifi_party_fit_t *f, int64_t win_us, int cap, int min_p
  * both_sides a window that far below is left out too, but only the worst one
  * a pass: a step drags the first line, and leaving out everything far from
  * that would take the good windows with it */
+/* the ring's i-th oldest window: once it is full, or the newest was dropped,
+ * slots 0..n-1 are not the n kept */
+static int slot(const hifi_party_fit_t *f, int i) { return (f->head - f->n + i + 2 * f->cap) % f->cap; }
+
 static void refit(hifi_party_fit_t *f) {
 	int newest = (f->head + f->cap - 1) % f->cap;
 	f->xb = f->px[newest];
@@ -147,15 +151,15 @@ static void refit(hifi_party_fit_t *f) {
 		int m = 0;
 		for (int i = 0; i < f->n; i++)
 			if (use[i]) {
-				sx += (double) (f->px[i] - f->xb);
-				sy += (double) (f->py[i] - f->yb);
+				sx += (double) (f->px[slot(f, i)] - f->xb);
+				sy += (double) (f->py[slot(f, i)] - f->yb);
 				m++;
 			}
 		if (m < 2) return;
 		double mx = sx / m, my = sy / m, sxx = 0, sxy = 0;
 		for (int i = 0; i < f->n; i++)
 			if (use[i]) {
-				double dx = (double) (f->px[i] - f->xb) - mx, dy = (double) (f->py[i] - f->yb) - my;
+				double dx = (double) (f->px[slot(f, i)] - f->xb) - mx, dy = (double) (f->py[slot(f, i)] - f->yb) - my;
 				sxx += dx * dx;
 				sxy += dx * dy;
 			}
@@ -168,7 +172,7 @@ static void refit(hifi_party_fit_t *f) {
 		bool dropped = false;
 		for (int i = 0; i < f->n; i++) {
 			if (!use[i]) continue;
-			double r = (double) (f->py[i] - f->yb) - (my + f->slope * ((double) (f->px[i] - f->xb) - mx));
+			double r = (double) (f->py[slot(f, i)] - f->yb) - (my + f->slope * ((double) (f->px[slot(f, i)] - f->xb) - mx));
 			if (f->both_sides) {
 				if (f->reject > 0 && fabs(r) > f->reject && m > f->min_points && fabs(r) > worst_r) {
 					worst_r = fabs(r);
