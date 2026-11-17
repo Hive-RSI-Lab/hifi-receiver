@@ -565,7 +565,8 @@ static void diag_power(const hifi_ops_t *ops, hifi_diag_power_t *p) {
 }
 
 /* diag, diag/tasks, diag/net, diag/audio, diag/ota (GET or POST) and
- * POST diag/echo; tasks takes {"from":N} to page, echo {"bytes":N} */
+ * POST diag/echo; tasks takes {"from":N} or diag/tasks/N to page, echo
+ * {"bytes":N} */
 static int r_diag(const hifi_ops_t *ops, const char *what, bool post, const char *body, char *out, size_t cap) {
 	const hifi_diag_ops_t *d = ops->diag;
 	if (!d) return error(out, cap, 404, "this build has no diagnostics");
@@ -579,8 +580,16 @@ static int r_diag(const hifi_ops_t *ops, const char *what, bool post, const char
 		free(s);
 		return 200;
 	}
-	if (!strcmp(what, "/tasks")) {
+	if (!strcmp(what, "/tasks") || !strncmp(what, "/tasks/", 7)) {
 		double from = 0;
+		/* diag/tasks/N: the page from N with no body, for a bench that takes
+		 * only bodiless lines from a lane that doesn't hold the board */
+		if (what[6]) {
+			const char *q = what + 7;
+			if (!*q || strlen(q) > 3 || strspn(q, "0123456789") != strlen(q))
+				return error(out, cap, 400, "diag/tasks/N: N a whole number, where the page starts");
+			from = atoi(q);
+		}
 		if (post && hj_get_raw(body, "from", &(const char *) {0}, &(size_t) {0}) &&
 		    (!hj_get_num(body, "from", &from) || from < 0 || from != floor(from)))
 			return error(out, cap, 400, "from: a whole number, where the page starts");

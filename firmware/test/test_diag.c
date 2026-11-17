@@ -255,6 +255,18 @@ static void api(void) {
 	CHECK(!md.fresh); /* later pages read the same sample */
 	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/tasks", "{\"from\":0}", out, sizeof(out)) == 200);
 	CHECK(md.fresh);
+	/* the page by path, for a bench that takes only bodiless lines */
+	char path2[64];
+	double f2 = -1, n2 = -2;
+	snprintf(path2, sizeof(path2), "/api/v1/diag/tasks/%d", (int) next);
+	CHECK(hifi_api_handle(&ops, "GET", path2, NULL, out, sizeof(out)) == 200);
+	CHECK(hj_get_num(out, "from", &f2) && f2 == next);
+	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/tasks/x", NULL, out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/tasks/", NULL, out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/tasks/-1", NULL, out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/tasks/9999", NULL, out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/tasks/999", NULL, out, sizeof(out)) == 200);
+	CHECK(hj_get_num(out, "next", &f2) && hj_get_num(out, "n", &n2) && f2 == n2);
 	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/tasks", "{\"from\":-1}", out, sizeof(out)) == 400);
 	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/tasks", "{\"from\":1.5}", out, sizeof(out)) == 400);
 	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/tasks", "{\"from\":\"x\"}", out, sizeof(out)) == 400);

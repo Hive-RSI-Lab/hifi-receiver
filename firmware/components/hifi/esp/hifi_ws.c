@@ -49,11 +49,16 @@ static hifi_ws_msg_cb_t on_msg;
 static hifi_ws_up_cb_t on_up;
 static volatile bool running, up, broken;
 static int64_t last_tx;
+static hifi_ws_stats_t stats; /* hifi_ws_stats() */
 
 static int64_t now_s(void) { return esp_timer_get_time() / 1000000; }
 
 static void drop(void) {
 	xSemaphoreTake(lock, portMAX_DELAY);
+	if (up) {
+		stats.drops++;
+		stats.up_since_us = 0;
+	}
 	up = false;
 	if (ssl) {
 		esp_transport_close(ssl);
@@ -70,6 +75,7 @@ static bool read_exact(void *b, size_t n) {
 		int r = esp_transport_read(ssl, (char *) b + got, (int) (n - got), IO_MS);
 		if (r <= 0) return false;
 		got += (size_t) r;
+		stats.rx_bytes += (uint64_t) r;
 	}
 	return true;
 }
@@ -80,6 +86,7 @@ static bool write_all(const void *b, size_t n) {
 		int r = esp_transport_write(ssl, (const char *) b + put, (int) (n - put), IO_MS);
 		if (r <= 0) return false;
 		put += (size_t) r;
+		stats.tx_bytes += (uint64_t) r;
 	}
 	return true;
 }
@@ -229,6 +236,8 @@ static void ws_task(void *arg) {
 			backoff = BACKOFF_MIN_S;
 			ESP_LOGI(TAG, "up: %s", url);
 			last_tx = now_s();
+			stats.up_since_us = esp_timer_get_time();
+			if (!stats.first_up_us) stats.first_up_us = stats.up_since_us;
 			up = true;
 			if (on_up) on_up();
 			while (running && !broken) {
@@ -293,6 +302,8 @@ void hifi_ws_stop(void) {
 }
 
 bool hifi_ws_up(void) { return up; }
+
+void hifi_ws_stats(hifi_ws_stats_t *out) { *out = stats; }
 
 bool hifi_ws_send(const char *text, size_t len) {
 	if (!up || !len) return false;

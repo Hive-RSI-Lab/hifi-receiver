@@ -72,7 +72,8 @@ typedef struct {
 
 typedef struct {
 	uint32_t uptime_s;
-	/* ms from power-up: app_main reached, an IP, the remote link up; 0: not yet */
+	/* ms from power-up: the hifi code started (hifi_init), the first IP, the
+	 * remote link first up; 0: not yet */
 	uint32_t boot_app_ms, boot_ip_ms, boot_link_ms;
 	hifi_diag_heap_t internal, psram;
 	const char *reset_reason;

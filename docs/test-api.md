@@ -327,6 +327,103 @@ length), `adc_i2c` (the ES7243E at 0x10 or 0x14; "set up" once the line in
 has configured it) and `amp_otw` (OTW_CLIP high). Ultra adds `front_i2c`
 (the front board's TCA9535 at 0x27, through the FFC).
 
+## Diagnostics: `diag`
+
+What the board knows about its own health and performance, for the
+self-test reports (`projects/hifi-lite-lab/reports/`) and long soaks. All of
+them are read-only and safe while the board plays, except `diag/echo`, which
+sends filler up the bench link. Each reply stays under 900 characters, so it
+fits a remote bench's reply line; the task list pages. On the console:
+`hifi diag [tasks [from]|net|audio|ota|echo [bytes]]`.
+
+### `GET /api/v1/diag`
+
+```json
+{"uptime_s": 5321,
+ "boot_ms": {"app": 812, "ip": 4210, "link": 6034},
+ "heap": {"free": 61234, "min": 38012, "largest": 31744, "total": 290000},
+ "psram": {"free": 3911000, "min": 3700000, "largest": 3866624, "total": 4192000},
+ "reset_reason": "sw", "resets": "sw,sw,power_on", "boots": 14,
+ "nvs": {"nvs": {"used": 210, "free": 294, "total": 504, "namespaces": 6, "used_pct": 41.7},
+         "settings": {"used": 96, "free": 1920, "total": 2016, "namespaces": 1, "used_pct": 4.8}},
+ "power": {"state": "on", "vbus_v": 20.08, "vbus_i_a": 0.31, "pvdd_v": 19.9, "pg": true,
+           "proto": "pd", "contract_v": 20.0, "contract_a": 3.25,
+           "amp_on": true, "amp_fault": false, "amp_faults": 0, "amp_temp_c": null}}
+```
+
+- `boot_ms`: ms from power-up to the hifi code starting, the first IP and
+  the remote link first up; `null` until each happens.
+- `heap` is internal RAM, `psram` the PSRAM (`null` with none fitted): free
+  now, the least free since boot, the largest free block and the size.
+- `resets` is the reset history, newest first, up to 8 reasons, kept in NVS
+  (namespace `hifi_diag`) with the `boots` counter.
+- `nvs` is each NVS partition's entries (32 bytes each): how full the flash
+  key store is, for wear.
+- `power` is the snapshot's power fields (`GET /api/v1/state`); a
+  measurement the board can't make is `null` (`amp_temp_c` on a board with no
+  sensor wired).
+
+### `GET /api/v1/diag/tasks`, `GET /api/v1/diag/tasks/N`, `POST` with `{"from": N}`
+
+Every FreeRTOS task: its stack high-water mark (the least free stack it has
+had, in bytes), its core (`null`: either), priority and CPU load, busiest
+first. The first page takes a new 1 s sample (the call blocks for it); a page
+with `from` reads the same sample. `next` is where the next page starts, `n`
+when the list is done. `diag/tasks/N` is the page from N with no body, for a
+remote bench that takes only bodiless lines from a lane that doesn't hold the
+board; `diag/tasks/0` takes a new sample like the first page.
+
+```json
+{"n": 31, "from": 0, "sample_ms": 1000, "idle_pct": [71.2, 88.0],
+ "cols": ["name", "stack_free", "core", "prio", "cpu_pct"],
+ "rows": [["IDLE1", 788, 1, 0, 88.0], ["output_i2s", 2240, 0, 20, 14.1], ...],
+ "next": 18}
+```
+
+`cpu_pct` is the share of one core over the sample; `idle_pct` is each
+core's idle task, so 100 minus it is that core's load.
+
+### `GET /api/v1/diag/net`
+
+```json
+{"wifi": {"rssi": -58, "channel": 6, "bssid": "aa:bb:cc:dd:ee:ff", "phy": "11n",
+          "connects": 3, "disconnects": 2, "last_reason": 8, "up_s": 4012},
+ "link": {"up": true, "drops": 1, "up_s": 3990, "tx_bytes": 812345, "rx_bytes": 4123456}}
+```
+
+`connects` and `disconnects` count the station's associations since the
+handlers came up (a few seconds after boot); `last_reason` is the last
+disconnect's `wifi_err_reason_t`. `link` is the remote link: for wss:// the
+bytes on the socket, for MQTT `0` (not counted).
+
+### `GET /api/v1/diag/audio`
+
+```json
+{"underruns": 0, "rate": 44100, "buffer_ms": 1520, "dma_ms": 46,
+ "latency_ms": 1566, "played_s": 3600}
+```
+
+`underruns` counts the times the output ran dry while a stream was playing
+(once per dry spell). `buffer_ms` is decoded audio waiting in the output
+buffer, `dma_ms` the I2S DMA's fixed delay; `latency_ms` is their sum, from
+decode to the pins. `played_s` is the output's total since boot. A build
+without the output's counters answers `{"underruns": null}`.
+
+### `GET /api/v1/diag/ota`
+
+The last update written over the relay: `{"version", "bytes", "total_ms",
+"write_ms", "kbps", "write_kbps", "boot"}`. `total_ms` is from the slot's
+open to the commit (the link's chunks included), `write_ms` the part spent
+erasing and writing flash, `boot` the boot count when it was written.
+`{"version": null}` before the first.
+
+### `POST /api/v1/diag/echo`
+
+`{"bytes": N}` (1 to 1048576, default 131072): sends N bytes of filler up the
+wss:// bench link in 8 KB messages (`{"t":"sink",...}`, which the bench drops)
+and times it: `{"bytes", "ms", "kbps"}`. The board's upload throughput to the
+bench. 409 when the link isn't wss:// or isn't up.
+
 ## Remote bring-up: `capture`, `ota`, `wifi`, `remote`
 
 These serve the hands-off bring-up in [remote.md](remote.md). They work the
