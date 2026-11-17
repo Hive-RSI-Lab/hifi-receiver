@@ -9,10 +9,10 @@
 The upstream file comes from $HIFI_UPSTREAM (a git checkout that has the
 pinned commit, such as a build tree from tools/fetch.sh), else from GitHub
 at the pinned commit; either is kept in OUT/.pristine, so it is fetched once.
-Exit 3 only when GitHub can't be reached and no HIFI_UPSTREAM is set: the
-caller skips the upstream tests then. A HIFI_UPSTREAM without the pinned
-commit, or a GitHub answer other than the file (a wrong path or commit), is
-an error (exit 1), not a skip.
+Exit 3 when no HIFI_UPSTREAM is set and GitHub can't be reached or answers
+with an error other than a 404 (down, rate-limited): the caller skips the
+upstream tests then. A HIFI_UPSTREAM without the pinned commit, or a 404
+from GitHub (a wrong path or commit), is an error (exit 1), not a skip.
 
 `extract` lets a test build upstream's own functions, as patched, against
 stubs of the ESP-IDF calls they make, instead of a copy of them that would
