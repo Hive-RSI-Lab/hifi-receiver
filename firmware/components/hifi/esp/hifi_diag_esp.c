@@ -17,6 +17,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
+#include "freertos/task_snapshot.h"
+#include "soc/soc_memory_types.h"
 #include "nvs.h"
 
 #include "hifi_crash.h"
@@ -171,6 +173,17 @@ static bool sample(hifi_diag_tasks_t *out, TaskStatus_t *st, uint32_t *total) {
 		t->num = st[i].xTaskNumber;
 		t->runtime = st[i].ulRunTimeCounter;
 		t->stack_free = st[i].usStackHighWaterMark; /* bytes on ESP-IDF */
+		/* the stack's size and where it is, to see what uses internal RAM. The
+		 * snapshot only reads the TCB (it checks the handle points at internal
+		 * RAM); a task gone since gives a size that fails the range check. */
+		const uint8_t *base = (const uint8_t *) st[i].pxStackBase;
+		TaskSnapshot_t snap;
+		t->stack_size = 0;
+		if (vTaskGetSnapshot(st[i].xHandle, &snap) == pdTRUE) {
+			const uint8_t *end = (const uint8_t *) snap.pxEndOfStack;
+			if (base && end > base && end - base < 256 * 1024) t->stack_size = (uint32_t) (end - base) + sizeof(StackType_t);
+		}
+		t->stack_ram = !base ? 0 : esp_ptr_external_ram(base) ? 'p' : esp_ptr_internal(base) ? 'i' : 0;
 #ifdef CONFIG_FREERTOS_VTASKLIST_INCLUDE_COREID
 		/* from the snapshot: the handle may belong to a task gone since */
 		t->core = st[i].xCoreID == tskNO_AFFINITY ? -1 : (int) st[i].xCoreID;

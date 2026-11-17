@@ -1069,6 +1069,29 @@ static void test_trial(void) {
 	CHECK(hifi_trial_judge(&t, 1, why, sizeof(why)) == HIFI_TRIAL_BAD);
 }
 
+/* the boot heap: taken once the board has settled, and the self-test's line */
+static void test_boot_heap(void) {
+	CHECK(!hifi_heap_boot_due(5, true, true, true)); /* too early, even with all up */
+	CHECK(hifi_heap_boot_due(HIFI_HEAP_BOOT_AFTER_S, true, true, true));
+	CHECK(!hifi_heap_boot_due(40, true, true, false)); /* waits for the bench link */
+	CHECK(hifi_heap_boot_due(40, true, false, false)); /* none set up: the network is enough */
+	CHECK(!hifi_heap_boot_due(40, false, false, false));
+	CHECK(hifi_heap_boot_due(HIFI_HEAP_BOOT_LATEST_S, false, true, false)); /* taken by 90 s regardless */
+
+	char v[64];
+	CHECK(hifi_heap_line(15000, 17890, v, sizeof(v)));
+	CHECK_STR(v, "15000 B free, 17890 B at boot, 5890 over the 12000 floor");
+	CHECK(strlen(v) < sizeof(v));
+	CHECK(hifi_heap_line(12001, 11535, v, sizeof(v)));
+	CHECK_STR(v, "12001 B free, 11535 B at boot, 465 under the 12000 floor");
+	CHECK(!hifi_heap_line(12000, 0, v, sizeof(v))); /* the floor itself fails, as before */
+	CHECK_STR(v, "12000 B free, boot not measured yet (floor 12000)");
+	CHECK(hifi_heap_line(327680, 327680, v, sizeof(v))); /* all of the ESP32's RAM still fits */
+	CHECK_STR(v, "327680 B free, 327680 B at boot, 315680 over the 12000 floor");
+	CHECK(hifi_heap_line(4294967295u, 4294967295u, v, sizeof(v))); /* nonsense is cut, not overrun */
+	CHECK(strlen(v) == sizeof(v) - 1);
+}
+
 /* test_sign_fw.py: does an image tools/sign_fw.py signed (with SEED_HEX)
  * install from the LAN on a board running build `running`? Prints the status
  * and the error; 0 when it matches `want`. */
@@ -1107,5 +1130,6 @@ int main(int argc, char **argv) {
 	test_ws_frames();
 	test_remote();
 	test_trial();
+	test_boot_heap();
 	return check_report("remote");
 }

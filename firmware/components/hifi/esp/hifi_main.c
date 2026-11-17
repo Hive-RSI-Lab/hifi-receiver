@@ -105,6 +105,7 @@ static hifi_tap_t taps;           /* the play button's taps; under lock */
 static TaskHandle_t tap_task;
 static char last_ctl[24];            /* the last button, knob step or remote action */
 static uint32_t last_ctl_ms;
+static volatile uint32_t heap_boot; /* the boot heap (hifi_boot.h); 0: not taken yet */
 
 static volatile bool audio_active;   /* set by the audio thread */
 
@@ -762,6 +763,7 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	s->net_mode = !s->ip[0] && (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA) ? "ap" : "sta";
 	s->heap_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 	s->heap_min = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+	s->heap_boot = heap_boot;
 	s->reset_reason = hifi_crash_reset_reason();
 	s->psram_free = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
 	hifi_net_update_status(&s->update);
@@ -894,7 +896,7 @@ static void factory_disarm(TimerHandle_t t) {
 	ESP_LOGW(TAG, "factory reset disarmed: not unplugged in time");
 }
 
-/* A FreeRTOS timer, not esp_timer: its task (3800 bytes) is the one that
+/* A FreeRTOS timer, not esp_timer: its task (3328 bytes) is the one that
  * already runs platform_config's own commits. The flag is committed before
  * the reply, so an unplug right after "armed" still finds it. */
 static int op_factory_arm(void) {
@@ -1073,7 +1075,9 @@ static void op_selftest(hifi_selftest_t *t) {
 
 	size_t ps = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
 	hifi_selftest_add(t, "psram", ps >= 2u << 20, "%u KB mapped", (unsigned) (ps >> 10));
-	hifi_selftest_add(t, "heap", s->heap_free > HIFI_HEAP_MIN, "%u B free", (unsigned) s->heap_free);
+	char heap[64];
+	bool heap_ok = hifi_heap_line(s->heap_free, s->heap_boot, heap, sizeof(heap));
+	hifi_selftest_add(t, "heap", heap_ok, "%s", heap);
 	hifi_selftest_add(t, "network", s->ip[0] != 0, s->ip[0] ? "%s" : "not connected", s->ip);
 	char why[64];
 	int strays = hifi_listen_now(why, sizeof(why));
@@ -1198,6 +1202,13 @@ bool hifi_net_ip(char *buf, size_t n) {
 		else buf[0] = 0;
 	}
 	return ok;
+}
+
+void hifi_main_note_boot_heap(void) {
+	if (!heap_boot) {
+		heap_boot = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+		ESP_LOGI(TAG, "boot heap %u B free", (unsigned) heap_boot);
+	}
 }
 
 void hifi_main_trial_inputs(hifi_trial_t *t) {

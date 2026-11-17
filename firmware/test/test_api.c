@@ -13,6 +13,7 @@ static struct {
 	hifi_tone_params_t tone;
 	bool tone_force;
 	bool power_on;
+	bool snap_heap_boot_zero; /* the snapshot has no boot heap yet */
 	hifi_input_t input;
 	float sub_db;
 	int sub_on;
@@ -82,6 +83,7 @@ static void m_snapshot(hifi_snapshot_t *s) {
 	s->rssi = -61;
 	s->heap_free = 81234;
 	s->heap_min = 60123;
+	s->heap_boot = m.snap_heap_boot_zero ? 0 : 17890;
 	s->psram_free = 3912345;
 }
 
@@ -178,7 +180,7 @@ static void info_and_state(void) {
 		  "\"sub\":{\"on\":false,\"level_db\":0.0},\"eq\":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"
 		  "\"volume\":35,\"mute\":false,\"max_volume\":100,\"playing\":null},"
 		  "\"net\":{\"mode\":\"sta\",\"ssid\":\"home\",\"hostname\":\"hifi-lite\",\"ip\":\"192.168.1.40\",\"rssi\":-61},"
-		  "\"sys\":{\"heap_free\":81234,\"heap_min\":60123,\"psram_free\":3912345},"
+		  "\"sys\":{\"heap_free\":81234,\"heap_min\":60123,\"heap_boot\":17890,\"psram_free\":3912345},"
 		  "\"ir\":{\"learning\":null,\"learned\":[],\"last_code\":null}}");
 
 	CHECK(call("POST", "/api/v1/state", "{}") == 405);
@@ -385,7 +387,12 @@ static void state_parts(void) {
 		       "\"sub\":{\"on\":true,\"level_db\":4.5},\"eq\":[1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,-12.0],"
 		       "\"volume\":20,\"mute\":false,\"max_volume\":100,\"playing\":null}}");
 	CHECK(call("GET", "/api/v1/state/sys", NULL) == 200);
-	CHECK_STR(out, "{\"sys\":{\"heap_free\":81234,\"heap_min\":60123,\"psram_free\":3912345}}");
+	CHECK_STR(out, "{\"sys\":{\"heap_free\":81234,\"heap_min\":60123,\"heap_boot\":17890,\"psram_free\":3912345}}");
+	/* the boot heap isn't taken yet: null, not 0 */
+	m.snap_heap_boot_zero = true;
+	CHECK(call("GET", "/api/v1/state/sys", NULL) == 200);
+	CHECK_HAS(out, "\"heap_boot\":null,");
+	m.snap_heap_boot_zero = false;
 	CHECK(call("GET", "/api/v1/state/amp?x=1", NULL) == 200);
 	CHECK_HAS(out, "{\"amp\":{\"enabled\":");
 	/* a section this board doesn't have now: an empty answer */
@@ -458,7 +465,7 @@ static void state_parts(void) {
 	memset(s.hostname, 'h', sizeof(s.hostname) - 1);
 	snprintf(s.ip, sizeof(s.ip), "255.255.255.255");
 	s.rssi = -100;
-	s.heap_free = s.heap_min = s.psram_free = 4294967295u;
+	s.heap_free = s.heap_min = s.heap_boot = s.psram_free = 4294967295u;
 	s.reset_reason = "task_watchdog";
 	s.update = (hifi_update_status_t) {.state = HIFI_UPD_ERROR, .progress = 100};
 	memset(s.update.error, 'e', sizeof(s.update.error) - 1);
