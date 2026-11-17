@@ -109,8 +109,8 @@ static void loud_music_never_clips(void) {
 	CHECK(pk <= 1.0);
 	CHECK(lv > -1.5 && lv <= 0.05);
 
-	/* a quiet passage, then a sudden full-scale hit: the instant attack
-	 * keeps the first sample under the ceiling */
+	/* a quiet passage, then a sudden full-scale hit: the lookahead has
+	 * the gain down before it arrives */
 	hifi_boost_init(&b);
 	hifi_boost_set_db(&b, 9);
 	run16(&b, -40, 1000, 1, NULL);
@@ -124,7 +124,7 @@ static void ceiling_follows_the_supply(void) {
 	hifi_gov_t g;
 	hifi_gov_init(&g, &cfg);
 	hifi_gov_set_supply(&g, 20, 60);
-	CHECK(hifi_gov_clip_fs(&g) == 1.0f); /* 19.06 V of swing, 17.98 V full scale */
+	CHECK(hifi_gov_clip_fs(&g) == 1.0f); /* 19.06 V of swing, 18.2 V full scale */
 	hifi_gov_set_supply(&g, 9, 27);
 	CHECK_NEAR(hifi_gov_clip_fs(&g), 0.953 * 9 / cfg.vfs_peak_v, 1e-4);
 
@@ -167,12 +167,114 @@ static void ramps_back_to_off(void) {
 	CHECK(hifi_boost_active(&b)); /* still ramping */
 	double lv = run16(&b, -20, 1000, 1, NULL);
 	CHECK_NEAR(lv, -20, 0.05);
+	/* at 0 dB the delay stays in while there is audio (taking it out would
+	 * skip 1 ms), and leaves in the first quiet block */
+	CHECK(hifi_boost_active(&b) && b.primed);
+	memset(b16, 0, sizeof(b16));
+	hifi_boost_process(&b, b16, BLOCK, 4, RATE);
 	CHECK(!hifi_boost_active(&b));
 	/* and the boost changes over ~50 ms, not in one step */
 	hifi_boost_set_db(&b, 9);
 	sine16(-20, 1000);
 	hifi_boost_process(&b, b16, BLOCK, 4, RATE);
 	CHECK(b.gain > 1.0f && b.gain < 1.8f);
+}
+
+/* 0.5 s of quiet DC, then a step to full scale, in s32: the gain (output
+ * over the boosted input LA frames back) falls smoothly over the lookahead,
+ * never in one step, and the output stays under the ceiling */
+static void lookahead_ramps_down(void) {
+	hifi_boost_t b;
+	hifi_boost_init(&b);
+	hifi_boost_set_db(&b, 9);
+	const float bg = powf(10, 9 / 20.0f);
+	static float in[RATE];
+	static float out[RATE];
+	int n = 0;
+	for (int k = 0; n + BLOCK <= RATE; k++) {
+		for (int i = 0; i < BLOCK; i++) {
+			int32_t v = n + i < RATE / 2 ? 21474836 : 2147483647; /* -40 dB, then 0 dB */
+			b32[2 * i] = b32[2 * i + 1] = v;
+			in[n + i] = v / 2147483648.0f * bg;
+		}
+		hifi_boost_process(&b, b32, BLOCK, 8, RATE);
+		for (int i = 0; i < BLOCK; i++) out[n + i] = b32[2 * i] / 2147483648.0f;
+		n += BLOCK;
+	}
+	double pk = 0, worst_step = 0, prev = 1;
+	for (int i = 2 * RATE / 5; i < n; i++) { /* after the boost's 50 ms ramp */
+		if (out[i] > pk) pk = out[i];
+		double g = out[i] / in[i - HIFI_BOOST_LA];
+		if (fabs(g - prev) > worst_step) worst_step = fabs(g - prev);
+		prev = g;
+	}
+	CHECK(pk <= 1.0);
+	double floor_g = 1.0 / bg;                     /* 0 dBFS boosted 9 dB */
+	CHECK(worst_step <= (1 - floor_g) / HIFI_BOOST_LA * 1.05);
+	CHECK(worst_step > (1 - floor_g) / HIFI_BOOST_LA * 0.5); /* it did ramp */
+	CHECK_NEAR(out[n - 1], 1.0, 1e-4);              /* and sits at the ceiling */
+}
+
+/* a boost that doesn't limit is the boost and a delay of exactly LA frames */
+static void latency_is_the_lookahead(void) {
+	hifi_boost_t b;
+	hifi_boost_init(&b);
+	hifi_boost_set_db(&b, 6);
+	run16(&b, -30, 1000, 0.5, NULL); /* the boost ramp settles */
+	static int16_t ref[2 * BLOCK];
+	sine16(-30, 1000);
+	memcpy(ref, b16, sizeof(ref));
+	hifi_boost_process(&b, b16, BLOCK, 4, RATE);
+	const double g = pow(10, 6 / 20.0);
+	double worst = 0;
+	for (int i = HIFI_BOOST_LA; i < BLOCK; i++) {
+		double e = fabs(b16[2 * i] - ref[2 * (i - HIFI_BOOST_LA)] * g);
+		if (e > worst) worst = e;
+	}
+	CHECK(worst <= 1.0);
+}
+
+/* noise bursts at random levels and odd block sizes, against the ceiling a
+ * low supply sets: no frame ever passes it */
+static void random_never_passes_ceiling(void) {
+	hifi_boost_t b;
+	hifi_boost_init(&b);
+	hifi_boost_set_db(&b, 9);
+	hifi_boost_set_ceiling(&b, 0.7f);
+	srand(7);
+	double pk = 0;
+	float amp = 0.1f;
+	for (int k = 0; k < 4000; k++) {
+		int frames = 1 + rand() % BLOCK;
+		if (rand() % 8 == 0) amp = (float) rand() / RAND_MAX;
+		for (int i = 0; i < frames; i++) {
+			float x = amp * (2.0f * rand() / RAND_MAX - 1);
+			b32[2 * i] = (int32_t) (x * 2147483647.0f);
+			b32[2 * i + 1] = (int32_t) (-x * 2147483647.0f);
+		}
+		hifi_boost_process(&b, b32, frames, 8, RATE);
+		for (int i = 0; i < 2 * frames; i++) {
+			double v = fabs(b32[i] / 2147483648.0);
+			if (v > pk) pk = v;
+		}
+	}
+	CHECK(pk <= 0.7 + 1e-6);
+	CHECK(pk > 0.69);
+}
+
+/* a test tone or the line copy takes the delay out at once */
+static void bypass_takes_it_out(void) {
+	hifi_boost_t b;
+	hifi_boost_init(&b);
+	hifi_boost_set_db(&b, 6);
+	run16(&b, -20, 1000, 0.2, NULL);
+	hifi_boost_bypass(&b);
+	CHECK(!b.primed);
+	CHECK(hifi_boost_active(&b)); /* the boost is still set */
+	hifi_boost_set_db(&b, 0);
+	b.gain = 1.0f;
+	hifi_boost_bypass(&b);
+	CHECK(!hifi_boost_active(&b));
 }
 
 static void heat_cap(void) {
@@ -191,7 +293,7 @@ static void heat_cap(void) {
 	/* the DJ guard's limit moves with it: 25 W / 0.88 + 2.5 */
 	CHECK_NEAR(hifi_djg_limit_w(&g.cfg, 1), 25 / 0.88 + 2.5, 1e-3);
 
-	/* a long 0 dBFS sine (40.4 W a channel) on a big charger: the default
+	/* a long 0 dBFS sine (41.4 W a channel) on a big charger: the default
 	 * cap holds it at 9 W sustained, and says why */
 	hifi_gov_init(&g, &cfg);
 	hifi_gov_set_supply(&g, 20, 1000);
@@ -203,7 +305,7 @@ static void heat_cap(void) {
 	CHECK(g.limiting);
 	CHECK_STR(hifi_gov_why(&g), "heat");
 	CHECK_NEAR(hifi_gov_heat_now_w(&g), 9, 0.3);
-	CHECK_NEAR(hifi_gov_gain_db(&g), 10 * log10(9 / 40.4), 0.2);
+	CHECK_NEAR(hifi_gov_gain_db(&g), 10 * log10(9 / 41.4), 0.2);
 
 	/* raised to 15 W, the same sine plays 2.2 dB louder */
 	hifi_gov_set_heat_w(&g, 15);
@@ -213,7 +315,7 @@ static void heat_cap(void) {
 	}
 	CHECK_STR(hifi_gov_why(&g), "heat");
 	CHECK_NEAR(hifi_gov_heat_now_w(&g), 15, 0.5);
-	CHECK_NEAR(hifi_gov_gain_db(&g), 10 * log10(15 / 40.4), 0.2);
+	CHECK_NEAR(hifi_gov_gain_db(&g), 10 * log10(15 / 41.4), 0.2);
 
 	/* the amp's warning (trim) wins over a raised cap */
 	g.trim = 0.25f;
@@ -280,6 +382,10 @@ int main(void) {
 	ceiling_follows_the_supply();
 	s32_full_scale();
 	ramps_back_to_off();
+	lookahead_ramps_down();
+	latency_is_the_lookahead();
+	random_never_passes_ceiling();
+	bypass_takes_it_out();
 	heat_cap();
 	boost_then_governor();
 	return check_report("boost");

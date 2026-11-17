@@ -17,6 +17,7 @@
 
 #include "driver/i2c.h"
 #include "driver/i2s.h"
+#include "esp_attr.h"
 #include "esp_console.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
@@ -88,7 +89,9 @@ static uint8_t pd_status;
 static hifi_input_t input = HIFI_INPUT_STREAM;
 static bool sub_on = true;
 static float sub_db = 0;
-static hifi_boost_t boost;    /* Boost and its peak limiter (k2388) */
+/* Boost and its lookahead limiter (k2388); ~1 KB, in PSRAM to spare the
+ * internal heap */
+static EXT_RAM_BSS_ATTR hifi_boost_t boost;
 static volatile bool amp_hot; /* the amp's over-temperature warning is held */
 static hifi_chan_t channel = HIFI_CHAN_STEREO;
 static volatile bool codec_dirty = true; /* re-apply input/sub to the codec */
@@ -846,22 +849,25 @@ static int op_set_input(hifi_input_t in) {
 	return 0;
 }
 
-/* Boost (dB) and the heat cap (W a channel); NaN leaves one */
+/* Boost (dB) and the heat cap (W a channel); NaN leaves one. Both take
+ * effect at once; nonzero when one couldn't be saved for the next start. */
 static int op_set_loudness(float boost_db, float heat_w) {
 	char v[16];
+	int err = 0;
 	if (!isnan(boost_db)) {
 		hifi_boost_set_db(&boost, boost_db);
 		snprintf(v, sizeof(v), "%.1f", boost.db);
-		config_set_value(NVS_TYPE_STR, "hifi_boost_db", v);
+		err |= config_set_value(NVS_TYPE_STR, "hifi_boost_db", v) != ESP_OK;
 	}
 	if (!isnan(heat_w)) {
 		LOCK();
 		float w = hifi_gov_set_heat_w(&gov, heat_w);
 		UNLOCK();
 		snprintf(v, sizeof(v), "%.1f", w);
-		config_set_value(NVS_TYPE_STR, "hifi_heat_w", v);
+		err |= config_set_value(NVS_TYPE_STR, "hifi_heat_w", v) != ESP_OK;
 	}
-	return 0;
+	if (err) ESP_LOGW(TAG, "loudness: set, but not saved to NVS");
+	return err;
 }
 
 static float op_set_sub(int on, float db) {
@@ -1420,7 +1426,9 @@ static void services_task(void *arg) {
 void hifi_dsp_process(uint8_t *buf, uint32_t frames, int bytes_per_frame, uint32_t rate) {
 	/* Boost first, under its limiter at the amp's clip point; a test tone
 	 * and DJ direct's line copy play at unity */
-	if (!tone_active && !line_unity && hifi_boost_active(&boost)) {
+	if (tone_active || line_unity) {
+		hifi_boost_bypass(&boost); /* drops at most 1 ms of delayed audio */
+	} else if (hifi_boost_active(&boost)) {
 		hifi_boost_set_ceiling(&boost, hifi_gov_clip_fs(&gov));
 		hifi_boost_process(&boost, buf, frames, bytes_per_frame, rate);
 	}

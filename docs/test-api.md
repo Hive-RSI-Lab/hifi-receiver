@@ -237,10 +237,12 @@ Applied at once and kept. Reply: the full `/state`.
 body with neither is a 400. Only boards whose `info.caps.loudness` is there
 take it (Lite).
 - **`boost_db`:** 0 to `caps.loudness.boost_max_db` (9), a number. Digital
-  gain before the power governor, with a fast peak limiter (instant attack,
-  25 ms hold, 0.15 s release) that keeps the boosted signal under the
-  governor's clip ceiling, so a loud master gets louder without hard
-  clipping. Test tones and line-in at unity skip it.
+  gain before the power governor, with a lookahead peak limiter (1 ms
+  lookahead at 48 kHz, 25 ms hold, 0.15 s release) that keeps the boosted
+  signal under the governor's clip ceiling, so a loud master gets louder
+  without hard clipping. While Boost is on, the audio runs 48 frames late.
+  Turning Boost up from 0 adds a single 1 ms gap. Test tones and line-in
+  at unity skip it.
 - **`heat_cap_w`:** sustained watts a channel the governor allows, from
   `heat_min_w` to `heat_max_w` (15), default `heat_def_w` (9). Above 9 W
   the amp may cut out when it gets hot (its warning pin backs the level off,

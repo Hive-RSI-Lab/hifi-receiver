@@ -5,13 +5,14 @@
 
 void hifi_gov_cfg_lite(hifi_gov_cfg_t *cfg) {
 	*cfg = (hifi_gov_cfg_t) {
-		/* 17.98 V peak: the ES8388's ~1.08 Vrms full scale at OUT1's -4.5 dB
-		 * (code 27, ES8388_OUT1_FULL) x 19.95 (26 dB) x sqrt 2 is 18.2 V,
-		 * within 0.1 dB (docs/review-2/firmware-requirements.md L3: at 0 dB
-		 * OUT1 would overdrive the amp by 4.1 dB at 20 V, so raising OUT1
-		 * gains nothing; Boost adds loudness instead). To be calibrated with
-		 * a 1 kHz sine into a dummy load */
-		.vfs_peak_v = 0.9f * 0.7079f * 19.95f * 1.4142f,
+		/* 18.2 V peak: the ES8388's ~1.08 Vrms full scale at OUT1's -4.5 dB
+		 * (code 27, ES8388_OUT1_FULL) x 19.95 (26 dB) x sqrt 2
+		 * (docs/review-2/firmware-requirements.md L3: at 0 dB OUT1 would
+		 * overdrive the amp by 4.1 dB at 20 V, so raising OUT1 gains nothing;
+		 * Boost adds loudness instead). The higher figure of the two
+		 * estimates (the other gave 17.98 V), so Boost's clip ceiling errs
+		 * low. To be calibrated with a 1 kHz sine into a dummy load */
+		.vfs_peak_v = 18.2f,
 		/* measured on hwde's made TPA3118 board: 95.3% of the supply */
 		.swing = 0.953f,
 		/* the Viennas' 4 ohm: the worst case for the charger */

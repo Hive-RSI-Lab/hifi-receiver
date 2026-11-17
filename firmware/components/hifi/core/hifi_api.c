@@ -464,7 +464,7 @@ static int r_loudness(const hifi_ops_t *ops, const char *body, char *out, size_t
 	if (has_w && !(w >= i.caps.heat_min_w && w <= i.caps.heat_max_w))
 		return error(out, cap, 400, "heat_cap_w is out of range");
 	if (ops->set_loudness(has_b ? (float) b : NAN, has_w ? (float) w : NAN))
-		return error(out, cap, 500, "couldn't set the loudness");
+		return error(out, cap, 500, "the loudness is set but couldn't be saved");
 	return r_state(ops, NULL, out, cap);
 }
 
