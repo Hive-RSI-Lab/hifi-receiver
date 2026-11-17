@@ -17,6 +17,10 @@ endif()
 # the lab build (board/lite-lab): experiments a signed command starts and stops
 if(CONFIG_HIFI_LAB)
 	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c)
+	# the BLE lab image (board/lite-lab-ble): a GATT link beside A2DP
+	if(CONFIG_BT_BLE_ENABLED)
+		list(APPEND srcs esp/lab_ble.c)
+	endif()
 endif()
 
 # app/build.py writes the web app here (firmware/tools/fetch.sh runs it);
@@ -37,7 +41,7 @@ idf_component_register(
 	PRIV_REQUIRES driver esp_adc_cal mdns console nvs_flash esp_wifi
 		      platform_config services wifi-manager tools
 		      app_update mqtt libsodium mbedtls lwip esp_http_client json
-		      tcp_transport esp-tls)
+		      tcp_transport esp-tls bt)
 
 # The Hive's signing key(s), an optional built-in relay and update manifest,
 # from the build's environment (firmware/tools/build.sh; docs/remote.md).

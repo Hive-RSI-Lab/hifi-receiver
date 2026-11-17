@@ -174,6 +174,9 @@ void hifi_lab_esp_init(void) {
 	kept_magic = KEPT_MAGIC;
 	kept_name[0] = 0;
 	hifi_lab_register(&lab, &lab_espnow);
+#if CONFIG_BT_BLE_ENABLED
+	hifi_lab_register(&lab, &lab_ble);
+#endif
 	lab_lock = xSemaphoreCreateMutex();
 	StackType_t *stack = NULL;
 #if CONFIG_SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY
