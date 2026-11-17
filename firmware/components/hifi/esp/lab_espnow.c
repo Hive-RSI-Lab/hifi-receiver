@@ -71,6 +71,7 @@ static TaskHandle_t worker;
 static StaticTask_t worker_tcb;
 static hifi_link_tx_t *tx;
 static hifi_link_rx_t *rx;
+static rx_item_t *rx_it; /* the receive callback's item, in PSRAM: ~270 bytes the Lite's internal RAM can't spare */
 static uint32_t heap_start, heap_after_init, heap_min;
 
 static volatile bool run, alive;
@@ -85,7 +86,7 @@ static wifi_ps_type_t ps_before, ps_set;
 static uint32_t run_no; /* the lab's number for this run, given back when it ends itself */
 static volatile uint32_t q_full, other, report_timeouts, no_mem;
 
-/* on the Wi-Fi task only: its item is static (~270 bytes off that task's stack) */
+/* on the Wi-Fi task only: its item (rx_it) is made once, off that task's stack */
 static void recv_cb(const uint8_t *mac, const uint8_t *data, int n) {
 	int64_t t = esp_timer_get_time();
 	if (!run || n <= 0 || n > HIFI_LINK_MAX) return;
@@ -93,12 +94,12 @@ static void recv_cb(const uint8_t *mac, const uint8_t *data, int n) {
 		other++;
 		return;
 	}
-	static rx_item_t it;
-	memcpy(it.mac, mac, 6);
-	it.len = (uint8_t) n;
-	it.t_us = t;
-	memcpy(it.data, data, n);
-	if (xQueueSend(q, &it, 0) != pdTRUE) q_full++;
+	rx_item_t *it = rx_it;
+	memcpy(it->mac, mac, 6);
+	it->len = (uint8_t) n;
+	it->t_us = t;
+	memcpy(it->data, data, n);
+	if (xQueueSend(q, it, 0) != pdTRUE) q_full++;
 }
 
 static void send_cb(const uint8_t *mac, esp_now_send_status_t st) {
@@ -300,7 +301,8 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		if (!window_sem) window_sem = xSemaphoreCreateCounting(16, 0);
 		if (!tx) tx = heap_caps_calloc(1, sizeof(*tx), MALLOC_CAP_SPIRAM);
 		if (!rx) rx = heap_caps_calloc(1, sizeof(*rx), MALLOC_CAP_SPIRAM);
-		if (!qmem || !stack || !window_sem || !tx || !rx) {
+		if (!rx_it) rx_it = heap_caps_calloc(1, sizeof(*rx_it), MALLOC_CAP_SPIRAM);
+		if (!qmem || !stack || !window_sem || !tx || !rx || !rx_it) {
 			free(qmem);
 			free(stack);
 			snprintf(err, n, "out of memory");

@@ -10,6 +10,7 @@
  */
 #include "hifi_lab_esp.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "esp_heap_caps.h"
@@ -49,6 +50,13 @@ static unsigned finish_head, finish_n;
 static portMUX_TYPE finish_mux = portMUX_INITIALIZER_UNLOCKED;
 
 static volatile uint32_t ticked_ms; /* the tick task's last pass */
+/* The tick's stack lives in PSRAM: 3 KB of internal RAM is a quarter of
+ * what the Lite has left with Wi-Fi, Bluetooth and the player up, and the
+ * self-test wants 12000 B. A task with a PSRAM stack must never write flash:
+ * the tick only touches the lab's state and the experiments' stop (radio
+ * calls, as the ESP-NOW worker makes from its own PSRAM stack). */
+#define TICK_STACK 3072
+static StaticTask_t tick_tcb;
 static esp_timer_handle_t watch_timer;
 
 static uint32_t now_ms(void) { return (uint32_t) (esp_timer_get_time() / 1000); }
@@ -157,7 +165,15 @@ void hifi_lab_esp_init(void) {
 	kept_name[0] = 0;
 	hifi_lab_register(&lab, &lab_espnow);
 	lab_lock = xSemaphoreCreateMutex();
-	xTaskCreatePinnedToCore(tick_task, "hifi_lab", 3072, NULL, ESP_TASK_PRIO_MIN + 2, NULL, 0);
+	StackType_t *stack = NULL;
+#if CONFIG_SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY
+	stack = heap_caps_malloc(TICK_STACK, MALLOC_CAP_SPIRAM);
+#endif
+	if (!stack || !xTaskCreateStaticPinnedToCore(tick_task, "hifi_lab", TICK_STACK, NULL, ESP_TASK_PRIO_MIN + 2, stack,
+						     &tick_tcb, 0)) {
+		free(stack); /* no PSRAM: an internal stack, as before */
+		xTaskCreatePinnedToCore(tick_task, "hifi_lab", TICK_STACK, NULL, ESP_TASK_PRIO_MIN + 2, NULL, 0);
+	}
 	const esp_timer_create_args_t wa = {.callback = watch, .name = "hifi_lab_watch"};
 	if (esp_timer_create(&wa, &watch_timer) == ESP_OK) esp_timer_start_periodic(watch_timer, 1000000);
 	else ESP_LOGE(TAG, "no watch timer: the lab can't restart a stuck board");
