@@ -25,6 +25,8 @@ typedef struct {
 	uint32_t num;        /* the scheduler's task number, to match samples */
 	uint32_t runtime;    /* run-time counter, in the counter's units (wraps) */
 	uint32_t stack_free; /* stack high-water mark: least ever free, bytes */
+	uint32_t stack_size; /* the whole stack, bytes; 0: unknown */
+	char stack_ram;      /* where the stack is: 'i' internal RAM, 'p' PSRAM, 0 unknown */
 	int core;            /* -1: either core */
 	int prio;
 	float cpu_pct;       /* % of one core over the sample; NaN: unknown */

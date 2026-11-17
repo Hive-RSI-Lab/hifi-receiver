@@ -301,6 +301,9 @@ static void seen(void) {
 	/* a jump far ahead clears everything */
 	CHECK(hifi_link_seen(&s, 4000000000u) == 0);
 	CHECK(hifi_link_seen(&s, 4000000000u - 1) == 0);
+	/* the last value would wrap top to 0 and reset "expected" (found by fuzz_espnow) */
+	CHECK(hifi_link_seen(&s, UINT32_MAX) == -1);
+	CHECK(s.top == 4000000001u);
 }
 
 static void receiver(void) {
@@ -442,7 +445,7 @@ static void sender(void) {
 	CHECK(hifi_link_tx_rtt_pct(t, 100) == 5000000);
 
 	/* hostile times off the radio: no overflow (UBSan), counted as bad */
-	uint32_t bad0 = t->bad, pongs0 = t->pongs;
+	uint32_t bad0 = t->bad, pongs0 = t->pongs, dup0 = t->dup;
 	hifi_link_frame_t h1 = {HIFI_LINK_PONG, 9, 502, INT64_MIN, 0, 0, 64};
 	hifi_link_tx_pong(t, &h1, a);
 	hifi_link_frame_t h2 = {HIFI_LINK_PONG, 9, 503, a, INT64_MIN, INT64_MAX, 64};
@@ -452,6 +455,20 @@ static void sender(void) {
 	hifi_link_frame_t h4 = {HIFI_LINK_PONG, 9, 505, a, INT64_MAX - 5, INT64_MAX, 64};
 	hifi_link_tx_pong(t, &h4, a + 10);
 	CHECK(t->bad == bad0 + 4 && t->pongs == pongs0);
+	/* in range, but round trips the run can't have had: rtt_sum_us would
+	 * overflow after two (found by fuzz_espnow); late, over the cap */
+	int64_t far = ((int64_t) 1 << 62) - 1;
+	for (uint32_t q = 506; q < 509; q++) {
+		hifi_link_frame_t h = {HIFI_LINK_PONG, 9, q, 0, 5, 5, 64};
+		hifi_link_tx_pong(t, &h, far);
+	}
+	hifi_link_frame_t late = {HIFI_LINK_PONG, 9, 509, a, a, a, 64};
+	hifi_link_tx_pong(t, &late, a + HIFI_LINK_RTT_MAX_US + 1);
+	CHECK(t->bad == bad0 + 8 && t->pongs == pongs0);
+	/* a forged PONG doesn't use up the seq of the real one */
+	hifi_link_frame_t real = {HIFI_LINK_PONG, 9, 509, a, a + 10, a + 20, 64};
+	hifi_link_tx_pong(t, &real, a + 1000);
+	CHECK(t->pongs == pongs0 + 1 && t->dup == dup0);
 	free(t);
 }
 

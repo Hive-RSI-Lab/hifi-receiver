@@ -422,7 +422,7 @@ static void note_good_slot(void) {
 }
 
 static void relay_task(void *arg) {
-	bool sntp = false, on_trial = false;
+	bool sntp = false, on_trial = false, boot_heap_taken = false;
 	uint32_t trial_start = 0, last_status = 0;
 	esp_ota_img_states_t st;
 	if (esp_ota_get_state_partition(esp_ota_get_running_partition(), &st) == ESP_OK && st == ESP_OTA_IMG_PENDING_VERIFY) {
@@ -481,6 +481,11 @@ static void relay_task(void *arg) {
 			announce = false;
 			publish_status();
 			last_status = now;
+		}
+
+		if (!boot_heap_taken && hifi_heap_boot_due(now, up, url[0] != 0, connected)) {
+			hifi_main_note_boot_heap();
+			boot_heap_taken = true;
 		}
 
 		if (on_trial) {

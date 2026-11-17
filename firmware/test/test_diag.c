@@ -85,6 +85,8 @@ static void paging(void) {
 		t->t[i] = task(name, (uint32_t) i, 0, i % 3 - 1);
 		t->t[i].cpu_pct = i % 2 ? NAN : 12.25f;
 		t->t[i].stack_free = 4000000000u;
+		t->t[i].stack_size = 4000000000u;
+		t->t[i].stack_ram = i % 3 ? 'p' : 0;
 	}
 	char out[4096];
 	int from = 0, pages = 0, seen = 0;
@@ -105,7 +107,7 @@ static void paging(void) {
 	CHECK(seen == t->n);
 	CHECK(pages >= 3);
 	CHECK_HAS(out, "\"idle_pct\":[81.5,null]");
-	CHECK_HAS(out, "\"cols\":[\"name\",\"stack_free\",\"core\",\"prio\",\"cpu_pct\"]");
+	CHECK_HAS(out, "\"cols\":[\"name\",\"stack_free\",\"core\",\"prio\",\"cpu_pct\",\"stack\",\"ram\"]");
 
 	/* past the end: an empty page that says so */
 	hifi_diag_write_tasks(t, 999, out, sizeof(out));
@@ -117,7 +119,14 @@ static void paging(void) {
 	one.t[0] = task("loudness", 7, 0, -1);
 	one.t[0].cpu_pct = 3.14f;
 	hifi_diag_write_tasks(&one, 0, out, sizeof(out));
-	CHECK_HAS(out, "\"rows\":[[\"loudness\",1007,null,7,3.1]],\"next\":1}");
+	CHECK_HAS(out, "\"rows\":[[\"loudness\",1007,null,7,3.1,null,null]],\"next\":1}");
+	one.t[0].stack_size = 4096;
+	one.t[0].stack_ram = 'i';
+	hifi_diag_write_tasks(&one, 0, out, sizeof(out));
+	CHECK_HAS(out, "[\"loudness\",1007,null,7,3.1,4096,\"int\"]");
+	one.t[0].stack_ram = 'p';
+	hifi_diag_write_tasks(&one, 0, out, sizeof(out));
+	CHECK_HAS(out, "[\"loudness\",1007,null,7,3.1,4096,\"psram\"]");
 	free(t);
 }
 

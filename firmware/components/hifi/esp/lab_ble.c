@@ -68,8 +68,8 @@ static const char *const ROLE_NAMES[] = {"echo", "ping", "flood"};
 typedef enum { PH_IDLE, PH_SCAN, PH_OPEN, PH_MTU, PH_FIND, PH_SUBSCRIBE, PH_READY, PH_ADVERTISE } phase_t;
 static const char *const PHASE_NAMES[] = {"idle", "scan", "open", "mtu", "find", "subscribe", "ready", "advertise"};
 
-#define LAB_MTU 247
-#define PAYLOAD_MAX (LAB_MTU - 3) /* a write or notification's value */
+#define LAB_MTU HIFI_LINK_BLE_MTU
+#define PAYLOAD_MAX HIFI_LINK_BLE_PAYLOAD /* a write or notification's value */
 
 typedef enum { EV_FRAME, EV_READY, EV_LOST, EV_FAIL } ev_t;
 
@@ -142,8 +142,7 @@ static void post(ev_t ev, const uint8_t *data, size_t n) {
 	rx_item_t *it = cb_it;
 	it->ev = ev;
 	it->t_us = esp_timer_get_time();
-	it->len = (uint16_t) (n > PAYLOAD_MAX ? 0 : n);
-	if (data && it->len) memcpy(it->data, data, it->len);
+	it->len = (uint16_t) hifi_link_take(it->data, sizeof(it->data), data, n);
 	if (xQueueSend(q, it, 0) != pdTRUE) q_full++;
 }
 
@@ -201,7 +200,12 @@ static void gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *p) {
 		if (!run || phase != PH_SCAN) break;
 		if (p->scan_rst.search_evt == ESP_GAP_SEARCH_INQ_RES_EVT) {
 			seen_adv++;
-			if (!adv_is_peer(p->scan_rst.ble_adv, p->scan_rst.adv_data_len)) break;
+			/* the mark is public, so a copy of it from another address is
+			 * skipped too (the address can be spoofed as well: this only
+			 * keeps a plain copycat out, security.md "Radio") */
+			if (!adv_is_peer(p->scan_rst.ble_adv, p->scan_rst.adv_data_len) ||
+			    p->scan_rst.ble_addr_type != BLE_ADDR_TYPE_PUBLIC || memcmp(p->scan_rst.bda, peer_bt, 6))
+				break;
 			phase = PH_OPEN;
 			esp_ble_gap_stop_scanning();
 			memcpy(remote, p->scan_rst.bda, 6);
@@ -488,22 +492,17 @@ static bool send_frame(hifi_link_frame_t *f) {
 }
 
 static void handle(const rx_item_t *it) {
-	hifi_link_frame_t f;
-	if (!hifi_link_decode(it->data, it->len, &f)) {
-		hifi_link_rx_bad(rx);
-		return;
-	}
-	if (role == ROLE_ECHO && f.type == HIFI_LINK_PING) {
-		hifi_link_frame_t pong;
-		hifi_link_pong_for(&f, it->t_us, 0, &pong);
-		rx->pings++;
+	hifi_link_frame_t pong;
+	switch (hifi_link_receive(rx, tx, role == ROLE_ECHO, role != ROLE_ECHO, it->data, it->len, it->t_us, &pong)) {
+	case HIFI_LINK_GOT_REPLY:
 		send_frame(&pong);
-	} else if (role == ROLE_ECHO && f.type == HIFI_LINK_DATA)
-		hifi_link_rx_data(rx, &f, it->t_us);
-	else if (role != ROLE_ECHO && f.type == HIFI_LINK_PONG)
-		hifi_link_tx_pong(tx, &f, it->t_us);
-	else
+		break;
+	case HIFI_LINK_GOT_OTHER:
 		other++;
+		break;
+	default:
+		break;
+	}
 }
 
 /* room in the stack's queue for one more write: not congested and a buffer

@@ -34,3 +34,17 @@ typedef enum { HIFI_TRIAL_WAIT = 0, HIFI_TRIAL_GOOD, HIFI_TRIAL_BAD } hifi_trial
 
 /* why gets the first thing still missing (or why it failed) */
 hifi_trial_verdict_t hifi_trial_judge(const hifi_trial_t *t, uint32_t elapsed_s, char *why, size_t n);
+
+/* The boot heap: internal RAM free once the board has settled, the figure
+ * that must stay well over HIFI_HEAP_MIN (16000 B is the aim, so one more
+ * feature can't roll a board back). Settled means the network and the
+ * bench link (when set up) are up and 30 s have passed, or 90 s in any
+ * case. */
+#define HIFI_HEAP_BOOT_AFTER_S 30
+#define HIFI_HEAP_BOOT_LATEST_S 90
+bool hifi_heap_boot_due(uint32_t up_s, bool net_up, bool relay_configured, bool relay_up);
+
+/* the self-test's heap line into out (64 B is enough): free now, at boot
+ * and the boot figure's margin over the floor. boot 0: not measured yet.
+ * Returns the check's verdict, which is free now over the floor. */
+bool hifi_heap_line(uint32_t now_free, uint32_t boot_free, char *out, size_t n);

@@ -11,7 +11,7 @@ LDLIBS := -lm
 
 SRCS := $(wildcard $(CORE)/*.c)
 BIN := build
-TESTS := test_json_pd test_power test_gov_tone test_vol_ir_meta test_api test_remote test_core test_line test_tap test_gate test_listen test_diag test_lab
+TESTS := test_json_pd test_power test_gov_tone test_vol_ir_meta test_api test_remote test_core test_line test_tap test_gate test_listen test_diag test_lab test_scan
 
 # test_remote signs and checks commands with real Ed25519 where the host has
 # OpenSSL's libcrypto, and with a stand-in signature where it doesn't.
@@ -30,7 +30,7 @@ $(BIN)/%: %.c $(SRCS) $(wildcard $(CORE)/*.h) check.h | $(BIN)
 	$(CC) $(CFLAGS) -o $@ $< $(SRCS) $(LDLIBS)
 
 run: $(addprefix $(BIN)/,$(TESTS))
-	@fail=0; for t in $(abspath $^); do $$t || fail=1; done; python3 test_otadata.py || fail=1; python3 test_sign_fw.py || fail=1; \
+	@fail=0; for t in $(abspath $^); do $$t || fail=1; done; python3 test_otadata.py || fail=1; TEST_REMOTE=$(abspath $(BIN))/test_remote python3 test_sign_fw.py || fail=1; \
 	  $(MAKE) --no-print-directory upstream || fail=1; \
 	  $(MAKE) --no-print-directory fuzz || fail=1; \
 	  $(MAKE) --no-print-directory qemu || fail=1; exit $$fail
@@ -73,7 +73,8 @@ coverage:
 	done; exit $$fail
 
 # libFuzzer harnesses (fuzz/): the console, the HTTP test API, the JSON
-# reader and writer, the relay's signed envelope and its websocket client.
+# reader and writer, the relay's signed envelope, its websocket client, and
+# what the lab's radios receive (the ESP-NOW and BLE link frames).
 # Each is built with clang, ASan and UBSan; its corpus grows in build/fuzz/
 # from the checked-in seeds in fuzz/seeds/. `fuzz` runs each for FUZZ_SECS
 # (part of `run`); `fuzz-long` runs them all at once for FUZZ_LONG_SECS (10
@@ -81,7 +82,7 @@ coverage:
 # build/fuzz/crash-NAME-*; replay it with build/fuzz/NAME FILE. No clang with
 # libFuzzer: skipped, loudly; FUZZ_REQUIRED=1 makes that a failure.
 FUZZ := $(BIN)/fuzz
-FUZZERS := fuzz_api fuzz_cli fuzz_json fuzz_remote fuzz_ws
+FUZZERS := fuzz_api fuzz_ble fuzz_cli fuzz_espnow fuzz_json fuzz_remote fuzz_ws
 FUZZ_SECS ?= 10
 FUZZ_LONG_SECS ?= 600
 CLANG ?= $(firstword $(wildcard $(HOME)/.local/opt/LLVM-*/bin/clang) $(shell command -v clang 2>/dev/null))
@@ -92,7 +93,7 @@ FUZZ_CFLAGS := -std=gnu11 -O1 -g -Wall -Wextra -Werror -Wno-unused-function -I$(
 FUZZ_RUN = $(FUZZ)/$(1) -dict=$(FUZZ)/hifi.dict -artifact_prefix=$(FUZZ)/crash-$(1)- \
 	$(FUZZ)/corpus/$(1) fuzz/seeds/$(1)
 
-$(FUZZ)/%: fuzz/%.c fuzz/fuzz_board.h $(SRCS) $(wildcard $(CORE)/*.h)
+$(FUZZ)/%: fuzz/%.c fuzz/fuzz_board.h fuzz/fuzz_link.h $(SRCS) $(wildcard $(CORE)/*.h)
 	@mkdir -p $(FUZZ)
 	$(CLANG) $(FUZZ_CFLAGS) -o $@ $< $(SRCS) -lm
 

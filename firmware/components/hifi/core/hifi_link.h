@@ -26,9 +26,14 @@
 
 #define HIFI_LINK_HDR 38  /* magic 2, version 1, type 1, length 2, session 4, seq 4, t1 t2 t3 8 each */
 #define HIFI_LINK_MAX 250 /* ESP-NOW's largest payload */
+/* the MTU the BLE link asks for, and the largest value a write or a
+ * notification then carries (the ATT header takes 3) */
+#define HIFI_LINK_BLE_MTU 247
+#define HIFI_LINK_BLE_PAYLOAD (HIFI_LINK_BLE_MTU - 3)
 #define HIFI_LINK_WINDOW 1024 /* sequence numbers the duplicate check remembers */
 #define HIFI_LINK_RTT_BIN_US 100
 #define HIFI_LINK_RTT_BINS 1000 /* 0 to 100 ms; slower ones land in the last bin */
+#define HIFI_LINK_RTT_MAX_US 10000000 /* a PONG slower than this answers no ping of the run: bad */
 
 typedef enum { HIFI_LINK_PING = 1, HIFI_LINK_PONG = 2, HIFI_LINK_DATA = 3 } hifi_link_type_t;
 
@@ -49,7 +54,8 @@ typedef struct {
 	uint64_t bits[HIFI_LINK_WINDOW / 64];
 } hifi_link_seen_t;
 
-/* 0 new, 1 a duplicate, -1 too old to tell */
+/* 0 new, 1 a duplicate, -1 too old to tell (and seq UINT32_MAX, which
+ * would wrap top) */
 int hifi_link_seen(hifi_link_seen_t *s, uint32_t seq);
 
 /* ------------------------------------------------------------ receiving end */
@@ -110,7 +116,9 @@ void hifi_link_tx_init(hifi_link_tx_t *t, uint32_t session);
 void hifi_link_tx_sent(hifi_link_tx_t *t, size_t len, bool ok, int64_t now_us);
 /* the radio's send report: acknowledged by the peer or not */
 void hifi_link_tx_acked(hifi_link_tx_t *t, bool acked);
-/* a PONG that arrived at t4 */
+/* a PONG that arrived at t4. One whose times no echo could have written
+ * (any outside [0, 2^62), t1 after t4, t3 before t2, a round trip below 0
+ * or over HIFI_LINK_RTT_MAX_US) counts as bad, before its seq is looked at. */
 void hifi_link_tx_pong(hifi_link_tx_t *t, const hifi_link_frame_t *f, int64_t t4);
 /* round trip at percentile p (0..100), in microseconds; -1 none */
 double hifi_link_tx_rtt_pct(const hifi_link_tx_t *t, double p);
@@ -118,6 +126,28 @@ double hifi_link_tx_rtt_pct(const hifi_link_tx_t *t, double p);
 bool hifi_link_tx_drift_ppm(const hifi_link_tx_t *t, double *ppm);
 double hifi_link_tx_kbps(const hifi_link_tx_t *t);
 void hifi_link_tx_json(const hifi_link_tx_t *t, void *hj);
+
+/* ------------------------------------------------------- one received frame */
+
+typedef enum {
+	HIFI_LINK_GOT_USED,  /* counted (DATA, a PONG) */
+	HIFI_LINK_GOT_REPLY, /* a PING: send *pong back (its t3 stamped at the send) */
+	HIFI_LINK_GOT_BAD,   /* not one of ours, or damaged: counted in rx->bad */
+	HIFI_LINK_GOT_OTHER, /* a good frame this end has no use for */
+} hifi_link_got_t;
+
+/* A radio callback's copy of a received value into its queue item's buffer
+ * (cap bytes): the length copied, 0 (nothing copied) when there is nothing
+ * or it is longer than cap. The item then goes to hifi_link_receive, where
+ * a length of 0 counts as bad. */
+size_t hifi_link_take(uint8_t *dst, size_t cap, const uint8_t *src, size_t n);
+
+/* What an end does with the bytes of one frame from the radio, whatever
+ * carried them (n as received: never trusted). An echo end answers PINGs and
+ * counts DATA into rx; an end that takes PONGs (pongs) counts them into tx.
+ * rx is always needed, tx only with pongs. t_us: the arrival time. */
+hifi_link_got_t hifi_link_receive(hifi_link_rx_t *rx, hifi_link_tx_t *tx, bool echo, bool pongs, const uint8_t *buf,
+                                  size_t n, int64_t t_us, hifi_link_frame_t *pong);
 
 /* "30:76:f5:2d:74:3c", "30-76-..." or "3076f52d743c" (a board's device id) */
 bool hifi_link_parse_mac(const char *s, uint8_t mac[6]);
