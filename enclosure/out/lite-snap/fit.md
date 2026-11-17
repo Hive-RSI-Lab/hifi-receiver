@@ -1,10 +1,10 @@
 # Fit: enclosure
 
-29/31 checks pass, some fail.
+30/31 checks pass, some fail.
 
 | check | result | measured |
 |---|---|---|
-| board_clear | fail | overlap_mm3=33.173 |
+| board_clear | pass | overlap_mm3=0 |
 | board_gap | pass | min_gap_mm=0.1, within_mm3=0 |
 | lid_covers | pass | open_mm2=0.0, where=[] |
 | parts_apart | pass | clashes=[] |
@@ -28,9 +28,9 @@
 | hole_H3 | pass | supported=1.0 |
 | screw_H3 | pass | axis_blocked_mm3=1.492, peg=True |
 | bed_base | pass | size_mm=[124.0, 96.0, 37.6], bed_mm=[180, 180, 180] |
-| bed_lid | pass | size_mm=[124.0, 96.0, 31.1], bed_mm=[180, 180, 180] |
+| bed_lid | pass | size_mm=[124.0, 96.0, 30.9], bed_mm=[180, 180, 180] |
 | overhang_base | pass | steep_mm2=0, faces=[], max_deg=45.0 |
-| bridge_base | pass | flat_faces=14, worst_bridge_mm=13.01, worst_ledge_mm=0.11, max_bridge_mm=15.0, max_ledge_mm=1.0, unsupported=[] |
+| bridge_base | pass | flat_faces=14, worst_bridge_mm=14.51, worst_ledge_mm=0.11, max_bridge_mm=15.0, max_ledge_mm=1.0, unsupported=[] |
 | wall_base | pass | min_wall_mm=0.8, thin=[] |
 | overhang_lid | pass | steep_mm2=0, faces=[], max_deg=45.0 |
 | bridge_lid | pass | flat_faces=12, worst_bridge_mm=2.25, worst_ledge_mm=1.01, max_bridge_mm=15.0, max_ledge_mm=1.0, unsupported=[] |
@@ -47,13 +47,13 @@
 
 ## Material
 
-- base: 56.2 cm3, 71.3 g PETG if solid
-- lid: 30.6 cm3, 38.8 g PETG if solid
+- base: 56.0 cm3, 71.2 g PETG if solid
+- lid: 30.9 cm3, 39.3 g PETG if solid
 
 ## Print (PrusaSlicer 2.8.1, mech/slicer.ini)
 
 | part | filament g | support g | support cm3 | time | cost |
 |---|---|---|---|---|---|
-| base | 73.25 | 3.42 | 2.7 | 4h 27m 17s | 1.83 |
-| lid | 36.76 | 0.52 | 0.41 | 2h 26m 31s | 0.92 |
-| all | 110.01 | 3.94 | 3.11 | 6h 53m | 2.75 |
+| base | 73.09 | 3.42 | 2.7 | 4h 27m 0s | 1.83 |
+| lid | 37.28 | 0.6 | 0.47 | 2h 29m 16s | 0.93 |
+| all | 110.37 | 4.02 | 3.17 | 6h 56m | 2.76 |

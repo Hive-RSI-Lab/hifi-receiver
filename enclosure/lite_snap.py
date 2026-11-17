@@ -27,17 +27,21 @@ FIT = lite.FIT
 PIN_D = 2.85        # into the 3.2 mm mounting holes: 0.17 mm a side
 PIN_H = 1.3         # above the standoff, under the board's top face (1.6)
 POST_OD = 6.0       # the lid's posts onto the board round each hole
-POST_GAP = 0.1      # post end over the board top: no preload, so nothing pushes the lid up
-# Snap hooks: a 1.4 mm PLA cantilever 14 mm long whose catch moves 1.0 mm going on: ~1.1 % strain.
+POST_GAP = 0.3      # post end over the board top: no preload, so nothing pushes the lid up
+# Snap hooks: a 1.6 mm PLA cantilever 18 mm long whose catch moves 1.8 mm going on: ~1.3 % strain.
+# v1 (1.4 x 14 mm, 1.0 mm catch, 0.1 mm window play) didn't engage: the catch reached only 0.75 mm past
+# the wall's inner face (the lip gap takes 0.25) and any lift of the lid held it above the window.
 HOOK_Y = 50.0       # both hooks' centre (y): W clear of the antenna (y < 34) and the RCA jacks (y > 70)
-HOOK_W = 12.0       # along the wall
-HOOK_T = 1.4        # thickness
-HOOK_L = 14.0       # lid underside to the hook's tip
-CATCH = 1.0         # how far the catch stands out from the hook, into the window
-CATCH_FLAT = 0.8    # the catch's square face before its 45-degree lead-in
-WIN_PLAY = 0.1      # window top over the catch: the lid lifts no more than this
+HOOK_W = 13.5       # along the wall
+HOOK_T = 1.6        # thickness
+HOOK_L = 18.0       # lid underside to the hook's tip
+CATCH = 1.8         # how far the catch stands out from the hook, into the window
+CATCH_FLAT = 1.2    # the catch's square face before its 45-degree lead-in
+CATCH_HOLD = 1.0    # the flat (holding) part of the catch's top; outside it the top slopes 45 deg so the flipped lid
+                    # prints it without a ledge over 1 mm
+WIN_PLAY = 0.6      # window top over the catch: room for the lid sitting a little high
 WIN_EDGE = 0.5      # window wider than the hook each side
-WIN_BELOW = 3.0     # window bottom under the catch's top: room to get a tip onto the catch
+WIN_BELOW = 4.2     # window bottom under the catch's top: room to get a tip onto the catch
 
 
 def base(t: CoreTray, feats: dict, ports=("J1", "U9")):
@@ -73,7 +77,7 @@ def lid(t: CoreTray, feats: dict):
 
 
 def catch_z(t):
-    return t.z_top - HOOK_L + CATCH_FLAT + CATCH
+    return t.z_top - HOOK_L + CATCH_FLAT + CATCH + (CATCH - CATCH_HOLD)
 
 
 def hook(t, side):
@@ -88,7 +92,8 @@ def hook(t, side):
     xc = xo + s * CATCH                                # the catch's outer face
     zc = catch_z(t)
     zt, zb = t.z_top + 0.01, t.z_top - HOOK_L
-    pts = [(xn, zt), (xo, zt), (xo, zc), (xc, zc), (xc, zc - CATCH_FLAT), (xo, zb), (xn, zb)]
+    xh, zs = xo + s * CATCH_HOLD, zc - (CATCH - CATCH_HOLD)
+    pts = [(xn, zt), (xo, zt), (xo, zc), (xh, zc), (xc, zs), (xc, zs - CATCH_FLAT), (xo, zb), (xn, zb)]
     prof = Polygon(*[(x, z) for x, z in pts], align=None)
     solid = extrude(Plane.XZ * prof, amount=HOOK_W)    # Plane.XZ's normal is -y
     bb = solid.bounding_box()
