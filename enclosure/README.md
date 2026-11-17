@@ -68,6 +68,19 @@ tip hangs from the pad and stops 0.4 mm above the switch. Pressing the pad
 bends the arm about 0.65 mm and clicks the switch; the arm springs back. The
 lid's lip is cut away under each pad's front edge.
 
+### Screwless (lite_snap.py)
+
+`lite_snap.py` builds the same box with no screws (`out/lite-snap/`). The
+board drops onto a 2.85 mm pin in each mounting hole, and the lid's posts come
+down to 0.1 mm over the board round each hole, so the board can't move once
+the lid is on. The lid clicks on: a 1.4 mm hook hangs inside the W and E walls
+at y = 50, and its 1 mm catch springs out into a window in the wall. To open,
+push each catch in through its window (pen tip or fingernail) and lift that
+side. Print files: `out/lite-snap/a1mini-pla-base/lite-snap-base.3mf`
+(1 h 44, 72 g) and `out/lite-snap/a1mini-pla-lid/lite-snap-lid.3mf`
+(1 h 22, 35 g), same settings as above. If the catch is too stiff or too
+loose, change `CATCH` or `HOOK_T`; if the board won't drop on, change `PIN_D`.
+
 ### Antenna
 
 The ESP32 module's antenna is at the west edge, so `lite.py` keeps the box out of
