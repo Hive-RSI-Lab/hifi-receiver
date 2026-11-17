@@ -1,0 +1,45 @@
+{
+ "base": {
+  "filament_g": 73.39,
+  "filament_m": 24.02,
+  "filament_cm3": 57.79,
+  "cost": 1.83,
+  "support_cm3": 2.91,
+  "support_g": 3.7,
+  "time": "4h 30m 9s",
+  "time_s": 16209,
+  "by_type_g": {
+   "bridge infill": 3.58,
+   "external perimeter": 16.12,
+   "internal infill": 0.46,
+   "overhang perimeter": 0.08,
+   "perimeter": 29.2,
+   "skirt/brim": 0.04,
+   "solid infill": 17.65,
+   "support material": 3.39,
+   "support material interface": 0.3,
+   "top solid infill": 2.56
+  },
+  "support_share": 0.05
+ },
+ "lid": {
+  "filament_g": 34.89,
+  "filament_m": 11.42,
+  "filament_cm3": 27.47,
+  "cost": 0.87,
+  "support_cm3": 0.0,
+  "support_g": 0.0,
+  "time": "2h 15m 19s",
+  "time_s": 8119,
+  "by_type_g": {
+   "bridge infill": 3.43,
+   "external perimeter": 4.72,
+   "internal infill": 0.89,
+   "perimeter": 6.39,
+   "skirt/brim": 0.04,
+   "solid infill": 16.93,
+   "top solid infill": 2.48
+  },
+  "support_share": 0.0
+ }
+}

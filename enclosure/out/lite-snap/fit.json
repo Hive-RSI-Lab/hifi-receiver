@@ -1,0 +1,310 @@
+{
+ "ok": false,
+ "checks": [
+  {
+   "name": "board_clear",
+   "ok": true,
+   "overlap_mm3": 0
+  },
+  {
+   "name": "board_gap",
+   "ok": true,
+   "min_gap_mm": 0.1,
+   "within_mm3": 0
+  },
+  {
+   "name": "lid_covers",
+   "ok": true,
+   "open_mm2": 0.0,
+   "where": []
+  },
+  {
+   "name": "parts_apart",
+   "ok": true,
+   "clashes": []
+  },
+  {
+   "name": "parts_clear",
+   "ok": true,
+   "hits": []
+  },
+  {
+   "name": "port_J1",
+   "ok": true,
+   "edge": "N",
+   "kind": "usb-c",
+   "blocked_mm3": 0,
+   "recess_mm": 2.97,
+   "max_recess_mm": 3.01
+  },
+  {
+   "name": "port_J2l",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.01
+  },
+  {
+   "name": "port_J2u",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.01
+  },
+  {
+   "name": "port_J3l",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.01
+  },
+  {
+   "name": "port_J3u",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.01
+  },
+  {
+   "name": "port_J4",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.01
+  },
+  {
+   "name": "port_J5",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.01
+  },
+  {
+   "name": "port_J6",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.01
+  },
+  {
+   "name": "port_J7",
+   "ok": true,
+   "edge": "N",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.0,
+   "max_recess_mm": 3.01
+  },
+  {
+   "name": "port_U9",
+   "ok": true,
+   "edge": "S",
+   "kind": "generic",
+   "blocked_mm3": 0,
+   "recess_mm": 3.5,
+   "max_recess_mm": 4.0
+  },
+  {
+   "name": "hole_H2",
+   "ok": true,
+   "supported": 1.0
+  },
+  {
+   "name": "screw_H2",
+   "ok": true,
+   "axis_blocked_mm3": 1.492,
+   "peg": true
+  },
+  {
+   "name": "hole_H4",
+   "ok": true,
+   "supported": 1.0
+  },
+  {
+   "name": "screw_H4",
+   "ok": true,
+   "axis_blocked_mm3": 1.492,
+   "peg": true
+  },
+  {
+   "name": "hole_H1",
+   "ok": true,
+   "supported": 1.0
+  },
+  {
+   "name": "screw_H1",
+   "ok": true,
+   "axis_blocked_mm3": 1.492,
+   "peg": true
+  },
+  {
+   "name": "hole_H3",
+   "ok": true,
+   "supported": 1.0
+  },
+  {
+   "name": "screw_H3",
+   "ok": true,
+   "axis_blocked_mm3": 1.492,
+   "peg": true
+  },
+  {
+   "name": "bed_base",
+   "ok": true,
+   "size_mm": [
+    124.0,
+    96.0,
+    37.6
+   ],
+   "bed_mm": [
+    180,
+    180,
+    180
+   ]
+  },
+  {
+   "name": "bed_lid",
+   "ok": true,
+   "size_mm": [
+    124.0,
+    96.0,
+    30.9
+   ],
+   "bed_mm": [
+    180,
+    180,
+    180
+   ]
+  },
+  {
+   "name": "overhang_base",
+   "ok": true,
+   "steep_mm2": 0,
+   "faces": [],
+   "max_deg": 45.0
+  },
+  {
+   "name": "bridge_base",
+   "ok": true,
+   "flat_faces": 14,
+   "worst_bridge_mm": 14.51,
+   "worst_ledge_mm": 0.11,
+   "max_bridge_mm": 15.0,
+   "max_ledge_mm": 1.0,
+   "unsupported": []
+  },
+  {
+   "name": "wall_base",
+   "ok": true,
+   "min_wall_mm": 0.8,
+   "thin": []
+  },
+  {
+   "name": "overhang_lid",
+   "ok": true,
+   "steep_mm2": 0,
+   "faces": [],
+   "max_deg": 45.0
+  },
+  {
+   "name": "bridge_lid",
+   "ok": true,
+   "flat_faces": 12,
+   "worst_bridge_mm": 2.25,
+   "worst_ledge_mm": 1.01,
+   "max_bridge_mm": 15.0,
+   "max_ledge_mm": 1.0,
+   "unsupported": []
+  },
+  {
+   "name": "wall_lid",
+   "ok": false,
+   "min_wall_mm": 0.8,
+   "thin": [
+    [
+     23.5,
+     6.5,
+     0.2,
+     24.3,
+     8.1,
+     0.2
+    ],
+    [
+     22.8,
+     6.7,
+     0.2,
+     23.5,
+     8.3,
+     0.2
+    ]
+   ]
+  }
+ ],
+ "top_access": [
+  {
+   "ref": "D2",
+   "open_above": true,
+   "under": []
+  },
+  {
+   "ref": "U9",
+   "open_above": false,
+   "under": [
+    "lid"
+   ]
+  },
+  {
+   "ref": "J8",
+   "open_above": false,
+   "under": [
+    "lid"
+   ]
+  },
+  {
+   "ref": "SW3",
+   "open_above": false,
+   "under": [
+    "lid"
+   ]
+  },
+  {
+   "ref": "SW2",
+   "open_above": false,
+   "under": [
+    "lid"
+   ]
+  },
+  {
+   "ref": "SW1",
+   "open_above": false,
+   "under": [
+    "lid"
+   ]
+  }
+ ],
+ "material": {
+  "base": {
+   "volume_cm3": 56.0,
+   "solid_petg_g": 71.2
+  },
+  "lid": {
+   "volume_cm3": 30.9,
+   "solid_petg_g": 39.3
+  }
+ },
+ "build_s": 1.8
+}
