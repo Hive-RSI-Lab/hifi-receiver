@@ -5,7 +5,8 @@
 # (about 12 KB free with the A2DP source in) has no room for ESP-NOW or BLE
 # once a stream is up. This one moves squeezelite's decode and stream thread
 # stacks (14 + 4 KB, pthreads, so internal in IDF 4.4) to PSRAM (patches/0019,
-# CONFIG_HIFI_LAB_PSRAM_STACKS). Lab images only.
+# CONFIG_HIFI_PSRAM_STACKS, now on in every Lite image via lite-main) and adds
+# the lab_flac experiment (CONFIG_HIFI_LAB_PSRAM_STACKS).
 CONFIG_HIFI_LAB_PSRAM_STACKS=y
 CONFIG_HIFI_LAB=y
 CONFIG_ESP_TASK_WDT_PANIC=y

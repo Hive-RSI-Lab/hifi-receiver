@@ -606,6 +606,10 @@ CONFIG_SPIRAM_CACHE_WORKAROUND_STRATEGY_MEMW=y
 
 # CONFIG_SPIRAM_BANKSWITCH_ENABLE is not set
 CONFIG_SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY=y
+# squeezelite's decode and stream thread stacks (14 + 4 KB) in PSRAM
+# (patches/0019): with Spotify playing, Lite 1 fell to 11 KB of internal RAM
+# free and panicked; this gives about 19 KB back.
+CONFIG_HIFI_PSRAM_STACKS=y
 # CONFIG_SPIRAM_OCCUPY_HSPI_HOST is not set
 CONFIG_SPIRAM_OCCUPY_VSPI_HOST=y
 # CONFIG_SPIRAM_OCCUPY_NO_HOST is not set
