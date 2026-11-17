@@ -63,6 +63,13 @@
 #define PIN_RMII_CRS_DV 27
 #define PIN_MDC 23
 #define PIN_MDIO 18
+/* what a LAN page's cfg-hw-* setting may not point squeezelite at (L8,
+ * hifi_gate.h): the Ethernet, the expander's INT and the current sense. The
+ * DAC's I2S and I2C pins stay allowed: the UI's DAC form sends them back. */
+#define HIFI_LAN_RESERVED_PINS                                                                    \
+	(1ULL << PIN_ETH_CLK | 1ULL << PIN_RMII_TXD0 | 1ULL << PIN_RMII_TX_EN | 1ULL << PIN_RMII_TXD1 | \
+	 1ULL << PIN_RMII_RXD0 | 1ULL << PIN_RMII_RXD1 | 1ULL << PIN_RMII_CRS_DV | 1ULL << PIN_MDC |     \
+	 1ULL << PIN_MDIO | 1ULL << PIN_EXP_INT | 1ULL << 34)
 
 /* the I2C parts */
 #define ES9018_ADDR 0x48 /* Sabre ES9018K2M, the mains DAC */

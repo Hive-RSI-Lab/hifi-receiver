@@ -47,6 +47,14 @@ bool hifi_lan_config_secret(const char *key);
  * nvs_*, api, hifi, update, recovery, restart_ota, join, i2c*, sleep. */
 bool hifi_lan_command_ok(const char *line);
 
+/* cfg-hw-* lines (L8), from the LAN and in autoexecN: only the command's own
+ * options, by exact long name ("--data 26" or "--data=26"), and no pin
+ * option may name a reserved pin. Always reserved: the flash (GPIO 6-11)
+ * and the WROVER's PSRAM (16, 17); the board adds the pins its firmware
+ * holds (HIFI_LAN_RESERVED_PINS in its header) before the web server starts. */
+#define HIFI_GATE_PINS_ALWAYS (0x3FULL << 6 | 3ULL << 16)
+void hifi_gate_reserve_pins(uint64_t mask);
+
 /* A line that may be kept in autoexecN (run at every boot): squeezelite's
  * command line (no option that makes it exit) or a cfg-* setter, one line. Also checked where the firmware
  * copies a saved line back into autoexec1 (the Bluetooth test). */

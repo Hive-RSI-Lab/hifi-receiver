@@ -1323,7 +1323,10 @@ void hifi_dsp_process(uint8_t *buf, uint32_t frames, int bytes_per_frame, uint32
 	hifi_bsp_audio(buf, frames, bytes_per_frame);
 }
 
-void hifi_http_register(httpd_handle_t server) { hifi_http_start(server, &hifi_ops); }
+void hifi_http_register(httpd_handle_t server) {
+	hifi_gate_reserve_pins(HIFI_LAN_RESERVED_PINS); /* whichever starts first (L8) */
+	hifi_http_start(server, &hifi_ops);
+}
 
 /* Every failed allocation goes to the console (and so to the crash log): a
  * Bluetooth connect panicked in btu_start_timer when its timer couldn't be
@@ -1338,6 +1341,7 @@ static void alloc_failed(size_t size, uint32_t caps, const char *fn) {
 }
 
 static bool hifi_init(void) {
+	hifi_gate_reserve_pins(HIFI_LAN_RESERVED_PINS); /* first: bt_test_boot checks a line (L8) */
 	heap_caps_register_failed_alloc_callback(alloc_failed);
 	hifi_diag_init();
 	factory_boot();

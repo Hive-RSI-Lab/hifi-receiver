@@ -1,6 +1,7 @@
 /* the LAN gate (core/hifi_gate.c): DNS rebinding and cross-site requests */
 #include "check.h"
 #include "hifi_gate.h"
+#include "../components/hifi/esp/hifi_board_lite.h" /* the Lite's HIFI_LAN_RESERVED_PINS */
 
 static const char *const names[] = {"hifi-lite-4", "squeezelite-a1b2c3"};
 #define ALLOW(h, o) CHECK(hifi_gate_allow(h, o, names, 2))
@@ -106,7 +107,7 @@ int main(void) {
 	CHECK(!hifi_gate_allow("hifi-lite-4", NULL, NULL, 0));
 
 	/* squeezelite's UI from the LAN */
-	CHECK(hifi_lan_command_ok("cfg-hw-dac -m 1"));
+	CHECK(hifi_lan_command_ok("cfg-hw-dac --model_name ES8388"));
 	CHECK(hifi_lan_command_ok("  squeezelite -o I2S -n kitchen"));
 	CHECK(hifi_lan_command_ok("restart"));
 	CHECK(hifi_lan_command_ok("version"));
@@ -160,7 +161,7 @@ int main(void) {
 	CHECK(!hifi_lan_config_ok("autoexec1", "  restart"));
 	CHECK(!hifi_lan_config_ok("autoexec2", "version"));
 	CHECK(!hifi_lan_config_ok("autoexec2", "tasks"));
-	CHECK(hifi_lan_config_ok("autoexec2", "cfg-hw-dac -m 1"));
+	CHECK(hifi_lan_config_ok("autoexec2", "cfg-hw-dac --model_name ES8388"));
 	CHECK(hifi_autoexec_ok("squeezelite -o BT -n kitchen"));
 	CHECK(!hifi_autoexec_ok("restart"));
 	CHECK(!hifi_autoexec_ok("nvs_set hifi_relay_key str -v x"));
@@ -180,6 +181,63 @@ int main(void) {
 	CHECK(!hifi_lan_command_ok("cfg-anything"));
 	CHECK(hifi_lan_command_ok("cfg-syst-name -n kitchen"));
 	CHECK(hifi_lan_command_ok("cfg-syst-services --AirPlay"));
+
+	/* L8: cfg-hw-* takes its own options by exact long name, and no pin
+	 * option names a reserved pin. Always: flash 6-11, PSRAM 16-17 */
+	CHECK(hifi_lan_command_ok("cfg-hw-dac --model_name ES8388 --clock 27 --wordselect 25 --data 26 --dac_sda 33 --dac_scl 32 --dac_i2c 16"));
+	CHECK(hifi_lan_command_ok("cfg-hw-dac --model_name \"ES8388\" --clock=27 --mute_gpio -1 --mute_level"));
+	CHECK(hifi_lan_command_ok("cfg-hw-dac --clear"));
+	CHECK(hifi_lan_command_ok("cfg-hw-dac"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 7"));	   /* flash */
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data=11"));	   /* flash */
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --mute_gpio 16")); /* PSRAM */
+	CHECK(!hifi_lan_command_ok("cfg-hw-spdif --clock 1 --wordselect 2 --data 17"));
+	CHECK(hifi_lan_command_ok("cfg-hw-dac --dac_i2c 16")); /* an address, not a pin */
+	/* pins only in plain decimal: argtable reads 0x07, 0o7 and 7KB as numbers too */
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 0x07"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 0o7"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 7KB"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data +7"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data -7"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 64"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 007"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data \"\""));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data"));	   /* no value */
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data="));
+	/* no short options (cfg-hw-display gives -b to cs and back), no
+	 * abbreviations (getopt_long takes --mute as --mute_gpio), no positionals */
+	CHECK(!hifi_lan_command_ok("cfg-hw-spi -d 7"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-display -b 7"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --mute 7"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --mute 20"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 26 x"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac -- --data 7"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --clear=1"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --A 5"));	   /* rotary's, not dac's */
+	/* a value option takes the next word whatever it is, as getopt does */
+	CHECK(hifi_lan_command_ok("cfg-hw-display --type SPI --depth -1 --cs 5 --back 2 --reset 15 --width 128 --height 64"));
+	CHECK(hifi_lan_command_ok("cfg-hw-ledvu --type WS2812 --length 8 --gpio 22"));
+	CHECK(hifi_lan_command_ok("cfg-hw-rotary --A 5 --B 13 --SW 15 --knobonly --timer 350"));
+	CHECK(hifi_lan_command_ok("cfg-hw-i2c --port 0 --speed 400000 --sda 33 --scl 32"));
+	CHECK(hifi_lan_command_ok("cfg-hw-spi --clk 14 --data 13 --miso 12 --dc 15 --host 1"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-ledvu --type WS2812 --length 8 --gpio 9"));
+	CHECK(!hifi_autoexec_ok("cfg-hw-dac --data 8")); /* autoexecN too */
+	CHECK(hifi_lan_config_ok("autoexec2", "cfg-hw-ledvu --type WS2812 --length 8 --gpio 22"));
+	CHECK(!hifi_lan_config_ok("autoexec2", "cfg-hw-ledvu --type WS2812 --length 8 --gpio 10"));
+	/* the Lite's own: the power path, the amp, the sense inputs */
+	CHECK(hifi_lan_command_ok("cfg-hw-ledvu --type WS2812 --length 8 --gpio 18"));
+	hifi_gate_reserve_pins(HIFI_LAN_RESERVED_PINS);
+	CHECK(!hifi_lan_command_ok("cfg-hw-ledvu --type WS2812 --length 8 --gpio 18")); /* PVDD_EN */
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --mute_gpio 21"));		     /* AMP_SDZ */
+	CHECK(!hifi_lan_command_ok("cfg-hw-rotary --A 4 --B 5"));		     /* PD PG */
+	CHECK(!hifi_lan_command_ok("cfg-hw-rotary --A 5 --B 13 --SW 23"));	     /* FAULTZ */
+	CHECK(!hifi_lan_command_ok("cfg-hw-i2c --sda 34 --scl 32"));		     /* VBUS sense */
+	CHECK(!hifi_lan_command_ok("cfg-hw-spi --clk 39"));			     /* PVDD sense */
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 9"));			     /* still flash */
+	/* the codec's own pins stay: the UI's DAC form sends them back */
+	CHECK(hifi_lan_command_ok("cfg-hw-dac --model_name ES8388 --clock 27 --wordselect 25 --data 26 --dac_sda 33 --dac_scl 32"));
+	/* the other cfg-* setters aren't hardware: unchanged */
+	CHECK(hifi_lan_command_ok("cfg-syst-name -n 18"));
 	CHECK(hifi_autoexec_ok("cfg-audio-general -v 50"));
 	/* squeezelite options that make it exit (and reboot the board 60 s later,
 	 * at every boot), or that this build doesn't know */
