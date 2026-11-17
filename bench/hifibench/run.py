@@ -62,8 +62,9 @@ def amp_powered(state: dict) -> bool:
 
 
 # Self-test items that can't pass while the board sits on 5 V: no contract, so
-# no PVDD and no amp (hifi_main.c op_selftest; the mock's names too)
-FAIL_ON_5V = ("pd_contract", "pvdd_on", "pvdd_sensed", "amp_no_fault", "amp_faultz_high")
+# no PVDD and no amp, so no loopback tone either (hifi_main.c op_selftest; the mock's names too)
+FAIL_ON_5V = ("pd_contract", "pvdd_on", "pvdd_sensed", "amp_no_fault", "amp_faultz_high",
+              "loopback")
 # ... and before --wifi has set the network (stage 1 sets it after the self-test)
 FAIL_OFFLINE = ("network", "wifi_or_eth_up")
 
