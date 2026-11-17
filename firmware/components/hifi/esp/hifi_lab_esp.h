@@ -24,3 +24,4 @@ void hifi_lab_esp_finished(const char *name, uint32_t run, bool ok);
 
 /* the experiments (esp/lab_*.c) */
 extern const hifi_lab_exp_t lab_espnow;
+extern const hifi_lab_exp_t lab_ble; /* the BLE lab image only (CONFIG_BT_BLE_ENABLED) */
