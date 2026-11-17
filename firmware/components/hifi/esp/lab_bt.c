@@ -64,6 +64,7 @@ static esp_bluedroid_status_t bd_status(void) {
 #endif
 
 extern int hifi_sink_source(void) __attribute__((weak)); /* 2: Bluetooth plays (decode_external.c) */
+extern void hifi_bt_sink_acl_reset(void) __attribute__((weak)); /* the sink's ACL table (patch 0018) */
 
 typedef enum { MODE_OFF, MODE_QUIET } mode_t_;
 
@@ -143,6 +144,8 @@ static int start(uint32_t run, const char *body, char *err, size_t n) {
 			snprintf(err, n, "esp_bluedroid_disable: %s", esp_err_to_name(e));
 			return 503;
 		}
+		/* the disable dropped every ACL link without a disconnect event */
+		if (hifi_bt_sink_acl_reset) hifi_bt_sink_acl_reset();
 		vTaskDelay(pdMS_TO_TICKS(400)); /* the sink's shutdown waits too: the controller crashes otherwise */
 		if ((e = esp_bt_controller_disable()) != ESP_OK) {
 			note(why, sizeof(why), "esp_bt_controller_disable", e);
