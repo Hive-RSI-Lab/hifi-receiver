@@ -663,7 +663,7 @@ void hifi_bsp_info(hifi_info_t *i) {
 	i->psram_mb = heap_caps_get_total_size(MALLOC_CAP_SPIRAM) ? 8 : 0; /* WROVER-E N8R8 */
 	i->caps = (hifi_caps_t) {
 		.dj_direct = true, .line = true, .eq_min_db = -12, .eq_max_db = 12,
-		.sub_count = 2, .sub_crossover = false, .sub_per_sub = false,
+		.sub_count = 2, .sub_crossover = false, .sub_per_sub = false, .sub_max_db = 0,
 		.zones = HIFI_ZONES, .eth = true, .pdo_v_max = 28,
 	};
 }

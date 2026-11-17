@@ -147,6 +147,7 @@ void hifi_bsp_info(hifi_info_t *i) {
 	i->caps = (hifi_caps_t) {
 		.dj_direct = true, .eq_min_db = -12, .eq_max_db = 12,
 		.sub_count = 2, .sub_crossover = false, .sub_per_sub = false,
+		.sub_max_db = (SUB_CODE_MAX - 30) * 1.5f,
 		.zones = 1, .eth = false, .pdo_v_max = 20,
 	};
 }

@@ -88,7 +88,8 @@ class API(unittest.TestCase):
             ("volume", {"volume": 90}, lambda s: s["audio"]["volume"] == 60),
             ("volume", {"mute": True}, lambda s: s["audio"]["mute"]),
             ("eq", {"gains": [3] * 10}, lambda s: s["audio"]["eq"] == [3] * 10),
-            ("sub", {"level_db": -4, "on": False}, lambda s: (s["audio"]["sub"]["level_db"], s["audio"]["sub"]["on"]) == (-4.5, False)),
+            ("sub", {"level_db": -13, "on": False}, lambda s: (s["audio"]["sub"]["level_db"], s["audio"]["sub"]["on"]) == (-13.5, False)),
+            ("sub", {"level_db": 3}, lambda s: s["audio"]["sub"]["level_db"] == -9.0),  # Lite tops out at -9 dB
             ("ir/learn", {"action": "volup"}, lambda s: s["ir"]["learning"] == "volup"),
             ("ir/forget", {}, lambda s: s["ir"]["learned"] == []),
             ("loudness", {"boost_db": 6}, lambda s: s["audio"]["boost"]["db"] == 6),

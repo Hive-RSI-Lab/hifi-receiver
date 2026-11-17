@@ -45,7 +45,7 @@ static void m_info(hifi_info_t *i) {
 	i->flash_mb = 8;
 	i->psram_mb = 8;
 	snprintf(i->name, sizeof(i->name), "%s", m.name[0] ? m.name : "Living room");
-	i->caps = (hifi_caps_t) {.dj_direct = true, .line = m.core, .eq_min_db = -12, .eq_max_db = 12, .sub_count = 2,
+	i->caps = (hifi_caps_t) {.dj_direct = true, .line = m.core, .eq_min_db = -12, .eq_max_db = 12, .sub_count = 2, .sub_max_db = m.core ? 0 : -9,
 				 .zones = 1, .pdo_v_max = 20};
 	if (m.loud) {
 		i->caps.boost_max_db = 9;
@@ -195,7 +195,7 @@ static void info_and_state(void) {
 		       "\"upstream\":\"squeezelite-esp32 master-v4.3 ee1720c\",\"api\":1,\"name\":\"Living room\","
 		       "\"mac\":\"24:0a:c4:12:34:56\",\"hostname\":\"squeezelite-123456\",\"flash_mb\":8,\"psram_mb\":8,"
 		       "\"caps\":{\"line_modes\":[\"dj_direct\"],\"eq_bands\":[31,62,125,250,500,1000,2000,4000,8000,16000],"
-		       "\"eq_min\":-12,\"eq_max\":12,\"sub\":{\"count\":2,\"crossover\":false,\"per_sub\":false},"
+		       "\"eq_min\":-12,\"eq_max\":12,\"sub\":{\"count\":2,\"crossover\":false,\"per_sub\":false,\"max_db\":-9.0},"
 		       "\"zones\":1,\"eth\":false,\"pdo_v_max\":20,\"channel\":true,\"led\":false,\"backlight\":false}}");
 
 	m.power_on = true;

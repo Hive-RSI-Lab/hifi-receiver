@@ -27,12 +27,12 @@ CONTROL = ("volup", "voldown", "toggle", "play", "pause", "stop", "next", "prev"
 IR_ACTIONS = ("volup", "voldown", "mute", "toggle", "next", "prev", "input", "power")
 
 CAPS = {
-    "lite": {"line_modes": ["dj_direct"], "sub": {"count": 2, "crossover": False, "per_sub": False},
+    "lite": {"line_modes": ["dj_direct"], "sub": {"count": 2, "crossover": False, "per_sub": False, "max_db": -9.0},
              "zones": 1, "eth": False, "pdo_v_max": 20, "channel": True, "led": False, "backlight": False},
-    "plus": {"line_modes": ["dj_direct", "line"], "sub": {"count": 2, "crossover": True, "per_sub": True},
+    "plus": {"line_modes": ["dj_direct", "line"], "sub": {"count": 2, "crossover": True, "per_sub": True, "max_db": 0.0},
              "zones": 1, "eth": True, "pdo_v_max": 28, "channel": False, "led": True, "backlight": False},
     "ultra": {"line_modes": ["dj_direct", "line", "optical"],
-              "sub": {"count": 2, "crossover": True, "per_sub": True},
+              "sub": {"count": 2, "crossover": True, "per_sub": True, "max_db": 0.0},
               "zones": 2, "eth": True, "pdo_v_max": 28, "channel": False, "led": True, "backlight": True},
 }
 BOARDS = {"lite": "lite-main", "plus": "core", "ultra": "core+ultra-front"}
@@ -301,7 +301,7 @@ class Receiver:
                 one["invert"] = boolean(b, "invert")
             return
         if "level_db" in b:  # the ES8388's LOUT2/ROUT2 in 1.5 dB steps on Lite (test-api.md)
-            sub["level_db"] = round(clamp(num(b, "level_db"), -30, 6, float) / 1.5) * 1.5
+            sub["level_db"] = round(clamp(num(b, "level_db"), -30, c.get("max_db", 6), float) / 1.5) * 1.5
         if "on" in b:
             sub["on"] = boolean(b, "on")
         for k, lo, hi in (("xover_hz", 40, 160),):

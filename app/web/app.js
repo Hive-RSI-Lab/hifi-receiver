@@ -285,7 +285,8 @@ function subCard() {
   const s = S.audio.sub, c = I.caps.sub;
   const rows = [h('div.row', {}, h('span.grow', {}, 'Sub outputs'), onOff(s.on, (on) => set('sub', { on })))];
   if (s.on) {
-    rows.push(line('Level', { min: -30, max: 6, step: 0.5 }, s.level_db, ' dB', (x) => set('sub', { level_db: x })));
+    rows.push(line('Level', { min: -30, max: c.max_db ?? 6, step: 0.5 }, s.level_db, ' dB', (x) => set('sub', { level_db: x })));
+    if ((c.max_db ?? 6) < 0) rows.push(h('p.dim', {}, `This model's sub outputs top out at ${c.max_db} dB.`));
     if (c.crossover) {
       rows.push(line('Crossover', { min: 40, max: 160, step: 5 }, s.xover_hz, ' Hz', (x) => set('sub', { xover_hz: x })));
       rows.push(h('div.row', {}, h('span.grow', {}, 'Take the deep bass off the main speakers'),

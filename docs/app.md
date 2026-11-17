@@ -153,12 +153,12 @@ firmware's rules for them: a volume outside 0–100 is a 400, not clamped.
 
 ```json
 "caps": {"line_modes": ["dj_direct"], "eq_bands": [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000],
-         "eq_min": -12, "eq_max": 12, "sub": {"count": 2, "crossover": false, "per_sub": false},
+         "eq_min": -12, "eq_max": 12, "sub": {"count": 2, "crossover": false, "per_sub": false, "max_db": -9.0},
          "zones": 1, "eth": false, "pdo_v_max": 20, "channel": true, "led": false, "backlight": false}
 ```
 
 On Plus, `line_modes` is `["dj_direct", "line"]`, and `crossover` and
-`per_sub` are `true`. Ultra adds `"optical"` and `zones: 2`. `channel`
+`per_sub` are `true` and `max_db` is 0. `sub.max_db` is the highest sub level the board allows (Lite: −9 dB, as its mute FETs leak above that). Ultra adds `"optical"` and `zones: 2`. `channel`
 (Lite: the Speaker output card, stereo, left, right or mono), `led` and
 `backlight` (Plus and Ultra, Ultra: the Lights card on Setup) say which of
 those controls the app shows.

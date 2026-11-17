@@ -39,7 +39,7 @@ What the box is.
  "caps": {"line_modes": ["dj_direct"],
           "eq_bands": [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000],
           "eq_min": -12, "eq_max": 12,
-          "sub": {"count": 2, "crossover": false, "per_sub": false},
+          "sub": {"count": 2, "crossover": false, "per_sub": false, "max_db": -9.0},
           "zones": 1, "eth": false, "pdo_v_max": 20,
           "channel": true, "led": false, "backlight": false}}
 ```

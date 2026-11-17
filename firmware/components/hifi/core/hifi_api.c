@@ -318,6 +318,7 @@ static int r_info(const hifi_ops_t *ops, char *out, size_t cap) {
 	hj_int(&j, "count", i.caps.sub_count);
 	hj_bool(&j, "crossover", i.caps.sub_crossover);
 	hj_bool(&j, "per_sub", i.caps.sub_per_sub);
+	hj_num(&j, "max_db", i.caps.sub_max_db, 1);
 	hj_obj_end(&j);
 	hj_int(&j, "zones", i.caps.zones);
 	hj_bool(&j, "eth", i.caps.eth);

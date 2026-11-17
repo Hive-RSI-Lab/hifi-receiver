@@ -31,6 +31,7 @@ typedef struct {
 	float eq_min_db, eq_max_db;
 	int sub_count;
 	bool sub_crossover, sub_per_sub;
+	float sub_max_db;  /* the highest sub level the board sets (Lite -9: its mute FETs) */
 	int zones;
 	bool eth;
 	float pdo_v_max;
