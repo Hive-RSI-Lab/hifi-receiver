@@ -63,7 +63,8 @@ static const char *TAG = "lab_ble";
 typedef enum { ROLE_ECHO, ROLE_PING, ROLE_FLOOD } role_t;
 static const char *const ROLE_NAMES[] = {"echo", "ping", "flood"};
 
-/* how far the client got; the result names it when a run fails */
+/* how far the client got (the echo: advertise until its peer connects, ready
+ * while linked); the result names where the last run ended */
 typedef enum { PH_IDLE, PH_SCAN, PH_OPEN, PH_MTU, PH_FIND, PH_SUBSCRIBE, PH_READY, PH_ADVERTISE } phase_t;
 static const char *const PHASE_NAMES[] = {"idle", "scan", "open", "mtu", "find", "subscribe", "ready", "advertise"};
 
@@ -74,7 +75,7 @@ typedef enum { EV_FRAME, EV_READY, EV_LOST, EV_FAIL } ev_t;
 
 typedef struct {
 	uint8_t ev;
-	uint8_t len;
+	uint16_t len;
 	int64_t t_us;
 	uint8_t data[PAYLOAD_MAX];
 } rx_item_t;
@@ -106,7 +107,7 @@ static uint16_t h_svc, h_val, h_cccd; /* the server's handles */
 
 static volatile bool run, alive, connected, notify_on, congested;
 static volatile bool opening; /* a connect asked for and not yet answered (OPEN_EVT) */
-static volatile phase_t phase;
+static volatile phase_t phase, phase_end; /* now; where the last run ended */
 static role_t role;
 static uint8_t peer[6], peer_bt[6], self[6], self_bt[6], remote[6];
 static uint16_t conn_id, c_start, c_end, c_val, c_cccd; /* the client's handles */
@@ -141,12 +142,13 @@ static void post(ev_t ev, const uint8_t *data, size_t n) {
 	rx_item_t *it = cb_it;
 	it->ev = ev;
 	it->t_us = esp_timer_get_time();
-	it->len = (uint8_t) (n > PAYLOAD_MAX ? 0 : n);
+	it->len = (uint16_t) (n > PAYLOAD_MAX ? 0 : n);
 	if (data && it->len) memcpy(it->data, data, it->len);
 	if (xQueueSend(q, it, 0) != pdTRUE) q_full++;
 }
 
 static void failed(const char *why) {
+	if (!run) return; /* a late answer after stop */
 	if (!fail[0]) strlcpy(fail, why, sizeof(fail));
 	post(EV_FAIL, NULL, 0);
 }
@@ -250,7 +252,7 @@ static void gatts_cb(esp_gatts_cb_event_t event, esp_gatt_if_t gif, esp_ble_gatt
 			break;
 		}
 		gatts_if = gif;
-		esp_ble_gatts_create_attr_tab(DB, gif, IDX_N, 0);
+		if (esp_ble_gatts_create_attr_tab(DB, gif, IDX_N, 0) != ESP_OK) xSemaphoreGive(reg_sem);
 		break;
 	case ESP_GATTS_CREAT_ATTR_TAB_EVT:
 		if (p->add_attr_tab.status == ESP_GATT_OK && p->add_attr_tab.num_handle == IDX_N) {
@@ -278,6 +280,7 @@ static void gatts_cb(esp_gatts_cb_event_t event, esp_gatt_if_t gif, esp_ble_gatt
 		ci_timeout = p->connect.conn_params.timeout;
 		connected = true;
 		notify_on = false;
+		phase = PH_READY;
 		connects++;
 		t_link_us = esp_timer_get_time();
 		break;
@@ -294,7 +297,10 @@ static void gatts_cb(esp_gatts_cb_event_t event, esp_gatt_if_t gif, esp_ble_gatt
 		last_disc_reason = p->disconnect.reason;
 		mtu = 23;
 		xSemaphoreGive(closed_sem);
-		if (run && !advertise()) failed("advertising data refused"); /* the client may come back */
+		if (run) {
+			phase = PH_ADVERTISE; /* the client may come back */
+			if (!advertise()) failed("advertising data refused");
+		}
 		break;
 	case ESP_GATTS_MTU_EVT:
 		if (gif == gatts_if && role == ROLE_ECHO && connected && p->mtu.conn_id == conn_id) {
@@ -304,7 +310,8 @@ static void gatts_cb(esp_gatts_cb_event_t event, esp_gatt_if_t gif, esp_ble_gatt
 		break;
 	case ESP_GATTS_WRITE_EVT:
 		if (role != ROLE_ECHO || !connected || p->write.conn_id != conn_id) break;
-		if (p->write.handle == h_cccd && p->write.len == 2)
+		if (p->write.is_prep) other++; /* a long write: the lab's frames fit the MTU */
+		else if (p->write.handle == h_cccd && p->write.len == 2)
 			notify_on = p->write.value[0] & 1;
 		else if (p->write.handle == h_val && run)
 			post(EV_FRAME, p->write.value, p->write.len);
@@ -345,7 +352,13 @@ static void gattc_cb(esp_gattc_cb_event_t event, esp_gatt_if_t gif, esp_ble_gatt
 		opening = false;
 		xSemaphoreGive(closed_sem); /* teardown may be waiting for this answer */
 		if (!run || phase != PH_OPEN) {
-			if (p->open.status == ESP_GATT_OK) esp_ble_gattc_close(gif, p->open.conn_id);
+			/* a connect that outlived its run: take the link so it is closed and
+			 * start waits for it to go */
+			if (p->open.status == ESP_GATT_OK) {
+				conn_id = p->open.conn_id;
+				connected = true;
+				esp_ble_gattc_close(gif, conn_id);
+			}
 			break;
 		}
 		if (p->open.status != ESP_GATT_OK) {
@@ -368,7 +381,7 @@ static void gattc_cb(esp_gattc_cb_event_t event, esp_gatt_if_t gif, esp_ble_gatt
 		if (esp_ble_gattc_send_mtu_req(gif, conn_id) != ESP_OK) failed("MTU request refused");
 		break;
 	case ESP_GATTC_CFG_MTU_EVT:
-		if (phase != PH_MTU) break;
+		if (!run || phase != PH_MTU) break;
 		if (p->cfg_mtu.status == ESP_GATT_OK) mtu = p->cfg_mtu.mtu;
 		if (mtu > mtu_link) mtu_link = mtu;
 		phase = PH_FIND; /* a refused MTU leaves 23: the run goes on with short frames, or says len is too big */
@@ -378,14 +391,14 @@ static void gattc_cb(esp_gattc_cb_event_t event, esp_gatt_if_t gif, esp_ble_gatt
 		if (esp_ble_gattc_search_service(gif, conn_id, &u) != ESP_OK) failed("service search refused");
 		break;
 	case ESP_GATTC_SEARCH_RES_EVT:
-		if (p->search_res.srvc_id.uuid.len == ESP_UUID_LEN_128 &&
+		if (run && phase == PH_FIND && p->search_res.srvc_id.uuid.len == ESP_UUID_LEN_128 &&
 		    !memcmp(p->search_res.srvc_id.uuid.uuid.uuid128, SVC_UUID, 16)) {
 			c_start = p->search_res.start_handle;
 			c_end = p->search_res.end_handle;
 		}
 		break;
 	case ESP_GATTC_SEARCH_CMPL_EVT: {
-		if (phase != PH_FIND) break;
+		if (!run || phase != PH_FIND) break;
 		if (!c_start) {
 			failed("no lab service on the peer");
 			break;
@@ -404,7 +417,7 @@ static void gattc_cb(esp_gattc_cb_event_t event, esp_gatt_if_t gif, esp_ble_gatt
 		break;
 	}
 	case ESP_GATTC_REG_FOR_NOTIFY_EVT: {
-		if (phase != PH_SUBSCRIBE) break;
+		if (!run || phase != PH_SUBSCRIBE) break;
 		esp_gattc_descr_elem_t d;
 		uint16_t n = 1;
 		esp_bt_uuid_t u = {.len = ESP_UUID_LEN_16, .uuid.uuid16 = ESP_GATT_UUID_CHAR_CLIENT_CONFIG};
@@ -421,7 +434,7 @@ static void gattc_cb(esp_gattc_cb_event_t event, esp_gatt_if_t gif, esp_ble_gatt
 		break;
 	}
 	case ESP_GATTC_WRITE_DESCR_EVT:
-		if (phase != PH_SUBSCRIBE) break;
+		if (!run || phase != PH_SUBSCRIBE) break;
 		if (p->write.status != ESP_GATT_OK) {
 			failed("notify write failed");
 			break;
@@ -510,19 +523,25 @@ static void teardown(void) {
 		if (connected) esp_ble_gap_disconnect(remote);
 	} else {
 		if (phase == PH_SCAN) esp_ble_gap_stop_scanning();
-		if (connected) esp_ble_gattc_close(gattc_if, conn_id);
-		/* a connect still pending: cancel it (Bluedroid keeps trying for up to
-		 * 3 x 30 s otherwise, into the next run) */
-		else if (opening) esp_ble_gap_disconnect(remote);
+		if (connected) {
+			esp_ble_gattc_close(gattc_if, conn_id);
+			esp_ble_gap_disconnect(remote); /* the link too, if another app holds it */
+		}
+		/* a connect still pending can't be cancelled on IDF 4.4 (no
+		 * esp_ble_gattc_cancel_open, and a GAP disconnect needs a link): it
+		 * stays pending until CONFIG_BT_BLE_ESTAB_LINK_CONN_TOUT (30 s), start
+		 * refuses meanwhile, and a late OPEN is closed (gattc_cb) */
 	}
 	/* the link down and any connect answered before the next start (2 s;
 	 * start refuses while either is left) */
-	for (int i = 0; i < 20 && (connected || opening); i++) xSemaphoreTake(closed_sem, pdMS_TO_TICKS(100));
+	int64_t until = esp_timer_get_time() + 2000000;
+	while ((connected || opening) && esp_timer_get_time() < until) xSemaphoreTake(closed_sem, pdMS_TO_TICKS(100));
+	phase_end = phase;
 	phase = PH_IDLE;
 }
 
-static void one_run(void) {
-	uint32_t my_run = run_no;
+/* the run; true when it ended by itself (the lab frame is told) */
+static bool one_run(bool *ok_out) {
 	bool ok = true;
 	rx_item_t it;
 	uint32_t seq = 0;
@@ -540,7 +559,7 @@ static void one_run(void) {
 			ok = false;
 			break;
 		}
-		if (ready && role != ROLE_ECHO && len > (uint32_t) mtu - 3) {
+		if (ready && role != ROLE_ECHO && connected && len > (uint32_t) mtu - 3) {
 			snprintf(fail, sizeof(fail), "len %u over the link's %u", (unsigned) len, (unsigned) mtu - 3);
 			ok = false;
 			break;
@@ -549,9 +568,12 @@ static void one_run(void) {
 			/* the frames from the echo end (none expected) still get read */
 			while (xQueueReceive(q, &it, 0) == pdTRUE) {
 				if (it.ev == EV_FRAME) handle(&it);
-				else if (it.ev == EV_LOST || it.ev == EV_FAIL) ok = false, run = false;
+				else if (it.ev == EV_LOST || it.ev == EV_FAIL) {
+					ok = false;
+					break;
+				}
 			}
-			if (!run) break;
+			if (!ok || !run) break;
 			if (count && seq >= count) {
 				if (!done_at) done_at = now + 500000;
 				if (now >= done_at) break;
@@ -599,16 +621,19 @@ static void one_run(void) {
 	}
 	bool ended_itself = run;
 	teardown();
-	if (ended_itself) hifi_lab_esp_finished("ble", my_run, ok);
 	ESP_LOGI(TAG, "%s stopped%s%s: sent %u, pongs %u, rx %u", ROLE_NAMES[role], fail[0] ? ": " : "", fail, (unsigned) tx->sent,
 		 (unsigned) tx->pongs, (unsigned) rx->rx);
+	*ok_out = ok;
+	return ended_itself;
 }
 
 static void task_main(void *arg) {
 	for (;;) {
 		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-		one_run();
-		alive = false;
+		uint32_t my_run = run_no;
+		bool ok, ended = one_run(&ok);
+		alive = false; /* first: the lab frame may start the next run at once */
+		if (ended) hifi_lab_esp_finished("ble", my_run, ok);
 	}
 }
 
@@ -622,7 +647,7 @@ static uint32_t num(const char *body, const char *key, uint32_t dflt) {
 
 /* once: the queue, the worker, the callbacks and both GATT apps */
 static int setup(char *err, size_t n) {
-	if (worker && gatts_if != ESP_GATT_IF_NONE && gattc_if != ESP_GATT_IF_NONE) return 0;
+	if (worker && gatts_if != ESP_GATT_IF_NONE && h_val && gattc_if != ESP_GATT_IF_NONE) return 0;
 	if (esp_bluedroid_get_status() != ESP_BLUEDROID_STATUS_ENABLED) {
 		snprintf(err, n, "Bluetooth isn't up (turn the Bluetooth sink on)");
 		return 503;
@@ -665,9 +690,11 @@ static int setup(char *err, size_t n) {
 		esp_ble_gatt_set_local_mtu(LAB_MTU);
 		cbs_registered = true;
 	}
-	if (gatts_if == ESP_GATT_IF_NONE) {
+	if (gatts_if == ESP_GATT_IF_NONE || !h_val) {
 		xSemaphoreTake(reg_sem, 0);
-		esp_ble_gatts_app_register(APP_SERVER);
+		/* registered but the table failed last time: make the table again */
+		if (gatts_if == ESP_GATT_IF_NONE) esp_ble_gatts_app_register(APP_SERVER);
+		else esp_ble_gatts_create_attr_tab(DB, gatts_if, IDX_N, 0);
 		if (xSemaphoreTake(reg_sem, pdMS_TO_TICKS(3000)) != pdTRUE || gatts_if == ESP_GATT_IF_NONE || !h_val) {
 			snprintf(err, n, "the GATT server didn't register");
 			return 503;
@@ -745,6 +772,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	last_disc_reason = 0;
 	ci_units = ci_latency = ci_timeout = 0;
 	mtu_link = 0;
+	phase_end = PH_IDLE;
 	fail[0] = 0;
 	congested = notify_on = false;
 	memset(remote, 0, 6);
@@ -807,7 +835,7 @@ static void result(void *hj) {
 		mac_str(remote, m, sizeof(m));
 		hj_str(j, "remote", m);
 	}
-	hj_str(j, "phase", PHASE_NAMES[phase]);
+	hj_str(j, "phase", PHASE_NAMES[alive ? phase : phase_end]);
 	if (fail[0]) hj_str(j, "fail", fail);
 	hj_bool(j, "connected", connected);
 	if (t_link_us) hj_int(j, "link_ms", (int64_t) ((t_link_us - t_start_us) / 1000));
