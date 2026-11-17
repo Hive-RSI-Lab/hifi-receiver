@@ -1,5 +1,6 @@
 #include "hifi_link.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "hifi_json.h"
@@ -346,6 +347,15 @@ void hifi_link_tx_pong(hifi_link_tx_t *t, const hifi_link_frame_t *f, int64_t t4
 	if (t->rtt_min_us < 0 || delay < t->rtt_min_us) t->rtt_min_us = delay;
 	if (delay > t->rtt_max_us) t->rtt_max_us = delay;
 	t->rtt_sum_us += delay;
+	if (t->ow) {
+		if (t->ow_n < t->ow_cap) {
+			hifi_link_ow_t *o = &t->ow[t->ow_n++];
+			o->t1 = f->t1;
+			o->fwd_raw = f->t2 - f->t1;
+			o->back_raw = t4 - f->t3;
+		} else
+			t->ow_dropped++;
+	}
 
 	int64_t offset = ((f->t2 - f->t1) + (f->t3 - t4)) / 2;
 	if (t->win_any && f->t1 - t->win_start_us >= 1000000) close_window(t);
@@ -385,13 +395,15 @@ double hifi_link_tx_rtt_pct(const hifi_link_tx_t *t, double p) {
 	return (double) t->rtt_max_us;
 }
 
-/* the fit's sums with the window still open added, so a run's last second
- * counts too (without closing it: more pongs may land in it) */
-bool hifi_link_tx_drift_ppm(const hifi_link_tx_t *t, double *ppm) {
+/* the fit's line with the window still open added, so a run's last second
+ * counts too (without closing it: more pongs may land in it): the offset at
+ * time x0 + x seconds is y0 + b + m * x, m in us per s */
+static bool fit_line(const hifi_link_tx_t *t, double *m, double *b, int64_t *x0, int64_t *y0) {
 	double n = t->windows, sx = t->sx, sy = t->sy, sxx = t->sxx, sxy = t->sxy;
+	*x0 = t->windows ? t->x0_us : t->win_start_us;
+	*y0 = t->windows ? t->y0_us : t->win_offset_us;
 	if (t->win_any) {
-		int64_t x0 = t->windows ? t->x0_us : t->win_start_us, y0 = t->windows ? t->y0_us : t->win_offset_us;
-		double x = (t->win_start_us - x0) / 1e6, y = (double) (t->win_offset_us - y0);
+		double x = (t->win_start_us - *x0) / 1e6, y = (double) (t->win_offset_us - *y0);
 		n++;
 		sx += x;
 		sy += y;
@@ -401,8 +413,99 @@ bool hifi_link_tx_drift_ppm(const hifi_link_tx_t *t, double *ppm) {
 	if (n < 3) return false;
 	double den = n * sxx - sx * sx;
 	if (den <= 0) return false;
-	*ppm = (n * sxy - sx * sy) / den; /* us per s */
+	*m = (n * sxy - sx * sy) / den;
+	*b = (sy - *m * sx) / n;
 	return true;
+}
+
+bool hifi_link_tx_drift_ppm(const hifi_link_tx_t *t, double *ppm) {
+	double m, b;
+	int64_t x0, y0;
+	if (!fit_line(t, &m, &b, &x0, &y0)) return false;
+	*ppm = m; /* us per s */
+	return true;
+}
+
+void hifi_link_tx_keep_oneway(hifi_link_tx_t *t, hifi_link_ow_t *buf, uint32_t cap) {
+	t->ow = buf;
+	t->ow_cap = buf ? cap : 0;
+	t->ow_n = t->ow_dropped = 0;
+}
+
+static int cmp_i32(const void *a, const void *b) {
+	int32_t x = *(const int32_t *) a, y = *(const int32_t *) b;
+	return (x > y) - (x < y);
+}
+
+static int32_t clamp32(double v) {
+	if (v > 1e9) return 1000000000;
+	if (v < -1e9) return -1000000000;
+	return (int32_t) (v < 0 ? v - 0.5 : v + 0.5);
+}
+
+/* nearest rank */
+static void ow_stats(int32_t *v, uint32_t n, hifi_link_ow_stats_t *s) {
+	qsort(v, n, sizeof(*v), cmp_i32);
+	s->n = n;
+	s->min = v[0];
+	s->max = v[n - 1];
+	const int pct[3] = {50, 90, 99};
+	int32_t *out[3] = {&s->p50, &s->p90, &s->p99};
+	for (int i = 0; i < 3; i++) {
+		uint64_t r = ((uint64_t) pct[i] * n + 99) / 100; /* ceil(p n / 100), 1-based */
+		*out[i] = v[r ? r - 1 : 0];
+	}
+}
+
+bool hifi_link_tx_oneway(const hifi_link_tx_t *t, int32_t *scratch, hifi_link_ow_stats_t *fwd,
+                         hifi_link_ow_stats_t *back, bool *fit) {
+	if (!t->ow || !t->ow_n || !scratch) return false;
+	double m = 0, b = 0;
+	int64_t x0 = 0, y0 = t->offset_us;
+	*fit = fit_line(t, &m, &b, &x0, &y0);
+	if (!*fit) {
+		m = b = 0;
+		x0 = 0;
+		y0 = t->offset_us;
+	}
+	/* the echo's clock reads ours + off(t1): its t2 on ours is t2 - off,
+	 * our t4 on its is t4 + off */
+	for (uint32_t i = 0; i < t->ow_n; i++) {
+		const hifi_link_ow_t *o = &t->ow[i];
+		double off = (double) y0 + b + m * ((o->t1 - x0) / 1e6);
+		scratch[i] = clamp32((double) o->fwd_raw - off);
+	}
+	ow_stats(scratch, t->ow_n, fwd);
+	for (uint32_t i = 0; i < t->ow_n; i++) {
+		const hifi_link_ow_t *o = &t->ow[i];
+		double off = (double) y0 + b + m * ((o->t1 - x0) / 1e6);
+		scratch[i] = clamp32((double) o->back_raw + off);
+	}
+	ow_stats(scratch, t->ow_n, back);
+	return true;
+}
+
+static void ow_json(hj_t *j, const char *name, const hifi_link_ow_stats_t *s) {
+	hj_obj(j, name);
+	hj_int(j, "min", s->min);
+	hj_int(j, "p50", s->p50);
+	hj_int(j, "p90", s->p90);
+	hj_int(j, "p99", s->p99);
+	hj_int(j, "max", s->max);
+	hj_int(j, "jitter_p99", (long long) s->p99 - s->p50); /* how late the 99th percentile comes, past the median */
+	hj_obj_end(j);
+}
+
+void hifi_link_tx_oneway_json(const hifi_link_tx_t *t, int32_t *scratch, void *hj) {
+	hj_t *j = hj;
+	hifi_link_ow_stats_t fwd, back;
+	bool fit;
+	hj_int(j, "kept", t->ow_n);
+	hj_int(j, "dropped", t->ow_dropped);
+	if (!hifi_link_tx_oneway(t, scratch, &fwd, &back, &fit)) return;
+	hj_str(j, "clock", fit ? "drift line" : "best offset");
+	ow_json(j, "fwd", &fwd);
+	ow_json(j, "back", &back);
 }
 
 double hifi_link_tx_kbps(const hifi_link_tx_t *t) {
