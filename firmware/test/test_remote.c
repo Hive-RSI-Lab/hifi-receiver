@@ -647,6 +647,69 @@ static void test_ota_api(void) {
 	CHECK(api("POST", "/api/v1/ota/abort", NULL) == 200);
 }
 
+/* L10: the URL job and the upload hold the session; each API step runs under
+ * the lock, and nothing is left locked */
+static int lock_depth, lock_max, locks;
+static void f_lock(void *ctx) {
+	(void) ctx;
+	locks++;
+	if (++lock_depth > lock_max) lock_max = lock_depth;
+}
+static void f_unlock(void *ctx) {
+	(void) ctx;
+	lock_depth--;
+}
+static void test_ota_held(void) {
+	static uint8_t img[6000];
+	char sha[65], body[8192];
+	const char *err = NULL;
+	static const hifi_ota_io_t lio = {.open = f_open, .write = f_write, .commit = f_commit, .abort = f_abort,
+					  .lock = f_lock, .unlock = f_unlock, .slot_size = sizeof(flash)};
+	make_image(img, sizeof(img), sha);
+	hifi_ota_init(&ota, &lio);
+	lock_depth = lock_max = locks = 0;
+
+	/* the job claims, then begins; the API can't begin over it, from anywhere */
+	CHECK(hifi_ota_claim(&ota, &err) == 0);
+	CHECK(hifi_ota_claim(&ota, &err) == 409); /* nor can a second job */
+	CHECK(hifi_ota_begin_local(&ota, sizeof(img), NULL, &err) == 200);
+	snprintf(body, sizeof(body), "{\"size\":%zu,\"sha256\":\"%s\"}", sizeof(img), sha);
+	aborted = false;
+	CHECK(api("POST", "/api/v1/ota/begin", body) == 409);
+	CHECK_HAS(out, "already running");
+	CHECK(lan("POST", "/api/v1/ota/begin", body) == 409);
+	CHECK(api("POST", "/api/v1/ota/abort", NULL) == 409);
+	CHECK(lan("POST", "/api/v1/ota/finish", NULL) == 409);
+	int n = sprintf(body, "{\"off\":0,\"data\":\"");
+	hifi_b64_encode(img, 4096, body + n, sizeof(body) - n);
+	strcat(body, "\"}");
+	CHECK(api("POST", "/api/v1/ota/chunk", body) == 409);
+	CHECK(ota.active && ota.written == 0 && !aborted); /* untouched */
+	CHECK(api("GET", "/api/v1/ota", NULL) == 200); /* reading is fine */
+
+	/* the job writes and finishes; release frees it */
+	CHECK(hifi_ota_chunk(&ota, 0, img, 4096, &err) == 200);
+	CHECK(hifi_ota_chunk(&ota, 4096, img + 4096, sizeof(img) - 4096, &err) == 200);
+	CHECK(hifi_ota_finish(&ota, &err) == 200);
+	hifi_ota_release(&ota);
+	CHECK(!ota.held);
+	snprintf(body, sizeof(body), "{\"size\":%zu,\"sha256\":\"%s\"}", sizeof(img), sha);
+	CHECK(api("POST", "/api/v1/ota/begin", body) == 200);
+
+	/* a job can't claim while the API has one open */
+	CHECK(hifi_ota_claim(&ota, &err) == 409);
+	CHECK(api("POST", "/api/v1/ota/abort", NULL) == 200);
+	CHECK(hifi_ota_claim(&ota, &err) == 0);
+	/* a job that stops part way: release drops what it left open */
+	CHECK(hifi_ota_begin_local(&ota, sizeof(img), NULL, &err) == 200);
+	aborted = false;
+	hifi_ota_release(&ota);
+	CHECK(!ota.active && !ota.held && aborted);
+
+	CHECK(lock_depth == 0 && lock_max == 1 && locks > 10);
+	hifi_ota_init(&ota, &io);
+}
+
 static void test_capture_api(void) {
 	CHECK(hifi_api_reply_cap("/api/v1/capture", "{\"frames\":16384}") > 16384 * 4 * 4 / 3);
 	CHECK(hifi_api_reply_cap("/api/v1/state", NULL) == 4096);
@@ -979,6 +1042,7 @@ int main(void) {
 	test_ota_sig();
 	test_ota_age();
 	test_lan_api();
+	test_ota_held();
 	test_capture_api();
 	test_wifi_remote_api();
 	test_ws_proto();

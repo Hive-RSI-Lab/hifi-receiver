@@ -66,7 +66,6 @@ int hifi_net_wifi_forget(void) {
 
 static hifi_update_status_t upd;    /* what /state reports */
 static hifi_update_offer_t offer;  /* the last check's, for its sha256 */
-static volatile bool busy;
 static char job_url[192], job_sha[65];
 static bool job_need_sig; /* from the LAN: the image must be signed (hifi_ota.h) */
 
@@ -175,20 +174,20 @@ static void download(void *arg) {
 	}
 	if (h) esp_http_client_cleanup(h);
 	free(buf);
-	busy = false;
+	hifi_ota_release(o);
 	vTaskDelete(NULL);
 }
 
 int hifi_net_update_start(const char *url, const char *sha, bool need_sig, const char **err) {
-	if (busy || hifi_ota_session.active) return *err = "an update is already running", 409;
+	/* held until download() ends: the API can't begin over it (L10) */
+	if (hifi_ota_claim(&hifi_ota_session, err)) return 409;
 	job_need_sig = need_sig;
 	snprintf(job_url, sizeof(job_url), "%s", url);
 	/* no hash given: the last check's, if it offered this url */
 	snprintf(job_sha, sizeof(job_sha), "%s", sha ? sha : !strcmp(url, offer.url) ? offer.sha256 : "");
 	upd = (hifi_update_status_t) {.state = HIFI_UPD_DOWNLOADING};
-	busy = true;
 	if (xTaskCreate(download, "hifi_update", 6144, NULL, ESP_TASK_PRIO_MIN + 1, NULL) != pdPASS) {
-		busy = false;
+		hifi_ota_release(&hifi_ota_session);
 		upd.state = HIFI_UPD_IDLE;
 		return *err = "out of memory", 500;
 	}
@@ -202,12 +201,12 @@ esp_err_t hifi_net_upload_handler(httpd_req_t *req) {
 	const char *err = "update failed";
 	int st = 200;
 	uint8_t *buf = NULL;
-	if (busy || o->active) {
-		st = 409, err = "an update is already running";
-	} else if ((buf = malloc(HIFI_OTA_CHUNK_MAX)) == NULL) {
+	bool held = false;
+	if (hifi_ota_claim(o, &err)) {
+		st = 409;
+	} else if ((held = true, buf = malloc(HIFI_OTA_CHUNK_MAX)) == NULL) {
 		st = 500, err = "out of memory";
 	} else if ((st = hifi_ota_begin_ex(o, req->content_len, NULL, NULL, true, &err)) == 200) {
-		busy = true;
 		upd = (hifi_update_status_t) {.state = HIFI_UPD_DOWNLOADING};
 		while (o->active && o->written < o->size) {
 			int want = o->size - o->written < HIFI_OTA_CHUNK_MAX ? o->size - o->written : HIFI_OTA_CHUNK_MAX;
@@ -236,8 +235,8 @@ esp_err_t hifi_net_upload_handler(httpd_req_t *req) {
 		} else {
 			fail(err);
 		}
-		busy = false;
 	}
+	if (held) hifi_ota_release(o);
 	free(buf);
 
 	char *out = heap_caps_malloc(4096, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);

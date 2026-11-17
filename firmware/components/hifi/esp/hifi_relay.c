@@ -21,6 +21,7 @@
 #include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
+#include "freertos/semphr.h"
 #include "freertos/task.h"
 #include "mqtt_client.h"
 #include "sodium.h"
@@ -363,7 +364,12 @@ static int f_commit(void *ctx, const char **err) {
 
 static void f_abort(void *ctx) { esp_ota_abort(ota_handle); }
 
-static hifi_ota_io_t ota_io = {.open = f_open, .write = f_write, .commit = f_commit, .abort = f_abort};
+/* the web server, the relay and the URL job share the session (L10) */
+static SemaphoreHandle_t ota_mux;
+static void f_lock(void *ctx) { xSemaphoreTake(ota_mux, portMAX_DELAY); }
+static void f_unlock(void *ctx) { xSemaphoreGive(ota_mux); }
+static hifi_ota_io_t ota_io = {.open = f_open, .write = f_write, .commit = f_commit, .abort = f_abort,
+			       .lock = f_lock, .unlock = f_unlock};
 
 void hifi_ota_status(hifi_ota_status_t *o) {
 	const esp_partition_t *run = esp_ota_get_running_partition();
@@ -506,6 +512,8 @@ void hifi_remote_start(const hifi_ops_t *o) {
 
 	const esp_partition_t *next = esp_ota_get_next_update_partition(NULL);
 	ota_io.slot_size = next ? next->size : 0;
+	ota_mux = xSemaphoreCreateMutex();
+	if (!ota_mux) ota_io.lock = ota_io.unlock = NULL; /* out of memory at boot: unlocked, as before */
 	hifi_ota_init(&hifi_ota_session, &ota_io);
 	/* the same keys sign the images the LAN may install (security.md) */
 	hifi_ota_set_keys(&hifi_ota_session, (const uint8_t (*)[32]) rem.keys, rem.nkeys, verify);

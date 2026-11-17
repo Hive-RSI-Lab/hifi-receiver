@@ -43,6 +43,11 @@ typedef struct {
 	int (*write)(void *ctx, const uint8_t *d, size_t n); /* 0 ok */
 	int (*commit)(void *ctx, const char **err);          /* make it the boot image; 0 ok */
 	void (*abort)(void *ctx);
+	/* optional (NULL: one task only, the host tests): one session, three tasks
+	 * (the web server, the relay, the URL job), so the API takes this around
+	 * each of its steps (hifi_ota_lock) */
+	void (*lock)(void *ctx);
+	void (*unlock)(void *ctx);
 	size_t slot_size; /* the largest image a slot holds */
 	void *ctx;
 } hifi_ota_io_t;
@@ -50,6 +55,7 @@ typedef struct {
 typedef struct {
 	const hifi_ota_io_t *io;
 	bool active, done;
+	bool held;         /* a task runs a whole update (hifi_ota_claim): the API waits */
 	size_t size, written;
 	uint8_t sha[32];
 	bool check_sha;    /* false: the image's own appended hash only (commit checks it) */
@@ -104,3 +110,16 @@ int hifi_ota_chunk(hifi_ota_t *o, size_t off, const uint8_t *d, size_t n, const 
 /* checks the hash and makes the image the next boot; the caller restarts */
 int hifi_ota_finish(hifi_ota_t *o, const char **err);
 void hifi_ota_abort(hifi_ota_t *o);
+
+/* ---- who may touch the session (L10) ----
+ * The URL job and the app's upload each run a whole update in one go: they
+ * claim the session first (0, or 409 with *err set when it is held or an
+ * update is open) and release it at the end: release drops an update the
+ * holder left open. While it is held,
+ * the API's ota/begin, chunk, finish and abort answer 409. The API does each
+ * step under hifi_ota_lock, and claim and release take it too, so no two
+ * tasks are ever inside the session at once. */
+int hifi_ota_claim(hifi_ota_t *o, const char **err);
+void hifi_ota_release(hifi_ota_t *o);
+void hifi_ota_lock(hifi_ota_t *o);
+void hifi_ota_unlock(hifi_ota_t *o);

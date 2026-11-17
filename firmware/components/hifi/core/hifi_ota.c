@@ -80,6 +80,30 @@ void hifi_ota_set_keys(hifi_ota_t *o, const uint8_t (*keys)[32], int nkeys, hifi
 	o->verify = verify;
 }
 
+void hifi_ota_lock(hifi_ota_t *o) {
+	if (o->io && o->io->lock) o->io->lock(o->io->ctx);
+}
+
+void hifi_ota_unlock(hifi_ota_t *o) {
+	if (o->io && o->io->unlock) o->io->unlock(o->io->ctx);
+}
+
+int hifi_ota_claim(hifi_ota_t *o, const char **err) {
+	int st = 0;
+	hifi_ota_lock(o);
+	if (o->held || o->active) st = 409, *err = "an update is already running";
+	else o->held = true;
+	hifi_ota_unlock(o);
+	return st;
+}
+
+void hifi_ota_release(hifi_ota_t *o) {
+	hifi_ota_lock(o);
+	hifi_ota_abort(o); /* an update the holder left open is abandoned */
+	o->held = false;
+	hifi_ota_unlock(o);
+}
+
 void hifi_ota_abort(hifi_ota_t *o) {
 	if (o->active && o->io->abort) o->io->abort(o->io->ctx);
 	o->active = false;
