@@ -87,6 +87,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "esp_attr.h"
 #include "esp_a2dp_api.h"
 #include "esp_avrc_api.h"
 #include "esp_bt_device.h"
@@ -270,7 +271,7 @@ static volatile bool watch_phone, phone_moved;
 
 /* one period of the tone: 100 frames, 16-bit stereo */
 #define TONE_FRAMES 100
-static int16_t tone[TONE_FRAMES * 2];
+static EXT_RAM_ATTR int16_t tone[TONE_FRAMES * 2]; /* PSRAM in the lab image (its BSS may be) */
 static size_t tone_pos; /* bytes into the table */
 
 static int32_t tone_cb(uint8_t *buf, int32_t len) {
