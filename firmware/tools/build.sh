@@ -64,6 +64,12 @@ fi
 cd "$DEST"
 idf.py reconfigure >/dev/null
 nice -n 19 ninja -C build -j "${JOBS:-4}"
+# "cannot open the home network": no port-mapping client (UPnP IGD, NAT-PMP,
+# PCP, SSDP) may be linked into either image (security.md)
+if grep -i -E -l 'upnp|natpmp|nat_pmp|ssdp|pcp_client' build/squeezelite.map build/recovery.map; then
+	echo "build.sh: a port-mapping client is linked in (the maps above); refused" >&2
+	exit 1
+fi
 # boot the main app (ota_0) after a flash from scratch, not the recovery app
 # that IDF's all-0xff otadata selects (tools/otadata.py says why)
 python3 "$FW/tools/otadata.py" build/ota_data_initial.bin
