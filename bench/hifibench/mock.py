@@ -408,6 +408,10 @@ class Sim:
                     ("wifi_or_eth_up", True, -52, "linked"),
                     ("psram", True, 8, "8 MB"),
                 ]
+                if self.board in TAP_V_PER_FS:  # the self-test's speaker-path check, on boards with taps
+                    amp = self.source == "pd"
+                    items.append(("loopback", amp, "stereo: L +0.0/-50.0, R -50.0/+0.0 dB" if amp else "amp not on",
+                                  "fed within 3 dB, others 20 dB down"))
                 # On a laptop port the PD item is expected to fail; it isn't a fault.
                 out = [{"name": n, "pass": bool(p), "value": v, "limit": l, "detail": ""} for n, p, v, l in items]
                 return 200, {"pass": all(i["pass"] for i in out), "items": out}

@@ -148,6 +148,18 @@ static void writers(void) {
 	CHECK(strlen(out) <= HIFI_DIAG_PAGE);
 	CHECK(hj_valid_object(out));
 	CHECK_HAS(out, "\"boot_ms\":{\"app\":812,\"ip\":4120,\"link\":null}");
+	CHECK(!strstr(out, "restart_cause")); /* not a restart */
+	char cause[HIFI_RESTART_CAUSE_CAP];
+	hifi_restart_cause_fmt(cause, sizeof(cause), "ip_change", "tiT", 0x400d1234u, 61);
+	CHECK(!strcmp(cause, "ip_change by tiT at 0x400d1234 after 61 s"));
+	hifi_restart_cause_fmt(cause, sizeof(cause), "", NULL, 0x400e0000u, 0);
+	CHECK(!strcmp(cause, "esp_restart by ? at 0x400e0000 after 0 s"));
+	s.reset_reason = "restart";
+	s.restart_cause = "api_reboot by hifi_restart at 0x400d0001 after 5 s";
+	hifi_diag_write_sys(&s, out, sizeof(out));
+	CHECK_HAS(out, "\"restart_cause\":\"api_reboot by hifi_restart at 0x400d0001 after 5 s\"");
+	s.reset_reason = "power_on";
+	s.restart_cause = NULL;
 	CHECK_HAS(out, "\"heap\":{\"free\":17743,\"min\":16539,\"largest\":9204,\"total\":300000}");
 	CHECK_HAS(out, "\"psram\":null");
 	CHECK_HAS(out, "\"settings\":{\"used\":10,\"free\":20,\"total\":30,\"namespaces\":2,\"used_pct\":33.3}");
@@ -207,11 +219,16 @@ static void writers(void) {
 	CHECK_HAS(out, "\"kbps\":null");
 
 	/* the widest sys reply there can be still fits a page whole */
+	char w_cause[HIFI_RESTART_CAUSE_CAP];
+	hifi_restart_cause_fmt(w_cause, sizeof(w_cause), "xxxxxxxxxxxxxxxxxxxxxxx", "xxxxxxxxxxxxxxx", UINT32_MAX,
+			       UINT32_MAX);
+	CHECK(strlen(w_cause) < sizeof(w_cause) - 1); /* never cut */
 	hifi_diag_sys_t w = {
 		.uptime_s = UINT32_MAX, .boot_app_ms = UINT32_MAX, .boot_ip_ms = UINT32_MAX, .boot_link_ms = UINT32_MAX,
 		.internal = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX},
 		.psram = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX},
 		.reset_reason = "task_watchdog", .boots = UINT32_MAX,
+		.restart_cause = w_cause,
 		.nvs = {{"nvs", UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX},
 			{"settings", UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX}},
 		.power = {.known = true, .state = "fault_latched", .vbus_v = -99.99f, .vbus_i_a = -99.99f,
@@ -223,6 +240,12 @@ static void writers(void) {
 	hifi_diag_write_sys(&w, out, sizeof(out));
 	CHECK(strlen(out) <= HIFI_DIAG_PAGE);
 	CHECK(hj_valid_object(out));
+	CHECK(!strstr(out, "restart_cause")); /* no room: left out, not cut */
+	w.reset_hist[4] = '\0'; /* room again: in, whole */
+	hifi_diag_write_sys(&w, out, sizeof(out));
+	CHECK(strlen(out) <= HIFI_DIAG_PAGE);
+	CHECK(hj_valid_object(out));
+	CHECK_HAS(out, w_cause);
 
 	/* a small buffer never overflows, and still ends in a string */
 	char tiny[24];
