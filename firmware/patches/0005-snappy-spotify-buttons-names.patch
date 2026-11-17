@@ -268,10 +268,17 @@ index 8dc6b4b..2eec3a7 100644
      Headers responseHeaders;
  
 diff --git a/components/spotify/cspot/include/CDNAudioFile.h b/components/spotify/cspot/include/CDNAudioFile.h
-index 90cf828..011d3ed 100644
+index 90cf828..fa33579 100644
 --- a/components/spotify/cspot/include/CDNAudioFile.h
 +++ b/components/spotify/cspot/include/CDNAudioFile.h
-@@ -52,6 +52,18 @@ class CDNAudioFile {
+@@ -1,5 +1,6 @@
+ #pragma once
+ 
++#include <chrono>   // for steady_clock
+ #include <cstddef>  // for size_t
+ #include <cstdint>  // for uint8_t
+ #include <memory>   // for shared_ptr, unique_ptr
+@@ -52,6 +53,18 @@ class CDNAudioFile {
    */
    void seek(size_t position);
  
@@ -290,19 +297,22 @@ index 90cf828..011d3ed 100644
   private:
    const int OPUS_HEADER_SIZE = 8 * 1024;
    const int OPUS_FOOTER_PREFFERED = 1024 * 12;  // 12K should be safe
-@@ -82,6 +94,10 @@ class CDNAudioFile {
+@@ -82,6 +95,13 @@ class CDNAudioFile {
  
    bool enableRequestMargin = false;
  
 +  // the last response on httpConnection was read whole, so the socket is at
 +  // a response boundary and can carry another request
 +  bool connectionClean = false;
++  // when the connection last finished a request: an idle socket may have
++  // been dropped silently, and it has no read timeout
++  std::chrono::steady_clock::time_point lastIo;
 +
    std::string cdnUrl;
    std::vector<uint8_t> audioKey;
  
 diff --git a/components/spotify/cspot/src/CDNAudioFile.cpp b/components/spotify/cspot/src/CDNAudioFile.cpp
-index f9be5ef..69314a8 100644
+index f9be5ef..b6cdf75 100644
 --- a/components/spotify/cspot/src/CDNAudioFile.cpp
 +++ b/components/spotify/cspot/src/CDNAudioFile.cpp
 @@ -3,7 +3,9 @@
@@ -349,7 +359,7 @@ index f9be5ef..69314a8 100644
 +    std::scoped_lock lock(spareMutex);
 +    spareConnection = std::move(this->httpConnection);
 +    spareOrigin = originOf(this->cdnUrl);
-+    spareSince = std::chrono::steady_clock::now();
++    spareSince = this->lastIo;
 +  }
 +  this->httpConnection.reset();
 +  this->connectionClean = false;
@@ -419,33 +429,42 @@ index f9be5ef..69314a8 100644
    this->httpConnection->stream().read((char*)header.data(), OPUS_HEADER_SIZE);
    this->totalFileSize =
        this->httpConnection->totalLength() - SPOTIFY_OPUS_HEADER;
-@@ -64,8 +148,13 @@ void CDNAudioFile::openStream() {
+@@ -64,8 +148,18 @@ void CDNAudioFile::openStream() {
    this->httpConnection->get(
        cdnUrl, {bell::HTTPClient::RangeHeader::last(footer.size())});
  
-+  clean = clean && this->httpConnection->statusCode() == 206 &&
++  if (this->httpConnection->statusCode() != 206) {
++    throw std::runtime_error("CDN answered " +
++                             std::to_string(this->httpConnection->statusCode()));
++  }
++  clean = clean &&
 +          this->httpConnection->contentLength() == this->footer.size();
    this->httpConnection->stream().read((char*)footer.data(),
                                        this->footer.size());
 +  this->connectionClean =
 +      clean && this->httpConnection->stream().gcount() ==
 +                   (std::streamsize)this->footer.size();
++  this->lastIo = std::chrono::steady_clock::now();
  
    this->decrypt(footer.data(), footer.size(), footerStartLocation);
    CSPOT_LOG(info, "Header and footer bytes received");
-@@ -133,12 +222,21 @@ size_t CDNAudioFile::readBytes(uint8_t* dst, size_t bytes) {
+@@ -133,12 +227,25 @@ size_t CDNAudioFile::readBytes(uint8_t* dst, size_t bytes) {
  
      size_t readCapacity = 0;
  
 +    this->connectionClean = false;
      try {
++      // after a long pause start over rather than risk a dead socket
++      if (std::chrono::steady_clock::now() - this->lastIo >= SPARE_MAX_IDLE) {
++        this->httpConnection->stream().close();
++      }
        this->httpConnection->get(
            cdnUrl,
            {bell::HTTPClient::RangeHeader::range(
                requestPosition, requestPosition + HTTP_BUFFER_SIZE - 1)});
        readCapacity = this->httpConnection->contentLength();
 +      // a server that ignores Range answers 200 with the whole file
-+      if (this->httpConnection->statusCode() != 206 ||
++      if (this->httpConnection->statusCode() != 206 || readCapacity == 0 ||
 +          readCapacity > this->httpBuffer.size()) {
 +        throw std::runtime_error(
 +            "Unexpected CDN answer " +
@@ -455,11 +474,12 @@ index f9be5ef..69314a8 100644
  
        this->httpConnection->stream().read((char*)this->httpBuffer.data(),
                                            readCapacity);
-@@ -147,6 +245,7 @@ size_t CDNAudioFile::readBytes(uint8_t* dst, size_t bytes) {
+@@ -147,6 +254,8 @@ size_t CDNAudioFile::readBytes(uint8_t* dst, size_t bytes) {
            (std::streamsize)readCapacity) {
          throw std::runtime_error("Short read of audio chunk body");
        }
 +      this->connectionClean = true;
++      this->lastIo = std::chrono::steady_clock::now();
      } catch (const std::exception& e) {
        // A network failure must not propagate through the vorbis C call
        // frames above us (TrackPlayer::runTask has no handler). Invalidate
