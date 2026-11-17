@@ -1,0 +1,5 @@
+# The lab build of the Lite (projects/hifi-lite-lab, lane esp32-lab): the
+# lite-main image with the experiment frame. fetch.sh appends these lines to
+# board/lite-main/sdkconfig.defaults and keeps lite-main's partition table,
+# so the bootloader and partitions match and a Wi-Fi update can carry it.
+CONFIG_HIFI_LAB=y

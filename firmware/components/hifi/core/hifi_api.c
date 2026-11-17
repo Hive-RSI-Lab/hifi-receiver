@@ -929,6 +929,8 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "update/check")) status = get ? r_update_check(ops, out, cap) : -1;
 	else if (!strcmp(route, "update")) status = post ? r_update(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "remote")) status = r_remote(ops, post, body, out, cap);
+	else if (!strcmp(route, "lab"))
+		status = ops->lab ? ops->lab(post, body, out, cap) : error(out, cap, 404, "this build has no lab");
 	else return error(out, cap, 404, "no such path");
 
 	if (status < 0) return error(out, cap, 405, "wrong method for this path");

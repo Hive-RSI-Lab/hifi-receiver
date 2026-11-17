@@ -22,6 +22,7 @@ typedef struct {
 	bool relay_configured, relay_ok;
 	bool i2c_ok;          /* the codec and the PD sink answer */
 	bool heap_ok;
+	bool lab_on, lab_ok;   /* a lab build (CONFIG_HIFI_LAB), and its frame is up */
 } hifi_trial_t;
 
 typedef enum { HIFI_TRIAL_WAIT = 0, HIFI_TRIAL_GOOD, HIFI_TRIAL_BAD } hifi_trial_verdict_t;

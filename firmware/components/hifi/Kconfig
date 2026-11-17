@@ -1,0 +1,16 @@
+menu "hifi-receiver lab"
+	config HIFI_LAB
+		bool "Lab build: experiments a signed command starts and stops"
+		default n
+		help
+			Adds the "lab" API (esp/hifi_lab_esp.c) and its experiments
+			(esp/lab_*.c). Set by board/lite-lab; off in a product image.
+	config HIFI_LAB_DRILL
+		bool "Rollback drill: the lab reports itself broken"
+		depends on HIFI_LAB
+		default n
+		help
+			The image's trial then fails ("the lab frame isn't up") and the
+			board must roll back to the image before it by itself. Set only by
+			board/lite-lab-drill, to prove that it does.
+endmenu
