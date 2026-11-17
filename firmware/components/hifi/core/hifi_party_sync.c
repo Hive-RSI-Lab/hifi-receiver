@@ -1,0 +1,135 @@
+/* Party mode: one board's clocks. See hifi_party_sync.h. */
+#include "hifi_party_sync.h"
+
+#include <math.h>
+#include <string.h>
+
+/* the fits' settings: one window a second, 30 s of them, a line from 4; a
+ * TSF bracket wider than 200 µs, or a DAC window 500 µs late, is off the line */
+static void dac_reset(hifi_party_sync_t *s) {
+	hifi_party_fit_init(&s->dac, 1000000, 30, 4, 500);
+	s->dac_bad = 0;
+}
+
+static void tsf_reset(hifi_party_sync_t *s) {
+	hifi_party_fit_init(&s->tsf, 1000000, 30, 4, 200);
+	s->tsf.both_sides = true; /* a TSF steps back as well as forward: keep a step out of the line until the reset */
+	s->tsf_bad = 0;
+	s->clk_ok = false; /* it was in the old TSF */
+}
+
+void hifi_party_sync_init(hifi_party_sync_t *s, int buf_frames) {
+	memset(s, 0, sizeof(*s));
+	s->buf_frames = buf_frames;
+	dac_reset(s);
+	tsf_reset(s);
+}
+
+void hifi_party_sync_restart(hifi_party_sync_t *s, int buf_frames) {
+	s->buf_frames = buf_frames;
+	s->dac_resets++;
+	dac_reset(s);
+}
+
+/* the newest window, as fit_add just closed it, against the line */
+static double newest_off(const hifi_party_fit_t *f) {
+	int last = (f->head + f->cap - 1) % f->cap;
+	return (double) f->py[last] - hifi_party_fit_y(f, (double) f->px[last]);
+}
+
+void hifi_party_sync_tsf(hifi_party_sync_t *s, int64_t a_us, int64_t b_us, int64_t tsf, const uint8_t bssid[6]) {
+	if (tsf <= 0) {
+		s->tsf_zero++;
+		return;
+	}
+	if (bssid) {
+		if (s->have_bssid && memcmp(s->bssid, bssid, 6)) {
+			/* a roam: another AP's TSF */
+			s->bssid_changes++;
+			s->tsf_resets++;
+			tsf_reset(s);
+		}
+		memcpy(s->bssid, bssid, 6);
+		s->have_bssid = true;
+	}
+	hifi_party_fit_t *f = &s->tsf;
+	if (hifi_party_fit_add(f, (a_us + b_us) / 2, tsf, (double) (b_us - a_us), b_us)) {
+		/* the newest window far off the line, either side, three windows
+		 * running: the TSF stepped (an AP restart, a re-lock); start again */
+		if (f->ok && fabs(newest_off(f)) > f->reject) {
+			if (++s->tsf_bad >= HIFI_PARTY_SYNC_BAD) {
+				s->tsf_resets++;
+				tsf_reset(s);
+			}
+		} else
+			s->tsf_bad = 0;
+	}
+}
+
+void hifi_party_sync_wrote(hifi_party_sync_t *s, int64_t w0, int64_t w1, int64_t t0, int64_t t1, int last_block) {
+	if (last_block && w1 - w0 < last_block) {
+		/* the DMA took less than the block: where the rest goes is unknown */
+		s->short_writes++;
+		s->dac_resets++;
+		dac_reset(s);
+		return;
+	}
+	int64_t x;
+	if (s->buf_frames > 0 && hifi_party_dac_sample(w0, w1, t0, t1, s->buf_frames, 0, &x)) {
+		double q = (double) t1 - (double) x * 1e6 / HIFI_PARTY_SYNC_RATE;
+		hifi_party_fit_t *f = &s->dac;
+		if (hifi_party_fit_add(f, x, t1, q, t1)) {
+			/* the newest window far above the line three times running: the
+			 * DMA ran dry and every frame plays later now; start the fit again */
+			if (f->ok && newest_off(f) > f->reject) {
+				if (++s->dac_bad >= HIFI_PARTY_SYNC_BAD) {
+					s->dac_resets++;
+					dac_reset(s);
+				}
+			} else
+				s->dac_bad = 0;
+		}
+	}
+}
+
+bool hifi_party_sync_ok(const hifi_party_sync_t *s) { return s->tsf.ok && s->dac.ok; }
+
+double hifi_party_sync_tsf_at(const hifi_party_sync_t *s, int64_t w) {
+	return hifi_party_fit_y(&s->tsf, hifi_party_fit_y(&s->dac, (double) w));
+}
+
+bool hifi_party_sync_leader_clock(const hifi_party_sync_t *s, int64_t w, int64_t *t_ref, uint32_t *rate) {
+	if (!hifi_party_sync_ok(s)) return false;
+	double a = s->dac.slope, b = s->tsf.slope; /* µs per frame; TSF µs per µs */
+	if (!(a > 0 && b > 0)) return false;
+	*t_ref = llround(hifi_party_sync_tsf_at(s, w));
+	*rate = (uint32_t) llround(1e9 / (a * b));
+	return true;
+}
+
+bool hifi_party_sync_clock(hifi_party_sync_t *s, int64_t k_ref, int64_t t_ref, uint32_t rate, uint32_t seq, const uint8_t bssid[6], int64_t now) {
+	if (s->clk_seq && (int32_t) (seq - s->clk_seq) <= 0) {
+		s->old_clocks++; /* a replay, or late */
+		return false;
+	}
+	s->clk_k = k_ref;
+	s->clk_t = t_ref;
+	s->clk_rate = rate;
+	s->clk_seq = seq;
+	s->clk_at = now;
+	s->clk_ok = true;
+	memcpy(s->clk_bssid, bssid, 6);
+	if (s->have_bssid && memcmp(s->clk_bssid, s->bssid, 6)) s->bssid_wrong++;
+	s->clocks++;
+	return true;
+}
+
+bool hifi_party_sync_target(hifi_party_sync_t *s, int64_t w, int64_t now, double *target) {
+	if (!s->clk_ok || !hifi_party_sync_ok(s) || !s->have_bssid || memcmp(s->clk_bssid, s->bssid, 6)) return false;
+	if (now - s->clk_at >= HIFI_PARTY_SYNC_STALE_US) {
+		s->stale++;
+		return false;
+	}
+	*target = hifi_party_target(s->clk_k, s->clk_t, s->clk_rate, hifi_party_sync_tsf_at(s, w));
+	return true;
+}
