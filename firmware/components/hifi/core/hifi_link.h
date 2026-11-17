@@ -26,6 +26,10 @@
 
 #define HIFI_LINK_HDR 38  /* magic 2, version 1, type 1, length 2, session 4, seq 4, t1 t2 t3 8 each */
 #define HIFI_LINK_MAX 250 /* ESP-NOW's largest payload */
+/* the MTU the BLE link asks for, and the largest value a write or a
+ * notification then carries (the ATT header takes 3) */
+#define HIFI_LINK_BLE_MTU 247
+#define HIFI_LINK_BLE_PAYLOAD (HIFI_LINK_BLE_MTU - 3)
 #define HIFI_LINK_WINDOW 1024 /* sequence numbers the duplicate check remembers */
 #define HIFI_LINK_RTT_BIN_US 100
 #define HIFI_LINK_RTT_BINS 1000 /* 0 to 100 ms; slower ones land in the last bin */
