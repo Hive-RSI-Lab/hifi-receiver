@@ -188,6 +188,9 @@ void hifi_lab_esp_init(void) {
 #if CONFIG_BT_BLE_ENABLED
 	if (&lab_ble) hifi_lab_register(&lab, &lab_ble); /* NULL in recovery */
 #endif
+#if CONFIG_HIFI_LAB_PSRAM_STACKS
+	if (&lab_flac) hifi_lab_register(&lab, &lab_flac); /* the lab-radio app only (NULL in recovery) */
+#endif
 	lab_lock = xSemaphoreCreateMutex();
 	StackType_t *stack = NULL;
 #if CONFIG_SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY

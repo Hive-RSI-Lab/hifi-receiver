@@ -81,13 +81,19 @@ fi
 # the lab's Bluetooth experiments are weak symbols that only patch 0017's
 # -u flags pull into the app: if the flags and the sdkconfig ever disagree,
 # the experiment would vanish without a link error, so fail here instead
-for lab in "lab_bt:CONFIG_BT_CLASSIC_ENABLED" "lab_a2dp:CONFIG_BT_CLASSIC_ENABLED" "lab_ble:CONFIG_BT_BLE_ENABLED"; do
+for lab in "lab_bt:CONFIG_BT_CLASSIC_ENABLED" "lab_a2dp:CONFIG_BT_CLASSIC_ENABLED" "lab_ble:CONFIG_BT_BLE_ENABLED" \
+	"lab_flac:CONFIG_HIFI_LAB_PSRAM_STACKS"; do
 	if grep -q '^CONFIG_HIFI_LAB=y' sdkconfig && grep -q "^${lab#*:}=y" sdkconfig &&
 		! grep -q "(${lab%%:*}.c.obj)" build/squeezelite.map; then
-		echo "build.sh: ${lab%%:*} is enabled but not linked into the app (patch 0017)" >&2
+		echo "build.sh: ${lab%%:*} is enabled but not linked into the app (patches 0017, 0027)" >&2
 		exit 1
 	fi
 done
+# and the FLAC experiment (libFLAC and its clip) stays out of recovery's slot
+if grep -q "(lab_flac.c.obj)" build/recovery.map; then
+	echo "build.sh: lab_flac is linked into the recovery image (patch 0027)" >&2
+	exit 1
+fi
 # boot the main app (ota_0) after a flash from scratch, not the recovery app
 # that IDF's all-0xff otadata selects (tools/otadata.py says why)
 python3 "$FW/tools/otadata.py" build/ota_data_initial.bin
