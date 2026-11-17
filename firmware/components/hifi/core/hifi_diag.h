@@ -110,6 +110,10 @@ typedef struct {
 	bool link_up;
 	uint32_t link_drops, link_up_s;
 	uint64_t tx_bytes, rx_bytes;
+	/* L4: the listener scan in normal running (core/hifi_listen.h) */
+	int listen_strays;       /* -1: no verdict yet */
+	uint32_t listen_events;  /* stray sets seen since boot */
+	char listen_open[64];    /* "N open: tcp/23 ..."; "": none */
 } hifi_diag_net_t;
 
 typedef struct {

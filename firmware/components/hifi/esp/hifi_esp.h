@@ -43,6 +43,7 @@ esp_err_t hifi_net_upload_handler(httpd_req_t *req); /* POST /api/v1/update/uplo
 void hifi_listen_tick(bool up);          /* every couple of seconds; scans every 10 s */
 void hifi_listen_trial(hifi_trial_t *t); /* fills listen_wait / listen_open */
 int hifi_listen_now(char *why, size_t n); /* a fresh scan for the self-test: strays */
+void hifi_listen_diag(hifi_diag_net_t *n); /* L4: the running report, for /api/diag */
 
 /* hifi_relay.c */
 extern hifi_ota_t hifi_ota_session;

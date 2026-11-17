@@ -3,7 +3,9 @@
  * bound UDP sockets (on the tcpip thread, where they may be read) and judges
  * them with core/hifi_listen.c. The relay task ticks it every 2 s; it scans
  * every 10 s. The OTA trial holds the image until two scans agree and rolls
- * it back on a stray; the self-test shows the newest verdict.
+ * it back on a stray; the self-test shows the newest verdict. In normal
+ * running each new stray set is logged and counted in /api/diag's net page
+ * (L4), so a listener that opens after the trial still shows.
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,6 +72,7 @@ static int verdict = -1; /* strays in the newest pair of scans; -1: none yet */
 static bool verdict_up;  /* both scans of that pair had the network up */
 static char verdict_why[64];
 static int64_t last_scan;
+static hifi_listen_report_t report = {.strays = -1};
 
 void hifi_listen_tick(bool up) {
 	int64_t now = esp_timer_get_time();
@@ -82,7 +85,8 @@ void hifi_listen_tick(bool up) {
 	if (nprev != -2 && prev_up == up) {
 		char why[sizeof(verdict_why)];
 		int v = hifi_listen_check(prev, nprev, cur, n, ap, why, sizeof(why));
-		if (v && (v != verdict || strcmp(why, verdict_why))) ESP_LOGE(TAG, "listening outside the allow list: %s", why);
+		if (hifi_listen_report(&report, v, why))
+			ESP_LOGE(TAG, "listening outside the allow list (stray set %u): %s", (unsigned) report.events, why);
 		verdict = v;
 		verdict_up = up;
 		strcpy(verdict_why, why);
@@ -121,4 +125,16 @@ int hifi_listen_now(char *why, size_t n) {
 	if (lock) xSemaphoreGive(lock);
 	free(now);
 	return v;
+}
+
+void hifi_listen_diag(hifi_diag_net_t *n) {
+	if (!lock) {
+		n->listen_strays = -1;
+		return;
+	}
+	xSemaphoreTake(lock, portMAX_DELAY);
+	n->listen_strays = report.strays;
+	n->listen_events = report.events;
+	snprintf(n->listen_open, sizeof(n->listen_open), "%s", report.open);
+	xSemaphoreGive(lock);
 }

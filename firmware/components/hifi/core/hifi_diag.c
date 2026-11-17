@@ -215,6 +215,12 @@ void hifi_diag_write_net(const hifi_diag_net_t *n, char *out, size_t cap) {
 	hj_int(&j, "tx_bytes", (long long) n->tx_bytes);
 	hj_int(&j, "rx_bytes", (long long) n->rx_bytes);
 	hj_obj_end(&j);
+	hj_obj(&j, "listeners");
+	if (n->listen_strays >= 0) hj_int(&j, "strays", n->listen_strays);
+	else hj_null(&j, "strays");
+	hj_int(&j, "events", n->listen_events);
+	hj_str(&j, "open", n->listen_open[0] ? n->listen_open : NULL);
+	hj_obj_end(&j);
 	hj_obj_end(&j);
 }
 
