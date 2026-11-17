@@ -5,17 +5,19 @@ second radio beside a live A2DP stream. Lab images only.
 diff --git a/components/squeezelite/decode.c b/components/squeezelite/decode.c
 --- a/components/squeezelite/decode.c
 +++ b/components/squeezelite/decode.c
-@@ -143,6 +143,9 @@
+@@ -142,7 +142,11 @@ static void sort_codecs(int pry, struct codec* ptr) {
+ 	}
  }
  
- static thread_type thread;
 +#if CONFIG_HIFI_LAB_PSRAM_STACKS
 +static void *psram_thread; /* hifi lab: its stack in PSRAM (embedded.h) */
++#else
+ static thread_type thread;
 +#endif
  
  void decode_init(log_level level, const char *include_codecs, const char *exclude_codecs) {
  	int i;
-@@ -213,7 +216,11 @@
+@@ -213,7 +217,11 @@ void decode_init(log_level level, const char *include_codecs, const char *exclud
  #ifdef PTHREAD_STACK_MIN
  	pthread_attr_setstacksize(&attr, PTHREAD_STACK_MIN + DECODE_THREAD_STACK_SIZE);
  #endif
@@ -27,7 +29,7 @@ diff --git a/components/squeezelite/decode.c b/components/squeezelite/decode.c
  	pthread_attr_destroy(&attr);
  #endif
  #if WIN
-@@ -238,7 +245,9 @@
+@@ -238,7 +246,9 @@ void decode_close(void) {
  	}
  	running = false;
  	UNLOCK_D;
@@ -41,7 +43,7 @@ diff --git a/components/squeezelite/decode.c b/components/squeezelite/decode.c
 diff --git a/components/squeezelite/embedded.c b/components/squeezelite/embedded.c
 --- a/components/squeezelite/embedded.c
 +++ b/components/squeezelite/embedded.c
-@@ -80,6 +80,60 @@
+@@ -80,6 +80,63 @@ int	pthread_create_name(pthread_t *thread, _CONST pthread_attr_t  *attr,
  	return pthread_create(thread, attr, start_routine, arg);
  }
  
@@ -63,7 +65,10 @@ diff --git a/components/squeezelite/embedded.c b/components/squeezelite/embedded
 +}
 +
 +/* the stack and control block are never freed: these threads end only at
-+ * exit, and a task deleting itself is cleaned up later by the idle task */
++ * exit, and a task deleting itself is cleaned up later by the idle task.
++ * Single use: join works once per thread. Each create holds its stack and
++ * control block for good, so a restart would need to wait for
++ * eTaskGetState() == eDeleted before freeing them, and delete the semaphore. */
 +int psram_thread_create(void **thread, void *(*start_routine)(void *), void *arg, size_t stack, const char *name) {
 +	esp_pthread_cfg_t cfg = esp_pthread_get_default_config();
 +	struct psram_thread *t = heap_caps_calloc(1, sizeof(*t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
@@ -105,7 +110,7 @@ diff --git a/components/squeezelite/embedded.c b/components/squeezelite/embedded
 diff --git a/components/squeezelite/embedded.h b/components/squeezelite/embedded.h
 --- a/components/squeezelite/embedded.h
 +++ b/components/squeezelite/embedded.h
-@@ -66,6 +66,17 @@
+@@ -66,6 +66,18 @@ uint32_t 	_gettime_ms_(void);
  int			pthread_create_name(pthread_t *thread, _CONST pthread_attr_t  *attr, 
  				   void *(*start_routine)( void * ), void *arg, char *name);
  
@@ -113,9 +118,10 @@ diff --git a/components/squeezelite/embedded.h b/components/squeezelite/embedded
 +#if CONFIG_HIFI_LAB_PSRAM_STACKS
 +/* hifi lab: a thread whose stack is in PSRAM (its control block stays in
 + * internal RAM), for the decode and stream threads, whose 14 and 4 KB stacks
-+ * are internal RAM as pthreads. Such a thread must never reach a flash write
-+ * or erase (the IDF asserts its stack is internal then). Falls back to an
-+ * internal stack if PSRAM has none. */
++ * are internal RAM as pthreads. Such a thread must never touch flash, reads
++ * included (NVS, a partition, mmap or OTA: the IDF asserts its stack is
++ * internal while the cache is off), nor run ROM code or call Bluetooth or
++ * Wi-Fi APIs directly. Falls back to an internal stack if PSRAM has none. */
 +int			psram_thread_create(void **thread, void *(*start_routine)(void *), void *arg, size_t stack, const char *name);
 +void		psram_thread_join(void *thread);
 +#endif
@@ -126,17 +132,19 @@ diff --git a/components/squeezelite/embedded.h b/components/squeezelite/embedded
 diff --git a/components/squeezelite/stream.c b/components/squeezelite/stream.c
 --- a/components/squeezelite/stream.c
 +++ b/components/squeezelite/stream.c
-@@ -555,6 +555,9 @@
+@@ -554,7 +554,11 @@ static void *stream_thread() {
+ 	return 0;
  }
  
- static thread_type thread;
 +#if CONFIG_HIFI_LAB_PSRAM_STACKS
 +static void *psram_thread; /* hifi lab: its stack in PSRAM (embedded.h) */
++#else
+ static thread_type thread;
 +#endif
  
  void stream_init(log_level level, unsigned stream_buf_size) {
  	loglevel = level;
-@@ -604,7 +607,11 @@
+@@ -604,7 +608,11 @@ void stream_init(log_level level, unsigned stream_buf_size) {
  #ifdef PTHREAD_STACK_MIN	
  	pthread_attr_setstacksize(&attr, PTHREAD_STACK_MIN + STREAM_THREAD_STACK_SIZE);
  #endif
@@ -148,7 +156,7 @@ diff --git a/components/squeezelite/stream.c b/components/squeezelite/stream.c
  	pthread_attr_destroy(&attr);
  #endif
  #if WIN
-@@ -617,7 +624,9 @@
+@@ -617,7 +625,9 @@ void stream_close(void) {
  	LOCK;
  	running = false;
  	UNLOCK;

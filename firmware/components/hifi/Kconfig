@@ -32,7 +32,8 @@ menu "hifi-receiver lab"
 			threads get their stacks from PSRAM instead of internal RAM, which
 			a pthread's always is in IDF 4.4. That frees about 19 KB of
 			internal RAM for a second radio beside a live A2DP stream. Such a
-			thread must never write or erase flash (the IDF asserts its stack
-			is internal then); neither does today. Set only by
-			board/lite-lab-radio.
+			thread must never touch flash, reads included (NVS, a partition,
+			mmap or OTA: the IDF asserts its stack is internal while the
+			cache is off), nor call Bluetooth or Wi-Fi APIs directly; neither
+			does today. Set only by board/lite-lab-radio.
 endmenu
