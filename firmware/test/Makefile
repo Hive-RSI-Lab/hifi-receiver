@@ -32,7 +32,8 @@ $(BIN)/%: %.c $(SRCS) $(wildcard $(CORE)/*.h) check.h | $(BIN)
 run: $(addprefix $(BIN)/,$(TESTS))
 	@fail=0; for t in $(abspath $^); do $$t || fail=1; done; python3 test_otadata.py || fail=1; \
 	  $(MAKE) --no-print-directory upstream || fail=1; \
-	  $(MAKE) --no-print-directory fuzz || fail=1; exit $$fail
+	  $(MAKE) --no-print-directory fuzz || fail=1; \
+	  $(MAKE) --no-print-directory qemu || fail=1; exit $$fail
 
 # Regressions for the bring-up bugs fixed in upstream's code (patches/):
 # upstream/upstream.py fetches the pinned files once (from $$HIFI_UPSTREAM or
@@ -117,7 +118,29 @@ fuzz fuzz-long fuzz-build:
 	@echo "SKIPPED fuzzing: no clang with libFuzzer (set CLANG)"; exit $(if $(filter-out 0,$(FUZZ_REQUIRED)),1,0)
 endif
 
+# The real Lite image booted in QEMU (`fw qemu`, from the hive's fw module),
+# with the faults of fw.json qemu.scenarios: the self-test (part of `run`),
+# and with `qemu-faults` a brown-out, a lost PD contract, an I2S stall, a full
+# settings flash and a heap squeeze. Each boots its own image; logs go to
+# the QEMU build dir's fw-qemu-NAME.log. They need the QEMU build, which
+# takes a while: `fw build .. --qemu` (with HIFI_HIVE_PUBKEY set, through
+# heavy). With no fw or no QEMU build: skipped, loudly; QEMU_REQUIRED=1
+# makes that a failure.
+FW ?= $(shell command -v fw 2>/dev/null)
+QEMU_SCENARIOS ?= selftest
+QEMU_BUILD := $(wildcard ../.fw-src/build-qemu/flasher_args.json)
+qemu:
+	@$(MAKE) --no-print-directory qemu-run SCEN="$(QEMU_SCENARIOS)"
+qemu-faults:
+	@$(MAKE) --no-print-directory qemu-run SCEN=all
+qemu-run:
+	@if [ -z "$(FW)" ] || [ -z "$(QEMU_BUILD)" ]; then \
+	  echo "SKIPPED QEMU scenarios: $(if $(FW),no QEMU build (fw build .. --qemu),no fw on PATH)"; \
+	  exit $(if $(filter-out 0,$(QEMU_REQUIRED)),1,0); fi; \
+	H=$$(command -v heavy >/dev/null && echo "heavy timeout 3000"); \
+	$$H $(FW) qemu .. $(foreach s,$(SCEN),--scenario $(s))
+
 clean:
 	rm -rf $(BIN)
 
-.PHONY: all run clean coverage upstream fuzz fuzz-long fuzz-build
+.PHONY: all run clean coverage upstream fuzz fuzz-long fuzz-build qemu qemu-faults qemu-run
