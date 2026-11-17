@@ -162,6 +162,12 @@ int main(void) {
 	CHECK(!hifi_autoexec_ok("squeezelite\nrecovery"));
 	CHECK(!hifi_autoexec_ok(NULL));
 	CHECK(!hifi_autoexec_ok(""));
+	/* L15 (patches/0012): cfg-audio-bt_source -n rewrites autoexec1 with the BT
+	 * name stripped (strip_bt_name); the patch saves only what this passes */
+	CHECK(hifi_autoexec_ok("squeezelite -o \"BT\" -b 500:2000 -R -Z 96000 -r \"44100-44100\""));
+	CHECK(hifi_autoexec_ok("squeezelite -o BT -b 500:2000"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o BT -b 500:2000 -t")); /* -t prints the licence and exits */
+	CHECK(!hifi_autoexec_ok("squeezelite -o BT\nrestart"));
 	/* cfg-hw-preset stores any NVS key its JSON names: an explicit list */
 	CHECK(!hifi_lan_command_ok("cfg-hw-preset --model_config {\"name\":\"x\",\"config\":[{\"hifi_relay_url\":\"ws://evil\"}]}"));
 	CHECK(!hifi_autoexec_ok("cfg-hw-preset --model_config x"));
