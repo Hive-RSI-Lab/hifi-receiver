@@ -144,6 +144,18 @@ Everything the bench logs, in one read. Poll it at up to 10 Hz.
   `state` being `downloading`, `flashing`, `done` (the box restarts into
   it) or `error` (with the reason; the running firmware stays).
 
+### `GET /api/v1/state/<section>`
+
+One top-level section of the state, as `{"<section>": {...}}`: `power`,
+`amp`, `governor`, `audio`, `net`, `sys`, `ir`, `controls` or `update`
+(`{}` when the board has none of it now; any other name is a 404). The
+whole state runs near 1000 characters on a Lite, which a serial line cuts
+at; a section stays under 960 even at its worst (`audio`, with the longest
+track text all in characters that need escaping, is about 960; with plain
+text it is about 740), so a bench test reads the part it saves. Control
+characters in track text are stored as spaces.
+Over the console: `api state/audio`, or `hifi state audio`.
+
 ## `POST /api/v1/tone`
 
 Plays a test signal, taking over from any stream until it ends or is stopped.
@@ -591,7 +603,7 @@ board that isn't on a network yet. Each prints the JSON reply on one line.
 
 ```
 hifi info
-hifi state
+hifi state [section]
 hifi tone sine 1000 -20 [both|left|right] [seconds]
 hifi tone sweep 20 20000 -20 [seconds]
 hifi tone noise -20 [seconds]
@@ -616,6 +628,7 @@ one line `API {json}`, with `"status"` added on an error:
 
 ```
 api state
+api state/audio
 api wifi "{\"ssid\": \"home\", \"password\": \"secret\"}"
 API {"ok":true}
 ```
