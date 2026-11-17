@@ -29,10 +29,18 @@ bool hifi_ws_send(const char *text, size_t len);
 
 /* The link's counters since boot, for `api diag/net`: bytes on the TLS
  * socket (frames and their headers; not the TLS overhead), the times an up
- * link dropped, and when it came up (esp_timer µs; 0: not up). */
+ * link dropped, and when it came up (esp_timer µs; 0: not up). The last
+ * drop: why (a hifi_ws_drop_t, core/hifi_ws_proto.h; 0: none since boot)
+ * and its code, whether the station had lost its access point then, when
+ * (esp_timer µs) and how long that link had been up. */
 typedef struct {
 	uint64_t tx_bytes, rx_bytes;
 	uint32_t drops;
 	int64_t up_since_us, first_up_us;
+	uint8_t last_drop;
+	bool last_drop_wifi_down;
+	int32_t last_drop_code;
+	int64_t last_drop_us;
+	uint32_t last_drop_lasted_s;
 } hifi_ws_stats_t;
 void hifi_ws_stats(hifi_ws_stats_t *out);

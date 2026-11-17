@@ -57,6 +57,8 @@
 #include "hifi_power.h"
 #include "hifi_tone.h"
 #include "hifi_vol.h"
+#include "hifi_ws.h"
+#include "hifi_ws_proto.h"
 
 static const char TAG[] = "hifi";
 
@@ -1078,8 +1080,17 @@ static void op_selftest(hifi_selftest_t *t) {
 	char heap[64];
 	bool heap_ok = hifi_heap_line(s->heap_free, s->heap_boot, heap, sizeof(heap));
 	hifi_selftest_add(t, "heap", heap_ok, "%s", heap);
-	hifi_selftest_add(t, "network", s->ip[0] != 0, s->ip[0] ? "%s" : "not connected", s->ip);
 	char why[64];
+	hifi_selftest_add(t, "network", s->ip[0] != 0, "%s", s->ip[0] ? s->ip : "not connected");
+	/* the remote link's last drop, if any, as a line of its own (it passes:
+	 * a drop isn't a fault; the whole of it is in `api diag/net`) */
+	hifi_ws_stats_t ws;
+	hifi_ws_stats(&ws);
+	if (ws.last_drop) {
+		hifi_ws_drop_line(why, sizeof(why), (uint32_t) ((esp_timer_get_time() - ws.last_drop_us) / 1000000),
+				  (hifi_ws_drop_t) ws.last_drop, ws.last_drop_code, ws.last_drop_wifi_down);
+		hifi_selftest_add(t, "link_drop", true, "%s", why);
+	}
 	int strays = hifi_listen_now(why, sizeof(why));
 	hifi_selftest_add(t, "listeners", strays == 0, "%s", why);
 #ifdef CONFIG_HIFI_LAB

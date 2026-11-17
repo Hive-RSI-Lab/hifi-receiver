@@ -145,7 +145,9 @@ Cloudflare, so the tower still opens no port. `POST /api/v1/remote` with a
   events and replies with a `"t"` member first (`"status"`, `"event"`,
   `"reply"`) since one socket carries all three. The board pings every
   20 s; the endpoint drops a board it hasn't heard from in 90 s, and that is
-  its "offline" (there is no last will).
+  its "offline" (there is no last will). Each drop logs its cause, and the
+  last one is in `api diag/net` (`link.last_drop`, docs/test-api.md) and on
+  the self-test's `network` line.
 - **A refused dial** (a wrong or revoked key, no Access token) just fails:
   IDF 4.4 doesn't give the HTTP status of a refused upgrade, so the board
   backs off from 5 s, doubling to 5 minutes, and keeps its settings.
