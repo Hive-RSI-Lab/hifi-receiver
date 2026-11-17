@@ -82,7 +82,8 @@ int hifi_remote_handle(hifi_remote_t *r, const hifi_ops_t *ops, const char *msg,
 	line[n] = '\0';
 
 	double idd = 0;
-	uint64_t id = hj_get_num(line, "id", &idd) && idd > 0 ? (uint64_t) idd : 0;
+	/* range-checked before the cast: an unsigned id past 2^64 is undefined */
+	uint64_t id = hj_get_num(line, "id", &idd) && idd > 0 && idd < 18446744073709551616.0 ? (uint64_t) idd : 0;
 	int st;
 	uint8_t sig[64];
 	bool good = false;
@@ -120,8 +121,7 @@ int hifi_remote_handle(hifi_remote_t *r, const hifi_ops_t *ops, const char *msg,
 		st = reject(r, id, 409, "ts too far from the board's clock", out, cap);
 		goto done;
 	}
-	r->last_id = id;
-	r->accepted++;
+	r->last_id = id; /* taken even if it fails below: a replay of it is still stale */
 
 	const char *braw = NULL;
 	size_t blen = 0;
@@ -140,6 +140,7 @@ int hifi_remote_handle(hifi_remote_t *r, const hifi_ops_t *ops, const char *msg,
 		st = reject(r, id, 500, "reply buffer too small", out, cap);
 		goto done;
 	}
+	r->accepted++; /* counted once, as accepted or as rejected */
 	st = hifi_api_handle(ops, method, path, body, out + pre, cap - pre - 20);
 	size_t used = strlen(out);
 	snprintf(out + used, cap - used, ",\"status\":%d}", st);

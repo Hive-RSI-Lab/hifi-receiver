@@ -36,6 +36,9 @@ void hj_null(hj_t *j, const char *key);
 /* Reader: each returns false if the key is missing or of another type. */
 bool hj_get_str(const char *json, const char *key, char *out, size_t n);
 bool hj_get_num(const char *json, const char *key, double *out);
+/* true if `key` holds what reads as a number but isn't a finite one (-nan,
+ * -inf, 1e999): hj_get_num refuses those, so a caller can answer 400 */
+bool hj_num_bad(const char *json, const char *key);
 bool hj_get_bool(const char *json, const char *key, bool *out);
 /* true if `json` is one well-formed object (whitespace around it allowed) */
 bool hj_valid_object(const char *json);

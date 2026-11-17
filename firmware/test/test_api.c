@@ -537,6 +537,7 @@ static void core_routes(void) {
 	CHECK(ccall("POST", "/api/v1/zone", "{\"zone\":\"b\",\"on\":true}") == 200 && c.zone_b);
 	CHECK(ccall("POST", "/api/v1/zone", "{\"zone\":\"b\",\"volume\":40}") == 400);
 	CHECK_HAS(out, "plays at the main volume");
+	CHECK(ccall("POST", "/api/v1/zone", "{\"zone\":\"b\",\"on\":true,\"volume\":1e999}") == 400);
 	CHECK(ccall("POST", "/api/v1/zone", "{\"zone\":\"a\",\"on\":true}") == 400);
 	CHECK(ccall("POST", "/api/v1/zone", "{\"zone\":\"b\"}") == 400);
 	CHECK(c.zone_b);
@@ -683,6 +684,22 @@ static void crash(void) {
 	/* a page at a time, for a bench that caps a console line */
 	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{}", out, sizeof(out)) == 400);
 	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":-1}", out, sizeof(out)) == 400);
+	/* fuzzing: NaN passed from < 0 and was cast and used as an offset into the log */
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":-nan}", out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":1e300}", out, sizeof(out)) == 200);
+	CHECK_HAS(out, "\"log\":\"\"");
+	/* frames past int were cast before the 64..16384 check */
+	CHECK(hifi_api_reply_cap("/api/v1/capture", "{\"frames\":1e30}") ==
+	      hifi_api_reply_cap("/api/v1/capture", "{\"frames\":16384}"));
+	CHECK(hifi_api_reply_cap("/api/v1/capture", "{\"frames\":-1e30}") ==
+	      hifi_api_reply_cap("/api/v1/capture", "{\"frames\":64}"));
+	/* a number that isn't finite (1e999, -inf, -nan) is refused, not read as missing */
+	CHECK(call("POST", "/api/v1/volume", "{\"volume\":1e999,\"mute\":true}") == 400);
+	CHECK(call("POST", "/api/v1/tone", "{\"type\":\"sine\",\"freq_hz\":1e999}") == 400);
+	CHECK(call("POST", "/api/v1/tone", "{\"type\":\"noise\",\"level_dbfs\":-nan}") == 400);
+	CHECK(call("POST", "/api/v1/sub", "{\"level_db\":-inf}") == 400);
+	CHECK(hifi_api_reply_cap("/api/v1/capture", "{\"frames\":1e999}") ==   /* refused, not the default */
+	      hifi_api_reply_cap("/api/v1/capture", "{\"frames\":64}"));
 	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":15}", out, sizeof(out)) == 200);
 	CHECK_STR(out, "{\"reset_reason\":\"panic\",\"len\":35,\"from\":15,\"next\":35,"
 		       "\"log\":\"Backtrace: 0x4008\\\"\\\\\\u000a\"}");

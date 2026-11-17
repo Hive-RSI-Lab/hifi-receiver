@@ -278,6 +278,7 @@ static int r_state(const hifi_ops_t *ops, char *out, size_t cap) {
 
 static double num_or(const char *body, const char *key, double dflt) {
 	double v;
+	if (hj_num_bad(body, key)) return NAN; /* fails the tone's range checks: 400 */
 	return hj_get_num(body, key, &v) ? v : dflt;
 }
 
@@ -370,9 +371,10 @@ static int r_input(const hifi_ops_t *ops, const char *body, char *out, size_t ca
 
 static int r_sub(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
 	double db = NAN;
-	bool on, has_on = hj_get_bool(body, "on", &on), has_db = hj_get_num(body, "level_db", &db);
+	bool on, has_on = hj_get_bool(body, "on", &on), has_db = hj_get_num(body, "level_db", &db) ||
+	     hj_num_bad(body, "level_db");
 	if (!has_on && !has_db) return error(out, cap, 400, "send level_db and/or on");
-	if (has_db && (db < -30 || db > 6)) return error(out, cap, 400, "level_db must be -30 to +6");
+	if (has_db && !(db >= -30 && db <= 6)) return error(out, cap, 400, "level_db must be -30 to +6");
 	ops->set_sub(has_on ? on : -1, (float) db);
 	return r_state(ops, out, cap);
 }
@@ -431,7 +433,8 @@ static bool other_type(const char *body, const char *key) {
 	char t[2];
 	bool b;
 	double d;
-	return hj_get_str(body, key, t, sizeof(t)) || hj_get_bool(body, key, &b) || hj_get_num(body, key, &d);
+	return hj_get_str(body, key, t, sizeof(t)) || hj_get_bool(body, key, &b) || hj_get_num(body, key, &d) ||
+	       hj_num_bad(body, key);
 }
 
 /* *out is a whole number lo..hi, or -1 when the key is missing (or null) */
@@ -506,7 +509,7 @@ static int r_crash(const hifi_ops_t *ops, const char *body, char *out, size_t ca
 	if (!ops->reset_reason || !ops->last_log) return error(out, cap, 404, "this build keeps no crash log");
 	double from_d = -1;
 	if (body && !hj_get_num(body, "from", &from_d)) return error(out, cap, 400, "from: a number, where the page starts");
-	if (body && from_d < 0) return error(out, cap, 400, "from: a number, where the page starts");
+	if (body && !(from_d >= 0)) return error(out, cap, 400, "from: a number, where the page starts");
 	char *log = malloc(CRASH_LOG_MAX + 1);
 	if (!log) return error(out, cap, 503, "out of memory");
 	size_t n = ops->last_log(log, CRASH_LOG_MAX + 1), k = 0;
@@ -703,7 +706,9 @@ static int r_ota(const hifi_ops_t *ops, const char *what, const char *body, char
 	if (!strcmp(what, "begin")) {
 		double size;
 		char sha[72] = "", version[32] = "";
-		if (!hj_get_num(body, "size", &size) || size <= 0) return error(out, cap, 400, "size is required");
+		if (!hj_get_num(body, "size", &size) || !(size > 0)) return error(out, cap, 400, "size is required");
+		/* range-checked before the cast: past size_t it is undefined (32 bits on the board) */
+		if (!(size <= 4294967295.0)) return error(out, cap, 400, "image is larger than the app slot");
 		hj_get_str(body, "sha256", sha, sizeof(sha));
 		hj_get_str(body, "version", version, sizeof(version));
 		if ((st = hifi_ota_begin(o, (size_t) size, sha, version, &err)) != 200) return error(out, cap, st, err);
@@ -719,7 +724,9 @@ static int r_ota(const hifi_ops_t *ops, const char *what, const char *body, char
 		double off;
 		const char *data;
 		size_t dlen;
-		if (!hj_get_num(body, "off", &off) || off < 0) return error(out, cap, 400, "off is required");
+		/* range-checked before the cast, as size is */
+		if (!hj_get_num(body, "off", &off) || !(off >= 0 && off <= 4294967295.0))
+			return error(out, cap, 400, "off is required");
 		if (!hj_get_str_span(body, "data", &data, &dlen)) return error(out, cap, 400, "data (base64) is required");
 		uint8_t *buf = malloc(HIFI_OTA_CHUNK_MAX);
 		if (!buf) return error(out, cap, 500, "out of memory");
@@ -757,8 +764,11 @@ static int r_ota(const hifi_ops_t *ops, const char *what, const char *body, char
 
 static int capture_frames(const char *body) {
 	double f;
+	if (body && hj_num_bad(body, "frames")) return -1;
 	if (!body || !hj_get_num(body, "frames", &f)) return HIFI_CAPTURE_FRAMES_DEFAULT;
-	return (int) f;
+	/* out of range stays out of range, without a cast past int */
+	if (!(f >= 0)) return -1;
+	return f > HIFI_CAPTURE_FRAMES_MAX ? HIFI_CAPTURE_FRAMES_MAX + 1 : (int) f;
 }
 
 static int r_capture(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
@@ -923,7 +933,7 @@ static int r_zone(const hifi_ops_t *ops, const char *body, char *out, size_t cap
 	bool on;
 	double v;
 	if (!hj_get_str(body, "zone", zone, sizeof(zone)) || strcmp(zone, "b")) return error(out, cap, 400, "zone must be \"b\"");
-	if (hj_get_num(body, "volume", &v))
+	if (hj_get_num(body, "volume", &v) || hj_num_bad(body, "volume"))
 		return error(out, cap, 400, "zone B has no level of its own: it plays at the main volume");
 	if (!hj_get_bool(body, "on", &on)) return error(out, cap, 400, "on (true or false) is required");
 	ops->set_zone(on);
