@@ -4,7 +4,9 @@
  * follower plays it on its own DAC at the moment the leader does, both timed
  * against the access point's Wi-Fi TSF. The design and its numbers are in
  * projects/hifi-lite-lab/party-mode.md; the parts with no radio or I2S (the
- * packet, the fits, the jitter buffer, the controller) are core/hifi_party.c.
+ * packet, the fits, the jitter buffer, the controller) are core/hifi_party.c,
+ * and the board's clocks (the two fits, their resets, the CLOCK it plays to)
+ * are core/hifi_party_sync.c, which firmware/test/sim_party.c runs on the host.
  *
  *   api lab "{\"op\":\"start\",\"exp\":\"party\",\"role\":\"follower\",\"peer\":\"192.168.1.20\",\"key\":\"<32 hex>\",\"max_s\":600}"
  *   api lab "{\"op\":\"start\",\"exp\":\"party\",\"role\":\"leader\",\"peer\":\"192.168.1.21\",\"key\":\"<32 hex>\",\"max_s\":600}"
@@ -62,6 +64,7 @@
 #include "hifi_lab_esp.h"
 #include "hifi_link.h"
 #include "hifi_party.h"
+#include "hifi_party_sync.h"
 #include "hifi_scan.h"
 
 static const char *TAG = "lab_party";
@@ -80,7 +83,6 @@ extern int hifi_sink_source(void) __attribute__((weak));
 #define JB_SLOTS 128          /* the follower's jitter buffer, ~1 s */
 #define HIST_SLOTS 128        /* the leader's resend history, ~1 s */
 #define CLOCK_EVERY_US 200000
-#define CLOCK_STALE_US 2000000
 #define TSF_EVERY_US 50000
 #define MARKS 64
 #define OFFS 4096
@@ -106,7 +108,7 @@ typedef struct {
 /* Made once and kept, all in PSRAM (the Lite has ~13 KB of internal RAM
  * free): a hook still running as a run ends never touches freed memory. */
 typedef struct {
-	hifi_party_fit_t tsf, dac;
+	hifi_party_sync_t sync; /* the fits, and the follower's CLOCK */
 	hifi_party_jb_t jb;
 	hifi_party_ctl_t ctl;
 	hifi_party_hist_t hist;
@@ -145,13 +147,12 @@ static uint32_t s_sec, s_tone; /* leader: s_pos mod RATE and mod TONE_N, kept by
 static int16_t tone_tab[TONE_N];
 static int64_t kw_off;     /* leader: stream index = write position + kw_off */
 static uint32_t prev_out;  /* the last frame of the last block, for the marker's edge */
-static int bad_windows;
 static frames_t last_block; /* frames the output was about to write */
-static uint32_t reanchors, short_writes, wrong_rate, blocks, muted, output_lost, unaligned;
+static uint32_t wrong_rate, blocks, muted, output_lost, unaligned;
 static int64_t last_clock_us;
-/* the clock: the leader's own, or the last the follower got */
+/* the leader's own clock, as it last sent it (a follower's is in st->sync) */
 static bool clk_ok;
-static int64_t clk_k, clk_t, clk_at;
+static int64_t clk_k, clk_t;
 static uint32_t clk_rate, clk_seq, clk_sent_seq;
 static uint8_t clk_bssid[6];
 /* markers and offsets */
@@ -163,8 +164,7 @@ static uint8_t my_bssid[6];
 static bool have_bssid;
 static uint32_t group, seq;
 static int64_t k_sent;
-static uint32_t sent, send_fail, send_skipped, resent, resend_gone, nacks_sent, rx_ok, rx_bad, rx_other, rx_old_clock,
-	clocks, groups, bssid_wrong, tsf_zero;
+static uint32_t sent, send_fail, send_skipped, resent, resend_gone, nacks_sent, rx_ok, rx_bad, rx_other, clocks_sent, groups;
 static uint32_t heap_start, heap_min;
 
 static uint32_t heap_now(void) { return heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); }
@@ -172,17 +172,8 @@ static uint32_t heap_now(void) { return heap_caps_get_free_size(MALLOC_CAP_INTER
 static void lock(void) { xSemaphoreTake(mx, portMAX_DELAY); }
 static void unlock(void) { xSemaphoreGive(mx); }
 
-static void dac_reset(void) {
-	hifi_party_fit_init(&st->dac, 1000000, 30, 4, 500);
-	bad_windows = 0;
-}
-
 /* the TSF at which write position w reaches the DAC (as the fits put it) */
-static double tsf_at(int64_t w) {
-	return hifi_party_fit_y(&st->tsf, hifi_party_fit_y(&st->dac, (double) w));
-}
-
-static bool fits_ok(void) { return st->tsf.ok && st->dac.ok; }
+static double tsf_at(int64_t w) { return hifi_party_sync_tsf_at(&st->sync, w); }
 
 static void mark_add(int64_t k, double tsf, bool have_ref) {
 	if (last_mark_k && k > last_mark_k && k - last_mark_k > RATE) marks_missed += (uint32_t) ((k - last_mark_k) / RATE - 1);
@@ -190,7 +181,8 @@ static void mark_add(int64_t k, double tsf, bool have_ref) {
 	st->marks[marks_head] = (mark_t){k, tsf};
 	marks_head = (marks_head + 1) % MARKS;
 	if (marks_n < MARKS) marks_n++;
-	if (have_ref && offs_n < OFFS) st->offs[offs_n++] = (float) (tsf - (clk_t + (double) (k - clk_k) * 1e9 / clk_rate));
+	const hifi_party_sync_t *c = &st->sync; /* the follower's CLOCK */
+	if (have_ref && offs_n < OFFS) st->offs[offs_n++] = (float) (tsf - (c->clk_t + (double) (k - c->clk_k) * 1e9 / c->clk_rate));
 }
 
 /* ------------------------------------------------------------------ hooks */
@@ -202,8 +194,7 @@ void hifi_party_i2s_restart(int frames, u32_t rate) {
 	lock();
 	run_buf_frames = frames;
 	buf_frames = frames;
-	reanchors++;
-	dac_reset();
+	hifi_party_sync_restart(&st->sync, frames);
 	unlock();
 }
 
@@ -226,18 +217,15 @@ static void leader_block(uint32_t *b, int n, int64_t now) {
 		if (++s_tone == TONE_N) s_tone = 0;
 	}
 	kw_off = s0 - DELAY - w_pos;
-	if (fits_ok()) {
+	if (hifi_party_sync_ok(&st->sync)) {
 		for (int i = 0; i < n; i++) {
 			int64_t k = w_pos + i + kw_off;
 			if (b[i] == MARKER && (i ? b[i - 1] : prev_out) != MARKER && k >= 0 && k % RATE == 0)
 				mark_add(k, tsf_at(w_pos + i), false);
 		}
 		if (now - last_clock_us >= CLOCK_EVERY_US) {
-			double a = st->dac.slope, bb = st->tsf.slope; /* µs per frame; TSF µs per µs */
-			if (a > 0 && bb > 0) {
+			if (hifi_party_sync_leader_clock(&st->sync, w_pos, &clk_t, &clk_rate, clk_bssid)) {
 				clk_k = w_pos + kw_off;
-				clk_t = llround(tsf_at(w_pos));
-				clk_rate = (uint32_t) llround(1e9 / (a * bb));
 				clk_ok = true;
 				clk_seq++;
 				last_clock_us = now;
@@ -248,9 +236,8 @@ static void leader_block(uint32_t *b, int n, int64_t now) {
 }
 
 static void follower_block(uint32_t *b, int n, int64_t now) {
-	if (fits_ok() && clk_seq && now - clk_at < CLOCK_STALE_US && have_bssid && !memcmp(clk_bssid, my_bssid, 6)) {
-		double t = tsf_at(w_pos);
-		double target = hifi_party_target(clk_k, clk_t, clk_rate, t);
+	double target;
+	if (hifi_party_sync_target(&st->sync, w_pos, now, &target)) {
 		hifi_party_render(&st->ctl, &st->jb, target, b, n, 65536, 65536);
 		for (int i = 0; i < n; i++)
 			if (b[i] == MARKER && (i ? b[i - 1] : prev_out) != MARKER) {
@@ -258,7 +245,9 @@ static void follower_block(uint32_t *b, int n, int64_t now) {
 				mark_add(k, tsf_at(w_pos + i), true);
 			}
 	} else {
-		memset(b, 0, (size_t) n * 4);
+		/* no clock to play to: fade out over the block rather than cut (a
+		 * click), and keep the buffer and controller in step with the time */
+		hifi_party_mute(&st->ctl, &st->jb, b, n, 65536, 65536);
 		muted++;
 	}
 }
@@ -295,33 +284,8 @@ void hifi_party_i2s_wrote(frames_t frames, int64_t t0, int64_t t1) {
 	lock();
 	int64_t w0 = w_pos;
 	w_pos += frames;
-	if (last_block && frames < last_block) {
-		/* the DMA took less than the block: where the rest goes is unknown */
-		short_writes++;
-		reanchors++;
-		dac_reset();
-		last_block = 0;
-		unlock();
-		return;
-	}
+	hifi_party_sync_wrote(&st->sync, w0, w_pos, t0, t1, (int) last_block);
 	last_block = 0;
-	int64_t x;
-	if (buf_frames > 0 && hifi_party_dac_sample(w0, w_pos, t0, t1, buf_frames, 0, &x)) {
-		double q = (double) t1 - (double) x * 1e6 / RATE;
-		if (hifi_party_fit_add(&st->dac, x, t1, q, t1)) {
-			hifi_party_fit_t *f = &st->dac;
-			int last = (f->head + f->cap - 1) % f->cap;
-			/* the newest window far above the line three times running: the
-			 * DMA ran dry and every frame plays later now; start the fit again */
-			if (f->ok && (double) f->py[last] - hifi_party_fit_y(f, (double) f->px[last]) > f->reject) {
-				if (++bad_windows >= 3) {
-					reanchors++;
-					dac_reset();
-				}
-			} else
-				bad_windows = 0;
-		}
-	}
 	unlock();
 }
 
@@ -337,12 +301,9 @@ static void tsf_sample(void) {
 	int64_t a = esp_timer_get_time();
 	int64_t tsf = esp_wifi_get_tsf_time(WIFI_IF_STA);
 	int64_t b = esp_timer_get_time();
-	if (tsf <= 0) {
-		tsf_zero++;
-		return;
-	}
 	lock();
-	hifi_party_fit_add(&st->tsf, (a + b) / 2, tsf, (double) (b - a), b);
+	/* a zero TSF (not associated) or another AP's starts the TSF fit again */
+	hifi_party_sync_tsf(&st->sync, a, b, tsf, have_bssid ? my_bssid : NULL);
 	unlock();
 }
 
@@ -376,12 +337,14 @@ static void leader_send(void) {
 	bool have = clk_ok && clk_seq != clk_sent_seq;
 	hifi_party_pkt_t p = {.type = HIFI_PARTY_CLOCK, .group = group, .seq = seq++, .k = clk_k, .t = clk_t, .rate = clk_rate};
 	clk_sent_seq = clk_seq;
+	uint8_t bss[6];
+	memcpy(bss, clk_bssid, 6); /* the AP whose TSF the clock is in */
 	unlock();
-	if (have && have_bssid) {
-		size_t n = hifi_party_encode(key, &p, my_bssid, st->pkt, sizeof(st->pkt));
+	if (have) {
+		size_t n = hifi_party_encode(key, &p, bss, st->pkt, sizeof(st->pkt));
 		if (n) {
 			send_pkt(st->pkt, n);
-			clocks++;
+			clocks_sent++;
 		}
 	}
 }
@@ -405,7 +368,7 @@ static void follower_reset(uint32_t g) {
 	lock();
 	hifi_party_jb_init(&st->jb, jb_mem, JB_SLOTS);
 	hifi_party_ctl_init(&st->ctl, RATE);
-	clk_seq = 0;
+	hifi_party_sync_forget_clock(&st->sync);
 	group = g;
 	unlock();
 	groups++;
@@ -441,17 +404,7 @@ static void got(const uint8_t *d, size_t len, int64_t now) {
 		unlock();
 	} else if (p.type == HIFI_PARTY_CLOCK) {
 		lock();
-		if (clk_seq && (int32_t) (p.seq - clk_seq) <= 0) rx_old_clock++; /* a replay, or late */
-		else {
-			clk_k = p.k;
-			clk_t = p.t;
-			clk_rate = p.rate;
-			clk_seq = p.seq;
-			clk_at = now;
-			memcpy(clk_bssid, pl, 6);
-			if (have_bssid && memcmp(clk_bssid, my_bssid, 6)) bssid_wrong++;
-			clocks++;
-		}
+		hifi_party_sync_clock(&st->sync, p.k, p.t, p.rate, p.seq, pl, now); /* drops a replay, or one late */
 		unlock();
 	}
 }
@@ -640,8 +593,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	self_ip = ntohl(ip.ip.addr);
 	buf_frames = bf;
 	run_buf_frames = 0;
-	hifi_party_fit_init(&st->tsf, 1000000, 30, 4, 200);
-	dac_reset();
+	hifi_party_sync_init(&st->sync, bf);
 	hifi_party_jb_init(&st->jb, jb_mem, JB_SLOTS);
 	hifi_party_ctl_init(&st->ctl, RATE);
 	hifi_party_hist_init(&st->hist, hist_mem, HIST_SLOTS);
@@ -649,8 +601,8 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	s_sec = s_tone = 0;
 	prev_out = 0;
 	last_block = 0;
-	reanchors = short_writes = wrong_rate = blocks = muted = output_lost = unaligned = 0;
-	last_clock_us = clk_at = 0;
+	wrong_rate = blocks = muted = output_lost = unaligned = 0;
+	last_clock_us = 0;
 	clk_ok = false;
 	clk_k = clk_t = 0;
 	clk_rate = clk_seq = clk_sent_seq = 0;
@@ -660,8 +612,9 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	have_bssid = false;
 	group = role == ROLE_LEADER ? (esp_random() | 1) : 0;
 	seq = 1;
-	sent = send_fail = send_skipped = resent = resend_gone = nacks_sent = rx_ok = rx_bad = rx_other = rx_old_clock = 0;
-	clocks = groups = bssid_wrong = tsf_zero = 0;
+	memset(clk_bssid, 0, 6);
+	sent = send_fail = send_skipped = resent = resend_gone = nacks_sent = rx_ok = rx_bad = rx_other = 0;
+	clocks_sent = groups = 0;
 	heap_start = heap_min = heap_now();
 	hifi_link_key_init(key, k);
 	hifi_link_wipe(k, sizeof(k));
@@ -718,17 +671,20 @@ static void result(void *hj) {
 	hj_str(j, "role", role == ROLE_LEADER ? (src_any ? "leader-any" : "leader-tone") : "follower");
 	hj_int(j, "buf", buf_frames);
 	hj_int(j, "w", w_pos);
-	hj_int(j, "re", reanchors); /* the DAC fit started again: an output restart, a short write, a lasting jump */
-	if (short_writes) hj_int(j, "sw", short_writes);
+	const hifi_party_sync_t *sy = &st->sync;
+	bool lead = role == ROLE_LEADER;
+	hj_int(j, "re", sy->dac_resets); /* the DAC fit started again: an output restart, a short write, a lasting jump */
+	if (sy->tsf_resets) hj_int(j, "tr", sy->tsf_resets); /* the TSF fit started again: a step, a roam, a disconnect */
+	if (sy->short_writes) hj_int(j, "sw", sy->short_writes);
 	if (wrong_rate) hj_int(j, "wr", wrong_rate);
 	if (unaligned) hj_int(j, "ua", unaligned);
-	if (tsf_zero) hj_int(j, "tz", tsf_zero);
-	fit_json(j, "tsf", &st->tsf);
-	fit_json(j, "dac", &st->dac);
+	if (sy->tsf_zero) hj_int(j, "tz", sy->tsf_zero);
+	fit_json(j, "tsf", &sy->tsf);
+	fit_json(j, "dac", &sy->dac);
 	hj_arr(j, "clk"); /* seq, frames per 1000 s of TSF, CLOCK packets */
-	hj_int(j, NULL, clk_seq);
-	hj_int(j, NULL, clk_rate);
-	hj_int(j, NULL, clocks);
+	hj_int(j, NULL, lead ? clk_seq : sy->clk_seq);
+	hj_int(j, NULL, lead ? clk_rate : sy->clk_rate);
+	hj_int(j, NULL, lead ? clocks_sent : sy->clocks);
 	hj_arr_end(j);
 	hj_obj(j, "net");
 	hj_int(j, "tx", sent);
@@ -742,9 +698,10 @@ static void result(void *hj) {
 		hj_int(j, "skip", send_skipped);
 	} else {
 		hj_int(j, "nack", nacks_sent);
-		hj_int(j, "oldc", rx_old_clock);
+		hj_int(j, "oldc", sy->old_clocks);
 		hj_int(j, "grp", groups);
-		hj_int(j, "bss", bssid_wrong);
+		hj_int(j, "bss", sy->bssid_wrong);
+		if (sy->stale) hj_int(j, "stale", sy->stale);
 	}
 	hj_obj_end(j);
 	if (role == ROLE_FOLLOWER) {
