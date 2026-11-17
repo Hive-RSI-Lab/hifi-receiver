@@ -1161,6 +1161,7 @@ const hifi_ops_t hifi_ops = {
 #endif
 	.set_wifi = op_set_wifi, .remote_status = hifi_remote_status,
 	.remote_set = hifi_remote_set, .ota = &hifi_ota_session, .ota_status = hifi_ota_status,
+	.diag = &hifi_diag_ops,
 	.wifi_scan = hifi_net_wifi_scan, .wifi_forget = hifi_net_wifi_forget,
 #if HIFI_ZONES > 1
 	.set_zone = hifi_bsp_set_zone,
@@ -1298,6 +1299,7 @@ static void alloc_failed(size_t size, uint32_t caps, const char *fn) {
 
 static bool hifi_init(void) {
 	heap_caps_register_failed_alloc_callback(alloc_failed);
+	hifi_diag_init();
 	bt_test_boot();
 	lock = xSemaphoreCreateMutex();
 	tone_lock = xSemaphoreCreateMutex();

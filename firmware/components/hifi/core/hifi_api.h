@@ -13,6 +13,7 @@
 #include "hifi_ir.h"
 #include "hifi_meta.h"
 #include "hifi_capture.h"
+#include "hifi_diag.h"
 #include "hifi_ota.h"
 #include "hifi_pd.h"
 #include "hifi_power.h"
@@ -216,6 +217,8 @@ typedef struct {
 	 * stops or reads one. Returns the HTTP status with the reply in out;
 	 * NULL outside a lab build: 404 */
 	int (*lab)(bool post, const char *body, char *out, size_t cap);
+	/* on-board diagnostics (hifi_diag.h); NULL: diag answers 404 */
+	const hifi_diag_ops_t *diag;
 } hifi_ops_t;
 
 /* Returns the HTTP status; the reply (always a JSON object) is in out. */
