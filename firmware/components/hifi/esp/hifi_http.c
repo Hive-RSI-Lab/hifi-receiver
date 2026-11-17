@@ -27,6 +27,8 @@ static const char *status_line(int st) {
 	case 404: return "404 Not Found";
 	case 405: return "405 Method Not Allowed";
 	case 409: return "409 Conflict";
+	case 503: return "503 Service Unavailable";
+	case 507: return "507 Insufficient Storage";
 	default: return "500 Internal Server Error";
 	}
 }

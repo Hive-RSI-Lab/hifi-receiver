@@ -1,0 +1,73 @@
+diff --git a/components/squeezelite/output.c b/components/squeezelite/output.c
+--- a/components/squeezelite/output.c
++++ b/components/squeezelite/output.c
+@@ -38,6 +38,15 @@
+ 
+ bool user_rates = false;
+ 
++/* hifi: times the output ran dry while a stream was still coming in (the
++ * board's `api diag/audio`); one count per dry spell, not per call. LMS,
++ * AirPlay (3) and Spotify (4) by hifi_sink_source(): a Bluetooth pause plays
++ * silence with the output running, so it can't be told from a dropout */
++extern struct streamstate stream;
++extern int hifi_sink_source(void) __attribute__((weak)); /* none in recovery */
++u32_t hifi_output_underruns;
++static bool hifi_dry;
++
+ #define LOCK   mutex_lock(outputbuf->mutex)
+ #define UNLOCK mutex_unlock(outputbuf->mutex)
+ 
+@@ -109,6 +118,14 @@
+ 	}
+ 	
+ 	// play silence if buffering or no frames
++	if (output.state == OUTPUT_RUNNING && frames == 0 &&
++	    (stream.state > DISCONNECT ||
++	     (hifi_sink_source && (hifi_sink_source() == 3 || hifi_sink_source() == 4)))) {
++		if (!hifi_dry) hifi_output_underruns++;
++		hifi_dry = true;
++	} else if (frames) {
++		hifi_dry = false;
++	}
+ 	if (output.state <= OUTPUT_BUFFER || frames == 0) {
+ 		silence = true;
+ 		frames = min(avail, MAX_SILENCE_FRAMES);
+diff --git a/components/squeezelite/output_i2s.c b/components/squeezelite/output_i2s.c
+--- a/components/squeezelite/output_i2s.c
++++ b/components/squeezelite/output_i2s.c
+@@ -116,6 +116,8 @@
+ 	u8_t *buf;
+ } spdif;
+ static size_t dma_buf_frames;
++static u64_t hifi_played_us; /* hifi: audio played since boot, this task's only */
++static volatile u32_t hifi_played_s; /* the same in s, read by hifi_output_stats */
+ static TaskHandle_t output_i2s_task;
+ static struct {
+ 	int gpio, active;
+@@ -589,6 +591,10 @@
+ 		_output_frames( iframes );
+ 		// oframes must be a global updated by the write callback
+ 		output.frames_in_process = oframes;
++		if (output.state == OUTPUT_RUNNING && output.current_sample_rate) {
++			hifi_played_us += (u64_t) oframes * 1000000 / output.current_sample_rate;
++			hifi_played_s = (u32_t) (hifi_played_us / 1000000);
++		}
+               						
+ 		SET_MIN_MAX_SIZED(oframes,rec,iframes);
+ 		SET_MIN_MAX_SIZED(_buf_used(outputbuf),o,outputbuf->size);
+@@ -834,3 +840,15 @@
+ 		*dst++ = ((u32_t)lo << 16) | hi;
+ 	}
+ }
++
++/* hifi: the output's figures for the board's `api diag/audio`
++ * (components/hifi/core/hifi_diag.h); read without the lock, as stats */
++extern u32_t hifi_output_underruns;
++void hifi_output_stats(u32_t *underruns, u32_t *rate, u32_t *buffer_ms, u32_t *dma_ms, u32_t *played_s) {
++	u32_t r = output.current_sample_rate;
++	*underruns = hifi_output_underruns;
++	*rate = r;
++	*buffer_ms = r && outputbuf ? (u32_t) ((u64_t) _buf_used(outputbuf) / BYTES_PER_FRAME * 1000 / r) : 0;
++	*dma_ms = r ? (u32_t) ((u64_t) dma_buf_frames * 1000 / r) : 0;
++	*played_s = hifi_played_s;
++}
