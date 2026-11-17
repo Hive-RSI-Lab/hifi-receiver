@@ -596,9 +596,12 @@ static int ok_reply(char *out, size_t cap) {
 	return 200;
 }
 
-static int r_ota(const hifi_ops_t *ops, const char *what, const char *body, char *out, size_t cap) {
+static int r_ota(const hifi_ops_t *ops, bool lan, const char *what, const char *body, char *out, size_t cap) {
 	hifi_ota_t *o = ops->ota;
 	if (!o) return error(out, cap, 404, "no OTA in this build");
+	/* the LAN can't touch an update the Hive started */
+	if (lan && o->active && !o->need_sig)
+		return error(out, cap, 403, "an update the Hive started is running");
 	const char *err = "update failed";
 	int st;
 	hj_t j;
@@ -608,7 +611,9 @@ static int r_ota(const hifi_ops_t *ops, const char *what, const char *body, char
 		if (!hj_get_num(body, "size", &size) || size <= 0) return error(out, cap, 400, "size is required");
 		hj_get_str(body, "sha256", sha, sizeof(sha));
 		hj_get_str(body, "version", version, sizeof(version));
-		if ((st = hifi_ota_begin(o, (size_t) size, sha, version, &err)) != 200) return error(out, cap, st, err);
+		if ((st = lan ? hifi_ota_begin_ex(o, (size_t) size, sha[0] ? sha : NULL, version, true, &err)
+			      : hifi_ota_begin(o, (size_t) size, sha, version, &err)) != 200)
+			return error(out, cap, st, err);
 		hj_init(&j, out, cap);
 		hj_obj(&j, NULL);
 		hj_bool(&j, "ok", true);
@@ -862,14 +867,14 @@ static int r_update_check(const hifi_ops_t *ops, char *out, size_t cap) {
 	return 200;
 }
 
-static int r_update(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+static int r_update(const hifi_ops_t *ops, bool lan, const char *body, char *out, size_t cap) {
 	if (!ops->update_start) return error(out, cap, 404, "no updates from a URL in this build");
 	char url[192] = "", sha[72] = "";
 	if (!hj_get_str(body, "url", url, sizeof(url)) || (strncmp(url, "http://", 7) && strncmp(url, "https://", 8)))
 		return error(out, cap, 400, "url (http:// or https://) is required");
 	hj_get_str(body, "sha256", sha, sizeof(sha));
 	const char *err = "couldn't start the update";
-	int st = ops->update_start(url, sha[0] ? sha : NULL, &err);
+	int st = ops->update_start(url, sha[0] ? sha : NULL, lan, &err);
 	if (st) return error(out, cap, st, err);
 	return ok_reply(out, cap);
 }
@@ -887,6 +892,12 @@ size_t hifi_api_reply_cap(const char *path, const char *body) {
 
 int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 		    const char *body, char *out, size_t cap) {
+	return hifi_api_handle_from(ops, HIFI_SRC_TRUSTED, method, path, body, out, cap);
+}
+
+int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *method, const char *path,
+			 const char *body, char *out, size_t cap) {
+	bool lan = src != HIFI_SRC_TRUSTED;
 	char route[32];
 	size_t plen = strlen(PREFIX);
 	if (strncmp(path, PREFIX, plen)) return error(out, cap, 404, "no such path");
@@ -916,7 +927,7 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "ota")) status = get ? r_ota_get(ops, out, cap) : -1;
 	else if (!strcmp(route, "crash")) status = get ? r_crash(ops, NULL, out, cap) : post ? r_crash(ops, body ? body : "{}", out, cap) : -1;
 	else if (!strcmp(route, "bttest")) status = post ? r_bttest(ops, body, out, cap) : -1;
-	else if (!strncmp(route, "ota/", 4)) status = post ? r_ota(ops, route + 4, body, out, cap) : -1;
+	else if (!strncmp(route, "ota/", 4)) status = post ? r_ota(ops, lan, route + 4, body, out, cap) : -1;
 	else if (!strcmp(route, "capture")) status = post ? r_capture(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "wifi")) status = post ? r_wifi(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "wifi/scan")) status = get ? r_wifi_scan(ops, out, cap) : -1;
@@ -927,8 +938,10 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "backlight"))
 		status = post ? r_mode(ops->set_backlight, "this model has no backlight", "on, off or auto", body, out, cap) : -1;
 	else if (!strcmp(route, "update/check")) status = get ? r_update_check(ops, out, cap) : -1;
-	else if (!strcmp(route, "update")) status = post ? r_update(ops, body, out, cap) : -1;
-	else if (!strcmp(route, "remote")) status = r_remote(ops, post, body, out, cap);
+	else if (!strcmp(route, "update")) status = post ? r_update(ops, lan, body, out, cap) : -1;
+	else if (!strcmp(route, "remote"))
+		status = lan && post ? error(out, cap, 403, "the relay is set over USB or by the Hive, not from the LAN")
+				     : r_remote(ops, post, body, out, cap);
 	else return error(out, cap, 404, "no such path");
 
 	if (status < 0) return error(out, cap, 405, "wrong method for this path");

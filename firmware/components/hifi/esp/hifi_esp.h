@@ -35,9 +35,14 @@ bool hifi_net_ip(char *ip, size_t n);
 int hifi_net_wifi_scan(hifi_wifi_ap_t *aps, int max);
 int hifi_net_wifi_forget(void);
 int hifi_net_update_check(hifi_update_offer_t *out, const char **err);
-int hifi_net_update_start(const char *url, const char *sha256, const char **err);
+int hifi_net_update_start(const char *url, const char *sha256, bool need_sig, const char **err);
 void hifi_net_update_status(hifi_update_status_t *out);
 esp_err_t hifi_net_upload_handler(httpd_req_t *req); /* POST /api/v1/update/upload */
+
+/* hifi_listen_esp.c: "cannot open the home network" (core/hifi_listen.h) */
+void hifi_listen_tick(bool up);          /* every couple of seconds; scans every 10 s */
+void hifi_listen_trial(hifi_trial_t *t); /* fills listen_wait / listen_open */
+int hifi_listen_now(char *why, size_t n); /* a fresh scan for the self-test: strays */
 
 /* hifi_relay.c */
 extern hifi_ota_t hifi_ota_session;

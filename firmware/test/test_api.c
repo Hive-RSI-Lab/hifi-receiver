@@ -442,7 +442,7 @@ static struct {
 	bool zone_b, forgot;
 	int scan_busy;
 	char url[192], sha[72];
-	bool sha_null;
+	bool sha_null, need_sig;
 	hifi_update_status_t upd;
 	bool controls;
 	char led[8], backlight[8];
@@ -491,7 +491,8 @@ static int c_update_check(hifi_update_offer_t *o, const char **err) {
 	return hifi_update_parse("{\"latest\":\"0.2.0\",\"url\":\"plus.bin\",\"notes\":\"Zone B\"}",
 				 "http://hive.local/fw/manifest.json", "hifi-plus", o, err) ? 502 : 0;
 }
-static int c_update_start(const char *url, const char *sha, const char **err) {
+static int c_update_start(const char *url, const char *sha, bool need_sig, const char **err) {
+	c.need_sig = need_sig;
 	if (c.upd.state == HIFI_UPD_DOWNLOADING) return *err = "an update is already running", 409;
 	snprintf(c.url, sizeof(c.url), "%s", url);
 	c.sha_null = !sha;
@@ -549,8 +550,15 @@ static void core_routes(void) {
 	CHECK(ccall("POST", "/api/v1/update", "{\"url\":\"http://hive.local/fw/plus.bin\"}") == 200);
 	CHECK_STR(c.url, "http://hive.local/fw/plus.bin");
 	CHECK(c.sha_null);
+	CHECK(!c.need_sig); /* a trusted caller (the relay, the console) */
 	CHECK(ccall("POST", "/api/v1/update", "{\"url\":\"http://h/b.bin\"}") == 409);
 	CHECK_HAS(out, "already running");
+	/* from the LAN the image must be signed (security.md) */
+	c.upd = (hifi_update_status_t) {0};
+	CHECK(hifi_api_handle_from(&core_ops, HIFI_SRC_LAN, "POST", "/api/v1/update",
+				   "{\"url\":\"http://hive.local/fw/plus.bin\"}", out, sizeof(out)) == 200);
+	CHECK(c.need_sig);
+	c.upd = (hifi_update_status_t) {0};
 
 	/* the state: zone B, Ethernet and the update, which Lite's leaves out */
 	c.upd = (hifi_update_status_t) {.state = HIFI_UPD_DOWNLOADING, .progress = 42};

@@ -2,10 +2,10 @@
 # the test API (HTTP + console + mDNS) and the web app. core/ is plain C and
 # host-tested (firmware/test); esp/ ties it to ESP-IDF and squeezelite-esp32.
 set(srcs
-	core/hifi_api.c core/hifi_b64.c core/hifi_boot.c core/hifi_capture.c core/hifi_exp.c
-	core/hifi_gov.c core/hifi_ir.c core/hifi_json.c core/hifi_line.c core/hifi_meta.c core/hifi_ota.c core/hifi_pd.c
+	core/hifi_api.c core/hifi_b64.c core/hifi_boot.c core/hifi_capture.c core/hifi_exp.c core/hifi_gate.c
+	core/hifi_gov.c core/hifi_ir.c core/hifi_json.c core/hifi_line.c core/hifi_listen.c core/hifi_meta.c core/hifi_ota.c core/hifi_pd.c
 	core/hifi_power.c core/hifi_remote.c core/hifi_sha256.c core/hifi_tap.c core/hifi_tone.c core/hifi_update.c
-	core/hifi_vol.c core/hifi_ws_proto.c esp/hifi_main.c esp/hifi_crash.c esp/hifi_http.c esp/hifi_net.c esp/hifi_relay.c esp/hifi_ws.c)
+	core/hifi_vol.c core/hifi_ws_proto.c esp/hifi_main.c esp/hifi_crash.c esp/hifi_http.c esp/hifi_listen_esp.c esp/hifi_net.c esp/hifi_relay.c esp/hifi_ws.c)
 
 # the board's own code (esp/hifi_bsp.h), from the Kconfig board choice
 if(CONFIG_HIFI_PLUS OR CONFIG_HIFI_ULTRA)
@@ -48,3 +48,12 @@ target_compile_options(${COMPONENT_LIB} PRIVATE -Wall -Wno-format-truncation)
 # esp/hifi_crash.c keeps a copy of everything the console prints (crash
 # reports included) across a restart, by wrapping the UART's FIFO write
 target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=uart_hal_write_txfifo")
+
+# squeezelite reaches the LAN gate's hooks through weak references
+# (firmware/patches/0009), which don't pull an object out of an archive by
+# themselves: name them here so a link-order change can't silently drop the
+# gate and leave port 80 open (security.md L1)
+foreach(sym hifi_lan_register hifi_lan_command_ok hifi_lan_config_ok hifi_lan_config_secret
+	    hifi_ap_password_pick hifi_ap_password_make hifi_ap_due hifi_http_register)
+	target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,-u,${sym}")
+endforeach()

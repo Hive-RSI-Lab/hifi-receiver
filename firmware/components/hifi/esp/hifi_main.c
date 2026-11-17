@@ -1012,6 +1012,9 @@ static void op_selftest(hifi_selftest_t *t) {
 	hifi_selftest_add(t, "psram", ps >= 2u << 20, "%u KB mapped", (unsigned) (ps >> 10));
 	hifi_selftest_add(t, "heap", s->heap_free > HIFI_HEAP_MIN, "%u B free", (unsigned) s->heap_free);
 	hifi_selftest_add(t, "network", s->ip[0] != 0, s->ip[0] ? "%s" : "not connected", s->ip);
+	char why[64];
+	int strays = hifi_listen_now(why, sizeof(why));
+	hifi_selftest_add(t, "listeners", strays == 0, "%s", why);
 	free(s);
 }
 
