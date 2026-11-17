@@ -51,6 +51,8 @@ UP_FILES := components/squeezelite/controls.c components/driver_bt/bt_app_sink.c
 	$(BELL)/io/X509Bundle.cpp $(BELL)/io/include/X509Bundle.h \
 	$(BELL)/utilities/BellLogger.cpp $(BELL)/utilities/include/BellLogger.h \
 	$(CSPOT)/src/AuthChallenges.cpp $(CSPOT)/include/AuthChallenges.h \
+	$(addprefix $(CSPOT)/,src/PlainConnection.cpp src/ShannonConnection.cpp src/Shannon.cpp include/PlainConnection.h \
+	  include/ShannonConnection.h include/Shannon.h include/Packet.h include/Logger.h include/Utils.h) \
 	$(CSPOT)/protobuf/keyexchange.proto $(CSPOT)/protobuf/keyexchange.options \
 	$(CSPOT)/protobuf/authentication.proto $(CSPOT)/protobuf/authentication.options \
 	$(BELL)/utilities/Crypto.cpp $(BELL)/utilities/include/Crypto.h $(BELL)/utilities/aes.c \
@@ -73,7 +75,8 @@ upstream:
 	$(CC) $(UP_CFLAGS) -I$(UP)/components/raop -o $(UP)/test_up_dmap upstream/test_up_dmap.c || exit 1; \
 	fail=0; $(UP)/test_up_controls || fail=1; $(UP)/test_up_bt || fail=1; $(UP)/test_up_dmap || fail=1; \
 	python3 upstream/test_up_source.py $(UP) || fail=1; \
-	python3 upstream/test_up_tls.py $(UP) || fail=1; python3 upstream/test_up_aphello.py $(UP) || fail=1; exit $$fail
+	python3 upstream/test_up_tls.py $(UP) || fail=1; python3 upstream/test_up_aphello.py $(UP) || fail=1; \
+	python3 upstream/test_up_shannon.py $(UP) || fail=1; exit $$fail
 
 # Line, branch and function coverage of core/ (gcov): each test is built
 # again with --coverage under build/cov and run there; `fw coverage` merges
