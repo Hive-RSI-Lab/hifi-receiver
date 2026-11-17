@@ -348,11 +348,14 @@ void hifi_link_tx_pong(hifi_link_tx_t *t, const hifi_link_frame_t *f, int64_t t4
 	if (delay > t->rtt_max_us) t->rtt_max_us = delay;
 	t->rtt_sum_us += delay;
 	if (t->ow) {
-		if (t->ow_n < t->ow_cap) {
-			hifi_link_ow_t *o = &t->ow[t->ow_n++];
+		uint32_t n = t->ow_n;
+		if (n < t->ow_cap) {
+			hifi_link_ow_t *o = &t->ow[n];
 			o->t1 = f->t1;
 			o->fwd_raw = f->t2 - f->t1;
 			o->back_raw = t4 - f->t3;
+			/* the sample is whole before the count says so */
+			__atomic_store_n(&t->ow_n, n + 1, __ATOMIC_RELEASE);
 		} else
 			t->ow_dropped++;
 	}
@@ -459,7 +462,9 @@ static void ow_stats(int32_t *v, uint32_t n, hifi_link_ow_stats_t *s) {
 
 bool hifi_link_tx_oneway(const hifi_link_tx_t *t, int32_t *scratch, hifi_link_ow_stats_t *fwd,
                          hifi_link_ow_stats_t *back, bool *fit) {
-	if (!t->ow || !t->ow_n || !scratch) return false;
+	/* one read of the count for both sides (a pong may land meanwhile) */
+	uint32_t n = __atomic_load_n(&t->ow_n, __ATOMIC_ACQUIRE);
+	if (!t->ow || !n || !scratch) return false;
 	double m = 0, b = 0;
 	int64_t x0 = 0, y0 = t->offset_us;
 	*fit = fit_line(t, &m, &b, &x0, &y0);
@@ -470,18 +475,18 @@ bool hifi_link_tx_oneway(const hifi_link_tx_t *t, int32_t *scratch, hifi_link_ow
 	}
 	/* the echo's clock reads ours + off(t1): its t2 on ours is t2 - off,
 	 * our t4 on its is t4 + off */
-	for (uint32_t i = 0; i < t->ow_n; i++) {
+	for (uint32_t i = 0; i < n; i++) {
 		const hifi_link_ow_t *o = &t->ow[i];
 		double off = (double) y0 + b + m * ((o->t1 - x0) / 1e6);
 		scratch[i] = clamp32((double) o->fwd_raw - off);
 	}
-	ow_stats(scratch, t->ow_n, fwd);
-	for (uint32_t i = 0; i < t->ow_n; i++) {
+	ow_stats(scratch, n, fwd);
+	for (uint32_t i = 0; i < n; i++) {
 		const hifi_link_ow_t *o = &t->ow[i];
 		double off = (double) y0 + b + m * ((o->t1 - x0) / 1e6);
 		scratch[i] = clamp32((double) o->back_raw + off);
 	}
-	ow_stats(scratch, t->ow_n, back);
+	ow_stats(scratch, n, back);
 	return true;
 }
 

@@ -757,10 +757,15 @@ static void result(void *hj) {
 	hj_obj(j, "tx");
 	hifi_link_tx_json(tx, j);
 	hj_obj_end(j);
+	/* after the run only: the worker records pongs (and the clock's fit)
+	 * without the lab's lock */
 	if (role == ROLE_PING && tx->ow && ow_scratch) {
-		hj_obj(j, "oneway_us");
-		hifi_link_tx_oneway_json(tx, ow_scratch, j);
-		hj_obj_end(j);
+		if (alive) hj_str(j, "oneway_us", "at the end");
+		else {
+			hj_obj(j, "oneway_us");
+			hifi_link_tx_oneway_json(tx, ow_scratch, j);
+			hj_obj_end(j);
+		}
 	}
 	if (role == ROLE_ECHO) {
 		hj_obj(j, "rx");
