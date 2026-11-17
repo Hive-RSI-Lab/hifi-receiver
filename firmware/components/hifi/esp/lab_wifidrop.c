@@ -21,12 +21,29 @@
  * as soon as a run fails: the restart loses the high-water marks.
  *
  * cycles: 1-50, default 20. The run ends "done" after the last one is back.
- * The result has each cycle's time to come back (ms) and the slowest.
+ * The result has each cycle's time to come back (ms) and the slowest, and
+ * the free internal heap before the first drop (heap_start), after each
+ * cycle's settle (heap, read just before the next drop, and after the last
+ * settle) and the change over the run (heap_delta): a reconnect that leaks
+ * shows as a heap that falls by the same step every cycle. heap_ok is true
+ * once a run is done with every cycle back and heap_delta no lower than
+ * -heap_tol (bytes, 0-65535, default 200): tools/hil-wifidrop.json in the
+ * lab project checks it, so a reconnect leak fails a test.
+ *
+ * On an image built with CONFIG_HEAP_TRACING_STANDALONE, "trace":1 also
+ * traces every allocation from just before the first drop to the end of the
+ * last settle (records in PSRAM, 300 of them) and the result lists what is
+ * still allocated in internal RAM, grouped by call stack, the biggest first:
+ * look the addresses up with addr2line on the image's ELF.
  */
 #include <stdlib.h>
 #include <string.h>
 
 #include "esp_heap_caps.h"
+#if CONFIG_HEAP_TRACING_STANDALONE
+#include "esp_heap_trace.h"
+#include "soc/soc_memory_layout.h"
+#endif
 #include "esp_log.h"
 #include "esp_netif.h"
 #include "esp_task.h"
@@ -53,6 +70,102 @@ static volatile uint32_t done_n;
 static uint32_t back_ms[CYCLES_MAX];
 static const char *volatile phase = "idle";
 static char why[48];
+static uint32_t heap_start, heap_at[CYCLES_MAX + 1], heap_tol;
+static volatile uint32_t heap_n;
+
+static uint32_t heap_int(void) {
+	return heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+}
+
+#if CONFIG_HEAP_TRACING_STANDALONE
+#define TRACE_RECORDS 300
+#define TRACE_GROUPS 8
+typedef struct {
+	void *by[CONFIG_HEAP_TRACING_STACK_DEPTH];
+	uint32_t n, bytes;
+} trace_group_t;
+static heap_trace_record_t *trace_buf;
+static bool trace_want, trace_ran;
+static uint32_t trace_count, trace_int_n, trace_int_bytes, trace_ngroups;
+static trace_group_t trace_groups[TRACE_GROUPS];
+
+static void trace_begin(void) {
+	trace_ran = false;
+	if (!trace_want) return;
+	if (!trace_buf) {
+		trace_buf = heap_caps_calloc(TRACE_RECORDS, sizeof(*trace_buf), MALLOC_CAP_SPIRAM);
+		if (!trace_buf || heap_trace_init_standalone(trace_buf, TRACE_RECORDS) != ESP_OK) {
+			ESP_LOGW(TAG, "no heap trace");
+			return;
+		}
+	}
+	trace_ran = heap_trace_start(HEAP_TRACE_LEAKS) == ESP_OK;
+}
+
+/* group what is still allocated in internal RAM by call stack; keep the
+ * TRACE_GROUPS biggest (a group that doesn't fit replaces the smallest) */
+static void trace_end(void) {
+	if (!trace_ran) return;
+	heap_trace_stop();
+	trace_count = heap_trace_get_count();
+	trace_int_n = trace_int_bytes = trace_ngroups = 0;
+	memset(trace_groups, 0, sizeof(trace_groups));
+	for (uint32_t i = 0; i < trace_count; i++) {
+		heap_trace_record_t r;
+		if (heap_trace_get(i, &r) != ESP_OK || !esp_ptr_internal(r.address)) continue;
+		trace_int_n++;
+		trace_int_bytes += r.size;
+		uint32_t g = 0;
+		while (g < trace_ngroups && memcmp(trace_groups[g].by, r.alloced_by, sizeof(r.alloced_by))) g++;
+		if (g == trace_ngroups) {
+			if (trace_ngroups < TRACE_GROUPS) trace_ngroups++;
+			else {
+				uint32_t min = 0;
+				for (uint32_t k = 1; k < TRACE_GROUPS; k++)
+					if (trace_groups[k].bytes < trace_groups[min].bytes) min = k;
+				if (trace_groups[min].bytes > r.size) continue;
+				g = min;
+			}
+			memcpy(trace_groups[g].by, r.alloced_by, sizeof(r.alloced_by));
+			trace_groups[g].n = trace_groups[g].bytes = 0;
+		}
+		trace_groups[g].n++;
+		trace_groups[g].bytes += r.size;
+	}
+}
+
+static void trace_result(hj_t *j) {
+	if (!trace_want) return;
+	hj_obj(j, "trace");
+	hj_bool(j, "ran", trace_ran);
+	if (trace_ran) {
+		hj_int(j, "records", trace_count);
+		hj_bool(j, "full", trace_count >= TRACE_RECORDS);
+		hj_int(j, "internal_n", trace_int_n);
+		hj_int(j, "internal_bytes", trace_int_bytes);
+		hj_arr(j, "groups");
+		for (uint32_t g = 0; g < trace_ngroups; g++) {
+			/* the stack as one string, frames apart by spaces, so a
+			 * result stays short enough for one console line */
+			char a[CONFIG_HEAP_TRACING_STACK_DEPTH * 9 + 1];
+			size_t o = 0;
+			for (int k = 0; k < CONFIG_HEAP_TRACING_STACK_DEPTH; k++)
+				o += snprintf(a + o, sizeof(a) - o, "%s%x", k ? " " : "", (unsigned) (uintptr_t) trace_groups[g].by[k]);
+			hj_obj(j, NULL);
+			hj_int(j, "n", trace_groups[g].n);
+			hj_int(j, "bytes", trace_groups[g].bytes);
+			hj_str(j, "by", a);
+			hj_obj_end(j);
+		}
+		hj_arr_end(j);
+	}
+	hj_obj_end(j);
+}
+#else
+static void trace_begin(void) {}
+static void trace_end(void) {}
+static void trace_result(hj_t *j) {}
+#endif
 
 static bool up(void) {
 	esp_netif_t *ni = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
@@ -104,6 +217,11 @@ static bool drops(void) {
 	for (uint32_t i = 0; i < cycles; i++) {
 		phase = "settling";
 		if (!hold(settle_s * 1000)) return false;
+		if (i == 0) {
+			heap_start = heap_int();
+			trace_begin();
+		} else
+			heap_at[heap_n++] = heap_int();
 		phase = "down";
 		/* it may already be down (a real drop in the hold): wait it out */
 		if (!up() && !wait_up(back_s * 1000, NULL)) {
@@ -131,6 +249,7 @@ static bool drops(void) {
 	/* the last reconnect's mDNS and dial-in work happens in this hold */
 	phase = "settling";
 	hold(settle_s * 1000);
+	heap_at[heap_n++] = heap_int();
 	return true;
 }
 
@@ -139,6 +258,7 @@ static void task_main(void *arg) {
 		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 		uint32_t my_run = run_no;
 		bool ok = drops();
+		trace_end();
 		bool ended_itself = run;
 		phase = ok ? "done" : run ? "failed" : "stopped";
 		run = false;
@@ -160,8 +280,17 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		return 409;
 	}
 	uint32_t c = num(body, "cycles", 20), s = num(body, "settle_s", 10), b = num(body, "back_s", 120);
-	if (c < 1 || c > CYCLES_MAX || s > 60 || b < 30 || b > 600) {
-		snprintf(err, n, "cycles 1-%d, settle_s 0-60, back_s 30-600", CYCLES_MAX);
+	uint32_t tol = num(body, "heap_tol", 200);
+#if CONFIG_HEAP_TRACING_STANDALONE
+	trace_want = num(body, "trace", 0) != 0;
+#else
+	if (num(body, "trace", 0)) {
+		snprintf(err, n, "this image has no heap tracing");
+		return 400;
+	}
+#endif
+	if (c < 1 || c > CYCLES_MAX || s > 60 || b < 30 || b > 600 || tol > 65535) {
+		snprintf(err, n, "cycles 1-%d, settle_s 0-60, back_s 30-600, heap_tol 0-65535", CYCLES_MAX);
 		return 400;
 	}
 	if (!up()) {
@@ -189,7 +318,8 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	cycles = c;
 	settle_s = s;
 	back_s = b;
-	done_n = 0;
+	heap_tol = tol;
+	done_n = heap_n = heap_start = 0;
 	memset(back_ms, 0, sizeof(back_ms));
 	why[0] = 0;
 	phase = "starting";
@@ -222,11 +352,26 @@ static void result(void *hj) {
 	}
 	hj_arr_end(j);
 	hj_int(j, "worst_ms", worst);
+	if (heap_start) {
+		uint32_t m = heap_n;
+		hj_int(j, "heap_start", heap_start);
+		if (m) {
+			long long d = (long long) heap_at[m - 1] - heap_start;
+			hj_int(j, "heap_delta", d);
+			/* the check for a test plan: every cycle ran and the heap came
+			 * back to within heap_tol of where it started */
+			hj_bool(j, "heap_ok", !strcmp(phase, "done") && done_n == cycles && d >= -(long long) heap_tol);
+		}
+		hj_arr(j, "heap");
+		for (uint32_t i = 0; i < m; i++) hj_int(j, NULL, heap_at[i]);
+		hj_arr_end(j);
+	}
+	trace_result(j);
 }
 
 const hifi_lab_exp_t lab_wifidrop = {
 	.name = "wifidrop",
-	.help = "Wi-Fi drops and comes back: cycles (1-50, 20), settle_s (0-60, 10), back_s (30-600, 120)",
+	.help = "Wi-Fi drops and comes back: cycles (1-50, 20), settle_s (0-60, 10), back_s (30-600, 120), heap_tol (B, 200), trace (0/1)",
 	.start = start,
 	.stop = stop,
 	.result = result,
