@@ -68,8 +68,8 @@ static const char *const ROLE_NAMES[] = {"echo", "ping", "flood"};
 typedef enum { PH_IDLE, PH_SCAN, PH_OPEN, PH_MTU, PH_FIND, PH_SUBSCRIBE, PH_READY, PH_ADVERTISE } phase_t;
 static const char *const PHASE_NAMES[] = {"idle", "scan", "open", "mtu", "find", "subscribe", "ready", "advertise"};
 
-#define LAB_MTU 247
-#define PAYLOAD_MAX (LAB_MTU - 3) /* a write or notification's value */
+#define LAB_MTU HIFI_LINK_BLE_MTU
+#define PAYLOAD_MAX HIFI_LINK_BLE_PAYLOAD /* a write or notification's value */
 
 typedef enum { EV_FRAME, EV_READY, EV_LOST, EV_FAIL } ev_t;
 

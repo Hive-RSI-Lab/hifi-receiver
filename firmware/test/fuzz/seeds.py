@@ -81,6 +81,7 @@ def main() -> None:
     def frame(typ: int, seq: int, size: int = 100) -> bytes:
         return bytes([3, typ, 0, seq]) + (2000).to_bytes(4, "little") + bytes([4]) + \
             (1500).to_bytes(4, "little") + bytes([size])
+    # full frames: 250 - 38 on ESP-NOW, HIFI_LINK_BLE_PAYLOAD (244) - HIFI_LINK_HDR (38) on BLE
     raw = bytes([0, 40]) + b"HL\x02\x01" + bytes(36)  # a raw frame whose payload fails
     for name, flag in (("fuzz_espnow", 1), ("fuzz_ble", 1)):
         write(name, [bytes([0]) + b"".join(bytes([3, flag]) + frame(0, q) for q in range(8)),
