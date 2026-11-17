@@ -197,6 +197,9 @@ static void meta(void) {
 	CHECK_STR(s, "short");
 	hifi_utf8_copy(s, sizeof(s), NULL);
 	CHECK_STR(s, "");
+	/* control characters are stored as spaces */
+	hifi_utf8_copy(s, sizeof(s), "a\tb\nc\x7f\"");
+	CHECK_STR(s, "a b c \"");
 	char big[200];
 	memset(big, 'a', sizeof(big) - 1);
 	big[199] = '\0';

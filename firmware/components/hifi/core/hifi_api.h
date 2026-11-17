@@ -245,6 +245,12 @@ size_t hifi_api_reply_cap(const char *path, const char *body);
 /* Shared by /state and the console */
 void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap);
 
+/* /state/<part>: one top-level section (power, amp, governor, audio, net,
+ * sys, ir, controls, update), or the whole state when part is NULL. A short
+ * answer for a serial line: the whole state runs near 1000 characters. */
+void hifi_api_write_state_part(const hifi_snapshot_t *s, const char *part, char *out, size_t cap);
+bool hifi_api_state_part_known(const char *part);
+
 /* Adds a check to a self-test result. */
 void hifi_selftest_add(hifi_selftest_t *t, const char *name, bool pass, const char *fmt, ...);
 
