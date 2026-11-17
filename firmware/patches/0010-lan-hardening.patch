@@ -1,0 +1,282 @@
+diff --git a/components/spotify/Shim.cpp b/components/spotify/Shim.cpp
+index 58a5649..fa433ca 100644
+--- a/components/spotify/Shim.cpp
++++ b/components/spotify/Shim.cpp
+@@ -36,6 +36,9 @@
+ #include "cspot_sink.h"
+ #include "platform_config.h"
+ #include "nvs_utilities.h"
++
++/* hifi-receiver: the LAN gate (components/hifi/esp/hifi_http.h) */
++extern "C" esp_err_t hifi_lan_register(httpd_handle_t server, const httpd_uri_t *u) __attribute__((weak));
+ #include "tools.h"
+  
+ #if !defined(CLIENT_ID) || !defined(CLIENT_SECRET)
+@@ -427,10 +430,15 @@ void cspotPlayer::enableZeroConf(void) {
+     };
+     
+     // register GET and POST handler for built-in server
+-    httpd_register_uri_handler(serverHandle, &request);
++    // hifi-receiver (security.md): behind the LAN gate like squeezelite's own
++    // handlers, so a web page can't log the receiver into its Spotify account
++    auto reg = [](httpd_handle_t h, const httpd_uri_t *u) {
++        return hifi_lan_register ? hifi_lan_register(h, u) : httpd_register_uri_handler(h, u);
++    };
++    reg(serverHandle, &request);
+     request.method = HTTP_POST;
+     request.handler = ::handlePOST;
+-    httpd_register_uri_handler(serverHandle, &request);
++    reg(serverHandle, &request);
+         
+     CSPOT_LOG(info, "ZeroConf mode (port %d)", serverPort);
+ 
+diff --git a/components/telnet/telnet.c b/components/telnet/telnet.c
+index 3b09135..71c9371 100644
+--- a/components/telnet/telnet.c
++++ b/components/telnet/telnet.c
+@@ -76,7 +76,18 @@ static ssize_t 	stdout_write(int fd, const void * data, size_t size);
+ static void 	handle_telnet_conn();
+ static size_t 	process_logs( UBaseType_t bytes, bool make_room);
+ 
++/* hifi-receiver (security.md): telnet is a console with no password on the
++ * home network, which can rewrite the Hive's dial-in: off in the receiver's
++ * builds unless built with -DHIFI_TELNET. The USB console stays. */
++extern bool hifi_lan_command_ok(const char *line) __attribute__((weak));
++
+ void init_telnet(){
++#ifndef HIFI_TELNET
++	if (hifi_lan_command_ok) {
++		ESP_LOGI(TAG, "Telnet support disabled (hifi-receiver build)");
++		return;
++	}
++#endif
+ 	char *val= get_nvs_value_alloc(NVS_TYPE_STR, "telnet_enable");
+ 
+ 	if (!val || strlen(val) == 0 || !strcasestr("YXD",val) ) {
+diff --git a/components/wifi-manager/http_server_handlers.c b/components/wifi-manager/http_server_handlers.c
+index 4dffc53..705cbe4 100644
+--- a/components/wifi-manager/http_server_handlers.c
++++ b/components/wifi-manager/http_server_handlers.c
+@@ -53,6 +53,11 @@ union sockaddr_aligned {
+     struct sockaddr_in6 sin6;
+ } aligned_sockaddr_t;
+ esp_err_t post_handler_buff_receive(httpd_req_t * req);
++/* hifi-receiver (security.md, core/hifi_gate.h): what squeezelite's UI may
++ * change from the network. Absent (no hifi component): unchanged. */
++extern bool hifi_lan_config_ok(const char *key, const char *strval) __attribute__((weak));
++extern bool hifi_lan_config_secret(const char *key) __attribute__((weak));
++extern bool hifi_lan_command_ok(const char *line) __attribute__((weak));
+ static const char redirect_payload1[]="<html><head><title>Redirecting to Captive Portal</title><meta http-equiv='refresh' content='0; url=";
+ static const char redirect_payload2[]="'></head><body><p>Please wait, refreshing.  If page does not refresh, click <a href='";
+ static const char redirect_payload3[]="'>here</a> to login.</p></body></html>";
+@@ -341,7 +346,6 @@ int resource_get_index(const char * fileName){
+ esp_err_t root_get_handler(httpd_req_t *req){
+ 	esp_err_t err = ESP_OK;
+     ESP_LOGD_LOC(TAG, "serving [%s]", req->uri);
+-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+     httpd_resp_set_hdr(req, "Accept-Encoding", "identity");
+ 
+     if(!is_user_authenticated(req)){
+@@ -483,7 +487,13 @@ esp_err_t console_cmd_post_handler(httpd_req_t *req){
+ 	else{
+ 		// navigate to the first child of the config structure
+ 		char *cmd = cJSON_GetStringValue(item);
+-		if(!console_push(cmd, strlen(cmd) + 1)){
++		if(!cmd || (hifi_lan_command_ok && !hifi_lan_command_ok(cmd))){
++			ESP_LOGW(TAG, "refused a console command from the network: %s", cmd ? cmd : "(not a string)");
++			httpd_resp_set_status(req, "403 Forbidden");
++			httpd_resp_sendstr(req, "{\"Result\" : \"not from the network: use the USB console\" }");
++			err = ESP_FAIL;
++		}
++		else if(!console_push(cmd, strlen(cmd) + 1)){
+ 			httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Unable to push command for execution");
+ 		}
+ 		else {
+@@ -537,6 +547,20 @@ esp_err_t config_get_handler(httpd_req_t *req){
+ 			err=ESP_FAIL;
+ 		}
+ 		else {
++			if(hifi_lan_config_secret){
++				cJSON *all = cJSON_Parse(json);
++				bool hid = false;
++				for(cJSON *e = all ? all->child : NULL; e; e = e->next){
++					cJSON *v = cJSON_GetObjectItemCaseSensitive(e, "value");
++					if(e->string && hifi_lan_config_secret(e->string) && cJSON_IsString(v) && *cJSON_GetStringValue(v)){
++						cJSON_ReplaceItemInObjectCaseSensitive(e, "value", cJSON_CreateString("(set)"));
++						hid = true;
++					}
++				}
++				char *red = hid ? cJSON_PrintUnformatted(all) : NULL;
++				if(red){ free(json); json = red; }
++				cJSON_Delete(all);
++			}
+ 			ESP_LOGD_LOC(TAG,  "config json : %s",json );
+ 			cJSON * gplist=get_gpio_list(false);
+ 			char * gpliststr=cJSON_PrintUnformatted(gplist);
+@@ -646,7 +670,18 @@ esp_err_t config_post_handler(httpd_req_t *req){
+ 			nvs_type_t item_type=  config_get_item_type(prev_item);
+ 			if(item_type!=0){
+ 				void * val = config_safe_alloc_get_entry_value(item_type, prev_item);
+-				if(val!=NULL){
++				if(val!=NULL && hifi_lan_config_ok && !hifi_lan_config_ok(prev_item->string, item_type==NVS_TYPE_STR ? (const char *)val : NULL)){
++					/* skipped, not an error: the UI posts back what config.json gave it,
++					 * the Hive's settings among them */
++					ESP_LOGW(TAG, "config from the network: %s not changed (USB console only)", prev_item->string);
++					if(strcmp(prev_item->string, "fwurl")==0){
++						httpd_resp_set_status(req, "403 Forbidden");
++						httpd_resp_sendstr(req, "{ \"result\" : \"updates from a URL: not from the network\" }");
++						err = ESP_FAIL;
++					}
++					free(val);
++				}
++				else if(val!=NULL){
+ 					if(strcmp(prev_item->string, "fwurl")==0) {
+ 						if(item_type!=NVS_TYPE_STR){
+ 							ESP_LOGE_LOC(TAG,"Firmware url should be type %d. Found type %d instead.",NVS_TYPE_STR,item_type );
+diff --git a/components/wifi-manager/network_manager_handlers.c b/components/wifi-manager/network_manager_handlers.c
+index 22a621a..f9b86dd 100644
+--- a/components/wifi-manager/network_manager_handlers.c
++++ b/components/wifi-manager/network_manager_handlers.c
+@@ -1026,6 +1026,8 @@ static state_machine_result_t WIFI_USER_DISCONNECTED_STATE_exit_handler(state_ma
+ /********************************************************************************************* 
+  * WIFI_LOST_CONNECTION_STATE
+  */
++extern bool hifi_ap_due(long long now_us, long long lost_at_us) __attribute__((weak));
++static int64_t wifi_lost_at = 0; /* 0: since boot */
+ static state_machine_result_t WIFI_LOST_CONNECTION_STATE_entry_handler(state_machine_t* const State_Machine) {
+     network_t* const nm = (network_t *)State_Machine;
+     network_handler_entry_print(State_Machine,true);
+@@ -1033,8 +1035,10 @@ static state_machine_result_t WIFI_LOST_CONNECTION_STATE_entry_handler(state_mac
+     messaging_post_message(MESSAGING_WARNING, MESSAGING_CLASS_SYSTEM, "WiFi Connection lost");
+     network_status_update_ip_info(UPDATE_LOST_CONNECTION);
+     network_status_safe_reset_sta_ip_string();
+-    if (nm->last_connected > 0)
++    if (nm->last_connected > 0) {
+         nm->total_connected_time += ((esp_timer_get_time() - nm->last_connected) / (1000 * 1000));
++        wifi_lost_at = esp_timer_get_time();
++    }
+     nm->last_connected = 0;
+     nm->num_disconnect++;
+     ESP_LOGW(TAG, " Wifi disconnected. Number of disconnects: %d, Average time connected: %d", nm->num_disconnect, nm->num_disconnect > 0 ? (nm->total_connected_time / nm->num_disconnect) : 0);
+@@ -1056,7 +1060,12 @@ static state_machine_result_t WIFI_LOST_CONNECTION_STATE_entry_handler(state_mac
+ 
+             /* put us in softAP mode first */
+             esp_wifi_get_mode(&mode);
+-            if (WIFI_MODE_APSTA != mode) {
++            if (WIFI_MODE_APSTA != mode && hifi_ap_due && !hifi_ap_due(esp_timer_get_time(), wifi_lost_at)) {
++                /* hifi-receiver (security.md): a router reboot doesn't open
++                 * the setup AP; it comes up after HIFI_AP_AFTER_US without Wi-Fi */
++                nm->STA_duration = nm->sta_polling_min_ms;
++                ESP_LOGW(TAG, " Setup AP held back: Wi-Fi lost less than 10 minutes ago");
++            } else if (WIFI_MODE_APSTA != mode) {
+                  nm->STA_duration = nm->sta_polling_min_ms;
+                 network_async_configure();
+             } else if (nm->STA_duration < nm->sta_polling_max_ms) {
+diff --git a/components/wifi-manager/network_wifi.c b/components/wifi-manager/network_wifi.c
+index 3412d21..7fae6bd 100644
+--- a/components/wifi-manager/network_wifi.c
++++ b/components/wifi-manager/network_wifi.c
+@@ -20,6 +20,9 @@
+ #include "platform_esp32.h"
+ #include "tools.h"
+ #include "trace.h"
++
++extern const char *hifi_ap_password_pick(const char *configured, const char *public_default, bool wifi_saved) __attribute__((weak));
++extern void hifi_ap_password_make(char *out, size_t n, uint32_t (*rnd)(void)) __attribute__((weak));
+ static void network_wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data);
+ static char* get_disconnect_code_desc(uint8_t reason);
+ esp_err_t network_wifi_get_blob(void* target, size_t size, const char* key);
+@@ -905,9 +908,22 @@ esp_netif_t* network_wifi_config_ap() {
+     FREE_AND_NULL(value);
+ 
+     value = config_alloc_get_default(NVS_TYPE_STR, "ap_pwd", DEFAULT_AP_PASSWORD, 0);
++    /* hifi-receiver (security.md): once a Wi-Fi network is saved, an AP still
++     * on the public password gets a random one of its own, kept as ap_pwd */
++    if (hifi_ap_password_pick && hifi_ap_password_make &&
++        !hifi_ap_password_pick(value, DEFAULT_AP_PASSWORD, network_wifi_get_known_count() > 0)) {
++        char pw[13];
++        hifi_ap_password_make(pw, sizeof(pw), esp_random);
++        if (config_set_value(NVS_TYPE_STR, "ap_pwd", pw) == ESP_OK) {
++            FREE_AND_NULL(value);
++            value = strdup(pw);
++            ESP_LOGW(TAG, "Setup AP now has its own password: read it with nvs_get ap_pwd over USB");
++        }
++    }
+     if (value != NULL) {
+         strlcpy((char*)ap_config.ap.password, value, sizeof(ap_config.ap.password));
+-        ESP_LOGI(TAG, "AP Password: %s", (char*)ap_config.ap.password);
++        /* hifi-receiver: not the password itself, the log reaches the Hive */
++        ESP_LOGI(TAG, "AP Password: set (%u characters)", (unsigned)strlen((char*)ap_config.ap.password));
+     }
+     FREE_AND_NULL(value);
+ 
+diff --git a/components/wifi-manager/wifi_manager_http_server.c b/components/wifi-manager/wifi_manager_http_server.c
+index 3ec6148..eaee1a9 100644
+--- a/components/wifi-manager/wifi_manager_http_server.c
++++ b/components/wifi-manager/wifi_manager_http_server.c
+@@ -40,6 +40,32 @@ static const char TAG[] = "http_server";
+ /* hifi-receiver: the receiver's web app and test API (components/hifi) */
+ extern void hifi_http_register(httpd_handle_t server) __attribute__((weak));
+ 
++/* hifi-receiver (security.md): every handler goes behind the LAN gate, which
++ * answers only requests addressed to this board (DNS rebinding) and sent from
++ * its own pages (CSRF). The captive portal's probe redirects stay open: in AP
++ * mode a phone asks for them under other sites' names. From the LAN the main
++ * app won't reboot into recovery, and recovery won't flash: it takes any
++ * image, signed or not (a new image goes in over USB or from the Hive). */
++extern esp_err_t hifi_lan_register(httpd_handle_t server, const httpd_uri_t *u) __attribute__((weak));
++
++static esp_err_t lan_refused(httpd_req_t *req) {
++	httpd_resp_set_status(req, "403 Forbidden");
++	httpd_resp_set_type(req, "application/json");
++	return httpd_resp_sendstr(req, "{\"error\":\"not from the network: use the USB console\"}");
++}
++
++static esp_err_t lan_register(httpd_handle_t server, const httpd_uri_t *u) {
++	if (!hifi_lan_register || u->handler == redirect_ev_handler || u->handler == redirect_200_ev_handler)
++		return httpd_register_uri_handler(server, u);
++	if ((u->handler == recovery_post_handler && !is_recovery_running) || u->handler == flash_post_handler) {
++		httpd_uri_t r = *u;
++		r.handler = lan_refused;
++		return hifi_lan_register(server, &r);
++	}
++	return hifi_lan_register(server, u);
++}
++#define httpd_register_uri_handler lan_register
++
+ EXT_RAM_ATTR static httpd_handle_t _server;
+ EXT_RAM_ATTR static int _port;
+ EXT_RAM_ATTR rest_server_context_t *rest_context;
+diff --git a/components/platform_console/cmd_system.c b/components/platform_console/cmd_system.c
+index dfd085a..946a535 100644
+--- a/components/platform_console/cmd_system.c
++++ b/components/platform_console/cmd_system.c
+@@ -397,8 +397,10 @@ int set_squeezelite_player_name(FILE * f,const char * name){
+     char * parm = " -n ";
+     char * cleaned_name = strdup(name);
+     for(char * p=cleaned_name;*p!='\0';p++){
+-        if(*p == ' '){
+-            *p='_'; // no spaces allowed
++        /* hifi-receiver (security.md M2): no spaces, and no quote, backslash
++         * or control character that would change how the line splits */
++        if(*p == ' ' || *p == '"' || *p == '\\' || (unsigned char)*p < 0x20 || *p == 0x7f){
++            *p='_';
+         }
+     }
+ 	if(nvs_config && strlen(nvs_config)>0){
+diff --git a/components/squeezelite/embedded.c b/components/squeezelite/embedded.c
+index 2b9bd2c..2f9ce66 100644
+--- a/components/squeezelite/embedded.c
++++ b/components/squeezelite/embedded.c
+@@ -147,6 +147,11 @@ void set_name(char *name) {
+ 		else *p = '\0';
+ 	}
+ 
++	/* hifi-receiver (security.md M2): the name comes from the server; a quote
++	 * or backslash in it would end the quoted -n argument and add options of
++	 * its own to the command line that runs at every boot */
++	for (char *c = name; *c; c++)
++		if (*c == '"' || *c == '\\' || (unsigned char) *c < 0x20 || *c == 0x7f) *c = '_';
+ 	asprintf(&q, "%s -n \"%s\"", cmd, name);
+     config_set_value(NVS_TYPE_STR, "autoexec1", q);
+ 	

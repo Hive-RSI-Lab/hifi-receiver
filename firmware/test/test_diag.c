@@ -319,6 +319,9 @@ static void api(void) {
 
 	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/echo", NULL, out, sizeof(out)) == 405);
 	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/echo", "{}", out, sizeof(out)) == 200);
+	/* the throughput test is for the bench (USB, the relay), not the LAN */
+	CHECK(hifi_api_handle_from(&ops, HIFI_SRC_LAN, "POST", "/api/v1/diag/echo", "{}", out, sizeof(out)) == 403);
+	CHECK(hifi_api_handle_from(&ops, HIFI_SRC_LAN, "GET", "/api/v1/diag/tasks", NULL, out, sizeof(out)) == 200);
 	CHECK(md.echo_bytes == HIFI_DIAG_ECHO_DEFAULT);
 	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/echo", "{\"bytes\":1000}", out, sizeof(out)) == 200);
 	CHECK_STR(out, "{\"bytes\":1000,\"ms\":100,\"kbps\":80.0}");

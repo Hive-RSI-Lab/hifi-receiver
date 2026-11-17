@@ -322,10 +322,277 @@ static void test_ota_core(void) {
 	fail_commit = false;
 }
 
+/* a signed image (firmware/tools/sign_fw.py): body, then "HIFISIG1" and an
+ * Ed25519 signature over "hifi-fw-v1:" + the body's SHA-256 in hex */
+static void sign_image(uint8_t *img, size_t n) {
+	size_t body = n - HIFI_OTA_SIG_LEN;
+	uint8_t h[32];
+	hifi_sha256_t s;
+	hifi_sha256_init(&s);
+	hifi_sha256_update(&s, img, body);
+	hifi_sha256_final(&s, h);
+	char msg[11 + 65];
+	memcpy(msg, HIFI_OTA_SIG_CONTEXT, 11);
+	hexs(h, 32, msg + 11);
+	memcpy(img + body, HIFI_OTA_SIG_MAGIC, 8);
+	sign((const uint8_t *) msg, 11 + 64, img + body + 8);
+}
+
+static int feed(const uint8_t *img, size_t n, size_t step, const char **err) {
+	int st = 200;
+	for (size_t off = 0; off < n && st == 200; off += step)
+		st = hifi_ota_chunk(&ota, off, img + off, n - off < step ? n - off : step, err);
+	return st == 200 ? hifi_ota_finish(&ota, err) : st;
+}
+
+static void test_ota_sig(void) {
+	static uint8_t img[10000];
+	char sha[65];
+	const char *err = NULL;
+	uint8_t pub[32];
+	unhex(PUB_HEX, pub, 32);
+	make_image(img, sizeof(img), sha);
+	sign_image(img, sizeof(img));
+
+	/* no key in the build: a signed-only update can't start */
+	hifi_ota_init(&ota, &io);
+	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 403);
+	CHECK(!ota.active);
+	hifi_ota_set_keys(&ota, (const uint8_t (*)[32]) pub, 1, verify);
+
+	/* a good signature, every chunk size, so the trailer lands across chunk edges */
+	size_t steps[] = {4096, 1000, 71, 72, 73, 1};
+	for (size_t i = 0; i < sizeof(steps) / sizeof(steps[0]); i++) {
+		committed = aborted = false;
+		CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 200);
+		CHECK(feed(img, sizeof(img), steps[i], &err) == 200);
+		CHECK(committed && !aborted);
+	}
+	/* with the Hive's own hash of the whole file as well */
+	{
+		uint8_t h[32];
+		hifi_sha256_t s;
+		hifi_sha256_init(&s);
+		hifi_sha256_update(&s, img, sizeof(img));
+		hifi_sha256_final(&s, h);
+		hexs(h, 32, sha);
+	}
+	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), sha, NULL, true, &err) == 200);
+	CHECK(feed(img, sizeof(img), 4096, &err) == 200);
+
+	/* a changed body: the signature no longer matches */
+	img[300] ^= 1;
+	committed = aborted = false;
+	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 200);
+	CHECK(feed(img, sizeof(img), 4096, &err) == 403);
+	CHECK_STR(err, "the image's signature isn't the Hive's");
+	CHECK(!committed && aborted && !ota.active);
+	img[300] ^= 1;
+
+	/* a changed signature */
+	img[sizeof(img) - 1] ^= 0x80;
+	committed = aborted = false;
+	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 200);
+	CHECK(feed(img, sizeof(img), 4096, &err) == 403);
+	CHECK(!committed);
+	img[sizeof(img) - 1] ^= 0x80;
+
+	/* another key */
+	uint8_t other[32];
+	memcpy(other, pub, 32);
+	other[0] ^= 1;
+	hifi_ota_set_keys(&ota, (const uint8_t (*)[32]) other, 1, verify);
+	committed = false;
+	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 200);
+	CHECK(feed(img, sizeof(img), 4096, &err) == 403 && !committed);
+	/* the second of two keys */
+	uint8_t two[2][32];
+	memcpy(two[0], other, 32);
+	memcpy(two[1], pub, 32);
+	hifi_ota_set_keys(&ota, (const uint8_t (*)[32]) two, 2, verify);
+	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 200);
+	CHECK(feed(img, sizeof(img), 4096, &err) == 200 && committed);
+
+	/* no trailer at all: an unsigned image */
+	static uint8_t plain[10000];
+	char plain_sha[65];
+	make_image(plain, sizeof(plain), plain_sha);
+	committed = false;
+	CHECK(hifi_ota_begin_ex(&ota, sizeof(plain), NULL, NULL, true, &err) == 200);
+	CHECK(feed(plain, sizeof(plain), 4096, &err) == 403);
+	CHECK_STR(err, "the image isn't signed by the Hive");
+	CHECK(!committed);
+	/* the same image is fine where no signature is asked for (the relay, USB) */
+	CHECK(hifi_ota_begin_ex(&ota, sizeof(plain), NULL, NULL, false, &err) == 200);
+	CHECK(feed(plain, sizeof(plain), 4096, &err) == 200 && committed);
+	/* and a signed image is fine there too: ESP-IDF ignores the trailer */
+	CHECK(hifi_ota_begin(&ota, sizeof(img), sha, NULL, &err) == 200);
+	CHECK(feed(img, sizeof(img), 4096, &err) == 200);
+
+	/* too small to hold an image and a trailer */
+	CHECK(hifi_ota_begin_ex(&ota, 1024 + HIFI_OTA_SIG_LEN - 1, NULL, NULL, true, &err) == 400);
+}
+
+/* an app description in the image: project, build time, date (esp_app_desc_t) */
+static void set_desc(uint8_t *img, const char *proj, const char *date, const char *time) {
+	img[32] = 0x32, img[33] = 0x54, img[34] = 0xCD, img[35] = 0xAB;
+	memset(img + 80, 0, 64);
+	memcpy(img + 80, proj, strlen(proj));
+	memcpy(img + 112, time, strlen(time));
+	memcpy(img + 128, date, strlen(date));
+}
+
+/* no going back from the LAN: a signed image older than the running one,
+ * or for another project, is refused; the relay isn't held to it */
+static void test_ota_age(void) {
+	static uint8_t img[10000];
+	char sha[65];
+	const char *err = NULL;
+	uint8_t pub[32];
+	unhex(PUB_HEX, pub, 32);
+
+	CHECK(hifi_ota_build_stamp("Nov 17 2026", "02:20:07") == 20261117022007LL);
+	CHECK(hifi_ota_build_stamp("Jan  5 2027", "23:59:59") == 20270105235959LL);
+	CHECK(hifi_ota_build_stamp("Dec 31 2026", "00:00:00") < hifi_ota_build_stamp("Jan  1 2027", "00:00:00"));
+	CHECK(hifi_ota_build_stamp("Nov 17 2026", "02:20:07") < hifi_ota_build_stamp("Nov 17 2026", "02:20:08"));
+	CHECK(hifi_ota_build_stamp("Foo 17 2026", "02:20:07") == -1);
+	CHECK(hifi_ota_build_stamp("Nov 17 2026", "2:20:07") == -1);
+	CHECK(hifi_ota_build_stamp("Nov 17 2026", "24:00:00") == -1);
+	CHECK(hifi_ota_build_stamp("Nov 1x 2026", "02:20:07") == -1);
+	CHECK(hifi_ota_build_stamp("", "") == -1);
+	CHECK(hifi_ota_build_stamp(NULL, "02:20:07") == -1);
+
+	hifi_ota_init(&ota, &io);
+	hifi_ota_set_keys(&ota, (const uint8_t (*)[32]) pub, 1, verify);
+	hifi_ota_set_running(&ota, "Squeezelite-ESP32", "Nov 17 2026", "02:20:07");
+
+	struct {
+		const char *proj, *date, *time;
+		int st;
+	} cases[] = {
+		{"Squeezelite-ESP32", "Nov 17 2026", "02:20:07", 200}, /* the same build again */
+		{"Squeezelite-ESP32", "Nov 17 2026", "02:20:08", 200}, /* newer */
+		{"Squeezelite-ESP32", "Jan  2 2027", "00:00:00", 200},
+		{"Squeezelite-ESP32", "Nov 17 2026", "02:20:06", 403}, /* older */
+		{"Squeezelite-ESP32", "Oct 30 2026", "12:00:00", 403},
+		{"recovery", "Dec  1 2026", "00:00:00", 403},          /* another project */
+		{"Squeezelite-ESP32", "Nov ?? 2026", "02:20:08", 403}, /* no readable time */
+	};
+	for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+		make_image(img, sizeof(img), sha);
+		set_desc(img, cases[i].proj, cases[i].date, cases[i].time);
+		sign_image(img, sizeof(img));
+		committed = aborted = false;
+		CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 200);
+		/* 7-byte chunks: the description arrives split across many */
+		int st = feed(img, sizeof(img), i % 2 ? 7 : 4096, &err);
+		CHECK(st == cases[i].st);
+		CHECK(committed == (cases[i].st == 200));
+		if (cases[i].st != 200) CHECK(aborted && !ota.active);
+	}
+	CHECK_STR(err, "the image's build time can't be read");
+
+	/* no app description at all */
+	make_image(img, sizeof(img), sha);
+	sign_image(img, sizeof(img));
+	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 200);
+	CHECK(feed(img, sizeof(img), 4096, &err) == 403);
+	CHECK_STR(err, "the image has no app description");
+
+	/* an old image with a bad signature still says "signature" (the age is read only once it's the Hive's) */
+	make_image(img, sizeof(img), sha);
+	set_desc(img, "Squeezelite-ESP32", "Oct 30 2026", "12:00:00");
+	sign_image(img, sizeof(img));
+	img[500] ^= 1;
+	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 200);
+	CHECK(feed(img, sizeof(img), 4096, &err) == 403);
+	CHECK_STR(err, "the image's signature isn't the Hive's");
+	img[500] ^= 1;
+
+	/* the relay and USB (no signature asked) may go back */
+	committed = false;
+	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, false, &err) == 200);
+	CHECK(feed(img, sizeof(img), 4096, &err) == 200 && committed);
+
+	/* an unreadable running time: no age check, rather than no updates */
+	hifi_ota_set_running(&ota, "Squeezelite-ESP32", "", "");
+	committed = false;
+	CHECK(hifi_ota_begin_ex(&ota, sizeof(img), NULL, NULL, true, &err) == 200);
+	CHECK(feed(img, sizeof(img), 4096, &err) == 200 && committed);
+	hifi_ota_init(&ota, &io);
+}
+
 static char out[200000];
 
 static int api(const char *method, const char *path, const char *body) {
 	return hifi_api_handle(&ops, method, path, body, out, sizeof(out));
+}
+
+static int lan(const char *method, const char *path, const char *body) {
+	return hifi_api_handle_from(&ops, HIFI_SRC_LAN, method, path, body, out, sizeof(out));
+}
+
+/* what port 80 may do: no relay changes, signed firmware only, and never
+ * a hand in an update the Hive is sending */
+static void test_lan_api(void) {
+	static uint8_t img[6000];
+	char sha[65], body[8192];
+	uint8_t pub[32];
+	unhex(PUB_HEX, pub, 32);
+	hifi_ota_init(&ota, &io);
+	hifi_ota_set_keys(&ota, (const uint8_t (*)[32]) pub, 1, verify);
+
+	/* the relay: readable, not changeable */
+	CHECK(lan("GET", "/api/v1/remote", NULL) == 200);
+	CHECK(lan("POST", "/api/v1/remote", "{\"url\":\"wss://evil.example/r\",\"user\":\"x\",\"pass\":\"y\"}") == 403);
+	CHECK(strcmp(relay_url, "wss://evil.example/r"));
+
+	/* an unsigned image from the LAN is refused at the end */
+	make_image(img, sizeof(img), sha);
+	committed = false;
+	snprintf(body, sizeof(body), "{\"size\":%zu,\"sha256\":\"%s\"}", sizeof(img), sha);
+	CHECK(lan("POST", "/api/v1/ota/begin", body) == 200);
+	CHECK(ota.need_sig);
+	int n = sprintf(body, "{\"off\":0,\"data\":\"");
+	hifi_b64_encode(img, 4096, body + n, sizeof(body) - n);
+	strcat(body, "\"}");
+	CHECK(lan("POST", "/api/v1/ota/chunk", body) == 200);
+	n = sprintf(body, "{\"off\":4096,\"data\":\"");
+	hifi_b64_encode(img + 4096, sizeof(img) - 4096, body + n, sizeof(body) - n);
+	strcat(body, "\"}");
+	CHECK(lan("POST", "/api/v1/ota/chunk", body) == 200);
+	CHECK(lan("POST", "/api/v1/ota/finish", NULL) == 403);
+	CHECK(!committed);
+
+	/* a signed one goes in */
+	sign_image(img, sizeof(img));
+	snprintf(body, sizeof(body), "{\"size\":%zu}", sizeof(img));
+	CHECK(lan("POST", "/api/v1/ota/begin", body) == 200);
+	n = sprintf(body, "{\"off\":0,\"data\":\"");
+	hifi_b64_encode(img, 4096, body + n, sizeof(body) - n);
+	strcat(body, "\"}");
+	CHECK(lan("POST", "/api/v1/ota/chunk", body) == 200);
+	n = sprintf(body, "{\"off\":4096,\"data\":\"");
+	hifi_b64_encode(img + 4096, sizeof(img) - 4096, body + n, sizeof(body) - n);
+	strcat(body, "\"}");
+	CHECK(lan("POST", "/api/v1/ota/chunk", body) == 200);
+	CHECK(lan("POST", "/api/v1/ota/finish", NULL) == 200);
+	CHECK(committed);
+
+	/* the Hive's update (relay, unsigned): the LAN can't abort, restart or feed it */
+	make_image(img, sizeof(img), sha);
+	snprintf(body, sizeof(body), "{\"size\":%zu,\"sha256\":\"%s\"}", sizeof(img), sha);
+	CHECK(api("POST", "/api/v1/ota/begin", body) == 200);
+	CHECK(lan("POST", "/api/v1/ota/abort", NULL) == 403);
+	CHECK(lan("POST", "/api/v1/ota/begin", body) == 403);
+	CHECK(lan("POST", "/api/v1/ota/finish", NULL) == 403);
+	CHECK(ota.active && !ota.need_sig);
+	/* the Hive may take over a LAN upload, though */
+	CHECK(api("POST", "/api/v1/ota/abort", NULL) == 200);
+	CHECK(lan("POST", "/api/v1/ota/begin", body) == 200);
+	CHECK(api("POST", "/api/v1/ota/begin", body) == 200);
+	CHECK(!ota.need_sig);
+	hifi_ota_abort(&ota);
 }
 
 static void test_ota_api(void) {
@@ -677,6 +944,18 @@ static void test_trial(void) {
 	CHECK_STR(why, "relay not reached after 120 s");
 	t.relay_ok = true;
 	CHECK(hifi_trial_judge(&t, 30, why, sizeof(why)) == HIFI_TRIAL_GOOD);
+	/* "cannot open the home network": a stray listener holds the trial and
+	 * rolls the image back at the limit */
+	t.listen_wait = true;
+	CHECK(hifi_trial_judge(&t, 30, why, sizeof(why)) == HIFI_TRIAL_WAIT);
+	CHECK_STR(why, "listener scan not done");
+	t.listen_wait = false;
+	t.listen_open = "1 open: tcp/23";
+	CHECK(hifi_trial_judge(&t, 30, why, sizeof(why)) == HIFI_TRIAL_WAIT);
+	CHECK_STR(why, "listening outside the allow list (1 open: tcp/23)");
+	CHECK(hifi_trial_judge(&t, HIFI_TRIAL_LIMIT_S, why, sizeof(why)) == HIFI_TRIAL_BAD);
+	CHECK_STR(why, "listening outside the allow list (1 open: tcp/23) after 120 s");
+	t.listen_open = NULL;
 	t.relay_configured = t.relay_ok = false; /* no relay set up: Wi-Fi is enough */
 	t.wifi_ok = false;
 	CHECK(hifi_trial_judge(&t, 200, why, sizeof(why)) == HIFI_TRIAL_BAD);
@@ -691,6 +970,9 @@ int main(void) {
 	test_sha256();
 	test_ota_core();
 	test_ota_api();
+	test_ota_sig();
+	test_ota_age();
+	test_lan_api();
 	test_capture_api();
 	test_wifi_remote_api();
 	test_ws_proto();
