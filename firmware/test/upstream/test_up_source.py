@@ -27,7 +27,7 @@ def check(ok: bool, what: str) -> None:
 
 def body(src: str, start: str, end: str) -> str:
     i = src.find(start)
-    return src[i:src.find(end, i)] if i >= 0 else ""
+    return src[i:src.find(end, i + len(start))] if i >= 0 else ""
 
 
 up = Path(sys.argv[1])
@@ -78,9 +78,17 @@ check(re.search(r"if\s*\(\s*!hifi_restart_after_trial\s*\|\|\s*!hifi_restart_aft
 relay = (Path(__file__).resolve().parents[2] / "components/hifi/esp/hifi_relay.c").read_text()
 check(re.search(r"(?m)^bool hifi_restart_after_trial\(const char \*why\)\s*\{", relay) is not None,
       "components/hifi defines no hifi_restart_after_trial for patch 0030's hook")
-kept = body(relay, "esp_ota_mark_app_valid_cancel_rollback();", "} else if")
-check("hifi_restart_release(" in kept and "esp_restart()" in kept,
-      "the relay task doesn't run a held restart once the image is kept")
+check(re.search(r"\(valid = esp_ota_mark_app_valid_cancel_rollback\(\)\) != ESP_OK", relay) is not None,
+      "the relay task doesn't check that the image was marked good before releasing a held restart")
+kept = body(relay, "} else if (v == HIFI_TRIAL_GOOD) {", "} else if")
+check("hifi_restart_release(" in kept and "esp_restart()" in kept and
+      kept.find("wait_for_commit()") < kept.find("esp_restart()") and "wait_for_commit()" in kept,
+      "the relay task doesn't run a held restart, settings committed, once the image is kept")
+hook = body(relay, "bool hifi_restart_after_trial(const char *why) {", "\n}\n")
+check("esp_ota_get_state_partition" not in hook and "portENTER_CRITICAL" in hook,
+      "hifi_restart_after_trial reads otadata (blank while it is rewritten) instead of the hold in RAM")
+# held, the connection carries on: mDNS and CONNECTED_BIT below still run
+check("return" not in ipc[held:], "a held IP-change restart returns early and skips the rest of the connection")
 
 print(f"{'up_source':<12} {checks} checks, {fails} failed")
 sys.exit(1 if fails else 0)

@@ -1111,20 +1111,26 @@ static void test_trial(void) {
 static void test_restart_hold(void) {
 	hifi_restart_hold_t h = {0};
 	const char *why = NULL;
-	CHECK(!hifi_restart_hold(&h, false, "ip_change")); /* not on trial: restart now */
+	CHECK(!hifi_restart_hold(&h, "ip_change")); /* not on trial: restart now */
 	CHECK(!h.held);
-	CHECK(!hifi_restart_release(&h, HIFI_TRIAL_GOOD, &why));
-	CHECK(hifi_restart_hold(&h, true, "ip_change"));
-	CHECK(h.held);
-	CHECK(!hifi_restart_release(&h, HIFI_TRIAL_WAIT, &why)); /* still on trial */
-	CHECK(!hifi_restart_release(&h, HIFI_TRIAL_BAD, &why)); /* rolls back by itself */
+	CHECK(!hifi_restart_release(&h, &why));
 	CHECK(why == NULL);
-	CHECK(hifi_restart_release(&h, HIFI_TRIAL_GOOD, &why)); /* kept: restart now */
+	h.on_trial = true; /* booted on trial */
+	CHECK(hifi_restart_hold(&h, "ip_change"));
+	CHECK(h.held);
+	CHECK(hifi_restart_hold(&h, "ip_change")); /* a second change: still held */
+	CHECK(hifi_restart_release(&h, &why)); /* marked good: restart now */
 	CHECK_STR(why, "ip_change");
-	CHECK(!h.held);
-	CHECK(!hifi_restart_release(&h, HIFI_TRIAL_GOOD, &why)); /* once */
-	CHECK(hifi_restart_hold(&h, true, NULL));
-	CHECK(hifi_restart_release(&h, HIFI_TRIAL_GOOD, &why));
+	CHECK(!h.held && !h.on_trial);
+	CHECK(!hifi_restart_release(&h, &why)); /* once */
+	CHECK(!hifi_restart_hold(&h, "ip_change")); /* kept: the next change restarts at once */
+	/* marked good with nothing held: later changes restart at once */
+	h = (hifi_restart_hold_t){.on_trial = true};
+	CHECK(!hifi_restart_release(&h, &why));
+	CHECK(!hifi_restart_hold(&h, "ip_change"));
+	h = (hifi_restart_hold_t){.on_trial = true};
+	CHECK(hifi_restart_hold(&h, NULL));
+	CHECK(hifi_restart_release(&h, &why));
 	CHECK_STR(why, "held");
 }
 
