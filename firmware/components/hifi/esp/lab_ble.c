@@ -105,6 +105,7 @@ static esp_gatt_if_t gatts_if = ESP_GATT_IF_NONE, gattc_if = ESP_GATT_IF_NONE;
 static uint16_t h_svc, h_val, h_cccd; /* the server's handles */
 
 static volatile bool run, alive, connected, notify_on, congested;
+static volatile bool opening; /* a connect asked for and not yet answered (OPEN_EVT) */
 static volatile phase_t phase;
 static role_t role;
 static uint8_t peer[6], peer_bt[6], self[6], self_bt[6], remote[6];
@@ -161,7 +162,7 @@ static esp_ble_adv_params_t adv_params = {
 	.adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
 };
 
-static void advertise(void) {
+static bool advertise(void) {
 	/* flags and the lab's mark with this board's Wi-Fi MAC: 15 of the 31
 	 * bytes an advertisement holds (the 128-bit service UUID would take 18
 	 * more; the client finds the service by discovery instead) */
@@ -171,9 +172,8 @@ static void advertise(void) {
 	*p++ = 0xff, *p++ = 0xff, *p++ = 'h', *p++ = 'l';
 	memcpy(p, self, 6), p += 6;
 	_Static_assert(sizeof(raw) <= ESP_BLE_ADV_DATA_LEN_MAX, "an advertisement holds 31 bytes");
-	esp_err_t e = esp_ble_gap_config_adv_data_raw(raw, p - raw);
-	if (e != ESP_OK) failed("advertising data refused");
 	/* advertising starts when the data is set (gap_cb) */
+	return esp_ble_gap_config_adv_data_raw(raw, p - raw) == ESP_OK;
 }
 
 static bool adv_is_peer(uint8_t *adv, uint8_t n) {
@@ -189,6 +189,8 @@ static void gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *p) {
 		break;
 	case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
 		if (p->adv_start_cmpl.status != ESP_BT_STATUS_SUCCESS) failed("advertising didn't start");
+		/* a start queued just before teardown's stop: stop it again */
+		else if (!run || role != ROLE_ECHO || connected) esp_ble_gap_stop_advertising();
 		break;
 	case ESP_GAP_BLE_SCAN_PARAM_SET_COMPLETE_EVT:
 		if (run && phase == PH_SCAN) esp_ble_gap_start_scanning(scan_s);
@@ -201,13 +203,17 @@ static void gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *p) {
 			phase = PH_OPEN;
 			esp_ble_gap_stop_scanning();
 			memcpy(remote, p->scan_rst.bda, 6);
-			if (esp_ble_gattc_open(gattc_if, p->scan_rst.bda, p->scan_rst.ble_addr_type, true) != ESP_OK)
+			opening = true;
+			if (esp_ble_gattc_open(gattc_if, p->scan_rst.bda, p->scan_rst.ble_addr_type, true) != ESP_OK) {
+				opening = false;
 				failed("connect refused");
+			}
 		} else if (p->scan_rst.search_evt == ESP_GAP_SEARCH_INQ_CMPL_EVT)
 			failed("the peer wasn't advertising");
 		break;
 	case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
-		if (p->update_conn_params.status == ESP_BT_STATUS_SUCCESS) {
+		if (p->update_conn_params.status == ESP_BT_STATUS_SUCCESS && connected &&
+		    !memcmp(p->update_conn_params.bda, remote, 6)) {
 			ci_units = p->update_conn_params.conn_int;
 			ci_latency = p->update_conn_params.latency;
 			ci_timeout = p->update_conn_params.timeout;
@@ -260,9 +266,8 @@ static void gatts_cb(esp_gatts_cb_event_t event, esp_gatt_if_t gif, esp_ble_gatt
 	 * server's link events are the echo's alone */
 	case ESP_GATTS_CONNECT_EVT:
 		if (gif != gatts_if || role != ROLE_ECHO) break;
-		if (!run || memcmp(p->connect.remote_bda, peer_bt, 6)) {
-			rejected++;
-			memcpy(remote, p->connect.remote_bda, 6);
+		if (!run || connected || memcmp(p->connect.remote_bda, peer_bt, 6)) {
+			rejected++; /* remote stays the peer's: the rejected one's goes nowhere */
 			esp_ble_gap_disconnect(p->connect.remote_bda);
 			break;
 		}
@@ -278,16 +283,21 @@ static void gatts_cb(esp_gatts_cb_event_t event, esp_gatt_if_t gif, esp_ble_gatt
 		break;
 	case ESP_GATTS_DISCONNECT_EVT:
 		if (gif != gatts_if || role != ROLE_ECHO) break;
-		if (!connected || p->disconnect.conn_id != conn_id) break; /* a rejected one */
+		if (!connected || p->disconnect.conn_id != conn_id) {
+			/* a rejected one: its connect stopped the advertising, so start
+			 * it again or the peer can't get in for the rest of the run */
+			if (run && !connected && !advertise()) failed("advertising data refused");
+			break;
+		}
 		connected = notify_on = false;
 		disconnects++;
 		last_disc_reason = p->disconnect.reason;
 		mtu = 23;
 		xSemaphoreGive(closed_sem);
-		if (run) advertise(); /* the client may come back */
+		if (run && !advertise()) failed("advertising data refused"); /* the client may come back */
 		break;
 	case ESP_GATTS_MTU_EVT:
-		if (role == ROLE_ECHO && connected && p->mtu.conn_id == conn_id) {
+		if (gif == gatts_if && role == ROLE_ECHO && connected && p->mtu.conn_id == conn_id) {
 			mtu = p->mtu.mtu;
 			if (mtu > mtu_link) mtu_link = mtu;
 		}
@@ -332,6 +342,8 @@ static void gattc_cb(esp_gattc_cb_event_t event, esp_gatt_if_t gif, esp_ble_gatt
 		}
 		break;
 	case ESP_GATTC_OPEN_EVT:
+		opening = false;
+		xSemaphoreGive(closed_sem); /* teardown may be waiting for this answer */
 		if (!run || phase != PH_OPEN) {
 			if (p->open.status == ESP_GATT_OK) esp_ble_gattc_close(gif, p->open.conn_id);
 			break;
@@ -427,7 +439,7 @@ static void gattc_cb(esp_gattc_cb_event_t event, esp_gatt_if_t gif, esp_ble_gatt
 		else xSemaphoreGive(space_sem);
 		break;
 	case ESP_GATTC_DISCONNECT_EVT:
-		if (!connected) break;
+		if (!connected || p->disconnect.conn_id != conn_id) break;
 		connected = false;
 		disconnects++;
 		last_disc_reason = p->disconnect.reason;
@@ -499,9 +511,13 @@ static void teardown(void) {
 	} else {
 		if (phase == PH_SCAN) esp_ble_gap_stop_scanning();
 		if (connected) esp_ble_gattc_close(gattc_if, conn_id);
+		/* a connect still pending: cancel it (Bluedroid keeps trying for up to
+		 * 3 x 30 s otherwise, into the next run) */
+		else if (opening) esp_ble_gap_disconnect(remote);
 	}
-	/* the link down before the next start (2 s; a stuck one shows in the result) */
-	for (int i = 0; i < 20 && connected; i++) xSemaphoreTake(closed_sem, pdMS_TO_TICKS(100));
+	/* the link down and any connect answered before the next start (2 s;
+	 * start refuses while either is left) */
+	for (int i = 0; i < 20 && (connected || opening); i++) xSemaphoreTake(closed_sem, pdMS_TO_TICKS(100));
 	phase = PH_IDLE;
 }
 
@@ -561,7 +577,7 @@ static void one_run(void) {
 					f.t2 = f.t3 = 0;
 					f.len = (uint16_t) len;
 					if (!congested) send_frame(&f);
-					else hifi_link_tx_sent(tx, len, false, now); /* skipped: the link is backed up */
+					else hifi_link_tx_sent(tx, len, false, now); /* skipped, the link backed up: a send_fail, not a loss */
 					next += period;
 					if (next < now) next = now + period; /* fell behind: don't burst */
 				}
@@ -673,6 +689,10 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		snprintf(err, n, "the last run is still stopping");
 		return 409;
 	}
+	if (connected || opening) {
+		snprintf(err, n, "the last run's link is still up");
+		return 409;
+	}
 	char s[24];
 	if (!hj_get_str(body, "role", s, sizeof(s))) s[0] = 0;
 	if (!strcmp(s, "echo")) role = ROLE_ECHO;
@@ -706,8 +726,14 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 
 	esp_read_mac(self, ESP_MAC_WIFI_STA);
 	memcpy(self_bt, esp_bt_dev_get_address(), 6);
-	/* the peer's BLE address: its Wi-Fi MAC plus the offset ours have */
-	u64_mac((mac_u64(peer) + mac_u64(self_bt) - mac_u64(self)) & 0xffffffffffffULL, peer_bt);
+	/* the peer's BLE address: its Wi-Fi MAC plus the offset ours have. IDF
+	 * adds the offset to the last byte alone, with no carry (esp_read_mac in
+	 * 4.4 and 5.5), so do the same when our two addresses differ only there */
+	if (!memcmp(self_bt, self, 5)) {
+		memcpy(peer_bt, peer, 6);
+		peer_bt[5] += (uint8_t) (self_bt[5] - self[5]);
+	} else
+		u64_mac((mac_u64(peer) + mac_u64(self_bt) - mac_u64(self)) & 0xffffffffffffULL, peer_bt);
 
 	heap_start = heap_min = heap_now();
 	xQueueReset(q);
@@ -729,7 +755,12 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 
 	if (role == ROLE_ECHO) {
 		phase = PH_ADVERTISE;
-		advertise();
+		if (!advertise()) {
+			run = alive = false;
+			phase = PH_IDLE;
+			snprintf(err, n, "advertising refused");
+			return 503;
+		}
 	} else {
 		static esp_ble_scan_params_t sp = {
 			.scan_type = BLE_SCAN_TYPE_PASSIVE,

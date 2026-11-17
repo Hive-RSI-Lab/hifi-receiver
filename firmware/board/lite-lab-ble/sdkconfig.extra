@@ -22,9 +22,11 @@ CONFIG_BT_GATTC_ENABLE=y
 # Win back internal RAM for this image only. Static Wi-Fi TX buffers are
 # ~1.6 KB of internal RAM each and the board mostly receives (audio streams
 # in, the dial-in is light), so 8 -> 4 gives back ~6.4 KB. The BLE cuts are
-# small: no BLE pairing (the lab link is open), a short duplicate-scan cache,
+# small: a short duplicate-scan cache,
 # the minimum adv-report queue, and a GATT table sized for one service.
 CONFIG_ESP32_WIFI_STATIC_TX_BUFFER_NUM=4
+# No BLE pairing (the lab link is open). With Classic on, CONFIG_BT_SMP_ENABLE
+# stays set, so in this image the line below saves nothing; it says the intent.
 # CONFIG_BT_BLE_SMP_ENABLE is not set
 CONFIG_BTDM_SCAN_DUPL_CACHE_SIZE=20
 CONFIG_BTDM_BLE_ADV_REPORT_FLOW_CTRL_NUM=50
