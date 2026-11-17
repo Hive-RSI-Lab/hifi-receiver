@@ -341,6 +341,11 @@ static void test_ota_api(void) {
 	CHECK_HAS(out, "\"update\":null");
 	CHECK_HAS(out, "\"last_rollback\":{\"from\":\"0.2.0\"");
 
+	/* found by fuzz_api: a size past size_t was cast before any range check (UB) */
+	CHECK(api("POST", "/api/v1/ota/begin", "{\"size\":1e122}") == 400);
+	CHECK_HAS(out, "larger than the app slot");
+	CHECK(api("POST", "/api/v1/ota/begin", "{\"size\":4294967296}") == 400);
+
 	snprintf(body, sizeof(body), "{\"size\":%zu,\"sha256\":\"%s\",\"version\":\"0.2.0\"}", sizeof(img), sha);
 	CHECK(api("POST", "/api/v1/ota/begin", body) == 200);
 	CHECK_HAS(out, "\"chunk_max\":4096");

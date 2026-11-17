@@ -31,7 +31,8 @@ $(BIN)/%: %.c $(SRCS) $(wildcard $(CORE)/*.h) check.h | $(BIN)
 
 run: $(addprefix $(BIN)/,$(TESTS))
 	@fail=0; for t in $(abspath $^); do $$t || fail=1; done; python3 test_otadata.py || fail=1; \
-	  $(MAKE) --no-print-directory upstream || fail=1; exit $$fail
+	  $(MAKE) --no-print-directory upstream || fail=1; \
+	  $(MAKE) --no-print-directory fuzz || fail=1; exit $$fail
 
 # Regressions for the bring-up bugs fixed in upstream's code (patches/):
 # upstream/upstream.py fetches the pinned files once (from $$HIFI_UPSTREAM or
@@ -68,7 +69,55 @@ coverage:
 	    $(abspath $(SRCS)) $(LDLIBS) $$extra && ./$$t >/dev/null) || fail=1; \
 	done; exit $$fail
 
+# libFuzzer harnesses (fuzz/): the console, the HTTP test API, the JSON
+# reader and writer, the relay's signed envelope and its websocket client.
+# Each is built with clang, ASan and UBSan; its corpus grows in build/fuzz/
+# from the checked-in seeds in fuzz/seeds/. `fuzz` runs each for FUZZ_SECS
+# (part of `run`); `fuzz-long` runs them all at once for FUZZ_LONG_SECS (10
+# min), through `heavy` where it exists. A crash leaves its input in
+# build/fuzz/crash-NAME-*; replay it with build/fuzz/NAME FILE. No clang with
+# libFuzzer: skipped, loudly; FUZZ_REQUIRED=1 makes that a failure.
+FUZZ := $(BIN)/fuzz
+FUZZERS := fuzz_api fuzz_cli fuzz_json fuzz_remote fuzz_ws
+FUZZ_SECS ?= 10
+FUZZ_LONG_SECS ?= 600
+CLANG ?= $(firstword $(wildcard $(HOME)/.local/opt/LLVM-*/bin/clang) $(shell command -v clang 2>/dev/null))
+FUZZ_OK := $(if $(CLANG),$(shell printf 'int LLVMFuzzerTestOneInput(const char*d,long n){return 0;}' | \
+	$(CLANG) -x c - -fsanitize=fuzzer -o /dev/null 2>/dev/null && echo 1))
+FUZZ_CFLAGS := -std=gnu11 -O1 -g -Wall -Wextra -Werror -Wno-unused-function -I$(CORE) -Ifuzz \
+	-fsanitize=fuzzer,address,undefined,float-cast-overflow -fno-sanitize-recover=all
+FUZZ_RUN = $(FUZZ)/$(1) -dict=$(FUZZ)/hifi.dict -artifact_prefix=$(FUZZ)/crash-$(1)- \
+	$(FUZZ)/corpus/$(1) fuzz/seeds/$(1)
+
+$(FUZZ)/%: fuzz/%.c fuzz/fuzz_board.h $(SRCS) $(wildcard $(CORE)/*.h)
+	@mkdir -p $(FUZZ)
+	$(CLANG) $(FUZZ_CFLAGS) -o $@ $< $(SRCS) -lm
+
+$(FUZZ)/hifi.dict: fuzz/dict.py $(SRCS)
+	@mkdir -p $(FUZZ)
+	python3 fuzz/dict.py $(SRCS) > $@
+
+ifeq ($(FUZZ_OK),1)
+fuzz-build: $(addprefix $(FUZZ)/,$(FUZZERS)) $(FUZZ)/hifi.dict
+fuzz: fuzz-build
+	@fail=0; for f in $(FUZZERS); do $(MAKE) --no-print-directory fuzz-one-$$f SECS=$(FUZZ_SECS) || fail=1; \
+	done; exit $$fail
+fuzz-long: fuzz-build
+	@H=$$(command -v heavy >/dev/null && echo "heavy timeout $$(( $(FUZZ_LONG_SECS) + 900 ))"); \
+	$$H $(MAKE) --no-print-directory -k -j$(words $(FUZZERS)) $(addprefix fuzz-one-,$(FUZZERS)) \
+	  SECS=$(FUZZ_LONG_SECS)
+fuzz-one-%:
+	@mkdir -p $(FUZZ)/corpus/$* fuzz/seeds/$*
+	@$(call FUZZ_RUN,$*) -max_total_time=$(SECS) -rss_limit_mb=1024 > $(FUZZ)/$*-$(SECS)s.log 2>&1 \
+	  && echo "fuzz $* ($(SECS) s): $$(grep -o 'Done [0-9]* runs' $(FUZZ)/$*-$(SECS)s.log), no crash" \
+	  || { echo "fuzz $*: FAILED (log $(FUZZ)/$*-$(SECS)s.log)"; grep -A30 '^==[0-9]*==ERROR\|runtime error\|FUZZ_ASSERT' \
+	    $(FUZZ)/$*-$(SECS)s.log | head -50; exit 1; }
+else
+fuzz fuzz-long fuzz-build:
+	@echo "SKIPPED fuzzing: no clang with libFuzzer (set CLANG)"; exit $(if $(FUZZ_REQUIRED),1,0)
+endif
+
 clean:
 	rm -rf $(BIN)
 
-.PHONY: all run clean coverage upstream
+.PHONY: all run clean coverage upstream fuzz fuzz-long fuzz-build

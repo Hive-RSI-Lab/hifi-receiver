@@ -606,6 +606,8 @@ static int r_ota(const hifi_ops_t *ops, const char *what, const char *body, char
 		double size;
 		char sha[72] = "", version[32] = "";
 		if (!hj_get_num(body, "size", &size) || size <= 0) return error(out, cap, 400, "size is required");
+		/* range-checked before the cast: past size_t it is undefined (32 bits on the board) */
+		if (size > 4294967295.0) return error(out, cap, 400, "image is larger than the app slot");
 		hj_get_str(body, "sha256", sha, sizeof(sha));
 		hj_get_str(body, "version", version, sizeof(version));
 		if ((st = hifi_ota_begin(o, (size_t) size, sha, version, &err)) != 200) return error(out, cap, st, err);
