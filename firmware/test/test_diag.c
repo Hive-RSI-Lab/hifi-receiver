@@ -207,6 +207,7 @@ static struct {
 	bool fresh;
 	int tasks_calls;
 	int tasks_over; /* m_tasks reports this many tasks, too many */
+	int tasks_rc;   /* else m_tasks returns this */
 	uint32_t echo_bytes;
 	int echo_status;
 } md;
@@ -230,6 +231,7 @@ static int m_tasks(hifi_diag_tasks_t *t, bool fresh) {
 	md.fresh = fresh;
 	md.tasks_calls++;
 	if (md.tasks_over) return md.tasks_over;
+	if (md.tasks_rc) return md.tasks_rc;
 	t->n = 30;
 	t->sample_ms = 1000;
 	for (int i = 0; i < t->n; i++) t->t[i] = task("some_task_name", (uint32_t) i, 0, 0);
@@ -300,6 +302,13 @@ static void api(void) {
 	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/tasks", NULL, out, sizeof(out)) == 507);
 	CHECK_HAS(out, "60 tasks");
 	md.tasks_over = 0;
+	/* a sample that failed is worth another try; no stats at all isn't */
+	md.tasks_rc = -2;
+	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/tasks", NULL, out, sizeof(out)) == 503);
+	CHECK_HAS(out, "try again");
+	md.tasks_rc = -1;
+	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/tasks", NULL, out, sizeof(out)) == 404);
+	md.tasks_rc = 0;
 
 	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/diag/net", NULL, out, sizeof(out)) == 200);
 	CHECK_HAS(out, "\"rssi\":-50");
@@ -315,6 +324,15 @@ static void api(void) {
 	CHECK_STR(out, "{\"bytes\":1000,\"ms\":100,\"kbps\":80.0}");
 	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/echo", "{\"bytes\":0}", out, sizeof(out)) == 400);
 	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/echo", "{\"bytes\":2000000}", out, sizeof(out)) == 400);
+	/* NaN, infinity and fractions never reach the uint32_t cast */
+	md.echo_bytes = 7;
+	const char *bad[] = {"{\"bytes\":-nan}", "{\"bytes\":nan}", "{\"bytes\":1e999}", "{\"bytes\":-1e999}",
+	                     "{\"bytes\":1.5}", "{\"bytes\":1048577}", "{\"bytes\":-1}", "{\"bytes\":\"x\"}"};
+	for (size_t i = 0; i < sizeof(bad) / sizeof(bad[0]); i++)
+		CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/echo", bad[i], out, sizeof(out)) == 400);
+	CHECK(md.echo_bytes == 7);
+	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/echo", "{\"bytes\":1048576}", out, sizeof(out)) == 200);
+	CHECK(md.echo_bytes == 1048576);
 	md.echo_status = 409;
 	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/diag/echo", "{}", out, sizeof(out)) == 409);
 	CHECK_HAS(out, "the remote link is down");
@@ -359,8 +377,43 @@ static void cli(void) {
 	CHECK_HAS(out, "diag [tasks");
 }
 
+/* the underrun rule: arm once the output plays, count once per dry spell */
+static void underruns(void) {
+	uint8_t st = 0;
+	int n = 0;
+	/* Spotify's play: running before data, the stream live: not a dropout */
+	for (int i = 0; i < 5; i++) n += hifi_diag_underrun_step(&st, true, 0, true, false);
+	CHECK(n == 0);
+	/* it plays, then runs dry for several calls while live: one */
+	n += hifi_diag_underrun_step(&st, true, 512, true, false);
+	for (int i = 0; i < 5; i++) n += hifi_diag_underrun_step(&st, true, 0, true, false);
+	CHECK(n == 1);
+	/* plays again, dry again: a second spell */
+	n += hifi_diag_underrun_step(&st, true, 512, true, false);
+	n += hifi_diag_underrun_step(&st, true, 0, true, false);
+	CHECK(n == 2);
+	/* a seek flushes while running, then refills: not counted */
+	n += hifi_diag_underrun_step(&st, true, 512, true, false);
+	n += hifi_diag_underrun_step(&st, true, 0, true, true);
+	for (int i = 0; i < 5; i++) n += hifi_diag_underrun_step(&st, true, 0, true, false);
+	CHECK(n == 2);
+	/* the stream ended and the buffer drained: not counted */
+	n += hifi_diag_underrun_step(&st, true, 512, true, false);
+	n += hifi_diag_underrun_step(&st, true, 0, false, false);
+	CHECK(n == 2);
+	/* the next track comes in late while still running: counted */
+	n += hifi_diag_underrun_step(&st, true, 0, true, false);
+	CHECK(n == 3);
+	/* stopped, then started again and still filling: not counted */
+	n += hifi_diag_underrun_step(&st, false, 0, true, false);
+	n += hifi_diag_underrun_step(&st, true, 0, true, false);
+	CHECK(n == 3);
+	CHECK(st == 0);
+}
+
 int main(void) {
 	history();
+	underruns();
 	cpu();
 	paging();
 	writers();
