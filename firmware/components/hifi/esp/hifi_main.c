@@ -38,6 +38,7 @@
 #include "hifi_api.h"
 #include "hifi_board.h"
 #include "hifi_bsp.h"
+#include "hifi_crash.h"
 #include "hifi_esp.h"
 #include "hifi_gov.h"
 #include "hifi_http.h"
@@ -45,6 +46,7 @@
 #include "hifi_json.h"
 #include "hifi_line.h"
 #include "hifi_meta.h"
+#include "hifi_tap.h"
 #include "hifi_pd.h"
 #include "hifi_power.h"
 #include "hifi_tone.h"
@@ -62,6 +64,7 @@ extern int hifi_sink_source(void) __attribute__((weak));
 extern void equalizer_set_gain(int8_t *gain) __attribute__((weak));
 extern int set_squeezelite_player_name(FILE *f, const char *name) __attribute__((weak));
 extern int set_cspot_player_name(FILE *f, const char *name) __attribute__((weak));
+extern bool bt_sink_pair_mode(void) __attribute__((weak));
 extern bool hifi_output_gain(unsigned left, unsigned right) __attribute__((weak));
 
 /* ------------------------------------------------------------------ state */
@@ -92,6 +95,8 @@ static bool vol_dirty, vol_from_source;
 static uint32_t vol_changed_ms;
 static hifi_meta_t meta;
 static hifi_ir_t ir;
+static hifi_tap_t taps;           /* the play button's taps; under lock */
+static TaskHandle_t tap_task;
 static char last_ctl[24];            /* the last button, knob step or remote action */
 static uint32_t last_ctl_ms;
 
@@ -119,7 +124,23 @@ static uint32_t now_ms(void) { return (uint32_t) (esp_timer_get_time() / 1000); 
 
 /* ------------------------------------------------------------------ I2C */
 
+/*
+ * Until squeezelite's codec start (or hifi_i2c_ensure) installs the driver,
+ * every transfer fails and the driver logs an error for it. power_task probes
+ * the codec every 10 ms, which buried a boot log under ~700 such lines. While
+ * the driver is missing, ask again only every 250 ms and with its log quiet.
+ */
+static bool i2c_missing = true;
+static uint32_t i2c_probe_at;
+
 static esp_err_t i2c_xfer(uint8_t addr, uint8_t reg, uint8_t *val, bool write) {
+	bool probe = i2c_missing;
+	if (probe) {
+		uint32_t now = now_ms();
+		if (i2c_probe_at && (int32_t) (now - i2c_probe_at) < 250) return ESP_ERR_INVALID_STATE;
+		i2c_probe_at = now ? now : 1;
+		esp_log_level_set("i2c", ESP_LOG_NONE);
+	}
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, (addr << 1) | I2C_MASTER_WRITE, true);
@@ -134,6 +155,9 @@ static esp_err_t i2c_xfer(uint8_t addr, uint8_t reg, uint8_t *val, bool write) {
 	i2c_master_stop(cmd);
 	esp_err_t err = i2c_master_cmd_begin(I2C_PORT, cmd, pdMS_TO_TICKS(50));
 	i2c_cmd_link_delete(cmd);
+	if (probe) esp_log_level_set("i2c", CONFIG_LOG_DEFAULT_LEVEL);
+	/* ESP_ERR_INVALID_STATE: no driver (a missing part NACKs with ESP_FAIL) */
+	i2c_missing = err == ESP_ERR_INVALID_STATE;
 	return err;
 }
 
@@ -157,6 +181,7 @@ void hifi_i2c_ensure(void) {
 	};
 	i2c_param_config(I2C_PORT, &c);
 	i2c_driver_install(I2C_PORT, I2C_MODE_MASTER, 0, 0, 0);
+	i2c_probe_at = 0; /* the next transfer tries it at once */
 	ESP_LOGW(TAG, "codec driver didn't start; installed I2C %d ourselves", I2C_PORT);
 }
 
@@ -411,8 +436,53 @@ void hifi_main_knob(int detents) {
 	for (int i = 0; h && i < abs(detents); i++) h(true);
 }
 
+/*
+ * The play button's taps, acted on once they're counted (hifi_tap.h): 1
+ * play/pause, 2 next, 3 previous. Its stack is in PSRAM like the buttons
+ * task's, so what it calls must not touch flash either.
+ */
+static void tap_main(void *arg) {
+	(void) arg;
+	for (;;) {
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		for (;;) {
+			LOCK();
+			int n = hifi_tap_poll(&taps, now_ms());
+			bool pending = hifi_tap_pending(&taps);
+			UNLOCK();
+			if (n) {
+				int a = n == 1 ? HIFI_IR_TOGGLE : n == 2 ? HIFI_IR_NEXT : HIFI_IR_PREV;
+				control_seen_locked("button", hifi_ir_action_name(a));
+				actrls_handler h = get_ctrl_handler(IR_TO_ACTRLS[a]);
+				if (h) h(true);
+			}
+			if (!pending) break;
+			ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(20));
+		}
+	}
+}
+
 /* A button press on the board (squeezelite's audio controls). */
 bool hifi_button_hook(int action, bool pressed) {
+	/* play: counted as headphone taps (a short press arrives on release) */
+	if (action == ACTRLS_TOGGLE && tap_task) {
+		if (pressed) {
+			LOCK();
+			hifi_tap_press(&taps, now_ms());
+			UNLOCK();
+			xTaskNotifyGive(tap_task);
+		}
+		return true;
+	}
+	/* play held: let a new phone pair over Bluetooth */
+	if (action == ACTRLS_POWER && bt_sink_pair_mode) {
+		static bool pairing; /* the release goes where the press went */
+		if (pressed) pairing = bt_sink_pair_mode();
+		if (pairing) {
+			if (pressed) control_seen_locked("button", "pair");
+			return true;
+		}
+	}
 	for (int a = 0; pressed && a < HIFI_IR_N; a++)
 		if (IR_TO_ACTRLS[a] == action && action != ACTRLS_NONE) control_seen_locked("button", hifi_ir_action_name(a));
 	if (action == ACTRLS_VOLUP) return local_action(HIFI_IR_VOLUP, pressed);
@@ -569,6 +639,24 @@ static void line_main(void *arg) {
 
 /* ------------------------------------------------------------------ ops */
 
+/*
+ * A task whose stack is in PSRAM, to leave internal RAM to Wi-Fi, Bluetooth
+ * and DMA (the Lite had 17 KB of it free with everything up). Only for tasks
+ * that never touch flash (NVS, OTA): IDF asserts on a flash operation from
+ * a PSRAM stack. Its TCB stays internal; IDF counts stacks in bytes. Falls back to an internal stack.
+ */
+static TaskHandle_t task_psram(TaskFunction_t fn, const char *name, uint32_t bytes, UBaseType_t prio, BaseType_t core) {
+	StackType_t *stack = heap_caps_malloc(bytes, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+	StaticTask_t *tcb = heap_caps_malloc(sizeof(StaticTask_t), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+	TaskHandle_t h = NULL;
+	if (stack && tcb) h = xTaskCreateStaticPinnedToCore(fn, name, bytes, NULL, prio, stack, tcb, core);
+	if (h) return h;
+	free(stack);
+	free(tcb);
+	xTaskCreatePinnedToCore(fn, name, bytes, NULL, prio, &h, core);
+	return h;
+}
+
 static void op_info(hifi_info_t *i) {
 	uint8_t mac[6];
 	i->model = HIFI_MODEL;
@@ -666,7 +754,9 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	wifi_mode_t mode = WIFI_MODE_NULL;
 	esp_wifi_get_mode(&mode);
 	s->net_mode = !s->ip[0] && (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA) ? "ap" : "sta";
-	s->heap_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+	s->heap_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+	s->heap_min = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+	s->reset_reason = hifi_crash_reset_reason();
 	s->psram_free = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
 	hifi_net_update_status(&s->update);
 	hifi_bsp_snapshot(s); /* its sensors, zones and Ethernet */
@@ -754,6 +844,11 @@ static int op_set_eq(const float g[HIFI_EQ_BANDS]) {
 	return config_set_value(NVS_TYPE_STR, "equalizer", s) == ESP_OK ? 0 : -1;
 }
 
+static int discard_write(void *cookie, const char *buf, int n) {
+	(void) cookie; (void) buf;
+	return n;
+}
+
 /* The name people see in AirPlay, Bluetooth, Spotify and LMS. The hostname
  * stays the model's (hifi-lite) so hifi-lite.local keeps working. */
 static int op_set_name(const char *name) {
@@ -762,10 +857,13 @@ static int op_set_name(const char *name) {
 	err |= config_set_value(NVS_TYPE_STR, "airplay_name", name) != ESP_OK;
 	err |= config_set_value(NVS_TYPE_STR, "bt_name", name) != ESP_OK;
 	err |= config_set_value(NVS_TYPE_STR, "a2dp_dev_name", name) != ESP_OK;
-	FILE *f = fopen("/dev/null", "w");
+	/* upstream's setters fprintf their chatter to f unchecked, and IDF 4.4
+	 * has no /dev/null: fopen gave NULL and the board crashed on a rename */
+	FILE *f = funopen(NULL, NULL, discard_write, NULL, NULL);
+	if (!f) return -1;
 	if (set_squeezelite_player_name) err |= set_squeezelite_player_name(f, name) != 0;
 	if (set_cspot_player_name) err |= set_cspot_player_name(f, name) != 0;
-	if (f) fclose(f);
+	fclose(f);
 	return err ? -1 : 0; /* the services pick it up at the next restart */
 }
 
@@ -782,6 +880,74 @@ static void restart_later(bool erase) {
 
 static void op_reboot(void) { restart_later(false); }
 static void op_factory_reset(void) { restart_later(true); }
+
+/* The Bluetooth test (ops.bt_test): this boot's squeezelite command line
+ * (autoexec1) is kept in hifi_bt_save, the next boot runs it with "-o BT"
+ * (a Bluetooth source playing to sink, a2dp_sink_name), and hifi_bttest walks
+ * armed -> used -> off, so the boot after the test, crash or not, puts the
+ * saved line back (bt_test_boot). */
+static int op_bt_test(const char *sink, const char **err) {
+	char *flag = config_alloc_get_str("hifi_bttest", NULL, "off");
+	bool busy = flag && strcmp(flag, "off");
+	free(flag);
+	if (busy) {
+		*err = "a Bluetooth test is already set up; reboot to end it";
+		return -1;
+	}
+	char *ax = config_alloc_get_str("autoexec1", NULL, NULL);
+	if (!ax || !strstr(ax, "squeezelite")) {
+		free(ax);
+		*err = "no squeezelite command line to change";
+		return -1;
+	}
+	size_t n = strlen(ax) + 16;
+	char *line = malloc(n);
+	if (!line) {
+		free(ax);
+		*err = "out of memory";
+		return -1;
+	}
+	/* swap "-o <device>" for "-o BT", or add it */
+	const char *o = strstr(ax, " -o ");
+	if (o) {
+		const char *rest = o + 4;
+		while (*rest == ' ') rest++;
+		while (*rest && *rest != ' ') rest++;
+		snprintf(line, n, "%.*s -o BT%s", (int) (o - ax), ax, rest);
+	} else {
+		snprintf(line, n, "%s -o BT", ax);
+	}
+	bool bad = config_set_value(NVS_TYPE_STR, "hifi_bt_save", ax) != ESP_OK;
+	bad = bad || config_set_value(NVS_TYPE_STR, "a2dp_sink_name", sink) != ESP_OK;
+	bad = bad || config_set_value(NVS_TYPE_STR, "hifi_bttest", "armed") != ESP_OK;
+	bad = bad || config_set_value(NVS_TYPE_STR, "autoexec1", line) != ESP_OK;
+	ESP_LOGW(TAG, "Bluetooth test: next boot runs '%s'", line);
+	free(ax);
+	free(line);
+	if (bad) {
+		config_set_value(NVS_TYPE_STR, "hifi_bttest", "used"); /* the next boot puts it back */
+		*err = "couldn't save the settings";
+		return -1;
+	}
+	restart_later(false);
+	return 0;
+}
+
+/* at boot, before squeezelite reads autoexec1 */
+static void bt_test_boot(void) {
+	char *flag = config_alloc_get_str("hifi_bttest", NULL, "off");
+	if (flag && !strcmp(flag, "armed")) {
+		config_set_value(NVS_TYPE_STR, "hifi_bttest", "used");
+		ESP_LOGW(TAG, "Bluetooth test boot: this boot plays to another board over Bluetooth");
+	} else if (flag && !strcmp(flag, "used")) {
+		char *ax = config_alloc_get_str("hifi_bt_save", NULL, NULL);
+		if (ax && *ax) config_set_value(NVS_TYPE_STR, "autoexec1", ax);
+		free(ax);
+		config_set_value(NVS_TYPE_STR, "hifi_bttest", "off");
+		ESP_LOGW(TAG, "Bluetooth test over: the usual command line is back");
+	}
+	free(flag);
+}
 
 static int op_control(const char *a) {
 	if (!strcmp(a, "mute") || !strcmp(a, "input") || !strcmp(a, "volup") || !strcmp(a, "voldown")) {
@@ -844,7 +1010,7 @@ static void op_selftest(hifi_selftest_t *t) {
 
 	size_t ps = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
 	hifi_selftest_add(t, "psram", ps >= 2u << 20, "%u KB mapped", (unsigned) (ps >> 10));
-	hifi_selftest_add(t, "heap", s->heap_free > 20000, "%u B free", (unsigned) s->heap_free);
+	hifi_selftest_add(t, "heap", s->heap_free > HIFI_HEAP_MIN, "%u B free", (unsigned) s->heap_free);
 	hifi_selftest_add(t, "network", s->ip[0] != 0, s->ip[0] ? "%s" : "not connected", s->ip);
 	free(s);
 }
@@ -968,7 +1134,7 @@ bool hifi_net_ip(char *buf, size_t n) {
 void hifi_main_trial_inputs(hifi_trial_t *t) {
 	t->component_ok = lock != NULL;
 	t->i2c_ok = hifi_bsp_parts_ok();
-	t->heap_ok = heap_caps_get_free_size(MALLOC_CAP_INTERNAL) > 20000;
+	t->heap_ok = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT) > HIFI_HEAP_MIN;
 	wifi_config_t wc = {0};
 	t->wifi_configured = esp_wifi_get_config(WIFI_IF_STA, &wc) == ESP_OK && wc.sta.ssid[0];
 	t->wifi_ok = hifi_net_ip(NULL, 0);
@@ -985,6 +1151,7 @@ const hifi_ops_t hifi_ops = {
 #endif
 	.set_wifi = op_set_wifi, .remote_status = hifi_remote_status,
 	.remote_set = hifi_remote_set, .ota = &hifi_ota_session, .ota_status = hifi_ota_status,
+	.diag = &hifi_diag_ops,
 	.wifi_scan = hifi_net_wifi_scan, .wifi_forget = hifi_net_wifi_forget,
 #if HIFI_ZONES > 1
 	.set_zone = hifi_bsp_set_zone,
@@ -996,6 +1163,9 @@ const hifi_ops_t hifi_ops = {
 #ifdef HIFI_HAS_BACKLIGHT
 	.set_backlight = hifi_bsp_set_backlight,
 #endif
+	.reset_reason = hifi_crash_reset_reason,
+	.last_log = hifi_crash_last_log,
+	.bt_test = op_bt_test,
 };
 
 /* ------------------------------------------------------------------ console, mDNS */
@@ -1102,7 +1272,22 @@ void hifi_dsp_process(uint8_t *buf, uint32_t frames, int bytes_per_frame, uint32
 
 void hifi_http_register(httpd_handle_t server) { hifi_http_start(server, &hifi_ops); }
 
+/* Every failed allocation goes to the console (and so to the crash log): a
+ * Bluetooth connect panicked in btu_start_timer when its timer couldn't be
+ * made, and this tells running out of internal RAM from other causes. */
+static void alloc_failed(size_t size, uint32_t caps, const char *fn) {
+	static int n;
+	if (n++ >= 20) return;
+	ESP_LOGE(TAG, "alloc of %u B failed in %s (caps 0x%x); internal %u B free, largest %u B, lowest %u B",
+		 (unsigned) size, fn ? fn : "?", (unsigned) caps, (unsigned) heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT),
+		 (unsigned) heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT),
+		 (unsigned) heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
+}
+
 static bool hifi_init(void) {
+	heap_caps_register_failed_alloc_callback(alloc_failed);
+	hifi_diag_init();
+	bt_test_boot();
 	lock = xSemaphoreCreateMutex();
 	tone_lock = xSemaphoreCreateMutex();
 
@@ -1137,14 +1322,16 @@ static bool hifi_init(void) {
 	free(s);
 	hifi_meta_init(&meta);
 	hifi_ir_init(&ir);
+	hifi_tap_init(&taps);
 	s = config_alloc_get_str("hifi_ir", NULL, "");
 	hifi_ir_load(&ir, s);
 	free(s);
 
 	xTaskCreatePinnedToCore(power_task, "hifi_power", 3072, NULL, ESP_TASK_PRIO_MIN + 3, NULL, 0);
-	if (hifi_sink_start) xTaskCreatePinnedToCore(tone_main, "hifi_tone", 4096, NULL, ESP_TASK_PRIO_MIN + 2, &tone_task, 1);
-	if (board_line) xTaskCreatePinnedToCore(line_main, "hifi_line", 4096, NULL, ESP_TASK_PRIO_MIN + 4, NULL, 1);
+	if (hifi_sink_start) tone_task = task_psram(tone_main, "hifi_tone", 4096, ESP_TASK_PRIO_MIN + 2, 1);
+	if (board_line) task_psram(line_main, "hifi_line", 4096, ESP_TASK_PRIO_MIN + 4, 1);
 	xTaskCreate(services_task, "hifi_svc", 3072, NULL, ESP_TASK_PRIO_MIN + 1, NULL);
+	tap_task = task_psram(tap_main, "hifi_tap", 4096, ESP_TASK_PRIO_MIN + 2, tskNO_AFFINITY);
 	hifi_remote_start(&hifi_ops);
 	hifi_bsp_start();
 	ESP_LOGI(TAG, "%s on %s, firmware %s", HIFI_MODEL, HIFI_BOARD, HIFI_FW_VERSION);

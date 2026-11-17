@@ -78,6 +78,7 @@ static void m_snapshot(hifi_snapshot_t *s) {
 	snprintf(s->ip, sizeof(s->ip), "192.168.1.40");
 	s->rssi = -61;
 	s->heap_free = 81234;
+	s->heap_min = 60123;
 	s->psram_free = 3912345;
 }
 
@@ -169,7 +170,7 @@ static void info_and_state(void) {
 		  "\"sub\":{\"on\":false,\"level_db\":0.0},\"eq\":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"
 		  "\"volume\":35,\"mute\":false,\"max_volume\":100,\"playing\":null},"
 		  "\"net\":{\"mode\":\"sta\",\"ssid\":\"home\",\"hostname\":\"hifi-lite\",\"ip\":\"192.168.1.40\",\"rssi\":-61},"
-		  "\"sys\":{\"heap_free\":81234,\"psram_free\":3912345},"
+		  "\"sys\":{\"heap_free\":81234,\"heap_min\":60123,\"psram_free\":3912345},"
 		  "\"ir\":{\"learning\":null,\"learned\":[],\"last_code\":null}}");
 
 	CHECK(call("POST", "/api/v1/state", "{}") == 405);
@@ -536,6 +537,7 @@ static void core_routes(void) {
 	CHECK(ccall("POST", "/api/v1/zone", "{\"zone\":\"b\",\"on\":true}") == 200 && c.zone_b);
 	CHECK(ccall("POST", "/api/v1/zone", "{\"zone\":\"b\",\"volume\":40}") == 400);
 	CHECK_HAS(out, "plays at the main volume");
+	CHECK(ccall("POST", "/api/v1/zone", "{\"zone\":\"b\",\"on\":true,\"volume\":1e999}") == 400);
 	CHECK(ccall("POST", "/api/v1/zone", "{\"zone\":\"a\",\"on\":true}") == 400);
 	CHECK(ccall("POST", "/api/v1/zone", "{\"zone\":\"b\"}") == 400);
 	CHECK(c.zone_b);
@@ -653,6 +655,96 @@ static void i2c_console(void) {
 	CHECK(bus.reads == r && bus.writes == w);
 }
 
+static const char *x_reason(void) { return "panic"; }
+static size_t x_log(char *o, size_t cap) {
+	/* colour codes and stray bytes dropped, newlines kept, cut to cap */
+	static const char log[] = "\x1b[0;31mE (1) bt: boom\x1b[0m\n\x01" "Backtrace: 0x4008\"\\\n";
+	size_t n = sizeof(log) - 1 < cap - 1 ? sizeof(log) - 1 : cap - 1;
+	memcpy(o, log, n);
+	o[n] = '\0';
+	return n;
+}
+
+static size_t x_long_log(char *o, size_t cap) {
+	/* 3000 bytes, a third of them newlines (6 escaped) */
+	size_t n = 3000 < cap - 1 ? 3000 : cap - 1;
+	for (size_t i = 0; i < n; i++) o[i] = i % 3 == 2 ? '\n' : 'a';
+	o[n] = '\0';
+	return n;
+}
+
+static void crash(void) {
+	CHECK(call("GET", "/api/v1/crash", NULL) == 404); /* no recorder */
+	hifi_ops_t x = ops;
+	x.reset_reason = x_reason;
+	x.last_log = x_log;
+	CHECK(hifi_api_handle(&x, "GET", "/api/v1/crash", NULL, out, sizeof(out)) == 200);
+	CHECK_STR(out, "{\"reset_reason\":\"panic\",\"log\":\"E (1) bt: boom\\u000aBacktrace: 0x4008\\\"\\\\\\u000a\"}");
+	CHECK(hifi_api_reply_cap("/api/v1/crash", NULL) > 6000);
+	/* a page at a time, for a bench that caps a console line */
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{}", out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":-1}", out, sizeof(out)) == 400);
+	/* fuzzing: NaN passed from < 0 and was cast and used as an offset into the log */
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":-nan}", out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":1e300}", out, sizeof(out)) == 200);
+	CHECK_HAS(out, "\"log\":\"\"");
+	/* frames past int were cast before the 64..16384 check */
+	CHECK(hifi_api_reply_cap("/api/v1/capture", "{\"frames\":1e30}") ==
+	      hifi_api_reply_cap("/api/v1/capture", "{\"frames\":16384}"));
+	CHECK(hifi_api_reply_cap("/api/v1/capture", "{\"frames\":-1e30}") ==
+	      hifi_api_reply_cap("/api/v1/capture", "{\"frames\":64}"));
+	/* a number that isn't finite (1e999, -inf, -nan) is refused, not read as missing */
+	CHECK(call("POST", "/api/v1/volume", "{\"volume\":1e999,\"mute\":true}") == 400);
+	CHECK(call("POST", "/api/v1/tone", "{\"type\":\"sine\",\"freq_hz\":1e999}") == 400);
+	CHECK(call("POST", "/api/v1/tone", "{\"type\":\"noise\",\"level_dbfs\":-nan}") == 400);
+	CHECK(call("POST", "/api/v1/sub", "{\"level_db\":-inf}") == 400);
+	CHECK(hifi_api_reply_cap("/api/v1/capture", "{\"frames\":1e999}") ==   /* refused, not the default */
+	      hifi_api_reply_cap("/api/v1/capture", "{\"frames\":64}"));
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":15}", out, sizeof(out)) == 200);
+	CHECK_STR(out, "{\"reset_reason\":\"panic\",\"len\":35,\"from\":15,\"next\":35,"
+		       "\"log\":\"Backtrace: 0x4008\\\"\\\\\\u000a\"}");
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":99}", out, sizeof(out)) == 200);
+	CHECK_HAS(out, "\"from\":35,\"next\":35,\"log\":\"\"");
+	x.last_log = x_long_log;
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/crash", "{\"from\":0}", out, sizeof(out)) == 200);
+	CHECK(strlen(out) < 900);
+	CHECK_HAS(out, "\"len\":3000,\"from\":0,\"next\":");
+	const char *argv[] = {"crash"}, *method, *path;
+	char body[64];
+	CHECK(hifi_cli_request(1, argv, &method, &path, body, sizeof(body), out, sizeof(out)));
+	CHECK_STR(method, "GET");
+	CHECK_STR(path, "/api/v1/crash");
+	const char *argv2[] = {"crash", "700"};
+	CHECK(hifi_cli_request(2, argv2, &method, &path, body, sizeof(body), out, sizeof(out)));
+	CHECK_STR(method, "POST");
+	CHECK_STR(path, "/api/v1/crash");
+	CHECK_STR(body, "{\"from\":700}");
+}
+
+static char bt_sink[40];
+static int x_bt_test(const char *sink, const char **err) {
+	if (!strcmp(sink, "busy")) {
+		*err = "already set up";
+		return -1;
+	}
+	snprintf(bt_sink, sizeof(bt_sink), "%s", sink);
+	return 0;
+}
+
+static void bttest(void) {
+	CHECK(call("POST", "/api/v1/bttest", "{\"sink\":\"HiFi Lite 3\"}") == 404); /* no test */
+	hifi_ops_t x = ops;
+	x.bt_test = x_bt_test;
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/bttest", "{}", out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/bttest", "{\"sink\":\"\"}", out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/bttest", "{\"sink\":\"busy\"}", out, sizeof(out)) == 409);
+	CHECK_HAS(out, "already set up");
+	CHECK(hifi_api_handle(&x, "GET", "/api/v1/bttest", NULL, out, sizeof(out)) == 405);
+	CHECK(!bt_sink[0]);
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/bttest", "{\"sink\":\"HiFi Lite 3\"}", out, sizeof(out)) == 200);
+	CHECK_STR(bt_sink, "HiFi Lite 3");
+}
+
 int main(void) {
 	hifi_vol_init(&m.vol, 35, 100);
 	m.ir_learning = -1;
@@ -664,5 +756,7 @@ int main(void) {
 	console();
 	core_routes();
 	i2c_console();
+	crash();
+	bttest();
 	return check_report("api");
 }

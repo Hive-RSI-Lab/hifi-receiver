@@ -8,6 +8,11 @@ set -eu
 FW=$(cd "$(dirname "$0")/.." && pwd)
 DEST=$("$FW/tools/fetch.sh" "${1:-${HOME}/fw-build/squeezelite-esp32}" | tail -1)
 
+# no IDF_PATH and no $HOME/esp: the fw tool's copy, pinned by firmware/fw.json
+FWTOOL=$(command -v fw || echo "$HOME/modules/fw/bin/fw")
+if [ -z "${IDF_PATH:-}" ] && [ ! -d "$HOME/esp/esp-idf-v4.4.8" ] && [ -x "$FWTOOL" ]; then
+	eval "$(cd "$FW" && "$FWTOOL" env .)"
+fi
 if [ -z "${IDF_PATH:-}" ]; then
 	export IDF_PATH="$HOME/esp/esp-idf-v4.4.8" IDF_TOOLS_PATH="$HOME/esp/tools"
 	for env in "$IDF_TOOLS_PATH"/python_env/idf4.4_py3.*_env; do
@@ -19,9 +24,47 @@ if [ -z "${IDF_PATH:-}" ]; then
 	set -u
 fi
 
+# Spotify Connect needs a Spotify developer app's client id and secret built in
+# (cspot fetches a Web API token with them; without one a track never starts):
+# from SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET, else files of those names in
+# HIFI_SECRETS_DIR (default ~/.config/h2/secrets). Never echoed.
+SECRETS_DIR=${HIFI_SECRETS_DIR:-$HOME/.config/h2/secrets}
+sp_id=${SPOTIFY_CLIENT_ID:-}
+sp_secret=${SPOTIFY_CLIENT_SECRET:-}
+[ -n "$sp_id" ] || { [ -r "$SECRETS_DIR/SPOTIFY_CLIENT_ID" ] && sp_id=$(tr -d ' \r\n' < "$SECRETS_DIR/SPOTIFY_CLIENT_ID"); } || true
+[ -n "$sp_secret" ] || { [ -r "$SECRETS_DIR/SPOTIFY_CLIENT_SECRET" ] && sp_secret=$(tr -d ' \r\n' < "$SECRETS_DIR/SPOTIFY_CLIENT_SECRET"); } || true
+if [ -n "$sp_id" ] && [ -n "$sp_secret" ]; then
+	case "$sp_id$sp_secret" in *[!A-Za-z0-9]*) echo "build.sh: the Spotify client id/secret must be letters and digits" >&2; exit 1 ;; esac
+	export SPOTIFY_SECRET="-DCLIENT_ID=\"$sp_id\" -DCLIENT_SECRET=\"$sp_secret\""
+	echo "build.sh: Spotify Connect key: set"
+else
+	unset SPOTIFY_SECRET
+	echo "build.sh: Spotify Connect key: missing, Spotify will connect but play nothing" >&2
+fi
+unset sp_id sp_secret
+
+# The Hive's public key, which the board needs to take agent commands and
+# updates over Wi-Fi (hifi_relay.c): from HIFI_HIVE_PUBKEY, else the bench
+# endpoint's tool if this machine has one. A build without it can only be
+# flashed by USB, and the bench refuses to send it over the air.
+if [ -z "${HIFI_HIVE_PUBKEY:-}" ] && [ -r "$HOME/modules/dash/remote_bench.py" ]; then
+	HIFI_HIVE_PUBKEY=$(python3 "$HOME/modules/dash/remote_bench.py" pubkey 2>/dev/null || true)
+fi
+if [ -n "${HIFI_HIVE_PUBKEY:-}" ]; then
+	case "$HIFI_HIVE_PUBKEY" in *[!0-9a-fA-F,\ ]*) echo "build.sh: HIFI_HIVE_PUBKEY must be hex keys, comma-separated" >&2; exit 1 ;; esac
+	export HIFI_HIVE_PUBKEY
+	echo "build.sh: Hive key: set"
+else
+	unset HIFI_HIVE_PUBKEY
+	echo "build.sh: Hive key: missing, the board will refuse agent commands and Wi-Fi updates" >&2
+fi
+
 cd "$DEST"
 idf.py reconfigure >/dev/null
 nice -n 19 ninja -C build -j "${JOBS:-4}"
+# boot the main app (ota_0) after a flash from scratch, not the recovery app
+# that IDF's all-0xff otadata selects (tools/otadata.py says why)
+python3 "$FW/tools/otadata.py" build/ota_data_initial.bin
 ls -l build/squeezelite.bin build/recovery.bin
 # squeezelite's build doesn't check the recovery image against its slot: do
 # it here for both, since an image that outgrows its slot can't be flashed

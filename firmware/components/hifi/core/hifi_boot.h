@@ -11,6 +11,10 @@
 #include <stdint.h>
 
 #define HIFI_TRIAL_LIMIT_S 120
+/* internal RAM still free for a board to count as healthy (self-test and
+ * trial). A live TLS link to the bench holds about 4 KB of it, so on a Lite
+ * with Bluetooth on 20 KB failed a healthy board. */
+#define HIFI_HEAP_MIN 12000
 
 typedef struct {
 	bool component_ok;    /* our init ran */

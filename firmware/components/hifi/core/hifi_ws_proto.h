@@ -9,6 +9,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #define HIFI_WS_HOST_MAX 64
 #define HIFI_WS_PATH_MAX 64
@@ -39,3 +40,30 @@ int hifi_ws_headers(char *out, size_t cap, const char *id, const char *secret, c
  * Returns the new length, or 0 if it isn't an object or doesn't fit.
  */
 size_t hifi_ws_tag(char *buf, size_t len, size_t cap, const char *t);
+
+/*
+ * The WebSocket framing itself (RFC 6455), done here rather than by IDF 4.4's
+ * transport_ws: that one reads the server's 101 answer in one gulp and loses
+ * whatever came in the same TLS record after it, so a command the Hive sends
+ * the moment the board connects cut the stream and every frame after it was
+ * misread.
+ */
+#define HIFI_WS_HEAD_MAX 14
+
+typedef struct {
+	int op;            /* 1 text, 2 binary, 8 close, 9 ping, 10 pong */
+	bool fin, masked;
+	uint8_t mask[4];
+	uint64_t len;      /* the payload's */
+} hifi_ws_head_t;
+
+/* A client frame's header: FIN, op, masked with mask. Returns its length. */
+size_t hifi_ws_head(uint8_t out[HIFI_WS_HEAD_MAX], int op, size_t len, const uint8_t mask[4]);
+/* The whole header's length from its first two bytes (2 to 14). */
+size_t hifi_ws_head_len(const uint8_t b[2]);
+/* Reads a whole header (hifi_ws_head_len bytes). -1 if a reserved bit is
+ * set or a control frame is longer than 125 bytes or split. */
+int hifi_ws_head_parse(const uint8_t *b, hifi_ws_head_t *h);
+/* The server's answer to the upgrade, NUL-terminated: true only for a 101
+ * whose Sec-WebSocket-Accept (header name in any case) is accept. */
+bool hifi_ws_upgrade_ok(const char *resp, const char *accept);

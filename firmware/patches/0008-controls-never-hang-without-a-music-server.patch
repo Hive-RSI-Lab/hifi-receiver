@@ -1,0 +1,53 @@
+diff --git a/components/squeezelite/controls.c b/components/squeezelite/controls.c
+--- a/components/squeezelite/controls.c
++++ b/components/squeezelite/controls.c
+@@ -9,6 +9,8 @@
+ #include "squeezelite.h"
+ #include "platform_config.h"
+ #include "audio_controls.h"
++#include <fcntl.h>
++#include <sys/select.h>
+ 
+ static log_level loglevel = lINFO;
+ 
+@@ -183,8 +185,26 @@
+ 	socklen_t addrlen = sizeof(addr);
+ 	
+ 	cli_sock = socket(AF_INET, SOCK_STREAM, 0);
+-	
+-	if (connect(cli_sock, (struct sockaddr *) &addr, addrlen) < 0) {
++	if (cli_sock < 0) return;
++
++	/* hifi: never block the caller (a button, the IR task, the API) on a server
++	 * that doesn't answer: a plain connect waits out every SYN retry, minutes */
++	int fl = fcntl(cli_sock, F_GETFL, 0);
++	fcntl(cli_sock, F_SETFL, fl | O_NONBLOCK);
++	int r = connect(cli_sock, (struct sockaddr *) &addr, addrlen);
++	if (r < 0 && errno == EINPROGRESS) {
++		fd_set w;
++		FD_ZERO(&w);
++		FD_SET(cli_sock, &w);
++		struct timeval tv = { .tv_sec = 1, .tv_usec = 0 };
++		int err = 1;
++		socklen_t el = sizeof(err);
++		if (select(cli_sock + 1, NULL, &w, NULL, &tv) == 1) getsockopt(cli_sock, SOL_SOCKET, SO_ERROR, &err, &el);
++		r = err ? -1 : 0;
++	}
++	fcntl(cli_sock, F_SETFL, fl);
++
++	if (r < 0) {
+ 		LOG_ERROR("unable to connect to server %s:%hu with cli", inet_ntoa(server_ip), server_cport);
+ 		closesocket(cli_sock);
+ 		cli_sock = -1;
+@@ -201,7 +221,11 @@
+ 	len = sprintf(packet, "%02x:%02x:%02x:%02x:%02x:%02x %s\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], cmd);
+ 	LOG_DEBUG("sending command %s at %s:%hu", packet, inet_ntoa(server_ip), server_cport);
+ 	
++	/* hifi: no music server known (Spotify, Bluetooth or nothing plays): nothing to tell */
++	if (!server_ip || !server_cport) return;
++
+ 	if (cli_sock < 0) connect_cli_socket();
++	if (cli_sock < 0) return;
+ 
+ 	if (send(cli_sock, packet, len, MSG_DONTWAIT) < 0) {
+ 		closesocket(cli_sock);

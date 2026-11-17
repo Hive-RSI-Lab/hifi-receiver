@@ -217,8 +217,17 @@ bool hj_get_str(const char *json, const char *k, char *out, size_t n) {
 bool hj_get_num(const char *json, const char *k, double *out) {
 	const char *p = find(json, k);
 	if (!p || !(*p == '-' || isdigit((unsigned char) *p))) return false;
-	*out = strtod(p, NULL);
+	/* strtod also reads -nan, -inf and 1e999, which no JSON number is and
+	 * which no caller's range check catches (NaN fails every comparison) */
+	double v = strtod(p, NULL);
+	if (!isfinite(v)) return false;
+	*out = v;
 	return true;
+}
+
+bool hj_num_bad(const char *json, const char *k) {
+	const char *p = find(json, k);
+	return p && (*p == '-' || isdigit((unsigned char) *p)) && !isfinite(strtod(p, NULL));
 }
 
 bool hj_get_bool(const char *json, const char *k, bool *out) {
@@ -240,6 +249,7 @@ int hj_get_num_array(const char *json, const char *k, double *out, int max) {
 		char *end;
 		if (!(*p == '-' || isdigit((unsigned char) *p))) return -1;
 		double v = strtod(p, &end);
+		if (!isfinite(v)) return -1;
 		if (n < max) out[n] = v;
 		n++;
 		p = ws(end);

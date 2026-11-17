@@ -163,7 +163,9 @@ void hifi_api_write_state(const hifi_snapshot_t *s, char *out, size_t cap) {
 
 	hj_obj(&j, "sys");
 	hj_int(&j, "heap_free", s->heap_free);
+	hj_int(&j, "heap_min", s->heap_min);
 	hj_int(&j, "psram_free", s->psram_free);
+	if (s->reset_reason) hj_str(&j, "reset_reason", s->reset_reason);
 	hj_obj_end(&j);
 
 	hj_obj(&j, "ir");
@@ -276,6 +278,7 @@ static int r_state(const hifi_ops_t *ops, char *out, size_t cap) {
 
 static double num_or(const char *body, const char *key, double dflt) {
 	double v;
+	if (hj_num_bad(body, key)) return NAN; /* fails the tone's range checks: 400 */
 	return hj_get_num(body, key, &v) ? v : dflt;
 }
 
@@ -368,9 +371,10 @@ static int r_input(const hifi_ops_t *ops, const char *body, char *out, size_t ca
 
 static int r_sub(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
 	double db = NAN;
-	bool on, has_on = hj_get_bool(body, "on", &on), has_db = hj_get_num(body, "level_db", &db);
+	bool on, has_on = hj_get_bool(body, "on", &on), has_db = hj_get_num(body, "level_db", &db) ||
+	     hj_num_bad(body, "level_db");
 	if (!has_on && !has_db) return error(out, cap, 400, "send level_db and/or on");
-	if (has_db && (db < -30 || db > 6)) return error(out, cap, 400, "level_db must be -30 to +6");
+	if (has_db && !(db >= -30 && db <= 6)) return error(out, cap, 400, "level_db must be -30 to +6");
 	ops->set_sub(has_on ? on : -1, (float) db);
 	return r_state(ops, out, cap);
 }
@@ -429,7 +433,8 @@ static bool other_type(const char *body, const char *key) {
 	char t[2];
 	bool b;
 	double d;
-	return hj_get_str(body, key, t, sizeof(t)) || hj_get_bool(body, key, &b) || hj_get_num(body, key, &d);
+	return hj_get_str(body, key, t, sizeof(t)) || hj_get_bool(body, key, &b) || hj_get_num(body, key, &d) ||
+	       hj_num_bad(body, key);
 }
 
 /* *out is a whole number lo..hi, or -1 when the key is missing (or null) */
@@ -492,6 +497,165 @@ static int r_selftest(const hifi_ops_t *ops, char *out, size_t cap) {
 
 /* ------------------------------------------------------------------ remote bring-up */
 
+#define CRASH_LOG_MAX 3072
+/* a remote bench caps a console line at 1000 characters, so a POST reads the
+ * log a page at a time: {"from":N} gives the cleaned text from N on, as much
+ * as fits CRASH_PAGE escaped, with "next" (where the following page starts)
+ * and "len" (the whole log's) */
+#define CRASH_PAGE 700
+static size_t esc_len(char c) { return c == '\n' ? 6 : (c == '"' || c == '\\') ? 2 : 1; }
+
+static int r_crash(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	if (!ops->reset_reason || !ops->last_log) return error(out, cap, 404, "this build keeps no crash log");
+	double from_d = -1;
+	if (body && !hj_get_num(body, "from", &from_d)) return error(out, cap, 400, "from: a number, where the page starts");
+	if (body && !(from_d >= 0)) return error(out, cap, 400, "from: a number, where the page starts");
+	char *log = malloc(CRASH_LOG_MAX + 1);
+	if (!log) return error(out, cap, 503, "out of memory");
+	size_t n = ops->last_log(log, CRASH_LOG_MAX + 1), k = 0;
+	/* keep it plain text (no colour codes) so the escaped reply fits */
+	for (size_t i = 0; i < n; i++) {
+		unsigned char c = (unsigned char) log[i];
+		if (c == 0x1b) { /* ESC [ ... letter */
+			while (i + 1 < n && !((log[i + 1] >= 'A' && log[i + 1] <= 'Z') || (log[i + 1] >= 'a' && log[i + 1] <= 'z'))) i++;
+			i++;
+			continue;
+		}
+		if (c == '\n' || (c >= 0x20 && c < 0x7f)) log[k++] = (char) c;
+	}
+	log[k] = '\0';
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_str(&j, "reset_reason", ops->reset_reason());
+	if (body) {
+		size_t from = from_d > k ? k : (size_t) from_d, end = from, esc = 0;
+		while (end < k && esc + esc_len(log[end]) <= CRASH_PAGE) esc += esc_len(log[end++]);
+		log[end] = '\0';
+		hj_num(&j, "len", (double) k, 0);
+		hj_num(&j, "from", (double) from, 0);
+		hj_num(&j, "next", (double) end, 0);
+		hj_str(&j, "log", log + from);
+	} else {
+		/* JSON-escaped it must fit the reply (hifi_api_reply_cap): drop the oldest */
+		size_t esc = 0, start = 0;
+		for (size_t i = 0; i < k; i++) esc += esc_len(log[i]);
+		while (esc > 2 * CRASH_LOG_MAX && start < k) esc -= esc_len(log[start++]);
+		hj_str(&j, "log", log + start);
+	}
+	hj_obj_end(&j);
+	free(log);
+	return 200;
+}
+
+/* ------------------------------------------------------------------ diagnostics */
+
+static void diag_power(const hifi_ops_t *ops, hifi_diag_power_t *p) {
+	hifi_snapshot_t *s = calloc(1, sizeof(*s));
+	if (!s) return;
+	ops->snapshot(s);
+	*p = (hifi_diag_power_t) {
+		.known = true,
+		.state = hifi_power_state_name(s->pwr_state),
+		.vbus_v = s->vbus_v, .vbus_i_a = s->vbus_i_a, .pvdd_v = s->pvdd_v,
+		.proto = s->contract.known ? hifi_proto_name(s->contract.proto) : NULL,
+		.contract_v = s->contract.known ? s->contract.v : NAN,
+		.contract_a = s->contract.known ? s->contract.i_max_a : NAN,
+		.pg = s->pg, .amp_on = s->amp_enabled, .amp_fault = s->amp_fault,
+		.amp_faults = s->amp_faults, .amp_temp_c = s->amp_temp_c,
+	};
+	free(s);
+}
+
+/* diag, diag/tasks, diag/net, diag/audio, diag/ota (GET or POST) and
+ * POST diag/echo; tasks takes {"from":N} or diag/tasks/N to page, echo
+ * {"bytes":N} */
+static int r_diag(const hifi_ops_t *ops, const char *what, bool post, const char *body, char *out, size_t cap) {
+	const hifi_diag_ops_t *d = ops->diag;
+	if (!d) return error(out, cap, 404, "this build has no diagnostics");
+	if (!*what) {
+		if (!d->sys) return error(out, cap, 404, "this build has no diagnostics");
+		hifi_diag_sys_t *s = calloc(1, sizeof(*s));
+		if (!s) return error(out, cap, 503, "out of memory");
+		d->sys(s);
+		diag_power(ops, &s->power);
+		hifi_diag_write_sys(s, out, cap);
+		free(s);
+		return 200;
+	}
+	if (!strcmp(what, "/tasks") || !strncmp(what, "/tasks/", 7)) {
+		double from = 0;
+		/* diag/tasks/N: the page from N with no body, for a bench that takes
+		 * only bodiless lines from a lane that doesn't hold the board */
+		if (what[6]) {
+			const char *q = what + 7;
+			if (!*q || strlen(q) > 3 || strspn(q, "0123456789") != strlen(q))
+				return error(out, cap, 400, "diag/tasks/N: N a whole number, where the page starts");
+			from = atoi(q);
+		}
+		if (post && hj_get_raw(body, "from", &(const char *) {0}, &(size_t) {0}) &&
+		    (!hj_get_num(body, "from", &from) || from < 0 || from != floor(from)))
+			return error(out, cap, 400, "from: a whole number, where the page starts");
+		if (from > HIFI_DIAG_TASKS_MAX) return error(out, cap, 400, "from: past the last task");
+		if (!d->tasks) return error(out, cap, 404, "this build keeps no task stats");
+		hifi_diag_tasks_t *t = calloc(1, sizeof(*t));
+		if (!t) return error(out, cap, 503, "out of memory");
+		/* the first page takes a new sample, the rest page through it */
+		int rc = d->tasks(t, from == 0);
+		if (!rc) hifi_diag_write_tasks(t, (int) from, out, cap);
+		free(t);
+		if (rc > 0) {
+			char m[64];
+			snprintf(m, sizeof(m), "%d tasks, more than the %d the list holds", rc, HIFI_DIAG_TASKS_MAX);
+			return error(out, cap, 507, m);
+		}
+		return rc ? error(out, cap, 404, "this build keeps no task stats") : 200;
+	}
+	if (!strcmp(what, "/net") && d->net) {
+		hifi_diag_net_t n = {0};
+		d->net(&n);
+		hifi_diag_write_net(&n, out, cap);
+		return 200;
+	}
+	if (!strcmp(what, "/audio") && d->audio) {
+		hifi_diag_audio_t a = {0};
+		d->audio(&a);
+		hifi_diag_write_audio(&a, out, cap);
+		return 200;
+	}
+	if (!strcmp(what, "/ota") && d->ota) {
+		hifi_diag_ota_t o = {0};
+		d->ota(&o);
+		hifi_diag_write_ota(&o, out, cap);
+		return 200;
+	}
+	if (!strcmp(what, "/echo")) {
+		if (!post) return -1;
+		if (!d->echo) return error(out, cap, 404, "this build has no throughput test");
+		double bytes = HIFI_DIAG_ECHO_DEFAULT;
+		if (hj_get_raw(body, "bytes", &(const char *) {0}, &(size_t) {0}) &&
+		    (!hj_get_num(body, "bytes", &bytes) || bytes < 1 || bytes > HIFI_DIAG_ECHO_MAX))
+			return error(out, cap, 400, "bytes: 1 to 1048576");
+		hifi_diag_echo_t e = {0};
+		const char *err = "the test failed";
+		int st = d->echo((uint32_t) bytes, &e, &err);
+		if (st) return error(out, cap, st, err);
+		hifi_diag_write_echo(&e, out, cap);
+		return 200;
+	}
+	return error(out, cap, 404, "no such path");
+}
+
+static int r_bttest(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	if (!ops->bt_test) return error(out, cap, 404, "this build has no Bluetooth test");
+	char sink[33];
+	if (!hj_get_str(body, "sink", sink, sizeof(sink)) || !sink[0])
+		return error(out, cap, 400, "sink (the other board's Bluetooth name) is required");
+	const char *err = NULL;
+	if (ops->bt_test(sink, &err)) return error(out, cap, 409, err ? err : "couldn't arm the test");
+	return r_state(ops, out, cap);
+}
+
 static int r_ota_get(const hifi_ops_t *ops, char *out, size_t cap) {
 	if (!ops->ota || !ops->ota_status) return error(out, cap, 404, "no OTA in this build");
 	hifi_ota_status_t st = {0};
@@ -542,7 +706,9 @@ static int r_ota(const hifi_ops_t *ops, const char *what, const char *body, char
 	if (!strcmp(what, "begin")) {
 		double size;
 		char sha[72] = "", version[32] = "";
-		if (!hj_get_num(body, "size", &size) || size <= 0) return error(out, cap, 400, "size is required");
+		if (!hj_get_num(body, "size", &size) || !(size > 0)) return error(out, cap, 400, "size is required");
+		/* range-checked before the cast: past size_t it is undefined (32 bits on the board) */
+		if (!(size <= 4294967295.0)) return error(out, cap, 400, "image is larger than the app slot");
 		hj_get_str(body, "sha256", sha, sizeof(sha));
 		hj_get_str(body, "version", version, sizeof(version));
 		if ((st = hifi_ota_begin(o, (size_t) size, sha, version, &err)) != 200) return error(out, cap, st, err);
@@ -558,7 +724,9 @@ static int r_ota(const hifi_ops_t *ops, const char *what, const char *body, char
 		double off;
 		const char *data;
 		size_t dlen;
-		if (!hj_get_num(body, "off", &off) || off < 0) return error(out, cap, 400, "off is required");
+		/* range-checked before the cast, as size is */
+		if (!hj_get_num(body, "off", &off) || !(off >= 0 && off <= 4294967295.0))
+			return error(out, cap, 400, "off is required");
 		if (!hj_get_str_span(body, "data", &data, &dlen)) return error(out, cap, 400, "data (base64) is required");
 		uint8_t *buf = malloc(HIFI_OTA_CHUNK_MAX);
 		if (!buf) return error(out, cap, 500, "out of memory");
@@ -596,8 +764,11 @@ static int r_ota(const hifi_ops_t *ops, const char *what, const char *body, char
 
 static int capture_frames(const char *body) {
 	double f;
+	if (body && hj_num_bad(body, "frames")) return -1;
 	if (!body || !hj_get_num(body, "frames", &f)) return HIFI_CAPTURE_FRAMES_DEFAULT;
-	return (int) f;
+	/* out of range stays out of range, without a cast past int */
+	if (!(f >= 0)) return -1;
+	return f > HIFI_CAPTURE_FRAMES_MAX ? HIFI_CAPTURE_FRAMES_MAX + 1 : (int) f;
 }
 
 static int r_capture(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
@@ -762,7 +933,7 @@ static int r_zone(const hifi_ops_t *ops, const char *body, char *out, size_t cap
 	bool on;
 	double v;
 	if (!hj_get_str(body, "zone", zone, sizeof(zone)) || strcmp(zone, "b")) return error(out, cap, 400, "zone must be \"b\"");
-	if (hj_get_num(body, "volume", &v))
+	if (hj_get_num(body, "volume", &v) || hj_num_bad(body, "volume"))
 		return error(out, cap, 400, "zone B has no level of its own: it plays at the main volume");
 	if (!hj_get_bool(body, "on", &on)) return error(out, cap, 400, "on (true or false) is required");
 	ops->set_zone(on);
@@ -818,6 +989,7 @@ size_t hifi_api_reply_cap(const char *path, const char *body) {
 		if (f > HIFI_CAPTURE_FRAMES_MAX) f = HIFI_CAPTURE_FRAMES_MAX;
 		return hifi_b64_len((size_t) f * 4) + 1024;
 	}
+	if (path && strstr(path, PREFIX "crash") == path) return 2 * CRASH_LOG_MAX + 256;
 	return 4096;
 }
 
@@ -850,6 +1022,8 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "ir/forget")) status = post ? r_ir(ops, body, out, cap, false) : -1;
 	else if (!strcmp(route, "selftest")) status = post ? r_selftest(ops, out, cap) : -1;
 	else if (!strcmp(route, "ota")) status = get ? r_ota_get(ops, out, cap) : -1;
+	else if (!strcmp(route, "crash")) status = get ? r_crash(ops, NULL, out, cap) : post ? r_crash(ops, body ? body : "{}", out, cap) : -1;
+	else if (!strcmp(route, "bttest")) status = post ? r_bttest(ops, body, out, cap) : -1;
 	else if (!strncmp(route, "ota/", 4)) status = post ? r_ota(ops, route + 4, body, out, cap) : -1;
 	else if (!strcmp(route, "capture")) status = post ? r_capture(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "wifi")) status = post ? r_wifi(ops, body, out, cap) : -1;
@@ -863,6 +1037,8 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "update/check")) status = get ? r_update_check(ops, out, cap) : -1;
 	else if (!strcmp(route, "update")) status = post ? r_update(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "remote")) status = r_remote(ops, post, body, out, cap);
+	else if (!strncmp(route, "diag", 4) && (!route[4] || route[4] == '/'))
+		status = get || post ? r_diag(ops, route + 4, post, body, out, cap) : -1;
 	else return error(out, cap, 404, "no such path");
 
 	if (status < 0) return error(out, cap, 405, "wrong method for this path");
@@ -872,7 +1048,7 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 /* ------------------------------------------------------------------ console */
 
 static const char USAGE[] =
-	"usage: hifi info|state|selftest | tone sine <hz> <dBFS> [both|left|right] [s] | "
+	"usage: hifi info|state|crash|selftest | diag [tasks [from]|net|audio|ota|echo [bytes]] | tone sine <hz> <dBFS> [both|left|right] [s] | "
 	"tone sweep <from> <to> <dBFS> [s] | tone noise <dBFS> [s] | tone silence [s] | tone stop | "
 	"amp on|off|reset | input stream|dj_direct|line | sub <dB> | control <action> | "
 	"volume <0-100> | mute on|off | maxvol <30-100> | ir learn <action> | ir forget [action] | "
@@ -897,10 +1073,36 @@ bool hifi_cli_request(int argc, const char *const *argv, const char **method,
 	if (argc < 1) return usage(out, cap);
 	const char *cmd = argv[0];
 
-	if (!strcmp(cmd, "info") || !strcmp(cmd, "state")) {
+	if (!strcmp(cmd, "crash") && argc == 2 && is_num(argv[1])) {
+		*path = PREFIX "crash";
+		snprintf(body, bc, "{\"from\":%s}", argv[1]);
+		return true;
+	}
+	if (!strcmp(cmd, "info") || !strcmp(cmd, "state") || !strcmp(cmd, "crash")) {
 		*method = "GET";
-		*path = !strcmp(cmd, "info") ? PREFIX "info" : PREFIX "state";
+		*path = !strcmp(cmd, "info") ? PREFIX "info" : !strcmp(cmd, "state") ? PREFIX "state" : PREFIX "crash";
 		return argc == 1 || usage(out, cap);
+	}
+	if (!strcmp(cmd, "diag") && argc <= 3) {
+		static const char *const parts[] = {"tasks", "net", "audio", "ota", "echo"};
+		static const char *const paths[] = {PREFIX "diag/tasks", PREFIX "diag/net", PREFIX "diag/audio",
+						    PREFIX "diag/ota", PREFIX "diag/echo"};
+		*path = PREFIX "diag";
+		if (argc == 1) {
+			*method = "GET";
+			return true;
+		}
+		int k = -1;
+		for (int i = 0; i < 5; i++)
+			if (!strcmp(argv[1], parts[i])) k = i;
+		if (k < 0) return usage(out, cap);
+		*path = paths[k];
+		if (argc == 3 && (k != 0 && k != 4)) return usage(out, cap);
+		if (argc == 3 && !is_num(argv[2])) return usage(out, cap);
+		if (argc == 3) snprintf(body, bc, "{\"%s\":%s}", k == 0 ? "from" : "bytes", argv[2]);
+		else if (k == 4) snprintf(body, bc, "{}");
+		else *method = "GET";
+		return true;
 	}
 	if (!strcmp(cmd, "selftest")) {
 		*path = PREFIX "selftest";

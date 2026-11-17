@@ -1,0 +1,39 @@
+diff --git a/components/platform_console/platform_console.c b/components/platform_console/platform_console.c
+index 6d2f41b..481686e 100644
+--- a/components/platform_console/platform_console.c
++++ b/components/platform_console/platform_console.c
+@@ -253,19 +253,26 @@ static ssize_t stdin_read(int fd, void* data, size_t size) {
+ 	size_t bytes = -1;
+ 	
+ 	while (1) {
++		/* hifi: take what the UART driver already holds before waiting on an event. One UART_DATA event can
++		   carry a whole line (a tool sends it at once), and linenoise reads one byte per call, so reading only
++		   per event left the rest of the line in the buffer until the next event: "api info" arrived as "a". */
++		size_t avail = 0;
++		if (uart_get_buffered_data_len(CONFIG_ESP_CONSOLE_UART_NUM, &avail) == ESP_OK && avail) {
++			int n = uart_read_bytes(CONFIG_ESP_CONSOLE_UART_NUM, data, size < avail ? size : avail, 0);
++			if (n > 0) {
++				bytes = n;
++				// we have to do our own line ending translation here 
++				for (int i = 0; i < n; i++) if (((char*)data)[i] == '\r') ((char*)data)[i] = '\n';
++				break;
++			}
++		}
++
+ 		QueueSetMemberHandle_t activated = xQueueSelectFromSet(stdin_redir.queue_set, portMAX_DELAY);
+ 	
+ 		if (activated == uart_queue) {
+ 			uart_event_t event;
+-			
++			// the data itself is read at the top of the loop; the event only wakes us
+ 			xQueueReceive(uart_queue, &event, 0);
+-	
+-			if (event.type == UART_DATA) {
+-				bytes = uart_read_bytes(CONFIG_ESP_CONSOLE_UART_NUM, data, size < event.size ? size : event.size, 0);
+-				// we have to do our own line ending translation here 
+-				for (int i = 0; i < bytes; i++) if (((char*)data)[i] == '\r') ((char*)data)[i] = '\n';
+-				break;
+-			}	
+ 		} else if (xRingbufferCanRead(stdin_redir.handle, activated)) {
+ 			char *p = xRingbufferReceiveUpTo(stdin_redir.handle, &bytes, 0, size);
+ 			// we might receive strings, replace null by \n

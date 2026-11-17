@@ -13,6 +13,7 @@
 #include "hifi_ir.h"
 #include "hifi_meta.h"
 #include "hifi_capture.h"
+#include "hifi_diag.h"
 #include "hifi_ota.h"
 #include "hifi_pd.h"
 #include "hifi_power.h"
@@ -109,7 +110,8 @@ typedef struct {
 	char hostname[33];
 	char ip[16];        /* empty when not connected */
 	int rssi;           /* 0 when unknown */
-	uint32_t heap_free, psram_free;
+	uint32_t heap_free, heap_min, psram_free; /* internal now, internal lowest since boot, PSRAM */
+	const char *reset_reason; /* why it last restarted (power_on, panic...); NULL: unknown */
 	hifi_update_status_t update; /* the app's updates; idle: not reported */
 } hifi_snapshot_t;
 
@@ -202,6 +204,17 @@ typedef struct {
 	 * "auto". 0 ok, -1 an unknown mode; NULL: the board has none (404) */
 	int (*set_led)(const char *mode);
 	int (*set_backlight)(const char *mode);
+	/* why the board last restarted, and the console's last lines before it
+	 * (printable text, at most cap - 1 bytes) for GET crash; NULL: 404 */
+	const char *(*reset_reason)(void);
+	size_t (*last_log)(char *out, size_t cap);
+	/* bring-up: for the next boot only, play to the Bluetooth speaker called
+	 * sink (another board) as a Bluetooth source, so pairing can be tested
+	 * with no phone; the boot after that is back to normal. Restarts the
+	 * board. 0, or -1 with *err set; NULL: 404 */
+	int (*bt_test)(const char *sink, const char **err);
+	/* on-board diagnostics (hifi_diag.h); NULL: diag answers 404 */
+	const hifi_diag_ops_t *diag;
 } hifi_ops_t;
 
 /* Returns the HTTP status; the reply (always a JSON object) is in out. */

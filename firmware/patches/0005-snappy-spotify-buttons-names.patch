@@ -1,0 +1,610 @@
+diff --git a/components/driver_bt/bt_app_sink.c b/components/driver_bt/bt_app_sink.c
+index 70f42fe..d52b0b4 100644
+--- a/components/driver_bt/bt_app_sink.c
++++ b/components/driver_bt/bt_app_sink.c
+@@ -140,6 +140,21 @@ const static actrls_t controls = {
+ 	bt_volume_down, bt_volume_up, bt_toggle// knob left, knob_right, knob push
+ };
+ 
++/* hifi: the phone connected now, so a held play button can let it go */
++static esp_bd_addr_t s_remote_bda;
++static volatile bool s_remote_connected, s_sink_active;
++
++/* hifi: let a new phone pair (play button held). Dropping the connected
++ * phone leaves the sink discoverable, as a disconnect always does here.
++ * False when the Bluetooth sink is not running, so the button keeps its
++ * usual meaning */
++bool bt_sink_pair_mode(void) {
++	if (!s_sink_active) return false;
++	if (s_remote_connected) esp_a2d_sink_disconnect(s_remote_bda);
++	else esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
++	return true;
++}
++
+ /* disconnection */
+ void bt_disconnect(void) {
+ 	displayer_control(DISPLAYER_SHUTDOWN);
+@@ -281,9 +296,12 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
+         ESP_LOGD(BT_AV_TAG, "A2DP connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+              s_a2d_conn_state_str[a2d->conn_stat.state], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+         if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) {
++            s_remote_connected = false;
+             esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+ 			(*bt_app_a2d_cmd_cb)(BT_SINK_DISCONNECTED);
+         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED){
++            memcpy(s_remote_bda, bda, sizeof(s_remote_bda));
++            s_remote_connected = true;
+ 			abs_volume = -1;
+ 			s_volume = sink_volume;
+             esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+@@ -572,6 +590,7 @@ void bt_sink_init(bt_cmd_vcb_t cmd_cb, bt_data_cb_t data_cb)
+ 	
+ 	// create task and run event loop
+     bt_app_task_start_up(bt_av_hdl_stack_evt);
++	s_sink_active = true;
+ 	
+ 	char *item = config_alloc_get_default(NVS_TYPE_STR, "bt_sink_volume", "127", 0);
+ 	sink_volume = atol(item);
+@@ -611,6 +630,8 @@ void bt_sink_init(bt_cmd_vcb_t cmd_cb, bt_data_cb_t data_cb)
+ 
+ void bt_sink_deinit(void)
+ {
++	s_sink_active = false;
++	s_remote_connected = false;
+ 	bt_app_task_shut_down();
+ }
+ 
+diff --git a/components/driver_bt/bt_app_sink.h b/components/driver_bt/bt_app_sink.h
+index d02aa51..f583bb5 100644
+--- a/components/driver_bt/bt_app_sink.h
++++ b/components/driver_bt/bt_app_sink.h
+@@ -10,6 +10,7 @@
+ #define __BT_APP_SINK_H__
+ 
+ #include <stdint.h>
++#include <stdbool.h>
+ 
+ #include "bt_app_core.h"
+ typedef enum { 	BT_SINK_CONNECTED, BT_SINK_DISCONNECTED, BT_SINK_AUDIO_STARTED, BT_SINK_AUDIO_STOPPED, BT_SINK_PLAY, BT_SINK_STOP, BT_SINK_PAUSE, 
+@@ -33,4 +34,9 @@ void bt_sink_deinit(void);
+  */
+ void bt_disconnect(void);
+ 
++/**
++ * @brief     hifi: let a new phone pair (drop the connected one, or become discoverable)
++ */
++bool bt_sink_pair_mode(void);
++
+ #endif /* __BT_APP_SINK_H__*/
+diff --git a/components/spotify/Shim.cpp b/components/spotify/Shim.cpp
+index 2bdcd6b..758dfa7 100644
+--- a/components/spotify/Shim.cpp
++++ b/components/spotify/Shim.cpp
+@@ -17,6 +17,9 @@
+ #include <ApResolve.h>
+ #include <deque>
+ #include <mutex>
++#include <map>
++#include <set>
++#include <string.h>
+ 
+ #include "BellTask.h"
+ #include "MDNSService.h"
+@@ -170,45 +173,107 @@ esp_err_t cspotPlayer::handleGET(httpd_req_t *request) {
+     return ESP_OK;
+ }
+ 
++// percent-decode one form field; malformed escapes are kept as they are
++static std::string formDecode(const char *src, size_t len) {
++    std::string out;
++    out.reserve(len);
++    auto hex = [](char c) -> int {
++        if (c >= '0' && c <= '9') return c - '0';
++        if (c >= 'a' && c <= 'f') return c - 'a' + 10;
++        if (c >= 'A' && c <= 'F') return c - 'A' + 10;
++        return -1;
++    };
++    for (size_t i = 0; i < len; i++) {
++        if (src[i] == '%' && i + 2 < len &&
++            hex(src[i + 1]) >= 0 && hex(src[i + 2]) >= 0) {
++            out += (char)(hex(src[i + 1]) << 4 | hex(src[i + 2]));
++            i += 2;
++        } else if (src[i] == '+') {
++            out += ' ';
++        } else {
++            out += src[i];
++        }
++    }
++    return out;
++}
++
+ esp_err_t cspotPlayer::handlePOST(httpd_req_t *request) {
+     cJSON* response= cJSON_CreateObject(); 
+     //see https://developer.spotify.com/documentation/commercial-hardware/implementation/guides/zeroconf
++    bool accepted = false;
+ 
+     if (cmdHandler(CSPOT_BUSY)) {
+-        cJSON_AddNumberToObject(response, "status", 101);
+-        cJSON_AddStringToObject(response, "statusString", "OK");
+-        cJSON_AddNumberToObject(response, "spotifyError", 0);
+-
+-        // get body if any (add '\0' at the end if used as string)
+-        if (request->content_len) {
+-            char* body = (char*) calloc(1, request->content_len + 1);
+-            int size = httpd_req_recv(request, body, request->content_len);
+-
+-            // I know this is very crude and unsafe...
+-            url_decode(body);
+-            char *key = strtok(body, "&");
+-
+-            std::map<std::string, std::string> queryMap;
++        // read the whole form (the body can come in several pieces); a login
++        // form is a few KB, so anything huge is not one
++        std::string body;
++        if (request->content_len && request->content_len < 16 * 1024) {
++            body.resize(request->content_len);
++            size_t got = 0;
++            int timeouts = 3;
++            while (got < body.size()) {
++                int n = httpd_req_recv(request, &body[0] + got, body.size() - got);
++                if (n == HTTPD_SOCK_ERR_TIMEOUT && timeouts-- > 0) continue;
++                if (n <= 0) break;
++                got += n;
++            }
++            body.resize(got);
++        }
+ 
+-            while (key) {
+-                char *value = strchr(key, '=');
+-                *value++ = '\0';
+-                queryMap[key] = value;
+-                key = strtok(NULL, "&");
+-            };
++        // split the form first and decode each field after, so an escaped
++        // '&' or '=' inside a value can't cut it
++        // only the fields the login uses are kept, so a form of many small
++        // fields can't eat the heap
++        static const std::set<std::string> wanted = {
++            "userName", "blob", "clientKey", "deviceName", "tokenType", "loginId"};
++        std::map<std::string, std::string> queryMap;
++        size_t start = 0;
++        while (start < body.size()) {
++            size_t end = body.find('&', start);
++            if (end == std::string::npos) end = body.size();
++            const char* field = body.data() + start;
++            const char* eq = (const char*)memchr(field, '=', end - start);
++            if (eq) {
++                std::string key = formDecode(field, eq - field);
++                if (wanted.count(key)) {
++                    queryMap[key] = formDecode(eq + 1, body.data() + end - eq - 1);
++                }
++            }
++            start = end + 1;
++        }
+ 
+-            free(body);
++        // base64 has no spaces: a '+' the client did not escape came out of
++        // form decoding as a space, put it back
++        for (auto field : {"blob", "clientKey"}) {
++            auto it = queryMap.find(field);
++            if (it != queryMap.end()) {
++                for (auto& c : it->second) if (c == ' ') c = '+';
++            }
++        }
+ 
+-            // Pass user's credentials to the blob and give the token
+-            blob->loadZeroconfQuery(queryMap);
+-            clientConnected.give();
++        // Pass user's credentials to the blob and give the token; a login
++        // that doesn't decode (for example made with a key from before a
++        // restart) is refused so the client tries again
++        if (queryMap.count("blob") && queryMap.count("clientKey")) {
++            try {
++                blob->loadZeroconfQuery(queryMap);
++                accepted = true;
++            } catch (const std::exception& e) {
++                CSPOT_LOG(error, "ZeroConf login refused: %s", e.what());
++            }
+         }
++    }
++
++    if (accepted) {
++        cJSON_AddNumberToObject(response, "status", 101);
++        cJSON_AddStringToObject(response, "statusString", "OK");
++        cJSON_AddNumberToObject(response, "spotifyError", 0);
++        clientConnected.give();
+     } else {
+         cJSON_AddNumberToObject(response, "status", 202);
+         cJSON_AddStringToObject(response, "statusString", "ERROR-LOGIN-FAILED");
+         cJSON_AddNumberToObject(response, "spotifyError", 0);
+         
+-        CSPOT_LOG(info, "sink is busy, can't accept request");
++        CSPOT_LOG(info, "sink is busy or login failed, can't accept request");
+     }
+ 
+     char *responseStr = cJSON_PrintUnformatted(response);
+diff --git a/components/spotify/cspot/bell/main/io/HTTPClient.cpp b/components/spotify/cspot/bell/main/io/HTTPClient.cpp
+index e5d5aa2..20c4d3f 100644
+--- a/components/spotify/cspot/bell/main/io/HTTPClient.cpp
++++ b/components/spotify/cspot/bell/main/io/HTTPClient.cpp
+@@ -98,6 +98,10 @@ void HTTPClient::Response::readResponseHeaders() {
+ 
+   size_t prevbuflen = 0, numHeaders;
+   this->httpBufferAvailable = 0;
++  // a kept-alive connection must not report the previous response's length
++  this->hasContentSize = false;
++  this->contentSize = 0;
++  this->status = 0;
+ 
+   while (1) {
+     socketStream.getline((char*)httpBuffer.data() + httpBufferAvailable,
+@@ -136,6 +140,7 @@ void HTTPClient::Response::readResponseHeaders() {
+                            phResponseHeaders, &numHeaders, prevbuflen);
+ 
+     if (pret > 0) {
++      this->status = status;
+       break; /* successfully parsed the request */
+     } else if (pret == -1)
+       throw std::runtime_error("Cannot parse http response");
+diff --git a/components/spotify/cspot/bell/main/io/include/HTTPClient.h b/components/spotify/cspot/bell/main/io/include/HTTPClient.h
+index 8dc6b4b..2eec3a7 100644
+--- a/components/spotify/cspot/bell/main/io/include/HTTPClient.h
++++ b/components/spotify/cspot/bell/main/io/include/HTTPClient.h
+@@ -68,6 +68,8 @@ class HTTPClient {
+ 
+     size_t contentLength();
+     size_t totalLength();
++    // status code of the last response (0 before one was read)
++    int statusCode() { return this->status; }
+ 
+    private:
+     bell::URLParser urlParser;
+@@ -82,6 +84,7 @@ class HTTPClient {
+ 
+     size_t contentSize = 0;
+     bool hasContentSize = false;
++    int status = 0;
+ 
+     Headers responseHeaders;
+ 
+diff --git a/components/spotify/cspot/include/CDNAudioFile.h b/components/spotify/cspot/include/CDNAudioFile.h
+index 90cf828..fa33579 100644
+--- a/components/spotify/cspot/include/CDNAudioFile.h
++++ b/components/spotify/cspot/include/CDNAudioFile.h
+@@ -1,5 +1,6 @@
+ #pragma once
+ 
++#include <chrono>   // for steady_clock
+ #include <cstddef>  // for size_t
+ #include <cstdint>  // for uint8_t
+ #include <memory>   // for shared_ptr, unique_ptr
+@@ -52,6 +53,18 @@ class CDNAudioFile {
+   */
+   void seek(size_t position);
+ 
++  /**
++  * @brief Done with this file: keep its CDN connection for the next track's
++  * openStream when the last response was read whole (saves a TLS handshake
++  * per track, the bulk of the delay on a skip)
++  */
++  void releaseConnection();
++
++  /**
++  * @brief Close the kept connection, if any (on disconnect)
++  */
++  static void dropSpareConnection();
++
+  private:
+   const int OPUS_HEADER_SIZE = 8 * 1024;
+   const int OPUS_FOOTER_PREFFERED = 1024 * 12;  // 12K should be safe
+@@ -82,6 +95,13 @@ class CDNAudioFile {
+ 
+   bool enableRequestMargin = false;
+ 
++  // the last response on httpConnection was read whole, so the socket is at
++  // a response boundary and can carry another request
++  bool connectionClean = false;
++  // when the connection last finished a request: an idle socket may have
++  // been dropped silently, and it has no read timeout
++  std::chrono::steady_clock::time_point lastIo;
++
+   std::string cdnUrl;
+   std::vector<uint8_t> audioKey;
+ 
+diff --git a/components/spotify/cspot/src/CDNAudioFile.cpp b/components/spotify/cspot/src/CDNAudioFile.cpp
+index f9be5ef..b6cdf75 100644
+--- a/components/spotify/cspot/src/CDNAudioFile.cpp
++++ b/components/spotify/cspot/src/CDNAudioFile.cpp
+@@ -3,7 +3,9 @@
+ #include <string.h>          // for memcpy
+ #include <functional>        // for __base
+ #include <initializer_list>  // for initializer_list
++#include <chrono>            // for steady_clock
+ #include <map>               // for operator!=, operator==
++#include <mutex>             // for mutex, scoped_lock
+ #include <stdexcept>         // for runtime_error
+ #include <string_view>       // for string_view
+ #include <type_traits>       // for remove_extent_t
+@@ -25,6 +27,51 @@
+ 
+ using namespace cspot;
+ 
++namespace {
++// One idle CDN connection kept between tracks. Only TrackPlayer's task opens
++// and releases streams, the mutex is for dropSpareConnection
++std::mutex spareMutex;
++std::unique_ptr<bell::HTTPClient::Response> spareConnection;
++std::string spareOrigin;
++std::chrono::steady_clock::time_point spareSince;
++// The sockets have no read timeout: a connection idle longer than this may
++// have been dropped silently (NAT, access point) and a request on it would
++// hang playback, so it is closed rather than reused. A skip reuses one that
++// was reading audio a second ago
++constexpr auto SPARE_MAX_IDLE = std::chrono::seconds(10);
++
++// scheme://host[:port] of a URL
++std::string originOf(const std::string& url) {
++  auto scheme = url.find("://");
++  if (scheme == std::string::npos) {
++    return "";
++  }
++  return url.substr(0, url.find('/', scheme + 3));
++}
++}  // namespace
++
++void CDNAudioFile::releaseConnection() {
++  if (this->httpConnection && this->connectionClean &&
++      this->httpConnection->stream().isOpen() &&
++      this->httpConnection->stream().good()) {
++    std::scoped_lock lock(spareMutex);
++    spareConnection = std::move(this->httpConnection);
++    spareOrigin = originOf(this->cdnUrl);
++    spareSince = this->lastIo;
++  }
++  this->httpConnection.reset();
++  this->connectionClean = false;
++}
++
++void CDNAudioFile::dropSpareConnection() {
++  std::unique_ptr<bell::HTTPClient::Response> old;
++  {
++    std::scoped_lock lock(spareMutex);
++    old = std::move(spareConnection);
++    spareOrigin.clear();
++  }
++}
++
+ CDNAudioFile::CDNAudioFile(const std::string& cdnUrl,
+                            const std::vector<uint8_t>& audioKey)
+     : cdnUrl(cdnUrl), audioKey(audioKey) {
+@@ -43,11 +90,48 @@ void CDNAudioFile::seek(size_t newPos) {
+ void CDNAudioFile::openStream() {
+   CSPOT_LOG(info, "Opening HTTP stream to %s", this->cdnUrl.c_str());
+ 
++  this->connectionClean = false;
++  this->httpConnection.reset();
++
++  // Reuse the connection the previous track left, when it goes to the same
++  // server: a new TLS handshake costs the ESP32 most of a second
++  {
++    std::unique_ptr<bell::HTTPClient::Response> spare;
++    {
++      std::scoped_lock lock(spareMutex);
++      if (spareConnection && spareOrigin == originOf(this->cdnUrl) &&
++          std::chrono::steady_clock::now() - spareSince < SPARE_MAX_IDLE) {
++        spare = std::move(spareConnection);
++      }
++      spareConnection.reset();
++      spareOrigin.clear();
++    }
++    if (spare) {
++      try {
++        spare->get(this->cdnUrl, {bell::HTTPClient::RangeHeader::range(
++                                     0, OPUS_HEADER_SIZE - 1)});
++        this->httpConnection = std::move(spare);
++        CSPOT_LOG(info, "Reusing CDN connection");
++      } catch (const std::exception& e) {
++        CSPOT_LOG(info, "Kept CDN connection failed (%s), opening a new one",
++                  e.what());
++      }
++    }
++  }
++
+   // Open connection, read first 128 bytes
+-  this->httpConnection = bell::HTTPClient::get(
+-      this->cdnUrl,
+-      {bell::HTTPClient::RangeHeader::range(0, OPUS_HEADER_SIZE - 1)});
++  if (!this->httpConnection) {
++    this->httpConnection = bell::HTTPClient::get(
++        this->cdnUrl,
++        {bell::HTTPClient::RangeHeader::range(0, OPUS_HEADER_SIZE - 1)});
++  }
+ 
++  // anything but the 206 asked for (an expired URL's 403, ...) is not audio
++  if (this->httpConnection->statusCode() != 206) {
++    throw std::runtime_error("CDN answered " +
++                             std::to_string(this->httpConnection->statusCode()));
++  }
++  bool clean = this->httpConnection->contentLength() == (size_t)OPUS_HEADER_SIZE;
+   this->httpConnection->stream().read((char*)header.data(), OPUS_HEADER_SIZE);
+   this->totalFileSize =
+       this->httpConnection->totalLength() - SPOTIFY_OPUS_HEADER;
+@@ -64,8 +148,18 @@ void CDNAudioFile::openStream() {
+   this->httpConnection->get(
+       cdnUrl, {bell::HTTPClient::RangeHeader::last(footer.size())});
+ 
++  if (this->httpConnection->statusCode() != 206) {
++    throw std::runtime_error("CDN answered " +
++                             std::to_string(this->httpConnection->statusCode()));
++  }
++  clean = clean &&
++          this->httpConnection->contentLength() == this->footer.size();
+   this->httpConnection->stream().read((char*)footer.data(),
+                                       this->footer.size());
++  this->connectionClean =
++      clean && this->httpConnection->stream().gcount() ==
++                   (std::streamsize)this->footer.size();
++  this->lastIo = std::chrono::steady_clock::now();
+ 
+   this->decrypt(footer.data(), footer.size(), footerStartLocation);
+   CSPOT_LOG(info, "Header and footer bytes received");
+@@ -133,12 +227,25 @@ size_t CDNAudioFile::readBytes(uint8_t* dst, size_t bytes) {
+ 
+     size_t readCapacity = 0;
+ 
++    this->connectionClean = false;
+     try {
++      // after a long pause start over rather than risk a dead socket
++      if (std::chrono::steady_clock::now() - this->lastIo >= SPARE_MAX_IDLE) {
++        this->httpConnection->stream().close();
++      }
+       this->httpConnection->get(
+           cdnUrl,
+           {bell::HTTPClient::RangeHeader::range(
+               requestPosition, requestPosition + HTTP_BUFFER_SIZE - 1)});
+       readCapacity = this->httpConnection->contentLength();
++      // a server that ignores Range answers 200 with the whole file
++      if (this->httpConnection->statusCode() != 206 || readCapacity == 0 ||
++          readCapacity > this->httpBuffer.size()) {
++        throw std::runtime_error(
++            "Unexpected CDN answer " +
++            std::to_string(this->httpConnection->statusCode()) + ", " +
++            std::to_string(readCapacity) + " bytes");
++      }
+ 
+       this->httpConnection->stream().read((char*)this->httpBuffer.data(),
+                                           readCapacity);
+@@ -147,6 +254,8 @@ size_t CDNAudioFile::readBytes(uint8_t* dst, size_t bytes) {
+           (std::streamsize)readCapacity) {
+         throw std::runtime_error("Short read of audio chunk body");
+       }
++      this->connectionClean = true;
++      this->lastIo = std::chrono::steady_clock::now();
+     } catch (const std::exception& e) {
+       // A network failure must not propagate through the vorbis C call
+       // frames above us (TrackPlayer::runTask has no handler). Invalidate
+diff --git a/components/spotify/cspot/src/LoginBlob.cpp b/components/spotify/cspot/src/LoginBlob.cpp
+index 68220d0..2d91de2 100644
+--- a/components/spotify/cspot/src/LoginBlob.cpp
++++ b/components/spotify/cspot/src/LoginBlob.cpp
+@@ -1,5 +1,7 @@
+ #include "LoginBlob.h"
+ 
++#include <stdexcept>  // for runtime_error
++
+ #include <stdio.h>           // for sprintf
+ #include <initializer_list>  // for initializer_list
+ 
+@@ -31,6 +33,9 @@ LoginBlob::LoginBlob(std::string name) {
+ std::vector<uint8_t> LoginBlob::decodeBlob(
+     const std::vector<uint8_t>& blob, const std::vector<uint8_t>& sharedKey) {
+   // 0:16 - iv; 17:-20 - blob; -20:0 - checksum
++  if (blob.size() < 16 + 20 + 16) {
++    throw std::runtime_error("Zeroconf blob too short");
++  }
+   auto iv = std::vector<uint8_t>(blob.begin(), blob.begin() + 16);
+   auto encrypted = std::vector<uint8_t>(blob.begin() + 16, blob.end() - 20);
+   auto checksum = std::vector<uint8_t>(blob.end() - 20, blob.end());
+@@ -55,8 +60,12 @@ std::vector<uint8_t> LoginBlob::decodeBlob(
+   auto mac = crypto->sha1HMAC(checksumKey, encrypted);
+ 
+   // Check checksum
++  // A mismatch means the client used another key exchange (for example a
++  // key it fetched before this device restarted): decoding on would parse
++  // garbage and crash, so reject the login and let the client retry
+   if (mac != checksum) {
+     CSPOT_LOG(error, "Mac doesn't match!");
++    throw std::runtime_error("Zeroconf blob checksum mismatch");
+   }
+ 
+   encryptionKey =
+@@ -67,12 +76,18 @@ std::vector<uint8_t> LoginBlob::decodeBlob(
+ }
+ 
+ uint32_t LoginBlob::readBlobInt(const std::vector<uint8_t>& data) {
++  if (blobSkipPosition < 0 || (size_t)blobSkipPosition >= data.size()) {
++    throw std::runtime_error("Zeroconf blob truncated");
++  }
+   auto lo = data[blobSkipPosition];
+   if ((int)(lo & 0x80) == 0) {
+     this->blobSkipPosition += 1;
+     return lo;
+   }
+ 
++  if ((size_t)blobSkipPosition + 1 >= data.size()) {
++    throw std::runtime_error("Zeroconf blob truncated");
++  }
+   auto hi = data[blobSkipPosition + 1];
+   this->blobSkipPosition += 2;
+ 
+@@ -84,6 +99,9 @@ std::vector<uint8_t> LoginBlob::decodeBlobSecondary(
+     const std::string& deviceId) {
+   auto encryptedString = std::string(blob.begin(), blob.end());
+   auto blobData = crypto->base64Decode(encryptedString);
++  if (blobData.size() < 16) {
++    throw std::runtime_error("Zeroconf secondary blob too short");
++  }
+ 
+   crypto->sha1Init();
+   crypto->sha1Update(std::vector<uint8_t>(deviceId.begin(), deviceId.end()));
+@@ -123,6 +141,9 @@ void LoginBlob::loadZeroconf(const std::vector<uint8_t>& blob,
+   this->authType = readBlobInt(loginData);
+   blobSkipPosition += 1;
+   auto authSize = readBlobInt(loginData);
++  if ((size_t)blobSkipPosition + authSize > loginData.size()) {
++    throw std::runtime_error("Zeroconf auth data truncated");
++  }
+   this->username = username;
+   this->authData =
+       std::vector<uint8_t>(loginData.begin() + blobSkipPosition,
+diff --git a/components/spotify/cspot/src/TrackPlayer.cpp b/components/spotify/cspot/src/TrackPlayer.cpp
+index 3c5fca4..3a2fd01 100644
+--- a/components/spotify/cspot/src/TrackPlayer.cpp
++++ b/components/spotify/cspot/src/TrackPlayer.cpp
+@@ -72,6 +72,8 @@ TrackPlayer::~TrackPlayer() {
+   isRunning = false;
+   resetState();
+   std::scoped_lock lock(runningMutex);
++  // the kept CDN connection holds a TLS context; free it with the player
++  CDNAudioFile::dropSpareConnection();
+ }
+ 
+ void TrackPlayer::start() {
+@@ -185,6 +187,8 @@ void TrackPlayer::runTask() {
+       }
+      
+       if (pendingReset || !currentSongPlaying) {
++        currentTrackStream->releaseConnection();
++        currentTrackStream = nullptr;
+         continue;
+       }
+ 
+@@ -258,6 +262,10 @@ void TrackPlayer::runTask() {
+ 
+       CSPOT_LOG(info, "Playing done");
+ 
++      // keep the CDN connection for the next track (skips skip the TLS
++      // handshake)
++      currentTrackStream->releaseConnection();
++
+       // always move back to LOADING (ensure proper seeking after last track has been loaded)
+       currentTrackStream = nullptr;
+       track->loading = false;
+diff --git a/main/esp_app_main.c b/main/esp_app_main.c
+index 35b04f4..6915367 100644
+--- a/main/esp_app_main.c
++++ b/main/esp_app_main.c
+@@ -57,7 +57,13 @@ const int CONNECTED_BIT = BIT0;
+ #define JOIN_TIMEOUT_MS (10000)
+ #define LOCAL_MAC_SIZE 20
+ static const char TAG[] = "esp_app_main";
++/* the Spotify and LMS player names a new board starts with: the product's
++ * name when the build has one, not upstream's "squeezelite" */
++#ifdef CONFIG_HIFI_HOST_NAME
++#define DEFAULT_HOST_NAME CONFIG_HIFI_HOST_NAME
++#else
+ #define DEFAULT_HOST_NAME "squeezelite"
++#endif
+ char * fwurl = NULL;
+ RTC_NOINIT_ATTR uint32_t RebootCounter ;
+ RTC_NOINIT_ATTR uint32_t RecoveryRebootCounter ;

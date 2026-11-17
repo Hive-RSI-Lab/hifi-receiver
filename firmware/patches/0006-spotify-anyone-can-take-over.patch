@@ -1,0 +1,66 @@
+diff --git a/components/spotify/Shim.cpp b/components/spotify/Shim.cpp
+--- a/components/spotify/Shim.cpp
++++ b/components/spotify/Shim.cpp
+@@ -66,6 +66,10 @@
+     std::atomic<bool> isPaused;
+     enum states { ABORT, LINKED, DISCO };
+     std::atomic<states> state;
++    // the account the running session logged in with (set by the cspot
++    // task, read by the httpd task, hence the lock)
++    std::string sessionUser;
++    std::mutex sessionMutex;
+     std::string credentials;
+     bool zeroConf;
+     std::atomic<bool> flushed = false, notify = true;
+@@ -257,6 +261,17 @@
+             try {
+                 blob->loadZeroconfQuery(queryMap);
+                 accepted = true;
++                // another account picked the speaker while one is logged in:
++                // end that session so the run loop logs the new one in (the
++                // last to pick it gets it, as on any Spotify speaker)
++                std::unique_lock lock(sessionMutex);
++                bool other = blob->username != sessionUser;
++                lock.unlock();
++                if (state == LINKED && other) {
++                    CSPOT_LOG(info, "new Spotify user, handing the speaker over");
++                    cmdHandler(CSPOT_DISC);
++                    state = ABORT;
++                }
+             } catch (const std::exception& e) {
+                 CSPOT_LOG(error, "ZeroConf login refused: %s", e.what());
+             }
+@@ -487,6 +502,10 @@
+             }
+ 
+             spirc = std::make_unique<cspot::SpircHandler>(ctx);
++            {
++                std::lock_guard lock(sessionMutex);
++                sessionUser = ctx->config.username;
++            }
+             state = LINKED;
+ 			
+             // set call back to calculate a hash on trackId
+diff --git a/components/spotify/cspot/src/LoginBlob.cpp b/components/spotify/cspot/src/LoginBlob.cpp
+--- a/components/spotify/cspot/src/LoginBlob.cpp
++++ b/components/spotify/cspot/src/LoginBlob.cpp
+@@ -233,7 +233,9 @@
+   cJSON_AddStringToObject(json_obj, "brandDisplayName", cspot::brandName);
+   cJSON_AddStringToObject(json_obj, "modelDisplayName", name.c_str());
+   cJSON_AddStringToObject(json_obj, "voiceSupport", "NO");
+-  cJSON_AddStringToObject(json_obj, "availability", this->username.c_str());
++  // "availability" is empty when anyone may log in; putting the user
++  // here made other accounts' apps treat the speaker as taken
++  cJSON_AddStringToObject(json_obj, "availability", "");
+   cJSON_AddNumberToObject(json_obj, "productID", 0);
+   cJSON_AddStringToObject(json_obj, "tokenType", "default");
+   cJSON_AddStringToObject(json_obj, "groupStatus", "NONE");
+@@ -263,7 +265,7 @@
+   obj["brandDisplayName"] = cspot::brandName;
+   obj["modelDisplayName"] = name;
+   obj["voiceSupport"] = "NO";
+-  obj["availability"] = this->username;
++  obj["availability"] = "";
+   obj["productID"] = 0;
+   obj["tokenType"] = "default";
+   obj["groupStatus"] = "NONE";

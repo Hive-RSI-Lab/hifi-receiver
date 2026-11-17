@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 #include <string.h>
 
 int hifi_ws_url_parse(const char *url, char host[HIFI_WS_HOST_MAX], int *port, char path[HIFI_WS_PATH_MAX]) {
@@ -70,4 +71,68 @@ size_t hifi_ws_tag(char *buf, size_t len, size_t cap, const char *t) {
 	memmove(buf + 1 + hn, buf + 1, len); /* the rest and its NUL */
 	memcpy(buf + 1, head, (size_t) hn);
 	return len + (size_t) hn;
+}
+
+size_t hifi_ws_head(uint8_t out[HIFI_WS_HEAD_MAX], int op, size_t len, const uint8_t mask[4]) {
+	size_t n = 0;
+	out[n++] = (uint8_t) (0x80 | (op & 0x0f));
+	if (len < 126) {
+		out[n++] = (uint8_t) (0x80 | len);
+	} else if (len < 65536) {
+		out[n++] = 0x80 | 126;
+		out[n++] = (uint8_t) (len >> 8);
+		out[n++] = (uint8_t) len;
+	} else {
+		out[n++] = 0x80 | 127;
+		for (int i = 7; i >= 0; i--) out[n++] = (uint8_t) ((uint64_t) len >> (8 * i));
+	}
+	memcpy(out + n, mask, 4);
+	return n + 4;
+}
+
+size_t hifi_ws_head_len(const uint8_t b[2]) {
+	size_t n = 2, l = b[1] & 0x7f;
+	if (l == 126) n += 2;
+	else if (l == 127) n += 8;
+	return n + ((b[1] & 0x80) ? 4 : 0);
+}
+
+int hifi_ws_head_parse(const uint8_t *b, hifi_ws_head_t *h) {
+	if (b[0] & 0x70) return -1;
+	h->fin = b[0] & 0x80;
+	h->op = b[0] & 0x0f;
+	h->masked = b[1] & 0x80;
+	uint64_t l = b[1] & 0x7f;
+	size_t n = 2;
+	if (l == 126) {
+		l = (uint64_t) b[2] << 8 | b[3];
+		n = 4;
+	} else if (l == 127) {
+		l = 0;
+		for (int i = 0; i < 8; i++) l = l << 8 | b[2 + i];
+		n = 10;
+	}
+	h->len = l;
+	if (h->masked) memcpy(h->mask, b + n, 4);
+	else memset(h->mask, 0, 4);
+	if (h->op >= 8 && (l > 125 || !h->fin)) return -1;
+	return 0;
+}
+
+bool hifi_ws_upgrade_ok(const char *resp, const char *accept) {
+	if (!resp || !accept || !accept[0]) return false;
+	if (strncmp(resp, "HTTP/1.1 101", 12) || (resp[12] != ' ' && resp[12] != '\r')) return false;
+	static const char name[] = "Sec-WebSocket-Accept:";
+	for (const char *l = strstr(resp, "\r\n"); l; l = strstr(l + 2, "\r\n")) {
+		const char *v = l + 2;
+		if (strncasecmp(v, name, sizeof(name) - 1)) continue;
+		v += sizeof(name) - 1;
+		while (*v == ' ' || *v == '\t') v++;
+		size_t a = strlen(accept);
+		if (strncmp(v, accept, a)) return false;
+		v += a;
+		while (*v == ' ' || *v == '\t') v++;
+		return v[0] == '\r' && v[1] == '\n';
+	}
+	return false;
 }

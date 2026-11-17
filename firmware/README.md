@@ -71,6 +71,16 @@ uv venv --seed --python 3.10 ~/esp/tools/python_env/idf4.4_py3.10_env
 ~/esp/tools/python_env/idf4.4_py3.10_env/bin/pip install "setuptools<70" "protobuf>=3.20,<4" "grpcio-tools>=1.48,<1.49"   # cspot's nanopb generator
 ```
 
+**Spotify Connect needs a Spotify app key.** cspot fetches a Web API token
+with a Spotify developer app's client id and secret, and a track only starts
+once it has one; without them a phone connects, sets the volume, and then
+nothing plays (seen on the first Lite, 2026-11-16). Create a free app at
+developer.spotify.com (Dashboard, Create app, Web API), then give `build.sh`
+the pair as `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET`, either in the
+environment or as files of those names in `HIFI_SECRETS_DIR` (default
+`~/.config/h2/secrets`). It prints only whether the key is set. An image built
+with the key holds it, so keep such images to your own boards.
+
 `build.sh` finds that install by itself. The Hive's `hive-fw` module is
 making a shared copy; when it lands, set `IDF_PATH` and `build.sh` uses it.
 
@@ -146,7 +156,11 @@ Over the board's USB-C (the CH340C console; DTR/RTS do the boot-mode dance):
 cd ~/fw-build/squeezelite-esp32 && idf.py -p /dev/ttyUSB0 flash monitor
 ```
 
-That writes the bootloader, partition table, recovery and the main app. Later
+That writes the bootloader, partition table, recovery and the main app, and
+an otadata that boots the main app in `ota_0` (marked valid, so no trial
+boot). IDF's own otadata is blank, which boots recovery; `build.sh` replaces it
+with `tools/otadata.py`'s. Recovery stays the fallback: the `recovery` console
+command, a rollback, or squeezelite's crash counter. Later
 updates go over the network (`docs/test-api.md`, "squeezelite-esp32's own
 endpoints").
 
@@ -190,3 +204,12 @@ Every hook is a weak symbol, so the patched tree still builds without our
 component. To move to a newer upstream: change `upstream.lock`, run
 `fetch.sh`, fix what doesn't apply, and regenerate the patch with
 `git -C ~/fw-build/squeezelite-esp32 -c core.fileMode=false diff -- . ':!sdkconfig' ':!sdkconfig.defaults' > firmware/patches/0001-hifi-receiver-hooks.patch` (the board's sdkconfig files are copied in, not patched).
+
+`patches/0003-console-read-whole-line.patch` is a fix, not a hook: upstream's
+`stdin_read` in `components/platform_console/platform_console.c` returned at
+most the bytes of one UART event, and linenoise reads one byte at a time, so a
+whole line sent at once (as `serialtab` and the API client do) lost all but its
+first byte or two until the next event. It now reads whatever the UART driver
+has buffered. The regenerate command above diffs the whole tree, so drop this
+file's hunk from 0001 when you regenerate.
+

@@ -1,0 +1,98 @@
+diff --git a/components/driver_bt/bt_app_core.c b/components/driver_bt/bt_app_core.c
+--- a/components/driver_bt/bt_app_core.c
++++ b/components/driver_bt/bt_app_core.c
+@@ -111,7 +111,9 @@
+ #if (CONFIG_BT_SSP_ENABLED)
+     /* Set default parameters for Secure Simple Pairing */
+     esp_bt_sp_param_t param_type = ESP_BT_SP_IOCAP_MODE;
+-    esp_bt_io_cap_t iocap = ESP_BT_IO_CAP_IO;
++    /* no screen and no keys: "just works" pairing, so phones pair
++     * without asking the person to compare a number */
++    esp_bt_io_cap_t iocap = ESP_BT_IO_CAP_NONE;
+     esp_bt_gap_set_security_param(param_type, &iocap, sizeof(uint8_t));
+ #endif
+ 	
+diff --git a/components/driver_bt/bt_app_sink.c b/components/driver_bt/bt_app_sink.c
+--- a/components/driver_bt/bt_app_sink.c
++++ b/components/driver_bt/bt_app_sink.c
+@@ -25,6 +25,7 @@
+ #include "platform_config.h"
+ #include "freertos/FreeRTOS.h"
+ #include "freertos/task.h"
++#include "freertos/timers.h"
+ #include "tools.h"
+ #include "audio_controls.h"
+ #include "sys/lock.h"
+@@ -144,6 +145,15 @@
+ static esp_bd_addr_t s_remote_bda;
+ static volatile bool s_remote_connected, s_sink_active;
+ 
++/* hifi: only one phone can be connected, and a connected phone hides the
++ * sink from every other one. A phone that has not played for this long is
++ * let go, so the sink shows up again for anyone nearby (a phone that pairs
++ * once reconnects by itself and would otherwise keep it forever) */
++#define IDLE_RELEASE_S 120
++#define IDLE_CHECK_S 15
++static TimerHandle_t s_idle_timer;
++static int s_idle_s;
++
+ /* hifi: let a new phone pair (play button held). Dropping the connected
+  * phone leaves the sink discoverable, as a disconnect always does here.
+  * False when the Bluetooth sink is not running, so the button keeps its
+@@ -155,12 +165,27 @@
+ 	return true;
+ }
+ 
++static void idle_check(TimerHandle_t timer) {
++	if (!s_remote_connected || s_audio == AUDIO_PLAYING) {
++		s_idle_s = 0;
++		return;
++	}
++	s_idle_s += IDLE_CHECK_S;
++	if (s_idle_s >= IDLE_RELEASE_S) {
++		s_idle_s = 0;
++		ESP_LOGI(BT_AV_TAG, "phone idle for %ds, letting it go so others can connect", IDLE_RELEASE_S);
++		esp_a2d_sink_disconnect(s_remote_bda);
++	}
++}
++
+ /* disconnection */
+ void bt_disconnect(void) {
+ 	displayer_control(DISPLAYER_SHUTDOWN);
+ 	if (s_audio == AUDIO_PLAYING) esp_avrc_ct_send_passthrough_cmd(tl++ & 0x0f, ESP_AVRC_PT_CMD_STOP, ESP_AVRC_PT_CMD_STATE_PRESSED);
+ 	actrls_unset();
+ 	ESP_LOGD(BT_AV_TAG, "forced disconnection %d", s_audio);
++	/* another source took over: this phone no longer counts as playing */
++	if (s_audio == AUDIO_PLAYING) s_audio = AUDIO_CONNECTED;
+ }
+ 
+ /* update metadata if any */
+@@ -295,8 +320,16 @@
+         uint8_t *bda = a2d->conn_stat.remote_bda;
+         ESP_LOGD(BT_AV_TAG, "A2DP connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+              s_a2d_conn_state_str[a2d->conn_stat.state], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
++        s_idle_s = 0;
+         if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) {
+             s_remote_connected = false;
++            /* a link dropped mid-song reports no audio stop first: clear it
++             * here, or the next phone looks busy and is never let go */
++            if (s_audio != AUDIO_IDLE) {
++                (*bt_app_a2d_cmd_cb)(BT_SINK_AUDIO_STOPPED);
++                actrls_unset();
++                s_audio = AUDIO_IDLE;
++            }
+             esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+ 			(*bt_app_a2d_cmd_cb)(BT_SINK_DISCONNECTED);
+         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED){
+@@ -696,6 +729,11 @@
+         esp_a2d_sink_register_data_callback(bt_app_a2d_data_cb);
+         esp_a2d_sink_init();
+ 
++        if (!s_idle_timer) {
++            s_idle_timer = xTimerCreate("bt_idle", pdMS_TO_TICKS(IDLE_CHECK_S * 1000), pdTRUE, NULL, idle_check);
++            if (s_idle_timer) xTimerStart(s_idle_timer, 0);
++        }
++
+         /* set discoverable and connectable mode, wait to be connected */
+         esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+         break;
