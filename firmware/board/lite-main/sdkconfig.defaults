@@ -826,11 +826,16 @@ CONFIG_ESP_TIMER_IMPL_TG0_LAC=y
 # Wi-Fi
 #
 CONFIG_ESP32_WIFI_SW_COEXIST_ENABLE=y
-CONFIG_ESP32_WIFI_STATIC_RX_BUFFER_NUM=8
+# Static Wi-Fi buffers are ~1.6 KB of internal RAM each. With Spotify playing,
+# Lite 1 sat at 29.7 KB internal free (goal 30 KB), so trim them to the counts
+# the ESP32 lab images already run (lite-lab-ble, lite-lab-radio): RX 8 -> 5,
+# TX 6 -> 4, about 8 KB back. The board mostly receives, and the 40 dynamic RX
+# buffers stay in PSRAM (SPIRAM_TRY_ALLOCATE_WIFI_LWIP).
+CONFIG_ESP32_WIFI_STATIC_RX_BUFFER_NUM=5
 CONFIG_ESP32_WIFI_DYNAMIC_RX_BUFFER_NUM=40
 CONFIG_ESP32_WIFI_STATIC_TX_BUFFER=y
 CONFIG_ESP32_WIFI_TX_BUFFER_TYPE=0
-CONFIG_ESP32_WIFI_STATIC_TX_BUFFER_NUM=6
+CONFIG_ESP32_WIFI_STATIC_TX_BUFFER_NUM=4
 CONFIG_ESP32_WIFI_CACHE_TX_BUFFER_NUM=32
 # CONFIG_ESP32_WIFI_CSI_ENABLED is not set
 # CONFIG_ESP32_WIFI_AMPDU_TX_ENABLED is not set
