@@ -37,9 +37,11 @@
  * traces every allocation from just before the first drop to the end of the
  * last settle (100 records in internal RAM, as the tracer needs, taken before
  * heap_start is read) and the result lists what is still allocated in
- * internal RAM, grouped by call stack (the four biggest, unsorted), in place
- * of the per-cycle back_ms and heap arrays, so it still fits one console
- * line: look the addresses up with addr2line on the image's ELF.
+ * internal RAM: the totals, and up to four groups by call stack (unsorted;
+ * a later, bigger allocation can evict a group, whose bytes then count only
+ * in the totals), in place of the per-cycle back_ms and heap arrays, so it
+ * still fits one console line: look the addresses up with addr2line on the
+ * image's ELF.
  */
 #include <stdlib.h>
 #include <string.h>
@@ -128,8 +130,10 @@ static bool trace_shown(void) {
 	return trace_want;
 }
 
-/* group what is still allocated in internal RAM by call stack; keep the
- * TRACE_GROUPS biggest (a group that doesn't fit replaces the smallest) */
+/* group what is still allocated in internal RAM by call stack, in one greedy
+ * pass: up to TRACE_GROUPS groups, and a new stack that doesn't fit replaces
+ * the smallest group if its first record is bigger, so this is not exactly
+ * the biggest four; an evicted group's bytes stay in trace_int_bytes only */
 static void trace_end(void) {
 	if (!trace_ran) return;
 	heap_trace_stop();
@@ -313,7 +317,9 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	uint32_t c = num(body, "cycles", 20), s = num(body, "settle_s", 10), b = num(body, "back_s", 120);
 	uint32_t tol = num(body, "heap_tol", 200);
 #if CONFIG_HEAP_TRACING_STANDALONE
-	trace_want = num(body, "trace", 0) != 0;
+	/* set only once every check passes: a refused start leaves the last
+	 * result's shape alone */
+	bool tw = num(body, "trace", 0) != 0;
 #else
 	if (num(body, "trace", 0)) {
 		snprintf(err, n, "this image has no heap tracing");
@@ -350,6 +356,9 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	settle_s = s;
 	back_s = b;
 	heap_tol = tol;
+#if CONFIG_HEAP_TRACING_STANDALONE
+	trace_want = tw;
+#endif
 	done_n = heap_n = heap_start = 0;
 	memset(back_ms, 0, sizeof(back_ms));
 	trace_reset();
