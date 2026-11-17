@@ -1,7 +1,8 @@
 diff --git a/components/platform_console/cmd_system.c b/components/platform_console/cmd_system.c
+index 946a535..b84118c 100644
 --- a/components/platform_console/cmd_system.c
 +++ b/components/platform_console/cmd_system.c
-@@ -167,6 +167,29 @@
+@@ -167,6 +167,29 @@ static void register_abort()
      ESP_ERROR_CHECK( esp_console_cmd_register(&cmd) );
  }
  
@@ -14,36 +15,38 @@ diff --git a/components/platform_console/cmd_system.c b/components/platform_cons
 +	return p && esp_ota_get_partition_description(p, &d) == ESP_OK;
 +}
 +
-+static const esp_partition_t *hifi_good_app(void) {
++/* the slots holding an app, the last good one first; returns how many */
++static int hifi_good_apps(const esp_partition_t *out[2]) {
 +	const esp_partition_t *p0 = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
 +	const esp_partition_t *p1 = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_1, NULL);
-+	const esp_partition_t *good = NULL, *other = NULL;
++	const esp_partition_t *order[2] = {p0, p1};
++	int n = 0;
 +	char *label = config_alloc_get_str("hifi_good_slot", NULL, NULL);
-+	if (label && p1 && !strcmp(label, p1->label)) { good = p1; other = p0; }
-+	else if (label && p0 && !strcmp(label, p0->label)) { good = p0; other = p1; }
++	if (label && p1 && !strcmp(label, p1->label)) { order[0] = p1; order[1] = p0; }
 +	free(label);
-+	if (hifi_slot_has_app(good)) return good;
-+	if (hifi_slot_has_app(other)) return other;
-+	if (hifi_slot_has_app(p0)) return p0;
-+	return hifi_slot_has_app(p1) ? p1 : NULL;
++	for (int i = 0; i < 2; i++)
++		if (hifi_slot_has_app(order[i])) out[n++] = order[i];
++	return n;
 +}
 +
  esp_err_t guided_boot(esp_partition_subtype_t partition_subtype)
  {
      if(is_recovery_running){
-@@ -182,6 +205,16 @@
+@@ -182,6 +205,18 @@ esp_err_t guided_boot(esp_partition_subtype_t partition_subtype)
          }
      }
  	esp_err_t err = ESP_OK;
-+	const esp_partition_t *good = NULL;
-+	if (is_recovery_running && partition_subtype == ESP_PARTITION_SUBTYPE_APP_OTA_0 && (good = hifi_good_app())) {
-+		log_send_messaging(MESSAGING_INFO, "Rebooting to %s", good->label);
-+		err = esp_ota_set_boot_partition(good);
++	const esp_partition_t *good[2];
++	int n_good = (is_recovery_running && partition_subtype == ESP_PARTITION_SUBTYPE_APP_OTA_0) ? hifi_good_apps(good) : 0;
++	/* a slot can carry a valid header over a partial image: try the next */
++	for (int i = 0; i < n_good; i++) {
++		log_send_messaging(MESSAGING_INFO, "Rebooting to %s", good[i]->label);
++		err = esp_ota_set_boot_partition(good[i]);
 +		if (err == ESP_OK) {
 +			taskYIELD();
 +			simple_restart();
 +		}
-+		log_send_messaging(MESSAGING_ERROR, "Unable to select %s: %s", good->label, esp_err_to_name(err));
++		log_send_messaging(MESSAGING_ERROR, "Unable to select %s: %s", good[i]->label, esp_err_to_name(err));
 +	}
      // log_send_messaging(MESSAGING_INFO, "Looking for partition type %u",partition_subtype);
      const esp_partition_t *partition;

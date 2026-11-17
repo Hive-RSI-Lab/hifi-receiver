@@ -382,7 +382,7 @@ static bool pin_ok(const char *v) {
 		if (*v < '0' || *v > '9' || ++d > 2) return false;
 		pin = pin * 10 + (*v - '0');
 	}
-	return d && pin < 64 && !(reserved_pins & PIN_BIT(pin));
+	return d && pin < 40 && !(reserved_pins & PIN_BIT(pin)); /* the ESP32 has GPIO 0-39 */
 }
 
 /* NULL: not a cfg-hw command this gate knows */

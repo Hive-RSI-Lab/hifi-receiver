@@ -28,6 +28,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
+#include "freertos/timers.h"
 #include "mdns.h"
 #include "nvs_flash.h"
 
@@ -887,20 +888,23 @@ static void op_factory_reset(void) { restart_later(true); }
 
 /* L6 (hifi_reset_confirmed): the LAN's reset arms, a power-on start finishes
  * it. The flag is a hifi_* key, which squeezelite's settings page can't set. */
-static void factory_disarm(void *arg) {
+static void factory_disarm(TimerHandle_t t) {
 	config_set_value(NVS_TYPE_STR, "hifi_reset_armed", "0");
 	ESP_LOGW(TAG, "factory reset disarmed: not unplugged in time");
 }
 
+/* A FreeRTOS timer, not esp_timer: its task (3800 bytes) is the one that
+ * already runs platform_config's own commits. The flag is committed before
+ * the reply, so an unplug right after "armed" still finds it. */
 static int op_factory_arm(void) {
-	static esp_timer_handle_t t;
+	static TimerHandle_t t;
 	if (!t) {
-		esp_timer_create_args_t a = {.callback = factory_disarm, .name = "hifi_disarm"};
-		if (esp_timer_create(&a, &t) != ESP_OK) return -1;
+		t = xTimerCreate("hifi_disarm", pdMS_TO_TICKS(HIFI_RESET_ARM_US / 1000), pdFALSE, NULL, factory_disarm);
+		if (!t) return -1;
 	}
 	if (config_set_value(NVS_TYPE_STR, "hifi_reset_armed", "1") != ESP_OK) return -1;
-	esp_timer_stop(t); /* a second arm starts the window again */
-	esp_timer_start_once(t, HIFI_RESET_ARM_US);
+	config_commit_to_nvs();
+	xTimerReset(t, pdMS_TO_TICKS(1000)); /* a second arm starts the window again */
 	ESP_LOGW(TAG, "factory reset armed from the LAN: unplug the receiver and plug it back in to finish");
 	return 0;
 }

@@ -200,6 +200,8 @@ int main(void) {
 	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data +7"));
 	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data -7"));
 	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 64"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 40")); /* no GPIO 40-63 on the ESP32 */
+	CHECK(hifi_lan_command_ok("cfg-hw-dac --data 39"));
 	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data 007"));
 	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data \"\""));
 	CHECK(!hifi_lan_command_ok("cfg-hw-dac --data"));	   /* no value */
