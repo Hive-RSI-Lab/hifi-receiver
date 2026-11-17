@@ -17,6 +17,7 @@
 #include "esp_log.h"
 #include "esp_system.h"
 #include "esp_task.h"
+#include "esp_task_wdt.h"
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -96,9 +97,14 @@ static void apply_finishes(void) {
 	}
 }
 
+/* esp_restart runs the shutdown handlers first, esp_wifi_stop among them,
+ * which waits on the Wi-Fi task: if the hang is in the Wi-Fi driver, the
+ * restart hangs there too. The task watchdog backs it: the timer task joins
+ * it here and never feeds it, so a stuck restart panics in 15 s. */
 static void restart_why(uint32_t magic, const char *why) {
 	ESP_LOGE(TAG, "%s: restarting", why);
 	kept_offline = magic;
+	esp_task_wdt_add(NULL);
 	esp_restart();
 }
 
@@ -106,10 +112,10 @@ static void restart_why(uint32_t magic, const char *why) {
  * start or stop holds the lock, and that is a hang this has to see */
 static void watch(void *arg) {
 	static hifi_lab_link_t w;
-	hifi_remote_status_t r;
-	hifi_remote_status(&r);
+	bool configured, up;
+	hifi_remote_up(&configured, &up);
 	uint32_t now = now_ms();
-	if (hifi_lab_link_tick(&w, now, r.configured, r.connected)) restart_why(OFFLINE_MAGIC, "off the dial-in too long");
+	if (hifi_lab_link_tick(&w, now, configured, up)) restart_why(OFFLINE_MAGIC, "off the dial-in too long");
 	uint32_t t = ticked_ms;
 	if (t && now - t >= HIFI_LAB_STUCK_MS) restart_why(STUCK_MAGIC, "the lab's tick is stuck");
 }
@@ -152,13 +158,17 @@ void hifi_lab_esp_init(void) {
 		hifi_lab_set_crashed(&lab, kept_name);
 		ESP_LOGW(TAG, "the last restart came during the %s experiment", kept_name);
 	}
-	if (kept_offline == OFFLINE_MAGIC && why == ESP_RST_SW) {
-		lab.offline_restart = true;
-		ESP_LOGW(TAG, "the last restart was the lab's own: off the dial-in too long");
-	}
-	if (kept_offline == STUCK_MAGIC && why == ESP_RST_SW) {
-		lab.stuck_restart = true;
-		ESP_LOGW(TAG, "the last restart was the lab's own: its tick was stuck");
+	/* the lab's own restart: a plain one, or the watchdog's when a shutdown
+	 * handler hung (see restart_why); name the experiment it was in */
+	bool own = why == ESP_RST_SW || why == ESP_RST_TASK_WDT || why == ESP_RST_PANIC;
+	if (own && (kept_offline == OFFLINE_MAGIC || kept_offline == STUCK_MAGIC)) {
+		if (kept_offline == OFFLINE_MAGIC) lab.offline_restart = true;
+		else lab.stuck_restart = true;
+		kept_name[sizeof(kept_name) - 1] = 0;
+		if (kept_magic == KEPT_MAGIC && kept_name[0]) hifi_lab_set_crashed(&lab, kept_name);
+		ESP_LOGW(TAG, "the last restart was the lab's own (%s%s): %s", why == ESP_RST_SW ? "" : "watchdog, ",
+			 kept_name[0] ? kept_name : "no experiment",
+			 kept_offline == OFFLINE_MAGIC ? "off the dial-in too long" : "its tick was stuck");
 	}
 	kept_offline = 0;
 	kept_magic = KEPT_MAGIC;

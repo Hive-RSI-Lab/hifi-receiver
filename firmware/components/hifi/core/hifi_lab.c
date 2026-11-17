@@ -209,16 +209,18 @@ bool hifi_lab_link_tick(hifi_lab_link_t *w, uint32_t now_ms, bool configured, bo
 }
 
 bool hifi_lab_selftest(const hifi_lab_t *l, char *value, size_t n) {
-	const char *run = hifi_lab_running(l);
-	if (l->crashed_in[0])
+	/* value is a self-test check's (64 bytes): the lab's own restarts say
+	 * which experiment held the board then, in as few words as fit */
+	const char *run = hifi_lab_running(l), *in = l->crashed_in[0] ? " during " : "";
+	if (l->stuck_restart)
+		snprintf(value, n, "%d experiments%s%s; lab restart, tick stuck %u min%s%s", l->n,
+			 run[0] ? ", running " : "", run, (unsigned) (HIFI_LAB_STUCK_MS / 60000u), in, l->crashed_in);
+	else if (l->offline_restart)
+		snprintf(value, n, "%d experiments%s%s; lab restart, off dial-in %u min%s%s", l->n,
+			 run[0] ? ", running " : "", run, (unsigned) (HIFI_LAB_OFFLINE_MS / 60000u), in, l->crashed_in);
+	else if (l->crashed_in[0])
 		snprintf(value, n, "%d experiments%s%s; last restart during or just after %s", l->n,
 			 run[0] ? ", running " : "", run, l->crashed_in);
-	else if (l->offline_restart)
-		snprintf(value, n, "%d experiments%s%s; the lab restarted it, off the dial-in %u min", l->n,
-			 run[0] ? ", running " : "", run, (unsigned) (HIFI_LAB_OFFLINE_MS / 60000u));
-	else if (l->stuck_restart)
-		snprintf(value, n, "%d experiments%s%s; the lab restarted it, its tick stuck %u min", l->n,
-			 run[0] ? ", running " : "", run, (unsigned) (HIFI_LAB_STUCK_MS / 60000u));
 	else
 		snprintf(value, n, "%d experiments%s%s", l->n, run[0] ? ", running " : "", run);
 	return l->n > 0;

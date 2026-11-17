@@ -43,6 +43,7 @@ esp_err_t hifi_net_upload_handler(httpd_req_t *req); /* POST /api/v1/update/uplo
 extern hifi_ota_t hifi_ota_session;
 void hifi_remote_start(const hifi_ops_t *ops); /* at init: the relay, SNTP and the trial boot */
 void hifi_remote_status(hifi_remote_status_t *out);
+void hifi_remote_up(bool *configured, bool *up); /* the two bools of the status, light */
 int hifi_remote_set(const char *url, const char *user, const char *password, const char *prefix, const char *key);
 void hifi_ota_status(hifi_ota_status_t *out);
 /* the remote link's state and counters into n (link_*, tx/rx bytes), and

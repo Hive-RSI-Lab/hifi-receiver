@@ -151,7 +151,17 @@ static void lab_frame(void) {
 		l.stuck_restart = true;
 		CHECK(hifi_lab_selftest(&l, v2, sizeof(v2)));
 		CHECK_HAS(v2, "tick stuck");
+		/* the experiment it was in, within a self-test value's 64 bytes */
+		char v3[64];
+		hifi_lab_set_crashed(&l, "espnow");
+		CHECK(hifi_lab_selftest(&l, v3, sizeof(v3)));
+		CHECK_HAS(v3, "tick stuck 3 min during espnow");
 		l.stuck_restart = false;
+		l.offline_restart = true;
+		CHECK(hifi_lab_selftest(&l, v3, sizeof(v3)));
+		CHECK_HAS(v3, "off dial-in 15 min during espnow");
+		l.offline_restart = false;
+		hifi_lab_set_crashed(&l, "");
 	}
 
 	/* a crash during a run is named after the restart */
@@ -190,7 +200,7 @@ static void lab_frame(void) {
 	hifi_lab_set_crashed(&l, "");
 	l.offline_restart = true;
 	CHECK(hifi_lab_selftest(&l, v, sizeof(v)));
-	CHECK_HAS(v, "off the dial-in 15 min");
+	CHECK_HAS(v, "off dial-in 15 min");
 	CHECK(hifi_lab_request(&l, false, NULL, 0, 100000, out, sizeof(out)) == 200);
 	CHECK_HAS(out, "\"offline_restart\":true");
 	CHECK(hj_valid_object(out));
