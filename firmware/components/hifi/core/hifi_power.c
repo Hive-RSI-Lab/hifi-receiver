@@ -139,7 +139,10 @@ const hifi_power_out_t *hifi_power_step(hifi_power_t *p, const hifi_power_in_t *
 
 	switch (p->state) {
 	case HIFI_PWR_WAIT_PD:
-		if (settled) enter(p, HIFI_PWR_SOFT_START, now);
+		if (settled) {
+			p->pvdd_fails = 0; /* a settled re-plug starts clean: old PVDD failures don't count towards the latch */
+			enter(p, HIFI_PWR_SOFT_START, now);
+		}
 		break;
 	case HIFI_PWR_SOFT_START:
 	case HIFI_PWR_ON:

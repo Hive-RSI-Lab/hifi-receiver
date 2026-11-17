@@ -129,4 +129,5 @@
 #define SUB_DIRECT_DMA_COUNT 4
 
 /* what this board's firmware does besides the shared parts */
+#define HIFI_HAS_CHANNEL 0 /* the DSP plays both sides to the amps */
 #define HIFI_HAS_CAPTURE 0 /* the API's capture is the ES8388's; core's ADC plays the line in instead */

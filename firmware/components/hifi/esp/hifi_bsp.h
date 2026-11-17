@@ -44,6 +44,8 @@ void hifi_bsp_power_out(const hifi_power_out_t *o);
  * while they can't take it yet (the codec still starting): called again.
  */
 bool hifi_bsp_route(hifi_input_t in, bool sub_on, float sub_db, const hifi_vol_t *vol, uint32_t now_ms);
+/* The side the speaker output plays (HIFI_HAS_CHANNEL boards); applied by the next hifi_bsp_route. */
+void hifi_bsp_channel(hifi_chan_t c);
 /* The sub level the board sets for a request of db. */
 float hifi_bsp_sub_db(float db);
 
