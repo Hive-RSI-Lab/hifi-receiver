@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "hifi_b64.h"
+#include "hifi_gate.h"
 #include "hifi_json.h"
 #include "hifi_vol.h"
 #include "hifi_ws_proto.h"
@@ -398,8 +399,12 @@ static int r_name(const hifi_ops_t *ops, const char *body, char *out, size_t cap
 	char name[65];
 	if (!hj_get_str(body, "name", name, sizeof(name)) || !name[0]) return error(out, cap, 400, "name is required");
 	if (strlen(name) > 32) return error(out, cap, 400, "name must be 32 characters or fewer");
-	for (const char *c = name; *c; c++)
-		if ((unsigned char) *c < 0x20) return error(out, cap, 400, "name has a control character");
+	/* the name goes into squeezelite's command line (autoexec1, -n "<name>"):
+	 * a quote or backslash there would end the word and add options */
+	for (const char *c = name; *c; c++) {
+		if ((unsigned char) *c < 0x20 || *c == 0x7f) return error(out, cap, 400, "name has a control character");
+		if (*c == '"' || *c == '\\') return error(out, cap, 400, "name may not have \" or \\ in it");
+	}
 	if (ops->set_name(name)) return error(out, cap, 500, "couldn't save the name");
 	return r_state(ops, out, cap);
 }
@@ -570,7 +575,7 @@ static void diag_power(const hifi_ops_t *ops, hifi_diag_power_t *p) {
 /* diag, diag/tasks, diag/net, diag/audio, diag/ota (GET or POST) and
  * POST diag/echo; tasks takes {"from":N} or diag/tasks/N to page, echo
  * {"bytes":N} */
-static int r_diag(const hifi_ops_t *ops, const char *what, bool post, const char *body, char *out, size_t cap) {
+static int r_diag(const hifi_ops_t *ops, const char *what, bool post, bool lan, const char *body, char *out, size_t cap) {
 	const hifi_diag_ops_t *d = ops->diag;
 	if (!d) return error(out, cap, 404, "this build has no diagnostics");
 	if (!*what) {
@@ -631,6 +636,8 @@ static int r_diag(const hifi_ops_t *ops, const char *what, bool post, const char
 	}
 	if (!strcmp(what, "/echo")) {
 		if (!post) return -1;
+		/* it sends up to 1 MB over the Hive's link: a test for the bench, not the LAN */
+		if (lan) return error(out, cap, 403, "the throughput test runs over USB or the relay, not from the LAN");
 		if (!d->echo) return error(out, cap, 404, "this build has no throughput test");
 		double bytes = HIFI_DIAG_ECHO_DEFAULT;
 		if (hj_get_raw(body, "bytes", &(const char *) {0}, &(size_t) {0}) &&
@@ -697,9 +704,12 @@ static int ok_reply(char *out, size_t cap) {
 	return 200;
 }
 
-static int r_ota(const hifi_ops_t *ops, const char *what, const char *body, char *out, size_t cap) {
+static int r_ota(const hifi_ops_t *ops, bool lan, const char *what, const char *body, char *out, size_t cap) {
 	hifi_ota_t *o = ops->ota;
 	if (!o) return error(out, cap, 404, "no OTA in this build");
+	/* the LAN can't touch an update the Hive started */
+	if (lan && o->active && !o->need_sig)
+		return error(out, cap, 403, "an update the Hive started is running");
 	const char *err = "update failed";
 	int st;
 	hj_t j;
@@ -711,7 +721,9 @@ static int r_ota(const hifi_ops_t *ops, const char *what, const char *body, char
 		if (!(size <= 4294967295.0)) return error(out, cap, 400, "image is larger than the app slot");
 		hj_get_str(body, "sha256", sha, sizeof(sha));
 		hj_get_str(body, "version", version, sizeof(version));
-		if ((st = hifi_ota_begin(o, (size_t) size, sha, version, &err)) != 200) return error(out, cap, st, err);
+		if ((st = lan ? hifi_ota_begin_ex(o, (size_t) size, sha[0] ? sha : NULL, version, true, &err)
+			      : hifi_ota_begin(o, (size_t) size, sha, version, &err)) != 200)
+			return error(out, cap, st, err);
 		hj_init(&j, out, cap);
 		hj_obj(&j, NULL);
 		hj_bool(&j, "ok", true);
@@ -970,14 +982,14 @@ static int r_update_check(const hifi_ops_t *ops, char *out, size_t cap) {
 	return 200;
 }
 
-static int r_update(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+static int r_update(const hifi_ops_t *ops, bool lan, const char *body, char *out, size_t cap) {
 	if (!ops->update_start) return error(out, cap, 404, "no updates from a URL in this build");
 	char url[192] = "", sha[72] = "";
 	if (!hj_get_str(body, "url", url, sizeof(url)) || (strncmp(url, "http://", 7) && strncmp(url, "https://", 8)))
 		return error(out, cap, 400, "url (http:// or https://) is required");
 	hj_get_str(body, "sha256", sha, sizeof(sha));
 	const char *err = "couldn't start the update";
-	int st = ops->update_start(url, sha[0] ? sha : NULL, &err);
+	int st = ops->update_start(url, sha[0] ? sha : NULL, lan, &err);
 	if (st) return error(out, cap, st, err);
 	return ok_reply(out, cap);
 }
@@ -995,6 +1007,12 @@ size_t hifi_api_reply_cap(const char *path, const char *body) {
 
 int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 		    const char *body, char *out, size_t cap) {
+	return hifi_api_handle_from(ops, HIFI_SRC_TRUSTED, method, path, body, out, cap);
+}
+
+int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *method, const char *path,
+			 const char *body, char *out, size_t cap) {
+	bool lan = src != HIFI_SRC_TRUSTED;
 	char route[32];
 	size_t plen = strlen(PREFIX);
 	if (strncmp(path, PREFIX, plen)) return error(out, cap, 404, "no such path");
@@ -1004,6 +1022,17 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 
 	if (post && (!body || !*body)) body = "{}";
 	if (post && !hj_valid_object(body)) return error(out, cap, 400, "body must be a JSON object");
+
+	/* while new firmware is on trial, a reboot or a lost Wi-Fi rolls it back:
+	 * the LAN may not reboot, change or forget the Wi-Fi, or erase settings,
+	 * until it is kept (hifi_lan_trial_refused; esp/hifi_http.c applies the
+	 * same list to squeezelite's pages) */
+	if (lan && ops->ota_status && hifi_lan_trial_refused(path, method)) {
+		hifi_ota_status_t o = {0};
+		ops->ota_status(&o);
+		if (o.state && !strcmp(o.state, "pending_verify"))
+			return error(out, cap, 409, "new firmware is on trial; try again in a few minutes");
+	}
 
 	int status;
 	if (!strcmp(route, "info")) status = get ? r_info(ops, out, cap) : -1;
@@ -1024,7 +1053,7 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "ota")) status = get ? r_ota_get(ops, out, cap) : -1;
 	else if (!strcmp(route, "crash")) status = get ? r_crash(ops, NULL, out, cap) : post ? r_crash(ops, body ? body : "{}", out, cap) : -1;
 	else if (!strcmp(route, "bttest")) status = post ? r_bttest(ops, body, out, cap) : -1;
-	else if (!strncmp(route, "ota/", 4)) status = post ? r_ota(ops, route + 4, body, out, cap) : -1;
+	else if (!strncmp(route, "ota/", 4)) status = post ? r_ota(ops, lan, route + 4, body, out, cap) : -1;
 	else if (!strcmp(route, "capture")) status = post ? r_capture(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "wifi")) status = post ? r_wifi(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "wifi/scan")) status = get ? r_wifi_scan(ops, out, cap) : -1;
@@ -1035,10 +1064,12 @@ int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 	else if (!strcmp(route, "backlight"))
 		status = post ? r_mode(ops->set_backlight, "this model has no backlight", "on, off or auto", body, out, cap) : -1;
 	else if (!strcmp(route, "update/check")) status = get ? r_update_check(ops, out, cap) : -1;
-	else if (!strcmp(route, "update")) status = post ? r_update(ops, body, out, cap) : -1;
-	else if (!strcmp(route, "remote")) status = r_remote(ops, post, body, out, cap);
+	else if (!strcmp(route, "update")) status = post ? r_update(ops, lan, body, out, cap) : -1;
+	else if (!strcmp(route, "remote"))
+		status = lan && post ? error(out, cap, 403, "the relay is set over USB or by the Hive, not from the LAN")
+				     : r_remote(ops, post, body, out, cap);
 	else if (!strncmp(route, "diag", 4) && (!route[4] || route[4] == '/'))
-		status = get || post ? r_diag(ops, route + 4, post, body, out, cap) : -1;
+		status = get || post ? r_diag(ops, route + 4, post, lan, body, out, cap) : -1;
 	else return error(out, cap, 404, "no such path");
 
 	if (status < 0) return error(out, cap, 405, "wrong method for this path");

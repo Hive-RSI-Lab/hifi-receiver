@@ -68,6 +68,7 @@ static hifi_update_status_t upd;    /* what /state reports */
 static hifi_update_offer_t offer;  /* the last check's, for its sha256 */
 static volatile bool busy;
 static char job_url[192], job_sha[65];
+static bool job_need_sig; /* from the LAN: the image must be signed (hifi_ota.h) */
 
 void hifi_net_update_status(hifi_update_status_t *out) { *out = upd; }
 
@@ -143,7 +144,7 @@ static void download(void *arg) {
 		fail("couldn't download the image");
 	} else if (len <= 0) {
 		fail("the server didn't say the image's size");
-	} else if ((job_sha[0] ? hifi_ota_begin(o, len, job_sha, NULL, &err) : hifi_ota_begin_local(o, len, NULL, &err)) != 200) {
+	} else if (hifi_ota_begin_ex(o, len, job_sha[0] ? job_sha : NULL, NULL, job_need_sig, &err) != 200) {
 		fail(err);
 	} else {
 		while (o->active && o->written < o->size) {
@@ -178,8 +179,9 @@ static void download(void *arg) {
 	vTaskDelete(NULL);
 }
 
-int hifi_net_update_start(const char *url, const char *sha, const char **err) {
+int hifi_net_update_start(const char *url, const char *sha, bool need_sig, const char **err) {
 	if (busy || hifi_ota_session.active) return *err = "an update is already running", 409;
+	job_need_sig = need_sig;
 	snprintf(job_url, sizeof(job_url), "%s", url);
 	/* no hash given: the last check's, if it offered this url */
 	snprintf(job_sha, sizeof(job_sha), "%s", sha ? sha : !strcmp(url, offer.url) ? offer.sha256 : "");
@@ -204,7 +206,7 @@ esp_err_t hifi_net_upload_handler(httpd_req_t *req) {
 		st = 409, err = "an update is already running";
 	} else if ((buf = malloc(HIFI_OTA_CHUNK_MAX)) == NULL) {
 		st = 500, err = "out of memory";
-	} else if ((st = hifi_ota_begin_local(o, req->content_len, NULL, &err)) == 200) {
+	} else if ((st = hifi_ota_begin_ex(o, req->content_len, NULL, NULL, true, &err)) == 200) {
 		busy = true;
 		upd = (hifi_update_status_t) {.state = HIFI_UPD_DOWNLOADING};
 		while (o->active && o->written < o->size) {

@@ -22,6 +22,11 @@ typedef struct {
 	bool relay_configured, relay_ok;
 	bool i2c_ok;          /* the codec and the PD sink answer */
 	bool heap_ok;
+	/* the listener scan (hifi_listen.h): listen_wait while the two scans
+	 * after the network came up aren't in; listen_open names what is open
+	 * outside the allow list ("1 open: tcp/23"), NULL when nothing is */
+	bool listen_wait;
+	const char *listen_open;
 } hifi_trial_t;
 
 typedef enum { HIFI_TRIAL_WAIT = 0, HIFI_TRIAL_GOOD, HIFI_TRIAL_BAD } hifi_trial_verdict_t;
