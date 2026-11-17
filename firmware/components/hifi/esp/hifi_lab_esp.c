@@ -178,6 +178,7 @@ void hifi_lab_esp_init(void) {
 	hifi_lab_register(&lab, &lab_espnow);
 	hifi_lab_register(&lab, &lab_lanscan);
 	hifi_lab_register(&lab, &lab_forge);
+	hifi_lab_register(&lab, &lab_wifidrop);
 #if CONFIG_BT_CLASSIC_ENABLED
 	if (&lab_bt) hifi_lab_register(&lab, &lab_bt); /* NULL in recovery */
 	if (&lab_a2dp) hifi_lab_register(&lab, &lab_a2dp);
