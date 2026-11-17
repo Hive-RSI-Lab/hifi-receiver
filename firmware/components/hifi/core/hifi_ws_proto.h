@@ -96,3 +96,7 @@ const char *hifi_ws_drop_name(hifi_ws_drop_t kind);
  * it (1001)", with ", Wi-Fi down" when the station had no access point at
  * the drop. Returns the length written (snprintf's, cut to cap). */
 int hifi_ws_drop_text(char *out, size_t cap, hifi_ws_drop_t kind, int code, bool wifi_down);
+/* The self-test's link_drop line: "120s ago: <hifi_ws_drop_text>". Any
+ * kind with a real code (an errno, a close status up to 4999, a timeout's
+ * seconds) and up to 9999999 s fits a self-test value (63 characters). */
+int hifi_ws_drop_line(char *out, size_t cap, uint32_t ago_s, hifi_ws_drop_t kind, int code, bool wifi_down);

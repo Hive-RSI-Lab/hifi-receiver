@@ -851,10 +851,18 @@ static void test_ws_drop(void) {
 	CHECK_STR(t, "send stalled 10 s");
 	CHECK(hifi_ws_drop_text(t, 8, HIFI_WS_DROP_EOF, 0, false) > 7); /* cut, NUL kept */
 	CHECK(strlen(t) == 7);
-	for (int k = HIFI_WS_DROP_NONE; k <= HIFI_WS_DROP_STOPPED; k++) { /* each fits a self-test line with an IP */
-		hifi_ws_drop_text(t, sizeof(t), (hifi_ws_drop_t) k, 1001, true);
-		CHECK(strlen(t) <= 48);
-	}
+	hifi_ws_drop_line(t, sizeof(t), 120, HIFI_WS_DROP_EOF, 0, false);
+	CHECK_STR(t, "120s ago: far end closed the socket");
+	/* the worst real case of each kind fits a self-test value (63 characters) */
+	static const int codes[] = {0, 10, 4999, 1001, ECONNRESET, ECONNABORTED, ETIMEDOUT, EHOSTUNREACH, ENETUNREACH,
+				    ENOTCONN, EPIPE, ENOMEM, 0x7880, 999};
+	char line[96];
+	for (int k = HIFI_WS_DROP_NONE; k <= HIFI_WS_DROP_STOPPED; k++)
+		for (size_t c = 0; c < sizeof(codes) / sizeof(codes[0]); c++)
+			for (int w = 0; w < 2; w++) {
+				hifi_ws_drop_line(line, sizeof(line), 9999999, (hifi_ws_drop_t) k, codes[c], w);
+				CHECK(strlen(line) <= 63);
+			}
 }
 
 static void test_ws_proto(void) {

@@ -24,6 +24,7 @@
 #include "esp_timer.h"
 #include "esp_transport.h"
 #include "esp_transport_ssl.h"
+#include "esp_netif.h"
 #include "esp_wifi.h"
 #include "mbedtls/net_sockets.h"
 #include "mbedtls/ssl.h"
@@ -32,6 +33,7 @@
 #include "freertos/semphr.h"
 #include "freertos/task.h"
 
+#include "hifi_esp.h"
 #include "hifi_ws.h"
 #include "hifi_ws_proto.h"
 
@@ -57,9 +59,15 @@ static hifi_ws_stats_t stats; /* hifi_ws_stats(); 64-bit fields, so under stats_
 static portMUX_TYPE stats_mux = portMUX_INITIALIZER_UNLOCKED;
 
 /* Why this link is ending: the first cause noted wins (a failed read after
- * the endpoint's close frame is still "closed"); reset at each dial. */
+ * the endpoint's close frame is still "closed"); reset under lock as the
+ * link comes up. */
 static hifi_ws_drop_t cause;
 static int cause_code;
+/* Whether this link rode the station (not Ethernet), and the station's
+ * disconnect count when it came up: a count that moved means the Wi-Fi
+ * went while the link was up, even if it is back by the drop. */
+static bool on_sta;
+static uint32_t sta_drops_at_up;
 
 static int64_t now_s(void) { return esp_timer_get_time() / 1000000; }
 
@@ -96,14 +104,24 @@ static void note_io(int r, bool wr, int e) {
 	else note(HIFI_WS_DROP_UNKNOWN, 0);
 }
 
+static bool netif_has_ip(const char *key) {
+	esp_netif_t *n = esp_netif_get_handle_from_ifkey(key);
+	esp_netif_ip_info_t ip;
+	return n && esp_netif_get_ip_info(n, &ip) == ESP_OK && ip.ip.addr != 0;
+}
+
 static void drop(void) {
 	xSemaphoreTake(lock, portMAX_DELAY);
 	if (up) {
-		wifi_ap_record_t ap;
-		bool wifi_down = esp_wifi_sta_get_ap_info(&ap) != ESP_OK;
+		bool wifi_down = false;
+		if (on_sta) {
+			wifi_ap_record_t ap;
+			wifi_down = hifi_diag_wifi_disconnects() != sta_drops_at_up || esp_wifi_sta_get_ap_info(&ap) != ESP_OK;
+		}
 		if (!running) note(HIFI_WS_DROP_STOPPED, 0);
 		/* losing the station takes its address, and lwIP aborts every socket on
-		 * it: that ECONNABORTED is the Wi-Fi, not keepalive or resends */
+		 * it: that ECONNABORTED is the Wi-Fi, not keepalive or resends (and a
+		 * blip the station rode out can still have run TCP's clock out) */
 		if (wifi_down && cause == HIFI_WS_DROP_TCP_GAVE_UP) cause = HIFI_WS_DROP_WIFI;
 		note(wifi_down ? HIFI_WS_DROP_WIFI : HIFI_WS_DROP_UNKNOWN, 0);
 		int64_t t = esp_timer_get_time();
@@ -309,7 +327,6 @@ static void ws_task(void *arg) {
 		int backoff = BACKOFF_MIN_S;
 		while (running) {
 			broken = false;
-			cause = HIFI_WS_DROP_NONE;
 			if (!dial()) {
 				drop();
 				ESP_LOGW(TAG, "couldn't reach %s; again in %d s", url, backoff);
@@ -324,10 +341,19 @@ static void ws_task(void *arg) {
 			stats.up_since_us = esp_timer_get_time();
 			if (!stats.first_up_us) stats.first_up_us = stats.up_since_us;
 			portEXIT_CRITICAL(&stats_mux);
+			/* no Ethernet address: the station carries the link (a board
+			 * with both prefers Ethernet's route) */
+			bool sta = !netif_has_ip("ETH_DEF") && netif_has_ip("WIFI_STA_DEF");
+			uint32_t sta_drops = hifi_diag_wifi_disconnects();
+			xSemaphoreTake(lock, portMAX_DELAY);
 			esp_tls_error_handle_t eh = esp_transport_get_error_handle(ssl);
 			if (eh) memset(eh, 0, sizeof(*eh)); /* the dial's own errors aren't this link's */
 			cause = HIFI_WS_DROP_NONE;
+			cause_code = 0;
+			on_sta = sta;
+			sta_drops_at_up = sta_drops;
 			up = true;
+			xSemaphoreGive(lock);
 			if (on_up) on_up();
 			while (running && !broken) {
 				if (now_s() - last_tx >= PING_S) {

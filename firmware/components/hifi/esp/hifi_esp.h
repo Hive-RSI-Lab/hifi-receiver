@@ -61,6 +61,8 @@ void hifi_remote_link(hifi_diag_net_t *n, uint32_t *first_up_ms);
 extern const hifi_diag_ops_t hifi_diag_ops;
 void hifi_diag_init(void); /* at hifi_init: the boot counter and reset history */
 void hifi_diag_tick(void); /* every few seconds, from the relay's task */
+/* the station's disconnects since boot (each WIFI_EVENT_STA_DISCONNECTED) */
+uint32_t hifi_diag_wifi_disconnects(void);
 /* a finished update over the relay: its size, time and the time spent in
  * flash writes, kept for `diag ota` */
 void hifi_diag_ota_done(uint32_t bytes, uint32_t total_ms, uint32_t write_ms, const char *version);

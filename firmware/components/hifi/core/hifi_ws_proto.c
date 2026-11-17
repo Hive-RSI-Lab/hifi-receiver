@@ -152,7 +152,7 @@ static const char *errno_word(int e) {
 	case ECONNABORTED: return "aborted";
 	case ETIMEDOUT: return "timed out";
 	case EHOSTUNREACH: return "no route";
-	case ENETUNREACH: return "network unreachable";
+	case ENETUNREACH: return "net unreachable";
 	case ENOTCONN: return "not connected";
 	case EPIPE: return "broken pipe";
 	case ENOMEM: return "no memory";
@@ -183,4 +183,10 @@ int hifi_ws_drop_text(char *out, size_t cap, hifi_ws_drop_t kind, int code, bool
 	default: snprintf(why, sizeof(why), "unknown"); break;
 	}
 	return snprintf(out, cap, "%s%s", why, wifi_down && kind != HIFI_WS_DROP_WIFI ? ", Wi-Fi down" : "");
+}
+
+int hifi_ws_drop_line(char *out, size_t cap, uint32_t ago_s, hifi_ws_drop_t kind, int code, bool wifi_down) {
+	char why[64];
+	hifi_ws_drop_text(why, sizeof(why), kind, code, wifi_down);
+	return snprintf(out, cap, "%us ago: %s", (unsigned) ago_s, why);
 }

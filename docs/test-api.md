@@ -333,6 +333,10 @@ Nothing in it needs a speaker or a load.
 on a 5 V port) fails with the reason in `value`; on a 5 V port that is
 expected, and the bench script knows it.
 
+After a remote link drop since boot, a `link_drop` check follows `network`:
+it always passes, and its value is how long ago and why
+(`"120s ago: TCP gave up: keepalive or resends"`, see `diag/net`).
+
 Plus and Ultra have no `vbus_matches` or `codec_i2c`; their board checks
 are `expander_i2c` (the I/O expander at 0x20, or 0x74–0x77 for the
 TCA9539), `dac_i2c` (the ES9018K2M at 0x48 answers and took the 32-bit word
@@ -441,14 +445,16 @@ boot, and always on MQTT). The first cause the board saw on that link wins.
 | `write_timeout` | seconds | a send stalled that long: the socket's send buffer stayed full |
 | `bad_frame` | 0 | a frame header the board won't take |
 | `no_memory` | 0 | no heap for a frame |
-| `wifi_down` | 0 or `ECONNABORTED` | the station had lost its access point (losing it takes the address, and the stack aborts the socket) |
+| `wifi_down` | 0 or `ECONNABORTED` | the station lost its access point while the link was up (losing it takes the address, and the stack aborts the socket; a blip the station rode out can still run TCP's clock out) |
 | `stopped` | 0 | the link was turned off |
 | `unknown` | 0 | the link ended with no cause noted |
 
-`wifi_down` says whether the station had lost its access point at the drop,
-whatever the cause; `why` is the one-line text (the self-test's `network`
-line carries it too, as `; drop Ns ago: <why>`, cut to fit); `ago_s` is how
-long ago it dropped and `lasted_s` how long that link had been up.
+`wifi_down` says whether the station lost its access point while that link
+was up (a disconnect counted, or no access point at the drop), whatever the
+cause; it is always `false` for a link over Ethernet. `why` is the one-line
+text (the self-test's passing `link_drop` line carries it too, as
+`Ns ago: <why>`); `ago_s` is how long ago it dropped and `lasted_s` how long
+that link had been up.
 
 ### `GET /api/v1/diag/audio`
 
