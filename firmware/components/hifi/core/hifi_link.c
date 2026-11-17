@@ -80,6 +80,9 @@ static void bit_clear(hifi_link_seen_t *s, uint32_t seq) {
 int hifi_link_seen(hifi_link_seen_t *s, uint32_t seq) {
 	uint32_t i = seq % HIFI_LINK_WINDOW;
 	uint64_t mask = 1ull << (i % 64);
+	/* top is seq + 1, so the last value would wrap it to 0 and reset
+	 * "expected"; no real sender gets there (49 days at 1000 frames/s) */
+	if (seq == UINT32_MAX) return -1;
 	if (seq >= s->top) {
 		/* move the window up: forget what falls out of it */
 		if ((uint64_t) seq - s->top >= HIFI_LINK_WINDOW)
@@ -217,14 +220,11 @@ void hifi_link_tx_pong(hifi_link_tx_t *t, const hifi_link_frame_t *f, int64_t t4
 		t->stray++;
 		return;
 	}
-	int s = hifi_link_seen(&t->seen, f->seq);
-	if (s != 0) {
-		t->dup++;
-		return;
-	}
 	/* the times come off the radio: each clock counts up from its boot, so a
 	 * time outside [0, 2^62) or running backwards is refused before any
-	 * arithmetic, which then can't overflow (the sums below stay in range) */
+	 * arithmetic, and a round trip over HIFI_LINK_RTT_MAX_US too, so
+	 * rtt_sum_us can't overflow either. Checked before the sequence number,
+	 * so a forged PONG doesn't use up the seq of the real one. */
 	const int64_t lim = (int64_t) 1 << 62;
 	if (f->t1 < 0 || f->t2 < 0 || f->t3 < 0 || t4 < 0 || f->t1 >= lim || f->t2 >= lim || f->t3 >= lim ||
 	    t4 >= lim || f->t1 > t4 || f->t2 > f->t3) {
@@ -232,8 +232,13 @@ void hifi_link_tx_pong(hifi_link_tx_t *t, const hifi_link_frame_t *f, int64_t t4
 		return;
 	}
 	int64_t delay = (t4 - f->t1) - (f->t3 - f->t2);
-	if (delay < 0) {
+	if (delay < 0 || delay > HIFI_LINK_RTT_MAX_US) {
 		t->bad++;
+		return;
+	}
+	int s = hifi_link_seen(&t->seen, f->seq);
+	if (s != 0) {
+		t->dup++;
 		return;
 	}
 	t->pongs++;
@@ -345,6 +350,35 @@ void hifi_link_tx_json(const hifi_link_tx_t *t, void *hj) {
 			hj_null(j, "drift_ppm");
 		hj_obj_end(j);
 	}
+}
+
+size_t hifi_link_take(uint8_t *dst, size_t cap, const uint8_t *src, size_t n) {
+	if (!dst || !src || !n || n > cap) return 0;
+	memcpy(dst, src, n);
+	return n;
+}
+
+hifi_link_got_t hifi_link_receive(hifi_link_rx_t *rx, hifi_link_tx_t *tx, bool echo, bool pongs, const uint8_t *buf,
+                                  size_t n, int64_t t_us, hifi_link_frame_t *pong) {
+	hifi_link_frame_t f;
+	if (!hifi_link_decode(buf, n, &f)) {
+		hifi_link_rx_bad(rx);
+		return HIFI_LINK_GOT_BAD;
+	}
+	if (echo && f.type == HIFI_LINK_PING) {
+		hifi_link_pong_for(&f, t_us, 0, pong);
+		rx->pings++;
+		return HIFI_LINK_GOT_REPLY;
+	}
+	if (echo && f.type == HIFI_LINK_DATA) {
+		hifi_link_rx_data(rx, &f, t_us);
+		return HIFI_LINK_GOT_USED;
+	}
+	if (pongs && f.type == HIFI_LINK_PONG) {
+		hifi_link_tx_pong(tx, &f, t_us);
+		return HIFI_LINK_GOT_USED;
+	}
+	return HIFI_LINK_GOT_OTHER;
 }
 
 static int hexval(char c) {
