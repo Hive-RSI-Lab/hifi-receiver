@@ -439,8 +439,8 @@ static void state_parts(void) {
 	for (size_t i = 0; i < sizeof(all) / sizeof(all[0]); i++) {
 		hifi_api_write_state_part(&s, all[i], part, sizeof(part));
 		size_t n = strlen(part);
-		if (getenv("STATE_SIZES") || n >= 960) fprintf(stderr, "state/%s is %zu characters\n", all[i], n);
-		CHECK(n > 2 && n < 960 && part[n - 1] == '}');
+		if (getenv("STATE_SIZES") || n > 850) fprintf(stderr, "state/%s is %zu characters\n", all[i], n);
+		CHECK(n > 2 && n <= 850 && part[n - 1] == '}');
 	}
 	hifi_meta_idle(&m.playing);
 }
