@@ -110,6 +110,8 @@ static void fz_check(const hifi_link_rx_t *rx, const hifi_link_tx_t *tx, const f
 	FUZZ_ASSERT(tx->pongs + tx->dup + tx->stray + tx->bad == c->pongs_in);
 	if (tx->pongs) {
 		FUZZ_ASSERT(tx->rtt_min_us >= 0 && tx->rtt_min_us <= tx->rtt_max_us);
+		/* the sum of the round trips: no wrap */
+		FUZZ_ASSERT(tx->rtt_sum_us >= 0 && (double) tx->rtt_sum_us <= (double) tx->pongs * (double) tx->rtt_max_us);
 		double p50 = hifi_link_tx_rtt_pct(tx, 50), p99 = hifi_link_tx_rtt_pct(tx, 99);
 		FUZZ_ASSERT(p50 >= tx->rtt_min_us && p50 <= p99 && p99 <= tx->rtt_max_us);
 		double ppm;

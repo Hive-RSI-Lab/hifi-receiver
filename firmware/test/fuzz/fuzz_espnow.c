@@ -22,7 +22,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t n) {
 	uint8_t air[512] = {0}; /* a damaged length may run past the frame */
 	for (int frames = 0; fz_more(&z) && frames < 256; frames++) {
 		now += (int64_t) (fz_u8(&z) % 40) * 30000;
-		if (pongs && fz_u8(&z) & 1) hifi_link_tx_sent(&tx, HIFI_LINK_HDR, true, now); /* a ping of ours went out */
+		uint8_t fl = fz_u8(&z); /* read in every role, so one seed fits them all */
+		if (pongs && fl & 1) hifi_link_tx_sent(&tx, HIFI_LINK_HDR, true, now); /* a ping of ours went out */
 		size_t len = fz_frame(&z, air, sizeof(air), now, rx.session);
 		/* recv_cb */
 		if (len == 0 || len > HIFI_LINK_MAX) continue;

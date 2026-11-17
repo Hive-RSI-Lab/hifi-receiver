@@ -74,7 +74,7 @@ coverage:
 
 # libFuzzer harnesses (fuzz/): the console, the HTTP test API, the JSON
 # reader and writer, the relay's signed envelope, its websocket client, and
-# what the lab's ESP-NOW radio receives (the link's frames).
+# what the lab's radios receive (the ESP-NOW and BLE link frames).
 # Each is built with clang, ASan and UBSan; its corpus grows in build/fuzz/
 # from the checked-in seeds in fuzz/seeds/. `fuzz` runs each for FUZZ_SECS
 # (part of `run`); `fuzz-long` runs them all at once for FUZZ_LONG_SECS (10
@@ -82,7 +82,7 @@ coverage:
 # build/fuzz/crash-NAME-*; replay it with build/fuzz/NAME FILE. No clang with
 # libFuzzer: skipped, loudly; FUZZ_REQUIRED=1 makes that a failure.
 FUZZ := $(BIN)/fuzz
-FUZZERS := fuzz_api fuzz_cli fuzz_espnow fuzz_json fuzz_remote fuzz_ws
+FUZZERS := fuzz_api fuzz_ble fuzz_cli fuzz_espnow fuzz_json fuzz_remote fuzz_ws
 FUZZ_SECS ?= 10
 FUZZ_LONG_SECS ?= 600
 CLANG ?= $(firstword $(wildcard $(HOME)/.local/opt/LLVM-*/bin/clang) $(shell command -v clang 2>/dev/null))

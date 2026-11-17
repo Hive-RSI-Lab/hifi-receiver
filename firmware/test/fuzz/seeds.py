@@ -73,18 +73,18 @@ def main() -> None:
         # byte 0: bit 0 no key, bit 1 an older id already taken, bit 2 the clock set
         rem.append(bytes([4 if i % 2 else 0]) + (json.dumps(cmd, separators=(",", ":")) + "\n" + sig).encode())
     write("fuzz_remote", rem)
-    # the radio (fuzz_link.h): byte 0 the role (0 echo, 1 ping, 2 flood) and bit 2 a clock
-    # from boot; then per frame a gap, a byte of flags (bit 0 a ping of ours went out)
-    # and a frame built from
+    # the radios (fuzz_link.h): byte 0 the role (0 echo, 1 ping, 2 flood) and bit 2 a clock
+    # from boot; then per frame a gap, a byte of flags (fuzz_espnow: bit 0 a ping of ours
+    # went out; fuzz_ble: the event, 1 a value write or notification) and a frame built from
     # fields: 3 (plausible times), type (0 PING, 1 PONG, 2 DATA), session (0 ours), seq, the
     # time back (4 bytes), the echo's turnaround (/50 us), its clock offset (4), length - 38
     def frame(typ: int, seq: int, size: int = 100) -> bytes:
         return bytes([3, typ, 0, seq]) + (2000).to_bytes(4, "little") + bytes([4]) + \
             (1500).to_bytes(4, "little") + bytes([size])
     raw = bytes([0, 40]) + b"HL\x02\x01" + bytes(36)  # a raw frame whose payload fails
-    for name, flag in (("fuzz_espnow", 1),):
+    for name, flag in (("fuzz_espnow", 1), ("fuzz_ble", 1)):
         write(name, [bytes([0]) + b"".join(bytes([3, flag]) + frame(0, q) for q in range(8)),
-                     bytes([0]) + b"".join(bytes([1, flag]) + frame(2, q, 212) for q in range(16)),
+                     bytes([0]) + b"".join(bytes([1, flag]) + frame(2, q, 212 if name == "fuzz_espnow" else 206) for q in range(16)),
                      bytes([1]) + b"".join(bytes([20, flag]) + frame(1, q) for q in range(24)),
                      bytes([2 | 4]) + b"".join(bytes([5, flag]) + frame(1, q) for q in range(4)),
                      bytes([0]) + bytes([3, flag]) + raw])
