@@ -16,7 +16,8 @@ endif()
 
 # the lab build (board/lite-lab): experiments a signed command starts and stops
 if(CONFIG_HIFI_LAB)
-	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c esp/lab_forge.c esp/lab_wifidrop.c)
+	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c esp/lab_forge.c esp/lab_wifidrop.c
+		core/hifi_party.c core/hifi_party_sync.c esp/lab_party.c)
 	# reads the board's I2C chips through hive-fw's i2c-device driver (esp/i2cdev)
 	list(APPEND srcs esp/lab_i2c.c esp/i2cdev/i2cdev.c esp/i2cdev/i2cdev_esp.c)
 	set(lab_inc esp/i2cdev)
