@@ -137,8 +137,10 @@ qemu-run:
 	@if [ -z "$(FW)" ] || [ -z "$(QEMU_BUILD)" ]; then \
 	  echo "SKIPPED QEMU scenarios: $(if $(FW),no QEMU build (fw build .. --qemu),no fw on PATH)"; \
 	  exit $(if $(filter-out 0,$(QEMU_REQUIRED)),1,0); fi; \
-	H=$$(command -v heavy >/dev/null && echo "heavy timeout 3000"); \
-	$$H $(FW) qemu .. $(foreach s,$(SCEN),--scenario $(s))
+	if [ -n "$$(find ../components ../patches ../fw.json -newer "$(QEMU_BUILD)" -type f -print -quit)" ]; then \
+	  echo "WARNING: the QEMU build is older than the sources: rebuild with fw build .. --qemu"; fi; \
+	H=$$(command -v heavy >/dev/null && echo heavy); \
+	$$H timeout 3000 "$(FW)" qemu .. $(foreach s,$(SCEN),--scenario '$(s)')
 
 clean:
 	rm -rf $(BIN)

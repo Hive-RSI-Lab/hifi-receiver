@@ -55,17 +55,17 @@
     ]
    },
    "i2s_stall": {
-    "about": "QEMU has no I2S: whatever the firmware writes to it never drains, so a tone is a stalled output. The API and the controls must still answer through it",
+    "about": "QEMU has no I2S: whatever the firmware writes to it never drains, so a tone is a stalled output. The tone must be taken and stay on, the API and the controls must still answer through it, and the tone must stop",
     "steps": [
      {"get": "/api/v1/state", "expect": "\"power\":\\{\"state\":\"on\"", "retry": 30},
-     {"post": "/api/v1/tone", "json": {"type": "sine", "freq_hz": 1000, "level_dbfs": -30, "duration_s": 20}},
+     {"post": "/api/v1/tone", "json": {"type": "sine", "freq_hz": 1000, "level_dbfs": -30, "duration_s": 20}, "expect": "\"tone\":\\{\"type\":\"sine\""},
      {"wait": 3},
-     {"post": "/api/v1/volume", "json": {"volume": 30}, "expect": "\"volume\":30,"},
+     {"post": "/api/v1/volume", "json": {"volume": 30}, "expect": "\"tone\":\\{\"type\":\"sine\".*\"volume\":30,"},
      {"post": "/api/v1/control", "json": {"action": "next"}},
      {"post": "/api/v1/control", "json": {"action": "prev"}},
      {"post": "/api/v1/control", "json": {"action": "volup"}},
      {"get": "/api/v1/state", "expect": "\"volume\":3[1-9],"},
-     {"post": "/api/v1/tone", "json": {"type": "stop"}},
+     {"post": "/api/v1/tone", "json": {"type": "stop"}, "expect": "\"tone\":null"},
      {"get": "/api/v1/info", "expect": "\"model\":\"hifi-lite\""}
     ]
    },
@@ -76,7 +76,7 @@
      {"get": "/api/v1/info", "expect": "\"model\":\"hifi-lite\"", "retry": 30},
      {"post": "/api/v1/volume", "json": {"volume": 33}},
      {"post": "/api/v1/name", "json": {"name": "Full Flash"}, "status": "any"},
-     {"log": "Error comitting value to nvs for key (hifi_volume|hifi_name|airplay_name|bt_name)", "timeout": 30},
+     {"log": "Error comitting value to nvs for key hifi_name", "timeout": 30},
      {"get": "/api/v1/state", "expect": "\"volume\":33,"},
      {"get": "/api/v1/info", "expect": "\"model\":\"hifi-lite\""}
     ]
