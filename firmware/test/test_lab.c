@@ -440,6 +440,18 @@ static void sender(void) {
 	hifi_link_tx_pong(t, &slow, a + 5000000);
 	CHECK(t->rtt_bins[HIFI_LINK_RTT_BINS - 1] == 1);
 	CHECK(hifi_link_tx_rtt_pct(t, 100) == 5000000);
+
+	/* hostile times off the radio: no overflow (UBSan), counted as bad */
+	uint32_t bad0 = t->bad, pongs0 = t->pongs;
+	hifi_link_frame_t h1 = {HIFI_LINK_PONG, 9, 502, INT64_MIN, 0, 0, 64};
+	hifi_link_tx_pong(t, &h1, a);
+	hifi_link_frame_t h2 = {HIFI_LINK_PONG, 9, 503, a, INT64_MIN, INT64_MAX, 64};
+	hifi_link_tx_pong(t, &h2, a + 10);
+	hifi_link_frame_t h3 = {HIFI_LINK_PONG, 9, 504, a, INT64_MAX, INT64_MIN, 64};
+	hifi_link_tx_pong(t, &h3, a + 10);
+	hifi_link_frame_t h4 = {HIFI_LINK_PONG, 9, 505, a, INT64_MAX - 5, INT64_MAX, 64};
+	hifi_link_tx_pong(t, &h4, a + 10);
+	CHECK(t->bad == bad0 + 4 && t->pongs == pongs0);
 	free(t);
 }
 
