@@ -1,0 +1,17 @@
+# Size probe for the BLE rung (lane esp32-lab): the lab image with the
+# Bluetooth controller in dual mode (Classic + BLE) and Bluedroid's GATT
+# server and client. Built to measure what BLE costs in internal RAM and
+# flash before any BLE experiment goes onto a board.
+CONFIG_HIFI_LAB=y
+CONFIG_ESP_TASK_WDT_PANIC=y
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=15
+CONFIG_BTDM_CTRL_MODE_BTDM=y
+CONFIG_BTDM_CTRL_BLE_MAX_CONN=1
+CONFIG_BT_BLE_ENABLED=y
+CONFIG_BT_GATTS_ENABLE=y
+CONFIG_BT_GATTC_ENABLE=y
+# BLE with GATT server and client adds ~190 KB of flash and 13 KB of IRAM:
+# the full Lite image no longer fits its 3.06 MB app slot. The BLE lab image
+# drops Spotify Connect (cspot and most of libstdc++) to make room; AirPlay,
+# Bluetooth A2DP and LMS stay, so BLE beside A2DP can still be measured.
+# CONFIG_CSPOT_SINK is not set
