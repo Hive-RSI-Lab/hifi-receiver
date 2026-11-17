@@ -1,0 +1,469 @@
+diff --git a/components/codecs/CMakeLists.txt b/components/codecs/CMakeLists.txt
+index f53fe27..bf6a1c4 100644
+--- a/components/codecs/CMakeLists.txt
++++ b/components/codecs/CMakeLists.txt
+@@ -1,6 +1,15 @@
++# hifi (patch 0021): ALAC is built from source with bounds fixes instead of lib/libalac.a
++set(HIFI_ALAC_DIR ${CMAKE_CURRENT_LIST_DIR}/../spotify/cspot/bell/external/alac/codec)
+ idf_component_register(
++	   SRCS alac_wrapper.cpp
++	        ${HIFI_ALAC_DIR}/ALACDecoder.cpp ${HIFI_ALAC_DIR}/ALACBitUtilities.c ${HIFI_ALAC_DIR}/ag_dec.c
++	        ${HIFI_ALAC_DIR}/dp_dec.c ${HIFI_ALAC_DIR}/matrix_dec.c ${HIFI_ALAC_DIR}/EndianPortable.c
+ 	   INCLUDE_DIRS . ./inc inc/alac inc/helix-aac inc/mad inc/resample16 inc/soxr inc/vorbis inc/opus
++	   PRIV_INCLUDE_DIRS ${HIFI_ALAC_DIR}
+ )
++target_compile_options(${COMPONENT_LIB} PRIVATE -O2 -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-function -Wno-implicit-fallthrough)
++# EndianPortable.c only knows x86 and ARM as little-endian; the ESP32 is too
++target_compile_definitions(${COMPONENT_LIB} PRIVATE TARGET_RT_LITTLE_ENDIAN=1)
+ 
+ if (DEFINED AAC_DISABLE_SBR)
+ add_prebuilt_library(libhelix-aac 	lib/libhelix-aac.a ) 
+@@ -12,7 +21,6 @@ add_prebuilt_library(libmad 		lib/libmad.a)
+ add_prebuilt_library(libFLAC 		lib/libFLAC.a ) 
+ add_prebuilt_library(libvorbisidec 	lib/libvorbisidec.a ) 
+ add_prebuilt_library(libogg 		lib/libogg.a )
+-add_prebuilt_library(libalac 		lib/libalac.a ) 
+ add_prebuilt_library(libresample16 	lib/libresample16.a ) 
+ add_prebuilt_library(libopus 		lib/libopus.a ) 
+ 
+@@ -21,6 +29,5 @@ target_link_libraries(${COMPONENT_LIB} INTERFACE libFLAC)
+ target_link_libraries(${COMPONENT_LIB} INTERFACE libhelix-aac)
+ target_link_libraries(${COMPONENT_LIB} INTERFACE libvorbisidec)
+ target_link_libraries(${COMPONENT_LIB} INTERFACE libogg)
+-target_link_libraries(${COMPONENT_LIB} INTERFACE libalac)
+ target_link_libraries(${COMPONENT_LIB} INTERFACE libresample16)
+ target_link_libraries(${COMPONENT_LIB} INTERFACE libopus)
+diff --git a/components/codecs/alac_wrapper.cpp b/components/codecs/alac_wrapper.cpp
+new file mode 100644
+index 0000000..6cbb221
+--- /dev/null
++++ b/components/codecs/alac_wrapper.cpp
+@@ -0,0 +1,119 @@
++/*****************************************************************************
++ * alac_wrapper.cpp: ALAC decoder wrapper, built from source (hifi).
++ *
++ * Replaces the prebuilt lib/libalac.a. The decoder is Apple's ALAC from
++ * cspot/bell/external/alac with the hifi bounds fixes (patch 0021). The input
++ * of every decode is copied into a buffer with zero padding past its end,
++ * because the bit readers look a few bytes ahead, and the decoder is told the
++ * real packet length rather than the PCM block size.
++ *
++ * Original wrapper (c) Philippe G. 2019, MIT License.
++ */
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <stdint.h>
++#include <new>
++
++#include "ALACDecoder.h"
++#include "ALACBitUtilities.h"
++
++#include "alac_wrapper.h"
++
++#define ALAC_INPUT_PAD 64	// zeros after the copied packet; the readers peek at most 8 bytes
++
++typedef struct alac_codec_s {
++	ALACDecoder *Decoder;
++	unsigned block_size;		// bytes of PCM for one packet, at least 2 channels wide
++	unsigned frames_per_packet;
++	unsigned out_channels_max;	// max(numChannels, 2)
++	unsigned bytes_per_sample;
++	unsigned in_cap;			// bytes of packet we keep; longer packets are cut
++	unsigned char *in;			// in_cap + ALAC_INPUT_PAD
++} alac_codec_t;
++
++/*----------------------------------------------------------------------------*/
++extern "C" struct alac_codec_s *alac_create_decoder(int magic_cookie_size, unsigned char *magic_cookie,
++											unsigned char *sample_size, unsigned *sample_rate,
++											unsigned char *channels, unsigned int *block_size) {
++	if (!magic_cookie || magic_cookie_size < 24) return NULL;
++
++	alac_codec_t *codec = (alac_codec_t*) calloc(1, sizeof(alac_codec_t));
++	if (!codec) return NULL;
++
++	codec->Decoder = new (std::nothrow) ALACDecoder;
++	if (!codec->Decoder || codec->Decoder->Init(magic_cookie, (uint32_t) magic_cookie_size) != ALAC_noErr) {
++		delete codec->Decoder;
++		free(codec);
++		return NULL;
++	}
++
++	ALACSpecificConfig *cfg = &codec->Decoder->mConfig;
++	codec->frames_per_packet = cfg->frameLength;
++	codec->out_channels_max = cfg->numChannels > 2 ? cfg->numChannels : 2;
++	codec->bytes_per_sample = (cfg->bitDepth + 7) / 8;
++	codec->block_size = codec->frames_per_packet * codec->out_channels_max * codec->bytes_per_sample;
++	// an ALAC packet is at most the PCM size plus a small escape header
++	codec->in_cap = codec->block_size + 64;
++	codec->in = (unsigned char*) malloc(codec->in_cap + ALAC_INPUT_PAD);
++	if (!codec->in) {
++		delete codec->Decoder;
++		free(codec);
++		return NULL;
++	}
++
++	*channels = cfg->numChannels;
++	*sample_rate = cfg->sampleRate;
++	*sample_size = cfg->bitDepth;
++	*block_size = codec->block_size;
++
++	return codec;
++}
++
++/*----------------------------------------------------------------------------*/
++extern "C" void alac_delete_decoder(struct alac_codec_s *codec) {
++	if (!codec) return;
++	delete codec->Decoder;
++	free(codec->in);
++	free(codec);
++}
++
++/*----------------------------------------------------------------------------*/
++extern "C" bool alac_to_pcm_len(struct alac_codec_s *codec, unsigned char *input, unsigned len,
++								unsigned char *output, char channels, unsigned *out_frames) {
++	BitBuffer input_buffer;
++	uint32_t frames = 0;
++
++	if (out_frames) *out_frames = 0;
++	if (!codec || !input || !output || !out_frames) return false;
++
++	// the output buffer is block_size bytes, which holds out_channels_max channels
++	if (channels < 1 || (unsigned) channels > codec->out_channels_max) {
++		memset(output, 0, codec->block_size);
++		*out_frames = codec->frames_per_packet;
++		return false;
++	}
++
++	if (len > codec->in_cap) len = codec->in_cap;
++	memcpy(codec->in, input, len);
++	memset(codec->in + len, 0, ALAC_INPUT_PAD);
++	BitBufferInit(&input_buffer, codec->in, len);
++
++	int32_t status = codec->Decoder->Decode(&input_buffer, output, codec->frames_per_packet, (uint32_t) channels, &frames);
++	if (status != ALAC_noErr || frames > codec->frames_per_packet) {
++		// a bad packet plays as one packet of silence, so timing holds
++		memset(output, 0, codec->block_size);
++		*out_frames = codec->frames_per_packet;
++		return false;
++	}
++
++	*out_frames = frames;
++	return true;
++}
++
++/*----------------------------------------------------------------------------*/
++// Old entry point: no length known, so assume a whole PCM block's worth of input.
++extern "C" bool alac_to_pcm(struct alac_codec_s *codec, unsigned char* input,
++							unsigned char *output, char channels, unsigned *out_frames) {
++	return alac_to_pcm_len(codec, input, codec ? codec->block_size : 0, output, channels, out_frames);
++}
+diff --git a/components/codecs/inc/alac/alac_wrapper.h b/components/codecs/inc/alac/alac_wrapper.h
+index e9e753d..095a120 100644
+--- a/components/codecs/inc/alac/alac_wrapper.h
++++ b/components/codecs/inc/alac/alac_wrapper.h
+@@ -11,6 +11,8 @@
+ #ifndef __ALAC_WRAPPER_H_
+ #define __ALAC_WRAPPER_H_
+ 
++#include <stdbool.h>
++
+ struct alac_codec_s;
+ 
+ #ifdef __cplusplus
+@@ -23,6 +25,10 @@ struct alac_codec_s *alac_create_decoder(int magic_cookie_size, unsigned char *m
+ void alac_delete_decoder(struct alac_codec_s *codec);
+ bool alac_to_pcm(struct alac_codec_s *codec, unsigned char* input,
+ 				 unsigned char *output, char channels, unsigned *out_frames);
++// hifi: decode len bytes of input. Output must hold the block_size reported at create.
++// On a bad packet the output is one packet of silence and the result is false.
++bool alac_to_pcm_len(struct alac_codec_s *codec, unsigned char *input, unsigned len,
++				 unsigned char *output, char channels, unsigned *out_frames);
+ 
+ #ifdef __cplusplus
+ }
+diff --git a/components/raop/rtp.c b/components/raop/rtp.c
+index feb857e..8f893fd 100644
+--- a/components/raop/rtp.c
++++ b/components/raop/rtp.c
+@@ -116,6 +116,7 @@ typedef struct rtp_s {
+ 	u32_t in_frames, out_frames;
+ 	struct in_addr host;
+ 	struct sockaddr_in rtp_host;
++	u32_t foreign_packets;				// hifi: RTP dropped because it was not from host
+ 	struct {
+ 		unsigned short rport, lport;
+ 		int sock;
+@@ -431,9 +432,9 @@ static u16_t alac_decode(rtp_t *ctx, s16_t *dest, char *buf, int len) {
+ 		mbedtls_aes_crypt_cbc(&ctx->aes, MBEDTLS_AES_DECRYPT, aeslen, iv, (unsigned char*) buf, ctx->decrypt_buf);
+ #endif
+ 		memcpy(ctx->decrypt_buf+aeslen, buf+aeslen, len-aeslen);
+-		alac_to_pcm(ctx->alac_codec, (unsigned char*) ctx->decrypt_buf, (unsigned char*) dest, 2, &frames);
++		alac_to_pcm_len(ctx->alac_codec, (unsigned char*) ctx->decrypt_buf, (unsigned) len, (unsigned char*) dest, 2, &frames);
+ 	} else {
+-		alac_to_pcm(ctx->alac_codec, (unsigned char*) buf, (unsigned char*) dest, 2, &frames);
++		alac_to_pcm_len(ctx->alac_codec, (unsigned char*) buf, (unsigned) len, (unsigned char*) dest, 2, &frames);
+ 	}	
+ 	
+ 	return frames * 4;
+@@ -658,7 +659,22 @@ static void rtp_thread_func(void *arg) {
+ 		for (i = 0; i < 3; i++)
+ 			if (FD_ISSET(ctx->rtp_sockets[i].sock, &fds)) idx = i;
+ 
+-		plen = recvfrom(ctx->rtp_sockets[idx].sock, packet, MAX_PACKET, MSG_DONTWAIT, (struct sockaddr*) &ctx->rtp_host, &rtp_client_len);
++		struct sockaddr_in from = { 0 };
++		plen = recvfrom(ctx->rtp_sockets[idx].sock, packet, MAX_PACKET, MSG_DONTWAIT, (struct sockaddr*) &from, &rtp_client_len);
++
++		// hifi: take RTP only from the sender that opened the RTSP session; anyone
++		// else on the LAN could otherwise feed the decoder or move the clock
++		if (plen > 0 && ctx->host.s_addr != INADDR_ANY && from.sin_addr.s_addr != ctx->host.s_addr) {
++			if ((ctx->foreign_packets++ & 0xff) == 0) {
++				LOG_WARN("[%p]: dropped RTP from %s (not the session's sender), %u so far", ctx, inet_ntoa(from.sin_addr), ctx->foreign_packets);
++			}
++			continue;
++		}
++		if (plen > 0) {
++			// keep the sender's port for control requests; sin_family stays AF_INET
++			ctx->rtp_host.sin_addr = from.sin_addr;
++			ctx->rtp_host.sin_port = from.sin_port;
++		}
+ 
+ 		if (!ntp_sent) {
+ 			LOG_WARN("[%p]: NTP request not send yet", ctx);
+diff --git a/components/spotify/cspot/bell/external/alac/codec/ALACBitUtilities.c b/components/spotify/cspot/bell/external/alac/codec/ALACBitUtilities.c
+index 9414889..04942e0 100644
+--- a/components/spotify/cspot/bell/external/alac/codec/ALACBitUtilities.c
++++ b/components/spotify/cspot/bell/external/alac/codec/ALACBitUtilities.c
+@@ -27,6 +27,13 @@
+ #include <stdio.h>
+ #include "ALACBitUtilities.h"
+ 
++// hifi: every read goes through this, so bytes at or past the end read as zero
++// instead of running off the packet buffer
++static inline uint32_t BitBufferByte( BitBuffer * bits, uint32_t k )
++{
++	return ( (bits->cur + k) < bits->end ) ? bits->cur[k] : 0;
++}
++
+ // BitBufferInit
+ //
+ void BitBufferInit( BitBuffer * bits, uint8_t * buffer, uint32_t byteSize )
+@@ -45,7 +52,7 @@ uint32_t BitBufferRead( BitBuffer * bits, uint8_t numBits )
+ 	
+ 	//Assert( numBits <= 16 );
+ 
+-	returnBits = ((uint32_t)bits->cur[0] << 16) | ((uint32_t)bits->cur[1] << 8) | ((uint32_t)bits->cur[2]);
++	returnBits = (BitBufferByte(bits, 0) << 16) | (BitBufferByte(bits, 1) << 8) | BitBufferByte(bits, 2);
+ 	returnBits = returnBits << bits->bitIndex;
+ 	returnBits &= 0x00FFFFFF;
+ 	
+@@ -70,7 +77,7 @@ uint8_t BitBufferReadSmall( BitBuffer * bits, uint8_t numBits )
+ 	
+ 	//Assert( numBits <= 8 );
+ 	
+-	returnBits = (bits->cur[0] << 8) | bits->cur[1];
++	returnBits = (uint16_t)((BitBufferByte(bits, 0) << 8) | BitBufferByte(bits, 1));
+ 	returnBits = returnBits << bits->bitIndex;
+ 	
+ 	bits->bitIndex += numBits;
+@@ -92,7 +99,7 @@ uint8_t BitBufferReadOne( BitBuffer * bits )
+ {
+ 	uint8_t		returnBits;
+ 
+-	returnBits = (bits->cur[0] >> (7 - bits->bitIndex)) & 1;
++	returnBits = (BitBufferByte(bits, 0) >> (7 - bits->bitIndex)) & 1;
+ 
+ 	bits->bitIndex++;
+ 	
+@@ -108,15 +115,15 @@ uint8_t BitBufferReadOne( BitBuffer * bits )
+ //
+ uint32_t BitBufferPeek( BitBuffer * bits, uint8_t numBits )
+ {
+-	return ((((((uint32_t) bits->cur[0] << 16) | ((uint32_t) bits->cur[1] << 8) |
+-			((uint32_t) bits->cur[2])) << bits->bitIndex) & 0x00FFFFFF) >> (24 - numBits));
++	return (((((BitBufferByte(bits, 0) << 16) | (BitBufferByte(bits, 1) << 8) |
++			BitBufferByte(bits, 2)) << bits->bitIndex) & 0x00FFFFFF) >> (24 - numBits));
+ }
+ 
+ // BitBufferPeekOne
+ //
+ uint32_t BitBufferPeekOne( BitBuffer * bits )
+ {
+-	return ((bits->cur[0] >> (7 - bits->bitIndex)) & 1);
++	return ((BitBufferByte(bits, 0) >> (7 - bits->bitIndex)) & 1);
+ }
+ 
+ // BitBufferUnpackBERSize
+diff --git a/components/spotify/cspot/bell/external/alac/codec/ALACDecoder.cpp b/components/spotify/cspot/bell/external/alac/codec/ALACDecoder.cpp
+index 455eb92..91e6698 100644
+--- a/components/spotify/cspot/bell/external/alac/codec/ALACDecoder.cpp
++++ b/components/spotify/cspot/bell/external/alac/codec/ALACDecoder.cpp
+@@ -43,6 +43,8 @@
+ 
+ // constants/data
+ const uint32_t kMaxBitDepth = 32;			// max allowed bit depth is 32
++// hifi: Apple's default is 4096 frames; refuse anything that would need a huge buffer
++const uint32_t kHifiALACMaxFrameLength = 16384;
+ 
+ 
+ // prototypes
+@@ -105,15 +107,18 @@ int32_t ALACDecoder::Init( void * inMagicCookie, uint32_t inMagicCookieSize )
+     // ALACSpecificConfig. 
+     // See ALACMagicCookieDescription.txt for additional documentation concerning the 'magic cookie'
+     
++    // hifi: a cookie shorter than an atom header can't be read safely
++    RequireAction( (theActualCookie != nil) && (inMagicCookieSize >= 8), return kALAC_ParamError; );
++
+     // skip format ('frma') atom if present
+-    if (theActualCookie[4] == 'f' && theActualCookie[5] == 'r' && theActualCookie[6] == 'm' && theActualCookie[7] == 'a')
++    if (theCookieBytesRemaining >= 20 && theActualCookie[4] == 'f' && theActualCookie[5] == 'r' && theActualCookie[6] == 'm' && theActualCookie[7] == 'a')
+     {
+         theActualCookie += 12;
+         theCookieBytesRemaining -= 12;
+     }
+     
+     // skip 'alac' atom header if present
+-    if (theActualCookie[4] == 'a' && theActualCookie[5] == 'l' && theActualCookie[6] == 'a' && theActualCookie[7] == 'c')
++    if (theCookieBytesRemaining >= 20 && theActualCookie[4] == 'a' && theActualCookie[5] == 'l' && theActualCookie[6] == 'a' && theActualCookie[7] == 'c')
+     {
+         theActualCookie += 12;
+         theCookieBytesRemaining -= 12;
+@@ -134,9 +139,17 @@ int32_t ALACDecoder::Init( void * inMagicCookie, uint32_t inMagicCookieSize )
+         theConfig.avgBitRate = Swap32BtoN(((ALACSpecificConfig *)theActualCookie)->avgBitRate);
+         theConfig.sampleRate = Swap32BtoN(((ALACSpecificConfig *)theActualCookie)->sampleRate);
+ 
++        RequireAction( theConfig.compatibleVersion <= kALACVersion, return kALAC_ParamError; );
++        // hifi: refuse configs the decoder can't honour safely (the cookie comes off the network),
++        // and check them before they become mConfig
++        // (unpc_block writes out[1..numactive] whatever the sample count, numactive <= 31)
++        RequireAction( (theConfig.frameLength >= 32) && (theConfig.frameLength <= kHifiALACMaxFrameLength), return kALAC_ParamError; );
++        RequireAction( (theConfig.bitDepth == 16) || (theConfig.bitDepth == 20) || (theConfig.bitDepth == 24) || (theConfig.bitDepth == 32),
++                       return kALAC_ParamError; );
++        RequireAction( (theConfig.numChannels >= 1) && (theConfig.numChannels <= kALACMaxChannels), return kALAC_ParamError; );
++        RequireAction( mMixBufferU == nil && mMixBufferV == nil && mPredictor == nil, return kALAC_ParamError; );
++
+         mConfig = theConfig;
+-        
+-        RequireAction( mConfig.compatibleVersion <= kALACVersion, return kALAC_ParamError; );
+ 
+         // allocate mix buffers
+         mMixBufferU = (int32_t *) calloc( mConfig.frameLength * sizeof(int32_t), 1 );
+@@ -231,6 +244,10 @@ int32_t ALACDecoder::Decode( BitBuffer * bits, uint8_t * sampleBuffer, uint32_t
+ 			case ID_SCE:
+ 			case ID_LFE:
+ 			{
++				// hifi: never write a channel past the caller's buffer
++				if ( (channelIndex + 1) > numChannels )
++					goto NoMoreChannels;
++
+ 				// mono/LFE channel
+ 				elementInstanceTag = BitBufferReadSmall( bits, 4 );
+ 				mActiveElements |= (1u << elementInstanceTag);
+@@ -246,6 +263,7 @@ int32_t ALACDecoder::Decode( BitBuffer * bits, uint8_t * sampleBuffer, uint32_t
+ 				
+ 				bytesShifted = (headerByte >> 1) & 0x3u;
+ 				RequireAction( bytesShifted != 3, status = kALAC_ParamError; goto Exit; );
++				RequireAction( (bytesShifted * 8u) < mConfig.bitDepth, status = kALAC_ParamError; goto Exit; );
+ 
+ 				shift = bytesShifted * 8;
+ 
+@@ -259,6 +277,8 @@ int32_t ALACDecoder::Decode( BitBuffer * bits, uint8_t * sampleBuffer, uint32_t
+ 					numSamples  = BitBufferRead( bits, 16 ) << 16;
+ 					numSamples |= BitBufferRead( bits, 16 );
+ 				}
++				// hifi: a partial frame may never be longer than the buffers sized from frameLength
++				RequireAction( numSamples <= mConfig.frameLength, status = kALAC_ParamError; goto Exit; );
+ 
+ 				if ( escapeFlag == 0 )
+ 				{
+@@ -397,6 +417,7 @@ int32_t ALACDecoder::Decode( BitBuffer * bits, uint8_t * sampleBuffer, uint32_t
+ 				
+ 				bytesShifted = (headerByte >> 1) & 0x3u;
+ 				RequireAction( bytesShifted != 3, status = kALAC_ParamError; goto Exit; );
++				RequireAction( (bytesShifted * 8u) < mConfig.bitDepth, status = kALAC_ParamError; goto Exit; );
+ 
+ 				shift = bytesShifted * 8;
+ 
+@@ -410,6 +431,8 @@ int32_t ALACDecoder::Decode( BitBuffer * bits, uint8_t * sampleBuffer, uint32_t
+ 					numSamples  = BitBufferRead( bits, 16 ) << 16;
+ 					numSamples |= BitBufferRead( bits, 16 );
+ 				}
++				// hifi: a partial frame may never be longer than the buffers sized from frameLength
++				RequireAction( numSamples <= mConfig.frameLength, status = kALAC_ParamError; goto Exit; );
+ 
+ 				if ( escapeFlag == 0 )
+ 				{
+diff --git a/components/spotify/cspot/bell/external/alac/codec/ag_dec.c b/components/spotify/cspot/bell/external/alac/codec/ag_dec.c
+index 2214c94..642b818 100644
+--- a/components/spotify/cspot/bell/external/alac/codec/ag_dec.c
++++ b/components/spotify/cspot/bell/external/alac/codec/ag_dec.c
+@@ -285,9 +285,13 @@ int32_t dyn_decomp( AGParamRecPtr params, BitBuffer * bitstream, int32_t * pc, i
+ 	RequireAction( (bitstream != nil) && (pc != nil) && (outNumBits != nil), return kALAC_ParamError; );
+ 	*outNumBits = 0;
+ 
++	// hifi: bitPos counts from cur, so the limit is what is left after cur, not the whole
++	// packet (byteSize). The readers below look up to 8 bytes ahead, so callers pad the
++	// buffer with zeros past end (alac_wrapper.cpp does).
++	RequireAction( bitstream->cur < bitstream->end, return kALAC_ParamError; );
+ 	in = bitstream->cur;
+ 	startPos = bitstream->bitIndex;
+-	maxPos = bitstream->byteSize * 8;
++	maxPos = (uint32_t)(bitstream->end - bitstream->cur) * 8;
+ 	bitPos = startPos;
+ 
+     mb = params->mb0;
+diff --git a/components/spotify/cspot/bell/external/alac/codec/dp_dec.c b/components/spotify/cspot/bell/external/alac/codec/dp_dec.c
+index d153025..a14b83c 100644
+--- a/components/spotify/cspot/bell/external/alac/codec/dp_dec.c
++++ b/components/spotify/cspot/bell/external/alac/codec/dp_dec.c
+@@ -61,7 +61,7 @@ void unpc_block( int32_t * pc1, int32_t * out, int32_t num, int16_t * coefs, int
+ 	int32_t *			pout;
+ 	int32_t				del, del0;
+ 	uint32_t			chanshift = 32 - chanbits;
+-	int32_t				denhalf = 1<<(denshift-1);
++	int32_t				denhalf = denshift ? 1<<(denshift-1) : 0;	// hifi: no shift by -1
+ 
+ 	out[0] = pc1[0];
+ 	if ( numactive == 0 )
+diff --git a/components/squeezelite/alac.c b/components/squeezelite/alac.c
+index c159e24..38c9402 100644
+--- a/components/squeezelite/alac.c
++++ b/components/squeezelite/alac.c
+@@ -117,11 +117,16 @@ static int read_mp4_header(void) {
+ 		}
+ 
+ 		// extract audio config from within alac
+-		if (!strcmp(type, "alac") && bytes > len) {
++		// hifi: one decoder per stream; a second alac atom would leak the first
++		if (!strcmp(type, "alac") && bytes > len && !l->decoder) {
+ 			u8_t *ptr = streambuf->readp + 36;
+ 			unsigned int block_size;
+ 			l->play = l->trak;						
+ 			l->decoder = alac_create_decoder(len - 36, ptr, &l->sample_size, &l->sample_rate, &l->channels, &block_size);
++			if (!l->decoder) {
++				LOG_ERROR("bad alac config");
++				return -1;
++			}
+ 			l->writebuf = malloc(block_size + 256);
+ 			LOG_INFO("allocated write buffer of %u bytes", block_size);
+ 			if (!l->writebuf) {
+@@ -382,12 +387,18 @@ static decode_state alac_decode(void) {
+ 	// need to create a buffer with contiguous data
+ 	if (bytes < block_size) {
+ 		iptr = malloc(block_size);
++		if (!iptr) {
++			UNLOCK_S;
++			return DECODE_ERROR;
++		}
+ 		memcpy(iptr, streambuf->readp, bytes);
+ 		memcpy(iptr + bytes, streambuf->buf, block_size - bytes);
+ 	} else iptr = streambuf->readp;
+ 
+-	if (!alac_to_pcm(l->decoder, iptr, l->writebuf, 2, &frames)) {
++	// hifi: pass the packet's real length so the decoder cannot read past it
++	if (!alac_to_pcm_len(l->decoder, iptr, block_size, l->writebuf, 2, &frames)) {
+ 		LOG_ERROR("decode error");
++		if (bytes < block_size) free(iptr);
+ 		UNLOCK_S;
+ 		return DECODE_ERROR;
+ 	}
