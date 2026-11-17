@@ -28,7 +28,7 @@ index e5fe0fb..f7e46a7 100644
  }	
  
  /****************************************************************************************
-@@ -168,7 +169,14 @@ static void raop_sink_start(nm_state_t state_id, int sub_state) {
+@@ -168,7 +169,15 @@ static void raop_sink_start(nm_state_t state_id, int sub_state) {
  	esp_netif_t* netif;
  	esp_netif_ip_info_t ipInfo = { }; 
  	uint8_t mac[6];	
@@ -37,10 +37,26 @@ index e5fe0fb..f7e46a7 100644
 +
 +	/* hifi: once per boot, as for Spotify. A second raop_create() can't bind
 +	 * port 5000 (the first listener still has it), so it returned NULL and
-+	 * lost the running instance's pointer. An IP change reboots the board
-+	 * (cb_connection_got_ip), so the first instance's address stays right. */
++	 * lost the running instance's pointer. The listener is bound to this
++	 * address: an IP change reboots the board (cb_connection_got_ip in esp_app_main.c,
++	 * which this patch makes remember the address), so it stays right. */
 +	if (raop) return;
 +	sink_name = (char*) config_alloc_get_default(NVS_TYPE_STR, "airplay_name", CONFIG_AIRPLAY_NAME, 0);
  
      netif = network_get_active_interface();
  	esp_netif_get_ip_info(netif, &ipInfo);
+diff --git a/main/esp_app_main.c b/main/esp_app_main.c
+index 6915367..b8b3d0c 100644
+--- a/main/esp_app_main.c
++++ b/main/esp_app_main.c
+@@ -163,6 +163,10 @@ void cb_connection_got_ip(nm_state_t new_state, int sub_state){
+ 		}
+ 		esp_restart();
+ 	}
++	/* hifi: remember the address, or the reboot above never fires. AirPlay
++	 * starts once per boot and its listener is bound to this address
++	 * (raop_sink_start), so a new one needs the restart. */
++	if (ipInfo.ip.addr) ip.addr = ipInfo.ip.addr;
+ 
+ 	// initializing mDNS
+ 	network_get_hostname(&hostname);

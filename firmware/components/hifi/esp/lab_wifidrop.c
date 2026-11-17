@@ -24,17 +24,22 @@
  * The result has each cycle's time to come back (ms) and the slowest, and
  * the free internal heap before the first drop (heap_start), after each
  * cycle's settle (heap, read just before the next drop, and after the last
- * settle) and the change over the run (heap_delta): a reconnect that leaks
- * shows as a heap that falls by the same step every cycle. heap_ok is true
- * once a run is done with every cycle back and heap_delta no lower than
- * -heap_tol (bytes, 0-65535, default 200): tools/hil-wifidrop.json in the
- * lab project checks it, so a reconnect leak fails a test.
+ * settle) and the change over the run (heap_delta, from heap_end, the
+ * highest of the last three readings: a reading can catch a few hundred
+ * bytes in flight, a packet or a dial-in buffer, that a leak never gives
+ * back): a reconnect that leaks shows as a heap that falls by the same step
+ * every cycle. heap_ok is true once a run is done with every cycle back and
+ * heap_delta no lower than -heap_tol (bytes, 0-65535, default 200):
+ * tools/hil-wifidrop.json in the lab project checks it, so a reconnect leak
+ * fails a test.
  *
  * On an image built with CONFIG_HEAP_TRACING_STANDALONE, "trace":1 also
  * traces every allocation from just before the first drop to the end of the
- * last settle (records in PSRAM, 300 of them) and the result lists what is
- * still allocated in internal RAM, grouped by call stack, the biggest first:
- * look the addresses up with addr2line on the image's ELF.
+ * last settle (100 records in internal RAM, as the tracer needs, taken before
+ * heap_start is read) and the result lists what is still allocated in
+ * internal RAM, grouped by call stack (the four biggest, unsorted), in place
+ * of the per-cycle back_ms and heap arrays, so it still fits one console
+ * line: look the addresses up with addr2line on the image's ELF.
  */
 #include <stdlib.h>
 #include <string.h>
@@ -78,8 +83,8 @@ static uint32_t heap_int(void) {
 }
 
 #if CONFIG_HEAP_TRACING_STANDALONE
-#define TRACE_RECORDS 300
-#define TRACE_GROUPS 8
+#define TRACE_RECORDS 100
+#define TRACE_GROUPS 4
 typedef struct {
 	void *by[CONFIG_HEAP_TRACING_STACK_DEPTH];
 	uint32_t n, bytes;
@@ -89,17 +94,38 @@ static bool trace_want, trace_ran;
 static uint32_t trace_count, trace_int_n, trace_int_bytes, trace_ngroups;
 static trace_group_t trace_groups[TRACE_GROUPS];
 
-static void trace_begin(void) {
-	trace_ran = false;
-	if (!trace_want) return;
+/* the record buffer must be in internal RAM (esp_heap_trace.h); it is
+ * taken once, before heap_start is read, so it isn't counted as a change */
+static bool trace_ready(void) {
+	if (!trace_want) return false;
 	if (!trace_buf) {
-		trace_buf = heap_caps_calloc(TRACE_RECORDS, sizeof(*trace_buf), MALLOC_CAP_SPIRAM);
-		if (!trace_buf || heap_trace_init_standalone(trace_buf, TRACE_RECORDS) != ESP_OK) {
+		trace_buf = heap_caps_calloc(TRACE_RECORDS, sizeof(*trace_buf), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+		if (!trace_buf) {
+			ESP_LOGW(TAG, "no heap trace: out of internal RAM");
+			return false;
+		}
+		if (heap_trace_init_standalone(trace_buf, TRACE_RECORDS) != ESP_OK) {
 			ESP_LOGW(TAG, "no heap trace");
-			return;
+			free(trace_buf);
+			trace_buf = NULL;
+			return false;
 		}
 	}
-	trace_ran = heap_trace_start(HEAP_TRACE_LEAKS) == ESP_OK;
+	return true;
+}
+
+static void trace_begin(void) {
+	trace_ran = trace_ready() && heap_trace_start(HEAP_TRACE_LEAKS) == ESP_OK;
+}
+
+static void trace_reset(void) {
+	trace_ran = false;
+	trace_count = trace_int_n = trace_int_bytes = trace_ngroups = 0;
+	memset(trace_groups, 0, sizeof(trace_groups));
+}
+
+static bool trace_shown(void) {
+	return trace_want;
 }
 
 /* group what is still allocated in internal RAM by call stack; keep the
@@ -145,8 +171,9 @@ static void trace_result(hj_t *j) {
 		hj_int(j, "internal_bytes", trace_int_bytes);
 		hj_arr(j, "groups");
 		for (uint32_t g = 0; g < trace_ngroups; g++) {
-			/* the stack as one string, frames apart by spaces, so a
-			 * result stays short enough for one console line */
+			/* the stack as one string, frames apart by spaces: with
+			 * at most four groups and no per-cycle arrays the result
+			 * fits one console line (about 1000 characters) */
 			char a[CONFIG_HEAP_TRACING_STACK_DEPTH * 9 + 1];
 			size_t o = 0;
 			for (int k = 0; k < CONFIG_HEAP_TRACING_STACK_DEPTH; k++)
@@ -162,8 +189,11 @@ static void trace_result(hj_t *j) {
 	hj_obj_end(j);
 }
 #else
+static bool trace_ready(void) { return false; }
 static void trace_begin(void) {}
 static void trace_end(void) {}
+static void trace_reset(void) {}
+static bool trace_shown(void) { return false; }
 static void trace_result(hj_t *j) {}
 #endif
 
@@ -218,6 +248,7 @@ static bool drops(void) {
 		phase = "settling";
 		if (!hold(settle_s * 1000)) return false;
 		if (i == 0) {
+			trace_ready();
 			heap_start = heap_int();
 			trace_begin();
 		} else
@@ -321,6 +352,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	heap_tol = tol;
 	done_n = heap_n = heap_start = 0;
 	memset(back_ms, 0, sizeof(back_ms));
+	trace_reset();
 	why[0] = 0;
 	phase = "starting";
 	run_no = run_n;
@@ -344,27 +376,36 @@ static void result(void *hj) {
 	hj_int(j, "cycles", cycles);
 	hj_int(j, "done", done_n);
 	if (why[0]) hj_str(j, "why", why);
+	/* a traced run leaves out the per-cycle arrays, to fit one line */
+	bool arrays = !trace_shown();
 	uint32_t n = done_n, worst = 0;
-	hj_arr(j, "back_ms");
-	for (uint32_t i = 0; i < n && i < CYCLES_MAX; i++) {
-		hj_int(j, NULL, back_ms[i]);
+	for (uint32_t i = 0; i < n && i < CYCLES_MAX; i++)
 		if (back_ms[i] > worst) worst = back_ms[i];
+	if (arrays) {
+		hj_arr(j, "back_ms");
+		for (uint32_t i = 0; i < n && i < CYCLES_MAX; i++) hj_int(j, NULL, back_ms[i]);
+		hj_arr_end(j);
 	}
-	hj_arr_end(j);
 	hj_int(j, "worst_ms", worst);
 	if (heap_start) {
 		uint32_t m = heap_n;
 		hj_int(j, "heap_start", heap_start);
 		if (m) {
-			long long d = (long long) heap_at[m - 1] - heap_start;
+			uint32_t end = 0;
+			for (uint32_t i = m > 3 ? m - 3 : 0; i < m; i++)
+				if (heap_at[i] > end) end = heap_at[i];
+			long long d = (long long) end - heap_start;
+			hj_int(j, "heap_end", end);
 			hj_int(j, "heap_delta", d);
 			/* the check for a test plan: every cycle ran and the heap came
 			 * back to within heap_tol of where it started */
 			hj_bool(j, "heap_ok", !strcmp(phase, "done") && done_n == cycles && d >= -(long long) heap_tol);
 		}
-		hj_arr(j, "heap");
-		for (uint32_t i = 0; i < m; i++) hj_int(j, NULL, heap_at[i]);
-		hj_arr_end(j);
+		if (arrays) {
+			hj_arr(j, "heap");
+			for (uint32_t i = 0; i < m; i++) hj_int(j, NULL, heap_at[i]);
+			hj_arr_end(j);
+		}
 	}
 	trace_result(j);
 }
