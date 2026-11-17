@@ -1,0 +1,43 @@
+diff --git a/components/wpa_supplicant/esp_supplicant/src/esp_hostap.c b/components/wpa_supplicant/esp_supplicant/src/esp_hostap.c
+index 618213f..0ed1ac1 100644
+--- a/components/wpa_supplicant/esp_supplicant/src/esp_hostap.c
++++ b/components/wpa_supplicant/esp_supplicant/src/esp_hostap.c
+@@ -87,7 +87,8 @@ void *hostap_init(void)
+ 
+     memcpy(hapd->conf->ssid.ssid, ssid->ssid, ssid->len);
+     hapd->conf->ssid.ssid_len = ssid->len;
+-    hapd->conf->ssid.wpa_passphrase = (char *)os_zalloc(64);
++    /* 65: a 64-character (hex) password in the 64-byte AP profile has no NUL */
++    hapd->conf->ssid.wpa_passphrase = (char *)os_zalloc(65);
+     if (hapd->conf->ssid.wpa_passphrase == NULL) {
+         os_free(auth_conf);
+         os_free(hapd->conf);
+@@ -95,7 +96,7 @@ void *hostap_init(void)
+         hapd = NULL;
+         return NULL;
+     }
+-    memcpy(hapd->conf->ssid.wpa_passphrase, esp_wifi_ap_get_prof_password_internal(), strlen((char *)esp_wifi_ap_get_prof_password_internal()));
++    memcpy(hapd->conf->ssid.wpa_passphrase, esp_wifi_ap_get_prof_password_internal(), strnlen((char *)esp_wifi_ap_get_prof_password_internal(), 64));
+ 
+     hapd->conf->ap_max_inactivity = 5 * 60;
+     hostapd_setup_wpa_psk(hapd->conf);
+diff --git a/components/wpa_supplicant/src/common/ieee802_11_common.c b/components/wpa_supplicant/src/common/ieee802_11_common.c
+index 14f426a..741f83b 100644
+--- a/components/wpa_supplicant/src/common/ieee802_11_common.c
++++ b/components/wpa_supplicant/src/common/ieee802_11_common.c
+@@ -195,12 +195,14 @@ int ieee802_11_parse_elems(struct wpa_supplicant *wpa_s, const u8 *start, size_t
+ 
+ 		switch (id) {
+ 		case WLAN_EID_RRM_ENABLED_CAPABILITIES:
++			if (elem->datalen < 5)
++				break;
+ 			os_memcpy(wpa_s->rrm_ie, pos, 5);
+ 			wpa_s->rrm.rrm_used = true;
+ 			break;
+ 		case WLAN_EID_EXT_CAPAB:
+ 			/* extended caps can go beyond 8 octacts but we aren't using them now */
+-			os_memcpy(wpa_s->extend_caps, pos, 5);
++			os_memcpy(wpa_s->extend_caps, pos, elem->datalen < 5 ? elem->datalen : 5);
+ 			break;
+ 		default:
+ 			break;

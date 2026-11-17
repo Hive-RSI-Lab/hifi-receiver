@@ -40,14 +40,18 @@ bundles several small upstream commits:
 | `lwip-r2-dhcps-handle-len.patch` | esp-idf 9b8a8e5b2d + 95cc19674d | DHCP server message length |
 | `lwip-r2-dhcps-parse-msg-nullcheck.patch` | esp-idf 26c44b765f | DHCP server NULL on OOM |
 | `mbedtls-cve-2026-49300-basicconstraints.patch` | Mbed TLS 2026-07 advisory fix, ported to 2.28 | CVE-2026-49300, forged CA bit in a chain |
-| `mbedtls-crt-bundle-drop-aaa-emsign.patch` | esp-idf 614fb7a6df, 52ec7af8d2, f67793f49e | drops the Comodo AAA and three emSign roots Mozilla removed |
+| `mbedtls-crt-bundle-drop-emsign.patch` | esp-idf 52ec7af8d2, f67793f49e | drops three emSign roots Mozilla removed. The Comodo AAA removal (614fb7a6df) is left out: a server that sends AAA as the top of its chain would fail, and AAA expires 2028-12-31 anyway |
 | `mbedtls-crt-bundle-accept-cross-signed-roots.patch` | esp-idf 79707d416f | the bundle callback accepts a cross-signed root at any depth; bounded issuer compare |
 | `wifi-sae-token-len.patch` | esp-idf cad36beb4c | WPA3 SAE anti-clogging token: freed but not NULLed, length wrap |
 | `wifi-sae-h2e-null-token.patch` | esp-idf 9de31f008c | SAE H2E write through a NULL token |
 | `wifi-memcmp-const.patch` | esp-idf 77eead46cf | `os_memcmp_const` was plain `memcmp` |
 | `wifi-hardening.patch` | esp-idf 342ae2d231, c9472256be | SAE and WPA IE checks on OOM / malformed IEs |
+| `bt-r2-6-review.patch` | own, from the round-2 review | `smp_act.c` NULL `btm_find_dev`; AVDT multiplexing copy uses the adjusted length; AVRCP company-ID capability length is 3 bytes each |
+| `wifi-r2-review.patch` | esp-idf cad36beb4c, c9472256be hunks the first port left out | SoftAP passphrase with no NUL at 64 characters; RRM and extended-capability IE lengths |
 | `wifi-lib-printf.patch` | esp-idf 5ca9e054c9 | stack bounds in esp_phy's log shim |
 | `netif-hostname-null.patch`, `netif-null-args.patch` | esp-idf 352f4997fa, 9e52922932 | `esp_netif` NULL checks |
+
+Keep the bundle patches together: the cross-signed callback is what lets chains through after a root is dropped.
 
 Held, with reasons in `security.md`: lwip 6a3a944207 (SYN_RCVD sequence
 check, one day old upstream), esp-idf 9669403338 (PTK with no PMK, reachability
