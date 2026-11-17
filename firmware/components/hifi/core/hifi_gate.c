@@ -169,7 +169,8 @@ static bool split_words(const char *line, char *buf, size_t cap, char **argv, in
  * -u/-R and no output size, squeezelite multiplies the 1450 KB default by
  * the first rate / 44100 (1 to 8; 8 with no -r). -r: squeezelite's range
  * form writes one past rates[] when the top rate is above 768000 (it zeroes
- * the MAC), so every rate must be 768000 or less. */
+ * the MAC), so every rate must be 768000 or less; a list of 18 leaves no 0
+ * to end it, so 17 at most; and a non-zero rate under 8000 is refused. */
 static bool debug_ok(const char *v) {
 	while (*v == '=') v++;
 	size_t l = strcspn(v, "=");
@@ -186,7 +187,8 @@ static bool debug_ok(const char *v) {
 #define SQ_OUTPUT_MIN_KB 256
 #define SQ_BUFFERS_MAX_KB 2600
 #define SQ_RATE_MAX 768000
-#define SQ_RATES_MAX 18 /* MAX_SUPPORTED_SAMPLERATES */
+#define SQ_RATE_MIN 8000 /* the lowest of squeezelite's TEST_RATES */
+#define SQ_RATES_MAX 17 /* MAX_SUPPORTED_SAMPLERATES 18 less the 0 that ends the list */
 
 /* one -b value: "S", "S:O", ":O" or "S:", each part 1-4 digits; an empty
  * part leaves that size as it was (next_param returns NULL for "") */
@@ -209,9 +211,9 @@ static bool buffers_ok(const char *v, unsigned *stream_kb, unsigned *output_kb) 
 	return true;
 }
 
-/* one -r value: "<rates>[:<delay>]", rates a comma list of up to 18
+/* one -r value: "<rates>[:<delay>]", rates a comma list of up to 17
  * ("44100,48000") or "<max>", "<min>-<max>" (either side may be empty);
- * digits only, each rate <= 768000, the delay up to 5 digits. An empty
+ * digits only, each rate 0 or 8000 to 768000, the delay up to 5 digits. An empty
  * rates part leaves the rates as they were. *top: squeezelite's rates[0],
  * the highest rate given. */
 static bool rates_ok(const char *v, unsigned *top) {
@@ -225,6 +227,7 @@ static bool rates_ok(const char *v, unsigned *top) {
 			any = 1;
 			continue;
 		}
+		if (digits && n && n < SQ_RATE_MIN) return false;
 		if (*v == ',') {
 			if (!digits || dashes || ++commas >= SQ_RATES_MAX) return false;
 		} else if (*v == '-') {
@@ -236,6 +239,7 @@ static bool rates_ok(const char *v, unsigned *top) {
 		n = 0, digits = 0;
 	}
 	if (commas && !digits) return false; /* "44100," */
+	if (digits && n && n < SQ_RATE_MIN) return false;
 	if (dashes && !any) return false;    /* "-" means 768000 to squeezelite */
 	if (n > hi) hi = n;
 	if (*v == ':') {
