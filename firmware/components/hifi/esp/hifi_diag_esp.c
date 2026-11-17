@@ -80,17 +80,31 @@ static void on_net(void *arg, esp_event_base_t base, int32_t id, void *data) {
 	}
 }
 
-void hifi_diag_tick(void) {
-	/* the default event loop comes up with the network, after hifi_init */
-	/* (network_manager creates it with ESP_ERROR_CHECK, so it can't be made
-	 * earlier here; the catch-up below covers a connect before this) */
-	static bool wifi_on, ip_on;
+/* Registers on_net with the default event loop, which network_manager
+ * creates (with ESP_ERROR_CHECK, so it can't be made earlier here). Safe to
+ * run twice at once: IDF replaces a handler registered again rather than
+ * adding it twice. */
+static void events_register(void) {
+	static volatile bool wifi_on, ip_on;
 	if (!wifi_on) wifi_on = esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, on_net, NULL) == ESP_OK;
 	if (!ip_on) ip_on = esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, on_net, NULL) == ESP_OK;
 	events_on = wifi_on && ip_on;
-	/* an association and an address that came before the handlers did: once
-	 * (later losses and gains reach on_net). The connect it missed counts;
-	 * the IP time stays 0 (unknown) rather than the time of the catch-up. */
+}
+
+/* The hook in patches/0010: network_manager calls it right after it creates
+ * the default event loop, before Wi-Fi or Ethernet start, so the first
+ * connect and the first address reach on_net. */
+void hifi_net_loop_ready(void) {
+	events_register();
+	if (!events_on) ESP_LOGW(TAG, "Wi-Fi events not registered at loop start; retrying from the tick");
+}
+
+void hifi_diag_tick(void) {
+	/* a fallback: a tree without patch 0010, or a register that failed */
+	events_register();
+	/* an association and an address that came before the handlers did (only
+	 * by the fallback): once (later losses and gains reach on_net). The
+	 * connect it missed counts; boot_ip_ms stays 0 (unknown). */
 	static bool caught_up;
 	wifi_ap_record_t ap;
 	if (events_on && !caught_up && hifi_net_ip(NULL, 0) && esp_wifi_sta_get_ap_info(&ap) == ESP_OK) {
