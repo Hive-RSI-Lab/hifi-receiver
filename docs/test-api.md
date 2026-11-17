@@ -215,6 +215,16 @@ up to +4.5 dB, so the level it reports is the one it could set. Plus/Ultra:
 a digital gain on the sub DAC's stream, −40 to 0 dB in 0.5 dB steps (more
 would clip). Kept across restarts. Reply: the full `/state`.
 
+## `POST /api/v1/channel`
+
+`{"channel": "stereo"|"left"|"right"|"mono"}`: which side the speaker output
+plays, on every input (stream, line, DJ direct). Lite only (404 on others).
+Done in the ES8388 output mixers (and, for mono, a -6 dB DAC volume or a
+lower analog gain in DJ direct), so SUB OUT (LOUT2/ROUT2, on the same
+mixers) follows it. `stereo` is the default and the old behaviour. Kept
+across restarts. Shown as `audio.channel` in `/state`. Reply: the full
+`/state`; 400 on a bad value.
+
 ## `POST /api/v1/eq`
 
 `{"gains": [0, 0, 2, 0, 0, 0, 0, 0, -1, 0]}`: squeezelite-esp32's 10-band
@@ -613,6 +623,7 @@ hifi tone stop
 hifi amp on|off|reset
 hifi input stream|dj_direct|line
 hifi sub <dB>
+hifi channel stereo|left|right|mono
 hifi control <action>
 hifi volume <0-100>
 hifi mute on|off

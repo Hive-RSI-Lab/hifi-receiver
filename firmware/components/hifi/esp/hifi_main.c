@@ -85,6 +85,7 @@ static uint8_t pd_status;
 static hifi_input_t input = HIFI_INPUT_STREAM;
 static bool sub_on = true;
 static float sub_db = 0;
+static hifi_chan_t channel = HIFI_CHAN_STEREO;
 static volatile bool codec_dirty = true; /* re-apply input/sub to the codec */
 /* the amps stay in shutdown until then: across an input change (the analog
  * switch moves only with them off, firmware requirement C5) and for 2.5 s
@@ -718,6 +719,7 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	s->dj_guard_tripped = djg.tripped;
 	s->sub_on = sub_on;
 	s->sub_db = hifi_bsp_sub_db(sub_db);
+	s->channel = channel;
 	s->vbus_i_a = vbus_i_a;
 	s->pvdd_v = pvdd_v;
 	s->volume = vol.volume;
@@ -837,6 +839,18 @@ static float op_set_sub(int on, float db) {
 	codec_dirty = true;
 	return set;
 }
+
+#if HIFI_HAS_CHANNEL
+static int op_set_channel(hifi_chan_t c) {
+	LOCK();
+	channel = c;
+	UNLOCK();
+	hifi_bsp_channel(c);
+	config_set_value(NVS_TYPE_STR, "hifi_channel", hifi_chan_name(c));
+	codec_dirty = true;
+	return 0;
+}
+#endif
 
 static int op_set_eq(const float g[HIFI_EQ_BANDS]) {
 	int8_t q[HIFI_EQ_BANDS];
@@ -1227,7 +1241,11 @@ void hifi_main_trial_inputs(hifi_trial_t *t) {
 const hifi_ops_t hifi_ops = {
 	.info = op_info, .snapshot = op_snapshot, .tone_start = op_tone_start, .tone_stop = op_tone_stop,
 	.amp_enable = op_amp_enable, .amp_reset = op_amp_reset, .set_input = op_set_input,
-	.set_sub = op_set_sub, .set_eq = op_set_eq, .set_name = op_set_name, .reboot = op_reboot,
+	.set_sub = op_set_sub,
+#if HIFI_HAS_CHANNEL
+	.set_channel = op_set_channel,
+#endif
+	.set_eq = op_set_eq, .set_name = op_set_name, .reboot = op_reboot,
 	.factory_reset = op_factory_reset, .factory_arm = op_factory_arm, .control = op_control, .selftest = op_selftest,
 	.set_volume = op_set_volume, .ir_learn = op_ir_learn, .ir_forget = op_ir_forget,
 #if HIFI_HAS_CAPTURE
@@ -1395,6 +1413,12 @@ static bool hifi_init(void) {
 	s = config_alloc_get_str("hifi_sub_on", NULL, "1");
 	sub_on = !s || strcmp(s, "0");
 	free(s);
+#if HIFI_HAS_CHANNEL
+	s = config_alloc_get_str("hifi_channel", NULL, "stereo");
+	if (!s || !hifi_chan_parse(s, &channel)) channel = HIFI_CHAN_STEREO;
+	free(s);
+	hifi_bsp_channel(channel);
+#endif
 	char *sv = config_alloc_get_str("hifi_volume", NULL, "30");
 	s = config_alloc_get_str("hifi_max_vol", NULL, "100");
 	hifi_vol_init(&vol, sv ? atoi(sv) : 30, s ? atoi(s) : 100);
