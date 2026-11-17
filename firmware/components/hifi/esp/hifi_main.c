@@ -42,6 +42,7 @@
 #include "hifi_boost.h"
 #include "hifi_board.h"
 #include "hifi_bsp.h"
+#include "hifi_chan.h"
 #include "hifi_gate.h"
 #include "hifi_crash.h"
 #include "hifi_esp.h"
@@ -831,6 +832,7 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	s->heap_min = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 	s->heap_boot = heap_boot;
 	s->reset_reason = hifi_crash_reset_reason();
+	s->restart_cause = hifi_crash_restart_cause();
 	s->psram_free = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
 	hifi_net_update_status(&s->update);
 	hifi_bsp_snapshot(s); /* its sensors, zones and Ethernet */
@@ -977,6 +979,7 @@ static int op_set_name(const char *name) {
 
 static void restart_cb(void *arg) {
 	if (arg) nvs_flash_erase();
+	hifi_restart_note(arg ? "api_factory_reset" : "api_reboot");
 	esp_restart();
 }
 
@@ -1039,6 +1042,7 @@ static void factory_boot(void) {
 	if (hifi_reset_confirmed(armed, esp_reset_reason() == ESP_RST_POWERON)) {
 		ESP_LOGW(TAG, "factory reset: unplugged while armed, erasing every setting");
 		nvs_flash_erase();
+		hifi_restart_note("factory_reset");
 		esp_restart();
 	}
 	config_set_value(NVS_TYPE_STR, "hifi_reset_armed", "0");
@@ -1133,6 +1137,10 @@ static int op_control(const char *a) {
 	return -1;
 }
 
+#if HIFI_HAS_CAPTURE
+static void selftest_loopback(hifi_selftest_t *t, bool amp_on);
+#endif
+
 static void op_selftest(hifi_selftest_t *t) {
 	uint8_t v;
 	bool pd = hifi_i2c_read(CH224_I2C_ADDR, CH224_REG_STATUS, &v) == ESP_OK;
@@ -1172,6 +1180,9 @@ static void op_selftest(hifi_selftest_t *t) {
 	else
 		hifi_selftest_add(t, "amp_no_fault", false, s->amp_latched ? "fault latched" : "amp not enabled (power %s)",
 				  hifi_power_state_name(s->pwr_state));
+#if HIFI_HAS_CAPTURE
+	selftest_loopback(t, s->amp_enabled && !s->amp_fault);
+#endif
 
 	size_t ps = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
 	hifi_selftest_add(t, "psram", ps >= 2u << 20, "%u KB mapped", (unsigned) (ps >> 10));
@@ -1239,9 +1250,13 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 	if (src == HIFI_CAP_LOOPBACK && !has_taps()) return *err = "this board revision has no loopback taps", 409;
 	if (!tone_active && !audio_active && input != HIFI_INPUT_DJ_DIRECT)
 		return *err = "output idle: play a tone or a stream first", 409;
+	if (!codec_up) return *err = "codec not started yet", 409; /* squeezelite's init still writes CHIPPOWER */
 	if (capture_busy) return *err = "a capture is running", 409;
 	capture_busy = true;
-	esp_err_t e = ESP_OK;
+	/* squeezelite's init leaves the ADC powered down in CHIPPOWER (0xAA), so
+	 * without this the ADC sends zeros; the DAC's bits are kept as they are */
+	uint8_t chip = ES8388_CHIPPOWER_ADC_DOWN;
+	esp_err_t e = hifi_i2c_read(ES8388_ADDR, ES8388_CHIPPOWER, &chip);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL1, 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL2, src == HIFI_CAP_LOOPBACK ? 0x50 : 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL4, 0x0C);
@@ -1250,6 +1265,7 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL9, 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL10, 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCPOWER, ES8388_ADCPOWER_CAPTURE);
+	e |= hifi_i2c_write(ES8388_ADDR, ES8388_CHIPPOWER, chip & 0x55); /* the ADC's half up */
 	int st = 0;
 	if (e != ESP_OK) {
 		*err = "codec didn't take the ADC settings";
@@ -1281,9 +1297,93 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 		info->v_per_fs[0] = info->v_per_fs[1] = ADC_FS_PEAK_V * LINE_DIVIDER;
 	}
 out:
+	/* the ADC down again, keeping the DAC's bits as they are now */
+	if (hifi_i2c_read(ES8388_ADDR, ES8388_CHIPPOWER, &chip) != ESP_OK ||
+	    hifi_i2c_write(ES8388_ADDR, ES8388_CHIPPOWER, (chip & 0x55) | ES8388_CHIPPOWER_ADC_DOWN) != ESP_OK)
+		ESP_LOGW(TAG, "capture: couldn't power the ADC down again");
 	capture_busy = false;
 	codec_dirty = true; /* back to the routing for the input in use */
 	return st;
+}
+
+/*
+ * The self-test's speaker path, end to end: a quiet 1 kHz tone on the left
+ * side, then the right, read back on the loopback taps and judged against
+ * the channel mode's routing (hifi_loop_judge). -50 dBFS is a faint beep on
+ * a speaker; on Lite 2 the quiet legs read 40 to 58 dB under it in the
+ * 1 kHz bin (once 28 dB, the first run after a boot). 4800 frames hold
+ * whole cycles of 1 kHz, so a constant DC drops out of the Goertzel;
+ * op_capture's settling wait keeps the ADC's decaying offset out. The
+ * test tone goes through the user's EQ, so the tolerance on a fed leg
+ * widens by the EQ's largest band. LOOP_TAP_GAIN is the taps' RMS per RMS
+ * of the tone, measured on Lite 2 (2026-11-17) with the EQ flat: one leg of
+ * the bridge, 1.2 dB under the nominal chain.
+ */
+#define LOOP_TONE_DBFS -50.0f
+#define LOOP_FRAMES 4800
+#define LOOP_TAP_GAIN 0.386f
+static const char *loop_busy(void) {
+	const char *src = source_name();
+	return audio_active ? "a stream plays" : tone_active ? "a test tone plays"
+	       : strcmp(src, "idle") && strcmp(src, "test") ? "a source is connected"
+	       : input == HIFI_INPUT_DJ_DIRECT ? "DJ direct plays" : NULL;
+}
+
+static bool loop_running; /* under LOCK: one loopback check at a time */
+
+static void selftest_loopback(hifi_selftest_t *t, bool amp_on) {
+	if (!has_taps()) return;
+	const char *busy = loop_busy();
+	LOCK();
+	if (!busy && loop_running) busy = "another self-test runs it";
+	if (!busy) loop_running = true;
+	UNLOCK();
+	if (busy) {
+		hifi_selftest_add(t, "loopback", true, "skipped: %s", busy); /* not a fault, and not ours to stop */
+		return;
+	}
+	int16_t *pcm = amp_on ? heap_caps_malloc(LOOP_FRAMES * 4, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT) : NULL;
+	if (!pcm) {
+		hifi_selftest_add(t, "loopback", false, amp_on ? "no memory for the capture" : "amp not on");
+		LOCK();
+		loop_running = false;
+		UNLOCK();
+		return;
+	}
+	float got[2][2] = {{0}};
+	const char *err = NULL;
+	for (int side = 0; side < 2 && !err; side++) {
+		hifi_tone_params_t p = {.type = HIFI_TONE_SINE, .freq_hz = 1000, .level_dbfs = LOOP_TONE_DBFS,
+					.duration_s = 2, .channel = side ? HIFI_CH_RIGHT : HIFI_CH_LEFT};
+		if (op_tone_start(&p, false, &err)) break;
+		vTaskDelay(pdMS_TO_TICKS(100)); /* the output starts and the 10 ms fade-in ends */
+		hifi_cap_info_t info;
+		if (op_capture(HIFI_CAP_LOOPBACK, pcm, LOOP_FRAMES, &info, &err)) break;
+		for (int leg = 0; leg < 2; leg++)
+			got[side][leg] = hifi_capture_tone_rms(pcm, LOOP_FRAMES, leg, p.freq_hz, TONE_RATE);
+	}
+	op_tone_stop();
+	free(pcm);
+	float eq[HIFI_EQ_BANDS], eq_max = 0;
+	read_eq(eq);
+	for (int i = 0; i < HIFI_EQ_BANDS; i++) eq_max = fmaxf(eq_max, fabsf(eq[i]));
+	LOCK();
+	hifi_chan_t c = channel;
+	loop_running = false;
+	UNLOCK();
+	const char *src = source_name(); /* not audio_active: our own tone counts in it */
+	if (strcmp(src, "idle") && strcmp(src, "test")) /* a source took the output mid-check */
+		hifi_selftest_add(t, "loopback", true, "skipped: a source is connected");
+	else if (err)
+		hifi_selftest_add(t, "loopback", false, "%s", err);
+	else {
+		char v[64];
+		bool ok = hifi_loop_judge(c, got, LOOP_TAP_GAIN * powf(10, LOOP_TONE_DBFS / 20) / sqrtf(2),
+					  HIFI_LOOP_TOL_DB + eq_max, v, sizeof(v));
+		size_t l = strlen(v);
+		if (eq_max > 0) snprintf(v + l, sizeof(v) - l, ", EQ %.0f dB", eq_max);
+		hifi_selftest_add(t, "loopback", ok, "%s", v);
+	}
 }
 #endif
 

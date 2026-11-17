@@ -1106,6 +1106,34 @@ static void test_trial(void) {
 	CHECK(hifi_trial_judge(&t, 1, why, sizeof(why)) == HIFI_TRIAL_BAD);
 }
 
+/* a restart asked for on trial (an IP change) waits for the image to be kept,
+ * or the bootloader rolls the new image back */
+static void test_restart_hold(void) {
+	hifi_restart_hold_t h = {0};
+	const char *why = NULL;
+	CHECK(!hifi_restart_hold(&h, "ip_change")); /* not on trial: restart now */
+	CHECK(!h.held);
+	CHECK(!hifi_restart_release(&h, &why));
+	CHECK(why == NULL);
+	h.on_trial = true; /* booted on trial */
+	CHECK(hifi_restart_hold(&h, "ip_change"));
+	CHECK(h.held);
+	CHECK(hifi_restart_hold(&h, "ip_change")); /* a second change: still held */
+	CHECK(hifi_restart_release(&h, &why)); /* marked good: restart now */
+	CHECK_STR(why, "ip_change");
+	CHECK(!h.held && !h.on_trial);
+	CHECK(!hifi_restart_release(&h, &why)); /* once */
+	CHECK(!hifi_restart_hold(&h, "ip_change")); /* kept: the next change restarts at once */
+	/* marked good with nothing held: later changes restart at once */
+	h = (hifi_restart_hold_t){.on_trial = true};
+	CHECK(!hifi_restart_release(&h, &why));
+	CHECK(!hifi_restart_hold(&h, "ip_change"));
+	h = (hifi_restart_hold_t){.on_trial = true};
+	CHECK(hifi_restart_hold(&h, NULL));
+	CHECK(hifi_restart_release(&h, &why));
+	CHECK_STR(why, "held");
+}
+
 /* the boot heap: taken once the board has settled, and the self-test's line */
 static void test_boot_heap(void) {
 	CHECK(!hifi_heap_boot_due(5, true, true, true)); /* too early, even with all up */
@@ -1168,6 +1196,7 @@ int main(int argc, char **argv) {
 	test_ws_frames();
 	test_remote();
 	test_trial();
+	test_restart_hold();
 	test_boot_heap();
 	return check_report("remote");
 }

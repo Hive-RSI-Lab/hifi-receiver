@@ -27,3 +27,7 @@ typedef struct {
 
 /* Stats of one channel (0 or 1) of interleaved stereo. */
 void hifi_capture_stats(const int16_t *pcm, int frames, int ch, hifi_cap_stats_t *out);
+/* The RMS of one sine in one channel (Goertzel), relative to full scale;
+ * exact when the frames hold whole cycles of it. */
+float hifi_capture_tone_rms(const int16_t *pcm, int frames, int ch, float freq_hz, int rate);
+

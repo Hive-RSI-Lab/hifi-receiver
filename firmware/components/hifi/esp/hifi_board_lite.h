@@ -59,8 +59,9 @@
 #define HIFI_HAS_BOOST 1   /* Boost and a heat cap above the default (hifi_boost.c, hifi_gov.c) */
 #define HIFI_HAS_CAPTURE 1 /* the ES8388's ADC: line in and the loopback taps */
 
-/* ES8388 ADC, for the captures (docs/remote.md). Values from the datasheet,
- * not yet checked on a board. */
+/* ES8388 ADC, for the captures (docs/remote.md). Values from the datasheet;
+ * checked on Lite 2 (2026-11-17): with CHIPPOWER below, a -6 dBFS tone reads
+ * about 0.13 fs on each loopback tap and the floor about 0.0002 fs. */
 #define ES8388_ADCCONTROL1 0x09  /* PGA gain, 0 = 0 dB */
 #define ES8388_ADCCONTROL2 0x0A  /* bits 7:6 LINSEL, 5:4 RINSEL: 00 = input 1, 01 = input 2 */
 #define ES8388_ADCCONTROL4 0x0C  /* I2S, 16 bit */
@@ -69,6 +70,11 @@
 #define ES8388_ADCCONTROL9 0x11
 #define ES8388_ADCCONTROL10 0x12 /* bits 7:6 ALC: 00 = off */
 #define ES8388_ADCPOWER_CAPTURE 0x08 /* inputs and ADCs on, mic bias off */
+/* CHIPPOWER: bits 7/5/3/1 hold the ADC's digital part, state machine, DLL
+ * and Vref down, bits 6/4/2/0 the DAC's. squeezelite's init leaves 0xAA
+ * (ADC down, DAC up), so a capture powers the ADC up and puts the value back. */
+#define ES8388_CHIPPOWER 0x02
+#define ES8388_CHIPPOWER_ADC_DOWN 0xAA
 
 /* The loopback taps: each speaker's + leg through 100k over 10k into LIN2/RIN2.
  * The board the review-2 ECO built (and every one since) has them: R66-R69,

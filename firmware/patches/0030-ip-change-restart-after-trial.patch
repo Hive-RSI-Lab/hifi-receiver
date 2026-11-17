@@ -1,0 +1,30 @@
+diff --git a/main/esp_app_main.c b/main/esp_app_main.c
+--- a/main/esp_app_main.c
++++ b/main/esp_app_main.c
+@@ -152,6 +152,7 @@
+ 	return bNetworkConnected;
+ }
+ extern void hifi_restart_note(const char *why) __attribute__((weak));
++extern bool hifi_restart_after_trial(const char *why) __attribute__((weak));
+ void cb_connection_got_ip(nm_state_t new_state, int sub_state){
+ 	const char *hostname;
+ 	static ip4_addr_t ip;
+@@ -164,9 +165,15 @@
+ 		if(!wait_for_commit()){
+ 			ESP_LOGW(TAG,"Unable to commit configuration. ");
+ 		}
+-		/* hifi: name this restart (api diag restart_cause) */
+-		if (hifi_restart_note) hifi_restart_note("ip_change");
+-		esp_restart();
++		/* hifi: a new image on trial would roll back on this restart, so it
++		 * waits until the trial keeps the image (hifi_relay.c), at most its
++		 * 2 minutes. The connection goes on below meanwhile; AirPlay stays
++		 * bound to the old address until the restart */
++		if (!hifi_restart_after_trial || !hifi_restart_after_trial("ip_change")) {
++			/* hifi: name this restart (api diag restart_cause) */
++			if (hifi_restart_note) hifi_restart_note("ip_change");
++			esp_restart();
++		}
+ 	}
+ 	/* hifi: remember the address, or the reboot above never fires. AirPlay
+ 	 * starts once per boot and its listener is bound to this address

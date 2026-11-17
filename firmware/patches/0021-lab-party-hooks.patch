@@ -1,0 +1,63 @@
+diff --git a/components/squeezelite/output_i2s.c b/components/squeezelite/output_i2s.c
+--- a/components/squeezelite/output_i2s.c
++++ b/components/squeezelite/output_i2s.c
+@@ -48,6 +48,7 @@
+ #include "accessors.h"
+ #include "equalizer.h"
+ #include "globdefs.h"
++#include "esp_timer.h"
+ 
+ #define LOCK   mutex_lock(outputbuf->mutex)
+ #define UNLOCK mutex_unlock(outputbuf->mutex)
+@@ -117,6 +118,20 @@
+ } spdif;
+ static size_t dma_buf_frames;
+ static u64_t hifi_played_us; /* hifi: audio played since boot, this task's only */
++
++/* hifi: the lab's party experiment (components/hifi/esp/lab_party.c) is told when
++ * the I2S starts again or changes rate (the DMA ring is zeroed then), sees each
++ * block just before the equalizer and the DAC and may rewrite it (a follower plays
++ * the leader's stream there), and stamps each write; weak, so only a lab image
++ * links them. Frames are 16-bit stereo, so only that build calls them. */
++extern void hifi_party_i2s_restart(int buf_frames, u32_t rate) __attribute__((weak));
++extern void hifi_party_i2s_block(u8_t *buf, frames_t frames, u32_t rate) __attribute__((weak));
++extern void hifi_party_i2s_wrote(frames_t frames, int64_t t0, int64_t t1) __attribute__((weak));
++#if BYTES_PER_FRAME == 4
++#define HIFI_PARTY_HOOKS 1
++#else
++#define HIFI_PARTY_HOOKS 0
++#endif
+ static volatile u32_t hifi_played_s; /* the same in s, read by hifi_output_stats */
+ static TaskHandle_t output_i2s_task;
+ static struct {
+@@ -626,6 +641,7 @@
+ 			i2s_start(CONFIG_I2S_NUM);
+ 			adac->power(ADAC_ON);	
+             if (spdif.enabled) spdif_convert(NULL, 0, NULL);
++			if (HIFI_PARTY_HOOKS && hifi_party_i2s_restart) hifi_party_i2s_restart(i2s_config.dma_buf_len, output.current_sample_rate);
+ 		} 
+ 
+ 		// this does not work well as set_sample_rates resets the fifos (and it's too early)
+@@ -641,10 +657,14 @@
+ 			i2s_config.sample_rate = output.current_sample_rate;
+ 			i2s_set_sample_rates(CONFIG_I2S_NUM, spdif.enabled ? i2s_config.sample_rate * 2 : i2s_config.sample_rate);
+ 			i2s_zero_dma_buffer(CONFIG_I2S_NUM);
++			if (HIFI_PARTY_HOOKS && hifi_party_i2s_restart) hifi_party_i2s_restart(i2s_config.dma_buf_len, output.current_sample_rate);
+ 
+             equalizer_set_samplerate(output.current_sample_rate);
+ 		}
+ 		
++		if (HIFI_PARTY_HOOKS && hifi_party_i2s_block) hifi_party_i2s_block(obuf, oframes, output.current_sample_rate);
++		int64_t hifi_t0 = hifi_party_i2s_wrote ? esp_timer_get_time() : 0;
++
+ 		// run equalizer
+ 		equalizer_process(obuf, oframes * BYTES_PER_FRAME);
+ 
+@@ -669,6 +689,7 @@
+ 		}
+ 
+ 		fullness = gettime_ms();
++		if (HIFI_PARTY_HOOKS && hifi_party_i2s_wrote) hifi_party_i2s_wrote(bytes / BYTES_PER_FRAME, hifi_t0, esp_timer_get_time());
+ 
+ 		if (bytes != oframes * BYTES_PER_FRAME) {
+ 			LOG_WARN("I2S DMA Overflow! available bytes: %d, I2S wrote %d bytes", oframes * BYTES_PER_FRAME, bytes);

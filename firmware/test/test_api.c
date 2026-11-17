@@ -1,5 +1,6 @@
 #include "check.h"
 #include "hifi_api.h"
+#include "hifi_diag.h"
 #include "hifi_json.h"
 #include "hifi_vol.h"
 
@@ -514,6 +515,9 @@ static void state_parts(void) {
 	s.rssi = -100;
 	s.heap_free = s.heap_min = s.heap_boot = s.psram_free = 4294967295u;
 	s.reset_reason = "task_watchdog";
+	static char cause[HIFI_RESTART_CAUSE_CAP];
+	memset(cause, 'c', sizeof(cause) - 1);
+	s.restart_cause = cause;
 	s.update = (hifi_update_status_t) {.state = HIFI_UPD_ERROR, .progress = 100};
 	memset(s.update.error, 'e', sizeof(s.update.error) - 1);
 	static const char *const all[] = {"power", "amp", "governor", "audio", "net", "sys", "ir", "controls", "update"};
