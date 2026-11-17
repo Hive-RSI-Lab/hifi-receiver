@@ -541,7 +541,7 @@ static void teardown(void) {
 	while ((connected || opening) && esp_timer_get_time() < until) xSemaphoreTake(closed_sem, pdMS_TO_TICKS(100));
 	phase_end = phase;
 	phase = PH_IDLE;
-	if (key) memset(key, 0, sizeof(*key)); /* the run's key goes with the run */
+	if (key) hifi_link_key_wipe(key); /* the run's key goes with the run */
 }
 
 /* the run; true when it ended by itself (the lab frame is told) */
@@ -757,18 +757,18 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	/* both ends get the same key, made afresh for the run by whoever starts it */
 	uint8_t k[HIFI_LINK_KEY];
 	bool have_key = hj_get_str(body, "key", ks, sizeof(ks)) && hifi_link_parse_key(ks, k);
-	memset(ks, 0, sizeof(ks));
+	hifi_link_wipe(ks, sizeof(ks));
 	if (!have_key) {
 		snprintf(err, n, "key (32 hex digits, the same at both ends) is required");
 		return 400;
 	}
 	int st = setup(err, n);
 	if (st) {
-		memset(k, 0, sizeof(k));
+		hifi_link_wipe(k, sizeof(k));
 		return st;
 	}
 	hifi_link_key_init(key, k); /* the worker is idle (alive is false): no frame is being tagged */
-	memset(k, 0, sizeof(k));
+	hifi_link_wipe(k, sizeof(k));
 
 	esp_read_mac(self, ESP_MAC_WIFI_STA);
 	memcpy(self_bt, esp_bt_dev_get_address(), 6);
@@ -805,7 +805,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		if (!advertise()) {
 			run = alive = false;
 			phase = PH_IDLE;
-			memset(key, 0, sizeof(*key));
+			hifi_link_key_wipe(key);
 			snprintf(err, n, "advertising refused");
 			return 503;
 		}
@@ -822,7 +822,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		if (esp_ble_gap_set_scan_params(&sp) != ESP_OK) {
 			run = alive = false;
 			phase = PH_IDLE;
-			memset(key, 0, sizeof(*key));
+			hifi_link_key_wipe(key);
 			snprintf(err, n, "scan refused");
 			return 503;
 		}

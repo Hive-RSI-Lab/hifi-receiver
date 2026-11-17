@@ -326,7 +326,7 @@ static void teardown(void) {
 		}
 	}
 	rate_changed = ps_changed = li_changed = false;
-	if (key) memset(key, 0, sizeof(*key)); /* the run's key goes with the run */
+	if (key) hifi_link_key_wipe(key); /* the run's key goes with the run */
 }
 
 static uint32_t heap_now(void) { return heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); }
@@ -480,7 +480,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	uint8_t k[HIFI_LINK_KEY];
 	char ks[2 * HIFI_LINK_KEY + 2];
 	bool have_key = hj_get_str(body, "key", ks, sizeof(ks)) && hifi_link_parse_key(ks, k);
-	memset(ks, 0, sizeof(ks));
+	hifi_link_wipe(ks, sizeof(ks));
 	if (!have_key) {
 		snprintf(err, n, "key (32 hex digits, the same at both ends) is required");
 		return 400;
@@ -490,7 +490,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	count = num(body, "count", 0);
 	window = num(body, "window", 4);
 	if (rate_hz < 1 || rate_hz > 100 || len < HIFI_LINK_MIN || len > HIFI_LINK_MAX || window < 1 || window > 16) {
-		memset(k, 0, sizeof(k));
+		hifi_link_wipe(k, sizeof(k));
 		snprintf(err, n, "rate_hz 1-100, len %d-%d, window 1-16", HIFI_LINK_MIN, HIFI_LINK_MAX);
 		return 400;
 	}
@@ -504,13 +504,13 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	if (retry > 8 || retry_ms > 500 || (sync_us > 1 && (sync_us < 10000 || sync_us > 1000000)) ||
 	    (sync_us > 1 && (win_us < 10000 || win_us > sync_us || off_us >= sync_us)) || num(body, "li", 0) > 100 ||
 	    ((retry || sync_us) && role != ROLE_FLOOD) || (li_want && role != ROLE_ECHO)) {
-		memset(k, 0, sizeof(k));
+		hifi_link_wipe(k, sizeof(k));
 		snprintf(err, n, "retry 0-8, retry_ms 0-500, sync_us 1 or 10000-1000000 with win_us 10000-sync_us and off_us below it (flood); li 1-100 (echo)");
 		return 400;
 	}
 	/* the tick is 10 ms (HZ 100): a shorter window can't be kept */
 	if (sync_us == 1 && (win_us < 10000 || win_us > 1000000 || off_us > 1000000)) {
-		memset(k, 0, sizeof(k));
+		hifi_link_wipe(k, sizeof(k));
 		snprintf(err, n, "sync_us dtim needs win_us 10000-1000000 and off_us 0-1000000");
 		return 400;
 	}
@@ -521,7 +521,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		for (i = 0; i < sizeof(RATES) / sizeof(RATES[0]) && strcmp(RATES[i].name, s); i++)
 			;
 		if (i == sizeof(RATES) / sizeof(RATES[0])) {
-			memset(k, 0, sizeof(k));
+			hifi_link_wipe(k, sizeof(k));
 			snprintf(err, n, "rate: 1m 2m 5m 11m 6m 12m 24m 54m mcs0 mcs7");
 			return 400;
 		}
@@ -531,7 +531,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	char ps[8] = "";
 	hj_get_str(body, "ps", ps, sizeof(ps));
 	if (ps[0] && strcmp(ps, "none") && strcmp(ps, "min") && strcmp(ps, "max")) {
-		memset(k, 0, sizeof(k));
+		hifi_link_wipe(k, sizeof(k));
 		snprintf(err, n, "ps must be none, min or max");
 		return 400;
 	}
@@ -546,7 +546,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		if (!key) key = heap_caps_calloc(1, sizeof(*key), MALLOC_CAP_SPIRAM);
 		if (!rt) rt = heap_caps_calloc(1, sizeof(*rt), MALLOC_CAP_SPIRAM);
 		if (!qmem || !stack || !window_sem || !tx || !rx || !rx_it || !rt || !key) {
-			memset(k, 0, sizeof(k));
+			hifi_link_wipe(k, sizeof(k));
 			free(qmem);
 			free(stack);
 			snprintf(err, n, "out of memory");
@@ -558,7 +558,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 						       &worker_tcb, 0);
 		if (!worker) { /* static creation can't fail on memory; if it does, the stack goes back */
 			free(stack);
-			memset(k, 0, sizeof(k));
+			hifi_link_wipe(k, sizeof(k));
 			snprintf(err, n, "no worker task");
 			return 503;
 		}
@@ -579,13 +579,13 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	if (want_beacon) read_beacon();
 	if (sync_us == 1) {
 		if (!beacon_seen) {
-			memset(k, 0, sizeof(k));
+			hifi_link_wipe(k, sizeof(k));
 			snprintf(err, n, "sync_us dtim: no beacon of the access point in 1 s (%u seen)", (unsigned) beacons);
 			return 503;
 		}
 		int64_t per = (int64_t) bi_tu * 1024 * (dtim_period ? dtim_period : 1);
 		if (per < 10000 || per > 1000000) {
-			memset(k, 0, sizeof(k));
+			hifi_link_wipe(k, sizeof(k));
 			snprintf(err, n, "sync_us dtim: the DTIM period %lld us is outside 10000-1000000", (long long) per);
 			return 503;
 		}
@@ -600,7 +600,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	 * lab3 on Lite 2 panicked on every ps:none start. The bt experiment
 	 * (mode off) disables the controller, and then ps none is allowed. */
 	if (!strcmp(ps, "none") && esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_ENABLED) {
-		memset(k, 0, sizeof(k));
+		hifi_link_wipe(k, sizeof(k));
 		snprintf(err, n, "ps none panics the Wi-Fi/Bluetooth coexistence while the controller is on; use min or max, or the bt experiment's mode off first");
 		return 400;
 	}
@@ -611,7 +611,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	esp_wifi_get_mac(WIFI_IF_STA, self);
 	esp_err_t e = esp_now_init();
 	if (e != ESP_OK) {
-		memset(k, 0, sizeof(k));
+		hifi_link_wipe(k, sizeof(k));
 		snprintf(err, n, "esp_now_init: %s", esp_err_to_name(e));
 		return 503;
 	}
@@ -624,7 +624,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	if ((e = esp_now_add_peer(&p)) != ESP_OK || (e = esp_now_register_recv_cb(recv_cb)) != ESP_OK ||
 	    (e = esp_now_register_send_cb(send_cb)) != ESP_OK) {
 		esp_now_deinit();
-		memset(k, 0, sizeof(k));
+		hifi_link_wipe(k, sizeof(k));
 		snprintf(err, n, "esp_now: %s", esp_err_to_name(e));
 		return 503;
 	}
@@ -632,7 +632,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		e = esp_wifi_config_espnow_rate(WIFI_IF_STA, rate);
 		if (e != ESP_OK) {
 			esp_now_deinit();
-			memset(k, 0, sizeof(k));
+			hifi_link_wipe(k, sizeof(k));
 			snprintf(err, n, "rate %s: %s", rate_name, esp_err_to_name(e));
 			return 400;
 		}
@@ -665,7 +665,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	}
 
 	hifi_link_key_init(key, k); /* the worker is idle: no frame is being tagged */
-	memset(k, 0, sizeof(k));
+	hifi_link_wipe(k, sizeof(k));
 	run_no = run_n;
 	run = alive = true;
 	xTaskNotifyGive(worker);

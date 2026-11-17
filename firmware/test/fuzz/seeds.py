@@ -97,6 +97,13 @@ def main() -> None:
                      bytes([0]) + b"".join(bytes([1, flag]) + frame(2, q) for q in range(8)) +
                      b"".join(bytes([1, flag]) + frame(t, q, forged=True, session=1)
                               for t, q in ((2, 1000000), (2, 8), (0, 9), (2, 7)))])
+    # the forger's parser (fuzz_espnow only): the whole input is one ESP-NOW action frame
+    # off the air, from the MAC at bytes 10-15, its vendor element around a 100-byte body
+    oui = b"\x18\xfe\x34"
+    air = b"\xd0" + bytes(3) + b"\xff" * 6 + bytes.fromhex("3076f52d742c") + b"\xff" * 6 + bytes(2) + \
+        b"\x7f" + oui + bytes(4) + bytes([221, 105]) + oui + b"\x04\x01" + bytes(range(100))
+    assert len(air) == 39 + 100
+    (HERE / "fuzz_espnow" / "seed-air").write_bytes(air)
 
 
 if __name__ == "__main__":

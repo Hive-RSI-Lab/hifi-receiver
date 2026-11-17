@@ -3,11 +3,17 @@
  * the configured peer, and a peer's MAC is easy to forge) goes through
  * hifi_link_receive at an echo, a pinger or a flooder. Byte 0 picks the role
  * and the clock's start; then frames, each after a gap of up to a second
- * and a bit, so sessions go idle and the clock's one-second windows close. */
+ * and a bit, so sessions go idle and the clock's one-second windows close.
+ * The whole input also goes, as a frame off the air, through the forger's
+ * parser (hifi_link_espnow_body), which must never point past it. */
 #include "fuzz_link.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t n) {
 	if (n < 1) return 0;
+	if (n >= 16) {
+		size_t b = hifi_link_espnow_body(d, n, d + 10);
+		if (b && (b < HIFI_LINK_MIN || b > HIFI_LINK_MAX || HIFI_LINK_ESPNOW_BODY + b > n)) __builtin_trap();
+	}
 	fz_t z = {d, n, 1};
 	int role = (d[0] & 3) % 3; /* echo, ping, flood */
 	bool echo = role == 0, pongs = role == 1;

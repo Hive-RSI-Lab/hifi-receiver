@@ -22,10 +22,22 @@
  * cut to HIFI_LINK_TAG bytes. The payload needs no covering: it is a function
  * of seq and the length, both in the header, and decode checks every byte.
  * A frame whose tag fails is bad before its session or seq is looked at, so a
- * stranger in radio range (any MAC, any seq) can't move the counts. The key
- * is given at the start of each run (never a constant in the code); the
- * ipad and opad states are computed once per key, so a frame costs two
- * SHA-256 blocks whatever its length.
+ * stranger in radio range (any MAC, any seq) can't make a frame of their own:
+ * all a forged frame moves is bad. The key is given at the start of each run
+ * (never a constant in the code); the ipad and opad states are computed once
+ * per key, so a frame costs two SHA-256 blocks whatever its length.
+ *
+ * What the tag doesn't stop: a stranger sending again, within the same run,
+ * a genuine frame they heard (a replay; across runs it fails, as each run has
+ * a fresh key). A replayed DATA frame is a dup (or old, or fills a gap the
+ * flooder's real frame left: lost goes down by one, reorder up). A replayed
+ * PING is answered once only: the echo remembers the seqs it answered and
+ * counts a repeat as ping_dup. A replayed PONG is a dup at the pinger, unless
+ * the pinger missed the real one: then it is taken, late, and lowers the
+ * loss, raises the round trip and skews that second's clock offset. A
+ * per-run counter in the tagged header can't stop that last case without a
+ * receive window tighter than the radio's own jitter, so the lab says it
+ * rather than hides it.
  */
 #pragma once
 
@@ -58,12 +70,18 @@ typedef struct {
 	uint16_t len;       /* the whole frame with its tag, HIFI_LINK_MIN..HIFI_LINK_MAX */
 } hifi_link_frame_t;
 
-/* the run's key, ready to tag with: the HMAC inner and outer states */
+/* the run's key, ready to tag with: the HMAC inner and outer states. Until
+ * key_init (and after key_wipe) it isn't ready, and encode, decode and forge
+ * refuse it: an all-zero state is a key anyone could compute. */
 typedef struct {
 	hifi_sha256_t in, out;
+	bool ready;
 } hifi_link_key_t;
 
 void hifi_link_key_init(hifi_link_key_t *k, const uint8_t key[HIFI_LINK_KEY]);
+void hifi_link_key_wipe(hifi_link_key_t *k);
+/* zeroes n bytes in a way the compiler keeps, for key bytes on their way out */
+void hifi_link_wipe(void *p, size_t n);
 /* 32 hex digits; false (key untouched) for anything else */
 bool hifi_link_parse_key(const char *s, uint8_t key[HIFI_LINK_KEY]);
 /* the tag of a frame's header (its first HIFI_LINK_HDR bytes) */
@@ -77,8 +95,9 @@ bool hifi_link_decode(const hifi_link_key_t *k, const uint8_t *buf, size_t n, hi
 /* The lab's forger (lab_forge.c): a frame heard on the air, its seq moved on
  * by jump, its payload made to match and its tag made again under k (the
  * forger's own key, or the run's for the control). The tag of the frame heard
- * isn't checked: the forger doesn't know the key. n bytes into out (cap at
- * least n); 0 when it isn't shaped like one of ours. */
+ * isn't checked: the forger doesn't know the key. jump 0 is a replay: the
+ * frame as heard, its own tag kept. n bytes into out (cap at least n); 0 when
+ * it isn't shaped like one of ours. */
 size_t hifi_link_forge(const hifi_link_key_t *k, const uint8_t *in, size_t n, uint32_t jump, uint8_t *out, size_t cap);
 
 typedef struct {
@@ -90,6 +109,15 @@ typedef struct {
  * would wrap top) */
 int hifi_link_seen(hifi_link_seen_t *s, uint32_t seq);
 
+/* An ESP-NOW frame as the air carries it (an 802.11 action frame: the 24-byte
+ * header, category 127 and Espressif's OUI, 4 random bytes, then a vendor
+ * element: 221, length, OUI, type 4, version, and the payload), n bytes
+ * without the FCS. The payload's length when it was sent by mac and is long
+ * enough to be a link frame (it starts at HIFI_LINK_ESPNOW_BODY); 0 if not. */
+#define HIFI_LINK_ESPNOW_BODY 39
+#define HIFI_LINK_ESPNOW_MAX (HIFI_LINK_ESPNOW_BODY + HIFI_LINK_MAX)
+size_t hifi_link_espnow_body(const uint8_t *p, size_t n, const uint8_t mac[6]);
+
 /* ------------------------------------------------------------ receiving end */
 
 typedef struct {
@@ -97,9 +125,12 @@ typedef struct {
 	uint32_t rx, dup, reorder, old, bad;
 	uint32_t stray; /* DATA of another session while this one is live */
 	uint32_t pings; /* PINGs answered (echo) */
+	uint32_t ping_dup; /* PINGs already answered: a replay gets no second PONG */
 	uint64_t bytes;
 	int64_t first_us, last_us;
 	hifi_link_seen_t seen;
+	uint32_t ping_session; /* the session of the PINGs in ping_seen */
+	hifi_link_seen_t ping_seen;
 } hifi_link_rx_t;
 
 void hifi_link_rx_init(hifi_link_rx_t *r);
@@ -165,7 +196,7 @@ typedef enum {
 	HIFI_LINK_GOT_USED,  /* counted (DATA, a PONG) */
 	HIFI_LINK_GOT_REPLY, /* a PING: send *pong back (its t3 stamped at the send) */
 	HIFI_LINK_GOT_BAD,   /* not one of ours, or damaged: counted in rx->bad */
-	HIFI_LINK_GOT_OTHER, /* a good frame this end has no use for */
+	HIFI_LINK_GOT_OTHER, /* a good frame this end has no use for (or a PING it answered already) */
 } hifi_link_got_t;
 
 /* A radio callback's copy of a received value into its queue item's buffer

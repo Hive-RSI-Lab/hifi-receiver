@@ -8,15 +8,18 @@
  *   api lab "{\"op\":\"start\",\"exp\":\"forge\",\"victim\":\"3076f52d742c\",\"max_s\":60}"
  *   api lab "{\"op\":\"result\",\"exp\":\"forge\"}"
  *
- * Optional: jump (default 1000), rate_hz (forged frames a second at most,
- * 1-100, default 20), key (32 hex digits: the control, tagging with the run's
- * own key, which must then move the far end's loss; without it the forger
- * makes up a key of its own).
+ * Optional: jump (default 1000; 0 replays each frame as heard, its own tag
+ * kept), rate_hz (forged frames a second at most, 1-100, default 20), key (32
+ * hex digits: the control, tagging with the run's own key; without it the
+ * forger makes up a key of its own). The control's effect is clearest with a
+ * flooder as the victim: each forged DATA frame moves the sink's top seq on
+ * by jump, so its loss jumps. Against a pinger the echo answers the forged
+ * PINGs and the pinger counts PONGs for seqs it never sent.
  *
  * ESP-NOW frames are 802.11 action frames: the 24-byte header, category 127
  * and Espressif's OUI, 4 random bytes, then a vendor element (221, length,
  * OUI, type 4, version) holding the payload. The forger keeps all of that and
- * replaces only the payload. The receive side is the promiscuous callback
+ * replaces only the payload (hifi_link_espnow_body, host-tested). The receive side is the promiscuous callback
  * (management frames only, on the station's channel); the station stays
  * connected throughout. Promiscuous mode goes off when the run stops.
  */
@@ -40,10 +43,9 @@
 
 static const char *TAG = "lab_forge";
 
-#define HDR 24      /* the 802.11 management header */
-#define BODY 39     /* the ESP-NOW payload's offset in the frame */
-#define FCS 4       /* the frame check sequence the promiscuous length counts */
-#define FRAME_MAX (BODY + HIFI_LINK_MAX)
+#define BODY HIFI_LINK_ESPNOW_BODY /* the ESP-NOW payload's offset in the frame */
+#define FCS 4                         /* the frame check sequence the promiscuous length counts */
+#define FRAME_MAX HIFI_LINK_ESPNOW_MAX
 
 typedef struct {
 	uint16_t n; /* bytes of frame, without the FCS */
@@ -72,29 +74,17 @@ static volatile uint32_t heard, q_full, other;
 static uint32_t sent, send_fail, not_ours, skipped;
 static char last_err[24];
 
-static const uint8_t OUI[3] = {0x18, 0xfe, 0x34};
-
-/* an ESP-NOW frame from the victim: its length without the FCS, 0 if not */
-static size_t espnow_from_victim(const uint8_t *p, size_t n) {
-	if (n < BODY + HIFI_LINK_MIN || n > FRAME_MAX) return 0;
-	if (p[0] != 0xd0 || memcmp(p + 10, victim, 6)) return 0; /* action, from the victim */
-	if (p[HDR] != 127 || memcmp(p + HDR + 1, OUI, 3)) return 0;
-	if (p[32] != 221 || memcmp(p + 34, OUI, 3) || p[37] != 4) return 0;
-	size_t body = p[33] >= 5 ? (size_t) p[33] - 5 : 0;
-	if (body < HIFI_LINK_MIN || BODY + body > n) return 0;
-	return BODY + body;
-}
-
 static void sniff_cb(void *buf, wifi_promiscuous_pkt_type_t type) {
 	if (!run || type != WIFI_PKT_MGMT) return;
 	const wifi_promiscuous_pkt_t *pk = buf;
 	size_t n = pk->rx_ctrl.sig_len;
 	if (n <= FCS) return;
-	n = espnow_from_victim(pk->payload, n - FCS);
-	if (!n) {
+	size_t body = hifi_link_espnow_body(pk->payload, n - FCS, victim);
+	if (!body) {
 		other++;
 		return;
 	}
+	n = BODY + body;
 	heard++;
 	cb_it->n = (uint16_t) n;
 	memcpy(cb_it->f, pk->payload, n);
@@ -105,7 +95,7 @@ static void teardown(void) {
 	run = false;
 	esp_wifi_set_promiscuous(false);
 	esp_wifi_set_promiscuous_rx_cb(NULL);
-	if (key) memset(key, 0, sizeof(*key));
+	if (key) hifi_link_key_wipe(key);
 }
 
 static void one_run(void) {
@@ -166,20 +156,20 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		snprintf(err, n, "victim (the sending board's MAC or device id) is required");
 		return 400;
 	}
-	jump = num(body, "jump", 1000);
+	jump = num(body, "jump", 1000); /* 0: a replay */
 	rate_hz = num(body, "rate_hz", 20);
-	if (jump < 1 || rate_hz < 1 || rate_hz > 100) {
-		snprintf(err, n, "jump at least 1, rate_hz 1-100");
+	if (rate_hz < 1 || rate_hz > 100) {
+		snprintf(err, n, "rate_hz 1-100");
 		return 400;
 	}
 	uint8_t k[HIFI_LINK_KEY];
 	control = hj_get_str(body, "key", s, sizeof(s));
 	if (control && !hifi_link_parse_key(s, k)) {
-		memset(s, 0, sizeof(s));
+		hifi_link_wipe(s, sizeof(s));
 		snprintf(err, n, "key: 32 hex digits");
 		return 400;
 	}
-	memset(s, 0, sizeof(s));
+	hifi_link_wipe(s, sizeof(s));
 	if (!control) esp_fill_random(k, sizeof(k)); /* a stranger's key */
 
 	if (!worker) {
@@ -188,7 +178,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		if (!cb_it) cb_it = heap_caps_calloc(1, sizeof(*cb_it), MALLOC_CAP_SPIRAM);
 		if (!key) key = heap_caps_calloc(1, sizeof(*key), MALLOC_CAP_SPIRAM);
 		if (!qmem || !stack || !cb_it || !key) {
-			memset(k, 0, sizeof(k));
+			hifi_link_wipe(k, sizeof(k));
 			free(qmem);
 			free(stack);
 			snprintf(err, n, "out of memory");
@@ -200,7 +190,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 						       &worker_tcb, 0);
 		if (!worker) {
 			free(stack);
-			memset(k, 0, sizeof(k));
+			hifi_link_wipe(k, sizeof(k));
 			snprintf(err, n, "no worker task");
 			return 503;
 		}
@@ -212,7 +202,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	wifi_second_chan_t second;
 	if (esp_wifi_get_channel(&channel, &second) != ESP_OK) channel = 0;
 	hifi_link_key_init(key, k); /* the worker is idle */
-	memset(k, 0, sizeof(k));
+	hifi_link_wipe(k, sizeof(k));
 
 	wifi_promiscuous_filter_t flt = {.filter_mask = WIFI_PROMIS_FILTER_MASK_MGMT};
 	esp_err_t e;
@@ -260,7 +250,7 @@ static void result(void *hj) {
 
 const hifi_lab_exp_t lab_forge = {
 	.name = "forge",
-	.help = "a stranger's forged ESP-NOW frames: victim (MAC), jump, rate_hz, key (the control only)",
+	.help = "a stranger's forged ESP-NOW frames: victim (MAC), jump (0 replays), rate_hz, key (the control only)",
 	.start = start,
 	.stop = stop,
 	.result = result,
