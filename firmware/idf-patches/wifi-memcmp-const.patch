@@ -1,0 +1,40 @@
+--- a/components/wpa_supplicant/port/include/os.h
++++ b/components/wpa_supplicant/port/include/os.h
+@@ -247,7 +247,8 @@
+ #define os_memcmp(s1, s2, n) memcmp((s1), (s2), (n))
+ #endif
+ #ifndef os_memcmp_const
+-#define os_memcmp_const(s1, s2, n) memcmp((s1), (s2), (n))
++int os_memcmp_const_impl(const void *a, const void *b, size_t len);
++#define os_memcmp_const(s1, s2, n) os_memcmp_const_impl((s1), (s2), (n))
+ #endif
+ 
+ 
+--- a/components/wpa_supplicant/port/os_xtensa.c
++++ b/components/wpa_supplicant/port/os_xtensa.c
+@@ -29,8 +29,14 @@
+ #include <sys/time.h>
+ #include "esp_system.h"
+ #include "utils/common.h"
++#include "utils/const_time.h"
+ #include "mbedtls/platform_util.h"
+ 
++int os_memcmp_const_impl(const void *a, const void *b, size_t len)
++{
++    return const_time_memcmp(a, b, len);
++}
++
+ int os_get_time(struct os_time *t)
+ {
+     struct timeval tv;
+--- a/components/wpa_supplicant/src/common/sae.c
++++ b/components/wpa_supplicant/src/common/sae.c
+@@ -2284,7 +2284,7 @@
+ 		}
+ 	}
+ 
+-	if (os_memcmp(verifier, data + 2, hash_len) != 0) {
++	if (os_memcmp_const(verifier, data + 2, hash_len) != 0) {
+ 		wpa_printf(MSG_DEBUG, "SAE: Confirm mismatch");
+ 		wpa_hexdump(MSG_DEBUG, "SAE: Received confirm",
+ 			    data + 2, hash_len);

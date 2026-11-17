@@ -1,0 +1,13 @@
+--- a/components/lwip/lwip/src/core/ipv4/dhcp.c
++++ b/components/lwip/lwip/src/core/ipv4/dhcp.c
+@@ -799,7 +799,9 @@
+   /* MTU judgement */
+ #if ESP_DHCP
+   if (dhcp_option_given(dhcp, DHCP_OPTION_IDX_MTU)) {
+-      if (dhcp_get_option_value(dhcp, DHCP_OPTION_IDX_MTU) < netif->mtu) {
++      /* RFC 2132 requires MTU >= 68 */
++      if (dhcp_get_option_value(dhcp, DHCP_OPTION_IDX_MTU) >= 68 &&
++          dhcp_get_option_value(dhcp, DHCP_OPTION_IDX_MTU) < netif->mtu) {
+           netif->mtu = dhcp_get_option_value(dhcp, DHCP_OPTION_IDX_MTU);
+           LWIP_DEBUGF(DHCP_DEBUG | LWIP_DBG_TRACE, ("dhcp_handle_ack(): Negotiated netif MTU is %d\n", netif->mtu));
+       }
