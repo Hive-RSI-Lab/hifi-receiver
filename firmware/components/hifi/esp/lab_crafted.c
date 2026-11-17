@@ -13,6 +13,17 @@
  * (1-64, default 1): the data is fed that many times (ALAC: one packet per
  * call; MP3: one stream of the copies end to end, so a crafted frame can
  * build on the one before it).
+ * A bench command is at most 512 characters, so data longer than about 300
+ * bytes goes in pieces: each piece but the last says "more":true and only
+ * stores its bytes (the run ends "done" at once, with "staged" in its
+ * result), and "offset" says where a piece goes, which must be 0 (a fresh
+ * start) or the number of bytes staged so far. The last piece, without
+ * "more", decodes everything staged plus itself:
+ *
+ *   api lab "{\"op\":\"start\",\"exp\":\"crafted\",\"codec\":\"mp3\",\"more\":true,\"data\":\"<300 B>\"}"
+ *   api lab "{\"op\":\"start\",\"exp\":\"crafted\",\"codec\":\"mp3\",\"offset\":300,\"data\":\"<the rest>\"}"
+ *
+ * A decode, a failed piece or a piece at offset 0 drops what was staged.
  * ALAC's stream parameters are AirPlay's (frame 352, 16 bits, 2 channels,
  * 44100 Hz) unless frame, bits and channels say otherwise. The packet goes
  * in with its length (alac_to_pcm_len, as rtp.c's alac_decode calls it) on
@@ -73,7 +84,8 @@ static StaticTask_t worker_tcb;
 static uint32_t run_no;
 static bool is_mp3;
 static uint8_t *data;
-static size_t data_n;
+static size_t data_n, staged_n; /* staged_n: bytes stored by "more" pieces, waiting for the last one */
+static bool stage_only;
 static uint32_t repeat, frame_len, bits, channels;
 static volatile uint32_t calls, ok, refused, frames_out;
 static volatile bool heap_before, heap_after, finished;
@@ -173,8 +185,9 @@ static void task_main(void *arg) {
 		 * that panics the board at once must not beat it there */
 		vTaskDelay(pdMS_TO_TICKS(250));
 		heap_before = heap_caps_check_integrity_all(true);
-		ESP_LOGW(TAG, "%s: %u bytes x %u", is_mp3 ? "mp3" : "alac", (unsigned) data_n, (unsigned) repeat);
-		if (go) {
+		if (!stage_only)
+			ESP_LOGW(TAG, "%s: %u bytes x %u", is_mp3 ? "mp3" : "alac", (unsigned) data_n, (unsigned) repeat);
+		if (go && !stage_only) {
 			if (is_mp3) run_mp3();
 			else run_alac();
 		}
@@ -215,6 +228,18 @@ static int start(uint32_t run, const char *body, char *err, size_t n) {
 		snprintf(err, n, "repeat 1-%d, frame 1-4096, bits 16-32, channels 1-2", REPEAT_MAX);
 		return 400;
 	}
+	uint32_t off = num(body, "offset", 0, 0, DATA_MAX - 1, &bad);
+	bool more = false;
+	const char *mv;
+	size_t mv_n;
+	if (bad || (hj_get_raw(body, "more", &mv, &mv_n) && !hj_get_bool(body, "more", &more))) {
+		snprintf(err, n, "offset 0-%d, more true or false", DATA_MAX - 1);
+		return 400;
+	}
+	if (off && off != staged_n) {
+		snprintf(err, n, "offset must be 0 or %u (the bytes staged)", (unsigned) staged_n);
+		return 400;
+	}
 	const char *b64;
 	size_t b64_n;
 	if (!hj_get_str_span(body, "data", &b64, &b64_n) || !b64_n) {
@@ -243,12 +268,15 @@ static int start(uint32_t run, const char *body, char *err, size_t n) {
 			return 503;
 		}
 	}
-	long got = hifi_b64_decode(b64, b64_n, data, DATA_MAX);
+	long got = hifi_b64_decode(b64, b64_n, data + off, DATA_MAX - off);
 	if (got <= 0) {
-		snprintf(err, n, "data: base64 of 1-%d bytes", DATA_MAX);
+		staged_n = 0; /* the piece may have written over what was staged */
+		snprintf(err, n, "data: base64 of 1-%u bytes", (unsigned) (DATA_MAX - off));
 		return 400;
 	}
-	data_n = got;
+	data_n = off + got;
+	stage_only = more;
+	staged_n = more ? data_n : 0;
 	is_mp3 = !strcmp(codec, "mp3");
 	repeat = rep, frame_len = fl, bits = bt, channels = chn;
 	calls = ok = refused = frames_out = 0;
@@ -270,6 +298,7 @@ static void result(void *hj) {
 	hj_t *j = hj;
 	hj_str(j, "codec", is_mp3 ? "mp3" : "alac");
 	hj_int(j, "bytes", data_n);
+	if (stage_only) hj_bool(j, "staged", true);
 	hj_int(j, "repeat", repeat);
 	hj_bool(j, "finished", finished);
 	hj_int(j, "calls", calls);
@@ -284,6 +313,7 @@ static void result(void *hj) {
 const hifi_lab_exp_t lab_crafted = {
 	.name = "crafted",
 	.help = "feeds a crafted packet or stream to the board's decoders: codec (alac|mp3), data (base64), repeat; "
+		"long data in pieces: more:true stores a piece, offset = bytes staged so far; "
 		"heap_ok_after sees a broken heap header, not every overrun (no heap poisoning)",
 	.start = start,
 	.stop = stop,
