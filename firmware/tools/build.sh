@@ -81,7 +81,7 @@ fi
 # the lab's Bluetooth experiments are weak symbols that only patch 0017's
 # -u flags pull into the app: if the flags and the sdkconfig ever disagree,
 # the experiment would vanish without a link error, so fail here instead
-for lab in "lab_bt:CONFIG_BT_CLASSIC_ENABLED" "lab_ble:CONFIG_BT_BLE_ENABLED"; do
+for lab in "lab_bt:CONFIG_BT_CLASSIC_ENABLED" "lab_a2dp:CONFIG_BT_CLASSIC_ENABLED" "lab_ble:CONFIG_BT_BLE_ENABLED"; do
 	if grep -q '^CONFIG_HIFI_LAB=y' sdkconfig && grep -q "^${lab#*:}=y" sdkconfig &&
 		! grep -q "(${lab%%:*}.c.obj)" build/squeezelite.map; then
 		echo "build.sh: ${lab%%:*} is enabled but not linked into the app (patch 0017)" >&2

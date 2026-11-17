@@ -180,6 +180,7 @@ void hifi_lab_esp_init(void) {
 	hifi_lab_register(&lab, &lab_forge);
 #if CONFIG_BT_CLASSIC_ENABLED
 	if (&lab_bt) hifi_lab_register(&lab, &lab_bt); /* NULL in recovery */
+	if (&lab_a2dp) hifi_lab_register(&lab, &lab_a2dp);
 #endif
 #if CONFIG_BT_BLE_ENABLED
 	if (&lab_ble) hifi_lab_register(&lab, &lab_ble); /* NULL in recovery */
