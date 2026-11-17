@@ -61,6 +61,14 @@ else
 	echo "build.sh: Hive key: missing, the board will refuse agent commands and Wi-Fi updates" >&2
 fi
 
+# The build number (seconds since 1970, UTC) the image carries and
+# tools/sign_fw.py signs: a board refuses a LAN update with a lower one
+# (security.md L9). Set HIFI_FW_BUILD to rebuild one exactly.
+HIFI_FW_BUILD=${HIFI_FW_BUILD:-$(date -u +%s)}
+case "$HIFI_FW_BUILD" in '' | *[!0-9]* | 0) echo "build.sh: HIFI_FW_BUILD must be a positive number" >&2; exit 1 ;; esac
+export HIFI_FW_BUILD
+echo "build.sh: build number $HIFI_FW_BUILD"
+
 cd "$DEST"
 idf.py reconfigure >/dev/null
 nice -n 19 ninja -C build -j "${JOBS:-4}"

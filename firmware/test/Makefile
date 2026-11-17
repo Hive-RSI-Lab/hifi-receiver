@@ -30,7 +30,7 @@ $(BIN)/%: %.c $(SRCS) $(wildcard $(CORE)/*.h) check.h | $(BIN)
 	$(CC) $(CFLAGS) -o $@ $< $(SRCS) $(LDLIBS)
 
 run: $(addprefix $(BIN)/,$(TESTS))
-	@fail=0; for t in $(abspath $^); do $$t || fail=1; done; python3 test_otadata.py || fail=1; \
+	@fail=0; for t in $(abspath $^); do $$t || fail=1; done; python3 test_otadata.py || fail=1; python3 test_sign_fw.py || fail=1; \
 	  $(MAKE) --no-print-directory upstream || fail=1; \
 	  $(MAKE) --no-print-directory fuzz || fail=1; \
 	  $(MAKE) --no-print-directory qemu || fail=1; exit $$fail

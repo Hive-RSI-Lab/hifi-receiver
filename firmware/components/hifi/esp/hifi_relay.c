@@ -512,6 +512,16 @@ static void relay_task(void *arg) {
 	}
 }
 
+/* this build's number (firmware/tools/build.sh: seconds since 1970 at the
+ * build), also kept as text in the image, where firmware/tools/sign_fw.py
+ * reads it into the signature; 0: none, and the LAN can't update it (L9) */
+#ifndef HIFI_FW_BUILD
+#define HIFI_FW_BUILD 0
+#endif
+#define HIFI_XSTR_(x) #x
+#define HIFI_XSTR(x) HIFI_XSTR_(x)
+__attribute__((used)) const char hifi_fw_build_tag[] = HIFI_BUILD_TAG_PREFIX HIFI_XSTR(HIFI_FW_BUILD) ";";
+
 void hifi_remote_start(const hifi_ops_t *o) {
 	ops = o;
 	uint8_t mac[6];
@@ -532,7 +542,9 @@ void hifi_remote_start(const hifi_ops_t *o) {
 	hifi_ota_set_keys(&hifi_ota_session, (const uint8_t (*)[32]) rem.keys, rem.nkeys, verify);
 	/* and the LAN may not put back an older build than this one */
 	const esp_app_desc_t *app = esp_ota_get_app_description();
-	hifi_ota_set_running(&hifi_ota_session, app->project_name, app->date, app->time);
+	unsigned long long build = hifi_ota_build_of(hifi_fw_build_tag);
+	if (!build) ESP_LOGW(TAG, "no build number in this build: updates from the LAN are refused");
+	hifi_ota_set_running(&hifi_ota_session, app->project_name, build);
 
 	inbox = xQueueCreate(4, sizeof(msg_t));
 	xTaskCreate(worker, "hifi_cmd", 6144, NULL, ESP_TASK_PRIO_MIN + 2, NULL);
