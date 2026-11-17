@@ -1,8 +1,12 @@
 /*
  * The lab frame on the board: one lock around the lab's state, a task that
- * ticks it once a second (deadlines, low RAM, the dial-in watch), and the
- * name of a running (or just stopped) experiment kept where a crash's
- * restart doesn't clear it.
+ * ticks it once a second (deadlines, low RAM), a watch on a timer of its own
+ * (the dial-in, and the tick itself: a start or stop that hangs holding the
+ * lock stops the tick, never the watch), and the name of a running (or just
+ * stopped) experiment kept where a crash's restart doesn't clear it.
+ *
+ * The tick and the lab's HTTP handler can each wait up to an experiment's
+ * stop timeout (3 s for ESP-NOW) under the lock while a stop winds down.
  */
 #include "hifi_lab_esp.h"
 
@@ -27,15 +31,25 @@ static SemaphoreHandle_t lab_lock;
 #define KEPT_MAGIC 0x1ab5a7e1u
 static RTC_NOINIT_ATTR uint32_t kept_magic;
 static RTC_NOINIT_ATTR char kept_name[16];
-/* the lab restarted the board itself, off the dial-in too long */
+/* the lab restarted the board itself: off the dial-in too long, or its tick stuck */
 #define OFFLINE_MAGIC 0x0ff11e5eu
+#define STUCK_MAGIC 0x57c4ed01u
 static RTC_NOINIT_ATTR uint32_t kept_offline;
 
-/* an experiment that ended itself, handed over to the tick */
-static volatile const char *finished_name;
-static volatile bool finished_ok;
+/* experiments that ended themselves, handed over to whoever next holds the
+ * lab's lock (the tick or a request); the run number drops a late one */
+typedef struct {
+	const char *name;
+	uint32_t run;
+	bool ok;
+} finish_t;
+#define FINISH_RING 4
+static finish_t finishes[FINISH_RING];
+static unsigned finish_head, finish_n;
+static portMUX_TYPE finish_mux = portMUX_INITIALIZER_UNLOCKED;
 
 static volatile uint32_t ticked_ms; /* the tick task's last pass */
+static esp_timer_handle_t watch_timer;
 
 static uint32_t now_ms(void) { return (uint32_t) (esp_timer_get_time() / 1000); }
 static uint32_t heap_now(void) { return heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); }
@@ -46,36 +60,72 @@ static void keep_running(void) {
 	kept_magic = KEPT_MAGIC;
 }
 
-void hifi_lab_esp_finished(const char *name, bool ok) {
-	finished_ok = ok;
-	finished_name = name;
+void hifi_lab_esp_finished(const char *name, uint32_t run, bool ok) {
+	portENTER_CRITICAL_SAFE(&finish_mux);
+	if (finish_n == FINISH_RING) { /* full: the oldest goes */
+		finish_head = (finish_head + 1) % FINISH_RING;
+		finish_n--;
+	}
+	finishes[(finish_head + finish_n) % FINISH_RING] = (finish_t) {name, run, ok};
+	finish_n++;
+	portEXIT_CRITICAL_SAFE(&finish_mux);
 }
 
-/* outside the lab's lock: a hang inside an experiment's start or stop holds
- * it, and that is a hang this has to see */
-static void watch_link(void) {
+/* under the lab's lock */
+static void apply_finishes(void) {
+	for (;;) {
+		finish_t f;
+		portENTER_CRITICAL_SAFE(&finish_mux);
+		bool any = finish_n > 0;
+		if (any) {
+			f = finishes[finish_head];
+			finish_head = (finish_head + 1) % FINISH_RING;
+			finish_n--;
+		}
+		portEXIT_CRITICAL_SAFE(&finish_mux);
+		if (!any) return;
+		hifi_lab_finished(&lab, f.name, f.run, now_ms(), f.ok);
+	}
+}
+
+static void restart_why(uint32_t magic, const char *why) {
+	ESP_LOGE(TAG, "%s: restarting", why);
+	kept_offline = magic;
+	esp_restart();
+}
+
+/* on esp_timer, never under the lab's lock: a hang inside an experiment's
+ * start or stop holds the lock, and that is a hang this has to see */
+static void watch(void *arg) {
 	static hifi_lab_link_t w;
 	hifi_remote_status_t r;
 	hifi_remote_status(&r);
-	if (!r.configured) return;
-	if (hifi_lab_link_tick(&w, now_ms(), r.connected)) {
-		ESP_LOGE(TAG, "off the dial-in %u min: restarting", (unsigned) (HIFI_LAB_OFFLINE_MS / 60000u));
-		kept_offline = OFFLINE_MAGIC;
-		vTaskDelay(pdMS_TO_TICKS(200));
-		esp_restart();
-	}
+	uint32_t now = now_ms();
+	if (hifi_lab_link_tick(&w, now, r.configured, r.connected)) restart_why(OFFLINE_MAGIC, "off the dial-in too long");
+	uint32_t t = ticked_ms;
+	if (t && now - t >= HIFI_LAB_STUCK_MS) restart_why(STUCK_MAGIC, "the lab's tick is stuck");
 }
+
+#ifdef CONFIG_HIFI_LAB_DRILL_STUCK
+/* the drill: once per power-up, 5 min after boot the tick hangs holding the
+ * lock, as a stuck experiment stop would; the watch must restart the board */
+static void drill_stuck(void) {
+	static RTC_NOINIT_ATTR uint32_t drilled;
+	if (drilled == STUCK_MAGIC || lab.stuck_restart || now_ms() < 300000u) return;
+	drilled = STUCK_MAGIC;
+	ESP_LOGW(TAG, "drill: the tick hangs holding the lab's lock");
+	for (;;) vTaskDelay(pdMS_TO_TICKS(1000));
+}
+#endif
 
 static void tick_task(void *arg) {
 	for (;;) {
 		vTaskDelay(pdMS_TO_TICKS(1000));
-		watch_link();
 		xSemaphoreTake(lab_lock, portMAX_DELAY);
-		const char *f = (const char *) finished_name;
-		if (f) {
-			finished_name = NULL;
-			hifi_lab_finished(&lab, f, now_ms(), finished_ok);
-		}
+#ifdef CONFIG_HIFI_LAB_DRILL_STUCK
+		drill_stuck();
+#endif
+		apply_finishes();
 		int n = hifi_lab_tick(&lab, now_ms(), heap_now());
 		ticked_ms = now_ms();
 		keep_running();
@@ -98,18 +148,26 @@ void hifi_lab_esp_init(void) {
 		lab.offline_restart = true;
 		ESP_LOGW(TAG, "the last restart was the lab's own: off the dial-in too long");
 	}
+	if (kept_offline == STUCK_MAGIC && why == ESP_RST_SW) {
+		lab.stuck_restart = true;
+		ESP_LOGW(TAG, "the last restart was the lab's own: its tick was stuck");
+	}
 	kept_offline = 0;
 	kept_magic = KEPT_MAGIC;
 	kept_name[0] = 0;
 	hifi_lab_register(&lab, &lab_espnow);
 	lab_lock = xSemaphoreCreateMutex();
 	xTaskCreatePinnedToCore(tick_task, "hifi_lab", 3072, NULL, ESP_TASK_PRIO_MIN + 2, NULL, 0);
+	const esp_timer_create_args_t wa = {.callback = watch, .name = "hifi_lab_watch"};
+	if (esp_timer_create(&wa, &watch_timer) == ESP_OK) esp_timer_start_periodic(watch_timer, 1000000);
+	else ESP_LOGE(TAG, "no watch timer: the lab can't restart a stuck board");
 	ESP_LOGI(TAG, "lab build: %d experiment(s), none running", lab.n);
 }
 
 int hifi_lab_esp_op(bool post, const char *body, char *out, size_t cap) {
 	if (!lab_lock) return 503;
 	xSemaphoreTake(lab_lock, portMAX_DELAY);
+	apply_finishes();
 	int st = hifi_lab_request(&lab, post, body, now_ms(), heap_now(), out, cap);
 	keep_running();
 	xSemaphoreGive(lab_lock);
@@ -120,12 +178,12 @@ bool hifi_lab_esp_ok(void) {
 #ifdef CONFIG_HIFI_LAB_DRILL
 	return false;
 #else
-	return lab_lock && lab.n > 0 && ticked_ms && now_ms() - ticked_ms < 5000;
+	return lab_lock && watch_timer && lab.n > 0 && ticked_ms && now_ms() - ticked_ms < 5000;
 #endif
 }
 
 void hifi_lab_esp_selftest(hifi_selftest_t *t) {
-	char v[64];
+	char v[64]; /* hifi_check_t.value */
 	bool ok = false;
 	if (lab_lock && xSemaphoreTake(lab_lock, pdMS_TO_TICKS(500))) {
 		ok = hifi_lab_selftest(&lab, v, sizeof(v)) && hifi_lab_esp_ok();

@@ -11,14 +11,17 @@
  * far board first); ping sends rate_hz PINGs of len bytes (round trip, loss,
  * clock offset and drift); flood sends DATA as fast as the radio takes it,
  * window frames in flight (throughput; the echo end has the loss).
- * Optional: count (frames, then the run ends itself), len (36-250),
+ * Optional: count (frames, then the run ends itself), len (38-250),
  * rate ("1m" default, "2m", "5m", "11m", "6m", "12m", "24m", "54m",
  * "mcs0", "mcs7"), ps (Wi-Fi power save for the run: "none", "min", "max";
- * default as it is), window (flood, 1-16, default 4).
+ * default as it is), window (flood, 1-16, default 4; a send report missing
+ * for 1 s counts as lost and its slot is used again: report_timeouts).
  *
  * Only frames from the peer are looked at; nothing is forwarded anywhere.
  * The stop (asked, deadline, low RAM or the run's own end) takes ESP-NOW
- * down again and puts the power save and the rate back.
+ * down again and puts the rate back, and the power save too unless someone
+ * else changed it during the run. Starts and stops come one at a time, under
+ * the lab's lock: `alive` is checked, then set, with nothing in between.
  */
 #include <stdlib.h>
 #include <string.h>
@@ -76,10 +79,13 @@ static uint8_t peer[6], self[6];
 static uint32_t rate_hz, len, count, window;
 static uint8_t channel;
 static char rate_name[8], ps_err[24];
+static const char *ps_run = "?"; /* the power save in effect for the run */
 static bool ps_changed, rate_changed;
-static wifi_ps_type_t ps_before;
+static wifi_ps_type_t ps_before, ps_set;
+static uint32_t run_no; /* the lab's number for this run, given back when it ends itself */
 static volatile uint32_t q_full, other, report_timeouts, no_mem;
 
+/* on the Wi-Fi task only: its item is static (~270 bytes off that task's stack) */
 static void recv_cb(const uint8_t *mac, const uint8_t *data, int n) {
 	int64_t t = esp_timer_get_time();
 	if (!run || n <= 0 || n > HIFI_LINK_MAX) return;
@@ -87,7 +93,7 @@ static void recv_cb(const uint8_t *mac, const uint8_t *data, int n) {
 		other++;
 		return;
 	}
-	rx_item_t it;
+	static rx_item_t it;
 	memcpy(it.mac, mac, 6);
 	it.len = (uint8_t) n;
 	it.t_us = t;
@@ -142,15 +148,19 @@ static void teardown(void) {
 	run = false;
 	esp_now_unregister_recv_cb();
 	esp_now_unregister_send_cb();
-	esp_now_deinit();
+	/* the rate while ESP-NOW is still up, as it was set */
 	if (rate_changed) esp_wifi_config_espnow_rate(WIFI_IF_STA, WIFI_PHY_RATE_1M_L);
-	if (ps_changed) esp_wifi_set_ps(ps_before);
+	esp_now_deinit();
+	wifi_ps_type_t now_ps;
+	/* the power save only if it is still ours: someone may have set it since */
+	if (ps_changed && esp_wifi_get_ps(&now_ps) == ESP_OK && now_ps == ps_set) esp_wifi_set_ps(ps_before);
 	rate_changed = ps_changed = false;
 }
 
 static uint32_t heap_now(void) { return heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); }
 
 static void one_run(void) {
+	uint32_t my_run = run_no;
 	rx_item_t it;
 	uint32_t seq = 0;
 	int64_t period = 1000000 / (rate_hz ? rate_hz : 1);
@@ -170,7 +180,8 @@ static void one_run(void) {
 				vTaskDelay(pdMS_TO_TICKS(20));
 				continue;
 			}
-			if (xSemaphoreTake(window_sem, pdMS_TO_TICKS(200)) != pdTRUE) report_timeouts++;
+			/* a send report missing for 1 s: count it lost, use its slot */
+			if (xSemaphoreTake(window_sem, pdMS_TO_TICKS(1000)) != pdTRUE) report_timeouts++;
 			f.type = HIFI_LINK_DATA;
 			f.seq = seq;
 			if (send_frame(&f))
@@ -204,7 +215,7 @@ static void one_run(void) {
 	}
 	bool ended_itself = run;
 	teardown();
-	if (ended_itself) hifi_lab_esp_finished("espnow", true);
+	if (ended_itself) hifi_lab_esp_finished("espnow", my_run, true);
 	ESP_LOGI(TAG, "%s stopped: sent %u, pongs %u, rx %u", ROLE_NAMES[role], (unsigned) tx->sent, (unsigned) tx->pongs,
 		 (unsigned) rx->rx);
 }
@@ -233,10 +244,11 @@ static const char *ps_str(wifi_ps_type_t p) {
 
 static uint32_t num(const char *body, const char *key, uint32_t dflt) {
 	double v;
-	return hj_get_num(body, key, &v) && v >= 0 ? (uint32_t) v : dflt;
+	if (!hj_get_num(body, key, &v) || !(v >= 0)) return dflt;
+	return v >= 4294967295.0 ? UINT32_MAX : (uint32_t) v; /* clamped first: the cast of a bigger one is undefined */
 }
 
-static int start(const char *body, char *err, size_t n) {
+static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	if (alive) {
 		snprintf(err, n, "the last run is still stopping");
 		return 409;
@@ -259,7 +271,7 @@ static int start(const char *body, char *err, size_t n) {
 	count = num(body, "count", 0);
 	window = num(body, "window", 4);
 	if (rate_hz < 1 || rate_hz > 100 || len < HIFI_LINK_HDR || len > HIFI_LINK_MAX || window < 1 || window > 16) {
-		snprintf(err, n, "rate_hz 1-100, len 36-250, window 1-16");
+		snprintf(err, n, "rate_hz 1-100, len %d-%d, window 1-16", HIFI_LINK_HDR, HIFI_LINK_MAX);
 		return 400;
 	}
 	wifi_phy_rate_t rate = WIFI_PHY_RATE_1M_L;
@@ -294,10 +306,12 @@ static int start(const char *body, char *err, size_t n) {
 			snprintf(err, n, "out of memory");
 			return 503;
 		}
-		q = xQueueCreateStatic(QLEN, sizeof(rx_item_t), qmem, &q_ctl);
+		if (!q) q = xQueueCreateStatic(QLEN, sizeof(rx_item_t), qmem, &q_ctl);
+		else free(qmem); /* made on an earlier try whose task failed */
 		worker = xTaskCreateStaticPinnedToCore(task_main, "lab_espnow", STACK, NULL, ESP_TASK_PRIO_MIN + 5, stack,
 						       &worker_tcb, 0);
-		if (!worker) { /* not reached: static creation can't fail on memory */
+		if (!worker) { /* static creation can't fail on memory; if it does, the stack goes back */
+			free(stack);
 			snprintf(err, n, "no worker task");
 			return 503;
 		}
@@ -351,16 +365,21 @@ static int start(const char *body, char *err, size_t n) {
 		}
 		rate_changed = true;
 	}
-	esp_wifi_get_ps(&ps_before);
+	if (esp_wifi_get_ps(&ps_before) != ESP_OK) ps_before = WIFI_PS_MIN_MODEM;
+	ps_set = ps_before;
 	if (ps[0]) {
 		wifi_ps_type_t want = !strcmp(ps, "none") ? WIFI_PS_NONE : !strcmp(ps, "min") ? WIFI_PS_MIN_MODEM : WIFI_PS_MAX_MODEM;
 		e = esp_wifi_set_ps(want);
 		if (e != ESP_OK)
-			strlcpy(ps_err, esp_err_to_name(e), sizeof(ps_err)); /* Bluetooth on: no "none"; carry on */
-		else
+			strlcpy(ps_err, esp_err_to_name(e), sizeof(ps_err)); /* carry on with the one it had */
+		else {
+			ps_set = want;
 			ps_changed = want != ps_before;
+		}
 	}
+	ps_run = ps_str(ps_set);
 
+	run_no = run_n;
 	run = alive = true;
 	xTaskNotifyGive(worker);
 	ESP_LOGI(TAG, "%s with %02x:%02x:%02x:%02x:%02x:%02x on channel %u", ROLE_NAMES[role], peer[0], peer[1], peer[2],
@@ -368,10 +387,13 @@ static int start(const char *body, char *err, size_t n) {
 	return 0;
 }
 
-static void stop(void) {
+/* false: the worker is still winding down after 3 s (a start is refused
+ * until it is down) */
+static bool stop(void) {
 	run = false;
 	for (int i = 0; i < 300 && alive; i++) vTaskDelay(pdMS_TO_TICKS(10));
 	if (alive) ESP_LOGE(TAG, "the task didn't stop in 3 s");
+	return !alive;
 }
 
 static void result(void *hj) {
@@ -384,8 +406,7 @@ static void result(void *hj) {
 	snprintf(m, sizeof(m), "%02x:%02x:%02x:%02x:%02x:%02x", self[0], self[1], self[2], self[3], self[4], self[5]);
 	hj_str(j, "self", m);
 	hj_int(j, "channel", channel);
-	wifi_ps_type_t ps;
-	hj_str(j, "ps", esp_wifi_get_ps(&ps) == ESP_OK ? ps_str(ps) : "?");
+	hj_str(j, "ps", ps_run); /* as set at the start; the board's own may differ now */
 	if (ps_err[0]) hj_str(j, "ps_error", ps_err);
 	hj_str(j, "rate", rate_name);
 	hj_int(j, "len", len);

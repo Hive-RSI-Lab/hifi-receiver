@@ -9,10 +9,12 @@
 
 /* ------------------------------------------------------------ a fake exp */
 
-static int fake_started, fake_stopped, fake_fail;
+static int fake_started, fake_stopped, fake_fail, fake_stuck;
+static uint32_t fake_run;
 static char fake_role[16];
 
-static int fake_start(const char *body, char *err, size_t n) {
+static int fake_start(uint32_t run, const char *body, char *err, size_t n) {
+	fake_run = run;
 	if (fake_fail) {
 		snprintf(err, n, "peer is required");
 		return 400;
@@ -21,7 +23,10 @@ static int fake_start(const char *body, char *err, size_t n) {
 	fake_started++;
 	return 0;
 }
-static void fake_stop(void) { fake_stopped++; }
+static bool fake_stop(void) {
+	fake_stopped++;
+	return !fake_stuck;
+}
 static void fake_result(void *hj) { hj_int(hj, "frames", 42); }
 
 static const hifi_lab_exp_t FAKE = {"espnow", "ESP-NOW link test", fake_start, fake_stop, fake_result};
@@ -122,7 +127,12 @@ static void lab_frame(void) {
 	/* stop all; an experiment that ends itself isn't stopped again */
 	CHECK(hifi_lab_request(&l, true, "{\"op\":\"start\",\"exp\":\"espnow\"}", 50000, 100000, out, sizeof(out)) == 200);
 	int before = fake_stopped;
-	hifi_lab_finished(&l, "espnow", 52000, true);
+	uint32_t run = fake_run;
+	hifi_lab_finished(&l, "espnow", run - 1, 52000, true); /* a late finish of the run before: dropped */
+	CHECK(!strcmp(hifi_lab_running(&l), "espnow"));
+	hifi_lab_finished(&l, "espnow", run + 1, 52000, true); /* not started yet: dropped */
+	CHECK(!strcmp(hifi_lab_running(&l), "espnow"));
+	hifi_lab_finished(&l, "espnow", run, 52000, true);
 	CHECK(fake_stopped == before);
 	CHECK(!hifi_lab_running(&l)[0]);
 	CHECK(hifi_lab_request(&l, true, "{\"op\":\"result\",\"exp\":\"espnow\"}", 53000, 100000, out, sizeof(out)) == 200);
@@ -131,6 +141,18 @@ static void lab_frame(void) {
 	CHECK(hifi_lab_request(&l, true, "{\"op\":\"stop\",\"exp\":\"all\"}", 61000, 100000, out, sizeof(out)) == 200);
 	CHECK(fake_stopped == before + 1);
 	CHECK(hj_valid_object(out));
+	hifi_lab_finished(&l, "espnow", run, 62000, false); /* after it is done: nothing changes */
+	CHECK(hifi_lab_request(&l, true, "{\"op\":\"result\",\"exp\":\"espnow\"}", 62000, 100000, out, sizeof(out)) == 200);
+	CHECK_HAS(out, "\"stopped\":\"done\"");
+
+	/* the restart reasons the self-test names */
+	{
+		char v2[160];
+		l.stuck_restart = true;
+		CHECK(hifi_lab_selftest(&l, v2, sizeof(v2)));
+		CHECK_HAS(v2, "tick stuck");
+		l.stuck_restart = false;
+	}
 
 	/* a crash during a run is named after the restart */
 	hifi_lab_set_crashed(&l, "espnow");
@@ -147,6 +169,22 @@ static void lab_frame(void) {
 	CHECK(!strcmp(hifi_lab_recent(&l, 200500), "espnow"));
 	CHECK(hifi_lab_request(&l, true, "{\"op\":\"stop\",\"exp\":\"espnow\"}", 201000, 100000, out, sizeof(out)) == 200);
 	CHECK(!strcmp(hifi_lab_recent(&l, 230000), "espnow"));
+
+	/* a stop that doesn't finish in time says so */
+	CHECK(hifi_lab_request(&l, true, "{\"op\":\"start\",\"exp\":\"espnow\"}", 240000, 100000, out, sizeof(out)) == 200);
+	fake_stuck = 1;
+	CHECK(hifi_lab_request(&l, true, "{\"op\":\"stop\",\"exp\":\"espnow\"}", 241000, 100000, out, sizeof(out)) == 200);
+	fake_stuck = 0;
+	CHECK_HAS(out, "\"stopped\":\"stuck\"");
+
+	/* "recently stopped" ends with its window, and the clock's wrap can't bring it back */
+	{
+		CHECK(strstr(hifi_lab_recent(&l, 242000), "espnow") != NULL);
+		hifi_lab_tick(&l, 241000 + HIFI_LAB_RECENT_MS, 100000);
+		CHECK(!hifi_lab_recent(&l, 241000 + HIFI_LAB_RECENT_MS)[0]);
+		CHECK(!hifi_lab_recent(&l, 241000u + 0x80000000u)[0]);
+		CHECK(!hifi_lab_recent(&l, 241000u + 10u)[0]); /* 2^32 ms later, the same low bits */
+	}
 
 	/* the lab's own restart is named in the self-test and the listing */
 	hifi_lab_set_crashed(&l, "");
@@ -194,19 +232,29 @@ static void frames(void) {
 
 	/* damage anywhere is caught */
 	for (int i = 0; i < 100; i += 13) {
-		if (i >= 12 && i < HIFI_LINK_HDR) continue; /* the times are free */
-		if (i >= 4 && i < 8) continue;              /* so is the session */
+		if (i >= 14 && i < HIFI_LINK_HDR) continue; /* the times are free */
+		if (i >= 6 && i < 10) continue;             /* so is the session */
 		uint8_t c[HIFI_LINK_MAX];
 		memcpy(c, buf, 100);
 		c[i] ^= 0x10;
 		hifi_link_frame_t h;
 		bool ok = hifi_link_decode(c, 100, &h);
 		/* a flipped seq byte breaks the payload's pattern; a flipped type
-		 * byte makes an unknown type */
+		 * byte makes an unknown type, a flipped length byte a length that
+		 * isn't the frame's */
 		CHECK(!ok);
 	}
 	CHECK(!hifi_link_decode(buf, HIFI_LINK_HDR - 1, &g));
-	CHECK(!hifi_link_decode(buf, 99, &g) || g.len == 99); /* a shorter frame is still whole */
+	/* a frame cut short (or padded) is caught by its length */
+	for (size_t n = HIFI_LINK_HDR; n < 100; n += 7) CHECK(!hifi_link_decode(buf, n, &g));
+	CHECK(!hifi_link_decode(buf, 101, &g));
+	CHECK(hifi_link_decode(buf, 100, &g));
+	{
+		uint8_t c[HIFI_LINK_MAX];
+		memcpy(c, buf, 100);
+		c[4] = 99; /* the length says 99: still caught at 100 bytes */
+		CHECK(!hifi_link_decode(c, 100, &g));
+	}
 
 	/* sizes */
 	f.len = HIFI_LINK_HDR;
@@ -229,7 +277,7 @@ static void seen(void) {
 	CHECK(hifi_link_seen(&s, 3) == 1);
 	CHECK(hifi_link_seen(&s, 5 + HIFI_LINK_WINDOW) == 0);
 	CHECK(hifi_link_seen(&s, 5) == -1);    /* fell out of the window */
-	CHECK(hifi_link_seen(&s, 6) == -1 || hifi_link_seen(&s, 6) >= 0);
+	CHECK(hifi_link_seen(&s, 6) == 0); /* just inside: its old bit was cleared as the window moved */
 	CHECK(hifi_link_seen(&s, 7 + HIFI_LINK_WINDOW / 2) == 0); /* inside the window, not seen */
 	/* a slot reused by the moving window doesn't look like a duplicate */
 	memset(&s, 0, sizeof(s));
@@ -278,11 +326,19 @@ static void receiver(void) {
 	CHECK_HAS(out, "\"lost\":2");
 	CHECK_HAS(out, "\"loss_pct\":2.000");
 
-	/* a new session starts afresh, keeping the damaged count */
+	/* a frame of another session while this one is live is a stray (a late
+	 * frame of the last run must not wipe this run's counts) */
 	f.session = 2;
 	f.seq = 0;
-	hifi_link_rx_data(&r, &f, now);
-	CHECK(r.rx == 1 && r.session == 2 && r.dup == 0 && r.bad == 1);
+	hifi_link_rx_data(&r, &f, now + 1000);
+	CHECK(r.rx == 98 && r.session == 1 && r.stray == 1);
+	/* once this one has been silent a second, a new session starts afresh,
+	 * keeping the damaged and stray counts */
+	hifi_link_rx_data(&r, &f, now + HIFI_LINK_SESSION_IDLE_US);
+	CHECK(r.rx == 1 && r.session == 2 && r.dup == 0 && r.bad == 1 && r.stray == 1);
+	f.session = 1; /* and the old one is now the stray */
+	hifi_link_rx_data(&r, &f, now + HIFI_LINK_SESSION_IDLE_US + 10);
+	CHECK(r.rx == 1 && r.session == 2 && r.stray == 2);
 }
 
 static void sender(void) {
@@ -327,6 +383,25 @@ static void sender(void) {
 	CHECK(t->windows >= 18);
 	CHECK(hifi_link_tx_drift_ppm(t, &ppm));
 	CHECK_NEAR(ppm, 20.0, 0.5);
+	/* the last second is still open: the fit counts it */
+	CHECK(t->win_any);
+	{
+		/* 2.5 s of pings: two windows closed, the third still open, and
+		 * the fit has three points */
+		hifi_link_tx_t *u = calloc(1, sizeof(*u));
+		hifi_link_tx_init(u, 3);
+		for (int q = 0; q < 25; q++) {
+			int64_t t1 = 1000000 + q * 100000LL, t2 = (int64_t) (t1 * (1 + 50e-6)) + 1000;
+			hifi_link_frame_t p = {HIFI_LINK_PONG, 3, (uint32_t) q, t1, t2, t2 + 10, 64};
+			hifi_link_tx_sent(u, 64, true, t1);
+			hifi_link_tx_pong(u, &p, t1 + 1010);
+		}
+		double d;
+		CHECK(u->windows == 2 && u->win_any);
+		CHECK(hifi_link_tx_drift_ppm(u, &d));
+		CHECK_NEAR(d, 50.0, 1.0);
+		free(u);
+	}
 	/* offset: 5 s plus the drift so far */
 	CHECK_NEAR((double) t->offset_us, 5000000 + 20e-6 * 19.5e6, 30);
 
@@ -368,23 +443,30 @@ static void macs(void) {
 /* the dial-in watch: a restart only after a long time off it, and only once it was on it */
 static void link_watch(void) {
 	hifi_lab_link_t w = {0};
-	CHECK(!hifi_lab_link_tick(&w, 1000, false));                          /* never on it: setup AP, no network */
-	CHECK(!hifi_lab_link_tick(&w, 1000 + 2 * HIFI_LAB_OFFLINE_MS, false));
-	CHECK(!hifi_lab_link_tick(&w, 5000, true));
-	CHECK(!hifi_lab_link_tick(&w, 6000, false));                          /* dropped at 6 s */
-	CHECK(!hifi_lab_link_tick(&w, 6000 + HIFI_LAB_OFFLINE_MS - 1, false));
-	CHECK(hifi_lab_link_tick(&w, 6000 + HIFI_LAB_OFFLINE_MS, false));
+	CHECK(!hifi_lab_link_tick(&w, 1000, true, false));                          /* never on it: setup AP, no network */
+	CHECK(!hifi_lab_link_tick(&w, 1000 + 2 * HIFI_LAB_OFFLINE_MS, true, false));
+	CHECK(!hifi_lab_link_tick(&w, 5000, true, true));
+	CHECK(!hifi_lab_link_tick(&w, 6000, true, false));                          /* dropped at 6 s */
+	CHECK(!hifi_lab_link_tick(&w, 6000 + HIFI_LAB_OFFLINE_MS - 1, true, false));
+	CHECK(hifi_lab_link_tick(&w, 6000 + HIFI_LAB_OFFLINE_MS, true, false));
 	/* back on it: the clock starts again from the next drop */
-	CHECK(!hifi_lab_link_tick(&w, 7000 + HIFI_LAB_OFFLINE_MS, true));
-	CHECK(!hifi_lab_link_tick(&w, 8000 + HIFI_LAB_OFFLINE_MS, false));
-	CHECK(!hifi_lab_link_tick(&w, 8000 + 2 * HIFI_LAB_OFFLINE_MS - 1, false));
-	CHECK(hifi_lab_link_tick(&w, 8000 + 2 * HIFI_LAB_OFFLINE_MS, false));
+	CHECK(!hifi_lab_link_tick(&w, 7000 + HIFI_LAB_OFFLINE_MS, true, true));
+	CHECK(!hifi_lab_link_tick(&w, 8000 + HIFI_LAB_OFFLINE_MS, true, false));
+	CHECK(!hifi_lab_link_tick(&w, 8000 + 2 * HIFI_LAB_OFFLINE_MS - 1, true, false));
+	CHECK(hifi_lab_link_tick(&w, 8000 + 2 * HIFI_LAB_OFFLINE_MS, true, false));
 	/* across the millisecond counter's wrap (49 days) */
 	hifi_lab_link_t z = {0};
-	CHECK(!hifi_lab_link_tick(&z, 0xffffff00u, true));
-	CHECK(!hifi_lab_link_tick(&z, 0xffffff10u, false));
-	CHECK(!hifi_lab_link_tick(&z, 0x100u, false));
-	CHECK(hifi_lab_link_tick(&z, 0xffffff10u + HIFI_LAB_OFFLINE_MS, false));
+	CHECK(!hifi_lab_link_tick(&z, 0xffffff00u, true, true));
+	CHECK(!hifi_lab_link_tick(&z, 0xffffff10u, true, false));
+	CHECK(!hifi_lab_link_tick(&z, 0x100u, true, false));
+	CHECK(hifi_lab_link_tick(&z, 0xffffff10u + HIFI_LAB_OFFLINE_MS, true, false));
+	/* the dial-in turned off (not configured) resets the watch: set again, it starts afresh */
+	hifi_lab_link_t c = {0};
+	CHECK(!hifi_lab_link_tick(&c, 1000, true, true));
+	CHECK(!hifi_lab_link_tick(&c, 2000, true, false));
+	CHECK(!hifi_lab_link_tick(&c, 3000, false, false));
+	CHECK(!hifi_lab_link_tick(&c, 2000 + HIFI_LAB_OFFLINE_MS, true, false)); /* never on it since */
+	CHECK(!hifi_lab_link_tick(&c, 2000 + 3 * HIFI_LAB_OFFLINE_MS, true, false));
 }
 
 int main(void) {

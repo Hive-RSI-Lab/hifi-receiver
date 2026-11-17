@@ -7,3 +7,8 @@ CONFIG_HIFI_LAB=y
 # switch. The plain image's task watchdog only logs; this one panics, the
 # board restarts, and the lab names the experiment that ran (hifi_lab.h).
 CONFIG_ESP_TASK_WDT_PANIC=y
+# 15 s, not the default 5: the panic must catch a hang, not a slow but live
+# product path (a flash write, a long TLS handshake) that the plain image
+# only logged. No Lite self-test report so far shows a watchdog reset; the
+# margin is for paths the bench didn't exercise.
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=15

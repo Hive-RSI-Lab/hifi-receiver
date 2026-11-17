@@ -35,10 +35,11 @@ bool hifi_lab_register(hifi_lab_t *l, const hifi_lab_exp_t *e) {
 
 static void stop_slot(hifi_lab_slot_t *s, uint32_t now_ms, const char *why) {
 	if (!s->running) return;
-	s->exp->stop();
+	bool down = s->exp->stop();
 	s->running = false;
+	s->recent = true;
 	s->stopped_ms = now_ms;
-	copy(s->stop_why, sizeof(s->stop_why), why);
+	copy(s->stop_why, sizeof(s->stop_why), down ? why : "stuck");
 }
 
 static void write_slot(hj_t *j, const hifi_lab_slot_t *s, uint32_t now_ms, bool with_result) {
@@ -79,6 +80,7 @@ static int reply_list(hifi_lab_t *l, uint32_t now_ms, char *out, size_t cap) {
 	hj_str(&j, "running", hifi_lab_running(l));
 	if (l->crashed_in[0]) hj_str(&j, "crashed_in", l->crashed_in);
 	if (l->offline_restart) hj_bool(&j, "offline_restart", true);
+	if (l->stuck_restart) hj_bool(&j, "stuck_restart", true);
 	hj_int(&j, "max_s", HIFI_LAB_MAX_S);
 	hj_arr(&j, "experiments");
 	for (int i = 0; i < l->n; i++) write_slot(&j, &l->s[i], now_ms, false);
@@ -125,13 +127,14 @@ int hifi_lab_request(hifi_lab_t *l, bool post, const char *body, uint32_t now_ms
 	if (hj_get_num(body, "max_s", &max_s) && !(max_s >= 1 && max_s <= HIFI_LAB_MAX_S))
 		return reply_err(out, cap, 400, "max_s must be 1 to 3600");
 	char err[96] = "";
-	int st = s->exp->start(body, err, sizeof(err));
+	int st = s->exp->start(s->runs + 1, body, err, sizeof(err));
 	if (st) return reply_err(out, cap, st >= 400 && st < 600 ? st : 500, err[0] ? err : "the experiment didn't start");
 	s->running = true;
 	s->runs++;
 	s->started_ms = now_ms;
 	s->deadline_ms = now_ms + (uint32_t) (max_s * 1000.0);
 	s->stopped_ms = 0;
+	s->recent = false;
 	s->stop_why[0] = 0;
 	return reply_slot(s, now_ms, out, cap);
 }
@@ -140,7 +143,11 @@ int hifi_lab_tick(hifi_lab_t *l, uint32_t now_ms, uint32_t heap_free) {
 	int stopped = 0;
 	for (int i = 0; i < l->n; i++) {
 		hifi_lab_slot_t *s = &l->s[i];
-		if (!s->running) continue;
+		if (!s->running) {
+			/* past the window: so the clock's wrap (49.7 days) can't bring it back */
+			if (s->recent && now_ms - s->stopped_ms >= HIFI_LAB_RECENT_MS) s->recent = false;
+			continue;
+		}
 		if (heap_free < HIFI_LAB_HEAP_STOP) {
 			stop_slot(s, now_ms, "heap");
 			stopped++;
@@ -152,9 +159,10 @@ int hifi_lab_tick(hifi_lab_t *l, uint32_t now_ms, uint32_t heap_free) {
 	return stopped;
 }
 
-void hifi_lab_finished(hifi_lab_t *l, const char *name, uint32_t now_ms, bool ok) {
+void hifi_lab_finished(hifi_lab_t *l, const char *name, uint32_t run, uint32_t now_ms, bool ok) {
 	hifi_lab_slot_t *s = find(l, name);
-	if (!s || !s->running) return;
+	if (!s || !s->running || s->runs != run) return;
+	s->recent = true;
 	/* the experiment has already ended itself: don't call its stop */
 	s->running = false;
 	s->stopped_ms = now_ms;
@@ -175,13 +183,17 @@ const char *hifi_lab_recent(const hifi_lab_t *l, uint32_t now_ms) {
 	const hifi_lab_slot_t *best = NULL;
 	for (int i = 0; i < l->n; i++) {
 		const hifi_lab_slot_t *s = &l->s[i];
-		if (!s->runs || now_ms - s->stopped_ms >= HIFI_LAB_RECENT_MS) continue;
+		if (!s->runs || !s->recent || now_ms - s->stopped_ms >= HIFI_LAB_RECENT_MS) continue;
 		if (!best || now_ms - s->stopped_ms < now_ms - best->stopped_ms) best = s;
 	}
 	return best ? best->exp->name : "";
 }
 
-bool hifi_lab_link_tick(hifi_lab_link_t *w, uint32_t now_ms, bool connected) {
+bool hifi_lab_link_tick(hifi_lab_link_t *w, uint32_t now_ms, bool configured, bool connected) {
+	if (!configured) {
+		w->seen = w->down = false;
+		return false;
+	}
 	if (connected) {
 		w->seen = true;
 		w->down = false;
@@ -204,6 +216,9 @@ bool hifi_lab_selftest(const hifi_lab_t *l, char *value, size_t n) {
 	else if (l->offline_restart)
 		snprintf(value, n, "%d experiments%s%s; the lab restarted it, off the dial-in %u min", l->n,
 			 run[0] ? ", running " : "", run, (unsigned) (HIFI_LAB_OFFLINE_MS / 60000u));
+	else if (l->stuck_restart)
+		snprintf(value, n, "%d experiments%s%s; the lab restarted it, its tick stuck %u min", l->n,
+			 run[0] ? ", running " : "", run, (unsigned) (HIFI_LAB_STUCK_MS / 60000u));
 	else
 		snprintf(value, n, "%d experiments%s%s", l->n, run[0] ? ", running " : "", run);
 	return l->n > 0;
