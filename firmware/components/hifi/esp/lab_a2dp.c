@@ -21,10 +21,11 @@
  * role "source": the board stops being a sink for the run and streams a
  * tone (-12 dBFS stereo, a 100-frame period: 441 Hz at the 44.1 kHz the
  * source asks for) to the peer's sink. Refused while a phone is connected
- * here (it would be dropped) or Bluetooth plays. Its A2DP sink is taken down
+ * here (it would be dropped), Bluetooth plays, the bt experiment runs, or the
+ * last source run couldn't give the sink back (that needs a reboot). Its A2DP sink is taken down
  * first (Bluedroid has one A2DP role at a time), the board goes
- * non-connectable and its AVRCP callbacks ignore the peer (so the peer can't
- * change this board's volume or playback), then the source is set up,
+ * non-connectable and its AVRCP callbacks drop every event for the run (so
+ * the peer can't change this board's volume or playback), then the source is set up,
  * connects and starts. Only the peer's A2DP events count. The stop suspends
  * the stream, disconnects, takes the source down, sets the sink up again and
  * waits for it (patch 0018's hifi_bt_sink_rearm), puts the sink's own
@@ -35,8 +36,12 @@
  *
  * Bluedroid answers on its own task. If a role's teardown doesn't answer in
  * 2 s, the run still stops (and a failed start still fails), and the rest of
- * the hand-back runs when the answer comes, from the timer task; sink_back
- * says "pending" until then, and starts are refused. While the sink is up,
+ * the hand-back runs when the answer comes, from a short task of its own;
+ * sink_back says "pending" until then, and starts are refused. A teardown
+ * still pending after 10 s is given up on at the next start: if Bluedroid
+ * says no A2DP role is up, the hand-back runs then; if not, the start is
+ * refused until a reboot. A source init that doesn't answer is taken down if
+ * Bluedroid says it came up, and otherwise counted as failed. While the sink is up,
  * the lab's A2DP callback hands its events to the sink's own
  * (bt_app_a2d_cb), so a sink whose teardown never answered still works.
  *
@@ -57,7 +62,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 #include "freertos/task.h"
-#include "freertos/timers.h"
 
 #include "hifi_json.h"
 #include "hifi_lab_esp.h"
@@ -89,6 +93,10 @@ extern void bt_app_rc_ct_cb(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param_t
 extern void bt_app_rc_tg_cb(esp_avrc_tg_cb_event_t event, esp_avrc_tg_cb_param_t *param) __attribute__((weak));
 extern esp_err_t hifi_bt_sink_rearm(void) __attribute__((weak));
 extern bool hifi_bt_sink_phone(void) __attribute__((weak));
+/* btc_av.c: an A2DP role is up (on_init), or none is (on_deinit); written on
+ * Bluedroid's task */
+extern bool g_a2dp_on_init __attribute__((weak));
+extern bool g_a2dp_on_deinit __attribute__((weak));
 
 typedef enum { ROLE_NONE, ROLE_SINK, ROLE_SOURCE } role_t;
 
@@ -179,6 +187,8 @@ static volatile a2d_mode_t mode = MODE_SINK;
 /* under mux: a role's teardown answered (deinit_seen), or didn't in time
  * and its answer runs the rest of the hand-back (orphan) */
 static bool deinit_seen, orphan;
+static int64_t pending_since; /* under mux: when orphan was set */
+#define PENDING_GIVE_UP_US 10000000
 
 typedef enum { SRC_DOWN, SRC_CONNECTING, SRC_CONNECTED, SRC_STARTING, SRC_STREAMING, SRC_LOST } src_state_t;
 static const char *const src_names[] = {"down", "connecting", "connected", "starting", "streaming", "lost"};
@@ -196,6 +206,10 @@ static char src_err[48];
 static const char *volatile sink_back; /* the hand-back: "yes", "pending" or the error */
 static char sink_back_err[40];
 static const char SINK_PENDING[] = "pending";
+/* the last hand-back failed (sink_back_err says how): the sink is down until
+ * a reboot, and source starts are refused */
+static volatile bool sink_lost;
+static bool sink_taken; /* this start took the sink down: its result counts */
 
 /* one period of the tone: 100 frames, 16-bit stereo */
 #define TONE_FRAMES 100
@@ -243,9 +257,12 @@ static void set_state(src_state_t s) {
 }
 
 static void give_back(void);
-static void give_back_pended(void *a, uint32_t b) {
-	(void)a, (void)b;
+/* the late hand-back waits for Bluedroid (up to 2 s): not on Bluedroid's own
+ * task, and not the timer task's */
+static void give_back_task(void *a) {
+	(void)a;
 	give_back();
+	vTaskDelete(NULL);
 }
 
 /* the AVRCP callbacks while the source runs: the peer's commands (play,
@@ -270,8 +287,9 @@ static void a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *p) {
 			/* a teardown that timed out has now answered: the hand-back
 			 * waits for Bluedroid, so it runs off this task */
 			mode = MODE_NONE;
-			if (xTimerPendFunctionCall(give_back_pended, NULL, 0, 0) != pdPASS) {
-				snprintf(sink_back_err, sizeof(sink_back_err), "no timer queue: sink is down");
+			if (xTaskCreate(give_back_task, "lab_a2dp_back", 3072, NULL, 5, NULL) != pdPASS) {
+				snprintf(sink_back_err, sizeof(sink_back_err), "no memory for the hand-back task");
+				sink_lost = true;
 				sink_back = sink_back_err;
 			}
 		}
@@ -342,6 +360,7 @@ static bool deinit_wait(void) {
 	bool came = deinit_seen;
 	if (!came) {
 		orphan = true;
+		pending_since = esp_timer_get_time();
 		sink_back = SINK_PENDING;
 	}
 	portEXIT_CRITICAL(&mux);
@@ -354,6 +373,25 @@ static bool pending(void) {
 	bool p = orphan || sink_back == SINK_PENDING;
 	portEXIT_CRITICAL(&mux);
 	return p;
+}
+
+static bool role_up(void) { return &g_a2dp_on_init && *(volatile bool *)&g_a2dp_on_init; }
+static bool none_up(void) { return &g_a2dp_on_deinit && *(volatile bool *)&g_a2dp_on_deinit; }
+
+/* A teardown pending past 10 s whose answer Bluedroid has already dealt with
+ * (no A2DP role up): the hand-back runs now. True: nothing is pending (any
+ * more). Not for a teardown the hand-back task already took. */
+static bool pending_give_up(void) {
+	if (!pending()) return true;
+	portENTER_CRITICAL(&mux);
+	bool late = orphan && esp_timer_get_time() - pending_since > PENDING_GIVE_UP_US && none_up();
+	if (late) orphan = false; /* the answer, if it ever comes, finds nothing to do */
+	portEXIT_CRITICAL(&mux);
+	if (!late) return false;
+	ESP_LOGW(TAG, "A2DP teardown: no answer in 10 s and no role up: the sink comes back now");
+	mode = MODE_NONE;
+	give_back();
+	return true;
 }
 
 static bool parse_bda(const char *s, esp_bd_addr_t out) {
@@ -391,6 +429,7 @@ static void give_back(void) {
 	esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
 	if (bonded) esp_bt_gap_remove_bond_device(peer);
 	bonded = false;
+	sink_lost = how != NULL && strcmp(how, "yes");
 	sink_back = how; /* last: a start waits for it */
 	ESP_LOGI(TAG, "sink back: %s", how);
 }
@@ -405,13 +444,19 @@ static bool source_down(void) {
 		vTaskDelay(pdMS_TO_TICKS(200));
 	}
 	if (sst != SRC_DOWN && sst != SRC_LOST) {
+		/* connecting too: a link half up is cut (or the deinit drops it) */
 		esp_a2d_source_disconnect(peer);
-		for (int i = 0; i < WAIT_MS / 100 && sst != SRC_DOWN && sst != SRC_LOST; i++) vTaskDelay(pdMS_TO_TICKS(100));
+		for (int i = 0; i < 50 && sst != SRC_DOWN && sst != SRC_LOST; i++) vTaskDelay(pdMS_TO_TICKS(100));
+		if (sst != SRC_DOWN && sst != SRC_LOST) {
+			if (!src_err[0]) snprintf(src_err, sizeof(src_err), "disconnect: no answer in 5 s");
+			ESP_LOGW(TAG, "disconnect: no answer in 5 s, the deinit takes it down");
+		}
 	}
 	if (sst == SRC_STREAMING) set_state(SRC_CONNECTED); /* the stream's length ends here */
 	deinit_arm();
 	esp_err_t e = esp_a2d_source_deinit();
 	if (e != ESP_OK) {
+		sink_lost = true;
 		sink_back = back_err("source deinit", e);
 		return false;
 	}
@@ -428,7 +473,8 @@ static int start_source(const char *body, char *err, size_t n) {
 		return 400;
 	}
 	if (!esp_a2d_source_init || !esp_a2d_sink_deinit || !hifi_bt_sink_rearm || !hifi_bt_sink_phone ||
-	    !bt_app_a2d_cb || !bt_app_rc_ct_cb || !bt_app_rc_tg_cb || !esp_bt_gap_remove_bond_device) {
+	    !bt_app_a2d_cb || !bt_app_rc_ct_cb || !bt_app_rc_tg_cb || !esp_bt_gap_remove_bond_device ||
+	    !&g_a2dp_on_init || !&g_a2dp_on_deinit) {
 		snprintf(err, n, "no A2DP source or sink hand-back in this image");
 		return 503;
 	}
@@ -442,6 +488,14 @@ static int start_source(const char *body, char *err, size_t n) {
 	}
 	if (hifi_bt_sink_phone()) {
 		snprintf(err, n, "a phone is connected here");
+		return 409;
+	}
+	if (hifi_lab_bt_busy && hifi_lab_bt_busy()) {
+		snprintf(err, n, "the bt experiment runs; stop it first");
+		return 409;
+	}
+	if (sink_lost) {
+		snprintf(err, n, "sink not back from the last run (%s): reboot", sink_back_err);
 		return 409;
 	}
 	if (!ev && !(ev = xEventGroupCreate())) {
@@ -477,6 +531,7 @@ static int start_source(const char *body, char *err, size_t n) {
 		snprintf(err, n, "sink deinit: %s", esp_err_to_name(e));
 		return 503;
 	}
+	sink_taken = true;
 	if (!deinit_wait()) {
 		/* still a sink, served through the lab's callback; if it goes
 		 * down later, its answer brings it back */
@@ -484,15 +539,28 @@ static int start_source(const char *body, char *err, size_t n) {
 		return 503;
 	}
 	mode = MODE_NONE;
+	if (hifi_bt_sink_phone()) {
+		/* a phone came in before the sink went down */
+		give_back();
+		snprintf(err, n, "a phone connected here; sink back: %s", sink_back);
+		return 409;
+	}
 	esp_avrc_ct_register_callback(rc_ct_quiet);
 	esp_avrc_tg_register_callback(rc_tg_quiet);
 	esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 	esp_a2d_source_register_data_callback(tone_cb);
 	if ((e = esp_a2d_source_init()) != ESP_OK || !wait_bit(EV_INIT, WAIT_MS)) {
 		int len = snprintf(err, n, "source init: %s", e == ESP_OK ? "no answer" : esp_err_to_name(e));
-		/* an init that failed outright left nothing up; one that didn't
-		 * answer is taken down first */
-		if (e != ESP_OK || source_down()) give_back();
+		/* an init that failed outright left nothing up. One that didn't
+		 * answer: Bluedroid's flag says whether it came up after all (take
+		 * it down first) or failed on its task, which sends no answer.
+		 * Its task runs in order, so a late init is given 2 s more. */
+		bool up = false;
+		if (e == ESP_OK) {
+			for (int i = 0; i < 20 && !(up = role_up()); i++) vTaskDelay(pdMS_TO_TICKS(100));
+			if (!up) ESP_LOGW(TAG, "source init: no answer and no role up: failed");
+		}
+		if (!up || source_down()) give_back();
 		const char *how = sink_back;
 		if (len > 0 && (size_t)len < n) snprintf(err + len, n - len, "; sink back: %s", how ? how : "?");
 		return 503;
@@ -509,8 +577,14 @@ static int start_source(const char *body, char *err, size_t n) {
 
 static int start(uint32_t run, const char *body, char *err, size_t n) {
 	(void)run;
-	if (pending()) {
-		snprintf(err, n, "the last run's Bluetooth teardown hasn't answered yet; try again");
+	if (!pending_give_up()) {
+		portENTER_CRITICAL(&mux);
+		int64_t for_s = orphan ? (esp_timer_get_time() - pending_since) / 1000000 : 0;
+		portEXIT_CRITICAL(&mux);
+		if (for_s * 1000000 > PENDING_GIVE_UP_US)
+			snprintf(err, n, "the last run's Bluetooth teardown hasn't answered in %d s: reboot", (int)for_s);
+		else
+			snprintf(err, n, "the last run's Bluetooth teardown hasn't answered yet; try again");
 		return 409;
 	}
 	char r[8] = "";
@@ -530,8 +604,16 @@ static int start(uint32_t run, const char *body, char *err, size_t n) {
 		portEXIT_CRITICAL(&mux);
 		armed = true;
 	} else {
+		sink_taken = false;
 		int rc = start_source(body, err, n);
-		if (rc) return rc;
+		if (rc) {
+			if (sink_taken) { /* the result shows how the sink came back */
+				role = ROLE_SOURCE;
+				started = true;
+				active = false;
+			}
+			return rc;
+		}
 	}
 	role = want;
 	started = active = true;
@@ -625,6 +707,9 @@ static void result(void *hj) {
 	}
 	hj_int(j, "run_ms", (now - t_start) / 1000);
 }
+
+/* lab_bt refuses to start while the source runs or its teardown is pending */
+bool hifi_lab_a2dp_busy(void) { return (active && role == ROLE_SOURCE) || pending(); }
 
 const hifi_lab_exp_t lab_a2dp = {
 	.name = "a2dp",

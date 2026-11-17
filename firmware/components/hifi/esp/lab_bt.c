@@ -99,10 +99,17 @@ static void note(char *buf, size_t n, const char *what, esp_err_t e) {
 	ESP_LOGW(TAG, "%s: %s", what, esp_err_to_name(e));
 }
 
+/* lab_a2dp refuses its source while this runs */
+bool hifi_lab_bt_busy(void) { return active; }
+
 static int start(uint32_t run, const char *body, char *err, size_t n) {
 	(void)run;
 	if (active) {
 		snprintf(err, n, "already %s", mode == MODE_OFF ? "off" : "quiet");
+		return 409;
+	}
+	if (hifi_lab_a2dp_busy && hifi_lab_a2dp_busy()) {
+		snprintf(err, n, "the a2dp experiment's source runs (or its teardown); stop it first");
 		return 409;
 	}
 	/* the last run's result stays as it was until this start succeeds */
