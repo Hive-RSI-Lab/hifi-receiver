@@ -15,15 +15,21 @@
  * build on the one before it).
  * A bench command is at most 512 characters, so data longer than about 300
  * bytes goes in pieces: each piece but the last says "more":true and only
- * stores its bytes (the run ends "done" at once, with "staged" in its
- * result), and "offset" says where a piece goes, which must be 0 (a fresh
- * start) or the number of bytes staged so far. The last piece, without
- * "more", decodes everything staged plus itself:
+ * stores its bytes (the run ends "done" by itself, with "staged" in its
+ * result, after the same 250 ms wait and heap checks as a decode: wait for
+ * it before the next piece, which gets a 409 till then), and "offset" says
+ * where a piece goes, which must be 0 (a fresh start) or the number of
+ * bytes staged so far. Staged pieces must leave room for the last one
+ * (they hold at most DATA_MAX - 1 bytes). The last piece, without "more",
+ * decodes everything staged plus itself, with its own codec, repeat and
+ * stream parameters (the earlier pieces' are only checked):
  *
  *   api lab "{\"op\":\"start\",\"exp\":\"crafted\",\"codec\":\"mp3\",\"more\":true,\"data\":\"<300 B>\"}"
  *   api lab "{\"op\":\"start\",\"exp\":\"crafted\",\"codec\":\"mp3\",\"offset\":300,\"data\":\"<the rest>\"}"
  *
- * A decode, a failed piece or a piece at offset 0 drops what was staged.
+ * A decode, a piece at offset 0 or a piece whose base64 fails (it may have
+ * written over the staged bytes) drops what was staged. A piece turned down
+ * before that (a bad field, a 409 or a 503) keeps it, so it can be resent.
  * ALAC's stream parameters are AirPlay's (frame 352, 16 bits, 2 channels,
  * 44100 Hz) unless frame, bits and channels say otherwise. The packet goes
  * in with its length (alac_to_pcm_len, as rtp.c's alac_decode calls it) on
@@ -93,7 +99,14 @@ static char why[48];
 
 static uint32_t num(const char *body, const char *k, uint32_t dflt, uint32_t lo, uint32_t hi, bool *bad) {
 	double v;
-	if (!hj_get_num(body, k, &v)) return hj_num_bad(body, k) ? (*bad = true, dflt) : dflt;
+	if (!hj_get_num(body, k, &v)) {
+		/* present but not a number ("300", null, true) is an error, not the
+		 * default: a quoted offset read as 0 would start the data over */
+		const char *r;
+		size_t rn;
+		if (hj_num_bad(body, k) || hj_get_raw(body, k, &r, &rn)) *bad = true;
+		return dflt;
+	}
 	if (!(v >= lo && v <= hi) || v != (uint32_t) v) {
 		*bad = true;
 		return dflt;
@@ -274,6 +287,11 @@ static int start(uint32_t run, const char *body, char *err, size_t n) {
 		snprintf(err, n, "data: base64 of 1-%u bytes", (unsigned) (DATA_MAX - off));
 		return 400;
 	}
+	if (more && off + got >= DATA_MAX) {
+		staged_n = 0;
+		snprintf(err, n, "staged pieces hold at most %d bytes, so the last one has room", DATA_MAX - 1);
+		return 400;
+	}
 	data_n = off + got;
 	stage_only = more;
 	staged_n = more ? data_n : 0;
@@ -298,7 +316,7 @@ static void result(void *hj) {
 	hj_t *j = hj;
 	hj_str(j, "codec", is_mp3 ? "mp3" : "alac");
 	hj_int(j, "bytes", data_n);
-	if (stage_only) hj_bool(j, "staged", true);
+	if (stage_only && staged_n) hj_bool(j, "staged", true);
 	hj_int(j, "repeat", repeat);
 	hj_bool(j, "finished", finished);
 	hj_int(j, "calls", calls);
