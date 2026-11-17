@@ -13,9 +13,12 @@
  * manager sees the drop as the router's and reconnects by itself, as it
  * would after a real one (every third drop it waits for its polling timer
  * first: its retry count is never reset on a connect). A cycle that isn't
- * back within back_s (default 120, 30-600) ends the run "failed"; the
- * network manager keeps trying, and the lab's offline watch restarts the
- * board after 15 minutes off the dial-in.
+ * back within back_s (default 120, 30-600) ends the run "failed". A
+ * reconnect that fails for another reason than a timeout (the AP not found
+ * in the scan, say) sends the manager to its setup AP, where it stays: only
+ * the lab's offline watch, restarting the board after 15 minutes off the
+ * dial-in, brings it back (a router drop does the same). Read diag/tasks
+ * as soon as a run fails: the restart loses the high-water marks.
  *
  * cycles: 1-50, default 20. The run ends "done" after the last one is back.
  * The result has each cycle's time to come back (ms) and the slowest.
@@ -61,6 +64,19 @@ static bool up(void) {
 	       esp_wifi_sta_get_ap_info(&ap) == ESP_OK && (!configured || remote);
 }
 
+/* the dial-in's flag is the relay's copy, refreshed every 2 s: after a drop
+ * wait for it to fall before "up" can count, or a quick DHCP restore reads
+ * the link from before the drop. A link that never falls in 10 s (it
+ * survived the drop) counts as down already. */
+static void wait_remote_down(void) {
+	for (int t = 0; run && t < 10000; t += 250) {
+		bool configured, remote;
+		hifi_remote_up(&configured, &remote);
+		if (!configured || !remote) return;
+		vTaskDelay(pdMS_TO_TICKS(250));
+	}
+}
+
 /* false: stopped, or not back in time */
 static bool wait_up(uint32_t limit_ms, uint32_t *took_ms) {
 	int64_t t0 = esp_timer_get_time();
@@ -96,19 +112,19 @@ static bool drops(void) {
 		}
 		esp_err_t e = esp_wifi_disconnect();
 		if (e != ESP_OK) {
-			snprintf(why, sizeof(why), "esp_wifi_disconnect: %s", esp_err_to_name(e));
+			if (run) snprintf(why, sizeof(why), "esp_wifi_disconnect: %s", esp_err_to_name(e));
 			return false;
 		}
-		/* the station loses its AP at once; give the manager's event a moment
-		 * so "up" isn't read from before the drop */
+		/* the station loses its AP at once; the dial-in's flag lags */
+		int64_t t_drop = esp_timer_get_time();
 		vTaskDelay(pdMS_TO_TICKS(500));
+		wait_remote_down();
 		phase = "coming back";
-		uint32_t took = 0;
-		if (!wait_up(back_s * 1000, &took)) {
+		if (!wait_up(back_s * 1000, NULL)) {
 			if (run) snprintf(why, sizeof(why), "cycle %u: not back in %u s", (unsigned) i + 1, (unsigned) back_s);
 			return false;
 		}
-		back_ms[i] = took + 500;
+		back_ms[i] = (uint32_t) ((esp_timer_get_time() - t_drop) / 1000);
 		done_n = i + 1;
 		ESP_LOGI(TAG, "cycle %u/%u back in %u ms", (unsigned) i + 1, (unsigned) cycles, (unsigned) back_ms[i]);
 	}
