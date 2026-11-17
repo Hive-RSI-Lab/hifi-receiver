@@ -61,3 +61,21 @@ index ebfe091..655180d 100644
    }
  
    // Update the nonce
+--- a/components/spotify/Shim.cpp
++++ b/components/spotify/Shim.cpp
+@@ -489,7 +489,14 @@
+         
+         if (!attempts) continue;
+ 
+-        ctx->config.authData = ctx->session->authenticate(blob);
++        // a refused or broken login (a MAC mismatch, a reset, a stall) throws:
++        // fail it like a refused login instead of letting it end the task
++        try {
++            ctx->config.authData = ctx->session->authenticate(blob);
++        } catch (const std::exception& e) {
++            CSPOT_LOG(error, "Login failed: %s", e.what());
++            ctx->config.authData.clear();
++        }
+         ctx->config.clientId = CLIENT_ID;
+         ctx->config.clientSecret = CLIENT_SECRET;
+ 

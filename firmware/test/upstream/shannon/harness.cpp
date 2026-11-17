@@ -20,6 +20,7 @@
 #include "BellLogger.h"
 
 #include <arpa/inet.h>
+#include <csignal>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -70,6 +71,8 @@ static void say(const char* c, const char* r) { printf("%s: %s\n", c, r), fflush
 static std::vector<uint8_t> key(uint8_t b) { return std::vector<uint8_t>(32, b); }
 
 int main(int argc, char** argv) {
+  // a peer that closes first must fail the write, not kill the harness
+  signal(SIGPIPE, SIG_IGN);
   bell::setDefaultLogger();
   std::string only = argc > 1 ? argv[1] : "";
   auto want = [&](const char* c) { return only.empty() || only == c; };
