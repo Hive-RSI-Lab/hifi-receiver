@@ -1,7 +1,8 @@
 /*
  * The lab frame on the board: one lock around the lab's state, a task that
- * ticks it once a second (deadlines, low RAM), and the name of a running
- * experiment kept where a crash's restart doesn't clear it.
+ * ticks it once a second (deadlines, low RAM, the dial-in watch), and the
+ * name of a running (or just stopped) experiment kept where a crash's
+ * restart doesn't clear it.
  */
 #include "hifi_lab_esp.h"
 
@@ -15,6 +16,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
+#include "hifi_esp.h"
 
 static const char *TAG = "hifi_lab";
 
@@ -25,6 +27,9 @@ static SemaphoreHandle_t lab_lock;
 #define KEPT_MAGIC 0x1ab5a7e1u
 static RTC_NOINIT_ATTR uint32_t kept_magic;
 static RTC_NOINIT_ATTR char kept_name[16];
+/* the lab restarted the board itself, off the dial-in too long */
+#define OFFLINE_MAGIC 0x0ff11e5eu
+static RTC_NOINIT_ATTR uint32_t kept_offline;
 
 /* an experiment that ended itself, handed over to the tick */
 static volatile const char *finished_name;
@@ -36,7 +41,7 @@ static uint32_t now_ms(void) { return (uint32_t) (esp_timer_get_time() / 1000); 
 static uint32_t heap_now(void) { return heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); }
 
 static void keep_running(void) {
-	const char *r = hifi_lab_running(&lab);
+	const char *r = hifi_lab_recent(&lab, now_ms());
 	strlcpy(kept_name, r, sizeof(kept_name));
 	kept_magic = KEPT_MAGIC;
 }
@@ -46,9 +51,25 @@ void hifi_lab_esp_finished(const char *name, bool ok) {
 	finished_name = name;
 }
 
+/* outside the lab's lock: a hang inside an experiment's start or stop holds
+ * it, and that is a hang this has to see */
+static void watch_link(void) {
+	static hifi_lab_link_t w;
+	hifi_remote_status_t r;
+	hifi_remote_status(&r);
+	if (!r.configured) return;
+	if (hifi_lab_link_tick(&w, now_ms(), r.connected)) {
+		ESP_LOGE(TAG, "off the dial-in %u min: restarting", (unsigned) (HIFI_LAB_OFFLINE_MS / 60000u));
+		kept_offline = OFFLINE_MAGIC;
+		vTaskDelay(pdMS_TO_TICKS(200));
+		esp_restart();
+	}
+}
+
 static void tick_task(void *arg) {
 	for (;;) {
 		vTaskDelay(pdMS_TO_TICKS(1000));
+		watch_link();
 		xSemaphoreTake(lab_lock, portMAX_DELAY);
 		const char *f = (const char *) finished_name;
 		if (f) {
@@ -73,6 +94,11 @@ void hifi_lab_esp_init(void) {
 		hifi_lab_set_crashed(&lab, kept_name);
 		ESP_LOGW(TAG, "the last restart came during the %s experiment", kept_name);
 	}
+	if (kept_offline == OFFLINE_MAGIC && why == ESP_RST_SW) {
+		lab.offline_restart = true;
+		ESP_LOGW(TAG, "the last restart was the lab's own: off the dial-in too long");
+	}
+	kept_offline = 0;
 	kept_magic = KEPT_MAGIC;
 	kept_name[0] = 0;
 	hifi_lab_register(&lab, &lab_espnow);

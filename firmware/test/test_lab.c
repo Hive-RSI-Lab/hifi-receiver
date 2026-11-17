@@ -135,9 +135,28 @@ static void lab_frame(void) {
 	/* a crash during a run is named after the restart */
 	hifi_lab_set_crashed(&l, "espnow");
 	CHECK(hifi_lab_selftest(&l, v, sizeof(v)));
-	CHECK_HAS(v, "during espnow");
+	CHECK_HAS(v, "just after espnow");
 	CHECK(hifi_lab_request(&l, false, NULL, 0, 100000, out, sizeof(out)) == 200);
 	CHECK_HAS(out, "\"crashed_in\":\"espnow\"");
+
+	/* what the board keeps for a crash: the running one, else one stopped in the last minute */
+	CHECK(!strcmp(hifi_lab_recent(&l, 61000), "ble")); /* ble stopped at 61000 by "all" */
+	CHECK(!strcmp(hifi_lab_recent(&l, 61000 + HIFI_LAB_RECENT_MS - 1), "ble"));
+	CHECK(!hifi_lab_recent(&l, 61000 + HIFI_LAB_RECENT_MS)[0]);
+	CHECK(hifi_lab_request(&l, true, "{\"op\":\"start\",\"exp\":\"espnow\"}", 200000, 100000, out, sizeof(out)) == 200);
+	CHECK(!strcmp(hifi_lab_recent(&l, 200500), "espnow"));
+	CHECK(hifi_lab_request(&l, true, "{\"op\":\"stop\",\"exp\":\"espnow\"}", 201000, 100000, out, sizeof(out)) == 200);
+	CHECK(!strcmp(hifi_lab_recent(&l, 230000), "espnow"));
+
+	/* the lab's own restart is named in the self-test and the listing */
+	hifi_lab_set_crashed(&l, "");
+	l.offline_restart = true;
+	CHECK(hifi_lab_selftest(&l, v, sizeof(v)));
+	CHECK_HAS(v, "off the dial-in 15 min");
+	CHECK(hifi_lab_request(&l, false, NULL, 0, 100000, out, sizeof(out)) == 200);
+	CHECK_HAS(out, "\"offline_restart\":true");
+	CHECK(hj_valid_object(out));
+	l.offline_restart = false;
 
 	/* a reply buffer that's too small says so rather than sending half */
 	char tiny[40];
@@ -346,8 +365,31 @@ static void macs(void) {
 	CHECK(!hifi_link_parse_mac("", m) && !hifi_link_parse_mac(NULL, m));
 }
 
+/* the dial-in watch: a restart only after a long time off it, and only once it was on it */
+static void link_watch(void) {
+	hifi_lab_link_t w = {0};
+	CHECK(!hifi_lab_link_tick(&w, 1000, false));                          /* never on it: setup AP, no network */
+	CHECK(!hifi_lab_link_tick(&w, 1000 + 2 * HIFI_LAB_OFFLINE_MS, false));
+	CHECK(!hifi_lab_link_tick(&w, 5000, true));
+	CHECK(!hifi_lab_link_tick(&w, 6000, false));                          /* dropped at 6 s */
+	CHECK(!hifi_lab_link_tick(&w, 6000 + HIFI_LAB_OFFLINE_MS - 1, false));
+	CHECK(hifi_lab_link_tick(&w, 6000 + HIFI_LAB_OFFLINE_MS, false));
+	/* back on it: the clock starts again from the next drop */
+	CHECK(!hifi_lab_link_tick(&w, 7000 + HIFI_LAB_OFFLINE_MS, true));
+	CHECK(!hifi_lab_link_tick(&w, 8000 + HIFI_LAB_OFFLINE_MS, false));
+	CHECK(!hifi_lab_link_tick(&w, 8000 + 2 * HIFI_LAB_OFFLINE_MS - 1, false));
+	CHECK(hifi_lab_link_tick(&w, 8000 + 2 * HIFI_LAB_OFFLINE_MS, false));
+	/* across the millisecond counter's wrap (49 days) */
+	hifi_lab_link_t z = {0};
+	CHECK(!hifi_lab_link_tick(&z, 0xffffff00u, true));
+	CHECK(!hifi_lab_link_tick(&z, 0xffffff10u, false));
+	CHECK(!hifi_lab_link_tick(&z, 0x100u, false));
+	CHECK(hifi_lab_link_tick(&z, 0xffffff10u + HIFI_LAB_OFFLINE_MS, false));
+}
+
 int main(void) {
 	macs();
+	link_watch();
 	lab_frame();
 	lab_route();
 	frames();

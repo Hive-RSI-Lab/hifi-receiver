@@ -311,6 +311,16 @@ static int start(const char *body, char *err, size_t n) {
 	hifi_link_rx_init(rx);
 	q_full = other = report_timeouts = no_mem = 0;
 	ps_err[0] = 0;
+#if CONFIG_BT_ENABLED
+	/* With Bluetooth in the image, the coexistence code in the Wi-Fi blob
+	 * aborts a few seconds after modem sleep is turned off ("Should enable
+	 * WiFi modem sleep when both WiFi and Bluetooth are enabled"): lab3 on
+	 * Lite 2 panicked on every ps:none start. */
+	if (!strcmp(ps, "none")) {
+		snprintf(err, n, "ps none panics the Wi-Fi/Bluetooth coexistence (modem sleep is required with Bluetooth on); use min or max");
+		return 400;
+	}
+#endif
 
 	wifi_second_chan_t second;
 	if (esp_wifi_get_channel(&channel, &second) != ESP_OK) channel = 0;

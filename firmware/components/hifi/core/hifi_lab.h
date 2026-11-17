@@ -10,7 +10,13 @@
  * - every run has a deadline (max_s, at most HIFI_LAB_MAX_S) and is stopped
  *   when it passes, or when internal RAM falls under HIFI_LAB_HEAP_STOP;
  * - a run that crashes the board is named after the restart (the board
- *   keeps the running experiment's name where a restart doesn't clear it).
+ *   keeps the running experiment's name, or the one that stopped in the
+ *   last HIFI_LAB_RECENT_MS, where a restart doesn't clear it);
+ * - a board that hangs comes back by itself: the lab build's task watchdog
+ *   panics (board/lite-lab/sdkconfig.extra), and a board that has been off
+ *   the Hive's dial-in for HIFI_LAB_OFFLINE_MS after having been on it
+ *   restarts (hifi_lab_link_tick). A hung Lite 2 once needed a hand on its
+ *   power switch: the plain image's watchdog only logs.
  *
  * This is the logic, in plain C so the host tests run it; the board gives
  * each experiment's start, stop and status (esp/hifi_lab_esp.c).
@@ -29,6 +35,12 @@
  * free, and a run is stopped when it falls under STOP. */
 #define HIFI_LAB_HEAP_FLOOR 10000
 #define HIFI_LAB_HEAP_STOP 7000
+/* a crash this soon after a run stopped is still put down to it (a stop
+ * that leaves the radio or a driver in a bad state) */
+#define HIFI_LAB_RECENT_MS 60000u
+/* off the dial-in this long, after having been on it: the lab restarts the
+ * board (a home Wi-Fi outage costs a restart every 15 minutes, no more) */
+#define HIFI_LAB_OFFLINE_MS (15u * 60u * 1000u)
 
 typedef struct hifi_lab_exp {
 	const char *name; /* [a-z0-9_-], at most 15 characters */
@@ -54,7 +66,15 @@ typedef struct {
 	int n;
 	hifi_lab_slot_t s[HIFI_LAB_EXP_MAX];
 	char crashed_in[16]; /* the experiment running when the board last went down; "" none */
+	bool offline_restart; /* the last restart was the lab's own, off the dial-in too long */
 } hifi_lab_t;
+
+/* the dial-in watch: hifi_lab_link_tick once a second */
+typedef struct {
+	bool seen;            /* on the dial-in at least once since boot */
+	bool down;
+	uint32_t down_since;
+} hifi_lab_link_t;
 
 void hifi_lab_init(hifi_lab_t *l);
 /* false when full, the name is bad or taken */
@@ -81,6 +101,14 @@ void hifi_lab_finished(hifi_lab_t *l, const char *name, uint32_t now_ms, bool ok
  * a crash; and the one it kept, after the restart. */
 const char *hifi_lab_running(const hifi_lab_t *l);
 void hifi_lab_set_crashed(hifi_lab_t *l, const char *name);
+/* The one to keep: the running experiment, else the one that stopped in the
+ * last HIFI_LAB_RECENT_MS, else "". */
+const char *hifi_lab_recent(const hifi_lab_t *l, uint32_t now_ms);
+
+/* true when the board should restart: it has been off the dial-in for
+ * HIFI_LAB_OFFLINE_MS after having been on it since boot. A board never on
+ * it (no network set up, the setup AP) is left alone. */
+bool hifi_lab_link_tick(hifi_lab_link_t *w, uint32_t now_ms, bool connected);
 
 /* "lab" self-test line: passes with experiments registered; names a running
  * one and the one a crash interrupted */

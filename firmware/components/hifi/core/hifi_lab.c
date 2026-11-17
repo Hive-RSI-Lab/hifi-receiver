@@ -78,6 +78,7 @@ static int reply_list(hifi_lab_t *l, uint32_t now_ms, char *out, size_t cap) {
 	hj_obj(&j, NULL);
 	hj_str(&j, "running", hifi_lab_running(l));
 	if (l->crashed_in[0]) hj_str(&j, "crashed_in", l->crashed_in);
+	if (l->offline_restart) hj_bool(&j, "offline_restart", true);
 	hj_int(&j, "max_s", HIFI_LAB_MAX_S);
 	hj_arr(&j, "experiments");
 	for (int i = 0; i < l->n; i++) write_slot(&j, &l->s[i], now_ms, false);
@@ -168,11 +169,41 @@ const char *hifi_lab_running(const hifi_lab_t *l) {
 
 void hifi_lab_set_crashed(hifi_lab_t *l, const char *name) { copy(l->crashed_in, sizeof(l->crashed_in), name); }
 
+const char *hifi_lab_recent(const hifi_lab_t *l, uint32_t now_ms) {
+	const char *run = hifi_lab_running(l);
+	if (run[0]) return run;
+	const hifi_lab_slot_t *best = NULL;
+	for (int i = 0; i < l->n; i++) {
+		const hifi_lab_slot_t *s = &l->s[i];
+		if (!s->runs || now_ms - s->stopped_ms >= HIFI_LAB_RECENT_MS) continue;
+		if (!best || now_ms - s->stopped_ms < now_ms - best->stopped_ms) best = s;
+	}
+	return best ? best->exp->name : "";
+}
+
+bool hifi_lab_link_tick(hifi_lab_link_t *w, uint32_t now_ms, bool connected) {
+	if (connected) {
+		w->seen = true;
+		w->down = false;
+		return false;
+	}
+	if (!w->seen) return false;
+	if (!w->down) {
+		w->down = true;
+		w->down_since = now_ms;
+		return false;
+	}
+	return now_ms - w->down_since >= HIFI_LAB_OFFLINE_MS;
+}
+
 bool hifi_lab_selftest(const hifi_lab_t *l, char *value, size_t n) {
 	const char *run = hifi_lab_running(l);
 	if (l->crashed_in[0])
-		snprintf(value, n, "%d experiments%s%s; last restart during %s", l->n, run[0] ? ", running " : "", run,
-			 l->crashed_in);
+		snprintf(value, n, "%d experiments%s%s; last restart during or just after %s", l->n,
+			 run[0] ? ", running " : "", run, l->crashed_in);
+	else if (l->offline_restart)
+		snprintf(value, n, "%d experiments%s%s; the lab restarted it, off the dial-in %u min", l->n,
+			 run[0] ? ", running " : "", run, (unsigned) (HIFI_LAB_OFFLINE_MS / 60000u));
 	else
 		snprintf(value, n, "%d experiments%s%s", l->n, run[0] ? ", running " : "", run);
 	return l->n > 0;
