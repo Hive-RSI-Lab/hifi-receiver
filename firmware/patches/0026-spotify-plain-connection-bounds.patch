@@ -61,6 +61,7 @@ index ebfe091..655180d 100644
    }
  
    // Update the nonce
+diff --git a/components/spotify/Shim.cpp b/components/spotify/Shim.cpp
 --- a/components/spotify/Shim.cpp
 +++ b/components/spotify/Shim.cpp
 @@ -489,7 +489,14 @@

@@ -59,8 +59,8 @@ check(shim.count("sessionMutex") >= 3, "sessionUser is read or written without i
 
 # 0026: a login that throws (a MAC mismatch, a reset) fails like a refused
 # one, so it falls back to ZeroConf instead of ending the task (a reboot)
-auth = re.search(r"try\s*\{\s*ctx->config\.authData\s*=\s*ctx->session->authenticate\(blob\);\s*\}\s*catch", shim)
-check(auth is not None, "runTask's authenticate(blob) is not inside a try")
+auth = re.search(r"try\s*\{\s*ctx->config\.authData\s*=\s*ctx->session->authenticate\((?:blob|login)\);\s*\}\s*catch", shim)
+check(auth is not None, "runTask's authenticate(...) is not inside a try")
 
 # 0011: the receiver's Wi-Fi handlers go on as soon as the event loop exists,
 # before the network state machine can start Wi-Fi or Ethernet
