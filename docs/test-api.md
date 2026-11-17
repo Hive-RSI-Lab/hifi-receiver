@@ -231,6 +231,27 @@ across restarts. Shown as `audio.channel` in `/state`. Reply: the full
 equalizer (bands in `info.caps.eq_bands`), whole dB, `eq_min` to `eq_max`.
 Applied at once and kept. Reply: the full `/state`.
 
+## `POST /api/v1/loudness`
+
+`{"boost_db": 6}`, `{"heat_cap_w": 12}`, or both; each is optional, and a
+body with neither is a 400. Only boards whose `info.caps.loudness` is there
+take it (Lite).
+- **`boost_db`:** 0 to `caps.loudness.boost_max_db` (9), a number. Digital
+  gain before the power governor, with a fast peak limiter (instant attack,
+  25 ms hold, 0.15 s release) that keeps the boosted signal under the
+  governor's clip ceiling, so a loud master gets louder without hard
+  clipping. Test tones and line-in at unity skip it.
+- **`heat_cap_w`:** sustained watts a channel the governor allows, from
+  `heat_min_w` to `heat_max_w` (15), default `heat_def_w` (9). Above 9 W
+  the amp may cut out when it gets hot (its warning pin backs the level off,
+  and its own latch stays as it was); a fan helps.
+
+Both are checked before either is set, and kept across restarts. Shown as
+`audio.boost` (`db`, `limit_db`: the gain the limiter is taking off now,
+`limiting`, `limit_events`) and `governor.heat_cap_w` / `heat_w` in
+`/state`, with `amp.hot` when the warning pin is low. Reply: the full
+`/state`; 400 on a bad value.
+
 ## `POST /api/v1/name`
 
 `{"name": "Kitchen"}`, 1–32 characters: the player name in AirPlay,

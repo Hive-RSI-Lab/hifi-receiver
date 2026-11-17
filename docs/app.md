@@ -65,6 +65,10 @@ what is playing; it doesn't choose it.
     (0–20 ms) and phase.
 - **Volume limit:** the highest the volume can go, from the app, buttons or
   remote.
+- **Loudness (Lite):** Boost (0 to +9 dB, with a limiter so it doesn't hard
+  clip) and Heat cap (watts a channel the amp may sustain, 9 W by default,
+  up to 15 W; above 9 W the amp may cut out when it is hot, and a fan helps).
+  The Sound page shows "Amplifier hot" or "Heat limit" when either is acting.
 
 **Setup**
 - **Wi-Fi:** scan, choose, password, join and forget. 2.4 GHz only.
