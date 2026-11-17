@@ -6,7 +6,9 @@
  * pinger or flooder, the client: the echo's notifications take the same
  * path. Byte 0 picks the role and the clock's start; then events, each
  * after a gap of up to a second and a bit. The write routing below is
- * gatts_cb's ESP_GATTS_WRITE_EVT case, without the ESP types. */
+ * gatts_cb's ESP_GATTS_WRITE_EVT case, without the ESP types. lab_ble.c's
+ * connected and run gates only drop events before hifi_link, so they aren't
+ * modelled; event bit 4 is spare. */
 #include "fuzz_link.h"
 
 enum { H_VAL = 42, H_CCCD = 43 };
