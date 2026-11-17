@@ -961,6 +961,12 @@ static void test_trial(void) {
 	CHECK(hifi_trial_judge(&t, 200, why, sizeof(why)) == HIFI_TRIAL_BAD);
 	t.wifi_configured = false; /* updated over USB, no network set up */
 	CHECK(hifi_trial_judge(&t, 1, why, sizeof(why)) == HIFI_TRIAL_GOOD);
+	t.lab_on = true; /* a lab build whose frame never comes up rolls back */
+	CHECK(hifi_trial_judge(&t, 5, why, sizeof(why)) == HIFI_TRIAL_WAIT);
+	CHECK_STR(why, "the lab frame isn't up");
+	CHECK(hifi_trial_judge(&t, HIFI_TRIAL_LIMIT_S, why, sizeof(why)) == HIFI_TRIAL_BAD);
+	t.lab_ok = true;
+	CHECK(hifi_trial_judge(&t, 5, why, sizeof(why)) == HIFI_TRIAL_GOOD);
 	t.component_ok = false;
 	CHECK(hifi_trial_judge(&t, 1, why, sizeof(why)) == HIFI_TRIAL_BAD);
 }

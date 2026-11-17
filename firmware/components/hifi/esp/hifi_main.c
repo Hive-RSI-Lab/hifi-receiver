@@ -44,6 +44,9 @@
 #include "hifi_gov.h"
 #include "hifi_http.h"
 #include "hifi_ir.h"
+#ifdef CONFIG_HIFI_LAB
+#include "hifi_lab_esp.h"
+#endif
 #include "hifi_json.h"
 #include "hifi_line.h"
 #include "hifi_meta.h"
@@ -1017,6 +1020,9 @@ static void op_selftest(hifi_selftest_t *t) {
 	char why[64];
 	int strays = hifi_listen_now(why, sizeof(why));
 	hifi_selftest_add(t, "listeners", strays == 0, "%s", why);
+#ifdef CONFIG_HIFI_LAB
+	hifi_lab_esp_selftest(t);
+#endif
 	free(s);
 }
 
@@ -1143,6 +1149,10 @@ void hifi_main_trial_inputs(hifi_trial_t *t) {
 	wifi_config_t wc = {0};
 	t->wifi_configured = esp_wifi_get_config(WIFI_IF_STA, &wc) == ESP_OK && wc.sta.ssid[0];
 	t->wifi_ok = hifi_net_ip(NULL, 0);
+#ifdef CONFIG_HIFI_LAB
+	t->lab_on = true;
+	t->lab_ok = hifi_lab_esp_ok();
+#endif
 }
 
 const hifi_ops_t hifi_ops = {
@@ -1162,6 +1172,9 @@ const hifi_ops_t hifi_ops = {
 	.set_zone = hifi_bsp_set_zone,
 #endif
 	.update_check = hifi_net_update_check, .update_start = hifi_net_update_start,
+#ifdef CONFIG_HIFI_LAB
+	.lab = hifi_lab_esp_op,
+#endif
 #ifdef HIFI_HAS_LED_TEST
 	.set_led = hifi_bsp_set_led,
 #endif
@@ -1337,6 +1350,9 @@ static bool hifi_init(void) {
 	if (board_line) task_psram(line_main, "hifi_line", 4096, ESP_TASK_PRIO_MIN + 4, 1);
 	xTaskCreate(services_task, "hifi_svc", 3072, NULL, ESP_TASK_PRIO_MIN + 1, NULL);
 	tap_task = task_psram(tap_main, "hifi_tap", 4096, ESP_TASK_PRIO_MIN + 2, tskNO_AFFINITY);
+#ifdef CONFIG_HIFI_LAB
+	hifi_lab_esp_init();
+#endif
 	hifi_remote_start(&hifi_ops);
 	hifi_bsp_start();
 	ESP_LOGI(TAG, "%s on %s, firmware %s", HIFI_MODEL, HIFI_BOARD, HIFI_FW_VERSION);

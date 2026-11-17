@@ -1070,6 +1070,10 @@ int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *meth
 	else if (!strcmp(route, "remote"))
 		status = lan && post ? error(out, cap, 403, "the relay is set over USB or by the Hive, not from the LAN")
 				     : r_remote(ops, post, body, out, cap);
+	else if (!strcmp(route, "lab"))
+		status = !ops->lab ? error(out, cap, 404, "this build has no lab")
+			 : lan && post ? error(out, cap, 403, "lab runs are started over USB or by the Hive, not from the LAN")
+			 : ops->lab(post, body, out, cap);
 	else if (!strncmp(route, "diag", 4) && (!route[4] || route[4] == '/'))
 		status = get || post ? r_diag(ops, route + 4, post, lan, body, out, cap) : -1;
 	else return error(out, cap, 404, "no such path");
