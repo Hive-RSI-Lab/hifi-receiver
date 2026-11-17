@@ -195,7 +195,7 @@ static struct { /* under mux: the BTC and media tasks write, result() reads */
 static char src_err[48];
 static const char *volatile sink_back; /* the hand-back: "yes", "pending" or the error */
 static char sink_back_err[40];
-static const char PENDING[] = "pending";
+static const char SINK_PENDING[] = "pending";
 
 /* one period of the tone: 100 frames, 16-bit stereo */
 #define TONE_FRAMES 100
@@ -342,7 +342,7 @@ static bool deinit_wait(void) {
 	bool came = deinit_seen;
 	if (!came) {
 		orphan = true;
-		sink_back = PENDING;
+		sink_back = SINK_PENDING;
 	}
 	portEXIT_CRITICAL(&mux);
 	if (!came) ESP_LOGW(TAG, "A2DP deinit: no answer in %d ms, the sink comes back when it does", WAIT_MS);
@@ -351,7 +351,7 @@ static bool deinit_wait(void) {
 
 static bool pending(void) {
 	portENTER_CRITICAL(&mux);
-	bool p = orphan || sink_back == PENDING;
+	bool p = orphan || sink_back == SINK_PENDING;
 	portEXIT_CRITICAL(&mux);
 	return p;
 }
