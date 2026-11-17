@@ -155,18 +155,28 @@ static bool split_words(const char *line, char *buf, size_t cap, char **argv, in
  * main.c): an unknown option, a word left over, -t (license) or -? (help)
  * makes it exit, and an exit reboots the board 60 s later, at every boot.
  * Only the options this build knows and that keep it running pass: the ones
- * with a value, then -W, and -u/-R (resampling, with an optional value). A
- * bad value (say -d nonsense) still exits; that check is squeezelite's own. */
-static bool squeezelite_args_ok(const char *line) {
-	char buf[512];
-	char *argv[40];
-	int argc = 0;
-	if (!split_words(line, buf, sizeof(buf), argv, 40, &argc) || argc < 1) return false;
+ * with a value, then -W, and -u/-R (resampling, with an optional value).
+ * Bare "squeezelite" gets -? added by the console (help, then exit), so at
+ * least one option is needed; without -o the output is I2S. -N is refused
+ * (with -n it exits; there is no file system for it anyway), and -d needs
+ * what squeezelite's strtok needs: a name, '=', a level. */
+static bool debug_ok(const char *v) {
+	while (*v == '=') v++;
+	size_t l = strcspn(v, "=");
+	if (!l) return false;
+	v += l;
+	while (*v == '=') v++;
+	return *v != 0;
+}
+
+static bool squeezelite_args_ok(char **argv, int argc) {
+	if (argc < 2) return false;
 	for (int i = 1; i < argc;) {
 		const char *a = argv[i];
 		if (a[0] != '-' || !a[1] || a[2]) return false;
-		if (strchr("oabcCdefmMnNpPrsZ", a[1])) {
+		if (strchr("oabcCdefmMnpPrsZ", a[1])) {
 			if (i + 1 >= argc) return false;
+			if (a[1] == 'd' && !debug_ok(argv[i + 1])) return false;
 			i += 2;
 		} else if (a[1] == 'W') {
 			i += 1;
@@ -198,18 +208,27 @@ static bool word_in(const char *w, size_t n, const char *const *list, size_t cou
 
 /* boot: lines kept in autoexecN run on the console at every boot, so only
  * squeezelite's own command line and the cfg-* setters may live there
- * ("restart" in autoexec1 would reboot the board forever) */
+ * ("restart" in autoexec1 would reboot the board forever).
+ * The console (platform_console.c) cuts a line at 599 bytes and keeps 27
+ * words (max_cmdline_length 600, max_cmdline_args 28 with the NULL), both
+ * silently: what it would run is not what was checked, so longer is refused. */
+#define CONSOLE_LINE_MAX 600
+#define CONSOLE_WORDS_MAX 27
 static bool command_ok(const char *line, bool boot) {
-	if (!line) return false;
+	if (!line || strlen(line) >= CONSOLE_LINE_MAX) return false;
 	/* one line, one command: a newline or other control character could
 	 * carry a second command past the check on the first word */
 	for (const char *c = line; *c; c++)
 		if (((unsigned char) *c < 0x20 && *c != '\t') || *c == 0x7f) return false;
+	char buf[CONSOLE_LINE_MAX];
+	char *argv[CONSOLE_WORDS_MAX];
+	int argc = 0;
+	if (!split_words(line, buf, sizeof(buf), argv, CONSOLE_WORDS_MAX, &argc)) return false;
 	while (*line == ' ' || *line == '\t') line++;
 	size_t n = strcspn(line, " \t");
 	if (!n) return false;
 	if (word_in(line, n, cfg_ok, sizeof(cfg_ok) / sizeof(cfg_ok[0]))) return true;
-	if (n == 11 && !strncmp(line, "squeezelite", 11)) return squeezelite_args_ok(line);
+	if (n == 11 && !strncmp(line, "squeezelite", 11)) return squeezelite_args_ok(argv, argc);
 	static const char *const ok[] = {"restart", "version", "free", "heap", "tasks"};
 	return !boot && word_in(line, n, ok, sizeof(ok) / sizeof(ok[0]));
 }
@@ -242,6 +261,9 @@ bool hifi_lan_config_ok(const char *key, const char *strval) {
  * which reach all three */
 bool hifi_lan_trial_refused(const char *path, const char *method) {
 	if (!path || !method || !strcmp(method, "GET") || !strcmp(method, "HEAD")) return false;
+	/* the server routes on the parsed path: an absolute-form target
+	 * (http://ip/reboot.json) or a '#' would slip past the names below */
+	if (path[0] != '/' || strchr(path, '#')) return true;
 	size_t n = strcspn(path, "?");
 	static const char *const paths[] = {
 		"/api/v1/wifi", "/api/v1/wifi/forget", "/api/v1/reset", "/api/v1/reboot", "/api/v1/bttest",

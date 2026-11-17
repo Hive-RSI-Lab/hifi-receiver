@@ -165,7 +165,18 @@ int main(void) {
 	CHECK(hifi_autoexec_ok("squeezelite -o \"BT -n 'Speaker'\" -b 500:2000 -R -Z 96000 -r \"44100-44100\""));
 	CHECK(hifi_autoexec_ok("squeezelite -o I2S -u m -s 192.168.1.10 -n \"Living room\""));
 	CHECK(hifi_autoexec_ok("squeezelite -o I2S -u -n x"));
-	CHECK(hifi_autoexec_ok("squeezelite"));
+	CHECK(!hifi_autoexec_ok("squeezelite"));           /* the console adds -?: help, exit */
+	CHECK(!hifi_autoexec_ok("squeezelite   "));
+	CHECK(!hifi_lan_command_ok("squeezelite"));
+	CHECK(hifi_autoexec_ok("squeezelite -n kitchen"));  /* no -o: I2S */
+	CHECK(!hifi_autoexec_ok("squeezelite -N /names"));   /* with -n it exits */
+	CHECK(!hifi_autoexec_ok("squeezelite -n a -N b"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -d all"));        /* no '=': exits */
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -d all="));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -d =info"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -d ==="));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -d slimproto=debug"));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -d all==info")); /* strtok takes it */
 	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -t"));
 	CHECK(!hifi_autoexec_ok("squeezelite -?"));
 	CHECK(!hifi_autoexec_ok("squeezelite -h"));
@@ -176,6 +187,29 @@ int main(void) {
 	CHECK(!hifi_autoexec_ok("squeezelite -o"));          /* a value missing */
 	CHECK(!hifi_autoexec_ok("squeezelite -ob I2S"));     /* strstr would take it; refused */
 	CHECK(!hifi_lan_command_ok("squeezelite -t"));
+	{
+		/* the console keeps 27 words and 599 bytes and drops the rest unseen */
+		char l[1024];
+		strcpy(l, "squeezelite");
+		for (int i = 0; i < 13; i++) strcat(l, " -n x");        /* 27 words */
+		CHECK(hifi_autoexec_ok(l));
+		strcat(l, " -W");                                         /* 28 */
+		CHECK(!hifi_autoexec_ok(l));
+		strcpy(l, "squeezelite -n ");
+		size_t k = strlen(l);
+		memset(l + k, 'a', 599 - k);
+		l[599] = 0;                                                /* 599 bytes */
+		CHECK(hifi_autoexec_ok(l));
+		CHECK(hifi_lan_command_ok(l));
+		l[599] = 'a';
+		l[600] = 0;                                                /* 600 */
+		CHECK(!hifi_autoexec_ok(l));
+		CHECK(!hifi_lan_command_ok(l));
+		CHECK(!hifi_lan_config_ok("autoexec1", l));
+		strcpy(l, "cfg-syst-name");
+		for (int i = 0; i < 27; i++) strcat(l, " x");          /* 28 words */
+		CHECK(!hifi_lan_command_ok(l));
+	}
 	CHECK(!hifi_lan_config_ok("autoexec1", "squeezelite -o I2S -t"));
 	/* the name quoted as the console reads it: a quote ends the word, \" is a quote */
 	CHECK(!hifi_autoexec_ok("squeezelite -n \"a\" -t \"b\""));
@@ -185,6 +219,12 @@ int main(void) {
 	CHECK(!hifi_autoexec_ok("squeezelite \\-t"));        /* \- drops both: "t" is a stray word */
 	/* during an OTA trial: what a LAN request may not do */
 	CHECK(hifi_lan_trial_refused("/api/v1/wifi", "POST"));
+	/* the server routes on the parsed path, not on these spellings */
+	CHECK(hifi_lan_trial_refused("http://192.168.1.5/reboot.json", "POST"));
+	CHECK(hifi_lan_trial_refused("/reboot.json#x", "POST"));
+	CHECK(hifi_lan_trial_refused("/connect.json?a#b", "DELETE"));
+	CHECK(hifi_lan_trial_refused("", "POST"));
+	CHECK(!hifi_lan_trial_refused("http://192.168.1.5/reboot.json", "GET"));
 	CHECK(hifi_lan_trial_refused("/api/v1/wifi/forget", "POST"));
 	CHECK(hifi_lan_trial_refused("/api/v1/reset", "POST"));
 	CHECK(hifi_lan_trial_refused("/api/v1/reboot", "POST"));
