@@ -1,5 +1,6 @@
 #include "hifi_ws_proto.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -135,4 +136,51 @@ bool hifi_ws_upgrade_ok(const char *resp, const char *accept) {
 		return v[0] == '\r' && v[1] == '\n';
 	}
 	return false;
+}
+
+const char *hifi_ws_drop_name(hifi_ws_drop_t kind) {
+	static const char *const names[] = {NULL,          "unknown",       "wifi_down",     "closed",
+					    "eof",         "tcp_gave_up",   "socket",        "tls",
+					    "read_timeout", "write_timeout", "bad_frame",    "no_memory",
+					    "stopped"};
+	return (unsigned) kind < sizeof(names) / sizeof(names[0]) ? names[kind] : "unknown";
+}
+
+static const char *errno_word(int e) {
+	switch (e) {
+	case ECONNRESET: return "reset";
+	case ECONNABORTED: return "aborted";
+	case ETIMEDOUT: return "timed out";
+	case EHOSTUNREACH: return "no route";
+	case ENETUNREACH: return "network unreachable";
+	case ENOTCONN: return "not connected";
+	case EPIPE: return "broken pipe";
+	case ENOMEM: return "no memory";
+	default: return NULL;
+	}
+}
+
+int hifi_ws_drop_text(char *out, size_t cap, hifi_ws_drop_t kind, int code, bool wifi_down) {
+	char why[48];
+	const char *w;
+	switch (kind) {
+	case HIFI_WS_DROP_NONE: snprintf(why, sizeof(why), "no drop"); break;
+	case HIFI_WS_DROP_WIFI: snprintf(why, sizeof(why), "Wi-Fi down"); break;
+	case HIFI_WS_DROP_CLOSED: snprintf(why, sizeof(why), "endpoint closed it (%d)", code); break;
+	case HIFI_WS_DROP_EOF: snprintf(why, sizeof(why), "far end closed the socket"); break;
+	case HIFI_WS_DROP_TCP_GAVE_UP: snprintf(why, sizeof(why), "TCP gave up: keepalive or resends"); break;
+	case HIFI_WS_DROP_SOCKET:
+		w = errno_word(code);
+		if (w) snprintf(why, sizeof(why), "socket errno %d (%s)", code, w);
+		else snprintf(why, sizeof(why), "socket errno %d", code);
+		break;
+	case HIFI_WS_DROP_TLS: snprintf(why, sizeof(why), "TLS error -0x%04X", (unsigned) code & 0xffffu); break;
+	case HIFI_WS_DROP_READ_TIMEOUT: snprintf(why, sizeof(why), "read stalled %d s mid-frame", code); break;
+	case HIFI_WS_DROP_WRITE_TIMEOUT: snprintf(why, sizeof(why), "send stalled %d s", code); break;
+	case HIFI_WS_DROP_BAD_FRAME: snprintf(why, sizeof(why), "bad frame"); break;
+	case HIFI_WS_DROP_NO_MEMORY: snprintf(why, sizeof(why), "no memory"); break;
+	case HIFI_WS_DROP_STOPPED: snprintf(why, sizeof(why), "stopped"); break;
+	default: snprintf(why, sizeof(why), "unknown"); break;
+	}
+	return snprintf(out, cap, "%s%s", why, wifi_down && kind != HIFI_WS_DROP_WIFI ? ", Wi-Fi down" : "");
 }

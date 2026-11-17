@@ -67,3 +67,32 @@ int hifi_ws_head_parse(const uint8_t *b, hifi_ws_head_t *h);
 /* The server's answer to the upgrade, NUL-terminated: true only for a 101
  * whose Sec-WebSocket-Accept (header name in any case) is accept. */
 bool hifi_ws_upgrade_ok(const char *resp, const char *accept);
+
+/*
+ * Why an up link ended, kept by esp/hifi_ws.c for `api diag/net` and the
+ * self-test (the bench saw drops it couldn't explain, 2026-11-17). The first
+ * cause seen on a link wins: a failed read that follows the endpoint's close
+ * frame is still "closed".
+ */
+typedef enum {
+	HIFI_WS_DROP_NONE,          /* no drop since boot */
+	HIFI_WS_DROP_UNKNOWN,       /* the link ended with no cause noted */
+	HIFI_WS_DROP_WIFI,          /* the station lost its access point, no socket cause */
+	HIFI_WS_DROP_CLOSED,        /* the endpoint's close frame; code: its status code */
+	HIFI_WS_DROP_EOF,           /* the far end closed the socket (FIN or TLS close_notify) */
+	HIFI_WS_DROP_TCP_GAVE_UP,   /* ECONNABORTED: TCP keepalive or resends ran out */
+	HIFI_WS_DROP_SOCKET,        /* another socket error; code: its errno */
+	HIFI_WS_DROP_TLS,           /* a TLS error; code: mbedTLS's, positive */
+	HIFI_WS_DROP_READ_TIMEOUT,  /* half a frame, then nothing for code seconds */
+	HIFI_WS_DROP_WRITE_TIMEOUT, /* a send stalled code seconds: the socket's buffer stayed full */
+	HIFI_WS_DROP_BAD_FRAME,     /* a frame header the board won't take */
+	HIFI_WS_DROP_NO_MEMORY,
+	HIFI_WS_DROP_STOPPED,       /* hifi_ws_stop */
+} hifi_ws_drop_t;
+
+/* Its short name for JSON ("socket", "tcp_gave_up", ...); NULL for NONE. */
+const char *hifi_ws_drop_name(hifi_ws_drop_t kind);
+/* One short line for a person: "socket errno 104 (reset)", "endpoint closed
+ * it (1001)", with ", Wi-Fi down" when the station had no access point at
+ * the drop. Returns the length written (snprintf's, cut to cap). */
+int hifi_ws_drop_text(char *out, size_t cap, hifi_ws_drop_t kind, int code, bool wifi_down);

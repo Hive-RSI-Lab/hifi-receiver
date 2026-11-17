@@ -112,6 +112,12 @@ typedef struct {
 	bool link_up;
 	uint32_t link_drops, link_up_s;
 	uint64_t tx_bytes, rx_bytes;
+	/* the last drop (wss:// only): a hifi_ws_drop_t (core/hifi_ws_proto.h;
+	 * 0: none since boot) and its code, whether Wi-Fi was down then, how long
+	 * ago and how long that link had been up */
+	int link_last_drop, link_last_code;
+	bool link_last_wifi_down;
+	uint32_t link_last_ago_s, link_last_lasted_s;
 	/* L4: the listener scan in normal running (core/hifi_listen.h) */
 	int listen_strays;       /* -1: no verdict yet */
 	uint32_t listen_events;  /* stray sets seen since boot */

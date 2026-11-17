@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "hifi_json.h"
+#include "hifi_ws_proto.h"
 
 /* ------------------------------------------------------------------ CPU load */
 
@@ -221,6 +222,20 @@ void hifi_diag_write_net(const hifi_diag_net_t *n, char *out, size_t cap) {
 	hj_int(&j, "up_s", n->link_up_s);
 	hj_int(&j, "tx_bytes", (long long) n->tx_bytes);
 	hj_int(&j, "rx_bytes", (long long) n->rx_bytes);
+	if (n->link_last_drop) {
+		char why[64];
+		hifi_ws_drop_text(why, sizeof(why), (hifi_ws_drop_t) n->link_last_drop, n->link_last_code, n->link_last_wifi_down);
+		hj_obj(&j, "last_drop");
+		hj_str(&j, "kind", hifi_ws_drop_name((hifi_ws_drop_t) n->link_last_drop));
+		hj_int(&j, "code", n->link_last_code);
+		hj_bool(&j, "wifi_down", n->link_last_wifi_down);
+		hj_str(&j, "why", why);
+		hj_int(&j, "ago_s", n->link_last_ago_s);
+		hj_int(&j, "lasted_s", n->link_last_lasted_s);
+		hj_obj_end(&j);
+	} else {
+		hj_null(&j, "last_drop");
+	}
 	hj_obj_end(&j);
 	hj_obj(&j, "listeners");
 	if (n->listen_strays >= 0) hj_int(&j, "strays", n->listen_strays);

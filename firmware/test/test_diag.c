@@ -1,10 +1,12 @@
 /* On-board diagnostics: CPU load, the reset history, the writers' paging and
  * size limit, and the diag routes through the API with a mock board. */
+#include <errno.h>
 #include <stdlib.h>
 
 #include "check.h"
 #include "hifi_api.h"
 #include "hifi_diag.h"
+#include "hifi_ws_proto.h"
 #include "hifi_json.h"
 
 static void history(void) {
@@ -163,6 +165,17 @@ static void writers(void) {
 	CHECK_HAS(out, "\"rssi\":-48,\"channel\":6");
 	CHECK_HAS(out, "\"last_reason\":8");
 	CHECK_HAS(out, "\"tx_bytes\":5000000000");
+	CHECK_HAS(out, "\"rx_bytes\":12,\"last_drop\":null}");
+	n.link_last_drop = HIFI_WS_DROP_TCP_GAVE_UP;
+	n.link_last_code = ECONNABORTED;
+	n.link_last_wifi_down = true;
+	n.link_last_ago_s = 42;
+	n.link_last_lasted_s = 3600;
+	hifi_diag_write_net(&n, out, sizeof(out));
+	CHECK(hj_valid_object(out));
+	CHECK(strlen(out) <= HIFI_DIAG_PAGE);
+	CHECK_HAS(out, "\"last_drop\":{\"kind\":\"tcp_gave_up\",\"code\":");
+	CHECK_HAS(out, "\"wifi_down\":true,\"why\":\"TCP gave up: keepalive or resends, Wi-Fi down\",\"ago_s\":42,\"lasted_s\":3600}");
 	CHECK_HAS(out, "\"listeners\":{\"strays\":0,\"events\":0,\"open\":null}");
 	hifi_diag_net_t stray = {.listen_strays = 1, .listen_events = 3, .listen_open = "1 open: tcp/23"};
 	hifi_diag_write_net(&stray, out, sizeof(out));

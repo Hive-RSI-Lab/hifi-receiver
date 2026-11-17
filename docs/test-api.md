@@ -413,7 +413,10 @@ core's idle task, so 100 minus it is that core's load.
 ```json
 {"wifi": {"rssi": -58, "channel": 6, "bssid": "aa:bb:cc:dd:ee:ff", "phy": "11n",
           "connects": 3, "disconnects": 2, "last_reason": 8, "up_s": 4012},
- "link": {"up": true, "drops": 1, "up_s": 3990, "tx_bytes": 812345, "rx_bytes": 4123456}}
+ "link": {"up": true, "drops": 1, "up_s": 3990, "tx_bytes": 812345, "rx_bytes": 4123456,
+          "last_drop": {"kind": "tcp_gave_up", "code": 113, "wifi_down": true,
+                        "why": "TCP gave up: keepalive or resends, Wi-Fi down",
+                        "ago_s": 3995, "lasted_s": 7210}}}
 ```
 
 `rssi`, `channel`, `bssid` and `phy` are `null` while the station isn't
@@ -422,6 +425,30 @@ handlers came up (a few seconds after boot); an association already up then
 counts as one connect. `last_reason` is the last
 disconnect's `wifi_err_reason_t`. `link` is the remote link: for wss:// the
 bytes on the socket, for MQTT `0` (not counted).
+
+`link.last_drop` is why the last up wss:// link ended (`null`: none since
+boot, and always on MQTT). The first cause the board saw on that link wins.
+`kind` is one of:
+
+| `kind` | `code` | what ended the link |
+|---|---|---|
+| `closed` | the close frame's status | the endpoint sent a close frame |
+| `eof` | 0 | the far end closed the socket (TCP FIN or TLS close_notify) |
+| `tcp_gave_up` | `ECONNABORTED` | TCP's keepalive (30 s idle, then 3 probes 10 s apart) or its resends ran out; lwIP doesn't say which |
+| `socket` | the errno | another socket error (`why` names the common ones: reset, timed out, no route) |
+| `tls` | mbedTLS's error, positive | a TLS error |
+| `read_timeout` | seconds | half a frame came, then nothing for that long |
+| `write_timeout` | seconds | a send stalled that long: the socket's send buffer stayed full |
+| `bad_frame` | 0 | a frame header the board won't take |
+| `no_memory` | 0 | no heap for a frame |
+| `wifi_down` | 0 | no socket cause, and the station had lost its access point |
+| `stopped` | 0 | the link was turned off |
+| `unknown` | 0 | the link ended with no cause noted |
+
+`wifi_down` says whether the station had lost its access point at the drop,
+whatever the cause; `why` is the one-line text (the self-test's `network`
+line carries it too, as `; drop Ns ago: <why>`, cut to fit); `ago_s` is how
+long ago it dropped and `lasted_s` how long that link had been up.
 
 ### `GET /api/v1/diag/audio`
 
