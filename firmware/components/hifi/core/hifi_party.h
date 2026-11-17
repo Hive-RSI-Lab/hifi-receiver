@@ -138,6 +138,9 @@ void hifi_party_fit_init(hifi_party_fit_t *f, int64_t win_us, int cap, int min_p
 /* A sample (x, y) of quality q (lower is better) taken at time now (µs).
  * Returns true when it closed a window and the line was drawn again. */
 bool hifi_party_fit_add(hifi_party_fit_t *f, int64_t x, int64_t y, double q, int64_t now_us);
+/* Takes the newest closed window back out of the line (one off it that the
+ * caller would keep out) and draws the line again. */
+void hifi_party_fit_drop_newest(hifi_party_fit_t *f);
 double hifi_party_fit_y(const hifi_party_fit_t *f, double x);
 double hifi_party_fit_x(const hifi_party_fit_t *f, double y);
 

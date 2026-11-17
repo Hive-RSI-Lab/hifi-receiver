@@ -28,14 +28,16 @@
  * true time the follower's DAC plays stream frame k minus the leader's.
  *
  * A case fails if, over the time the follower plays, the error's p99 is over
- * 100 µs, or a step is audible: a jump (5 ms crossfade) other than the first
+ * 100 µs, or over 1% of any 10 s of it is (so a few bad seconds can't hide
+ * in a long run), or a step is audible: a jump (5 ms crossfade) other than the first
  * one after the follower was muted, or two neighbouring frames more than one
  * frame apart outside a jump; or a mute that cuts the sound rather than
  * fading it, or a resume that doesn't fade in; or the follower is muted
  * longer than the case allows. The BSSID is polled once a second, so the
  * TSF of a new AP can arrive under the old one's BSSID for up to a second.
- * SEED=n draws every case anew. Then the same cases run with a deliberately broken servo (the
- * correction's sign flipped; the slips left out), and each must fail. The
+ * SEED=n draws every case anew. Then the base case runs with two deliberately
+ * broken servos (the correction's sign flipped; the slips left out), and
+ * each must fail. The
  * program exits non-zero when a good case fails or a broken one passes.
  *
  *   build/sim_party            all cases, then the broken servos
@@ -60,6 +62,8 @@
 #define TSF_EVERY_US 50000
 #define BEACON_US 102400.0
 #define LIMIT_US 100.0    /* p99 pass limit */
+#define WINDOW_S 10       /* and over every window this long */
+#define SIM_MAX_S 600
 #define DECIM 4           /* errors kept: one frame in DECIM */
 
 /* ------------------------------------------------------------ random */
@@ -127,6 +131,12 @@ static const scase_t CASES[] = {
 	 .ppm_follower = 23.6, .ppm_ap = 4, .miss_at_s = 50, .miss_len_s = 3, .miss_step_us = 1500, .max_mute_s = 12},
 	{.name = "relock-small", .what = "follower misses beacons 5 s (drifts ~220 µs), no step", .sim_s = 120, .ppm_leader = -2.9,
 	 .ppm_follower = 23.6, .ppm_ap = -20, .miss_at_s = 50, .miss_len_s = 5, .max_mute_s = 12},
+	{.name = "relock-60ppm", .what = "follower misses beacons 5 s at +30 ppm, the AP at -30 (drifts 300 µs), no step", .sim_s = 120,
+	 .ppm_leader = -2.9, .ppm_follower = 30, .ppm_ap = -30, .miss_at_s = 50, .miss_len_s = 5, .max_mute_s = 12},
+	{.name = "relock-60ppm-3s", .what = "the same, beacons missed 3 s (drifts 180 µs)", .sim_s = 120,
+	 .ppm_leader = -2.9, .ppm_follower = 30, .ppm_ap = -30, .miss_at_s = 50, .miss_len_s = 3, .max_mute_s = 12},
+	{.name = "relock-step150", .what = "follower misses beacons 1 s with its TSF 150 µs off", .sim_s = 120, .ppm_leader = -2.9,
+	 .ppm_follower = 23.6, .ppm_ap = 4, .miss_at_s = 50, .miss_len_s = 1, .miss_step_us = 150, .max_mute_s = 12},
 	{.name = "relock-early", .what = "relock, at 6 s while the TSF fit is young", .sim_s = 120, .ppm_leader = -2.9,
 	 .ppm_follower = 23.6, .ppm_ap = 4, .miss_at_s = 6, .miss_len_s = 3, .miss_step_us = 1500, .max_mute_s = 12},
 	{.name = "relock-5s", .what = "relock, beacons missed 5 s", .sim_s = 120, .ppm_leader = -2.9, .ppm_follower = 23.6, .ppm_ap = 4,
@@ -144,7 +154,7 @@ static const scase_t CASES[] = {
 	{.name = "all", .what = "+-30 ppm, losses, jitter, DAC noise and a late join together", .sim_s = 150, .ppm_leader = 30,
 	 .ppm_follower = -30, .ppm_ap = 10, .follower_start_s = 10, .wake_mean_us = 120, .spike_p = 0.03, .spike_max_us = 5000,
 	 .busy_p = 0.02, .tsf_wide_p = 0.08, .beacon_noise_us = 3, .clk_delay_mean_us = 10000, .clk_tail_p = 0.01, .clk_loss_p = 0.10,
-	 .burst_at_s = {70}, .burst_len_s = {1.5}},
+	 .burst_at_s = {70}, .burst_len_s = {1.5}, .max_mute_s = 1}, /* a lost CLOCK each side of the burst leaves one over 2 s old: a short, deliberate mute */
 };
 #define NCASES ((int) (sizeof(CASES) / sizeof(CASES[0])))
 
@@ -304,11 +314,18 @@ typedef struct {
 	int64_t prev_k;
 	uint32_t jumps_ok, jumps_bad, steps_bad, concealed_blocks, blocks, resume_bad, mute_bad;
 	int skip; /* frames to leave out after a jump: the crossfade */
+	/* per second of the run: samples, and those over LIMIT_US */
+	uint32_t sec_n[SIM_MAX_S], sec_over[SIM_MAX_S];
 } meas_t;
 
 static meas_t M;
 
-static void keep(double e) {
+static void keep(double t, double e) {
+	int sec = (int) (t / 1e6);
+	if (sec >= 0 && sec < SIM_MAX_S) {
+		M.sec_n[sec]++;
+		M.sec_over[sec] += fabs(e) > LIMIT_US;
+	}
 	if (M.n == M.cap) {
 		M.cap = M.cap ? M.cap * 2 : 1 << 16;
 		M.err = realloc(M.err, M.cap * sizeof(float));
@@ -401,7 +418,7 @@ static void board_hook(board_t *b, double t, servo_t servo) {
 					}
 					M.prev_k = k;
 					M.have_prev = true;
-					if (i % DECIM == 0) keep(play_at(b, b->w + i) - play_at(&L, k + DELAY));
+					if (i % DECIM == 0) keep(t, play_at(b, b->w + i) - play_at(&L, k + DELAY));
 				}
 			}
 		} else {
@@ -478,6 +495,8 @@ static void board_start(board_t *b, int id, bool follower, double ppm, double st
 
 typedef struct {
 	double mean, p50, p99, max, mute_s, play_s;
+	double worst_frac; /* the most of any WINDOW_S that is over LIMIT_US */
+	int worst_at;
 	uint32_t jumps_ok, jumps_bad, steps_bad, concealed;
 	bool pass;
 	char why[96];
@@ -532,11 +551,19 @@ static result_t run(const scase_t *c, servo_t servo, uint64_t seed) {
 		r.p99 = M.err[(size_t) ((double) (M.n - 1) * 0.99)];
 		r.max = M.err[M.n - 1];
 	}
+	for (int s0 = 0; s0 + WINDOW_S <= SIM_MAX_S; s0++) {
+		uint32_t n = 0, over = 0;
+		for (int i = s0; i < s0 + WINDOW_S; i++) n += M.sec_n[i], over += M.sec_over[i];
+		if (n >= 1000 && (double) over / n > r.worst_frac) r.worst_frac = (double) over / n, r.worst_at = s0;
+	}
 	r.pass = true;
 	if (M.n == 0 || r.play_s < (c->sim_s - c->follower_start_s) * 0.5)
 		r.pass = false, snprintf(r.why, sizeof(r.why), "played only %.1f s", r.play_s);
 	else if (r.p99 > LIMIT_US)
 		r.pass = false, snprintf(r.why, sizeof(r.why), "p99 %.1f µs > %.0f", r.p99, LIMIT_US);
+	else if (r.worst_frac > 0.01)
+		r.pass = false, snprintf(r.why, sizeof(r.why), "%.1f%% over %.0f µs in the %d s from %d s", 100 * r.worst_frac, LIMIT_US, WINDOW_S,
+		                         r.worst_at);
 	else if (M.jumps_bad || M.steps_bad || M.resume_bad || M.mute_bad)
 		r.pass = false, snprintf(r.why, sizeof(r.why), "audible: %u jumps, %u steps, %u loud resumes, %u hard mutes", M.jumps_bad, M.steps_bad,
 		                         M.resume_bad, M.mute_bad);

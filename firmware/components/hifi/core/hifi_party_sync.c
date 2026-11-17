@@ -5,14 +5,15 @@
 #include <string.h>
 
 /* the fits' settings: one window a second, 30 s of them, a line from 4; a
- * TSF bracket wider than 200 µs, or a DAC window 500 µs late, is off the line */
+ * TSF window 100 µs off the line (dropped from it), or a DAC window 500 µs late,
+ * is off the line */
 static void dac_reset(hifi_party_sync_t *s) {
 	hifi_party_fit_init(&s->dac, 1000000, 30, 4, 500);
 	s->dac_bad = 0;
 }
 
 static void tsf_reset(hifi_party_sync_t *s) {
-	hifi_party_fit_init(&s->tsf, 1000000, 30, 4, 200);
+	hifi_party_fit_init(&s->tsf, 1000000, 30, 4, 100);
 	s->tsf.both_sides = true; /* a TSF steps back as well as forward: keep a step out of the line until the reset */
 	s->tsf_bad = 0;
 	s->tsf_have_prev = s->tsf_step_open = false;
@@ -96,7 +97,8 @@ void hifi_party_sync_tsf(hifi_party_sync_t *s, int64_t a_us, int64_t b_us, int64
 	if (reset) {
 		s->tsf_resets++;
 		tsf_reset(s);
-	}
+	} else if (off)
+		hifi_party_fit_drop_newest(f); /* keep a stepped or drifting window out, or a few of them bend the line onto it */
 	s->tsf_prev_x = x;
 	s->tsf_prev_y = y;
 	s->tsf_have_prev = true;

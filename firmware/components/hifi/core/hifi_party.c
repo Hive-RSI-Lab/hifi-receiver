@@ -218,6 +218,13 @@ bool hifi_party_fit_add(hifi_party_fit_t *f, int64_t x, int64_t y, double q, int
 	return closed;
 }
 
+void hifi_party_fit_drop_newest(hifi_party_fit_t *f) {
+	if (f->n <= 0) return;
+	f->head = (f->head + f->cap - 1) % f->cap;
+	f->n--;
+	refit(f);
+}
+
 double hifi_party_fit_y(const hifi_party_fit_t *f, double x) {
 	return (double) f->yb + f->my + f->slope * ((x - (double) f->xb) - f->mx);
 }
