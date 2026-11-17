@@ -150,8 +150,10 @@ One top-level section of the state, as `{"<section>": {...}}`: `power`,
 `amp`, `governor`, `audio`, `net`, `sys`, `ir`, `controls` or `update`
 (`{}` when the board has none of it now; any other name is a 404). The
 whole state runs near 1000 characters on a Lite, which a serial line cuts
-at; a section stays well under 800 (`audio`, with the longest track text,
-is the largest at about 740), so a bench test reads the part it saves.
+at; a section stays under 960 even at its worst (`audio`, with the longest
+track text all in characters that need escaping, is about 960; with plain
+text it is about 740), so a bench test reads the part it saves. Control
+characters in track text are stored as spaces.
 Over the console: `api state/audio`, or `hifi state audio`.
 
 ## `POST /api/v1/tone`

@@ -3,6 +3,8 @@
 #include "hifi_json.h"
 #include "hifi_vol.h"
 
+#include <stdlib.h>
+
 /* ------------------------------------------------------------ mock board */
 
 static struct {
@@ -409,9 +411,11 @@ static void state_parts(void) {
 	s.volume = s.max_volume = 100;
 	s.zones = 2;
 	s.playing.state = HIFI_PLAY_PAUSE;
-	memset(s.playing.title, 'T', sizeof(s.playing.title) - 1);
-	memset(s.playing.artist, 'A', sizeof(s.playing.artist) - 1);
-	memset(s.playing.album, 'B', sizeof(s.playing.album) - 1);
+	/* '"' escapes to two characters, the most any track text can cost now
+	 * that hifi_utf8_copy turns control characters into spaces */
+	memset(s.playing.title, '"', sizeof(s.playing.title) - 1);
+	memset(s.playing.artist, '"', sizeof(s.playing.artist) - 1);
+	memset(s.playing.album, '"', sizeof(s.playing.album) - 1);
 	s.playing.elapsed_ms = s.playing.duration_ms = 2147483647;
 	s.ir_learning = 0;
 	for (int a = 0; a < HIFI_IR_N; a++) s.ir_learned[a] = true;
@@ -435,8 +439,8 @@ static void state_parts(void) {
 	for (size_t i = 0; i < sizeof(all) / sizeof(all[0]); i++) {
 		hifi_api_write_state_part(&s, all[i], part, sizeof(part));
 		size_t n = strlen(part);
-		if (n >= 800) fprintf(stderr, "state/%s is %zu characters\n", all[i], n);
-		CHECK(n > 2 && n < 800 && part[n - 1] == '}');
+		if (getenv("STATE_SIZES") || n >= 960) fprintf(stderr, "state/%s is %zu characters\n", all[i], n);
+		CHECK(n > 2 && n < 960 && part[n - 1] == '}');
 	}
 	hifi_meta_idle(&m.playing);
 }
