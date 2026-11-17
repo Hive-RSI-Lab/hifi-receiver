@@ -129,10 +129,10 @@ extern void bt_app_rc_tg_cb(esp_avrc_tg_cb_event_t event, esp_avrc_tg_cb_param_t
 extern esp_err_t hifi_bt_sink_rearm(void) __attribute__((weak));
 extern bool hifi_bt_sink_phone(void) __attribute__((weak));
 extern bool hifi_bt_sink_peer(uint8_t out[6]) __attribute__((weak));
-/* Bluedroid's own: is an ACL link to that address up (transport 1: BR/EDR)?
- * A source that is pairing or connecting has its ACL up before any A2DP
- * event says so (IDF 4.4 stack/btm/btm_acl.c) */
-extern bool BTM_IsAclConnectionUp(uint8_t *remote_bda, uint8_t transport) __attribute__((weak));
+/* patch 0018: an ACL link to that address is up, as the sink's GAP
+ * callback saw it (a source that is pairing or connecting has its ACL up
+ * before any A2DP event says so) */
+extern bool hifi_bt_sink_acl(const uint8_t a[6]) __attribute__((weak));
 /* btc_av.c: an A2DP role is up (on_init), or none is (on_deinit); written on
  * Bluedroid's task */
 extern bool g_a2dp_on_init __attribute__((weak));
@@ -695,7 +695,7 @@ static bool sink_has(const esp_bd_addr_t a) {
 /* the source at a has a link here at all: connected as above, or its ACL is
  * up (pairing, or connecting short of A2DP connected). A forget would cut it */
 static bool link_up(const esp_bd_addr_t a) {
-	return sink_has(a) || (BTM_IsAclConnectionUp && BTM_IsAclConnectionUp((uint8_t *)a, 1));
+	return sink_has(a) || (hifi_bt_sink_acl && hifi_bt_sink_acl(a));
 }
 
 /* the last stop's forget, if its source is down now: before that source
@@ -762,10 +762,11 @@ static int start_sink(const char *body, char *err, size_t n) {
 	/* the address is whole before Bluedroid's task can read it */
 	__asm__ __volatile__("" ::: "memory");
 	sink_peer_set = true;
-	/* already connected (a source run started first), or an event between
-	 * the callback going in and the address being set: the callback missed it */
+	/* already connected (a source run started first), or connected between
+	 * the callback going in and the address being set: the callback missed
+	 * it. A source short of connected then is caught by the stop's own
+	 * check of its link */
 	if (sink_has(a)) sink_peer_seen = sink_peer_up = true;
-	else if (link_up(a)) sink_peer_up = true;
 	return 0;
 }
 
