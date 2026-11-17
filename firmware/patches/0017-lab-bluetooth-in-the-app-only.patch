@@ -1,0 +1,20 @@
+diff --git a/components/platform_console/app_squeezelite/CMakeLists.txt b/components/platform_console/app_squeezelite/CMakeLists.txt
+index 9fdf664..84a11fe 100644
+--- a/components/platform_console/app_squeezelite/CMakeLists.txt
++++ b/components/platform_console/app_squeezelite/CMakeLists.txt
+@@ -11,6 +11,15 @@ target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=fileno")
+ target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=fstat")
+ target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=lround")
+ target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=esp_app_desc")
++# hifi: the lab's Bluetooth experiments link into the app only. hifi_lab_esp.c
++# refers to them weakly, so the recovery image (which doesn't link this
++# component) leaves out lab_bt.c/lab_ble.c and the Bluedroid host they reach.
++if(CONFIG_HIFI_LAB AND CONFIG_BT_CLASSIC_ENABLED)
++	target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=lab_bt")
++endif()
++if(CONFIG_HIFI_LAB AND CONFIG_BT_BLE_ENABLED)
++	target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=lab_ble")
++endif()
+ 
+ idf_build_get_property(project_ver PROJECT_VER)
+ message("******************* ${project_ver}")

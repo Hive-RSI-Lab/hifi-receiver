@@ -178,10 +178,10 @@ void hifi_lab_esp_init(void) {
 	hifi_lab_register(&lab, &lab_espnow);
 	hifi_lab_register(&lab, &lab_lanscan);
 #if CONFIG_BT_CLASSIC_ENABLED
-	hifi_lab_register(&lab, &lab_bt);
+	if (&lab_bt) hifi_lab_register(&lab, &lab_bt); /* NULL in recovery */
 #endif
 #if CONFIG_BT_BLE_ENABLED
-	hifi_lab_register(&lab, &lab_ble);
+	if (&lab_ble) hifi_lab_register(&lab, &lab_ble); /* NULL in recovery */
 #endif
 	lab_lock = xSemaphoreCreateMutex();
 	StackType_t *stack = NULL;
