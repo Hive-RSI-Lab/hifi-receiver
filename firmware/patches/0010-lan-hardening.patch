@@ -247,3 +247,36 @@ index 3ec6148..eaee1a9 100644
  EXT_RAM_ATTR static httpd_handle_t _server;
  EXT_RAM_ATTR static int _port;
  EXT_RAM_ATTR rest_server_context_t *rest_context;
+diff --git a/components/platform_console/cmd_system.c b/components/platform_console/cmd_system.c
+index dfd085a..946a535 100644
+--- a/components/platform_console/cmd_system.c
++++ b/components/platform_console/cmd_system.c
+@@ -397,8 +397,10 @@ int set_squeezelite_player_name(FILE * f,const char * name){
+     char * parm = " -n ";
+     char * cleaned_name = strdup(name);
+     for(char * p=cleaned_name;*p!='\0';p++){
+-        if(*p == ' '){
+-            *p='_'; // no spaces allowed
++        /* hifi-receiver (security.md M2): no spaces, and no quote, backslash
++         * or control character that would change how the line splits */
++        if(*p == ' ' || *p == '"' || *p == '\\' || (unsigned char)*p < 0x20 || *p == 0x7f){
++            *p='_';
+         }
+     }
+ 	if(nvs_config && strlen(nvs_config)>0){
+diff --git a/components/squeezelite/embedded.c b/components/squeezelite/embedded.c
+index 2b9bd2c..2f9ce66 100644
+--- a/components/squeezelite/embedded.c
++++ b/components/squeezelite/embedded.c
+@@ -147,6 +147,11 @@ void set_name(char *name) {
+ 		else *p = '\0';
+ 	}
+ 
++	/* hifi-receiver (security.md M2): the name comes from the server; a quote
++	 * or backslash in it would end the quoted -n argument and add options of
++	 * its own to the command line that runs at every boot */
++	for (char *c = name; *c; c++)
++		if (*c == '"' || *c == '\\' || (unsigned char) *c < 0x20 || *c == 0x7f) *c = '_';
+ 	asprintf(&q, "%s -n \"%s\"", cmd, name);
+     config_set_value(NVS_TYPE_STR, "autoexec1", q);
+ 	

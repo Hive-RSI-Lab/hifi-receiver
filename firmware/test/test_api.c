@@ -267,6 +267,10 @@ static void amp_input_sub_control(void) {
 	CHECK(call("POST", "/api/v1/name", "{\"name\":\"Kitchen\"}") == 200);
 	CHECK_STR(m.name, "Kitchen");
 	CHECK(call("POST", "/api/v1/name", "{\"name\":\"\"}") == 400);
+	/* the name goes into squeezelite's command line: no quote or backslash */
+	CHECK(call("POST", "/api/v1/name", "{\"name\":\"a\\\" -o x\"}") == 400);
+	CHECK(call("POST", "/api/v1/name", "{\"name\":\"a\\\\b\"}") == 400);
+	CHECK(call("POST", "/api/v1/name", "{\"name\":\"a\x7f" "b\"}") == 400);
 	CHECK(call("POST", "/api/v1/name", "{\"name\":\"0123456789012345678901234567890123\"}") == 400);
 
 	CHECK(call("POST", "/api/v1/reset", "{}") == 400);
@@ -576,7 +580,11 @@ static void core_routes(void) {
 	CHECK(hifi_api_handle_from(&core_ops, HIFI_SRC_LAN, "POST", "/api/v1/wifi",
 				   "{\"ssid\":\"x\",\"password\":\"12345678\"}", out, sizeof(out)) == 409);
 	CHECK(hifi_api_handle_from(&core_ops, HIFI_SRC_LAN, "POST", "/api/v1/reset", "{\"factory\":true}", out, sizeof(out)) == 409);
+	CHECK(hifi_api_handle_from(&core_ops, HIFI_SRC_LAN, "POST", "/api/v1/reboot", "{}", out, sizeof(out)) == 409);
+	CHECK(hifi_api_handle_from(&core_ops, HIFI_SRC_LAN, "POST", "/api/v1/bttest", "{\"sink\":\"x\"}", out, sizeof(out)) == 409);
+	CHECK(hifi_api_handle_from(&core_ops, HIFI_SRC_LAN, "POST", "/api/v1/reboot?x=1", "{}", out, sizeof(out)) == 409);
 	CHECK(hifi_api_handle_from(&core_ops, HIFI_SRC_LAN, "GET", "/api/v1/wifi/scan", NULL, out, sizeof(out)) == 200);
+	CHECK(hifi_api_handle_from(&core_ops, HIFI_SRC_LAN, "GET", "/api/v1/state", NULL, out, sizeof(out)) == 200);
 	CHECK(ccall("POST", "/api/v1/wifi/forget", NULL) == 200 && c.forgot); /* USB or the relay still can */
 	c.ota_state = NULL;
 	c.forgot = false;

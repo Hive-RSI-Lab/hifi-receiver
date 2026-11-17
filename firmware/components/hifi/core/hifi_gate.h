@@ -42,16 +42,24 @@ bool hifi_lan_config_ok(const char *key, const char *strval);
 bool hifi_lan_config_secret(const char *key);
 
 /* commands.json POST: may the LAN run this console line? Only the settings
- * commands (cfg-*), squeezelite, restart and read-only system info; never
+ * commands (an explicit cfg-* list, without cfg-hw-preset), squeezelite with
+ * options that keep it running, restart and read-only system info; never
  * nvs_*, api, hifi, update, recovery, restart_ota, join, i2c*, sleep. */
 bool hifi_lan_command_ok(const char *line);
 
 /* A line that may be kept in autoexecN (run at every boot): squeezelite's
- * command line or a cfg-* setter, one line. Also checked where the firmware
+ * command line (no option that makes it exit) or a cfg-* setter, one line. Also checked where the firmware
  * copies a saved line back into autoexec1 (the Bluetooth test). */
 bool hifi_autoexec_ok(const char *line);
 
-/* ---- the setup access point (security.md, firmware/patches/0009) ----
+/* While new firmware is on trial (not yet marked good), may a LAN request
+ * with this method and path (query allowed) roll it back? true for every
+ * method but GET/HEAD on: /api/v1/ wifi, wifi/forget, reset, reboot, bttest;
+ * squeezelite's /connect.json, /reboot.json, /reboot_ota.json,
+ * /commands.json, /config.json. The caller answers 409 then. */
+bool hifi_lan_trial_refused(const char *path, const char *method);
+
+/* ---- the setup access point (security.md, firmware/patches/0010) ----
  * First setup keeps the public password (nothing on the board to protect
  * yet). Once a Wi-Fi network is saved, an AP still on the public password
  * gets a random one of its own, kept in NVS as ap_pwd: the serial log and

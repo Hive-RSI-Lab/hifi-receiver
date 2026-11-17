@@ -8,6 +8,7 @@
 #include "esp_heap_caps.h"
 #include "esp_log.h"
 #include "esp_netif.h"
+#include "esp_ota_ops.h"
 
 #include "hifi_esp.h"
 #include "hifi_gate.h"
@@ -65,9 +66,24 @@ typedef struct {
 	void *ctx;
 } gated_t;
 
+/* new firmware on trial rolls back on a reboot or a lost Wi-Fi: squeezelite's
+ * own pages may not reboot, change the Wi-Fi or the settings until it is kept */
+static bool on_trial(httpd_req_t *req) {
+	if (!hifi_lan_trial_refused(req->uri, http_method_str(req->method))) return false;
+	esp_ota_img_states_t st;
+	return esp_ota_get_state_partition(esp_ota_get_running_partition(), &st) == ESP_OK &&
+	       st == ESP_OTA_IMG_PENDING_VERIFY;
+}
+
 static esp_err_t gate_trampoline(httpd_req_t *req) {
 	const gated_t *g = req->user_ctx;
 	if (!gate_ok(req)) return refuse(req);
+	if (on_trial(req)) {
+		static const char msg[] = "{\"error\":\"new firmware is on trial; try again in a few minutes\"}";
+		httpd_resp_set_status(req, status_line(409));
+		httpd_resp_set_type(req, "application/json");
+		return httpd_resp_send(req, msg, sizeof(msg) - 1);
+	}
 	req->user_ctx = g->ctx; /* the server sets it again on every request */
 	return g->handler(req);
 }

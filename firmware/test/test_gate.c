@@ -114,7 +114,8 @@ int main(void) {
 	CHECK(!hifi_lan_command_ok("restart\x7f"));
 	CHECK(!hifi_lan_command_ok("squeezelite -n a\x1b[2Jb"));
 	CHECK(!hifi_lan_command_ok("version\n"));
-	CHECK(hifi_lan_command_ok("squeezelite\t-n kitchen"));
+	/* the console parts words at spaces only: "squeezelite\t-n" is one word */
+	CHECK(!hifi_lan_command_ok("squeezelite\t-n kitchen"));
 	CHECK(!hifi_lan_config_ok("autoexec1", "version\nrecovery"));
 	CHECK(hifi_lan_config_ok("autoexec1", "squeezelite -n kitchen"));
 
@@ -150,6 +151,58 @@ int main(void) {
 	CHECK(!hifi_autoexec_ok("squeezelite\nrecovery"));
 	CHECK(!hifi_autoexec_ok(NULL));
 	CHECK(!hifi_autoexec_ok(""));
+	/* cfg-hw-preset stores any NVS key its JSON names: an explicit list */
+	CHECK(!hifi_lan_command_ok("cfg-hw-preset --model_config {\"name\":\"x\",\"config\":[{\"hifi_relay_url\":\"ws://evil\"}]}"));
+	CHECK(!hifi_autoexec_ok("cfg-hw-preset --model_config x"));
+	CHECK(!hifi_lan_command_ok("cfg-hw-dacx"));
+	CHECK(!hifi_lan_command_ok("cfg-anything"));
+	CHECK(hifi_lan_command_ok("cfg-syst-name -n kitchen"));
+	CHECK(hifi_lan_command_ok("cfg-syst-services --AirPlay"));
+	CHECK(hifi_autoexec_ok("cfg-audio-general -v 50"));
+	/* squeezelite options that make it exit (and reboot the board 60 s later,
+	 * at every boot), or that this build doesn't know */
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 500:2000 -d all=info -C 30 -W")); /* the default */
+	CHECK(hifi_autoexec_ok("squeezelite -o \"BT -n 'Speaker'\" -b 500:2000 -R -Z 96000 -r \"44100-44100\""));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -u m -s 192.168.1.10 -n \"Living room\""));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -u -n x"));
+	CHECK(hifi_autoexec_ok("squeezelite"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -t"));
+	CHECK(!hifi_autoexec_ok("squeezelite -?"));
+	CHECK(!hifi_autoexec_ok("squeezelite -h"));
+	CHECK(!hifi_autoexec_ok("squeezelite -l"));
+	CHECK(!hifi_autoexec_ok("squeezelite -L"));
+	CHECK(!hifi_autoexec_ok("squeezelite --help"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S stray"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o"));          /* a value missing */
+	CHECK(!hifi_autoexec_ok("squeezelite -ob I2S"));     /* strstr would take it; refused */
+	CHECK(!hifi_lan_command_ok("squeezelite -t"));
+	CHECK(!hifi_lan_config_ok("autoexec1", "squeezelite -o I2S -t"));
+	/* the name quoted as the console reads it: a quote ends the word, \" is a quote */
+	CHECK(!hifi_autoexec_ok("squeezelite -n \"a\" -t \"b\""));
+	CHECK(hifi_autoexec_ok("squeezelite -n \"a\\\" -t \\\"b\""));
+	CHECK(!hifi_autoexec_ok("squeezelite -n a\\ b -t"));
+	CHECK(hifi_autoexec_ok("squeezelite -n a\\ b"));
+	CHECK(!hifi_autoexec_ok("squeezelite \\-t"));        /* \- drops both: "t" is a stray word */
+	/* during an OTA trial: what a LAN request may not do */
+	CHECK(hifi_lan_trial_refused("/api/v1/wifi", "POST"));
+	CHECK(hifi_lan_trial_refused("/api/v1/wifi/forget", "POST"));
+	CHECK(hifi_lan_trial_refused("/api/v1/reset", "POST"));
+	CHECK(hifi_lan_trial_refused("/api/v1/reboot", "POST"));
+	CHECK(hifi_lan_trial_refused("/api/v1/bttest?x=1", "POST"));
+	CHECK(hifi_lan_trial_refused("/connect.json", "POST"));
+	CHECK(hifi_lan_trial_refused("/connect.json", "DELETE"));
+	CHECK(hifi_lan_trial_refused("/reboot.json", "POST"));
+	CHECK(hifi_lan_trial_refused("/reboot_ota.json", "POST"));
+	CHECK(hifi_lan_trial_refused("/commands.json", "POST"));
+	CHECK(hifi_lan_trial_refused("/config.json", "POST"));
+	CHECK(!hifi_lan_trial_refused("/config.json", "GET"));
+	CHECK(!hifi_lan_trial_refused("/connect.json", "HEAD"));
+	CHECK(!hifi_lan_trial_refused("/api/v1/wifi/scan", "GET"));
+	CHECK(!hifi_lan_trial_refused("/api/v1/volume", "POST"));
+	CHECK(!hifi_lan_trial_refused("/api/v1/reboots", "POST"));
+	CHECK(!hifi_lan_trial_refused("/config.jsonx", "POST"));
+	CHECK(!hifi_lan_trial_refused(NULL, "POST"));
+	CHECK(!hifi_lan_trial_refused("/reboot.json", NULL));
 	CHECK(hifi_lan_config_secret("hifi_relay_pass"));
 	CHECK(hifi_lan_config_secret("hifi_relay_key"));
 	CHECK(!hifi_lan_config_secret("hifi_relay_url"));
