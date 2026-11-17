@@ -140,7 +140,7 @@ int hifi_lab_tick(hifi_lab_t *l, uint32_t now_ms, uint32_t heap_free) {
 	for (int i = 0; i < l->n; i++) {
 		hifi_lab_slot_t *s = &l->s[i];
 		if (!s->running) continue;
-		if (heap_free < HIFI_LAB_HEAP_FLOOR / 2) {
+		if (heap_free < HIFI_LAB_HEAP_STOP) {
 			stop_slot(s, now_ms, "heap");
 			stopped++;
 		} else if ((int32_t) (now_ms - s->deadline_ms) >= 0) {

@@ -20,6 +20,7 @@
  * The stop (asked, deadline, low RAM or the run's own end) takes ESP-NOW
  * down again and puts the power save and the rate back.
  */
+#include <stdlib.h>
 #include <string.h>
 
 #include "esp_heap_caps.h"
@@ -51,13 +52,23 @@ typedef struct {
 } rx_item_t;
 
 #define QLEN 32
+#define STACK 4096
 
-/* made once and kept: a callback still running as ESP-NOW comes down never
- * touches freed memory */
+/* Made once and kept: a callback still running as ESP-NOW comes down never
+ * touches freed memory. The Lite has ~13 KB of internal RAM free with Wi-Fi,
+ * Bluetooth and the player up, so the big parts live in PSRAM: the queue's
+ * storage (QLEN frames, ~8 KB) and the worker's stack. The worker is made
+ * once and waits for a run, so its static stack is never reused under a
+ * task that is still being deleted. Its stack is in PSRAM: it must never
+ * write flash. */
 static QueueHandle_t q;
+static StaticQueue_t q_ctl;
 static SemaphoreHandle_t window_sem;
+static TaskHandle_t worker;
+static StaticTask_t worker_tcb;
 static hifi_link_tx_t *tx;
 static hifi_link_rx_t *rx;
+static uint32_t heap_start, heap_after_init, heap_min;
 
 static volatile bool run, alive;
 static role_t role;
@@ -137,7 +148,9 @@ static void teardown(void) {
 	rate_changed = ps_changed = false;
 }
 
-static void task_main(void *arg) {
+static uint32_t heap_now(void) { return heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); }
+
+static void one_run(void) {
 	rx_item_t it;
 	uint32_t seq = 0;
 	int64_t period = 1000000 / (rate_hz ? rate_hz : 1);
@@ -147,6 +160,8 @@ static void task_main(void *arg) {
 	f.len = (uint16_t) len;
 	while (run) {
 		int64_t now = esp_timer_get_time();
+		uint32_t h = heap_now();
+		if (h < heap_min) heap_min = h;
 		if (role == ROLE_FLOOD) {
 			if (count && seq >= count) {
 				/* let the last send reports in */
@@ -192,8 +207,14 @@ static void task_main(void *arg) {
 	if (ended_itself) hifi_lab_esp_finished("espnow", true);
 	ESP_LOGI(TAG, "%s stopped: sent %u, pongs %u, rx %u", ROLE_NAMES[role], (unsigned) tx->sent, (unsigned) tx->pongs,
 		 (unsigned) rx->rx);
-	alive = false;
-	vTaskDelete(NULL);
+}
+
+static void task_main(void *arg) {
+	for (;;) {
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		one_run(); /* a run stopped before it began still tears ESP-NOW down */
+		alive = false;
+	}
 }
 
 static const struct {
@@ -261,16 +282,27 @@ static int start(const char *body, char *err, size_t n) {
 		return 400;
 	}
 
-	if (!q) {
-		q = xQueueCreate(QLEN, sizeof(rx_item_t));
-		window_sem = xSemaphoreCreateCounting(16, 0);
-		tx = heap_caps_calloc(1, sizeof(*tx), MALLOC_CAP_SPIRAM);
-		rx = heap_caps_calloc(1, sizeof(*rx), MALLOC_CAP_SPIRAM);
-		if (!q || !window_sem || !tx || !rx) {
+	if (!worker) {
+		uint8_t *qmem = heap_caps_malloc(QLEN * sizeof(rx_item_t), MALLOC_CAP_SPIRAM);
+		StackType_t *stack = heap_caps_malloc(STACK, MALLOC_CAP_SPIRAM);
+		if (!window_sem) window_sem = xSemaphoreCreateCounting(16, 0);
+		if (!tx) tx = heap_caps_calloc(1, sizeof(*tx), MALLOC_CAP_SPIRAM);
+		if (!rx) rx = heap_caps_calloc(1, sizeof(*rx), MALLOC_CAP_SPIRAM);
+		if (!qmem || !stack || !window_sem || !tx || !rx) {
+			free(qmem);
+			free(stack);
 			snprintf(err, n, "out of memory");
 			return 503;
 		}
+		q = xQueueCreateStatic(QLEN, sizeof(rx_item_t), qmem, &q_ctl);
+		worker = xTaskCreateStaticPinnedToCore(task_main, "lab_espnow", STACK, NULL, ESP_TASK_PRIO_MIN + 5, stack,
+						       &worker_tcb, 0);
+		if (!worker) { /* not reached: static creation can't fail on memory */
+			snprintf(err, n, "no worker task");
+			return 503;
+		}
 	}
+	heap_start = heap_now();
 	xQueueReset(q);
 	while (xSemaphoreTake(window_sem, 0) == pdTRUE)
 		;
@@ -288,6 +320,7 @@ static int start(const char *body, char *err, size_t n) {
 		snprintf(err, n, "esp_now_init: %s", esp_err_to_name(e));
 		return 503;
 	}
+	heap_after_init = heap_min = heap_now();
 	esp_now_peer_info_t p = {0};
 	memcpy(p.peer_addr, peer, 6);
 	p.channel = 0; /* the channel the station is on */
@@ -319,12 +352,7 @@ static int start(const char *body, char *err, size_t n) {
 	}
 
 	run = alive = true;
-	if (xTaskCreatePinnedToCore(task_main, "lab_espnow", 4096, NULL, ESP_TASK_PRIO_MIN + 5, NULL, 0) != pdPASS) {
-		run = alive = false;
-		teardown();
-		snprintf(err, n, "no memory for the task");
-		return 503;
-	}
+	xTaskNotifyGive(worker);
 	ESP_LOGI(TAG, "%s with %02x:%02x:%02x:%02x:%02x:%02x on channel %u", ROLE_NAMES[role], peer[0], peer[1], peer[2],
 		 peer[3], peer[4], peer[5], channel);
 	return 0;
@@ -356,6 +384,11 @@ static void result(void *hj) {
 	hj_int(j, "queue_full", q_full);
 	hj_int(j, "other", other);
 	hj_int(j, "no_mem", no_mem);
+	hj_obj(j, "heap"); /* internal RAM: before ESP-NOW, after its init, the least during the run */
+	hj_int(j, "start", heap_start);
+	hj_int(j, "after_init", heap_after_init);
+	hj_int(j, "min", heap_min);
+	hj_obj_end(j);
 	if (role == ROLE_FLOOD) hj_int(j, "report_timeouts", report_timeouts);
 	hj_obj(j, "tx");
 	hifi_link_tx_json(tx, j);

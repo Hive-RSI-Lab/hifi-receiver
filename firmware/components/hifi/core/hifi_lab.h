@@ -8,7 +8,7 @@
  *   passes its trial and self-test exactly as the plain image does, so a
  *   crash in an experiment brings the board back with nothing running;
  * - every run has a deadline (max_s, at most HIFI_LAB_MAX_S) and is stopped
- *   when it passes, or when internal RAM falls under HIFI_LAB_HEAP_FLOOR;
+ *   when it passes, or when internal RAM falls under HIFI_LAB_HEAP_STOP;
  * - a run that crashes the board is named after the restart (the board
  *   keeps the running experiment's name where a restart doesn't clear it).
  *
@@ -24,7 +24,11 @@
 #define HIFI_LAB_EXP_MAX 8
 #define HIFI_LAB_MAX_S 3600       /* the longest run a command may ask for */
 #define HIFI_LAB_DEFAULT_S 60
-#define HIFI_LAB_HEAP_FLOOR 20000 /* internal RAM a run must leave free */
+/* Internal RAM. The Lite runs with ~13 KB free (Wi-Fi, Bluetooth, player), so
+ * an experiment keeps its buffers and stacks in PSRAM: a start needs FLOOR
+ * free, and a run is stopped when it falls under STOP. */
+#define HIFI_LAB_HEAP_FLOOR 10000
+#define HIFI_LAB_HEAP_STOP 7000
 
 typedef struct hifi_lab_exp {
 	const char *name; /* [a-z0-9_-], at most 15 characters */

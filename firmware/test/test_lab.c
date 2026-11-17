@@ -108,7 +108,7 @@ static void lab_frame(void) {
 	/* default deadline; low RAM stops every run */
 	CHECK(hifi_lab_request(&l, true, "{\"op\":\"start\",\"exp\":\"espnow\"}", 40000, 100000, out, sizeof(out)) == 200);
 	CHECK(hifi_lab_request(&l, true, "{\"op\":\"start\",\"exp\":\"ble\"}", 40000, 100000, out, sizeof(out)) == 200);
-	CHECK(hifi_lab_tick(&l, 41000, HIFI_LAB_HEAP_FLOOR / 2 - 1) == 2);
+	CHECK(hifi_lab_tick(&l, 41000, HIFI_LAB_HEAP_STOP - 1) == 2);
 	CHECK(fake_stopped == 4);
 	CHECK(hifi_lab_request(&l, true, "{\"op\":\"result\",\"exp\":\"ble\"}", 41000, 100000, out, sizeof(out)) == 200);
 	CHECK_HAS(out, "\"stopped\":\"heap\"");
