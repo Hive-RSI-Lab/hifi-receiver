@@ -91,6 +91,8 @@ class API(unittest.TestCase):
             ("sub", {"level_db": -4, "on": False}, lambda s: (s["audio"]["sub"]["level_db"], s["audio"]["sub"]["on"]) == (-4.5, False)),
             ("ir/learn", {"action": "volup"}, lambda s: s["ir"]["learning"] == "volup"),
             ("ir/forget", {}, lambda s: s["ir"]["learned"] == []),
+            ("loudness", {"boost_db": 6}, lambda s: s["audio"]["boost"]["db"] == 6),
+            ("loudness", {"heat_cap_w": 12.5}, lambda s: s["governor"]["heat_cap_w"] == 12.5 and s["audio"]["boost"]["db"] == 6),
         ):
             code, s = self.m.post(path, body)
             self.assertEqual(code, 200, (path, s))
@@ -114,7 +116,9 @@ class API(unittest.TestCase):
                            ("ir/forget", {"action": "eject"}), ("input", {"input": "line"}),
                            ("eq", {"gains": [0] * 3}), ("sub", {"xover_hz": 80}), ("sub", {"sub": 0, "trim_db": 1}),
                            ("zone", {"zone": "b", "on": True}), ("name", {"name": ""}), ("reset", {}),
-                           ("control", {"action": "skip"}), ("ir/learn", {"action": "eject"})):
+                           ("control", {"action": "skip"}), ("ir/learn", {"action": "eject"}),
+                           ("loudness", {}), ("loudness", {"boost_db": 10}), ("loudness", {"boost_db": "6"}),
+                           ("loudness", {"heat_cap_w": 1}), ("loudness", {"boost_db": 3, "heat_cap_w": 40})):
             code, s = self.m.post(path, body)
             self.assertEqual(code, 400, (path, body))
             self.assertIn("error", s)
@@ -248,6 +252,15 @@ class Browser(unittest.TestCase):
         try:
             d = self.dom(m, "#setup")
             for want in ("Scan for networks", "Teach", "Check for updates", "Factory reset"):
+                self.assertIn(want, d)
+        finally:
+            m.close()
+
+    def test_sound_page_has_the_loudness_sliders(self):
+        m = Mock()
+        try:
+            d = self.dom(m, "#sound")
+            for want in ("Loudness", "Boost", "Heat cap", "a fan helps"):
                 self.assertIn(want, d)
         finally:
             m.close()

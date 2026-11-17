@@ -154,6 +154,12 @@ function powerNotice() {
     'Unplug the charger and plug it back in. If this comes back, the box needs service.');
   if (p.state === 'undervolt' || p.state === 'overvolt') return h('div.card.err', {},
     h('b', {}, 'Speakers off: the supply is out of range. '), `It reads ${p.vbus_v?.toFixed(1)} V. Try another charger or cable.`);
+  if (a.hot) return h('div.card.warn', {}, h('b', {}, 'Amplifier hot. '),
+    'It is turning itself down until it cools. A fan, or a lower Heat cap on the Sound page, keeps it playing.');
+  if (g.limiting && g.gain_db < -0.5 && (g.reason === 'heat' || g.reason === 'amp_hot'))
+    return h('div.card.warn', {}, h('b', {}, 'Heat limit. '),
+      `Turned down ${(-g.gain_db).toFixed(1)} dB to keep the amplifier under ${g.heat_cap_w} W a channel. ` +
+      'You can raise the Heat cap on the Sound page.');
   if (g.limiting && g.gain_db < -0.5) return h('div.card.warn', {}, h('b', {}, 'Power limit. '),
     `Turned down ${(-g.gain_db).toFixed(1)} dB to stay within the charger's ${Math.round(c.w)} W.`);
   return null;
@@ -229,16 +235,44 @@ function pageSound() {
       h('div.row', {}, h('div.grow', {}, slider({ min: 30, max: 100, value: a.max_volume, 'aria-label': 'Volume limit',
         show: (v) => { $('#maxv').textContent = v; } }, (v) => set('volume', { max_volume: v }))),
       h('span.big', { id: 'maxv' }, String(a.max_volume)))),
+    loudnessCard(),
   ];
+}
+
+// a labelled slider with its value beside it
+function line(label, attrs, value, unit, send) {
+  const v = h('span.dim', { style: 'min-width:64px;text-align:right' }, value + unit);
+  return h('div.row', {}, h('span', { style: 'min-width:84px' }, label),
+    h('div.grow', {}, slider({ ...attrs, value, show: (x) => { v.textContent = x + unit; } }, send)), v);
+}
+
+// Boost (digital gain past full scale, under a peak limiter) and the heat cap
+function loudnessCard() {
+  const L = I.caps.loudness, b = S.audio.boost, g = S.governor;
+  if (!L || !b) return null;
+  const hc = L.heat_cap_w;
+  const rows = [
+    h('p.dim', {}, 'Boost makes everything louder. A fast limiter keeps the loud peaks from clipping, ' +
+      'so loud songs sound a little squeezed at high Boost.'),
+    line('Boost', { min: 0, max: L.boost_max_db, step: 0.5 }, b.db, ' dB', (x) => set('loudness', { boost_db: x })),
+  ];
+  if (b.db > 0) rows.push(h('p.dim', {}, b.limiting
+    ? `Limiting now: peaks ${(-b.limit_db).toFixed(1)} dB down.` : 'Not limiting now.'));
+  if (g.heat_cap_w != null) {
+    rows.push(line('Heat cap', { min: hc.min, max: hc.max, step: 0.5 }, g.heat_cap_w, ' W',
+      (x) => set('loudness', { heat_cap_w: x })),
+    h('p.dim', {}, `How much sustained power each channel may give. ${hc.default} W is the safe default. ` +
+      `Above ${hc.default} W the amplifier may cut out when it gets hot, more so in a closed box; a fan helps.`));
+    if (g.reason === 'heat' || g.reason === 'amp_hot' || S.amp.hot)
+      rows.push(h('p', {}, h('b', {}, S.amp.hot || g.reason === 'amp_hot'
+        ? 'The amplifier is hot and is turning itself down.'
+        : `Held at the heat cap now (${g.heat_w} W a channel).`)));
+  }
+  return h('div.card', {}, h('h2', {}, 'Loudness'), rows);
 }
 
 function subCard() {
   const s = S.audio.sub, c = I.caps.sub;
-  const line = (label, attrs, value, unit, send) => {
-    const v = h('span.dim', { style: 'min-width:64px;text-align:right' }, value + unit);
-    return h('div.row', {}, h('span', { style: 'min-width:84px' }, label),
-      h('div.grow', {}, slider({ ...attrs, value, show: (x) => { v.textContent = x + unit; } }, send)), v);
-  };
   const rows = [h('div.row', {}, h('span.grow', {}, 'Sub outputs'), onOff(s.on, (on) => set('sub', { on })))];
   if (s.on) {
     rows.push(line('Level', { min: -30, max: 6, step: 0.5 }, s.level_db, ' dB', (x) => set('sub', { level_db: x })));

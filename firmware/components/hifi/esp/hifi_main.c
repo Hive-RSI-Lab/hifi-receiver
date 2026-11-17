@@ -38,6 +38,7 @@
 #include "platform_config.h"
 
 #include "hifi_api.h"
+#include "hifi_boost.h"
 #include "hifi_board.h"
 #include "hifi_bsp.h"
 #include "hifi_gate.h"
@@ -87,6 +88,8 @@ static uint8_t pd_status;
 static hifi_input_t input = HIFI_INPUT_STREAM;
 static bool sub_on = true;
 static float sub_db = 0;
+static hifi_boost_t boost;    /* Boost and its peak limiter (k2388) */
+static volatile bool amp_hot; /* the amp's over-temperature warning is held */
 static hifi_chan_t channel = HIFI_CHAN_STEREO;
 static volatile bool codec_dirty = true; /* re-apply input/sub to the codec */
 /* the amps stay in shutdown until then: across an input change (the analog
@@ -243,6 +246,7 @@ static void power_task(void *arg) {
 		 * clipped PWM cycle, which is not heat (R5-DAL-5) */
 		if (!bp.otw) otw_high_ms = now;
 		bool otw_held = bp.otw && now - otw_high_ms >= 200;
+		amp_hot = otw_held;
 		if (otw_held) {
 			otw_clear_ms = now;
 			if (now - otw_ms >= 2000) {
@@ -684,6 +688,12 @@ static void op_info(hifi_info_t *i) {
 	free(s);
 	i->flash_mb = spi_flash_get_chip_size() >> 20;
 	hifi_bsp_info(i);
+	i->caps.boost_max_db = HIFI_BOOST_MAX_DB;
+	if (hifi_gov_heat_max_w(&gov) > 0) {
+		i->caps.heat_min_w = HIFI_GOV_HEAT_MIN_W;
+		i->caps.heat_max_w = hifi_gov_heat_max_w(&gov);
+		i->caps.heat_def_w = hifi_gov_heat_def_w(&gov);
+	}
 }
 
 static const char *source_name(void) {
@@ -745,6 +755,15 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	s->gov_gain_db = hifi_gov_gain_db(&gov);
 	s->gov_limiting = gov.limiting;
 	s->gov_events = gov.events;
+	s->loudness = true;
+	s->gov_why = hifi_gov_why(&gov);
+	s->heat_cap_w = hifi_gov_heat_w(&gov);
+	s->heat_w = hifi_gov_heat_now_w(&gov);
+	s->amp_hot = amp_hot;
+	s->boost_db = boost.db;
+	s->boost_limit_db = hifi_boost_reduction_db(&boost);
+	s->boost_limiting = boost.limiting;
+	s->boost_events = boost.events;
 	s->level_dbfs = hifi_gov_level_dbfs(&gov);
 	s->source = source_name();
 	/* LMS sends its track text only as display graphics: the state, no text */
@@ -824,6 +843,24 @@ static int op_set_input(hifi_input_t in) {
 	UNLOCK();
 	if (changed) input_changed(in, true);
 	else codec_dirty = true;
+	return 0;
+}
+
+/* Boost (dB) and the heat cap (W a channel); NaN leaves one */
+static int op_set_loudness(float boost_db, float heat_w) {
+	char v[16];
+	if (!isnan(boost_db)) {
+		hifi_boost_set_db(&boost, boost_db);
+		snprintf(v, sizeof(v), "%.1f", boost.db);
+		config_set_value(NVS_TYPE_STR, "hifi_boost_db", v);
+	}
+	if (!isnan(heat_w)) {
+		LOCK();
+		float w = hifi_gov_set_heat_w(&gov, heat_w);
+		UNLOCK();
+		snprintf(v, sizeof(v), "%.1f", w);
+		config_set_value(NVS_TYPE_STR, "hifi_heat_w", v);
+	}
 	return 0;
 }
 
@@ -1252,7 +1289,7 @@ void hifi_main_trial_inputs(hifi_trial_t *t) {
 const hifi_ops_t hifi_ops = {
 	.info = op_info, .snapshot = op_snapshot, .tone_start = op_tone_start, .tone_stop = op_tone_stop,
 	.amp_enable = op_amp_enable, .amp_reset = op_amp_reset, .set_input = op_set_input,
-	.set_sub = op_set_sub,
+	.set_sub = op_set_sub, .set_loudness = op_set_loudness,
 #if HIFI_HAS_CHANNEL
 	.set_channel = op_set_channel,
 #endif
@@ -1381,6 +1418,12 @@ static void services_task(void *arg) {
 /* ------------------------------------------------------------------ hooks */
 
 void hifi_dsp_process(uint8_t *buf, uint32_t frames, int bytes_per_frame, uint32_t rate) {
+	/* Boost first, under its limiter at the amp's clip point; a test tone
+	 * and DJ direct's line copy play at unity */
+	if (!tone_active && !line_unity && hifi_boost_active(&boost)) {
+		hifi_boost_set_ceiling(&boost, hifi_gov_clip_fs(&gov));
+		hifi_boost_process(&boost, buf, frames, bytes_per_frame, rate);
+	}
 	hifi_gov_process(&gov, buf, frames, bytes_per_frame, rate);
 	audio_active = gov.ms_avg > 1e-8f; /* above about -77 dBFS */
 	hifi_bsp_audio(buf, frames, bytes_per_frame);
@@ -1420,6 +1463,13 @@ static bool hifi_init(void) {
 
 	char *s = config_alloc_get_str("hifi_sub_db", NULL, "0");
 	sub_db = s ? strtof(s, NULL) : 0;
+	free(s);
+	hifi_boost_init(&boost);
+	s = config_alloc_get_str("hifi_boost_db", NULL, "0");
+	hifi_boost_set_db(&boost, s ? strtof(s, NULL) : 0);
+	free(s);
+	s = config_alloc_get_str("hifi_heat_w", NULL, NULL);
+	if (s) hifi_gov_set_heat_w(&gov, strtof(s, NULL));
 	free(s);
 	s = config_alloc_get_str("hifi_sub_on", NULL, "1");
 	sub_on = !s || strcmp(s, "0");

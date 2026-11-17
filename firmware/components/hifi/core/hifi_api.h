@@ -34,6 +34,10 @@ typedef struct {
 	int zones;
 	bool eth;
 	float pdo_v_max;
+	/* Loudness (ask k2388): the most Boost may add, in dB (0: no Boost),
+	 * and the heat cap's range and default, watts a channel sustained */
+	float boost_max_db;
+	float heat_min_w, heat_max_w, heat_def_w;
 } hifi_caps_t;
 
 typedef struct {
@@ -73,6 +77,14 @@ typedef struct {
 	float gov_budget_w, gov_in_w, gov_out_w, gov_gain_db;
 	bool gov_limiting;
 	uint32_t gov_events;
+	/* loudness (set_loudness): reported only when `loudness` is true */
+	bool loudness;
+	const char *gov_why;      /* hifi_gov_why: "" when free */
+	float heat_cap_w, heat_w; /* the cap and the sustained power now, a channel */
+	bool amp_hot;             /* the amp's over-temperature warning is held */
+	float boost_db, boost_limit_db; /* set, and the limiter's reduction now (<= 0) */
+	bool boost_limiting;
+	uint32_t boost_events;
 	/* audio */
 	const char *source; /* idle lms airplay spotify bt test */
 	hifi_input_t input;
@@ -177,6 +189,9 @@ typedef struct {
 	/* NULL: the board has no channel mode. 0 ok */
 	int (*set_channel)(hifi_chan_t c);
 	int (*set_eq)(const float gains_db[HIFI_EQ_BANDS]);
+	/* Boost (dB) and the heat cap (W a channel); NaN leaves one. Checked
+	 * against caps first. NULL: the board has neither (404) */
+	int (*set_loudness)(float boost_db, float heat_cap_w);
 	int (*set_name)(const char *name);
 	void (*reboot)(void);        /* after the reply has gone */
 	void (*factory_reset)(void); /* likewise */

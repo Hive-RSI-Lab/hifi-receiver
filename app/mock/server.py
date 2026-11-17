@@ -47,7 +47,8 @@ PLAYING = {"state": "play", "title": "Teardrop", "artist": "Massive Attack", "al
 
 def initial_info(model: str) -> dict:
     caps = copy.deepcopy(CAPS[model])
-    caps.update(eq_bands=EQ_BANDS, eq_min=-12, eq_max=12)
+    caps.update(eq_bands=EQ_BANDS, eq_min=-12, eq_max=12,
+                loudness={"boost_max_db": 9.0, "heat_cap_w": {"min": 2.0, "max": 15.0, "default": 9.0}})
     return {"model": "hifi-" + model, "board": BOARDS[model], "fw": "0.1.0",
             "upstream": "squeezelite-esp32 (mock)", "api": 1, "mac": "24:0a:c4:12:34:56",
             "hostname": "hifi-" + model, "name": "HiFi " + model.capitalize(),
@@ -68,11 +69,14 @@ def initial_state(model: str, ap: bool, pdo: tuple[float, float], fault: bool) -
                   "contract": {"protocol": "pd", "epr": v > 20, "v": v, "i_max_a": a, "w": round(v * a, 1)},
                   "pvdd_on": pd_ok, "pvdd_v": None, "vbus_i_a": None},
         "amp": {"enabled": pd_ok and not fault, "fault": False, "faults": 3 if fault else 0,
-                "latched": fault, "temp_c": None if model == "lite" else 46},
+                "latched": fault, "temp_c": None if model == "lite" else 46, "hot": False},
         "governor": {"budget_w": round(0.9 * v * a, 1), "in_w": 7.9, "out_w": 4.4,
-                     "gain_db": 0.0, "limiting": False, "limit_events": 0},
+                     "gain_db": 0.0, "limiting": False, "limit_events": 0,
+                     "reason": None, "heat_cap_w": 9.0, "heat_w": 2.2},
         "audio": {"source": "spotify", "input": "stream", "tone": None, "level_dbfs": -23.4,
-                  "volume": 35, "mute": False, "max_volume": 100, "eq": [0] * len(EQ_BANDS),
+                  "volume": 35, "mute": False, "max_volume": 100,
+                  "boost": {"db": 0.0, "limit_db": 0.0, "limiting": False, "limit_events": 0},
+                  "eq": [0] * len(EQ_BANDS),
                   "sub": sub, "playing": dict(PLAYING)},
         "net": {"mode": "sta", "ssid": "Home", "ip": "192.168.1.40", "rssi": -52,
                 "hostname": "hifi-" + model, "eth": model != "lite", "join": None},
@@ -156,6 +160,23 @@ class Receiver:
                 a["eq"] = [clamp(num({"g": x}, "g"), caps["eq_min"], caps["eq_max"], int) for x in g]
             elif path == "sub":
                 self._sub(b, a["sub"], caps["sub"])
+            elif path == "loudness":
+                # as the firmware: both checked before either is set
+                L = caps["loudness"]
+                bd = None if b.get("boost_db") is None else num(b, "boost_db")
+                hw = None if b.get("heat_cap_w") is None else num(b, "heat_cap_w")
+                if bd is None and hw is None:
+                    raise ValueError("send boost_db and/or heat_cap_w")
+                if bd is not None and not 0 <= bd <= L["boost_max_db"]:
+                    raise ValueError("boost_db is out of range")
+                if hw is not None and not L["heat_cap_w"]["min"] <= hw <= L["heat_cap_w"]["max"]:
+                    raise ValueError("heat_cap_w is out of range")
+                if bd is not None:
+                    a["boost"]["db"] = round(bd * 10) / 10
+                    a["boost"]["limiting"] = bd > 0
+                    a["boost"]["limit_db"] = -round(bd / 3, 1)
+                if hw is not None:
+                    s["governor"]["heat_cap_w"] = round(hw * 2) / 2
             elif path == "zone":
                 if caps["zones"] < 2 or b.get("zone") != "b":
                     raise ValueError("no such zone")
