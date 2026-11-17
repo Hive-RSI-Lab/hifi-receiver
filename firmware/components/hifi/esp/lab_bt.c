@@ -41,6 +41,20 @@
 
 static const char *TAG = "lab_bt";
 
+/* Weak: the recovery image links this file too (same component library, only
+ * app_recovery differs) but has no Bluetooth host, and a strong reference
+ * here pulled all of Bluedroid (~220 KB of libbt) into it, past its slot.
+ * The app has them from the A2DP sink; recovery sees NULL and the
+ * experiment refuses to start. */
+#pragma weak esp_bluedroid_get_status
+#pragma weak esp_bluedroid_enable
+#pragma weak esp_bluedroid_disable
+#pragma weak esp_bt_gap_set_scan_mode
+
+static esp_bluedroid_status_t bd_status(void) {
+	return esp_bluedroid_get_status ? esp_bluedroid_get_status() : ESP_BLUEDROID_STATUS_UNINITIALIZED;
+}
+
 /* the mode the controller was set up in (bt_app_core.c, patch 0012):
  * enabling it in another one fails */
 #if CONFIG_BTDM_CTRL_MODE_BTDM
@@ -59,7 +73,7 @@ static char err_start[48], err_stop[48];
 static const char *ps_fix; /* the stop turned modem sleep on before enabling the controller */
 /* how long going off, staying off and coming back took (ms): the cost of a
  * short controller-off window */
-static int64_t t_start, t_off, t_stop;
+static int64_t t_off, t_stop;
 static uint32_t off_ms, down_ms, on_ms;
 
 static const char *status_str(void) {
@@ -72,7 +86,7 @@ static const char *status_str(void) {
 }
 
 static const char *bd_str(void) {
-	switch (esp_bluedroid_get_status()) {
+	switch (bd_status()) {
 	case ESP_BLUEDROID_STATUS_UNINITIALIZED: return "uninitialized";
 	case ESP_BLUEDROID_STATUS_INITIALIZED: return "initialized";
 	case ESP_BLUEDROID_STATUS_ENABLED: return "enabled";
@@ -102,8 +116,12 @@ static int start(uint32_t run, const char *body, char *err, size_t n) {
 		snprintf(err, n, "mode must be off or quiet");
 		return 400;
 	}
+	if (!esp_bluedroid_enable || !esp_bluedroid_disable || !esp_bt_gap_set_scan_mode) {
+		snprintf(err, n, "no Bluetooth host in this image (recovery)");
+		return 503;
+	}
 	if (esp_bt_controller_get_status() != ESP_BT_CONTROLLER_STATUS_ENABLED ||
-	    esp_bluedroid_get_status() != ESP_BLUEDROID_STATUS_ENABLED) {
+	    bd_status() != ESP_BLUEDROID_STATUS_ENABLED) {
 		snprintf(err, n, "Bluetooth isn't up (controller %s, Bluedroid %s)", status_str(), bd_str());
 		return 409;
 	}
@@ -137,7 +155,6 @@ static int start(uint32_t run, const char *body, char *err, size_t n) {
 			note(why, sizeof(why), "esp_coex_preference_set", e);
 	}
 	mode = want;
-	t_start = t0;
 	t_off = esp_timer_get_time();
 	off_ms = (uint32_t) ((t_off - t0) / 1000);
 	down_ms = on_ms = 0;
@@ -174,11 +191,11 @@ static bool stop(void) {
 		/* Bluedroid on a controller that is down would wait on HCI for ever,
 		 * holding the lab's lock */
 		if (esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_ENABLED &&
-		    esp_bluedroid_get_status() != ESP_BLUEDROID_STATUS_ENABLED && (e = esp_bluedroid_enable()) != ESP_OK)
+		    bd_status() != ESP_BLUEDROID_STATUS_ENABLED && (e = esp_bluedroid_enable()) != ESP_OK)
 			note(err_stop, sizeof(err_stop), "esp_bluedroid_enable", e);
 	} else if ((e = esp_coex_preference_set(ESP_COEX_PREFER_BALANCE)) != ESP_OK)
 		note(err_stop, sizeof(err_stop), "esp_coex_preference_set", e);
-	if (esp_bluedroid_get_status() == ESP_BLUEDROID_STATUS_ENABLED && !(hifi_sink_source && hifi_sink_source() == 2) &&
+	if (bd_status() == ESP_BLUEDROID_STATUS_ENABLED && !(hifi_sink_source && hifi_sink_source() == 2) &&
 	    (e = esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE)) != ESP_OK)
 		note(err_stop, sizeof(err_stop), "esp_bt_gap_set_scan_mode", e);
 	on_ms = (uint32_t) ((esp_timer_get_time() - t_stop) / 1000);

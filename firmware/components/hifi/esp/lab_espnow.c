@@ -238,6 +238,7 @@ static void promisc_cb(void *buf, wifi_promiscuous_pkt_type_t type) {
 	int64_t ts = 0;
 	for (int i = 7; i >= 0; i--) ts = ts << 8 | d[24 + i];
 	uint16_t bi = d[32] | d[33] << 8;
+	if (!bi) return; /* a beacon interval of 0 would divide by zero below */
 	for (int i = 36; i + 2 <= n && i + 2 + d[i + 1] <= n; i += 2 + d[i + 1]) {
 		if (d[i] == 5 && d[i + 1] >= 2) {
 			bi_tu = bi;
@@ -263,6 +264,7 @@ static void read_beacon(void) {
 	if (esp_wifi_set_promiscuous(true) != ESP_OK) return;
 	for (int i = 0; i < 100 && !beacon_seen; i++) vTaskDelay(pdMS_TO_TICKS(10));
 	esp_wifi_set_promiscuous(false);
+	esp_wifi_set_promiscuous_rx_cb(NULL);
 	if (!beacon_seen) return;
 	/* TBTTs fall where the TSF is a multiple of the beacon interval; the
 	 * DTIM one is dtim_count intervals after this beacon's */
@@ -317,7 +319,9 @@ static void teardown(void) {
 		wifi_config_t c;
 		if (esp_wifi_get_config(WIFI_IF_STA, &c) == ESP_OK && c.sta.listen_interval == li_now) {
 			c.sta.listen_interval = li_before;
+			esp_wifi_set_storage(WIFI_STORAGE_RAM); /* not into NVS */
 			esp_wifi_set_config(WIFI_IF_STA, &c);
+			esp_wifi_set_storage(WIFI_STORAGE_FLASH);
 		}
 	}
 	rate_changed = ps_changed = li_changed = false;
@@ -339,7 +343,7 @@ static void one_run(void) {
 		uint32_t h = heap_now();
 		if (h < heap_min) heap_min = h;
 		if (role == ROLE_FLOOD) {
-			if (count && seq >= count && !(retry && rt->rn)) {
+			if (count && seq >= count && !(retry && (rt->rn || rt->n))) {
 				/* let the last send reports in (and their retries go) */
 				if (!done_at) done_at = now + 500000 + (int64_t) retry_ms * 1000;
 				if (now >= done_at) break;
@@ -349,18 +353,28 @@ static void one_run(void) {
 			int64_t w = until_window();
 			if (w) {
 				outside_win++;
-				TickType_t t = w / 1000 / portTICK_PERIOD_MS;
+				int64_t ms = w / 1000 > 100 ? 100 : w / 1000; /* a stop is seen within 100 ms */
+				TickType_t t = ms / portTICK_PERIOD_MS;
 				vTaskDelay(t ? t : 1); /* never spin: idle on this core feeds the watchdog */
 				continue;
 			}
 			/* a send report missing for 1 s: count it lost, use its slot */
 			if (xSemaphoreTake(window_sem, pdMS_TO_TICKS(1000)) != pdTRUE) {
+				/* if that report comes after all, it retires the next frame
+				 * in flight instead: the counts are off by one from here,
+				 * so a run with report_timeouts > 0 is suspect */
 				report_timeouts++;
 				infl_done(false);
 			}
+			done_at = 0; /* retries still pending: the grace time starts again after them */
 			uint32_t rseq;
 			uint8_t att = 0;
 			bool again = retry && retry_due(now, &rseq, &att);
+			if (!again && count && seq >= count) { /* all sent: only retries may go, when due */
+				xSemaphoreGive(window_sem);
+				vTaskDelay(1);
+				continue;
+			}
 			f.type = HIFI_LINK_DATA;
 			f.seq = again ? rseq : seq;
 			infl_push(f.seq, att);
@@ -476,13 +490,14 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	want_beacon = num(body, "beacon", 0) || sync_us == 1;
 	li_want = (uint16_t) num(body, "li", 0);
 	if (retry > 8 || retry_ms > 500 || (sync_us > 1 && (sync_us < 10000 || sync_us > 1000000)) ||
-	    (sync_us > 1 && (win_us < 1000 || win_us > sync_us || off_us >= sync_us)) || num(body, "li", 0) > 100 ||
+	    (sync_us > 1 && (win_us < 10000 || win_us > sync_us || off_us >= sync_us)) || num(body, "li", 0) > 100 ||
 	    ((retry || sync_us) && role != ROLE_FLOOD) || (li_want && role != ROLE_ECHO)) {
-		snprintf(err, n, "retry 0-8, retry_ms 0-500, sync_us 1 or 10000-1000000 with win_us 1000-sync_us and off_us below it (flood); li 1-100 (echo)");
+		snprintf(err, n, "retry 0-8, retry_ms 0-500, sync_us 1 or 10000-1000000 with win_us 10000-sync_us and off_us below it (flood); li 1-100 (echo)");
 		return 400;
 	}
-	if (sync_us == 1 && (win_us < 1000 || win_us > 1000000)) {
-		snprintf(err, n, "sync_us dtim needs win_us 1000-1000000");
+	/* the tick is 10 ms (HZ 100): a shorter window can't be kept */
+	if (sync_us == 1 && (win_us < 10000 || win_us > 1000000 || off_us > 1000000)) {
+		snprintf(err, n, "sync_us dtim needs win_us 10000-1000000 and off_us 0-1000000");
 		return 400;
 	}
 	wifi_phy_rate_t rate = WIFI_PHY_RATE_1M_L;
@@ -548,9 +563,13 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 			snprintf(err, n, "sync_us dtim: no beacon of the access point in 1 s (%u seen)", (unsigned) beacons);
 			return 503;
 		}
-		uint32_t per = (uint32_t) bi_tu * 1024 * (dtim_period ? dtim_period : 1);
-		off_us = (dtim_phase_us + off_us) % per; /* off_us: after the DTIM TBTT */
-		sync_us = per;
+		int64_t per = (int64_t) bi_tu * 1024 * (dtim_period ? dtim_period : 1);
+		if (per < 10000 || per > 1000000) {
+			snprintf(err, n, "sync_us dtim: the DTIM period %lld us is outside 10000-1000000", (long long) per);
+			return 503;
+		}
+		off_us = (uint32_t) (((int64_t) dtim_phase_us + off_us) % per); /* off_us: after the DTIM TBTT */
+		sync_us = (uint32_t) per;
 		if (win_us > per) win_us = per;
 	}
 #if CONFIG_BT_ENABLED
@@ -613,7 +632,9 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		if (esp_wifi_get_config(WIFI_IF_STA, &c) == ESP_OK) {
 			li_before = c.sta.listen_interval;
 			c.sta.listen_interval = li_want;
+			esp_wifi_set_storage(WIFI_STORAGE_RAM); /* a lab setting: not into NVS, a reboot undoes it */
 			if (esp_wifi_set_config(WIFI_IF_STA, &c) == ESP_OK) li_changed = li_want != li_before;
+			esp_wifi_set_storage(WIFI_STORAGE_FLASH);
 			li_now = esp_wifi_get_config(WIFI_IF_STA, &c) == ESP_OK ? c.sta.listen_interval : 0;
 		}
 	}
