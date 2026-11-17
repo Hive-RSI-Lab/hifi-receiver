@@ -35,8 +35,12 @@
  * that source is still up, or "this run's" when it is still up and the new
  * run names it, whose stop then takes it over). One forget waits at a
  * time: a stop that leaves a second first retries the older one, and drops
- * it (logged) only if both sources are still up. A source that reconnects
- * to the plain sink before then still meets its stale key. peer_connected:
+ * it (logged, forgot_last "dropped: replaced", and not retried) only if
+ * both sources are still up. A source that reconnects to the plain sink
+ * before then still meets its stale key. A waiting forget is held in RAM
+ * only: a reboot loses it, and that source's key stays until a later run
+ * names it again. "Up" here is any link of that source's: connected,
+ * connecting, or pairing (an ACL link Bluedroid has, with no A2DP event yet). peer_connected:
  * the source was connected at some point in the run; peer_up: it was still
  * up when last seen (at the stop, once the run is over). Without a peer
  * nothing is forgotten: a phone's pairing is never touched, as only the
@@ -125,6 +129,10 @@ extern void bt_app_rc_tg_cb(esp_avrc_tg_cb_event_t event, esp_avrc_tg_cb_param_t
 extern esp_err_t hifi_bt_sink_rearm(void) __attribute__((weak));
 extern bool hifi_bt_sink_phone(void) __attribute__((weak));
 extern bool hifi_bt_sink_peer(uint8_t out[6]) __attribute__((weak));
+/* Bluedroid's own: is an ACL link to that address up (transport 1: BR/EDR)?
+ * A source that is pairing or connecting has its ACL up before any A2DP
+ * event says so (IDF 4.4 stack/btm/btm_acl.c) */
+extern bool BTM_IsAclConnectionUp(uint8_t *remote_bda, uint8_t transport) __attribute__((weak));
 /* btc_av.c: an A2DP role is up (on_init), or none is (on_deinit); written on
  * Bluedroid's task */
 extern bool g_a2dp_on_init __attribute__((weak));
@@ -684,6 +692,12 @@ static bool sink_has(const esp_bd_addr_t a) {
 	return hifi_bt_sink_peer(b) && !memcmp(a, b, sizeof(b));
 }
 
+/* the source at a has a link here at all: connected as above, or its ACL is
+ * up (pairing, or connecting short of A2DP connected). A forget would cut it */
+static bool link_up(const esp_bd_addr_t a) {
+	return sink_has(a) || (BTM_IsAclConnectionUp && BTM_IsAclConnectionUp((uint8_t *)a, 1));
+}
+
 /* the last stop's forget, if its source is down now: before that source
  * can meet the stale key, even when the new run names it again. Still up:
  * it waits again, or, if keep (the address a new run names) is that
@@ -691,7 +705,7 @@ static bool sink_has(const esp_bd_addr_t a) {
 static void forget_left(const esp_bd_addr_t keep) {
 	forgot_last[0] = 0;
 	if (!forget_pending) return;
-	if (!sink_has(forget_addr)) {
+	if (!link_up(forget_addr)) {
 		forget_now(forget_addr, forgot_last, sizeof(forgot_last));
 		forget_pending = false;
 		return;
@@ -748,29 +762,32 @@ static int start_sink(const char *body, char *err, size_t n) {
 	/* the address is whole before Bluedroid's task can read it */
 	__asm__ __volatile__("" ::: "memory");
 	sink_peer_set = true;
-	/* already connected (a source run started first): the callback missed it */
+	/* already connected (a source run started first), or an event between
+	 * the callback going in and the address being set: the callback missed it */
 	if (sink_has(a)) sink_peer_seen = sink_peer_up = true;
+	else if (link_up(a)) sink_peer_up = true;
 	return 0;
 }
 
 /* the sink's own callback back, and the peer's pairing forgotten: now if
  * its link is down, else at the next sink start (a forget would cut it).
- * Up is what the lab's callback saw until the swap (connecting counts), or
- * what the sink's own task has. That task hears of a link through its
- * dispatch queue, so the check waits STOP_SETTLE_MS after the swap for an
- * event already on its way; a source that starts to connect after the swap
- * and is still short of connected then is the case missed. */
+ * Up is what the lab's callback saw (connecting counts), what the sink's own
+ * task has, or an ACL link Bluedroid has to the source (pairing counts). It
+ * is checked once with the lab's callback still in, and again after the
+ * swap: the sink's task hears of a link through its dispatch queue, so the
+ * second check waits STOP_SETTLE_MS for an event already on its way. */
 #define STOP_SETTLE_MS 200
 static void stop_sink(void) {
 	if (!sink_peer_set) return;
+	bool up = sink_peer_up || link_up(sink_peer);
 	esp_a2d_register_callback(bt_app_a2d_cb);
 	vTaskDelay(pdMS_TO_TICKS(STOP_SETTLE_MS));
-	if (sink_peer_up || sink_has(sink_peer)) {
+	if (up || sink_peer_up || link_up(sink_peer)) {
 		sink_peer_up = true;
 		/* one forget waits at a time: an older one for another source
 		 * first, if that source is down by now */
 		if (forget_pending && memcmp(forget_addr, sink_peer, sizeof(forget_addr))) {
-			if (!sink_has(forget_addr)) {
+			if (!link_up(forget_addr)) {
 				forget_now(forget_addr, forgot_last, sizeof(forgot_last));
 			} else {
 				ESP_LOGW(TAG, "sink: two sources still connected; the older one's pairing is kept");
