@@ -51,6 +51,12 @@ typedef enum { HIFI_INPUT_STREAM = 0, HIFI_INPUT_DJ_DIRECT, HIFI_INPUT_LINE } hi
 const char *hifi_input_name(hifi_input_t in);
 bool hifi_input_parse(const char *s, hifi_input_t *in);
 
+/* Which side of the program the speaker output plays (a Lite driving one
+ * speaker of a pair): "stereo", "left", "right", "mono" ((L+R)/2) */
+typedef enum { HIFI_CHAN_STEREO = 0, HIFI_CHAN_LEFT, HIFI_CHAN_RIGHT, HIFI_CHAN_MONO } hifi_chan_t;
+const char *hifi_chan_name(hifi_chan_t c);
+bool hifi_chan_parse(const char *s, hifi_chan_t *c);
+
 /* Everything /state reports. Floats that can't be measured are NaN. */
 typedef struct {
 	uint32_t uptime_s;
@@ -81,6 +87,7 @@ typedef struct {
 	const char *dj_guard_tripped;
 	bool sub_on;
 	float sub_db;
+	hifi_chan_t channel;
 	float eq[HIFI_EQ_BANDS];
 	int volume, max_volume;   /* hifi_vol.h */
 	bool mute;
@@ -167,6 +174,8 @@ typedef struct {
 	/* on: -1 leaves it; db: NaN leaves it, else set as near as the
 	 * hardware can. Returns the level it set. */
 	float (*set_sub)(int on, float db);
+	/* NULL: the board has no channel mode. 0 ok */
+	int (*set_channel)(hifi_chan_t c);
 	int (*set_eq)(const float gains_db[HIFI_EQ_BANDS]);
 	int (*set_name)(const char *name);
 	void (*reboot)(void);        /* after the reply has gone */

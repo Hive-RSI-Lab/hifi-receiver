@@ -18,7 +18,7 @@ typedef struct {
 	/* "" when unknown. Sized so the whole `state/audio` answer stays at or
 	 * under about 850 characters with every byte escaped (test_api
 	 * state_parts), clear of the bench's 1000-character line cut. */
-	char title[64], artist[48], album[48];
+	char title[60], artist[48], album[48];
 	int32_t elapsed_ms;  /* at tick_ms; -1 unknown */
 	int32_t duration_ms; /* -1 unknown */
 	uint32_t tick_ms;

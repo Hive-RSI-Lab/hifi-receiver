@@ -7,6 +7,7 @@
 #include "hifi_pd.h"
 #include "hifi_power.h"
 #include "hifi_update.h"
+#include "hifi_chan.h"
 #include "hifi_vol.h"
 
 /* the core board's expander: knob on P12/P13, knob push P14, buttons P15/P16 */
@@ -311,7 +312,40 @@ static void manifest(void) {
 	CHECK_STR(err, "the image's url is too long");
 }
 
+/* the ES8388 mixer words for each channel mode: [LD2LO, RD2LO, LD2RO, RD2RO] */
+static void chan_regs(void) {
+	hifi_chan_regs_t r;
+	/* stereo is what the board always wrote: DAC 0xB8 in 0x27/0x2A; the cross mixes off */
+	hifi_chan_regs(HIFI_CHAN_STEREO, false, 7, true, &r);
+	CHECK(r.mix[0] == 0xB8 && r.mix[1] == 0x38 && r.mix[2] == 0x38 && r.mix[3] == 0xB8 && r.dac_vol == 0);
+	hifi_chan_regs(HIFI_CHAN_STEREO, true, 3, true, &r); /* DJ direct: LIN at -3 dB, 0x58 */
+	CHECK(r.mix[0] == 0x58 && r.mix[1] == 0x18 && r.mix[2] == 0x18 && r.mix[3] == 0x58 && r.dac_vol == 0);
+	hifi_chan_regs(HIFI_CHAN_STEREO, true, 3, false, &r); /* muted: nothing in the mix */
+	CHECK(r.mix[0] == 0x18 && r.mix[1] == 0x18 && r.mix[2] == 0x18 && r.mix[3] == 0x18);
+	/* left: the left side to both outputs, the right side nowhere */
+	hifi_chan_regs(HIFI_CHAN_LEFT, false, 7, true, &r);
+	CHECK(r.mix[0] == 0xB8 && r.mix[1] == 0x38 && r.mix[2] == 0xB8 && r.mix[3] == 0x38 && r.dac_vol == 0);
+	hifi_chan_regs(HIFI_CHAN_RIGHT, false, 7, true, &r);
+	CHECK(r.mix[0] == 0x38 && r.mix[1] == 0xB8 && r.mix[2] == 0x38 && r.mix[3] == 0xB8 && r.dac_vol == 0);
+	hifi_chan_regs(HIFI_CHAN_RIGHT, true, 3, true, &r);
+	CHECK(r.mix[0] == 0x18 && r.mix[1] == 0x58 && r.mix[2] == 0x18 && r.mix[3] == 0x58);
+	/* mono: both sides to both outputs at half level: DAC -6 dB, LIN a further -6 dB */
+	hifi_chan_regs(HIFI_CHAN_MONO, false, 7, true, &r);
+	CHECK(r.mix[0] == 0xB8 && r.mix[1] == 0xB8 && r.mix[2] == 0xB8 && r.mix[3] == 0xB8 && r.dac_vol == 12);
+	hifi_chan_regs(HIFI_CHAN_MONO, true, 3, true, &r);
+	CHECK(r.mix[0] == 0x68 && r.mix[1] == 0x68 && r.mix[2] == 0x68 && r.mix[3] == 0x68 && r.dac_vol == 0);
+	hifi_chan_regs(HIFI_CHAN_MONO, true, 3, false, &r);
+	CHECK(r.mix[0] == 0x28 && r.mix[3] == 0x28);
+
+	hifi_chan_t c;
+	CHECK(hifi_chan_parse("right", &c) && c == HIFI_CHAN_RIGHT);
+	CHECK(!hifi_chan_parse("both", &c) && !hifi_chan_parse(NULL, &c));
+	CHECK_STR(hifi_chan_name(HIFI_CHAN_MONO), "mono");
+	CHECK_STR(hifi_chan_name((hifi_chan_t) 9), "stereo");
+}
+
 int main(void) {
+	chan_regs();
 	knob_detents();
 	buttons();
 	knob_volume();

@@ -33,6 +33,7 @@ extern const hifi_lab_exp_t lab_a2dp __attribute__((weak)); /* the same images: 
 extern const hifi_lab_exp_t lab_lanscan;
 extern const hifi_lab_exp_t lab_wifidrop;
 extern const hifi_lab_exp_t lab_crafted; /* a crafted packet or stream for the ALAC and MP3 decoders */
+extern const hifi_lab_exp_t lab_i2c; /* read-only: the board's I2C chips (esp/lab_i2c.c) */
 extern const hifi_lab_exp_t lab_ble __attribute__((weak)); /* the BLE lab image only (CONFIG_BT_BLE_ENABLED) */
 /* lab_bt and lab_a2dp's source both change Bluetooth's state, so each refuses
  * to start while the other runs (weak: either may be left out) */

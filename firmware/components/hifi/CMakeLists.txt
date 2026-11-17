@@ -5,7 +5,7 @@ set(srcs
 	core/hifi_api.c core/hifi_b64.c core/hifi_boot.c core/hifi_capture.c core/hifi_diag.c core/hifi_exp.c core/hifi_gate.c
 	core/hifi_gov.c core/hifi_ir.c core/hifi_json.c core/hifi_lab.c core/hifi_line.c core/hifi_link.c core/hifi_listen.c core/hifi_meta.c core/hifi_ota.c core/hifi_pd.c
 	core/hifi_power.c core/hifi_remote.c core/hifi_scan.c core/hifi_sha256.c core/hifi_tap.c core/hifi_tone.c core/hifi_update.c
-	core/hifi_vol.c core/hifi_ws_proto.c esp/hifi_main.c esp/hifi_crash.c esp/hifi_diag_esp.c esp/hifi_http.c esp/hifi_listen_esp.c esp/hifi_net.c esp/hifi_relay.c esp/hifi_ws.c)
+	core/hifi_chan.c core/hifi_vol.c core/hifi_ws_proto.c esp/hifi_main.c esp/hifi_crash.c esp/hifi_diag_esp.c esp/hifi_http.c esp/hifi_listen_esp.c esp/hifi_net.c esp/hifi_relay.c esp/hifi_ws.c)
 
 # the board's own code (esp/hifi_bsp.h), from the Kconfig board choice
 if(CONFIG_HIFI_PLUS OR CONFIG_HIFI_ULTRA)
@@ -17,6 +17,9 @@ endif()
 # the lab build (board/lite-lab): experiments a signed command starts and stops
 if(CONFIG_HIFI_LAB)
 	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c esp/lab_forge.c esp/lab_wifidrop.c esp/lab_crafted.c)
+	# reads the board's I2C chips through hive-fw's i2c-device driver (esp/i2cdev)
+	list(APPEND srcs esp/lab_i2c.c esp/i2cdev/i2cdev.c esp/i2cdev/i2cdev_esp.c)
+	set(lab_inc esp/i2cdev)
 	# Bluetooth off or quiet for a while, to measure what it costs Wi-Fi
 	if(CONFIG_BT_CLASSIC_ENABLED)
 		# and a real A2DP stream between two boards, beside the other radios
@@ -41,7 +44,7 @@ endif()
 idf_component_register(
 	SRCS ${srcs}
 	INCLUDE_DIRS core
-	PRIV_INCLUDE_DIRS esp ${webapp_dir}
+	PRIV_INCLUDE_DIRS esp ${webapp_dir} ${lab_inc}
 	REQUIRES esp_http_server
 	PRIV_REQUIRES driver esp_adc_cal mdns console nvs_flash esp_wifi
 		      platform_config services wifi-manager tools

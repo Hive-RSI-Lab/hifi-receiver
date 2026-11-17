@@ -59,6 +59,11 @@ void hifi_diag_hist_push(char *hist, size_t cap, const char *reason) {
 	memcpy(hist, next, keep + 1);
 }
 
+bool hifi_diag_is_power_cut(const char *reason, uint32_t boots_before) {
+	if (!reason || !boots_before) return false;
+	return !strcmp(reason, "power_on") || !strcmp(reason, "brownout");
+}
+
 /* ------------------------------------------------------------------ underruns */
 
 int hifi_diag_underrun_step(uint8_t *state, bool running, uint32_t frames, bool live, bool flushed) {
@@ -110,6 +115,7 @@ void hifi_diag_write_sys(const hifi_diag_sys_t *s, char *out, size_t cap) {
 	hj_str(&j, "reset_reason", s->reset_reason);
 	hj_str(&j, "resets", s->reset_hist);
 	hj_int(&j, "boots", s->boots);
+	hj_int(&j, "power_cuts", s->power_cuts);
 	hj_obj(&j, "nvs");
 	for (int i = 0; i < 2; i++) {
 		const hifi_diag_nvs_t *v = &s->nvs[i];

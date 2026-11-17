@@ -32,6 +32,21 @@ bool hifi_input_parse(const char *s, hifi_input_t *in) {
 	return false;
 }
 
+static const char *const CHAN_NAMES[] = {"stereo", "left", "right", "mono"};
+
+const char *hifi_chan_name(hifi_chan_t c) {
+	return (unsigned) c < sizeof(CHAN_NAMES) / sizeof(CHAN_NAMES[0]) ? CHAN_NAMES[c] : "stereo";
+}
+
+bool hifi_chan_parse(const char *s, hifi_chan_t *c) {
+	for (unsigned i = 0; s && i < sizeof(CHAN_NAMES) / sizeof(CHAN_NAMES[0]); i++)
+		if (!strcmp(s, CHAN_NAMES[i])) {
+			*c = (hifi_chan_t) i;
+			return true;
+		}
+	return false;
+}
+
 static int error(char *out, size_t cap, int status, const char *msg) {
 	hj_t j;
 	hj_init(&j, out, cap);
@@ -152,6 +167,7 @@ void hifi_api_write_state_part(const hifi_snapshot_t *s, const char *part, char 
 		if (s->tone_active) write_tone(&j, "tone", &s->tone);
 		else hj_null(&j, "tone");
 		hj_num(&j, "level_dbfs", s->level_dbfs, 1);
+		hj_str(&j, "channel", hifi_chan_name(s->channel));
 		hj_obj(&j, "sub");
 		hj_bool(&j, "on", s->sub_on);
 		hj_num(&j, "level_db", s->sub_db, 1);
@@ -408,6 +424,16 @@ static int r_sub(const hifi_ops_t *ops, const char *body, char *out, size_t cap)
 	if (!has_on && !has_db) return error(out, cap, 400, "send level_db and/or on");
 	if (has_db && !(db >= -30 && db <= 6)) return error(out, cap, 400, "level_db must be -30 to +6");
 	ops->set_sub(has_on ? on : -1, (float) db);
+	return r_state(ops, NULL, out, cap);
+}
+
+static int r_channel(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	char v[16];
+	hifi_chan_t c;
+	if (!ops->set_channel) return error(out, cap, 404, "this model has no channel mode");
+	if (!hj_get_str(body, "channel", v, sizeof(v)) || !hifi_chan_parse(v, &c))
+		return error(out, cap, 400, "channel must be stereo, left, right or mono");
+	if (ops->set_channel(c)) return error(out, cap, 500, "couldn't set the channel");
 	return r_state(ops, NULL, out, cap);
 }
 
@@ -1099,6 +1125,7 @@ int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *meth
 	else if (!strcmp(route, "amp")) status = post ? r_amp(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "input")) status = post ? r_input(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "sub")) status = post ? r_sub(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "channel")) status = post ? r_channel(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "eq")) status = post ? r_eq(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "name")) status = post ? r_name(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "reboot")) status = post ? r_reboot(ops, lan, body, out, cap, false) : -1;
@@ -1143,7 +1170,7 @@ int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *meth
 static const char USAGE[] =
 	"usage: hifi info|state [section]|crash|selftest | diag [tasks [from]|net|audio|ota|echo [bytes]] | tone sine <hz> <dBFS> [both|left|right] [s] | "
 	"tone sweep <from> <to> <dBFS> [s] | tone noise <dBFS> [s] | tone silence [s] | tone stop | "
-	"amp on|off|reset | input stream|dj_direct|line | sub <dB> | control <action> | "
+	"amp on|off|reset | input stream|dj_direct|line | sub <dB> | channel stereo|left|right|mono | control <action> | "
 	"volume <0-100> | mute on|off | maxvol <30-100> | ir learn <action> | ir forget [action] | "
 	"led test|auto | backlight on|off|auto | i2c <addr> <reg> [val]";
 
@@ -1228,6 +1255,13 @@ bool hifi_cli_request(int argc, const char *const *argv, const char **method,
 	if (!strcmp(cmd, "sub") && argc == 2 && is_num(argv[1])) {
 		*path = PREFIX "sub";
 		snprintf(body, bc, "{\"level_db\":%s}", argv[1]);
+		return true;
+	}
+	if (!strcmp(cmd, "channel") && argc == 2) {
+		hifi_chan_t v;
+		if (!hifi_chan_parse(argv[1], &v)) return usage(out, cap);
+		*path = PREFIX "channel";
+		snprintf(body, bc, "{\"channel\":\"%s\"}", argv[1]);
 		return true;
 	}
 	if (!strcmp(cmd, "control") && argc == 2 && strlen(argv[1]) < 16 && !strpbrk(argv[1], "\"\\")) {

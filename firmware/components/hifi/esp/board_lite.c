@@ -13,6 +13,7 @@
 
 #include "hifi_board.h"
 #include "hifi_bsp.h"
+#include "hifi_chan.h"
 #include "hifi_esp.h"
 #include "hifi_pd.h"
 
@@ -93,6 +94,9 @@ static int sub_code(float db) {
 
 float hifi_bsp_sub_db(float db) { return (sub_code(db) - 30) * 1.5f; }
 
+static hifi_chan_t channel;
+void hifi_bsp_channel(hifi_chan_t c) { channel = c; }
+
 /* Input routing and sub level onto the ES8388. Squeezelite's controlset
  * (firmware/patches, Kconfig) sets the rest at codec start. */
 static esp_err_t codec_apply(hifi_input_t in, bool on, float sub_db, const hifi_vol_t *vol) {
@@ -100,25 +104,27 @@ static esp_err_t codec_apply(hifi_input_t in, bool on, float sub_db, const hifi_
 	/* the bypass skips squeezelite, so the volume goes on the codec's outputs */
 	int out1 = hifi_vol_codec_code(vol, ES8388_OUT1_FULL);
 	esp_err_t err = ESP_OK;
+	hifi_chan_regs_t cr;
 	if (in == HIFI_INPUT_DJ_DIRECT) {
 		/* analog inputs on (ADCs stay off), mixers take LIN1/RIN1 at -3 dB, DAC out
 		 * of the mix: the line in reaches the amp and sub outs with no latency.
 		 * Muted: the line in leaves the mix too */
-		uint8_t mix = ES8388_MIX_LIN_M3DB | (out1 < 0 ? 0 : 0x40); /* bit6: LIN into the mixer */
+		hifi_chan_regs(channel, true, 3, out1 >= 0, &cr);
 		err |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCPOWER, 0x38);
-		err |= hifi_i2c_write(ES8388_ADDR, ES8388_DACCONTROL17, mix);
-		err |= hifi_i2c_write(ES8388_ADDR, ES8388_DACCONTROL20, mix);
 		err |= hifi_i2c_write(ES8388_ADDR, ES8388_LOUT1VOL, out1 < 0 ? 0 : out1);
 		err |= hifi_i2c_write(ES8388_ADDR, ES8388_ROUT1VOL, out1 < 0 ? 0 : out1);
 	} else {
 		/* squeezelite's own setting: DAC into the mixers, inputs powered down;
 		 * the volume is squeezelite's digital gain (hifi_volume_hook) */
-		err |= hifi_i2c_write(ES8388_ADDR, ES8388_DACCONTROL17, 0xB8);
-		err |= hifi_i2c_write(ES8388_ADDR, ES8388_DACCONTROL20, 0xB8);
+		hifi_chan_regs(channel, false, 7, true, &cr);
 		err |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCPOWER, 0xFC);
 		err |= hifi_i2c_write(ES8388_ADDR, ES8388_LOUT1VOL, ES8388_OUT1_FULL);
 		err |= hifi_i2c_write(ES8388_ADDR, ES8388_ROUT1VOL, ES8388_OUT1_FULL);
 	}
+	/* which side reaches which mixer (and mono's half-level DAC) */
+	for (int i = 0; i < 4; i++) err |= hifi_i2c_write(ES8388_ADDR, HIFI_CHAN_MIX_FIRST + i, cr.mix[i]);
+	err |= hifi_i2c_write(ES8388_ADDR, HIFI_CHAN_DACVOL_L, cr.dac_vol);
+	err |= hifi_i2c_write(ES8388_ADDR, HIFI_CHAN_DACVOL_R, cr.dac_vol);
 	err |= hifi_i2c_write(ES8388_ADDR, ES8388_DACPOWER, on ? 0x3C : 0x30);
 	err |= hifi_i2c_write(ES8388_ADDR, ES8388_LOUT2VOL, on ? code : 0);
 	err |= hifi_i2c_write(ES8388_ADDR, ES8388_ROUT2VOL, on ? code : 0);
