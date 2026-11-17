@@ -369,7 +369,6 @@ static void collapse_with_pvdd_ahead_of_vbus(void) {
 	on_and_playing();
 	for (int i = 0; i < 4; i++) {
 		in.vbus_v = 18.0f; /* the sense still shows a good contract... */
-		in.pvdd_v = 2.0f;  /* ...but PVDD is already down */
 		in.pg = true;
 		sw = SW_STUCK;     /* run() pins PVDD at 0 */
 		run(100);
@@ -381,8 +380,15 @@ static void collapse_with_pvdd_ahead_of_vbus(void) {
 		in.pg = true;
 		in.vbus_v = 20.0f;
 		run(1500);
-		CHECK(p.state == HIFI_PWR_ON && p.out.amp_on && !p.latched);
+		CHECK(p.state == HIFI_PWR_ON && p.out.amp_on && !p.latched && p.pvdd_fails == 0);
 	}
+	/* after the cuts a single small PVDD dip must not latch */
+	in.pvdd_v = 0.0f;
+	sw = SW_STUCK;
+	run(100);
+	sw = SW_WORKS;
+	run(3000);
+	CHECK(p.state == HIFI_PWR_ON && p.pvdd_fails <= 1);
 }
 
 int main(void) {
