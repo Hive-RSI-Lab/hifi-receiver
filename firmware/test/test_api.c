@@ -17,6 +17,7 @@ static struct {
 	hifi_input_t input;
 	float sub_db;
 	int sub_on;
+	hifi_chan_t channel;
 	float eq[HIFI_EQ_BANDS];
 	char name[65];
 	bool rebooted, reset;
@@ -69,6 +70,7 @@ static void m_snapshot(hifi_snapshot_t *s) {
 	s->level_dbfs = -23.4f;
 	s->sub_on = m.sub_on != 0;
 	s->sub_db = m.sub_db;
+	s->channel = m.channel;
 	memcpy(s->eq, m.eq, sizeof(m.eq));
 	s->volume = m.vol.volume;
 	s->mute = m.vol.mute;
@@ -109,6 +111,10 @@ static float m_set_sub(int on, float db) {
 	if (!isnan(db)) m.sub_db = db > 4.5f ? 4.5f : db;
 	return m.sub_db;
 }
+static int m_set_channel(hifi_chan_t c) {
+	m.channel = c;
+	return 0;
+}
 static int m_set_eq(const float g[HIFI_EQ_BANDS]) {
 	memcpy(m.eq, g, sizeof(m.eq));
 	return 0;
@@ -143,7 +149,7 @@ static void m_selftest(hifi_selftest_t *t) {
 static const hifi_ops_t ops = {
 	.info = m_info, .snapshot = m_snapshot, .tone_start = m_tone_start, .tone_stop = m_tone_stop,
 	.amp_enable = m_amp_enable, .amp_reset = m_amp_reset, .set_input = m_set_input,
-	.set_sub = m_set_sub, .set_eq = m_set_eq, .set_name = m_set_name, .reboot = m_reboot,
+	.set_sub = m_set_sub, .set_channel = m_set_channel, .set_eq = m_set_eq, .set_name = m_set_name, .reboot = m_reboot,
 	.factory_reset = m_factory_reset, .control = m_control, .selftest = m_selftest,
 	.set_volume = m_set_volume, .ir_learn = m_ir_learn, .ir_forget = m_ir_forget};
 
@@ -176,7 +182,7 @@ static void info_and_state(void) {
 		  "\"pvdd_on\":true,\"pvdd_v\":null,\"vbus_i_a\":null},"
 		  "\"amp\":{\"enabled\":true,\"fault\":false,\"faults\":0,\"latched\":false,\"temp_c\":null},"
 		  "\"governor\":{\"budget_w\":58.5,\"in_w\":7.9,\"out_w\":4.4,\"gain_db\":0.0,\"limiting\":false,\"limit_events\":0},"
-		  "\"audio\":{\"source\":\"lms\",\"input\":\"stream\",\"tone\":null,\"level_dbfs\":-23.4,"
+		  "\"audio\":{\"source\":\"lms\",\"input\":\"stream\",\"tone\":null,\"level_dbfs\":-23.4,\"channel\":\"stereo\","
 		  "\"sub\":{\"on\":false,\"level_db\":0.0},\"eq\":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"
 		  "\"volume\":35,\"mute\":false,\"max_volume\":100,\"playing\":null},"
 		  "\"net\":{\"mode\":\"sta\",\"ssid\":\"home\",\"hostname\":\"hifi-lite\",\"ip\":\"192.168.1.40\",\"rssi\":-61},"
@@ -266,6 +272,19 @@ static void amp_input_sub_control(void) {
 	CHECK(m.sub_on == 1 && m.sub_db == 4.5f);
 	CHECK(call("POST", "/api/v1/sub", "{\"level_db\":-40}") == 400);
 	CHECK(call("POST", "/api/v1/sub", "{}") == 400);
+
+	/* channel mode: stereo by default, shown in /state, set by the route */
+	CHECK(call("GET", "/api/v1/state", NULL) == 200);
+	CHECK_HAS(out, "\"channel\":\"stereo\",\"sub\":");
+	CHECK(call("POST", "/api/v1/channel", "{\"channel\":\"left\"}") == 200);
+	CHECK(m.channel == HIFI_CHAN_LEFT);
+	CHECK_HAS(out, "\"channel\":\"left\"");
+	CHECK(call("POST", "/api/v1/channel", "{\"channel\":\"mono\"}") == 200 && m.channel == HIFI_CHAN_MONO);
+	CHECK(call("POST", "/api/v1/channel", "{\"channel\":\"right\"}") == 200 && m.channel == HIFI_CHAN_RIGHT);
+	CHECK(call("POST", "/api/v1/channel", "{\"channel\":\"centre\"}") == 400 && m.channel == HIFI_CHAN_RIGHT);
+	CHECK(call("POST", "/api/v1/channel", "{}") == 400);
+	CHECK(call("GET", "/api/v1/channel", NULL) == 405);
+	CHECK(call("POST", "/api/v1/channel", "{\"channel\":\"stereo\"}") == 200 && m.channel == HIFI_CHAN_STEREO);
 
 	CHECK(call("POST", "/api/v1/eq", "{\"gains\":[1,2,3,4,5,6,7,8,9,-12]}") == 200);
 	CHECK(m.eq[0] == 1 && m.eq[9] == -12);
@@ -383,7 +402,7 @@ static void volume_playing_ir(void) {
 static void state_parts(void) {
 	m.power_on = true;
 	CHECK(call("GET", "/api/v1/state/audio", NULL) == 200);
-	CHECK_STR(out, "{\"audio\":{\"source\":\"lms\",\"input\":\"dj_direct\",\"tone\":null,\"level_dbfs\":-23.4,"
+	CHECK_STR(out, "{\"audio\":{\"source\":\"lms\",\"input\":\"dj_direct\",\"tone\":null,\"level_dbfs\":-23.4,\"channel\":\"stereo\","
 		       "\"sub\":{\"on\":true,\"level_db\":4.5},\"eq\":[1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,-12.0],"
 		       "\"volume\":20,\"mute\":false,\"max_volume\":100,\"playing\":null}}");
 	CHECK(call("GET", "/api/v1/state/sys", NULL) == 200);
@@ -522,6 +541,12 @@ static void console(void) {
 	CHECK(CLI("tone", "stop"));
 	CHECK(CLI("amp", "reset"));
 	CHECK_STR(body, "{\"reset\":true}");
+	CHECK(CLI("channel", "left"));
+	CHECK_STR(method, "POST");
+	CHECK_STR(path, "/api/v1/channel");
+	CHECK_STR(body, "{\"channel\":\"left\"}");
+	CHECK(!CLI("channel", "centre"));
+	CHECK(!CLI("channel"));
 	CHECK(CLI("input", "dj_direct"));
 	CHECK(CLI("input", "line"));
 	CHECK(CLI("sub", "-6"));
@@ -692,6 +717,7 @@ static void core_routes(void) {
 	CHECK_STR(out, "{\"current\":\"0.1.0\",\"latest\":\"0.2.0\",\"url\":\"http://hive.local/fw/plus.bin\","
 		       "\"sha256\":null,\"notes\":\"Zone B\"}");
 	CHECK(ccall("POST", "/api/v1/update", "{\"url\":\"ftp://h/a.bin\"}") == 400);
+	CHECK(ccall("POST", "/api/v1/channel", "{\"channel\":\"left\"}") == 404);
 	CHECK(ccall("POST", "/api/v1/update", "{}") == 400);
 	CHECK(ccall("POST", "/api/v1/update", "{\"url\":\"http://hive.local/fw/plus.bin\"}") == 200);
 	CHECK_STR(c.url, "http://hive.local/fw/plus.bin");

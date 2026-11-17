@@ -415,6 +415,8 @@ void hifi_bsp_set_zone(bool on) {
 
 /* the sub is digital here, after squeezelite's volume: no boost past 0 dB,
  * which would clip, and down to -40 dB in 0.5 dB steps */
+void hifi_bsp_channel(hifi_chan_t c) { (void) c; }
+
 float hifi_bsp_sub_db(float db) {
 	if (isnan(db)) db = 0;
 	db = roundf(db * 2) / 2;
