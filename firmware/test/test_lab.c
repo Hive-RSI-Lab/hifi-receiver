@@ -228,6 +228,10 @@ static void lab_route(void) {
 	CHECK(hifi_api_handle(&ops, "GET", "/api/v1/lab", NULL, out, sizeof(out)) == 200);
 	CHECK_HAS(out, "espnow");
 	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/lab", "{\"op\":\"result\",\"exp\":\"espnow\"}", out, sizeof(out)) == 200);
+	/* the LAN may read the lab but not start or stop a run, as with the relay */
+	CHECK(hifi_api_handle_from(&ops, HIFI_SRC_LAN, "GET", "/api/v1/lab", NULL, out, sizeof(out)) == 200);
+	CHECK(hifi_api_handle_from(&ops, HIFI_SRC_LAN, "POST", "/api/v1/lab", "{\"op\":\"start\",\"exp\":\"espnow\"}", out, sizeof(out)) == 403);
+	CHECK_HAS(out, "not from the LAN");
 }
 
 /* ------------------------------------------------------------ link frames */

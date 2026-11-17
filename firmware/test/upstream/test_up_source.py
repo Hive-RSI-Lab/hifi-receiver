@@ -7,7 +7,7 @@ Each check reads the patched source for the fix and fails if a patch stops
 carrying it (dropped, reverted, or upstream moved the code from under it).
 Spotify (patch 0006): the person's partner couldn't take the speaker over
 from their own account. Bluetooth pairing (0007): phones were asked to
-compare a number on a speaker with no screen. Wi-Fi events (0010): `diag`
+compare a number on a speaker with no screen. Wi-Fi events (0011): `diag`
 missed the first connect and never had the boot's IP time (S8).
 """
 import re
@@ -56,7 +56,7 @@ check(re.search(r"sessionUser\s*=\s*ctx->config\.username", shim) is not None,
       "the session's user is never recorded")
 check(shim.count("sessionMutex") >= 3, "sessionUser is read or written without its lock")
 
-# 0010: the receiver's Wi-Fi handlers go on as soon as the event loop exists,
+# 0011: the receiver's Wi-Fi handlers go on as soon as the event loop exists,
 # before the network state machine can start Wi-Fi or Ethernet
 init = body(net, "NETWORK_INITIALIZING_STATE_entry_handler(state_machine_t* const State_Machine) {", "\n}")
 loop, hook = init.find("esp_event_loop_create_default()"), init.find("hifi_net_loop_ready()")
@@ -65,7 +65,7 @@ check(hook >= 0 and all(init.find(x, loop) < 0 or hook < init.find(x, loop)
                         for x in ("network_wifi_global_init", "esp_event_handler_register", "NETWORK_EXECUTE_CB")),
       "hifi_net_loop_ready is called after the network can start")
 check(re.search(r"(?m)^void hifi_net_loop_ready\(void\)\s*\{", diag) is not None,
-      "components/hifi defines no hifi_net_loop_ready for patch 0010's hook")
+      "components/hifi defines no hifi_net_loop_ready for patch 0011's hook")
 
 print(f"{'up_source':<12} {checks} checks, {fails} failed")
 sys.exit(1 if fails else 0)

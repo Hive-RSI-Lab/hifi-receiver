@@ -196,8 +196,9 @@ typedef struct {
 	int (*update_check)(hifi_update_offer_t *out, const char **err);
 	/* downloads and installs an image in the background (state's "update");
 	 * sha256 NULL: the one the last check offered for that url, if any.
-	 * 0, or an HTTP status with *err set */
-	int (*update_start)(const char *url, const char *sha256, const char **err);
+	 * need_sig: the image must carry the Hive's signature (a request from
+	 * the LAN; hifi_ota.h). 0, or an HTTP status with *err set */
+	int (*update_start)(const char *url, const char *sha256, bool need_sig, const char **err);
 	/* bring-up. The LED test: "test" lights the board's LEDs solid (Ultra's
 	 * front LED red, green, blue and white in turn) for 30 s or until
 	 * "auto" hands them back. The backlight (Ultra): "on", "off" or
@@ -221,9 +222,18 @@ typedef struct {
 	const hifi_diag_ops_t *diag;
 } hifi_ops_t;
 
-/* Returns the HTTP status; the reply (always a JSON object) is in out. */
+/* Where a request came from (security.md). The LAN (port 80) may play and
+ * adjust; it may not change the relay, and firmware it sends must carry the
+ * Hive's signature. The relay's signed commands and the USB console are
+ * trusted. */
+typedef enum { HIFI_SRC_TRUSTED = 0, HIFI_SRC_LAN } hifi_src_t;
+
+/* Returns the HTTP status; the reply (always a JSON object) is in out.
+ * hifi_api_handle is a trusted caller's (the relay, the console). */
 int hifi_api_handle(const hifi_ops_t *ops, const char *method, const char *path,
 		    const char *body, char *out, size_t cap);
+int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *method, const char *path,
+			 const char *body, char *out, size_t cap);
 
 /* The reply buffer a request needs: 4 KB, or more for a capture. */
 size_t hifi_api_reply_cap(const char *path, const char *body);

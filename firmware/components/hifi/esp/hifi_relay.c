@@ -422,6 +422,7 @@ static void relay_task(void *arg) {
 		hifi_diag_tick();
 		uint32_t now = esp_timer_get_time() / 1000000;
 		bool up = hifi_net_ip(NULL, 0);
+		hifi_listen_tick(up);
 
 		if (up && !sntp) {
 			sntp_setoperatingmode(SNTP_OPMODE_POLL);
@@ -470,6 +471,7 @@ static void relay_task(void *arg) {
 			hifi_main_trial_inputs(&t);
 			t.relay_configured = url[0] != 0;
 			t.relay_ok = connected;
+			hifi_listen_trial(&t);
 			char why[96];
 			hifi_trial_verdict_t v = hifi_trial_judge(&t, now - trial_start, why, sizeof(why));
 			if (v == HIFI_TRIAL_GOOD) {
@@ -505,6 +507,11 @@ void hifi_remote_start(const hifi_ops_t *o) {
 	const esp_partition_t *next = esp_ota_get_next_update_partition(NULL);
 	ota_io.slot_size = next ? next->size : 0;
 	hifi_ota_init(&hifi_ota_session, &ota_io);
+	/* the same keys sign the images the LAN may install (security.md) */
+	hifi_ota_set_keys(&hifi_ota_session, (const uint8_t (*)[32]) rem.keys, rem.nkeys, verify);
+	/* and the LAN may not put back an older build than this one */
+	const esp_app_desc_t *app = esp_ota_get_app_description();
+	hifi_ota_set_running(&hifi_ota_session, app->project_name, app->date, app->time);
 
 	inbox = xQueueCreate(4, sizeof(msg_t));
 	xTaskCreate(worker, "hifi_cmd", 6144, NULL, ESP_TASK_PRIO_MIN + 2, NULL);

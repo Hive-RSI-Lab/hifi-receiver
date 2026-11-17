@@ -16,6 +16,27 @@
 #define HIFI_OTA_CHUNK_MAX 4096
 #define HIFI_OTA_APP_MAGIC 0xE9 /* the first byte of every ESP32 app image */
 
+/*
+ * A signed image (firmware/tools/sign_fw.py) ends in a 72-byte trailer:
+ * "HIFISIG1" and an Ed25519 signature over "hifi-fw-v1:" followed by the
+ * SHA-256 (64 lower-case hex digits) of everything before the trailer. The
+ * ESP-IDF image format ignores bytes after the image, so a signed file still
+ * flashes anywhere an unsigned one does. An update from the LAN must carry
+ * one (security.md); the Hive's relay commands are signed themselves.
+ */
+#define HIFI_OTA_SIG_MAGIC "HIFISIG1"
+#define HIFI_OTA_SIG_LEN 72
+#define HIFI_OTA_SIG_CONTEXT "hifi-fw-v1:"
+#define HIFI_OTA_KEYS_MAX 2
+
+/* An app image's esp_app_desc_t sits at byte 32: project_name at 80, build
+ * time ("02:20:07") at 112 and date ("Nov 17 2026") at 128. The signature
+ * covers them, so a signed image's age and project can be trusted. */
+#define HIFI_OTA_DESC_MAGIC 0xABCD5432u
+#define HIFI_OTA_DESC_END 144
+
+typedef bool (*hifi_verify_fn)(const uint8_t pub[32], const uint8_t *msg, size_t n, const uint8_t sig[64]);
+
 typedef struct {
 	/* opens the slot it isn't running from; *slot names it ("ota_1") */
 	int (*open)(void *ctx, size_t size, const char **slot, const char **err);
@@ -35,9 +56,31 @@ typedef struct {
 	char version[32];
 	const char *slot;
 	hifi_sha256_t h;
+	/* the signature check (set once by hifi_ota_set_keys; kept by begin) */
+	bool need_sig;           /* this session must end in a good trailer */
+	hifi_sha256_t hb;        /* everything before the trailer */
+	uint8_t tail[HIFI_OTA_SIG_LEN];
+	uint8_t keys[HIFI_OTA_KEYS_MAX][32];
+	int nkeys;
+	hifi_verify_fn verify;
+	/* no going back from the LAN (hifi_ota_set_running): the running app's
+	 * project and build time, and the first bytes of the incoming image */
+	char run_project[32];
+	long long run_stamp;     /* -1: unknown, no age check */
+	uint8_t head[HIFI_OTA_DESC_END];
 } hifi_ota_t;
 
 void hifi_ota_init(hifi_ota_t *o, const hifi_ota_io_t *io);
+/* The running app's project name and build date and time (its
+ * esp_app_desc_t). With them, a signed image from the LAN must be the same
+ * project and built no earlier than the running one (403 otherwise): an old
+ * signed image with a known bug can't be put back from the LAN. The Hive's
+ * relay updates aren't held to it (the bench swaps builds both ways). */
+void hifi_ota_set_running(hifi_ota_t *o, const char *project, const char *date, const char *time);
+/* "Nov 17 2026", "02:20:07" as one sortable number (20261117022007), or -1 */
+long long hifi_ota_build_stamp(const char *date, const char *time);
+/* The keys a trailer may be signed with (the build's Hive keys). */
+void hifi_ota_set_keys(hifi_ota_t *o, const uint8_t (*keys)[32], int nkeys, hifi_verify_fn verify);
 
 /* Each returns an HTTP status (200 ok) with *err set otherwise. A begin
  * while one is open drops the old one: the sender restarted. */
@@ -47,6 +90,15 @@ int hifi_ota_begin(hifi_ota_t *o, size_t size, const char *sha_hex, const char *
  * the image's own appended hash, which the board's commit checks
  * (esp_ota_end), stands between it and the boot slot. */
 int hifi_ota_begin_local(hifi_ota_t *o, size_t size, const char *version, const char **err);
+/* Either of them for a request from the LAN when need_sig: finish refuses
+ * the image (403) unless its trailer is signed by one of the keys. sha_hex
+ * may be NULL. */
+int hifi_ota_begin_ex(hifi_ota_t *o, size_t size, const char *sha_hex, const char *version, bool need_sig,
+		      const char **err);
+/* Checks a whole signed image in memory (the host tests, sign_fw.py's twin):
+ * 0 good, or an HTTP status with *err set. */
+int hifi_ota_check_sig(const hifi_ota_t *o, const uint8_t body_sha[32], const uint8_t tail[HIFI_OTA_SIG_LEN],
+		       const char **err);
 /* 409 if off isn't where the image has got to (o->written says where) */
 int hifi_ota_chunk(hifi_ota_t *o, size_t off, const uint8_t *d, size_t n, const char **err);
 /* checks the hash and makes the image the next boot; the caller restarts */

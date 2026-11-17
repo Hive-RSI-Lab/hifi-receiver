@@ -16,7 +16,7 @@
 #define HIFI_REMOTE_KEYS_MAX 2   /* the Hive's signing keys: one, plus one while rotating */
 #define HIFI_REMOTE_TS_SLACK 600 /* seconds a command's ts may be off once the clock is set */
 
-typedef bool (*hifi_verify_fn)(const uint8_t pub[32], const uint8_t *msg, size_t n, const uint8_t sig[64]);
+/* hifi_verify_fn (an Ed25519 check) comes from hifi_ota.h, through hifi_api.h */
 
 typedef struct {
 	char dev[13];       /* the board's id: its Wi-Fi MAC, lower-case hex, no colons */

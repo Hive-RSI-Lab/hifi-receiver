@@ -182,8 +182,8 @@ static int m_update_check(hifi_update_offer_t *o, const char **err) {
 	snprintf(o->notes, sizeof(o->notes), "notes with \"quotes\"");
 	return 0;
 }
-static int m_update_start(const char *url, const char *sha, const char **err) {
-	(void) sha;
+static int m_update_start(const char *url, const char *sha, bool need_sig, const char **err) {
+	(void) sha, (void) need_sig;
 	if (!url[0]) return *err = "no url", 400;
 	return 0;
 }
