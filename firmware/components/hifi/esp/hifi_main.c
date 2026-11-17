@@ -1155,9 +1155,13 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 	if (src == HIFI_CAP_LOOPBACK && !has_taps()) return *err = "this board revision has no loopback taps", 409;
 	if (!tone_active && !audio_active && input != HIFI_INPUT_DJ_DIRECT)
 		return *err = "output idle: play a tone or a stream first", 409;
+	if (!codec_up) return *err = "codec not started yet", 409; /* squeezelite's init still writes CHIPPOWER */
 	if (capture_busy) return *err = "a capture is running", 409;
 	capture_busy = true;
-	esp_err_t e = ESP_OK;
+	/* squeezelite's init leaves the ADC powered down in CHIPPOWER (0xAA), so
+	 * without this the ADC sends zeros; the DAC's bits are kept as they are */
+	uint8_t chip = ES8388_CHIPPOWER_ADC_DOWN;
+	esp_err_t e = hifi_i2c_read(ES8388_ADDR, ES8388_CHIPPOWER, &chip);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL1, 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL2, src == HIFI_CAP_LOOPBACK ? 0x50 : 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL4, 0x0C);
@@ -1166,6 +1170,7 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL9, 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL10, 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCPOWER, ES8388_ADCPOWER_CAPTURE);
+	e |= hifi_i2c_write(ES8388_ADDR, ES8388_CHIPPOWER, chip & 0x55); /* the ADC's half up */
 	int st = 0;
 	if (e != ESP_OK) {
 		*err = "codec didn't take the ADC settings";
@@ -1197,6 +1202,10 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 		info->v_per_fs[0] = info->v_per_fs[1] = ADC_FS_PEAK_V * LINE_DIVIDER;
 	}
 out:
+	/* the ADC down again, keeping the DAC's bits as they are now */
+	if (hifi_i2c_read(ES8388_ADDR, ES8388_CHIPPOWER, &chip) != ESP_OK ||
+	    hifi_i2c_write(ES8388_ADDR, ES8388_CHIPPOWER, (chip & 0x55) | ES8388_CHIPPOWER_ADC_DOWN) != ESP_OK)
+		ESP_LOGW(TAG, "capture: couldn't power the ADC down again");
 	capture_busy = false;
 	codec_dirty = true; /* back to the routing for the input in use */
 	return st;
