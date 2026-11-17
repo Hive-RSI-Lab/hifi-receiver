@@ -127,22 +127,17 @@ static bool send_frame(hifi_link_frame_t *f) {
 }
 
 static void handle(const rx_item_t *it) {
-	hifi_link_frame_t f;
-	if (!hifi_link_decode(it->data, it->len, &f)) {
-		hifi_link_rx_bad(rx);
-		return;
-	}
-	if (role == ROLE_ECHO && f.type == HIFI_LINK_PING) {
-		hifi_link_frame_t pong;
-		hifi_link_pong_for(&f, it->t_us, 0, &pong);
-		rx->pings++;
+	hifi_link_frame_t pong;
+	switch (hifi_link_receive(rx, tx, role == ROLE_ECHO, role == ROLE_PING, it->data, it->len, it->t_us, &pong)) {
+	case HIFI_LINK_GOT_REPLY:
 		send_frame(&pong);
-	} else if (role == ROLE_ECHO && f.type == HIFI_LINK_DATA)
-		hifi_link_rx_data(rx, &f, it->t_us);
-	else if (role == ROLE_PING && f.type == HIFI_LINK_PONG)
-		hifi_link_tx_pong(tx, &f, it->t_us);
-	else
+		break;
+	case HIFI_LINK_GOT_OTHER:
 		other++;
+		break;
+	default:
+		break;
+	}
 }
 
 static void teardown(void) {
