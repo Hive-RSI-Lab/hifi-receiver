@@ -163,8 +163,44 @@ int main(void) {
 	 * at every boot), or that this build doesn't know */
 	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 500:2000 -d all=info -C 30 -W")); /* the default */
 	CHECK(hifi_autoexec_ok("squeezelite -o \"BT -n 'Speaker'\" -b 500:2000 -R -Z 96000 -r \"44100-44100\""));
-	CHECK(hifi_autoexec_ok("squeezelite -o I2S -u m -s 192.168.1.10 -n \"Living room\""));
-	CHECK(hifi_autoexec_ok("squeezelite -o I2S -u -n x"));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 500:2000 -u m -s 192.168.1.10 -n \"Living room\""));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b :2000 -u -n x"));
+	/* -u/-R with no output size: 1450 KB times up to 8, malloc fails, exit */
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -u m -s 192.168.1.10 -n \"Living room\""));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -u -n x"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 500 -R"));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 500:2000 -b 500: -R -b 600")); /* output 2000 kept */
+	/* -b: sizes squeezelite can allocate (a failed malloc exits) */
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 500"));           /* output 1450 */
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 500:"));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b :2500"));         /* stream 480 */
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 1000:2000"));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 0500:2000"));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 64:256"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 100000:2000"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 500:999999"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 1001:2000"));    /* 3001 KB */
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b :2521"));        /* 480 + 2521 */
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 2000"));         /* 2000 + 1450 */
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b -1:2000"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 500:2000:9"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b :"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 0:2000"));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 500:0"));        /* 0: the default 1450, as squeezelite does */
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 500:0 -R"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 63:2000"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 500:255"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 5e2:2000"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b \" 500:2000\""));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 500:2000 -b 2000:2000")); /* the last wins */
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 2000:500 -b 500:"));        /* 500 + 500 */
+	/* a tab: the console doesn't split on it, so the line is refused */
+	CHECK(!hifi_autoexec_ok("squeezelite\t-t -o I2S"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S\t-n x"));
+	CHECK(!hifi_lan_command_ok("version\t"));
+	/* the name as the console sees it, quotes and all */
+	CHECK(hifi_autoexec_ok("\"squeezelite\" -o I2S"));
+	CHECK(!hifi_autoexec_ok("\"squeezelite -t\" -o I2S"));
 	CHECK(!hifi_autoexec_ok("squeezelite"));           /* the console adds -?: help, exit */
 	CHECK(!hifi_autoexec_ok("squeezelite   "));
 	CHECK(!hifi_lan_command_ok("squeezelite"));

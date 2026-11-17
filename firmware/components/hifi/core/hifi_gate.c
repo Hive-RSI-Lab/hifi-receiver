@@ -159,7 +159,13 @@ static bool split_words(const char *line, char *buf, size_t cap, char **argv, in
  * Bare "squeezelite" gets -? added by the console (help, then exit), so at
  * least one option is needed; without -o the output is I2S. -N is refused
  * (with -n it exits; there is no file system for it anyway), and -d needs
- * what squeezelite's strtok needs: a name, '=', a level. */
+ * what squeezelite's strtok needs: a name, '=', a level.
+ * -b sets the stream and output buffers in KB (next_param on ':'); if a
+ * malloc fails squeezelite exits (stream_init, output_init_common), so the
+ * sizes squeezelite would end with are checked: stream >= 64, output >= 256,
+ * together <= 3000 (stock 500:2000 leaves 1.2 MB of PSRAM free, its largest
+ * block 1.15 MB). With -u/-R and no output size, squeezelite multiplies its
+ * 1450 KB default by up to 8, so resampling needs -b with an output size. */
 static bool debug_ok(const char *v) {
 	while (*v == '=') v++;
 	size_t l = strcspn(v, "=");
@@ -169,25 +175,60 @@ static bool debug_ok(const char *v) {
 	return *v != 0;
 }
 
+#define SQ_STREAM_KB 480 /* STREAMBUF_SIZE on ESP32 */
+#define SQ_STREAM_MIN_KB 64
+#define SQ_OUTPUT_MIN_KB 256
+#define SQ_BUFFERS_MAX_KB 3000
+
+/* one -b value: "S", "S:O", ":O" or "S:", each part 1-4 digits; an empty
+ * part leaves that size as it was (next_param returns NULL for "") */
+static bool buffers_ok(const char *v, unsigned *stream_kb, unsigned *output_kb) {
+	unsigned part[2] = {0, 0};
+	int len[2] = {0, 0}, k = 0;
+	for (; *v; v++) {
+		if (*v == ':') {
+			if (++k > 1) return false;
+		} else if (*v >= '0' && *v <= '9') {
+			if (++len[k] > 4) return false;
+			part[k] = part[k] * 10 + (unsigned) (*v - '0');
+		} else {
+			return false;
+		}
+	}
+	if (!len[0] && !len[1]) return false;
+	if (len[0]) *stream_kb = part[0];
+	if (len[1]) *output_kb = part[1];
+	return true;
+}
+
 static bool squeezelite_args_ok(char **argv, int argc) {
 	if (argc < 2) return false;
+	unsigned stream_kb = SQ_STREAM_KB, output_kb = 0;
+	bool resample = false;
 	for (int i = 1; i < argc;) {
 		const char *a = argv[i];
 		if (a[0] != '-' || !a[1] || a[2]) return false;
 		if (strchr("oabcCdefmMnpPrsZ", a[1])) {
 			if (i + 1 >= argc) return false;
 			if (a[1] == 'd' && !debug_ok(argv[i + 1])) return false;
+			if (a[1] == 'b' && !buffers_ok(argv[i + 1], &stream_kb, &output_kb)) return false;
 			i += 2;
 		} else if (a[1] == 'W') {
 			i += 1;
 		} else if (a[1] == 'u' || a[1] == 'R') {
+			resample = true;
 			i += 1;
 			if (i < argc && argv[i][0] != '-') i += 1;
 		} else {
 			return false;
 		}
 	}
-	return true;
+	if (!output_kb) {
+		if (resample) return false;
+		output_kb = 1450; /* OUTPUTBUF_SIZE on ESP32 */
+	}
+	return stream_kb >= SQ_STREAM_MIN_KB && output_kb >= SQ_OUTPUT_MIN_KB &&
+	       stream_kb + output_kb <= SQ_BUFFERS_MAX_KB;
 }
 
 /* the settings commands a LAN page may run, and an autoexecN line may hold.
@@ -219,14 +260,16 @@ static bool command_ok(const char *line, bool boot) {
 	/* one line, one command: a newline or other control character could
 	 * carry a second command past the check on the first word */
 	for (const char *c = line; *c; c++)
-		if (((unsigned char) *c < 0x20 && *c != '\t') || *c == 0x7f) return false;
+		if ((unsigned char) *c < 0x20 || *c == 0x7f) return false;
 	char buf[CONSOLE_LINE_MAX];
 	char *argv[CONSOLE_WORDS_MAX];
 	int argc = 0;
 	if (!split_words(line, buf, sizeof(buf), argv, CONSOLE_WORDS_MAX, &argc)) return false;
-	while (*line == ' ' || *line == '\t') line++;
-	size_t n = strcspn(line, " \t");
-	if (!n) return false;
+	/* the command name as the console sees it (it splits on spaces only;
+	 * a tab is refused above) */
+	if (!argc) return false;
+	line = argv[0];
+	size_t n = strlen(line);
 	if (word_in(line, n, cfg_ok, sizeof(cfg_ok) / sizeof(cfg_ok[0]))) return true;
 	if (n == 11 && !strncmp(line, "squeezelite", 11)) return squeezelite_args_ok(argv, argc);
 	static const char *const ok[] = {"restart", "version", "free", "heap", "tasks"};
