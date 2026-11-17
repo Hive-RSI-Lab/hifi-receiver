@@ -44,7 +44,7 @@
  * Bluedroid says it came up, and otherwise counted as failed; a source that
  * comes up later still is caught when the sink's own answer is checked (the
  * service Bluedroid says is up must be the sink's), and that also needs a
- * reboot. The calls wait on Bluedroid: at worst about 10 s for a failed
+ * reboot. The calls wait on Bluedroid: at worst about 12 s for a failed
  * source start and about 9 s for a stop. While the sink is up,
  * the lab's A2DP callback hands its events to the sink's own
  * (bt_app_a2d_cb), so a sink whose teardown never answered still works.
@@ -434,6 +434,7 @@ static const char *back_err(const char *what, esp_err_t e) {
  * start, or the timer task when a late teardown answers. */
 static void give_back(void) {
 	const char *how = "yes";
+	bool src_up = false;
 	xEventGroupClearBits(ev, EV_INIT);
 	esp_err_t e = hifi_bt_sink_rearm();
 	if (e != ESP_OK) how = back_err("rearm", e);
@@ -442,6 +443,7 @@ static void give_back(void) {
 		/* the answer was a late source init's: the sink's init failed on
 		 * Bluedroid's task (one role at a time), which sends none */
 		snprintf(sink_back_err, sizeof(sink_back_err), "a source is up, not the sink");
+		src_up = true;
 		ESP_LOGW(TAG, "sink not back: %s", sink_back_err);
 		how = sink_back_err;
 	}
@@ -449,7 +451,9 @@ static void give_back(void) {
 	esp_a2d_register_callback(bt_app_a2d_cb);
 	esp_avrc_ct_register_callback(bt_app_rc_ct_cb);
 	esp_avrc_tg_register_callback(bt_app_rc_tg_cb);
-	esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+	/* a source left up stays hidden: nobody could play to it */
+	if (src_up) esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+	else esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
 	if (bonded) esp_bt_gap_remove_bond_device(peer);
 	bonded = false;
 	sink_lost = how != NULL && strcmp(how, "yes");
@@ -575,7 +579,7 @@ static int start_source(const char *body, char *err, size_t n) {
 	if (phone_moved || hifi_bt_sink_phone()) {
 		/* a phone came in (or went) before the sink went down */
 		give_back();
-		snprintf(err, n, "a phone connected here; sink back: %s", sink_back);
+		snprintf(err, n, "a phone connected or left here; sink back: %s", sink_back);
 		return 409;
 	}
 	esp_avrc_ct_register_callback(rc_ct_quiet);
@@ -746,7 +750,8 @@ static void result(void *hj) {
 	portEXIT_CRITICAL(&mux);
 	if (stuck_s * 1000000 > PENDING_GIVE_UP_US) {
 		char b[48];
-		snprintf(b, sizeof(b), "no teardown answer for %d s: reboot", (int)stuck_s);
+		snprintf(b, sizeof(b), "no teardown answer for %d s: %s", (int)stuck_s,
+			 none_up() ? "the next start ends it" : "reboot");
 		hj_str(j, "sink_back", b);
 	} else if (how)
 		hj_str(j, "sink_back", how);
