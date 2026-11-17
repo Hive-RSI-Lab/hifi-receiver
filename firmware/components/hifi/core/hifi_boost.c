@@ -9,9 +9,12 @@
 #define HOLD_S 0.025f
 #define QUIET_FS 1e-4f /* -80 dBFS: dropping this much audio is inaudible */
 #define LA HIFI_BOOST_LA
+#define XF (4 * LA)    /* the crossfade into the delayed path as it comes in */
+#define SNAP 1e-6f     /* a request this close to 1 is 1 */
 
 static void unprime(hifi_boost_t *b) {
 	b->req = 1.0f;
+	b->req_d = 0;
 	b->hold = 0;
 	b->t = 0;
 	b->pos = 0;
@@ -20,6 +23,7 @@ static void unprime(hifi_boost_t *b) {
 	b->box_sum = LA;
 	b->mq_head = b->mq_n = 0;
 	b->quiet = 0;
+	b->fill = 0;
 	b->primed = false;
 }
 
@@ -46,6 +50,16 @@ float hifi_boost_set_db(hifi_boost_t *b, float db) {
 void hifi_boost_set_ceiling(hifi_boost_t *b, float ceiling) {
 	if (!(ceiling > 0.05f)) ceiling = 0.05f;
 	if (ceiling > 1.0f) ceiling = 1.0f;
+	/* a lower ceiling (the supply sagged) rescales what is already judged,
+	 * so the frames in the delay ease down to it instead of being clamped */
+	if (ceiling < b->ceiling && b->primed) {
+		float k = ceiling / b->ceiling;
+		b->req *= k;
+		b->req_d = 1.0f - b->req;
+		for (uint32_t i = 0; i < b->mq_n; i++) b->mq_v[(b->mq_head + i) % (LA + 1)] *= k;
+		for (int i = 0; i < LA; i++) b->box[i] *= k;
+		b->box_sum *= k;
+	}
 	b->ceiling = ceiling;
 }
 
@@ -62,12 +76,23 @@ static inline void frame(hifi_boost_t *b, float *l, float *r, float rel, uint32_
 	float need = pk > b->ceiling ? b->ceiling / pk : 1.0f;
 	if (need <= b->req) {
 		b->req = need;
+		b->req_d = 1.0f - need;
 		b->hold = hold;
 	} else if (b->hold) {
 		b->hold--;
 	} else {
-		float up = 1.0f - (1.0f - b->req) * rel;
-		b->req = need < up ? need : up;
+		/* released as the distance from 1, which keeps shrinking where
+		 * 1 - d would round back to the same float short of unity */
+		float d = b->req_d * rel;
+		if (d < SNAP) d = 0;
+		float up = 1.0f - d;
+		if (need < up) {
+			b->req = need;
+			b->req_d = 1.0f - need;
+		} else {
+			b->req = up;
+			b->req_d = d;
+		}
 	}
 
 	/* the minimum request over the last LA + 1 frames */
@@ -93,6 +118,16 @@ static inline void frame(hifi_boost_t *b, float *l, float *r, float rel, uint32_
 	if (g < *gmin) *gmin = g;
 
 	float ol = b->delay[p][0] * g, or_ = b->delay[p][1] * g;
+	if (b->fill < LA + XF) {
+		/* coming in: the live frame until the delay is full, then a
+		 * crossfade to the delayed one, instead of 1 ms of silence. The
+		 * boost is still ramping up from unity here; the clamp holds the
+		 * ceiling */
+		float a = b->fill < LA ? 0.0f : (float) (b->fill - LA) / XF;
+		ol = *l + (ol - *l) * a;
+		or_ = *r + (or_ - *r) * a;
+		b->fill++;
+	}
 	b->delay[p][0] = *l;
 	b->delay[p][1] = *r;
 	b->pos = p + 1 == LA ? 0 : p + 1;

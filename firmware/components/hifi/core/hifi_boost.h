@@ -16,8 +16,10 @@
  * governor), so the amp doesn't clip either.
  *
  * The delay is in the path only while the limiter is: it comes in when Boost
- * is turned up (a gap of 1 ms, once) and leaves only after Boost is back at 0
- * and the delayed audio is silent, so turning Boost down never skips audio.
+ * is turned up (the live audio plays while it fills, then a 4 ms crossfade
+ * to the delayed audio, so nothing is skipped or clicks) and leaves only
+ * after Boost is back at 0 and the delayed audio is silent, so turning Boost
+ * down never skips audio either.
  *
  * It runs before the power governor (hifi_gov), which then sees the louder
  * signal and keeps the charger and the amps' heat budget as before. The state
@@ -40,6 +42,7 @@ typedef struct {
 	float release_s;
 	/* the limiter */
 	float req;       /* the held and released gain request (linear, <= 1) */
+	float req_d;     /* 1 - req, kept apart so the release reaches 1 exactly */
 	uint32_t hold;   /* frames left before the request may rise */
 	uint32_t t;      /* frames seen since it came in (wraps) */
 	uint32_t pos;    /* the ring position of the oldest frame */
@@ -51,6 +54,7 @@ typedef struct {
 	uint32_t mq_t[HIFI_BOOST_LA + 1];
 	uint32_t mq_head, mq_n;
 	uint32_t quiet;  /* frames in a row below -80 dBFS (before the delay) */
+	uint32_t fill;   /* frames since the delay came in (to LA + its crossfade) */
 	bool primed;     /* the delay is in the path */
 	/* what it shows */
 	float gr_min;    /* the deepest limiter gain in the last block (linear) */

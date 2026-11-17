@@ -240,13 +240,18 @@ take it (Lite).
   gain before the power governor, with a lookahead peak limiter (1 ms
   lookahead at 48 kHz, 25 ms hold, 0.15 s release) that keeps the boosted
   signal under the governor's clip ceiling, so a loud master gets louder
-  without hard clipping. While Boost is on, the audio runs 48 frames late.
-  Turning Boost up from 0 adds a single 1 ms gap. Test tones and line-in
-  at unity skip it.
+  without hard clipping. While Boost is on, the audio runs 48 frames late;
+  turning Boost up from 0 crossfades into that delay over 4 ms, with no
+  gap. The ceiling is the amp's clip point from the lower of the charger
+  contract and the measured PVDD, 0.5 dB under the datasheet swing. Test
+  tones and line-in at unity skip it.
 - **`heat_cap_w`:** sustained watts a channel the governor allows, from
   `heat_min_w` to `heat_max_w` (15), default `heat_def_w` (9). Above 9 W
-  the amp may cut out when it gets hot (its warning pin backs the level off,
-  and its own latch stays as it was); a fan helps.
+  the amp may cut out when it gets hot; a fan helps. Lite's TPA3118 has no
+  warning pin, so each trip with the cap above the default lowers the cap
+  by 2 W (shown in `heat_cap_w`, until a restart or a new setting) and the
+  gain by 3 dB for a while, and doesn't count towards the amp's 3-trips
+  latch. At the default, trips latch as before.
 
 Both are checked before either is set, and kept across restarts. Shown as
 `audio.boost` (`db`, `limit_db`: the gain the limiter is taking off now,

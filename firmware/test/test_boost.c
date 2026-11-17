@@ -1,6 +1,8 @@
 /* Boost (hifi_boost) and the governor's heat cap (hifi_gov), ask k2388 */
+#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "check.h"
 #include "hifi_boost.h"
@@ -124,9 +126,18 @@ static void ceiling_follows_the_supply(void) {
 	hifi_gov_t g;
 	hifi_gov_init(&g, &cfg);
 	hifi_gov_set_supply(&g, 20, 60);
-	CHECK(hifi_gov_clip_fs(&g) == 1.0f); /* 19.06 V of swing, 18.2 V full scale */
+	/* 19.06 V of swing less 0.5 dB, 18.2 V full scale */
+	CHECK_NEAR(hifi_gov_clip_fs(&g), 0.944 * 0.953 * 20 / cfg.vfs_peak_v, 1e-4);
+	/* a sagging PVDD lowers it; one over the contract doesn't raise it */
+	hifi_gov_set_pvdd(&g, 18);
+	CHECK_NEAR(hifi_gov_clip_fs(&g), 0.944 * 0.953 * 18 / cfg.vfs_peak_v, 1e-4);
+	hifi_gov_set_pvdd(&g, 21);
+	CHECK_NEAR(hifi_gov_clip_fs(&g), 0.944 * 0.953 * 20 / cfg.vfs_peak_v, 1e-4);
+	hifi_gov_set_pvdd(&g, NAN);
+	hifi_gov_set_supply(&g, 28, 60);
+	CHECK(hifi_gov_clip_fs(&g) == 1.0f);
 	hifi_gov_set_supply(&g, 9, 27);
-	CHECK_NEAR(hifi_gov_clip_fs(&g), 0.953 * 9 / cfg.vfs_peak_v, 1e-4);
+	CHECK_NEAR(hifi_gov_clip_fs(&g), 0.944 * 0.953 * 9 / cfg.vfs_peak_v, 1e-4);
 
 	hifi_boost_t b;
 	hifi_boost_init(&b);
@@ -277,6 +288,70 @@ static void bypass_takes_it_out(void) {
 	CHECK(!hifi_boost_active(&b));
 }
 
+/* after a peak the limiter's request reaches unity exactly (not 0.9998), so
+ * Boost back at 0 takes the path out and the audio is bit-exact again */
+static void release_reaches_unity(void) {
+	hifi_boost_t b;
+	hifi_boost_init(&b);
+	hifi_boost_set_db(&b, 9);
+	run16(&b, -1, 100, 0.5, NULL); /* deep limiting */
+	CHECK(b.req < 0.6f);
+	run16(&b, -40, 1000, 3, NULL); /* quiet, well under the ceiling */
+	CHECK(b.req == 1.0f && b.req_d == 0.0f);
+	hifi_boost_set_db(&b, 0);
+	run16(&b, -40, 1000, 1, NULL); /* the boost ramps out; still playing */
+	sine16(-40, 1000);
+	static int16_t ref[2 * BLOCK];
+	memcpy(ref, b16, sizeof(ref));
+	hifi_boost_process(&b, b16, BLOCK, 4, RATE);
+	/* still delayed (the audio never went quiet), but at exactly unity */
+	int bad = 0;
+	for (int i = HIFI_BOOST_LA; i < BLOCK; i++) bad += b16[2 * i] != ref[2 * (i - HIFI_BOOST_LA)];
+	CHECK(bad == 0);
+}
+
+/* turning Boost up mid-song doesn't drop 1 ms of audio: the live frames play
+ * while the delay fills, then cross over */
+static void coming_in_has_no_gap(void) {
+	hifi_boost_t b;
+	hifi_boost_init(&b);
+	phase = 0;
+	run16(&b, -6, 1000, 0.2, NULL);
+	hifi_boost_set_db(&b, 3);
+	/* every 1 kHz cycle (48 frames) through the change keeps its peak */
+	for (int k = 0; k < 4; k++) {
+		sine16(-6, 1000);
+		hifi_boost_process(&b, b16, BLOCK, 4, RATE);
+		for (int c = 0; c + 48 <= BLOCK; c += 48) {
+			int pk = 0;
+			for (int i = c; i < c + 48; i++) pk = abs(b16[2 * i]) > pk ? abs(b16[2 * i]) : pk;
+			CHECK(pk > 0.45 * 32768); /* -6 dBFS is 0.5 */
+		}
+	}
+}
+
+/* the supply sagging mid-stream lowers the ceiling: the frames already in the
+ * delay ease under the new one instead of being cut flat */
+static void ceiling_drop_eases(void) {
+	hifi_boost_t b;
+	hifi_boost_init(&b);
+	hifi_boost_set_db(&b, 6);
+	run16(&b, -8, 200, 0.5, NULL);
+	hifi_boost_set_ceiling(&b, 0.6f);
+	sine16(-8, 200);
+	hifi_boost_process(&b, b16, BLOCK, 4, RATE);
+	/* a cut-flat run would sit at the ceiling for many frames in a row */
+	int run = 0, longest = 0;
+	for (int i = 0; i < BLOCK; i++) {
+		run = abs(b16[2 * i]) >= (int) (0.6 * 32768) - 1 ? run + 1 : 0;
+		longest = run > longest ? run : longest;
+	}
+	CHECK(longest <= 2);
+	double pk = 0;
+	for (int i = 0; i < 2 * BLOCK; i++) pk = fmax(pk, fabs(b16[i] / 32768.0));
+	CHECK(pk <= 0.6 + 1.0 / 32768);
+}
+
 static void heat_cap(void) {
 	hifi_gov_cfg_t cfg;
 	hifi_gov_cfg_lite(&cfg);
@@ -386,6 +461,9 @@ int main(void) {
 	latency_is_the_lookahead();
 	random_never_passes_ceiling();
 	bypass_takes_it_out();
+	release_reaches_unity();
+	coming_in_has_no_gap();
+	ceiling_drop_eases();
 	heat_cap();
 	boost_then_governor();
 	return check_report("boost");

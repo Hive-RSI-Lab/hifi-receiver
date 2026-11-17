@@ -39,10 +39,12 @@ void hifi_gov_cfg_lite(hifi_gov_cfg_t *cfg) {
 		 * R3-LAYOUT-13, docs/review-3/sims/layout/thermal_calc.py) */
 		.thermal_out_w = 18.0f,
 		.thermal_tau_s = 30.0f,
-		/* the app's heat cap goes to 15 W a channel for now (k2388: "heat
-		 * trips or a fan are fine"; about 22 W once reviewed): past 9 W the
-		 * amp may warn (OTW steps the gain down 3 dB every 2 s) or latch in a
-		 * warm box */
+		/* the app's heat cap goes to 15 W a channel (k2388: "heat trips or a
+		 * fan are fine"). The thermal model puts Tj at the 150 C shutdown
+		 * near 15 W in a warm box, so past 9 W the amp may cut out: Lite has
+		 * no OTW pin, and hifi_main answers each trip above the default
+		 * with 2 W less cap and 3 dB less gain. 22 W needs a fan, a heatsink
+		 * and a measurement first (Opus review of k2388) */
 		.thermal_max_w = 30.0f,
 	};
 }
@@ -255,8 +257,13 @@ const char *hifi_gov_why(const hifi_gov_t *g) {
 	}
 }
 
+void hifi_gov_set_pvdd(hifi_gov_t *g, float pvdd_v) { g->pvdd_v = pvdd_v > 0 ? pvdd_v : 0; }
+
 float hifi_gov_clip_fs(const hifi_gov_t *g) {
 	if (!(g->cfg.vfs_peak_v > 0) || !(g->vsupply > 0)) return 1.0f;
-	float f = g->cfg.swing * g->vsupply / g->cfg.vfs_peak_v;
+	float v = g->pvdd_v > 0 && g->pvdd_v < g->vsupply ? g->pvdd_v : g->vsupply;
+	/* -0.5 dB: ~1.7 V lost in hot switches and coil at 4.75 A peak (review
+	 * of k2388); replace with a measured swing */
+	float f = 0.944f * g->cfg.swing * v / g->cfg.vfs_peak_v;
 	return f < 1.0f ? f : 1.0f;
 }

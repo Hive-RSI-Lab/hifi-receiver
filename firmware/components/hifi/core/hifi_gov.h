@@ -64,6 +64,7 @@ typedef enum {
 typedef struct {
 	hifi_gov_cfg_t cfg;
 	float vsupply, budget_w, contract_w;
+	float pvdd_v; /* measured, 0 when not sensed */
 	float p_out_pre;   /* averaged speaker power before the limiter */
 	float p_out_slow;  /* the same over thermal_tau_s */
 	float p_out_peak;  /* the loudest block's power, decaying over peak_hold_s */
@@ -104,5 +105,7 @@ float hifi_gov_heat_max_w(const hifi_gov_t *g);  /* the most the cap may be */
 float hifi_gov_heat_now_w(const hifi_gov_t *g);  /* the sustained power a channel now */
 const char *hifi_gov_why(const hifi_gov_t *g);   /* "", charger, charger_peak, heat, amp_hot */
 /* the amp's clip point for the supply now, in FS peak (<= 1): the boost's
- * limiter ceiling */
+ * limiter ceiling. From the lower of the contract and the measured PVDD,
+ * 0.5 dB under the datasheet swing for the drop inside a hot amp at 4 ohm */
 float hifi_gov_clip_fs(const hifi_gov_t *g);
+void hifi_gov_set_pvdd(hifi_gov_t *g, float pvdd_v); /* NaN or <= 0: not sensed */

@@ -91,7 +91,7 @@ static bool sub_on = true;
 static float sub_db = 0;
 /* Boost and its lookahead limiter (k2388); ~1 KB, in PSRAM to spare the
  * internal heap */
-static EXT_RAM_BSS_ATTR hifi_boost_t boost;
+static EXT_RAM_ATTR hifi_boost_t boost;
 static volatile bool amp_hot; /* the amp's over-temperature warning is held */
 static hifi_chan_t channel = HIFI_CHAN_STEREO;
 static volatile bool codec_dirty = true; /* re-apply input/sub to the codec */
@@ -234,6 +234,7 @@ static void power_task(void *arg) {
 		vbus_v = bp.vbus_v;
 		vbus_i_a = bp.vbus_i_a;
 		pvdd_v = bp.pvdd_v;
+		hifi_gov_set_pvdd(&gov, bp.pvdd_v);
 		pg = bp.pg;
 		fault = bp.fault;
 		if (bp.pd_read) {
@@ -289,7 +290,22 @@ static void power_task(void *arg) {
 		int save_v = vol.volume, save_max = vol.max_volume;
 		if (save_vol) vol_dirty = false;
 		hifi_pwr_state_t before = power.state;
+		int faults_before = power.faults;
 		hifi_power_out_t o = *hifi_power_step(&power, &in);
+		/* Lite's TPA3118 has no warning pin: heat shows only as its 150 C
+		 * shutdown on FAULTZ. A trip with the heat cap over the default is
+		 * taken as heat: the cap drops 2 W (until a restart or a new
+		 * setting) and the gain 3 dB (back as above), and the trip doesn't
+		 * count towards the latch. At the default, trips latch as before. */
+		float cap_w = hifi_gov_heat_w(&gov), def_w = hifi_gov_heat_def_w(&gov);
+		if (power.faults > faults_before && def_w > 0 && cap_w > def_w + 0.25f) {
+			float w = hifi_gov_set_heat_w(&gov, fmaxf(cap_w - 2.0f, def_w));
+			hifi_power_forgive_fault(&power, now);
+			gov.trim = fmaxf(gov.trim * 0.708f, 0.25f);
+			otw_ms = otw_clear_ms = now;
+			ESP_LOGW(TAG, "amp tripped with the heat cap at %.1f W: taken as heat, cap now %.1f W, gain "
+				      "ceiling %.1f dB", cap_w, w, 20 * log10f(gov.trim));
+		}
 		if (power.state != before)
 			ESP_LOGI(TAG, "power %s -> %s (VBUS %.2f V, PVDD %.2f V, PG %d)", hifi_power_state_name(before),
 				 hifi_power_state_name(power.state), bp.vbus_v, bp.pvdd_v, bp.pg);
