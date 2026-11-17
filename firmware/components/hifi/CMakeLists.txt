@@ -16,7 +16,7 @@ endif()
 
 # the lab build (board/lite-lab): experiments a signed command starts and stops
 if(CONFIG_HIFI_LAB)
-	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c esp/lab_forge.c esp/lab_wifidrop.c)
+	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c esp/lab_forge.c esp/lab_wifidrop.c esp/lab_crafted.c)
 	# Bluetooth off or quiet for a while, to measure what it costs Wi-Fi
 	if(CONFIG_BT_CLASSIC_ENABLED)
 		# and a real A2DP stream between two boards, beside the other radios
@@ -46,7 +46,7 @@ idf_component_register(
 	PRIV_REQUIRES driver esp_adc_cal mdns console nvs_flash esp_wifi
 		      platform_config services wifi-manager tools
 		      app_update mqtt libsodium mbedtls lwip esp_http_client json
-		      tcp_transport esp-tls bt)
+		      tcp_transport esp-tls bt codecs)
 
 # The Hive's signing key(s), an optional built-in relay and update manifest,
 # from the build's environment (firmware/tools/build.sh; docs/remote.md).
