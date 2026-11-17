@@ -414,8 +414,8 @@ core's idle task, so 100 minus it is that core's load.
 {"wifi": {"rssi": -58, "channel": 6, "bssid": "aa:bb:cc:dd:ee:ff", "phy": "11n",
           "connects": 3, "disconnects": 2, "last_reason": 8, "up_s": 4012},
  "link": {"up": true, "drops": 1, "up_s": 3990, "tx_bytes": 812345, "rx_bytes": 4123456,
-          "last_drop": {"kind": "tcp_gave_up", "code": 113, "wifi_down": true,
-                        "why": "TCP gave up: keepalive or resends, Wi-Fi down",
+          "last_drop": {"kind": "tcp_gave_up", "code": 113, "wifi_down": false,
+                        "why": "TCP gave up: keepalive or resends",
                         "ago_s": 3995, "lasted_s": 7210}}}
 ```
 
@@ -434,14 +434,14 @@ boot, and always on MQTT). The first cause the board saw on that link wins.
 |---|---|---|
 | `closed` | the close frame's status | the endpoint sent a close frame |
 | `eof` | 0 | the far end closed the socket (TCP FIN or TLS close_notify) |
-| `tcp_gave_up` | `ECONNABORTED` | TCP's keepalive (30 s idle, then 3 probes 10 s apart) or its resends ran out; lwIP doesn't say which |
+| `tcp_gave_up` | `ECONNABORTED` | with Wi-Fi up, TCP's keepalive (30 s idle, then 3 probes 10 s apart) or its resends ran out; lwIP doesn't say which |
 | `socket` | the errno | another socket error (`why` names the common ones: reset, timed out, no route) |
 | `tls` | mbedTLS's error, positive | a TLS error |
-| `read_timeout` | seconds | half a frame came, then nothing for that long |
+| `read_timeout` | seconds | half a frame (or a TLS record) came, then nothing for that long |
 | `write_timeout` | seconds | a send stalled that long: the socket's send buffer stayed full |
 | `bad_frame` | 0 | a frame header the board won't take |
 | `no_memory` | 0 | no heap for a frame |
-| `wifi_down` | 0 | no socket cause, and the station had lost its access point |
+| `wifi_down` | 0 or `ECONNABORTED` | the station had lost its access point (losing it takes the address, and the stack aborts the socket) |
 | `stopped` | 0 | the link was turned off |
 | `unknown` | 0 | the link ended with no cause noted |
 

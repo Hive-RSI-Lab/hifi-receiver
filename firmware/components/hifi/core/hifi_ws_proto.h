@@ -77,10 +77,10 @@ bool hifi_ws_upgrade_ok(const char *resp, const char *accept);
 typedef enum {
 	HIFI_WS_DROP_NONE,          /* no drop since boot */
 	HIFI_WS_DROP_UNKNOWN,       /* the link ended with no cause noted */
-	HIFI_WS_DROP_WIFI,          /* the station lost its access point, no socket cause */
+	HIFI_WS_DROP_WIFI,          /* the station lost its access point (the stack's abort of the socket, or no socket cause) */
 	HIFI_WS_DROP_CLOSED,        /* the endpoint's close frame; code: its status code */
 	HIFI_WS_DROP_EOF,           /* the far end closed the socket (FIN or TLS close_notify) */
-	HIFI_WS_DROP_TCP_GAVE_UP,   /* ECONNABORTED: TCP keepalive or resends ran out */
+	HIFI_WS_DROP_TCP_GAVE_UP,   /* ECONNABORTED with Wi-Fi up: keepalive or resends ran out */
 	HIFI_WS_DROP_SOCKET,        /* another socket error; code: its errno */
 	HIFI_WS_DROP_TLS,           /* a TLS error; code: mbedTLS's, positive */
 	HIFI_WS_DROP_READ_TIMEOUT,  /* half a frame, then nothing for code seconds */

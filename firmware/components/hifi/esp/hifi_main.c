@@ -1082,7 +1082,7 @@ static void op_selftest(hifi_selftest_t *t) {
 	hifi_selftest_add(t, "heap", heap_ok, "%s", heap);
 	/* the remote link's last drop, if any, rides on the network line (the
 	 * whole of it is in `api diag/net`, link.last_drop) */
-	char why[64], net[64];
+	char why[64], net[96];
 	hifi_ws_stats_t ws;
 	hifi_ws_stats(&ws);
 	snprintf(net, sizeof(net), "%s", s->ip[0] ? s->ip : "not connected");

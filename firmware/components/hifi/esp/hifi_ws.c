@@ -86,6 +86,8 @@ static void note_io(int r, bool wr, int e) {
 	int tls = eh ? eh->esp_tls_error_code : 0; /* mbedTLS's, made positive */
 	if (eh && eh->last_error == ESP_ERR_ESP_TLS_TCP_CLOSED_FIN) note(HIFI_WS_DROP_EOF, 0);
 	else if (sock > 0) note_errno(sock);
+	else if (!tls && (e == EAGAIN || e == EWOULDBLOCK)) /* SO_RCVTIMEO/SO_SNDTIMEO ran out mid-record */
+		note(wr ? HIFI_WS_DROP_WRITE_TIMEOUT : HIFI_WS_DROP_READ_TIMEOUT, IO_MS / 1000);
 	else if (tls == -MBEDTLS_ERR_SSL_CONN_EOF || tls == -MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) note(HIFI_WS_DROP_EOF, 0);
 	else if (tls == -MBEDTLS_ERR_NET_CONN_RESET) note(HIFI_WS_DROP_SOCKET, ECONNRESET);
 	else if ((tls == -MBEDTLS_ERR_NET_RECV_FAILED || tls == -MBEDTLS_ERR_NET_SEND_FAILED) && e > 0) note_errno(e);
@@ -100,6 +102,9 @@ static void drop(void) {
 		wifi_ap_record_t ap;
 		bool wifi_down = esp_wifi_sta_get_ap_info(&ap) != ESP_OK;
 		if (!running) note(HIFI_WS_DROP_STOPPED, 0);
+		/* losing the station takes its address, and lwIP aborts every socket on
+		 * it: that ECONNABORTED is the Wi-Fi, not keepalive or resends */
+		if (wifi_down && cause == HIFI_WS_DROP_TCP_GAVE_UP) cause = HIFI_WS_DROP_WIFI;
 		note(wifi_down ? HIFI_WS_DROP_WIFI : HIFI_WS_DROP_UNKNOWN, 0);
 		int64_t t = esp_timer_get_time();
 		portENTER_CRITICAL(&stats_mux);
@@ -331,9 +336,13 @@ static void ws_task(void *arg) {
 					last_tx = now_s();
 					xSemaphoreGive(lock);
 				}
+				errno = 0;
 				int p = esp_transport_poll_read(ssl, 500);
 				if (p < 0) {
-					note_io(p, false, errno);
+					int e = errno;
+					xSemaphoreTake(lock, portMAX_DELAY); /* hifi_ws_send may be noting too */
+					note_io(p, false, e);
+					xSemaphoreGive(lock);
 					break;
 				}
 				if (p > 0) read_frame(); /* a socket the far end closed reads as broken */
