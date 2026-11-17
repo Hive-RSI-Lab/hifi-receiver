@@ -13,7 +13,8 @@
  * window frames in flight (throughput; the echo end has the loss).
  * Optional: count (frames, then the run ends itself), len (38-250),
  * rate ("1m" default, "2m", "5m", "11m", "6m", "12m", "24m", "54m",
- * "mcs0", "mcs7"), ps (Wi-Fi power save for the run: "none", "min", "max";
+ * "mcs0", "mcs7"), ps (Wi-Fi power save for the run: "none" (only with
+ * the Bluetooth controller off: the bt experiment), "min", "max";
  * default as it is), window (flood, 1-16, default 4; a send report missing
  * for 1 s counts as lost and its slot is used again: report_timeouts).
  *
@@ -26,7 +27,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "sdkconfig.h"
 #include "esp_heap_caps.h"
+#if CONFIG_BT_ENABLED
+#include "esp_bt.h"
+#endif
 #include "esp_log.h"
 #include "esp_now.h"
 #include "esp_system.h"
@@ -328,12 +333,13 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	q_full = other = report_timeouts = no_mem = 0;
 	ps_err[0] = 0;
 #if CONFIG_BT_ENABLED
-	/* With Bluetooth in the image, the coexistence code in the Wi-Fi blob
-	 * aborts a few seconds after modem sleep is turned off ("Should enable
-	 * WiFi modem sleep when both WiFi and Bluetooth are enabled"): lab3 on
-	 * Lite 2 panicked on every ps:none start. */
-	if (!strcmp(ps, "none")) {
-		snprintf(err, n, "ps none panics the Wi-Fi/Bluetooth coexistence (modem sleep is required with Bluetooth on); use min or max");
+	/* With the Bluetooth controller on, the coexistence code in the Wi-Fi
+	 * blob aborts a few seconds after modem sleep is turned off ("Should
+	 * enable WiFi modem sleep when both WiFi and Bluetooth are enabled"):
+	 * lab3 on Lite 2 panicked on every ps:none start. The bt experiment
+	 * (mode off) disables the controller, and then ps none is allowed. */
+	if (!strcmp(ps, "none") && esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_ENABLED) {
+		snprintf(err, n, "ps none panics the Wi-Fi/Bluetooth coexistence while the controller is on; use min or max, or the bt experiment's mode off first");
 		return 400;
 	}
 #endif

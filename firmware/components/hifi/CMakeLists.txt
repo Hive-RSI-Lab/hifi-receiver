@@ -17,6 +17,10 @@ endif()
 # the lab build (board/lite-lab): experiments a signed command starts and stops
 if(CONFIG_HIFI_LAB)
 	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c)
+	# Bluetooth off or quiet for a while, to measure what it costs Wi-Fi
+	if(CONFIG_BT_ENABLED)
+		list(APPEND srcs esp/lab_bt.c)
+	endif()
 	# the BLE lab image (board/lite-lab-ble): a GATT link beside A2DP
 	if(CONFIG_BT_BLE_ENABLED)
 		list(APPEND srcs esp/lab_ble.c)
