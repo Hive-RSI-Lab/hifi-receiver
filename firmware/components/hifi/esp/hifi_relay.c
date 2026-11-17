@@ -29,6 +29,7 @@
 #include "platform_config.h"
 
 #include "hifi_board.h"
+#include "hifi_crash.h"
 #include "hifi_esp.h"
 #include "hifi_json.h"
 #include "hifi_remote.h"
@@ -426,6 +427,28 @@ static void note_good_slot(void) {
 	if (strcmp(saved, run->label)) config_set_value(NVS_TYPE_STR, "hifi_good_slot", run->label);
 }
 
+static hifi_restart_hold_t restart_hold;
+
+static bool image_on_trial(void) {
+	esp_ota_img_states_t st;
+	return esp_ota_get_state_partition(esp_ota_get_running_partition(), &st) == ESP_OK &&
+	       st == ESP_OTA_IMG_PENDING_VERIFY;
+}
+
+/* hifi_esp.h: called from upstream's IP-change reboot (patch 0030). The
+ * relay task marks the image good and then reads the hold, so the state is
+ * read again after the hold is set: a trial that ended in between restarts
+ * here instead, and at worst both restart. */
+bool hifi_restart_after_trial(const char *why) {
+	if (!hifi_restart_hold(&restart_hold, image_on_trial(), why)) return false;
+	if (!image_on_trial()) {
+		restart_hold.held = false;
+		return false;
+	}
+	ESP_LOGW(TAG, "%s: restart held until firmware %s is kept", why ? why : "restart", HIFI_FW_VERSION);
+	return true;
+}
+
 static void relay_task(void *arg) {
 	bool sntp = false, on_trial = false, boot_heap_taken = false;
 	uint32_t trial_start = 0, last_status = 0;
@@ -509,6 +532,14 @@ static void relay_task(void *arg) {
 				ESP_LOGI(TAG, "firmware %s kept: %s", HIFI_FW_VERSION, why);
 				publish_event("ota_valid", "why", why, NULL, NULL);
 				publish_status();
+				const char *held;
+				if (hifi_restart_release(&restart_hold, v, &held)) {
+					ESP_LOGW(TAG, "restarting for the held %s", held);
+					publish_event("restart", "why", held, NULL, NULL);
+					vTaskDelay(pdMS_TO_TICKS(500));
+					hifi_restart_note(held);
+					esp_restart();
+				}
 			} else if (v == HIFI_TRIAL_BAD) {
 				ESP_LOGE(TAG, "firmware %s failed its trial: %s; rolling back", HIFI_FW_VERSION, why);
 				config_set_value(NVS_TYPE_STR, "hifi_rb_from", HIFI_FW_VERSION);

@@ -35,6 +35,7 @@ core = (up / "components/driver_bt/bt_app_core.c").read_text()
 blob = (up / "components/spotify/cspot/src/LoginBlob.cpp").read_text()
 shim = (up / "components/spotify/Shim.cpp").read_text()
 net = (up / "components/wifi-manager/network_manager_handlers.c").read_text()
+app = (up / "main/esp_app_main.c").read_text()
 diag = (Path(__file__).resolve().parents[2] / "components/hifi/esp/hifi_diag_esp.c").read_text()
 
 # 0007: just-works pairing, no number to compare
@@ -66,6 +67,20 @@ check(hook >= 0 and all(init.find(x, loop) < 0 or hook < init.find(x, loop)
       "hifi_net_loop_ready is called after the network can start")
 check(re.search(r"(?m)^void hifi_net_loop_ready\(void\)\s*\{", diag) is not None,
       "components/hifi defines no hifi_net_loop_ready for patch 0011's hook")
+
+# 0030: an IP change while a new image is on trial doesn't restart until the
+# trial keeps it; with rollback on, a restart before then put the old image back
+ipc = body(app, '"IP change, need to reboot"', "\n\t}\n")
+held, restart = ipc.find("hifi_restart_after_trial("), ipc.find("esp_restart()")
+check(held >= 0 and restart > held, "the IP-change reboot doesn't ask hifi_restart_after_trial first")
+check(re.search(r"if\s*\(\s*!hifi_restart_after_trial\s*\|\|\s*!hifi_restart_after_trial\(", ipc) is not None,
+      "the IP-change reboot doesn't skip esp_restart() while the restart is held")
+relay = (Path(__file__).resolve().parents[2] / "components/hifi/esp/hifi_relay.c").read_text()
+check(re.search(r"(?m)^bool hifi_restart_after_trial\(const char \*why\)\s*\{", relay) is not None,
+      "components/hifi defines no hifi_restart_after_trial for patch 0030's hook")
+kept = body(relay, "esp_ota_mark_app_valid_cancel_rollback();", "} else if")
+check("hifi_restart_release(" in kept and "esp_restart()" in kept,
+      "the relay task doesn't run a held restart once the image is kept")
 
 print(f"{'up_source':<12} {checks} checks, {fails} failed")
 sys.exit(1 if fails else 0)

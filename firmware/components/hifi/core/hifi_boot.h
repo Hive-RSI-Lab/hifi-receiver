@@ -48,3 +48,21 @@ bool hifi_heap_boot_due(uint32_t up_s, bool net_up, bool relay_configured, bool 
  * and the boot figure's margin over the floor. boot 0: not measured yet.
  * Returns the check's verdict, which is free now over the floor. */
 bool hifi_heap_line(uint32_t now_free, uint32_t boot_free, char *out, size_t n);
+
+/* A restart that something asks for while the image is on trial (upstream's
+ * reboot on an IP change, patch 0030) waits until the trial is over. With
+ * rollback on, any restart before the image is marked good puts the old one
+ * back, so a router handing out a new address during the first two minutes
+ * rolled every update back. Held, it runs once the trial judges the image
+ * good; a bad image rolls back anyway, which is a restart too. */
+typedef struct {
+	volatile bool held;
+	const char *volatile why;
+} hifi_restart_hold_t;
+
+/* on_trial: the running image is still waiting to be marked good. true: the
+ * restart is held and the caller must not restart; false: restart now. */
+bool hifi_restart_hold(hifi_restart_hold_t *h, bool on_trial, const char *why);
+/* after the trial's verdict: true (and *why) when a held restart should run
+ * now, which is once the image is good. It is released once. */
+bool hifi_restart_release(hifi_restart_hold_t *h, hifi_trial_verdict_t v, const char **why);
