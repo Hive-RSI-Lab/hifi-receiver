@@ -41,6 +41,7 @@ static inline float lim(hifi_boost_t *b, float pk, float rel, uint32_t hold, flo
 	} else {
 		float e = b->env * rel;
 		b->env = pk > e ? pk : e;
+		if (b->env < 1e-6f) b->env = 0.0f; /* no denormals in long silence */
 	}
 	if (b->env <= b->ceiling) return 1.0f;
 	float g = b->ceiling / b->env;
@@ -73,8 +74,10 @@ void hifi_boost_process(hifi_boost_t *b, void *buf, size_t frames, int bytes_per
 			/* the ceiling is <= 1, so this only catches float rounding */
 			l = l > 0.99999994f ? 0.99999994f : l < -1.0f ? -1.0f : l;
 			r = r > 0.99999994f ? 0.99999994f : r < -1.0f ? -1.0f : r;
-			s[2 * i] = (int32_t) ((double) l * 2147483648.0);
-			s[2 * i + 1] = (int32_t) ((double) r * 2147483648.0);
+			/* float, not double: the ESP32 has no double FPU; the clamp
+			 * keeps l * 2^31 within int32 (0.99999994 * 2^31 = 2^31 - 128) */
+			s[2 * i] = (int32_t) (l * 2147483648.0f);
+			s[2 * i + 1] = (int32_t) (r * 2147483648.0f);
 		}
 	} else {
 		int16_t *s = buf;
