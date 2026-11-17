@@ -41,10 +41,26 @@ run: $(addprefix $(BIN)/,$(TESTS))
 # the tests build against stubs. With no copy of upstream reachable they are
 # skipped, loudly; UPSTREAM_REQUIRED=1 makes that a failure.
 UP := $(BIN)/upstream
+CSPOT := components/spotify/cspot
+BELL := $(CSPOT)/bell/main
+NANOPB := $(CSPOT)/bell/external/nanopb
 UP_FILES = components/squeezelite/controls.c components/driver_bt/bt_app_sink.c \
 	components/driver_bt/bt_app_core.c components/spotify/Shim.cpp components/spotify/cspot/src/LoginBlob.cpp \
 	components/wifi-manager/network_manager_handlers.c components/raop/dmap_parser.c components/raop/dmap_parser.h \
-	components/raop/rtp.c $(ALAC_FILES)
+	components/raop/rtp.c $(ALAC_FILES) \
+	$(BELL)/io/TLSSocket.cpp $(BELL)/io/include/TLSSocket.h $(BELL)/io/include/BellSocket.h \
+	$(BELL)/io/X509Bundle.cpp $(BELL)/io/include/X509Bundle.h \
+	$(BELL)/utilities/BellLogger.cpp $(BELL)/utilities/include/BellLogger.h \
+	$(CSPOT)/src/AuthChallenges.cpp $(CSPOT)/include/AuthChallenges.h \
+	$(addprefix $(CSPOT)/,src/PlainConnection.cpp src/ShannonConnection.cpp src/Shannon.cpp include/PlainConnection.h \
+	  include/ShannonConnection.h include/Shannon.h include/Packet.h include/Logger.h include/Utils.h) \
+	$(CSPOT)/protobuf/keyexchange.proto $(CSPOT)/protobuf/keyexchange.options \
+	$(CSPOT)/protobuf/authentication.proto $(CSPOT)/protobuf/authentication.options \
+	$(BELL)/utilities/Crypto.cpp $(BELL)/utilities/include/Crypto.h $(BELL)/utilities/aes.c \
+	$(BELL)/utilities/include/aes.h $(BELL)/utilities/NanoPBHelper.cpp $(BELL)/utilities/include/NanoPBHelper.h \
+	$(addprefix $(NANOPB)/,pb.h pb_common.c pb_common.h pb_decode.c pb_decode.h pb_encode.c pb_encode.h \
+	  generator/nanopb_generator.py generator/proto/__init__.py generator/proto/_utils.py \
+	  generator/proto/nanopb.proto generator/proto/google/protobuf/descriptor.proto)
 # The ALAC decoder as the board builds it (patch 0021), and Apple's encoder to make real packets.
 # Address sanitizer only: Apple's code shifts signed values all over, which UBSan would stop on.
 ALAC_DIR := components/spotify/cspot/bell/external/alac/codec
@@ -78,7 +94,9 @@ upstream:
 	$(UP)/test_up_alac || fail=1; \
 	if [ "$(FUZZ_OK)" = 1 ]; then $(MAKE) --no-print-directory fuzz-alac || fail=1; \
 	else echo "SKIPPED fuzz_alac: no clang with libFuzzer"; fi; \
-	python3 upstream/test_up_source.py $(UP) || fail=1; exit $$fail
+	python3 upstream/test_up_source.py $(UP) || fail=1; \
+	python3 upstream/test_up_tls.py $(UP) || fail=1; python3 upstream/test_up_aphello.py $(UP) || fail=1; \
+	python3 upstream/test_up_shannon.py $(UP) || fail=1; exit $$fail
 
 # Line, branch and function coverage of core/ (gcov): each test is built
 # again with --coverage under build/cov and run there; `fw coverage` merges

@@ -7,7 +7,8 @@ Each check reads the patched source for the fix and fails if a patch stops
 carrying it (dropped, reverted, or upstream moved the code from under it).
 Spotify (patch 0006): the person's partner couldn't take the speaker over
 from their own account. Bluetooth pairing (0007): phones were asked to
-compare a number on a speaker with no screen. Wi-Fi events (0011): `diag`
+compare a number on a speaker with no screen. Spotify login (0026): a
+login that threw ended the Spotify task and rebooted the speaker. Wi-Fi events (0011): `diag`
 missed the first connect and never had the boot's IP time (S8).
 """
 import re
@@ -55,6 +56,11 @@ check(re.search(r"cmdHandler\(CSPOT_DISC\);\s*state\s*=\s*ABORT;", after) is not
 check(re.search(r"sessionUser\s*=\s*ctx->config\.username", shim) is not None,
       "the session's user is never recorded")
 check(shim.count("sessionMutex") >= 3, "sessionUser is read or written without its lock")
+
+# 0026: a login that throws (a MAC mismatch, a reset) fails like a refused
+# one, so it falls back to ZeroConf instead of ending the task (a reboot)
+auth = re.search(r"try\s*\{\s*ctx->config\.authData\s*=\s*ctx->session->authenticate\(blob\);\s*\}\s*catch", shim)
+check(auth is not None, "runTask's authenticate(blob) is not inside a try")
 
 # 0011: the receiver's Wi-Fi handlers go on as soon as the event loop exists,
 # before the network state machine can start Wi-Fi or Ethernet
