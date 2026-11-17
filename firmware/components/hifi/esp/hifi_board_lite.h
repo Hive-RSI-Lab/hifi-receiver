@@ -68,6 +68,11 @@
 #define ES8388_ADCCONTROL9 0x11
 #define ES8388_ADCCONTROL10 0x12 /* bits 7:6 ALC: 00 = off */
 #define ES8388_ADCPOWER_CAPTURE 0x08 /* inputs and ADCs on, mic bias off */
+/* CHIPPOWER: bits 7/5/3/1 hold the ADC's digital part, state machine, DLL
+ * and Vref down, bits 6/4/2/0 the DAC's. squeezelite's init leaves 0xAA
+ * (ADC down, DAC up), so a capture powers the ADC up and puts the value back. */
+#define ES8388_CHIPPOWER 0x02
+#define ES8388_CHIPPOWER_ADC_DOWN 0xAA
 
 /* The loopback taps: each speaker's + leg through 100k over 10k into LIN2/RIN2.
  * The board the review-2 ECO built (and every one since) has them: R66-R69,
