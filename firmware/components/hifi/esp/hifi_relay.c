@@ -411,6 +411,16 @@ void hifi_remote_link(hifi_diag_net_t *n, uint32_t *first_up_ms) {
 
 /* ------------------------------------------------------------------ the relay task */
 
+/* L11: recovery's "boot the app" reads this (firmware/patches/0013): the slot
+ * that last ran well, since otadata is wiped once recovery is booted */
+static void note_good_slot(void) {
+	const esp_partition_t *run = esp_ota_get_running_partition();
+	if (run->subtype == ESP_PARTITION_SUBTYPE_APP_FACTORY) return;
+	char saved[16];
+	load_str("hifi_good_slot", "", saved, sizeof(saved));
+	if (strcmp(saved, run->label)) config_set_value(NVS_TYPE_STR, "hifi_good_slot", run->label);
+}
+
 static void relay_task(void *arg) {
 	bool sntp = false, on_trial = false;
 	uint32_t trial_start = 0, last_status = 0;
@@ -418,6 +428,8 @@ static void relay_task(void *arg) {
 	if (esp_ota_get_state_partition(esp_ota_get_running_partition(), &st) == ESP_OK && st == ESP_OTA_IMG_PENDING_VERIFY) {
 		on_trial = true;
 		ESP_LOGW(TAG, "firmware %s is on trial: it has %d s to prove itself", HIFI_FW_VERSION, HIFI_TRIAL_LIMIT_S);
+	} else {
+		note_good_slot();
 	}
 	char pending[8];
 	load_str("hifi_rb_report", "0", pending, sizeof(pending));
@@ -482,6 +494,7 @@ static void relay_task(void *arg) {
 			hifi_trial_verdict_t v = hifi_trial_judge(&t, now - trial_start, why, sizeof(why));
 			if (v == HIFI_TRIAL_GOOD) {
 				esp_ota_mark_app_valid_cancel_rollback();
+				note_good_slot();
 				on_trial = false;
 				ESP_LOGI(TAG, "firmware %s kept: %s", HIFI_FW_VERSION, why);
 				publish_event("ota_valid", "why", why, NULL, NULL);

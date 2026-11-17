@@ -1,0 +1,50 @@
+diff --git a/components/platform_console/cmd_system.c b/components/platform_console/cmd_system.c
+--- a/components/platform_console/cmd_system.c
++++ b/components/platform_console/cmd_system.c
+@@ -167,6 +167,29 @@
+     ESP_ERROR_CHECK( esp_console_cmd_register(&cmd) );
+ }
+ 
++/* hifi (security.md L11): from recovery, "boot the app" means the slot that
++ * last ran well, which the receiver keeps in NVS as hifi_good_slot (setting
++ * recovery as the boot partition wiped otadata, so it can't say). Not a fixed
++ * ota_0: after an update to ota_1 that would boot the older firmware. */
++static bool hifi_slot_has_app(const esp_partition_t *p) {
++	esp_app_desc_t d;
++	return p && esp_ota_get_partition_description(p, &d) == ESP_OK;
++}
++
++static const esp_partition_t *hifi_good_app(void) {
++	const esp_partition_t *p0 = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_0, NULL);
++	const esp_partition_t *p1 = esp_partition_find_first(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_APP_OTA_1, NULL);
++	const esp_partition_t *good = NULL, *other = NULL;
++	char *label = config_alloc_get_str("hifi_good_slot", NULL, NULL);
++	if (label && p1 && !strcmp(label, p1->label)) { good = p1; other = p0; }
++	else if (label && p0 && !strcmp(label, p0->label)) { good = p0; other = p1; }
++	free(label);
++	if (hifi_slot_has_app(good)) return good;
++	if (hifi_slot_has_app(other)) return other;
++	if (hifi_slot_has_app(p0)) return p0;
++	return hifi_slot_has_app(p1) ? p1 : NULL;
++}
++
+ esp_err_t guided_boot(esp_partition_subtype_t partition_subtype)
+ {
+     if(is_recovery_running){
+@@ -182,6 +205,16 @@
+         }
+     }
+ 	esp_err_t err = ESP_OK;
++	const esp_partition_t *good = NULL;
++	if (is_recovery_running && partition_subtype == ESP_PARTITION_SUBTYPE_APP_OTA_0 && (good = hifi_good_app())) {
++		log_send_messaging(MESSAGING_INFO, "Rebooting to %s", good->label);
++		err = esp_ota_set_boot_partition(good);
++		if (err == ESP_OK) {
++			taskYIELD();
++			simple_restart();
++		}
++		log_send_messaging(MESSAGING_ERROR, "Unable to select %s: %s", good->label, esp_err_to_name(err));
++	}
+     // log_send_messaging(MESSAGING_INFO, "Looking for partition type %u",partition_subtype);
+     const esp_partition_t *partition;
+ 	esp_partition_iterator_t it = esp_partition_find(ESP_PARTITION_TYPE_APP, partition_subtype, NULL);
