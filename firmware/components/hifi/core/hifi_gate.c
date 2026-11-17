@@ -15,17 +15,25 @@ static const char *const home_suffixes[] = {"local", "home.arpa", "internal"};
 static bool host_part(const char *host, char *out, size_t cap, bool *v6) {
 	*v6 = false;
 	size_t n;
+	const char *port;
 	if (host[0] == '[') {
 		const char *e = strchr(host, ']');
 		if (!e) return false;
 		if (e[1] && e[1] != ':') return false;
+		port = e[1] ? e + 2 : NULL;
 		host++;
 		n = (size_t) (e - host);
 		*v6 = true;
 	} else {
 		const char *c = strchr(host, ':');
 		n = c ? (size_t) (c - host) : strlen(host);
-		if (c && strchr(c + 1, ':')) return false; /* bare IPv6 is not a Host */
+		port = c ? c + 1 : NULL;
+	}
+	/* a port is 1 to 5 digits, nothing else (L12): "host:abc" or a second
+	 * ':' (bare IPv6 is not a Host) is not a header a browser sends */
+	if (port) {
+		size_t d = strspn(port, "0123456789");
+		if (!d || d > 5 || port[d]) return false;
 	}
 	if (n == 0 || n >= cap) return false;
 	memcpy(out, host, n);
@@ -358,7 +366,8 @@ bool hifi_lan_config_ok(const char *key, const char *strval) {
 /* during an OTA trial, what may roll the new firmware back: a reboot (the
  * bootloader then goes back to the old image), a Wi-Fi change or forget (no
  * Wi-Fi at the verdict), an erase, or squeezelite's settings and console,
- * which reach all three */
+ * which reach all three; and another update, which would write over the
+ * slot holding the image to roll back to */
 bool hifi_lan_trial_refused(const char *path, const char *method) {
 	if (!path || !method || !strcmp(method, "GET") || !strcmp(method, "HEAD")) return false;
 	/* the server routes on the parsed path: an absolute-form target
@@ -368,8 +377,21 @@ bool hifi_lan_trial_refused(const char *path, const char *method) {
 	static const char *const paths[] = {
 		"/api/v1/wifi", "/api/v1/wifi/forget", "/api/v1/reset", "/api/v1/reboot", "/api/v1/bttest",
 		"/connect.json", "/reboot.json", "/reboot_ota.json", "/commands.json", "/config.json",
+		/* another update would replace the rollback copy (L16) */
+		"/api/v1/update", "/api/v1/update/upload", "/api/v1/ota/begin", "/api/v1/ota/finish",
 	};
 	return word_in(path, n, paths, sizeof(paths) / sizeof(paths[0]));
+}
+
+bool hifi_lan_throttled(const char *path, const char *method, long long now_us, long long *last_us) {
+	if (!path || !method || !last_us || (strcmp(method, "GET") && strcmp(method, "HEAD"))) return false;
+	static const char *const costly[] = {"/scan.json", "/api/v1/wifi/scan", "/api/v1/update/check"};
+	/* the paths the server routes on (see hifi_lan_trial_refused): a
+	 * spelling that isn't one of them reaches none of these handlers */
+	if (!word_in(path, strcspn(path, "?"), costly, sizeof(costly) / sizeof(costly[0]))) return false;
+	if (*last_us && now_us - *last_us < HIFI_LAN_GAP_US && now_us >= *last_us) return true;
+	*last_us = now_us ? now_us : 1;
+	return false;
 }
 
 bool hifi_lan_config_secret(const char *key) {

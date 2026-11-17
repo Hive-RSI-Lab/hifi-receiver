@@ -62,6 +62,17 @@ int main(void) {
 	DENY("[fe80::1", NULL);
 	DENY(":80", NULL);
 	DENY("a:1:2", NULL);
+	/* a port is 1 to 5 digits (L12) */
+	ALLOW("192.168.1.50:65535", NULL);
+	ALLOW("[fe80::1]:8", NULL);
+	DENY("192.168.1.50:abc", NULL);
+	DENY("hifi-lite-4:80x", NULL);
+	DENY("192.168.1.50:", NULL);
+	DENY("[fe80::1]:", NULL);
+	DENY("192.168.1.50:123456", NULL);
+	DENY("192.168.1.50: 80", NULL);
+	DENY("[fe80::1]:8:0", NULL);
+	DENY("192.168.1.50:-1", NULL);
 	{
 		char longhost[300];
 		memset(longhost, 'a', sizeof(longhost) - 1);
@@ -316,6 +327,33 @@ int main(void) {
 	CHECK(!hifi_lan_trial_refused("/config.jsonx", "POST"));
 	CHECK(!hifi_lan_trial_refused(NULL, "POST"));
 	CHECK(!hifi_lan_trial_refused("/reboot.json", NULL));
+	/* another update during the trial would replace the rollback copy (L16) */
+	CHECK(hifi_lan_trial_refused("/api/v1/update/upload", "POST"));
+	CHECK(hifi_lan_trial_refused("/api/v1/update", "POST"));
+	CHECK(hifi_lan_trial_refused("/api/v1/ota/begin", "POST"));
+	CHECK(hifi_lan_trial_refused("/api/v1/ota/finish?x", "POST"));
+	CHECK(!hifi_lan_trial_refused("/api/v1/update/check", "GET"));
+	CHECK(!hifi_lan_trial_refused("/api/v1/ota", "GET"));
+	/* GETs that start work: once per 5 s from the LAN (L7) */
+	{
+		long long last = 0, s = 1000000;
+		CHECK(!hifi_lan_throttled("/scan.json", "GET", 10 * s, &last));
+		CHECK(hifi_lan_throttled("/scan.json", "GET", 12 * s, &last));
+		CHECK(hifi_lan_throttled("/api/v1/wifi/scan?x=1", "GET", 13 * s, &last)); /* one budget for all */
+		CHECK(hifi_lan_throttled("/api/v1/update/check", "HEAD", 14 * s, &last));
+		CHECK(!hifi_lan_throttled("/api/v1/wifi/scan", "GET", 15 * s, &last));
+		CHECK(last == 15 * s);
+		CHECK(!hifi_lan_throttled("/api/v1/state", "GET", 15 * s, &last));      /* not costly */
+		CHECK(!hifi_lan_throttled("/scan.json", "POST", 15 * s, &last));        /* not a GET */
+		CHECK(!hifi_lan_throttled("/scan.jsonx", "GET", 15 * s, &last));
+		CHECK(last == 15 * s);
+		CHECK(!hifi_lan_throttled("/api/v1/update/check", "GET", 3 * s, &last)); /* the clock went back */
+		last = 0;
+		CHECK(!hifi_lan_throttled("/scan.json", "GET", 0, &last));
+		CHECK(last == 1);
+		CHECK(!hifi_lan_throttled(NULL, "GET", 0, &last));
+		CHECK(!hifi_lan_throttled("/scan.json", "GET", 0, NULL));
+	}
 	CHECK(hifi_lan_config_secret("hifi_relay_pass"));
 	CHECK(hifi_lan_config_secret("hifi_relay_key"));
 	CHECK(!hifi_lan_config_secret("hifi_relay_url"));

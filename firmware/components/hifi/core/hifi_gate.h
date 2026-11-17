@@ -59,6 +59,19 @@ bool hifi_autoexec_ok(const char *line);
  * /commands.json, /config.json. The caller answers 409 then. */
 bool hifi_lan_trial_refused(const char *path, const char *method);
 
+/* ---- GETs a web page elsewhere could fire (L7) ----
+ * A browser sends no Origin on a plain cross-site GET (an <img>, a link),
+ * and sends Sec-Fetch-Site only to https or localhost, never to the board's
+ * http:// address: the gate can't tell such a GET from the app's own. The
+ * page can't read the answer, so what is left is the work a GET starts:
+ * a Wi-Fi scan (/scan.json, /api/v1/wifi/scan: the radio leaves the
+ * channel, audio can stutter) or a fetch of the update manifest
+ * (/api/v1/update/check). Those run at most once per HIFI_LAN_GAP_US from the
+ * LAN; true: refuse this one (the caller answers 503, try again).
+ * *last_us holds the time of the last one let through (0: none yet). */
+#define HIFI_LAN_GAP_US (5LL * 1000 * 1000)
+bool hifi_lan_throttled(const char *path, const char *method, long long now_us, long long *last_us);
+
 /* ---- the setup access point (security.md, firmware/patches/0010) ----
  * First setup keeps the public password (nothing on the board to protect
  * yet). Once a Wi-Fi network is saved, an AP still on the public password
