@@ -222,7 +222,7 @@ cable.
    | `pd_contract` | **fail, expected**: no PD on a laptop port |
    | `vbus_matches` | pass |
    | `codec_i2c` | pass, "0x10 acks". A fail means U7: CE on GND, DVDD on +3V3, solder |
-   | `pvdd_on`, `pvdd_sensed`, `amp_no_fault` | fail, expected (the amp is refused on 5 V) |
+   | `pvdd_on`, `pvdd_sensed`, `amp_no_fault`, `loopback` | fail, expected (the amp is refused on 5 V) |
    | `psram` | pass, 8 MB (WROVER-E N8R8) |
    | `heap` | pass, > 20000 B |
    | `network` | fail until 8.1 |
@@ -249,7 +249,7 @@ terminals open for this step.
 | `power.contract` | `hifi state` / `GET /api/v1/state` | `protocol` pd, `v` 20, and `i_max_a` the charger's 20 V PDO (3.25 A for 65 W, 5 A for 100 W with a 5 A cable) |
 | `power.vbus_v` | state | 20.0 ±0.5 |
 | CH224A registers | I2C 0x22, reg 0x09 (status) and 0x50 (current) | PD active; the PDO current. **No console op reads these directly. See the gaps list.** `contract` is the firmware's decoding of them. |
-| `selftest` | `pd_contract`, `vbus_matches`, `pvdd_on`, `pvdd_sensed`, `amp_no_fault` | all pass. `pvdd_sensed` needs PVDD ≥ 0.85 × VBUS. |
+| `selftest` | `pd_contract`, `vbus_matches`, `pvdd_on`, `pvdd_sensed`, `amp_no_fault`, `loopback` | all pass. `pvdd_sensed` needs PVDD ≥ 0.85 × VBUS. |
 
 **PVDD soft start (scope):**
 - CH1 on Q1.4 (gate) and CH2 on C58+ (PVDD), both against GND.

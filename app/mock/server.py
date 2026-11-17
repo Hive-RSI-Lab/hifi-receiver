@@ -293,6 +293,8 @@ class Receiver:
             {"name": "pvdd_on", "pass": on, "value": "on" if on else "off: " + p["state"]},
             {"name": "amp_no_fault", "pass": on and not s["amp"]["latched"],
              "value": "latched" if s["amp"]["latched"] else "FAULTZ high after 200 ms enabled"},
+            {"name": "loopback", "pass": on and not s["amp"]["latched"],
+             "value": "stereo: L +0.1/-43.4, R -42.1/-0.1 dB" if on and not s["amp"]["latched"] else "amp not on"},
             {"name": "psram", "pass": True, "value": "8 MB"},
             {"name": "heap", "pass": True, "value": f"{s['sys']['heap_free']} B free"},
             {"name": "network", "pass": s["net"]["mode"] == "sta",

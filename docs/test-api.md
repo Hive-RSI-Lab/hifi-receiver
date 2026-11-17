@@ -321,7 +321,7 @@ Reply: `{"ok": true}`.
 
 ## `POST /api/v1/selftest`
 
-Runs every check the board can do on itself in about 2 s and returns them.
+Runs every check the board can do on itself in about 3 s and returns them.
 Nothing in it needs a speaker or a load.
 
 ```json
@@ -334,6 +334,7 @@ Nothing in it needs a speaker or a load.
   {"name": "pvdd_on",       "pass": true,  "value": "on"},
   {"name": "pvdd_sensed",   "pass": true,  "value": "PVDD 19.95 V of VBUS 20.12 V"},
   {"name": "amp_no_fault",  "pass": true,  "value": "FAULTZ high after 200 ms enabled"},
+  {"name": "loopback",      "pass": true,  "value": "stereo: L +0.1/-43.4, R -42.1/-0.1 dB"},
   {"name": "psram",         "pass": true,  "value": "8 MB"},
   {"name": "heap",          "pass": true,  "value": "81234 B free"},
   {"name": "network",       "pass": false, "value": "not connected"}]}
@@ -346,6 +347,24 @@ expected, and the bench script knows it.
 After a remote link drop since boot, a `link_drop` check follows `network`:
 it always passes, and its value is how long ago and why
 (`"120s ago: TCP gave up: keepalive or resends"`, see `diag/net`).
+
+On a board with loopback taps (the Lite; see `capture`), `loopback` checks
+the speaker path end to end: a 1 kHz tone at -50 dBFS on the left side, then
+the right, each read back on both taps. A speaker plugged in gives a faint
+beep. Its value is the channel mode, then for the left tone and the right
+tone what the left and right taps read, in dB against the level the path
+should give (`"stereo: L +0.1/-43.4, R -42.1/-0.1 dB"`: the left tone reaches
+the left output only, the right tone the right). An output the channel mode
+feeds must read within 3 dB of its gain (0 dB, or -6 dB per side in mono);
+one it doesn't feed must read 20 dB down or more. The quiet legs read the
+taps' noise in the 1 kHz bin, so expect about -40 to -60 dB, and once in a
+while about -28 dB on the first run after boot. With the EQ not flat, the
+3 dB widens by the largest band's gain and the value ends in `", EQ 6 dB"`.
+With a stream, a test tone, a connected source or DJ direct playing, the
+check is skipped and passes (`"skipped: a stream plays"`, `"skipped: a source
+is connected"`), and the same if a source connects while it runs; a second
+self-test that starts while one runs skips it too (`"skipped: another
+self-test runs it"`). With the amp off it fails (`"amp not on"`).
 
 Plus and Ultra have no `vbus_matches` or `codec_i2c`; their board checks
 are `expander_i2c` (the I/O expander at 0x20, or 0x74–0x77 for the

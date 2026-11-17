@@ -337,6 +337,25 @@ static void chan_regs(void) {
 	hifi_chan_regs(HIFI_CHAN_MONO, true, 3, false, &r);
 	CHECK(r.mix[0] == 0x28 && r.mix[3] == 0x28);
 
+	/* the same routing as gains, for the self-test's loopback check */
+	float g[2];
+	hifi_chan_gain(HIFI_CHAN_STEREO, 0, g);
+	CHECK(g[0] == 1 && g[1] == 0);
+	hifi_chan_gain(HIFI_CHAN_STEREO, 1, g);
+	CHECK(g[0] == 0 && g[1] == 1);
+	hifi_chan_gain(HIFI_CHAN_LEFT, 0, g);
+	CHECK(g[0] == 1 && g[1] == 1);
+	hifi_chan_gain(HIFI_CHAN_LEFT, 1, g);
+	CHECK(g[0] == 0 && g[1] == 0);
+	hifi_chan_gain(HIFI_CHAN_RIGHT, 0, g);
+	CHECK(g[0] == 0 && g[1] == 0);
+	hifi_chan_gain(HIFI_CHAN_RIGHT, 1, g);
+	CHECK(g[0] == 1 && g[1] == 1);
+	hifi_chan_gain(HIFI_CHAN_MONO, 0, g);
+	CHECK(g[0] == 0.5f && g[1] == 0.5f);
+	hifi_chan_gain(HIFI_CHAN_MONO, 1, g);
+	CHECK(g[0] == 0.5f && g[1] == 0.5f);
+
 	hifi_chan_t c;
 	CHECK(hifi_chan_parse("right", &c) && c == HIFI_CHAN_RIGHT);
 	CHECK(!hifi_chan_parse("both", &c) && !hifi_chan_parse(NULL, &c));
@@ -344,8 +363,53 @@ static void chan_regs(void) {
 	CHECK_STR(hifi_chan_name((hifi_chan_t) 9), "stereo");
 }
 
+/* the self-test's loopback check: the 1 kHz reading and the judging */
+static void loop_check(void) {
+	static int16_t pcm[2 * 4800];
+	/* left: 1 kHz at 0.01 FS peak with DC and a ramp; right: 0.002 FS of 3 kHz */
+	for (int i = 0; i < 4800; i++) {
+		pcm[2 * i] = (int16_t) lrint(32768 * (0.01 * sin(2 * M_PI * 1000 * i / 48000.0 + 0.4) + 0.02 - 0.01 * i / 4800.0));
+		pcm[2 * i + 1] = (int16_t) lrint(32768 * 0.002 * sin(2 * M_PI * 3000 * i / 48000.0));
+	}
+	float l = hifi_capture_tone_rms(pcm, 4800, 0, 1000, 48000), r = hifi_capture_tone_rms(pcm, 4800, 1, 1000, 48000);
+	CHECK(fabsf(l - 0.01f / sqrtf(2)) < 0.0002f);
+	CHECK(r < 1e-5f);
+	CHECK(hifi_capture_tone_rms(pcm, 0, 0, 1000, 48000) == 0);
+
+	char v[64];
+	float w = 0.001f, x = w * powf(10, -40 / 20.0f); /* x: a leg 40 dB down */
+	float stereo[2][2] = {{w, x}, {x, w * 1.12f}};    /* the right leg 1 dB up */
+	CHECK(hifi_loop_judge(HIFI_CHAN_STEREO, stereo, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
+	CHECK_STR(v, "stereo: L +0.0/-40.0, R -40.0/+1.0 dB");
+	float weak[2][2] = {{w * 0.5f, x}, {x, w}}; /* the left leg 6 dB down: a fault */
+	CHECK(!hifi_loop_judge(HIFI_CHAN_STEREO, weak, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
+	float leak[2][2] = {{w, w * 0.2f}, {x, w}}; /* the left side 14 dB down on the right leg */
+	CHECK(!hifi_loop_judge(HIFI_CHAN_STEREO, leak, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
+	CHECK(!hifi_loop_judge(HIFI_CHAN_LEFT, stereo, w, HIFI_LOOP_TOL_DB, v, sizeof(v))); /* left mode plays the left side on both */
+	float left[2][2] = {{w, w}, {x, 0}};
+	CHECK(hifi_loop_judge(HIFI_CHAN_LEFT, left, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
+	CHECK_STR(v, "left: L +0.0/+0.0, R -40.0/-99.0 dB");
+	float mono[2][2] = {{w / 2, w / 2}, {w / 2, w / 2}};
+	CHECK(hifi_loop_judge(HIFI_CHAN_MONO, mono, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
+	CHECK(!hifi_loop_judge(HIFI_CHAN_MONO, left, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
+	float dead[2][2] = {{0}};                                 /* the ADC sends zeros */
+	CHECK(!hifi_loop_judge(HIFI_CHAN_RIGHT, dead, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
+	CHECK(strlen(v) < sizeof(((hifi_check_t *) 0)->value));
+	/* the tolerance's edge, and the EQ widening it */
+	float edge[2][2] = {{w * powf(10, 2.9f / 20), x}, {x, w}};
+	CHECK(hifi_loop_judge(HIFI_CHAN_STEREO, edge, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
+	edge[0][0] = w * powf(10, 3.1f / 20);
+	CHECK(!hifi_loop_judge(HIFI_CHAN_STEREO, edge, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
+	edge[0][0] = w * powf(10, 7.0f / 20); /* a 1 kHz band at +6 dB */
+	CHECK(!hifi_loop_judge(HIFI_CHAN_STEREO, edge, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
+	CHECK(hifi_loop_judge(HIFI_CHAN_STEREO, edge, w, HIFI_LOOP_TOL_DB + 6, v, sizeof(v)));
+	/* the off limit stays 20 dB whatever the EQ */
+	CHECK(!hifi_loop_judge(HIFI_CHAN_STEREO, leak, w, HIFI_LOOP_TOL_DB + 12, v, sizeof(v)));
+}
+
 int main(void) {
 	chan_regs();
+	loop_check();
 	knob_detents();
 	buttons();
 	knob_volume();
