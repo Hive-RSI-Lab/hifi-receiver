@@ -341,6 +341,13 @@ static uint32_t scale(uint32_t f, int32_t a, int32_t b) {
 	return pack(lo(f) * a / b, hi(f) * a / b);
 }
 
+/* one concealed frame: the last stretch played again, fading out, then silence */
+static uint32_t conceal(hifi_party_jb_t *jb) {
+	int j = jb->gap_run++;
+	if (jb->gap_run > HIFI_PARTY_CONCEAL) jb->gap_run = HIFI_PARTY_CONCEAL + 1; /* no overflow on long silence */
+	return j < HIFI_PARTY_CONCEAL ? scale(jb->hist[(jb->hist_pos + j) % HIFI_PARTY_CONCEAL], HIFI_PARTY_CONCEAL - j, HIFI_PARTY_CONCEAL) : 0;
+}
+
 int hifi_party_jb_read(hifi_party_jb_t *jb, int64_t k, uint32_t *out, int n) {
 	int missing = 0;
 	for (int i = 0; i < n; i++) {
@@ -360,13 +367,7 @@ int hifi_party_jb_read(hifi_party_jb_t *jb, int64_t k, uint32_t *out, int n) {
 			}
 			out[i] = f;
 		} else {
-			/* concealed: the last stretch played again, fading out, then silence */
-			int j = jb->gap_run++;
-			if (j < HIFI_PARTY_CONCEAL)
-				out[i] = scale(jb->hist[(jb->hist_pos + j) % HIFI_PARTY_CONCEAL], HIFI_PARTY_CONCEAL - j, HIFI_PARTY_CONCEAL);
-			else
-				out[i] = 0;
-			if (jb->gap_run > HIFI_PARTY_CONCEAL) jb->gap_run = HIFI_PARTY_CONCEAL + 1; /* no overflow on long silence */
+			out[i] = conceal(jb);
 			missing++;
 		}
 	}
@@ -410,12 +411,9 @@ void hifi_party_render(hifi_party_ctl_t *c, hifi_party_jb_t *jb, double target, 
 	double err = (double) c->next - target; /* > 0: ahead of the leader */
 	c->last_err = err;
 	if (fabs(err) >= c->jump_frames) {
-		/* far off: jump, crossfading from where the stream was. When none of
-		 * that is left (back from a mute) there is nothing to fade from:
-		 * the concealment would replay what played before the mute, so the
-		 * stream fades in from silence instead */
+		/* far off: jump, crossfading from where the stream was */
 		int m = n < HIFI_PARTY_CONCEAL ? n : HIFI_PARTY_CONCEAL;
-		if (hifi_party_jb_read(jb, c->next, c->xfade, m) == m) m = 0;
+		hifi_party_jb_read(jb, c->next, c->xfade, m);
 		int64_t to = llround(target);
 		hifi_party_jb_read(jb, to, out, n);
 		for (int i = 0; i < m; i++) {
@@ -450,6 +448,13 @@ void hifi_party_render(hifi_party_ctl_t *c, hifi_party_jb_t *jb, double target, 
 		c->next += n;
 	}
 	c->since_slip += n;
+	hifi_party_gain(out, n, gain_l, gain_r);
+}
+
+void hifi_party_mute(hifi_party_ctl_t *c, hifi_party_jb_t *jb, uint32_t *out, int n, int32_t gain_l, int32_t gain_r) {
+	if (n <= 0) return;
+	for (int i = 0; i < n; i++) out[i] = conceal(jb); /* not missing: nothing was due */
+	c->started = false;
 	hifi_party_gain(out, n, gain_l, gain_r);
 }
 

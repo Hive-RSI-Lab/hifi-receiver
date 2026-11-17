@@ -116,7 +116,7 @@ int64_t hifi_party_nack_k(const uint8_t *payload, int i);
 
 typedef struct {
 	int64_t win_us;   /* one sample kept per window of this length */
-	double reject;    /* a window more than this far (y units) above the line is left out */
+	double reject;    /* a window more than this far (y units) above the line (or either side, with both_sides) is left out */
 	bool both_sides;  /* ...or below it: set after init for a fit whose y can step either way (the TSF) */
 	int min_points;   /* windows needed before the line is used */
 	/* the window being filled */
@@ -213,6 +213,10 @@ void hifi_party_ctl_init(hifi_party_ctl_t *c, int rate);
  * target, from the jitter buffer, slipping or jumping as needed, and applies
  * the follower's gain (65536 = unity, per channel). */
 void hifi_party_render(hifi_party_ctl_t *c, hifi_party_jb_t *jb, double target, uint32_t *out, int n, int32_t gain_l, int32_t gain_r);
+/* A block with no target (no fresh CLOCK, the fits not ready): what played
+ * last fades out, then silence, and the next render starts afresh where the
+ * leader is, fading in. A hard cut (zeros) would click. */
+void hifi_party_mute(hifi_party_ctl_t *c, hifi_party_jb_t *jb, uint32_t *out, int n, int32_t gain_l, int32_t gain_r);
 /* the gain alone, saturating, as squeezelite's 16-bit output applies it */
 void hifi_party_gain(uint32_t *frames, int n, int32_t gain_l, int32_t gain_r);
 

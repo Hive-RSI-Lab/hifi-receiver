@@ -30,8 +30,11 @@
  * A case fails if, over the time the follower plays, the error's p99 is over
  * 100 µs, or a step is audible: a jump (5 ms crossfade) other than the first
  * one after the follower was muted, or two neighbouring frames more than one
- * frame apart outside a jump; or the follower is muted longer than the case
- * allows. Then the same cases run with a deliberately broken servo (the
+ * frame apart outside a jump; or a mute that cuts the sound rather than
+ * fading it, or a resume that doesn't fade in; or the follower is muted
+ * longer than the case allows. The BSSID is polled once a second, so the
+ * TSF of a new AP can arrive under the old one's BSSID for up to a second.
+ * SEED=n draws every case anew. Then the same cases run with a deliberately broken servo (the
  * correction's sign flipped; the slips left out), and each must fail. The
  * program exits non-zero when a good case fails or a broken one passes.
  *
@@ -122,8 +125,16 @@ static const scase_t CASES[] = {
 	 .ppm_follower = 23.6, .ppm_ap = 4, .roam_leader_s = 50, .roam_follower_s = 52, .max_mute_s = 12},
 	{.name = "relock", .what = "follower misses beacons 3 s with its TSF 1.5 ms off, then re-locks", .sim_s = 120, .ppm_leader = -2.9,
 	 .ppm_follower = 23.6, .ppm_ap = 4, .miss_at_s = 50, .miss_len_s = 3, .miss_step_us = 1500, .max_mute_s = 12},
-	{.name = "relock-small", .what = "follower misses beacons 5 s (drifts ~100 µs), no step", .sim_s = 120, .ppm_leader = -2.9,
+	{.name = "relock-small", .what = "follower misses beacons 5 s (drifts ~220 µs), no step", .sim_s = 120, .ppm_leader = -2.9,
 	 .ppm_follower = 23.6, .ppm_ap = -20, .miss_at_s = 50, .miss_len_s = 5, .max_mute_s = 12},
+	{.name = "relock-early", .what = "relock, at 6 s while the TSF fit is young", .sim_s = 120, .ppm_leader = -2.9,
+	 .ppm_follower = 23.6, .ppm_ap = 4, .miss_at_s = 6, .miss_len_s = 3, .miss_step_us = 1500, .max_mute_s = 12},
+	{.name = "relock-5s", .what = "relock, beacons missed 5 s", .sim_s = 120, .ppm_leader = -2.9, .ppm_follower = 23.6, .ppm_ap = 4,
+	 .miss_at_s = 50, .miss_len_s = 5, .miss_step_us = 1500, .max_mute_s = 12},
+	{.name = "relock-8s", .what = "relock, beacons missed 8 s: disconnected after 6", .sim_s = 120, .ppm_leader = -2.9, .ppm_follower = 23.6, .ppm_ap = 4,
+	 .miss_at_s = 50, .miss_len_s = 8, .miss_step_us = 1500, .max_mute_s = 12},
+	{.name = "short-mute", .what = "CLOCKs lost 2.3 s: muted ~0.3 s, the old audio still buffered", .sim_s = 120, .ppm_leader = -2.9,
+	 .ppm_follower = 23.6, .ppm_ap = 4, .burst_at_s = {40}, .burst_len_s = {2.3}, .max_mute_s = 3},
 	{.name = "wifi-jitter", .what = "CLOCK delay 2-60 ms, 2% at 0.3-1 s; TSF reads pre-empted 10%", .sim_s = 120, .ppm_leader = -2.9,
 	 .ppm_follower = 23.6, .ppm_ap = 4, .clk_delay_mean_us = 15000, .clk_tail_p = 0.02, .tsf_wide_p = 0.10, .beacon_noise_us = 3},
 	{.name = "dac-noise", .what = "write wake-ups mean 150 µs, 5% late 0.5-8 ms, 3% busy seconds", .sim_s = 120, .ppm_leader = -2.9,
@@ -154,6 +165,8 @@ typedef struct {
 	double next_hook;    /* true µs of the next hook and write */
 	double next_tsf;
 	double roam_at;
+	uint8_t bssid[6];    /* the AP as last polled, once a second */
+	double next_poll;
 	double busy_win;     /* the busy second this board is in, or -1 */
 	hifi_party_sync_t sync;
 	/* leader */
@@ -191,12 +204,14 @@ static double ap_tsf(int ap, double t) {
 
 /* the board's TSF at true time t: set at the last beacon it heard, then run
  * on its own crystal */
+#define MISS_DISCONNECT_US 6e6
 static int64_t board_tsf(const board_t *b, double t) {
 	int ap = on_ap2(b, t) ? 2 : 1;
 	double tb = floor(t / BEACON_US) * BEACON_US, step = 0;
 	if (b->follower && C->miss_len_s > 0) {
 		double m0 = C->miss_at_s * 1e6, m1 = m0 + C->miss_len_s * 1e6;
 		if (t >= m0 && t < m1) {
+			if (t >= m0 + MISS_DISCONNECT_US) return 0; /* ESP-IDF disconnects after 6 s of no beacon: no TSF until it reassociates */
 			tb = floor(m0 / BEACON_US) * BEACON_US;
 			step = C->miss_step_us;
 		}
@@ -287,7 +302,7 @@ typedef struct {
 	double first_play, mute_us, muted_since;
 	bool playing, have_prev;
 	int64_t prev_k;
-	uint32_t jumps_ok, jumps_bad, steps_bad, concealed_blocks, blocks, resume_bad;
+	uint32_t jumps_ok, jumps_bad, steps_bad, concealed_blocks, blocks, resume_bad, mute_bad;
 	int skip; /* frames to leave out after a jump: the crossfade */
 } meas_t;
 
@@ -327,9 +342,10 @@ static void board_hook(board_t *b, double t, servo_t servo) {
 		}
 		int64_t tref;
 		uint32_t rate;
-		if (t - b->last_clock >= CLOCK_EVERY_US / (1 + b->ppm * 1e-6) && hifi_party_sync_leader_clock(&b->sync, b->w, &tref, &rate)) {
+		uint8_t bssid[6];
+		if (t - b->last_clock >= CLOCK_EVERY_US / (1 + b->ppm * 1e-6) && hifi_party_sync_leader_clock(&b->sync, b->w, &tref, &rate, bssid)) {
 			b->seq++;
-			send_clock(t, b->w - DELAY, tref, rate, b->seq, b->sync.have_bssid ? b->sync.bssid : BSSID1);
+			send_clock(t, b->w - DELAY, tref, rate, b->seq, bssid);
 			b->last_clock = t;
 		}
 	} else {
@@ -358,7 +374,7 @@ static void board_hook(board_t *b, double t, servo_t servo) {
 				M.have_prev = false;
 				M.skip = HIFI_PARTY_CONCEAL;
 			}
-			if (resumed && jumped) {
+			if (resumed) {
 				/* back from silence: the block fades in, so the frames don't say
 				 * their index; it must rise no faster than the fade-in */
 				for (int i = 0; i < BLOCK; i++) {
@@ -389,7 +405,16 @@ static void board_hook(board_t *b, double t, servo_t servo) {
 				}
 			}
 		} else {
-			memset(out, 0, sizeof(out));
+			hifi_party_mute(&b->ctl, &b->jb, out, BLOCK, 65536, 65536);
+			/* the first mute block fades out what played last, no faster
+			 * than the concealment does; then silence */
+			for (int i = 0; i < BLOCK; i++) {
+				int lim = M.playing && i < HIFI_PARTY_CONCEAL ? 32768 * (HIFI_PARTY_CONCEAL - i) / HIFI_PARTY_CONCEAL + 1 : 0;
+				if (abs((int16_t) (uint16_t) out[i]) > lim || abs((int16_t) (uint16_t) (out[i] >> 16)) > lim) {
+					M.mute_bad++;
+					break;
+				}
+			}
 			if (M.playing) {
 				M.playing = false;
 				M.muted_since = t;
@@ -411,8 +436,16 @@ static void board_tsf_read(board_t *b, double t) {
 	if (C->tsf_wide_p > 0 && uni() < C->tsf_wide_p) width += urange(100, 3000);
 	else if (uni() < 0.02) width += urange(100, 1000);
 	double at = t + urange(5, width - 5);
-	const uint8_t *bssid = on_ap2(b, at) ? BSSID2 : BSSID1;
-	hifi_party_sync_tsf(&b->sync, local_us(b, t), local_us(b, t + width), board_tsf(b, at), bssid);
+	if (t >= b->next_poll) {
+		memcpy(b->bssid, on_ap2(b, t) ? BSSID2 : BSSID1, 6);
+		b->next_poll = t + 1e6;
+	}
+	uint32_t resets0 = b->sync.tsf_resets;
+	bool ok0 = b->sync.tsf.ok;
+	hifi_party_sync_tsf(&b->sync, local_us(b, t), local_us(b, t + width), board_tsf(b, at), b->bssid);
+	if (getenv("SIM_TRACE") && (b->sync.tsf_resets != resets0 || b->sync.tsf.ok != ok0))
+		printf("      t %.3f s %s TSF fit %s%s\n", t / 1e6, b->follower ? "F" : "L", b->sync.tsf_resets != resets0 ? "reset" : "",
+		       b->sync.tsf.ok ? " ok" : " not ok");
 	b->next_tsf = t + TSF_EVERY_US / (1 + b->ppm * 1e-6);
 }
 
@@ -444,7 +477,7 @@ static void board_start(board_t *b, int id, bool follower, double ppm, double st
 /* ------------------------------------------------------------ a run */
 
 typedef struct {
-	double p50, p99, max, mute_s, play_s;
+	double mean, p50, p99, max, mute_s, play_s;
 	uint32_t jumps_ok, jumps_bad, steps_bad, concealed;
 	bool pass;
 	char why[96];
@@ -490,7 +523,9 @@ static result_t run(const scase_t *c, servo_t servo, uint64_t seed) {
 	r.concealed = M.concealed_blocks;
 	r.mute_s = M.mute_us / 1e6;
 	r.play_s = M.first_play >= 0 ? (end - M.first_play) / 1e6 - r.mute_s : 0;
-	for (size_t i = 0; i < M.n; i++) M.err[i] = fabsf(M.err[i]);
+	double sum = 0;
+	for (size_t i = 0; i < M.n; i++) sum += M.err[i], M.err[i] = fabsf(M.err[i]);
+	r.mean = M.n ? sum / (double) M.n : 0;
 	if (M.n) {
 		qsort(M.err, M.n, sizeof(float), cmpf);
 		r.p50 = M.err[M.n / 2];
@@ -502,8 +537,9 @@ static result_t run(const scase_t *c, servo_t servo, uint64_t seed) {
 		r.pass = false, snprintf(r.why, sizeof(r.why), "played only %.1f s", r.play_s);
 	else if (r.p99 > LIMIT_US)
 		r.pass = false, snprintf(r.why, sizeof(r.why), "p99 %.1f µs > %.0f", r.p99, LIMIT_US);
-	else if (M.jumps_bad || M.steps_bad || M.resume_bad)
-		r.pass = false, snprintf(r.why, sizeof(r.why), "audible: %u jumps, %u steps, %u loud resumes", M.jumps_bad, M.steps_bad, M.resume_bad);
+	else if (M.jumps_bad || M.steps_bad || M.resume_bad || M.mute_bad)
+		r.pass = false, snprintf(r.why, sizeof(r.why), "audible: %u jumps, %u steps, %u loud resumes, %u hard mutes", M.jumps_bad, M.steps_bad,
+		                         M.resume_bad, M.mute_bad);
 	else if (r.mute_s > c->max_mute_s + 0.25)
 		r.pass = false, snprintf(r.why, sizeof(r.why), "muted %.1f s > %.1f", r.mute_s, c->max_mute_s);
 	else if (r.concealed)
@@ -518,11 +554,11 @@ static result_t run(const scase_t *c, servo_t servo, uint64_t seed) {
 }
 
 static void print_head(void) {
-	printf("  %-13s %8s %8s %8s %7s %7s  %s\n", "case", "p50 µs", "p99 µs", "max µs", "mute s", "jumps", "result");
+	printf("  %-13s %8s %8s %8s %8s %7s %7s  %s\n", "case", "mean µs", "p50 µs", "p99 µs", "max µs", "mute s", "jumps", "result");
 }
 
 static void print_row(const scase_t *c, const result_t *r) {
-	printf("  %-13s %8.1f %8.1f %8.1f %7.1f %7u  %s%s%s\n", c->name, r->p50, r->p99, r->max, r->mute_s, r->jumps_ok + r->jumps_bad,
+	printf("  %-13s %+8.1f %8.1f %8.1f %8.1f %7.1f %7u  %s%s%s\n", c->name, r->mean, r->p50, r->p99, r->max, r->mute_s, r->jumps_ok + r->jumps_bad,
 	       r->pass ? "pass" : "FAIL", r->pass ? "" : ": ", r->why);
 }
 
@@ -547,11 +583,13 @@ int main(int argc, char **argv) {
 	if (all)
 		for (int j = 0; j < NCASES; j++) sel[nsel++] = j;
 
+	/* SEED=n runs every case on other random draws */
+	uint64_t seed = getenv("SEED") ? strtoull(getenv("SEED"), NULL, 10) : 1000;
 	int fails = 0;
 	printf("sim_party: follower sync error against the leader, |error| over the time the follower plays\n");
 	print_head();
 	for (int i = 0; i < nsel; i++) {
-		result_t r = run(&CASES[sel[i]], SERVO_OK, 1000 + (uint64_t) sel[i]);
+		result_t r = run(&CASES[sel[i]], SERVO_OK, seed + (uint64_t) sel[i]);
 		print_row(&CASES[sel[i]], &r);
 		if (!r.pass) fails++;
 	}
@@ -559,7 +597,7 @@ int main(int argc, char **argv) {
 		/* a servo that is wrong must be caught: every one fails the base case */
 		for (int s = SERVO_SIGN; s <= SERVO_NOSLIP; s++) {
 			printf("broken servo (%s), which must fail:\n", SERVO_NAME[s]);
-			result_t r = run(&CASES[0], (servo_t) s, 1000);
+			result_t r = run(&CASES[0], (servo_t) s, seed);
 			print_row(&CASES[0], &r);
 			if (r.pass) {
 				printf("  ...but it passed: the simulation does not catch a broken servo\n");

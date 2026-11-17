@@ -286,14 +286,20 @@ static void controller(double ppm) {
 	hifi_party_render(&c, &jb, target, out, N, 65536, 65536);
 	CHECK(c.jumps == 1 && c.next == llround(target) + N);
 
-	/* back after a mute: what played before is gone from the buffer, so the
-	 * jump doesn't crossfade from it (that replayed the stretch before the
-	 * mute); the stream fades in from silence */
-	target += 10 * 44100;
-	sent = (int64_t) (target / HIFI_PARTY_FRAMES) - 1;
-	while (sent * HIFI_PARTY_FRAMES < target + N + 13230) put_packet(&jb, sent++, 0);
+	/* a mute, short enough that what played before is still in the buffer:
+	 * the mute block fades out from what played last, then silence, and
+	 * isn't counted missing; the next render starts afresh (no jump, no
+	 * crossfade from the stretch before the mute) and fades in */
+	uint32_t missing = jb.missing_frames, jumps = c.jumps;
+	hifi_party_mute(&c, &jb, out, N, 65536, 65536);
+	CHECK(!c.started && jb.missing_frames == missing);
+	bool falls = true;
+	for (int i = 0; i < N; i++) falls &= abs((int16_t) (uint16_t) out[i]) <= 30000 * (HIFI_PARTY_CONCEAL - (i < HIFI_PARTY_CONCEAL ? i : HIFI_PARTY_CONCEAL)) / HIFI_PARTY_CONCEAL + 1;
+	CHECK(falls);
+	target += 0.3 * 44100;
+	while (sent * HIFI_PARTY_FRAMES < target + N + 13230) put_packet(&jb, sent++, 0); /* the stream ran on meanwhile */
 	hifi_party_render(&c, &jb, target, out, N, 65536, 65536);
-	CHECK(c.jumps == 2);
+	CHECK(c.jumps == jumps && c.next == llround(target) + N);
 	bool rises = true;
 	for (int i = 0; i < HIFI_PARTY_FADE_IN; i++) rises &= abs((int16_t) (uint16_t) out[i]) <= 30000 * (i + 1) / HIFI_PARTY_FADE_IN + 1;
 	CHECK(rises);

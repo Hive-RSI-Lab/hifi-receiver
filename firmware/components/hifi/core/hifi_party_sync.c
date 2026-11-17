@@ -15,6 +15,7 @@ static void tsf_reset(hifi_party_sync_t *s) {
 	hifi_party_fit_init(&s->tsf, 1000000, 30, 4, 200);
 	s->tsf.both_sides = true; /* a TSF steps back as well as forward: keep a step out of the line until the reset */
 	s->tsf_bad = 0;
+	s->tsf_have_prev = s->tsf_step_open = false;
 	s->clk_ok = false; /* it was in the old TSF */
 }
 
@@ -40,6 +41,13 @@ static double newest_off(const hifi_party_fit_t *f) {
 void hifi_party_sync_tsf(hifi_party_sync_t *s, int64_t a_us, int64_t b_us, int64_t tsf, const uint8_t bssid[6]) {
 	if (tsf <= 0) {
 		s->tsf_zero++;
+		s->have_bssid = false; /* not associated: whichever AP comes next is checked afresh */
+		if (s->tsf.n || s->tsf_have_prev) {
+			/* nor is its TSF the old one's: a fit built while beacons were
+			 * missed, the TSF stepped, would play off when they come back */
+			s->tsf_resets++;
+			tsf_reset(s);
+		}
 		return;
 	}
 	if (bssid) {
@@ -53,17 +61,45 @@ void hifi_party_sync_tsf(hifi_party_sync_t *s, int64_t a_us, int64_t b_us, int64
 		s->have_bssid = true;
 	}
 	hifi_party_fit_t *f = &s->tsf;
-	if (hifi_party_fit_add(f, (a_us + b_us) / 2, tsf, (double) (b_us - a_us), b_us)) {
-		/* the newest window far off the line, either side, three windows
-		 * running: the TSF stepped (an AP restart, a re-lock); start again */
-		if (f->ok && fabs(newest_off(f)) > f->reject) {
-			if (++s->tsf_bad >= HIFI_PARTY_SYNC_BAD) {
-				s->tsf_resets++;
-				tsf_reset(s);
-			}
-		} else
-			s->tsf_bad = 0;
+	if (!hifi_party_fit_add(f, (a_us + b_us) / 2, tsf, (double) (b_us - a_us), b_us)) return;
+	int last = (f->head + f->cap - 1) % f->cap;
+	int64_t x = f->px[last], y = f->py[last];
+	/* a jump from the window before: the TSF and esp_timer run within
+	 * HIFI_PARTY_SYNC_PPM of each other, so between two windows the TSF moves
+	 * as far as the local clock give or take that. Unlike the distance from
+	 * the line, a young line that took the step in can't hide it (nor bend
+	 * the test, as its slope would) */
+	bool jump = false;
+	if (s->tsf_have_prev) {
+		double dx = (double) (x - s->tsf_prev_x), d = (double) (y - s->tsf_prev_y) - dx;
+		jump = fabs(d) > f->reject + fabs(dx) * HIFI_PARTY_SYNC_PPM * 1e-6;
 	}
+	bool off = f->ok && fabs(newest_off(f)) > f->reject;
+	bool reset = false;
+	if (jump && !f->ok)
+		reset = true; /* no line to keep the step out of: start in the new TSF */
+	else if (jump && off) {
+		s->tsf_step_open = true; /* the TSF stepped; the line kept it out */
+		reset = ++s->tsf_bad >= HIFI_PARTY_SYNC_BAD;
+	} else if (jump) {
+		if (s->tsf_step_open) {
+			s->tsf_step_open = false; /* back onto the line: the step is over */
+			s->tsf_bad = 0;
+		} else
+			reset = true; /* the line took the step in */
+	} else if (off)
+		reset = ++s->tsf_bad >= HIFI_PARTY_SYNC_BAD; /* the TSF stepped; three windows running */
+	else if (s->tsf_step_open)
+		reset = true; /* still stepped, but the line has moved onto it */
+	else
+		s->tsf_bad = 0;
+	if (reset) {
+		s->tsf_resets++;
+		tsf_reset(s);
+	}
+	s->tsf_prev_x = x;
+	s->tsf_prev_y = y;
+	s->tsf_have_prev = true;
 }
 
 void hifi_party_sync_wrote(hifi_party_sync_t *s, int64_t w0, int64_t w1, int64_t t0, int64_t t1, int last_block) {
@@ -98,12 +134,14 @@ double hifi_party_sync_tsf_at(const hifi_party_sync_t *s, int64_t w) {
 	return hifi_party_fit_y(&s->tsf, hifi_party_fit_y(&s->dac, (double) w));
 }
 
-bool hifi_party_sync_leader_clock(const hifi_party_sync_t *s, int64_t w, int64_t *t_ref, uint32_t *rate) {
-	if (!hifi_party_sync_ok(s)) return false;
+bool hifi_party_sync_leader_clock(const hifi_party_sync_t *s, int64_t w, int64_t *t_ref, uint32_t *rate, uint8_t bssid[6]) {
+	if (!hifi_party_sync_ok(s) || !s->have_bssid) return false;
 	double a = s->dac.slope, b = s->tsf.slope; /* µs per frame; TSF µs per µs */
-	if (!(a > 0 && b > 0)) return false;
+	double r = 1e9 / (a * b), nominal = 1e3 * HIFI_PARTY_SYNC_RATE;
+	if (!(a > 0 && b > 0) || !(fabs(r - nominal) <= nominal * 1e-3)) return false; /* a fit gone wild */
 	*t_ref = llround(hifi_party_sync_tsf_at(s, w));
-	*rate = (uint32_t) llround(1e9 / (a * b));
+	*rate = (uint32_t) llround(r);
+	memcpy(bssid, s->bssid, 6);
 	return true;
 }
 
@@ -122,6 +160,11 @@ bool hifi_party_sync_clock(hifi_party_sync_t *s, int64_t k_ref, int64_t t_ref, u
 	if (s->have_bssid && memcmp(s->clk_bssid, s->bssid, 6)) s->bssid_wrong++;
 	s->clocks++;
 	return true;
+}
+
+void hifi_party_sync_forget_clock(hifi_party_sync_t *s) {
+	s->clk_ok = false;
+	s->clk_seq = 0;
 }
 
 bool hifi_party_sync_target(hifi_party_sync_t *s, int64_t w, int64_t now, double *target) {

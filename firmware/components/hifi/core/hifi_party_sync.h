@@ -15,7 +15,10 @@
  *     unknown), an I2S restart, or the newest window more than the reject
  *     limit above the line three windows running (the DMA ran dry);
  *   - tsf: the newest window more than the reject limit off the line, either
- *     side, three windows running (the AP restarted or the TSF re-locked), or
+ *     side, three windows running (the AP restarted or the TSF re-locked); a
+ *     window that jumps from the one before by more than the reject limit
+ *     when the line has no room to keep it out (the fit isn't ready, or the
+ *     line took the step in); a jump back onto the line ends a step instead;
  *     a new BSSID (a roam: another AP's TSF). A reset also forgets the clock,
  *     which was in the old TSF.
  *
@@ -34,10 +37,15 @@
 #define HIFI_PARTY_SYNC_RATE 44100
 #define HIFI_PARTY_SYNC_STALE_US 2000000 /* a CLOCK older than this mutes the follower */
 #define HIFI_PARTY_SYNC_BAD 3            /* windows off the line, running, that reset a fit */
+#define HIFI_PARTY_SYNC_PPM 100          /* the TSF against esp_timer, at most (crystals ±30 ppm, the AP's too) */
 
 typedef struct {
 	hifi_party_fit_t dac, tsf;
 	int dac_bad, tsf_bad;
+	/* the TSF fit's last closed window, for the jump test (a step the young
+	 * line would take in) */
+	bool tsf_have_prev, tsf_step_open;
+	int64_t tsf_prev_x, tsf_prev_y;
 	uint8_t bssid[6];
 	bool have_bssid;
 	int buf_frames;     /* the DMA buffer length, from the last I2S restart */
@@ -55,7 +63,9 @@ void hifi_party_sync_init(hifi_party_sync_t *s, int buf_frames);
  * the DMA buffers is new, so the DAC fit starts again. */
 void hifi_party_sync_restart(hifi_party_sync_t *s, int buf_frames);
 /* A TSF read bracketed by two local reads a_us <= b_us, on the AP bssid. A
- * zero TSF (not associated) is counted and dropped. */
+ * zero TSF (not associated: ESP-IDF drops the AP after 6 s with no beacon)
+ * is counted and dropped, and the BSSID and the TSF fit with it: the next
+ * association, to whichever AP, starts afresh. */
 void hifi_party_sync_tsf(hifi_party_sync_t *s, int64_t a_us, int64_t b_us, int64_t tsf, const uint8_t bssid[6]);
 /* An I2S write of frames [w0, w1) that began at local t0 and returned at t1;
  * last_block is the block the output was about to write (0: unknown). */
@@ -66,12 +76,16 @@ bool hifi_party_sync_ok(const hifi_party_sync_t *s);
 double hifi_party_sync_tsf_at(const hifi_party_sync_t *s, int64_t w);
 
 /* Leader: the CLOCK for write position w (k_ref is the stream index the
- * caller writes there): t_ref and the rate. False while the fits aren't ready. */
-bool hifi_party_sync_leader_clock(const hifi_party_sync_t *s, int64_t w, int64_t *t_ref, uint32_t *rate);
+ * caller writes there): t_ref, the rate and the BSSID the TSF fit is in.
+ * False while the fits aren't ready, or the rate is more than 1000 ppm off. */
+bool hifi_party_sync_leader_clock(const hifi_party_sync_t *s, int64_t w, int64_t *t_ref, uint32_t *rate, uint8_t bssid[6]);
 
 /* Follower: a CLOCK received at local now. Returns false (and keeps the old
  * one) when seq is not newer than the last (a replay, or late). */
 bool hifi_party_sync_clock(hifi_party_sync_t *s, int64_t k_ref, int64_t t_ref, uint32_t rate, uint32_t seq, const uint8_t bssid[6], int64_t now);
+/* Follower: forget the CLOCK and its sequence (a new leader, or a reset), so
+ * the next CLOCK is taken whatever its seq. */
+void hifi_party_sync_forget_clock(hifi_party_sync_t *s);
 /* Follower: the stream index the leader plays when write position w reaches
  * this board's DAC. False (mute) unless both fits are ready, the CLOCK is
  * fresh and it is on the AP this board is on. */
