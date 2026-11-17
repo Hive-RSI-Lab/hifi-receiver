@@ -117,6 +117,7 @@ int64_t hifi_party_nack_k(const uint8_t *payload, int i);
 typedef struct {
 	int64_t win_us;   /* one sample kept per window of this length */
 	double reject;    /* a window more than this far (y units) above the line is left out */
+	bool both_sides;  /* ...or below it: set after init for a fit whose y can step either way (the TSF) */
 	int min_points;   /* windows needed before the line is used */
 	/* the window being filled */
 	bool have_cur;

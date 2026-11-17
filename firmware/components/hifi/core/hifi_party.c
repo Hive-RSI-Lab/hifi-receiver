@@ -130,7 +130,10 @@ void hifi_party_fit_init(hifi_party_fit_t *f, int64_t win_us, int cap, int min_p
 }
 
 /* least squares through the kept points, leaving out those more than reject
- * above the line drawn with them (late windows) and drawing it again */
+ * above the line drawn with them (late windows) and drawing it again. With
+ * both_sides a window that far below is left out too, but only the worst one
+ * a pass: a step drags the first line, and leaving out everything far from
+ * that would take the good windows with it */
 static void refit(hifi_party_fit_t *f) {
 	int newest = (f->head + f->cap - 1) % f->cap;
 	f->xb = f->px[newest];
@@ -138,7 +141,8 @@ static void refit(hifi_party_fit_t *f) {
 	bool use[HIFI_PARTY_FIT_MAX];
 	for (int i = 0; i < f->n; i++) use[i] = true;
 	f->ok = false;
-	for (int pass = 0; pass < 3; pass++) {
+	int passes = f->both_sides ? f->n + 1 : 3; /* at most n - min_points are left out */
+	for (int pass = 0; pass < passes; pass++) {
 		double sx = 0, sy = 0;
 		int m = 0;
 		for (int i = 0; i < f->n; i++)
@@ -159,17 +163,29 @@ static void refit(hifi_party_fit_t *f) {
 		f->mx = mx;
 		f->my = my;
 		f->slope = sxy / sxx;
-		double ss = 0;
+		double ss = 0, worst_r = 0;
+		int worst = -1;
 		bool dropped = false;
 		for (int i = 0; i < f->n; i++) {
 			if (!use[i]) continue;
 			double r = (double) (f->py[i] - f->yb) - (my + f->slope * ((double) (f->px[i] - f->xb) - mx));
-			if (f->reject > 0 && r > f->reject && m > f->min_points) {
+			if (f->both_sides) {
+				if (f->reject > 0 && fabs(r) > f->reject && m > f->min_points && fabs(r) > worst_r) {
+					worst_r = fabs(r);
+					worst = i;
+				}
+				ss += r * r;
+			} else if (f->reject > 0 && r > f->reject && m > f->min_points) {
 				use[i] = false;
 				dropped = true;
 			} else {
 				ss += r * r;
 			}
+		}
+		if (worst >= 0) {
+			use[worst] = false;
+			dropped = true;
+			continue; /* draw it again without the worst; rms and used come from the last line */
 		}
 		f->used = 0;
 		for (int i = 0; i < f->n; i++) f->used += use[i];
@@ -394,9 +410,12 @@ void hifi_party_render(hifi_party_ctl_t *c, hifi_party_jb_t *jb, double target, 
 	double err = (double) c->next - target; /* > 0: ahead of the leader */
 	c->last_err = err;
 	if (fabs(err) >= c->jump_frames) {
-		/* far off: jump, crossfading from where the stream was */
+		/* far off: jump, crossfading from where the stream was. When none of
+		 * that is left (back from a mute) there is nothing to fade from:
+		 * the concealment would replay what played before the mute, so the
+		 * stream fades in from silence instead */
 		int m = n < HIFI_PARTY_CONCEAL ? n : HIFI_PARTY_CONCEAL;
-		hifi_party_jb_read(jb, c->next, c->xfade, m);
+		if (hifi_party_jb_read(jb, c->next, c->xfade, m) == m) m = 0;
 		int64_t to = llround(target);
 		hifi_party_jb_read(jb, to, out, n);
 		for (int i = 0; i < m; i++) {

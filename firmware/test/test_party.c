@@ -141,6 +141,17 @@ static void clock_fit(void) {
 	CHECK(f.ok && f.n == 4);
 	CHECK_NEAR(hifi_party_fit_y(&f, 8), 40, 1e-9);
 
+	/* a TSF that steps back: with both_sides the stepped windows stay out of
+	 * the line, which goes on through the others */
+	for (int both = 0; both < 2; both++) {
+		hifi_party_fit_init(&f, 1000, 30, 4, 200);
+		f.both_sides = both;
+		for (int i = 0; i < 20; i++) hifi_party_fit_add(&f, 1000 * i, 1000 * i + 5000000, 0, 1000 * i);
+		for (int i = 20; i < 24; i++) hifi_party_fit_add(&f, 1000 * i, 1000 * i - 4000000, 0, 1000 * i);
+		bool on_line = f.ok && fabs(hifi_party_fit_y(&f, 30000) - 5030000) < 1;
+		CHECK(both ? on_line && f.rejected == 3 : !on_line);
+	}
+
 	/* the write samples */
 	int64_t x = -1;
 	CHECK(hifi_party_dac_sample(0, 2048, 0, 100, 256, 0, &x) && x == 1792);
@@ -274,6 +285,19 @@ static void controller(double ppm) {
 	target += 441;
 	hifi_party_render(&c, &jb, target, out, N, 65536, 65536);
 	CHECK(c.jumps == 1 && c.next == llround(target) + N);
+
+	/* back after a mute: what played before is gone from the buffer, so the
+	 * jump doesn't crossfade from it (that replayed the stretch before the
+	 * mute); the stream fades in from silence */
+	target += 10 * 44100;
+	sent = (int64_t) (target / HIFI_PARTY_FRAMES) - 1;
+	while (sent * HIFI_PARTY_FRAMES < target + N + 13230) put_packet(&jb, sent++, 0);
+	hifi_party_render(&c, &jb, target, out, N, 65536, 65536);
+	CHECK(c.jumps == 2);
+	bool rises = true;
+	for (int i = 0; i < HIFI_PARTY_FADE_IN; i++) rises &= abs((int16_t) (uint16_t) out[i]) <= 30000 * (i + 1) / HIFI_PARTY_FADE_IN + 1;
+	CHECK(rises);
+	CHECK(index_of(out[N - 1]) == (llround(target) + N - 1) % 30000);
 	free(mem);
 }
 
