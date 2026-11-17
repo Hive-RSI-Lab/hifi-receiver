@@ -17,6 +17,9 @@ endif()
 # the lab build (board/lite-lab): experiments a signed command starts and stops
 if(CONFIG_HIFI_LAB)
 	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c)
+	# reads the board's I2C chips through hive-fw's i2c-device driver (esp/i2cdev)
+	list(APPEND srcs esp/lab_i2c.c esp/i2cdev/i2cdev.c esp/i2cdev/i2cdev_esp.c)
+	set(lab_inc esp/i2cdev)
 	# Bluetooth off or quiet for a while, to measure what it costs Wi-Fi
 	if(CONFIG_BT_CLASSIC_ENABLED)
 		list(APPEND srcs esp/lab_bt.c)
@@ -40,7 +43,7 @@ endif()
 idf_component_register(
 	SRCS ${srcs}
 	INCLUDE_DIRS core
-	PRIV_INCLUDE_DIRS esp ${webapp_dir}
+	PRIV_INCLUDE_DIRS esp ${webapp_dir} ${lab_inc}
 	REQUIRES esp_http_server
 	PRIV_REQUIRES driver esp_adc_cal mdns console nvs_flash esp_wifi
 		      platform_config services wifi-manager tools

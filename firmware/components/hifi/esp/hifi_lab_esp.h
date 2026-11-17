@@ -29,4 +29,5 @@ extern const hifi_lab_exp_t lab_espnow;
  * with them, the Bluedroid host they reach (it would not fit its slot). */
 extern const hifi_lab_exp_t lab_bt __attribute__((weak));  /* images with Classic Bluetooth (CONFIG_BT_CLASSIC_ENABLED) */
 extern const hifi_lab_exp_t lab_lanscan;
+extern const hifi_lab_exp_t lab_i2c; /* read-only: the board's I2C chips (esp/lab_i2c.c) */
 extern const hifi_lab_exp_t lab_ble __attribute__((weak)); /* the BLE lab image only (CONFIG_BT_BLE_ENABLED) */
