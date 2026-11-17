@@ -1,5 +1,5 @@
 diff --git a/components/squeezelite/opus.c b/components/squeezelite/opus.c
-index 27c8a35..8e8c537 100644
+index 27c8a35..b626ebe 100644
 --- a/components/squeezelite/opus.c
 +++ b/components/squeezelite/opus.c
 @@ -133,6 +133,7 @@ static opus_uint32 parse_uint32(const unsigned char* _data) {
@@ -54,6 +54,15 @@ index 27c8a35..8e8c537 100644
  				}
  				else {
  					LOG_INFO("codec up and running");
+@@ -293,7 +305,7 @@ static decode_state opus_decompress(void) {
+ 				u->overframes = n - min(n, frames);
+ 				n = min(n, frames);
+ 				memcpy(write_buf, u->overbuf, n * BYTES_PER_FRAME);
+-				memmove(u->overbuf, u->overbuf + n, u->overframes);
++				memmove(u->overbuf, u->overbuf + n * BYTES_PER_FRAME, u->overframes * BYTES_PER_FRAME); /* frames, not bytes */
+ 			}
+ 		} else {
+ 			/* we just do one packet at a time, although we could loop on packets but that means locking the 
 diff --git a/components/squeezelite/slimproto.c b/components/squeezelite/slimproto.c
 index b377964..8181695 100644
 --- a/components/squeezelite/slimproto.c

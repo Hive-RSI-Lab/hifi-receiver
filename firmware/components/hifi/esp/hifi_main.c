@@ -34,6 +34,7 @@
 
 #include "audio_controls.h"
 #include "network_manager.h"
+#include "nvs_utilities.h"
 #include "platform_config.h"
 
 #include "hifi_api.h"
@@ -897,14 +898,32 @@ static void factory_disarm(TimerHandle_t t) {
  * already runs platform_config's own commits. The flag is committed before
  * the reply, so an unplug right after "armed" still finds it. */
 static int op_factory_arm(void) {
-	static TimerHandle_t t;
-	if (!t) {
-		t = xTimerCreate("hifi_disarm", pdMS_TO_TICKS(HIFI_RESET_ARM_US / 1000), pdFALSE, NULL, factory_disarm);
-		if (!t) return -1;
+	static TimerHandle_t t; /* the HTTP task and the relay's hifi_cmd task both arm */
+	TimerHandle_t mine = NULL, none = NULL;
+	if (!__atomic_load_n(&t, __ATOMIC_ACQUIRE)) {
+		mine = xTimerCreate("hifi_disarm", pdMS_TO_TICKS(HIFI_RESET_ARM_US / 1000), pdFALSE, NULL, factory_disarm);
+		if (!mine) return -1;
+		if (!__atomic_compare_exchange_n(&t, &none, mine, false, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE))
+			xTimerDelete(mine, 0); /* the other task won; use its timer */
 	}
-	if (config_set_value(NVS_TYPE_STR, "hifi_reset_armed", "1") != ESP_OK) return -1;
-	config_commit_to_nvs();
-	xTimerReset(t, pdMS_TO_TICKS(1000)); /* a second arm starts the window again */
+	/* the disarm window runs before the flag is set, so the flag never
+	 * outlives a timer that failed to start */
+	if (xTimerReset(t, pdMS_TO_TICKS(1000)) != pdPASS) return -1; /* a second arm starts the window again */
+	bool ok = config_set_value(NVS_TYPE_STR, "hifi_reset_armed", "1") == ESP_OK;
+	if (ok) {
+		config_commit_to_nvs();
+		/* read it back from flash: the commit clears its change flag even
+		 * when a store fails, so only this shows an unplug would finish it */
+		char *v = get_nvs_value_alloc(NVS_TYPE_STR, "hifi_reset_armed");
+		ok = v && !strcmp(v, "1");
+		free(v);
+	}
+	if (!ok) { /* refused: leave nothing armed behind the 403 */
+		xTimerStop(t, pdMS_TO_TICKS(1000));
+		config_set_value(NVS_TYPE_STR, "hifi_reset_armed", "0");
+		config_commit_to_nvs();
+		return -1;
+	}
 	ESP_LOGW(TAG, "factory reset armed from the LAN: unplug the receiver and plug it back in to finish");
 	return 0;
 }
