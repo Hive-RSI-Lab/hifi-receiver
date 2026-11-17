@@ -2,6 +2,7 @@
  * commands, captures and the trial boot. With OpenSSL on the host the
  * commands are signed and checked with real Ed25519 (the board uses
  * libsodium); without it, a stand-in signature tests the same logic. */
+#include <errno.h>
 #include <stdlib.h>
 
 #include "check.h"
@@ -828,6 +829,42 @@ static void test_wifi_remote_api(void) {
 	CHECK_HAS(out, "\"transport\":null");
 }
 
+static void test_ws_drop(void) {
+	char t[64];
+	CHECK(hifi_ws_drop_name(HIFI_WS_DROP_NONE) == NULL);
+	CHECK_STR(hifi_ws_drop_name(HIFI_WS_DROP_SOCKET), "socket");
+	CHECK_STR(hifi_ws_drop_name(HIFI_WS_DROP_STOPPED), "stopped");
+	CHECK_STR(hifi_ws_drop_name((hifi_ws_drop_t) 99), "unknown");
+	hifi_ws_drop_text(t, sizeof(t), HIFI_WS_DROP_CLOSED, 1001, false);
+	CHECK_STR(t, "endpoint closed it (1001)");
+	hifi_ws_drop_text(t, sizeof(t), HIFI_WS_DROP_SOCKET, ECONNRESET, false);
+	char want[64];
+	snprintf(want, sizeof(want), "socket errno %d (reset)", ECONNRESET);
+	CHECK_STR(t, want);
+	hifi_ws_drop_text(t, sizeof(t), HIFI_WS_DROP_SOCKET, 9999, true);
+	CHECK_STR(t, "socket errno 9999, Wi-Fi down");
+	hifi_ws_drop_text(t, sizeof(t), HIFI_WS_DROP_WIFI, 0, true); /* not said twice */
+	CHECK_STR(t, "Wi-Fi down");
+	hifi_ws_drop_text(t, sizeof(t), HIFI_WS_DROP_TLS, 0x7880, false);
+	CHECK_STR(t, "TLS error -0x7880");
+	hifi_ws_drop_text(t, sizeof(t), HIFI_WS_DROP_WRITE_TIMEOUT, 10, false);
+	CHECK_STR(t, "send stalled 10 s");
+	CHECK(hifi_ws_drop_text(t, 8, HIFI_WS_DROP_EOF, 0, false) > 7); /* cut, NUL kept */
+	CHECK(strlen(t) == 7);
+	hifi_ws_drop_line(t, sizeof(t), 120, HIFI_WS_DROP_EOF, 0, false);
+	CHECK_STR(t, "120s ago: far end closed the socket");
+	/* the worst real case of each kind fits a self-test value (63 characters) */
+	static const int codes[] = {0, 10, 4999, 1001, ECONNRESET, ECONNABORTED, ETIMEDOUT, EHOSTUNREACH, ENETUNREACH,
+				    ENOTCONN, EPIPE, ENOMEM, 0x7880, 999};
+	char line[96];
+	for (int k = HIFI_WS_DROP_NONE; k <= HIFI_WS_DROP_STOPPED; k++)
+		for (size_t c = 0; c < sizeof(codes) / sizeof(codes[0]); c++)
+			for (int w = 0; w < 2; w++) {
+				hifi_ws_drop_line(line, sizeof(line), 9999999, (hifi_ws_drop_t) k, codes[c], w);
+				CHECK(strlen(line) <= 63);
+			}
+}
+
 static void test_ws_proto(void) {
 	char host[HIFI_WS_HOST_MAX], path[HIFI_WS_PATH_MAX];
 	int port = 0;
@@ -1127,6 +1164,7 @@ int main(int argc, char **argv) {
 	test_capture_api();
 	test_wifi_remote_api();
 	test_ws_proto();
+	test_ws_drop();
 	test_ws_frames();
 	test_remote();
 	test_trial();

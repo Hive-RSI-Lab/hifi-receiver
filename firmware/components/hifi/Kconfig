@@ -23,4 +23,17 @@ menu "hifi-receiver lab"
 			watch must restart the board within HIFI_LAB_STUCK_MS, and the
 			self-test after it says "the lab restarted it, its tick stuck".
 			Set only by board/lite-lab-stuck, to prove that.
+	config HIFI_LAB_PSRAM_STACKS
+		bool "Lab: the decode and stream threads' stacks in PSRAM"
+		depends on HIFI_LAB
+		default n
+		help
+			patches/0019: squeezelite's decode (14 KB) and stream (4 KB)
+			threads get their stacks from PSRAM instead of internal RAM, which
+			a pthread's always is in IDF 4.4. That frees about 19 KB of
+			internal RAM for a second radio beside a live A2DP stream. Such a
+			thread must never touch flash, reads included (NVS, a partition,
+			mmap or OTA: the IDF asserts its stack is internal while the
+			cache is off), nor call Bluetooth or Wi-Fi APIs directly; neither
+			does today. Set only by board/lite-lab-radio.
 endmenu

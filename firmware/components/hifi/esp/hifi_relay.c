@@ -396,6 +396,11 @@ void hifi_remote_link(hifi_diag_net_t *n, uint32_t *first_up_ms) {
 		n->link_drops = w.drops;
 		up = w.up_since_us;
 		first = w.first_up_us;
+		n->link_last_drop = w.last_drop;
+		n->link_last_code = w.last_drop_code;
+		n->link_last_wifi_down = w.last_drop_wifi_down;
+		n->link_last_ago_s = w.last_drop ? (uint32_t) ((now - w.last_drop_us) / 1000000) : 0;
+		n->link_last_lasted_s = w.last_drop_lasted_s;
 	} else {
 		/* MQTT: no byte counts */
 		n->link_drops = mqtt_drops;

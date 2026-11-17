@@ -26,7 +26,10 @@
  * named in peer: its BLE address is worked out from the peer's Wi-Fi MAC
  * with the same offset this board's own two addresses have (one ESP32
  * family, one rule). Anything else that connects is dropped at once and
- * counted (rejected). No pairing, no bonding, nothing kept.
+ * counted (rejected). No pairing, no bonding, nothing kept. A BLE address
+ * is easy to forge, so the address check only keeps strangers off the
+ * link; what stops a forged frame is the tag every frame carries (key, 32
+ * hex digits, the same at both ends, made afresh for each run).
  *
  * The stop (asked, deadline, low RAM, the link lost or the run's own end)
  * stops scanning and advertising and closes the link. The GATT apps, the
@@ -100,6 +103,7 @@ static TaskHandle_t worker;
 static StaticTask_t worker_tcb;
 static hifi_link_tx_t *tx;
 static hifi_link_rx_t *rx;
+static hifi_link_key_t *key; /* the run's frame key, from the start op; never logged or reported */
 static rx_item_t *cb_it; /* the callbacks' item (they all run on Bluedroid's task) */
 static bool cbs_registered;
 static esp_gatt_if_t gatts_if = ESP_GATT_IF_NONE, gattc_if = ESP_GATT_IF_NONE;
@@ -479,7 +483,7 @@ static bool send_frame(hifi_link_frame_t *f) {
 	int64_t t = esp_timer_get_time();
 	if (f->type == HIFI_LINK_PING) f->t1 = t;
 	else if (f->type == HIFI_LINK_PONG) f->t3 = t;
-	size_t n = hifi_link_encode(f, buf, sizeof(buf));
+	size_t n = hifi_link_encode(key, f, buf, sizeof(buf));
 	if (!n || !connected) return false;
 	esp_err_t e;
 	if (role == ROLE_ECHO) {
@@ -493,7 +497,7 @@ static bool send_frame(hifi_link_frame_t *f) {
 
 static void handle(const rx_item_t *it) {
 	hifi_link_frame_t pong;
-	switch (hifi_link_receive(rx, tx, role == ROLE_ECHO, role != ROLE_ECHO, it->data, it->len, it->t_us, &pong)) {
+	switch (hifi_link_receive(key, rx, tx, role == ROLE_ECHO, role != ROLE_ECHO, it->data, it->len, it->t_us, &pong)) {
 	case HIFI_LINK_GOT_REPLY:
 		send_frame(&pong);
 		break;
@@ -537,6 +541,7 @@ static void teardown(void) {
 	while ((connected || opening) && esp_timer_get_time() < until) xSemaphoreTake(closed_sem, pdMS_TO_TICKS(100));
 	phase_end = phase;
 	phase = PH_IDLE;
+	if (key) hifi_link_key_wipe(key); /* the run's key goes with the run */
 }
 
 /* the run; true when it ended by itself (the lab frame is told) */
@@ -664,7 +669,8 @@ static int setup(char *err, size_t n) {
 		if (!tx) tx = heap_caps_calloc(1, sizeof(*tx), MALLOC_CAP_SPIRAM);
 		if (!rx) rx = heap_caps_calloc(1, sizeof(*rx), MALLOC_CAP_SPIRAM);
 		if (!cb_it) cb_it = heap_caps_calloc(1, sizeof(*cb_it), MALLOC_CAP_SPIRAM);
-		if (!qmem || !stack || !reg_sem || !space_sem || !closed_sem || !tx || !rx || !cb_it) {
+		if (!key) key = heap_caps_calloc(1, sizeof(*key), MALLOC_CAP_SPIRAM);
+		if (!qmem || !stack || !reg_sem || !space_sem || !closed_sem || !tx || !rx || !cb_it || !key) {
 			free(qmem);
 			free(stack);
 			snprintf(err, n, "out of memory");
@@ -720,6 +726,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		return 409;
 	}
 	char s[24];
+	char ks[2 * HIFI_LINK_KEY + 2];
 	if (!hj_get_str(body, "role", s, sizeof(s))) s[0] = 0;
 	if (!strcmp(s, "echo")) role = ROLE_ECHO;
 	else if (!strcmp(s, "ping")) role = ROLE_PING;
@@ -743,12 +750,25 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		return 400;
 	}
 	if (iv == 7.5) interval_ms = 8; /* 6 units of 1.25 ms: the shortest */
-	if (rate_hz < 1 || rate_hz > 100 || len < HIFI_LINK_HDR || len > PAYLOAD_MAX || scan_s < 3 || scan_s > 60) {
-		snprintf(err, n, "rate_hz 1-100, len %d-%d, scan_s 3-60", HIFI_LINK_HDR, PAYLOAD_MAX);
+	if (rate_hz < 1 || rate_hz > 100 || len < HIFI_LINK_MIN || len > PAYLOAD_MAX || scan_s < 3 || scan_s > 60) {
+		snprintf(err, n, "rate_hz 1-100, len %d-%d, scan_s 3-60", HIFI_LINK_MIN, PAYLOAD_MAX);
+		return 400;
+	}
+	/* both ends get the same key, made afresh for the run by whoever starts it */
+	uint8_t k[HIFI_LINK_KEY];
+	bool have_key = hj_get_str(body, "key", ks, sizeof(ks)) && hifi_link_parse_key(ks, k);
+	hifi_link_wipe(ks, sizeof(ks));
+	if (!have_key) {
+		snprintf(err, n, "key (32 hex digits, the same at both ends) is required");
 		return 400;
 	}
 	int st = setup(err, n);
-	if (st) return st;
+	if (st) {
+		hifi_link_wipe(k, sizeof(k));
+		return st;
+	}
+	hifi_link_key_init(key, k); /* the worker is idle (alive is false): no frame is being tagged */
+	hifi_link_wipe(k, sizeof(k));
 
 	esp_read_mac(self, ESP_MAC_WIFI_STA);
 	memcpy(self_bt, esp_bt_dev_get_address(), 6);
@@ -785,6 +805,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		if (!advertise()) {
 			run = alive = false;
 			phase = PH_IDLE;
+			hifi_link_key_wipe(key);
 			snprintf(err, n, "advertising refused");
 			return 503;
 		}
@@ -801,6 +822,7 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 		if (esp_ble_gap_set_scan_params(&sp) != ESP_OK) {
 			run = alive = false;
 			phase = PH_IDLE;
+			hifi_link_key_wipe(key);
 			snprintf(err, n, "scan refused");
 			return 503;
 		}
@@ -872,7 +894,7 @@ static void result(void *hj) {
 
 const hifi_lab_exp_t lab_ble = {
 	.name = "ble",
-	.help = "BLE GATT link beside Wi-Fi and A2DP: role echo|ping|flood, peer, rate_hz, len, count, interval_ms, scan_s",
+	.help = "BLE GATT link beside Wi-Fi and A2DP: role echo|ping|flood, peer, key (32 hex, both ends), rate_hz, len, count, interval_ms, scan_s",
 	.start = start,
 	.stop = stop,
 	.result = result,

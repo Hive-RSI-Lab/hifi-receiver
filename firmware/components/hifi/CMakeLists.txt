@@ -16,13 +16,14 @@ endif()
 
 # the lab build (board/lite-lab): experiments a signed command starts and stops
 if(CONFIG_HIFI_LAB)
-	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c)
+	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c esp/lab_forge.c esp/lab_wifidrop.c)
 	# reads the board's I2C chips through hive-fw's i2c-device driver (esp/i2cdev)
 	list(APPEND srcs esp/lab_i2c.c esp/i2cdev/i2cdev.c esp/i2cdev/i2cdev_esp.c)
 	set(lab_inc esp/i2cdev)
 	# Bluetooth off or quiet for a while, to measure what it costs Wi-Fi
 	if(CONFIG_BT_CLASSIC_ENABLED)
-		list(APPEND srcs esp/lab_bt.c)
+		# and a real A2DP stream between two boards, beside the other radios
+		list(APPEND srcs esp/lab_bt.c esp/lab_a2dp.c)
 	endif()
 	# the BLE lab image (board/lite-lab-ble): a GATT link beside A2DP
 	if(CONFIG_BT_BLE_ENABLED)

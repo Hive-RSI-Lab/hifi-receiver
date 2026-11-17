@@ -343,6 +343,10 @@ Nothing in it needs a speaker or a load.
 on a 5 V port) fails with the reason in `value`; on a 5 V port that is
 expected, and the bench script knows it.
 
+After a remote link drop since boot, a `link_drop` check follows `network`:
+it always passes, and its value is how long ago and why
+(`"120s ago: TCP gave up: keepalive or resends"`, see `diag/net`).
+
 Plus and Ultra have no `vbus_matches` or `codec_i2c`; their board checks
 are `expander_i2c` (the I/O expander at 0x20, or 0x74–0x77 for the
 TCA9539), `dac_i2c` (the ES9018K2M at 0x48 answers and took the 32-bit word
@@ -423,7 +427,10 @@ core's idle task, so 100 minus it is that core's load.
 ```json
 {"wifi": {"rssi": -58, "channel": 6, "bssid": "aa:bb:cc:dd:ee:ff", "phy": "11n",
           "connects": 3, "disconnects": 2, "last_reason": 8, "up_s": 4012},
- "link": {"up": true, "drops": 1, "up_s": 3990, "tx_bytes": 812345, "rx_bytes": 4123456}}
+ "link": {"up": true, "drops": 1, "up_s": 3990, "tx_bytes": 812345, "rx_bytes": 4123456,
+          "last_drop": {"kind": "tcp_gave_up", "code": 113, "wifi_down": false,
+                        "why": "TCP gave up: keepalive or resends",
+                        "ago_s": 3995, "lasted_s": 7210}}}
 ```
 
 `rssi`, `channel`, `bssid` and `phy` are `null` while the station isn't
@@ -432,6 +439,32 @@ handlers came up (a few seconds after boot); an association already up then
 counts as one connect. `last_reason` is the last
 disconnect's `wifi_err_reason_t`. `link` is the remote link: for wss:// the
 bytes on the socket, for MQTT `0` (not counted).
+
+`link.last_drop` is why the last up wss:// link ended (`null`: none since
+boot, and always on MQTT). The first cause the board saw on that link wins.
+`kind` is one of:
+
+| `kind` | `code` | what ended the link |
+|---|---|---|
+| `closed` | the close frame's status | the endpoint sent a close frame |
+| `eof` | 0 | the far end closed the socket (TCP FIN or TLS close_notify) |
+| `tcp_gave_up` | `ECONNABORTED` | with Wi-Fi up, TCP's keepalive (30 s idle, then 3 probes 10 s apart) or its resends ran out; lwIP doesn't say which |
+| `socket` | the errno | another socket error (`why` names the common ones: reset, timed out, no route) |
+| `tls` | mbedTLS's error, positive | a TLS error |
+| `read_timeout` | seconds | half a frame (or a TLS record) came, then nothing for that long |
+| `write_timeout` | seconds | a send stalled that long: the socket's send buffer stayed full |
+| `bad_frame` | 0 | a frame header the board won't take |
+| `no_memory` | 0 | no heap for a frame |
+| `wifi_down` | 0 or `ECONNABORTED` | the station lost its access point while the link was up (losing it takes the address, and the stack aborts the socket; a blip the station rode out can still run TCP's clock out) |
+| `stopped` | 0 | the link was turned off |
+| `unknown` | 0 | the link ended with no cause noted |
+
+`wifi_down` says whether the station lost its access point while that link
+was up (a disconnect counted, or no access point at the drop), whatever the
+cause; it is always `false` for a link over Ethernet. `why` is the one-line
+text (the self-test's passing `link_drop` line carries it too, as
+`Ns ago: <why>`); `ago_s` is how long ago it dropped and `lasted_s` how long
+that link had been up.
 
 ### `GET /api/v1/diag/audio`
 

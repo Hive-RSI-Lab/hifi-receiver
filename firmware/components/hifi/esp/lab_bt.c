@@ -64,6 +64,7 @@ static esp_bluedroid_status_t bd_status(void) {
 #endif
 
 extern int hifi_sink_source(void) __attribute__((weak)); /* 2: Bluetooth plays (decode_external.c) */
+extern void hifi_bt_sink_acl_reset(void) __attribute__((weak)); /* the sink's ACL table (patch 0018) */
 
 typedef enum { MODE_OFF, MODE_QUIET } mode_t_;
 
@@ -99,10 +100,17 @@ static void note(char *buf, size_t n, const char *what, esp_err_t e) {
 	ESP_LOGW(TAG, "%s: %s", what, esp_err_to_name(e));
 }
 
+/* lab_a2dp refuses its source while this runs */
+bool hifi_lab_bt_busy(void) { return active; }
+
 static int start(uint32_t run, const char *body, char *err, size_t n) {
 	(void)run;
 	if (active) {
 		snprintf(err, n, "already %s", mode == MODE_OFF ? "off" : "quiet");
+		return 409;
+	}
+	if (hifi_lab_a2dp_busy && hifi_lab_a2dp_busy()) {
+		snprintf(err, n, "the a2dp experiment's source runs (or its teardown); stop it first");
 		return 409;
 	}
 	/* the last run's result stays as it was until this start succeeds */
@@ -136,6 +144,8 @@ static int start(uint32_t run, const char *body, char *err, size_t n) {
 			snprintf(err, n, "esp_bluedroid_disable: %s", esp_err_to_name(e));
 			return 503;
 		}
+		/* the disable dropped every ACL link without a disconnect event */
+		if (hifi_bt_sink_acl_reset) hifi_bt_sink_acl_reset();
 		vTaskDelay(pdMS_TO_TICKS(400)); /* the sink's shutdown waits too: the controller crashes otherwise */
 		if ((e = esp_bt_controller_disable()) != ESP_OK) {
 			note(why, sizeof(why), "esp_bt_controller_disable", e);

@@ -1,0 +1,152 @@
+diff --git a/components/driver_bt/bt_app_sink.c b/components/driver_bt/bt_app_sink.c
+--- a/components/driver_bt/bt_app_sink.c
++++ b/components/driver_bt/bt_app_sink.c
+@@ -668,9 +668,43 @@ void bt_sink_deinit(void)
+ 	bt_app_task_shut_down();
+ }
+ 
++/* hifi: the Classic ACL links up here, as Bluedroid's GAP events tell this
++ * callback (on Bluedroid's task): a source that is pairing or connecting
++ * has its ACL up before any A2DP event. hifi_bt_sink_acl reads it */
++#define HIFI_ACL_MAX 4
++static esp_bd_addr_t s_acl[HIFI_ACL_MAX];
++static uint8_t s_acl_n;
++static bool s_acl_over;	/* a connect didn't fit: every address reads as up until the reset */
++static portMUX_TYPE s_acl_mux = portMUX_INITIALIZER_UNLOCKED;
++static void hifi_acl_note(const uint8_t *bda, bool up) {
++	portENTER_CRITICAL(&s_acl_mux);
++	int i;
++	for (i = 0; i < s_acl_n && memcmp(s_acl[i], bda, 6); i++);
++	if (up && i == s_acl_n) {
++		if (s_acl_n < HIFI_ACL_MAX) memcpy(s_acl[s_acl_n++], bda, 6);
++		else s_acl_over = true;
++	} else if (!up && i < s_acl_n) memcpy(s_acl[i], s_acl[--s_acl_n], 6);
++	portEXIT_CRITICAL(&s_acl_mux);
++}
++
++/* hifi: no ACL link is up: Bluedroid has just come up, or has been disabled,
++ * and a disable sends no disconnect events for the links it drops */
++void hifi_bt_sink_acl_reset(void) {
++	portENTER_CRITICAL(&s_acl_mux);
++	s_acl_n = 0;
++	s_acl_over = false;
++	portEXIT_CRITICAL(&s_acl_mux);
++}
++
+ static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
+ {
+     switch (event) {
++    case ESP_BT_GAP_ACL_CONN_CMPL_STAT_EVT:
++        if (param->acl_conn_cmpl_stat.stat == ESP_BT_STATUS_SUCCESS) hifi_acl_note(param->acl_conn_cmpl_stat.bda, true);
++        break;
++    case ESP_BT_GAP_ACL_DISCONN_CMPL_STAT_EVT:
++        hifi_acl_note(param->acl_disconn_cmpl_stat.bda, false);
++        break;
+     case ESP_BT_GAP_AUTH_CMPL_EVT: {
+         if (param->auth_cmpl.stat == ESP_BT_STATUS_SUCCESS) {
+             ESP_LOGD(BT_AV_TAG, "authentication success: %s", param->auth_cmpl.device_name);
+@@ -711,6 +745,7 @@ static void bt_av_hdl_stack_evt(uint16_t event, void *p_param)
+ 		bt_name = (char * )config_alloc_get_default(NVS_TYPE_STR, "bt_name", CONFIG_BT_NAME, 0);
+ 		esp_bt_dev_set_device_name(bt_name);
+ 		free(bt_name);
++        hifi_bt_sink_acl_reset();
+         esp_bt_gap_register_callback(bt_app_gap_cb);
+ 
+         /* initialize AVRCP controller */
+@@ -747,3 +782,43 @@ static void bt_av_hdl_stack_evt(uint16_t event, void *p_param)
+ 
+ 
+ 
++
++
++/* hifi: the lab's A2DP source (components/hifi/esp/lab_a2dp.c) takes the
++ * board's one A2DP role for a run (esp_a2d_sink_deinit, then the source)
++ * and gives it back with this once the source is down: the sink's data
++ * callback and its init, as bt_av_hdl_stack_evt does them. The lab waits for
++ * the init's answer and puts the A2DP and AVRCP callbacks and the scan mode
++ * back itself. */
++esp_err_t hifi_bt_sink_rearm(void) {
++	esp_err_t e;
++	if (!s_sink_active || !bt_app_a2d_data_cb) return ESP_ERR_INVALID_STATE;
++	if ((e = esp_a2d_sink_register_data_callback(bt_app_a2d_data_cb)) != ESP_OK) return e;
++	return esp_a2d_sink_init();
++}
++
++/* hifi: a phone (or any source) is connected to the sink: the lab's A2DP
++ * source refuses to start then, as it would drop it */
++bool hifi_bt_sink_phone(void) {
++	return s_remote_connected;
++}
++
++/* hifi: the source connected to the sink, if one is (its address in out).
++ * The lab's sink runs ask before they forget a source's pairing, which
++ * would drop its link */
++bool hifi_bt_sink_peer(uint8_t out[6]) {
++	if (s_remote_connected) memcpy(out, s_remote_bda, 6);
++	return s_remote_connected;
++}
++
++/* hifi: an ACL link to a is up (pairing, connecting or connected), as this
++ * file's GAP callback has seen. The lab's sink runs ask this too: a forget
++ * would cut a source that is still pairing */
++bool hifi_bt_sink_acl(const uint8_t a[6]) {
++	bool up;
++	portENTER_CRITICAL(&s_acl_mux);
++	up = s_acl_over;
++	for (int i = 0; i < s_acl_n && !up; i++) up = !memcmp(s_acl[i], a, 6);
++	portEXIT_CRITICAL(&s_acl_mux);
++	return up;
++}
+diff --git a/components/squeezelite/decode_external.c b/components/squeezelite/decode_external.c
+--- a/components/squeezelite/decode_external.c
++++ b/components/squeezelite/decode_external.c
+@@ -13,6 +13,7 @@
+ #ifdef ESP_PLATFORM
+ #include "freertos/FreeRTOS.h"
+ #include "freertos/timers.h"
++#include "esp_timer.h"
+ #endif
+ #include "platform_config.h"
+ #include "squeezelite.h"
+@@ -210,8 +211,16 @@
+  * BT sink data handler
+  */
+ #if CONFIG_BT_SINK
++/* hifi: the lab's A2DP experiment (components/hifi/esp/lab_a2dp.c) counts
++ * what arrives (timed before the output buffer's back-pressure), what the
++ * buffer couldn't take, and what was thrown away on purpose; weak, so only a
++ * lab image has it */
++extern void hifi_lab_a2dp_rx(int64_t t, uint32_t len, uint32_t written, bool discarded) __attribute__((weak));
+ static void bt_sink_data_handler(const uint8_t *data, uint32_t len) {
+-    sink_data_handler(data, len, 10);
++    int64_t t = hifi_lab_a2dp_rx ? esp_timer_get_time() : 0;
++    uint32_t written = sink_data_handler(data, len, 10);
++    if (hifi_lab_a2dp_rx)
++        hifi_lab_a2dp_rx(t, len, written, output.external != DECODE_BT || sink_state != SINK_RUNNING);
+ }    
+ 
+ /****************************************************************************************
+diff --git a/components/squeezelite/output.c b/components/squeezelite/output.c
+--- a/components/squeezelite/output.c
++++ b/components/squeezelite/output.c
+@@ -53,6 +53,11 @@
+ u32_t hifi_output_underruns;
+ bool hifi_output_flushed;
+ static u8_t hifi_underrun;
++/* hifi: the lab's A2DP experiment (components/hifi/esp/lab_a2dp.c) times
++ * the dry spells of a Bluetooth stream, which the count above leaves out
++ * (bt_running: the output runs with Bluetooth as its source); weak, so only
++ * a lab image has it */
++extern void hifi_lab_a2dp_out(bool bt_running, u32_t frames) __attribute__((weak));
+ 
+ #define LOCK   mutex_lock(outputbuf->mutex)
+ #define UNLOCK mutex_unlock(outputbuf->mutex)
+@@ -133,6 +138,8 @@
+ 			hifi_output_underruns++;
+ 		hifi_output_flushed = false;
+ 	}
++	if (hifi_lab_a2dp_out)
++		hifi_lab_a2dp_out(output.state == OUTPUT_RUNNING && hifi_sink_source && hifi_sink_source() == 2, frames);
+ 	if (output.state <= OUTPUT_BUFFER || frames == 0) {
+ 		silence = true;
+ 		frames = min(avail, MAX_SILENCE_FRAMES);

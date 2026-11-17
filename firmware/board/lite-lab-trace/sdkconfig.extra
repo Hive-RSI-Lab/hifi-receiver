@@ -1,0 +1,10 @@
+# The heap-trace build of the lab image (projects/hifi-lite-lab, lane
+# hifi-lite-security): lite-lab with ESP-IDF's standalone heap tracing, so
+# `wifidrop` with "trace":1 can list what a Wi-Fi drop leaves allocated.
+# Tracing slows every malloc and free a little: flash it to find a leak,
+# then put lite-lab back.
+CONFIG_HIFI_LAB=y
+CONFIG_ESP_TASK_WDT_PANIC=y
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=15
+CONFIG_HEAP_TRACING_STANDALONE=y
+CONFIG_HEAP_TRACING_STACK_DEPTH=6

@@ -88,6 +88,8 @@ static void on_net(void *arg, esp_event_base_t base, int32_t id, void *data) {
 	}
 }
 
+uint32_t hifi_diag_wifi_disconnects(void) { return disconnects; }
+
 /* Registers on_net with the default event loop, which network_manager
  * creates (with ESP_ERROR_CHECK, so it can't be made earlier here). Safe to
  * run twice at once: IDF replaces a handler registered again rather than
