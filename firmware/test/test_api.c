@@ -196,7 +196,7 @@ static void info_and_state(void) {
 		       "\"mac\":\"24:0a:c4:12:34:56\",\"hostname\":\"squeezelite-123456\",\"flash_mb\":8,\"psram_mb\":8,"
 		       "\"caps\":{\"line_modes\":[\"dj_direct\"],\"eq_bands\":[31,62,125,250,500,1000,2000,4000,8000,16000],"
 		       "\"eq_min\":-12,\"eq_max\":12,\"sub\":{\"count\":2,\"crossover\":false,\"per_sub\":false},"
-		       "\"zones\":1,\"eth\":false,\"pdo_v_max\":20}}");
+		       "\"zones\":1,\"eth\":false,\"pdo_v_max\":20,\"channel\":true,\"led\":false,\"backlight\":false}}");
 
 	m.power_on = true;
 	m.amp_enabled = true;
@@ -721,6 +721,11 @@ static void core_routes(void) {
 	CHECK_STR(out, "{\"error\":\"this model has one zone\"}");
 	CHECK(call("GET", "/api/v1/update/check", NULL) == 404);
 	CHECK(call("POST", "/api/v1/update", "{\"url\":\"http://h/a.bin\"}") == 404);
+
+	/* info says which of the settings routes the model has (k2391) */
+	CHECK(ccall("GET", "/api/v1/info", NULL) == 200);
+	CHECK_HAS(out, "\"channel\":false,\"led\":true,\"backlight\":true");
+	CHECK(ccall("POST", "/api/v1/channel", "{\"channel\":\"left\"}") == 404);
 
 	CHECK(ccall("GET", "/api/v1/wifi/scan", NULL) == 200);
 	CHECK_STR(out, "{\"networks\":[{\"ssid\":\"home\",\"rssi\":-48,\"secure\":true},"

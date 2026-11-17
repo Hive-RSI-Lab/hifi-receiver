@@ -28,12 +28,12 @@ IR_ACTIONS = ("volup", "voldown", "mute", "toggle", "next", "prev", "input", "po
 
 CAPS = {
     "lite": {"line_modes": ["dj_direct"], "sub": {"count": 2, "crossover": False, "per_sub": False},
-             "zones": 1, "eth": False, "pdo_v_max": 20},
+             "zones": 1, "eth": False, "pdo_v_max": 20, "channel": True, "led": False, "backlight": False},
     "plus": {"line_modes": ["dj_direct", "line"], "sub": {"count": 2, "crossover": True, "per_sub": True},
-             "zones": 1, "eth": True, "pdo_v_max": 28},
+             "zones": 1, "eth": True, "pdo_v_max": 28, "channel": False, "led": True, "backlight": False},
     "ultra": {"line_modes": ["dj_direct", "line", "optical"],
               "sub": {"count": 2, "crossover": True, "per_sub": True},
-              "zones": 2, "eth": True, "pdo_v_max": 28},
+              "zones": 2, "eth": True, "pdo_v_max": 28, "channel": False, "led": True, "backlight": True},
 }
 BOARDS = {"lite": "lite-main", "plus": "core", "ultra": "core+ultra-front"}
 SCAN = [{"ssid": "Home", "rssi": -48, "secure": True},
@@ -76,7 +76,7 @@ def initial_state(model: str, ap: bool, pdo: tuple[float, float], fault: bool) -
         "audio": {"source": "spotify", "input": "stream", "tone": None, "level_dbfs": -23.4,
                   "volume": 35, "mute": False, "max_volume": 100,
                   "boost": {"db": 0.0, "limit_db": 0.0, "limiting": False, "limit_events": 0},
-                  "eq": [0] * len(EQ_BANDS),
+                  "eq": [0] * len(EQ_BANDS), "channel": "stereo",
                   "sub": sub, "playing": dict(PLAYING)},
         "net": {"mode": "sta", "ssid": "Home", "ip": "192.168.1.40", "rssi": -52,
                 "hostname": "hifi-" + model, "eth": model != "lite", "join": None},
@@ -84,6 +84,8 @@ def initial_state(model: str, ap: bool, pdo: tuple[float, float], fault: bool) -
         "update": {"state": "idle", "progress": 0},
         "ir": {"learning": None, "learned": [], "last_code": None},
     }
+    if CAPS[model]["backlight"]:
+        s["controls"] = {"last": None, "backlight": "auto"}
     if CAPS[model]["zones"] > 1:
         # core's zone B amp takes zone A's signal: it has no level of its own
         s["audio"]["zone_b"] = {"on": False, "volume": None}
@@ -177,6 +179,22 @@ class Receiver:
                     a["boost"]["limit_db"] = -round(bd / 3, 1)
                 if hw is not None:
                     s["governor"]["heat_cap_w"] = round(hw * 2) / 2
+            elif path == "channel":
+                # as the firmware: Lite's ES8388 mixers pick the side; 404 elsewhere
+                if not caps["channel"]:
+                    raise KeyError(path)
+                if b.get("channel") not in ("stereo", "left", "right", "mono"):
+                    raise ValueError("channel must be stereo, left, right or mono")
+                a["channel"] = b["channel"]
+            elif path in ("led", "backlight"):
+                modes = ("test", "auto") if path == "led" else ("on", "off", "auto")
+                if not caps[path]:
+                    raise KeyError(path)
+                if b.get("mode") not in modes:
+                    raise ValueError("mode must be " + ", ".join(modes[:-1]) + " or " + modes[-1])
+                if path == "backlight":
+                    s["controls"]["backlight"] = b["mode"]
+                return {"ok": True}
             elif path == "zone":
                 if caps["zones"] < 2 or b.get("zone") != "b":
                     raise ValueError("no such zone")

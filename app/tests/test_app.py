@@ -93,6 +93,8 @@ class API(unittest.TestCase):
             ("ir/forget", {}, lambda s: s["ir"]["learned"] == []),
             ("loudness", {"boost_db": 6}, lambda s: s["audio"]["boost"]["db"] == 6),
             ("loudness", {"heat_cap_w": 12.5}, lambda s: s["governor"]["heat_cap_w"] == 12.5 and s["audio"]["boost"]["db"] == 6),
+            ("channel", {"channel": "left"}, lambda s: s["audio"]["channel"] == "left"),
+            ("channel", {"channel": "mono"}, lambda s: s["audio"]["channel"] == "mono"),
         ):
             code, s = self.m.post(path, body)
             self.assertEqual(code, 200, (path, s))
@@ -118,11 +120,15 @@ class API(unittest.TestCase):
                            ("zone", {"zone": "b", "on": True}), ("name", {"name": ""}), ("reset", {}),
                            ("control", {"action": "skip"}), ("ir/learn", {"action": "eject"}),
                            ("loudness", {}), ("loudness", {"boost_db": 10}), ("loudness", {"boost_db": "6"}),
-                           ("loudness", {"heat_cap_w": 1}), ("loudness", {"boost_db": 3, "heat_cap_w": 40})):
+                           ("loudness", {"heat_cap_w": 1}), ("loudness", {"boost_db": 3, "heat_cap_w": 40}),
+                           ("channel", {}), ("channel", {"channel": "centre"})):
             code, s = self.m.post(path, body)
             self.assertEqual(code, 400, (path, body))
             self.assertIn("error", s)
         self.assertEqual(self.m.post("nope", {})[0], 404)
+        # Lite has no LED test or backlight: 404, as the firmware
+        self.assertEqual(self.m.post("led", {"mode": "test"})[0], 404)
+        self.assertEqual(self.m.post("backlight", {"mode": "on"})[0], 404)
 
     def test_wifi_join_and_forget(self):
         code, s = self.m.post("wifi", {"ssid": "Home", "password": "wrong"})
@@ -172,6 +178,24 @@ class Models(unittest.TestCase):
                 self.assertEqual(m.post("zone", {"zone": "b", "volume": 40})[0], 400)
                 if zones == 2:
                     self.assertIsNone(m.get("api/v1/state")["audio"]["zone_b"]["volume"])
+            finally:
+                m.close()
+
+    def test_each_model_has_its_own_settings_routes(self):
+        # info.caps says which of channel, led and backlight a model answers (k2391)
+        for model, want in (("lite", (True, False, False)), ("plus", (False, True, False)),
+                            ("ultra", (False, True, True))):
+            m = Mock(model=model)
+            try:
+                c = m.get("api/v1/info")["caps"]
+                self.assertEqual((c["channel"], c["led"], c["backlight"]), want, model)
+                self.assertEqual(m.post("channel", {"channel": "right"})[0], 200 if want[0] else 404)
+                code, r = m.post("led", {"mode": "test"})
+                self.assertEqual((code, r), (200, {"ok": True}) if want[1] else (404, r))
+                if want[2]:
+                    self.assertEqual(m.post("backlight", {"mode": "off"}), (200, {"ok": True}))
+                    self.assertEqual(m.get("api/v1/state")["controls"]["backlight"], "off")
+                    self.assertEqual(m.post("backlight", {"mode": "dim"})[0], 400)
             finally:
                 m.close()
 
@@ -260,7 +284,18 @@ class Browser(unittest.TestCase):
         m = Mock()
         try:
             d = self.dom(m, "#sound")
-            for want in ("Loudness", "Boost", "Heat cap", "a fan helps"):
+            for want in ("Loudness", "Boost", "Heat cap", "a fan helps", "Speaker output", "Mono"):
+                self.assertIn(want, d)
+            self.assertNotIn("Lights", self.dom(m, "#setup"))  # Lite has no LED test or backlight
+        finally:
+            m.close()
+
+    def test_ultra_shows_lights_and_no_speaker_output(self):
+        m = Mock(model="ultra")
+        try:
+            self.assertNotIn("Speaker output", self.dom(m, "#sound"))
+            d = self.dom(m, "#setup")
+            for want in ("Lights", "Backlight", "Light every LED"):
                 self.assertIn(want, d)
         finally:
             m.close()

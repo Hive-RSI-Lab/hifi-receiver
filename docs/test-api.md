@@ -40,8 +40,14 @@ What the box is.
           "eq_bands": [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000],
           "eq_min": -12, "eq_max": 12,
           "sub": {"count": 2, "crossover": false, "per_sub": false},
-          "zones": 1, "eth": false, "pdo_v_max": 20}}
+          "zones": 1, "eth": false, "pdo_v_max": 20,
+          "channel": true, "led": false, "backlight": false}}
 ```
+
+`channel`, `led` and `backlight` say whether this model answers
+`POST channel`, `POST led` and `POST backlight` (a 404 where false): Lite
+has the speaker side and neither of the others; Plus and Ultra have the LED
+test; only Ultra has the backlight.
 
 `name` is the player name people see in AirPlay, Bluetooth, Spotify and
 LMS. `caps` says what this tier can do, so one web app serves all three:
@@ -224,6 +230,14 @@ lower analog gain in DJ direct), so SUB OUT (LOUT2/ROUT2, on the same
 mixers) follows it. `stereo` is the default and the old behaviour. Kept
 across restarts. Shown as `audio.channel` in `/state`. Reply: the full
 `/state`; 400 on a bad value.
+
+## `POST /api/v1/led` and `POST /api/v1/backlight`
+
+`{"mode": "test"|"auto"}` lights the board's LEDs (Ultra: the front LED too)
+for a few seconds, then hands them back. `{"mode": "on"|"off"|"auto"}` sets
+Ultra's front-panel backlight, shown as `controls.backlight` in `/state`.
+Not kept across restarts. Only on models whose `info.caps` has `led` or
+`backlight` true (404 elsewhere); reply `{"ok": true}`, 400 on a bad mode.
 
 ## `POST /api/v1/eq`
 

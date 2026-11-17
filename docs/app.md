@@ -154,11 +154,14 @@ firmware's rules for them: a volume outside 0–100 is a 400, not clamped.
 ```json
 "caps": {"line_modes": ["dj_direct"], "eq_bands": [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000],
          "eq_min": -12, "eq_max": 12, "sub": {"count": 2, "crossover": false, "per_sub": false},
-         "zones": 1, "eth": false, "pdo_v_max": 20}
+         "zones": 1, "eth": false, "pdo_v_max": 20, "channel": true, "led": false, "backlight": false}
 ```
 
 On Plus, `line_modes` is `["dj_direct", "line"]`, and `crossover` and
-`per_sub` are `true`. Ultra adds `"optical"` and `zones: 2`.
+`per_sub` are `true`. Ultra adds `"optical"` and `zones: 2`. `channel`
+(Lite: the Speaker output card, stereo, left, right or mono), `led` and
+`backlight` (Plus and Ultra, Ultra: the Lights card on Setup) say which of
+those controls the app shows.
 
 **`GET state` adds:**
 
@@ -171,6 +174,8 @@ On Plus, `line_modes` is `["dj_direct", "line"]`, and `crossover` and
 | `audio.sub` | `{on, level_db}`, plus `xover_hz`, `mains_hp` and `subs: [{trim_db, delay_ms, invert}]` where caps say so |
 | `audio.playing` | `{state: "play"\|"pause"\|"stop", title, artist, album, elapsed_s, duration_s}` or `null`; for Lyrion the text is `null` |
 | `audio.zone_b` | `{on, volume}` (Ultra) |
+| `audio.channel` | `stereo`, `left`, `right` or `mono` (the speaker side; set where `caps.channel`) |
+| `controls.backlight` | `on`, `off` or `auto` (Ultra) |
 | `net.mode` | `sta` or `ap` |
 | `net.ssid`, `net.hostname`, `net.eth` | the network it is on, its name, and whether Ethernet is connected |
 | `net.join` | `{ssid, state: "joining"\|"ok"\|"failed", ip, reason}` |
@@ -185,6 +190,9 @@ On Plus, `line_modes` is `["dj_direct", "line"]`, and `crossover` and
 | `POST eq` | `{gains: [10]}` |
 | `POST sub` | `{on?, level_db?, xover_hz?, mains_hp?}`, or `{sub: i, trim_db?, delay_ms?, invert?}` for one sub |
 | `POST zone` | `{zone: "b", on?, volume?}` |
+| `POST channel` | `{channel: "stereo"\|"left"\|"right"\|"mono"}` (where `caps.channel`) |
+| `POST led` | `{mode: "test"\|"auto"}` (where `caps.led`; replies `{ok: true}`) |
+| `POST backlight` | `{mode: "on"\|"off"\|"auto"}` (where `caps.backlight`; replies `{ok: true}`) |
 | `POST name` | `{name}` (1–32 characters) |
 | `GET wifi/scan` | replies `{networks: [{ssid, rssi, secure}]}` |
 | `POST wifi` | `{ssid, password}` |

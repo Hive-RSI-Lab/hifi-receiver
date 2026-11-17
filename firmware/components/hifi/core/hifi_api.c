@@ -322,6 +322,11 @@ static int r_info(const hifi_ops_t *ops, char *out, size_t cap) {
 	hj_int(&j, "zones", i.caps.zones);
 	hj_bool(&j, "eth", i.caps.eth);
 	hj_num(&j, "pdo_v_max", i.caps.pdo_v_max, 0);
+	/* the settings the model has a route for (ask k2391), so the app shows
+	 * only those: the speaker side (POST channel), the LED test, the backlight */
+	hj_bool(&j, "channel", ops->set_channel != NULL);
+	hj_bool(&j, "led", ops->set_led != NULL);
+	hj_bool(&j, "backlight", ops->set_backlight != NULL);
 	if (i.caps.boost_max_db > 0 && ops->set_loudness) {
 		hj_obj(&j, "loudness");
 		hj_num(&j, "boost_max_db", i.caps.boost_max_db, 1);

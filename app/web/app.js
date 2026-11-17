@@ -230,6 +230,7 @@ function pageSound() {
           (v) => { gains[i] = v; set('eq', { gains }); }),
         fmt(f))))),
     subCard(),
+    c.channel && channelCard(),
     h('div.card', {}, h('h2', {}, 'Volume limit'),
       h('p.dim', {}, 'The highest the volume can go, from the app, buttons or remote. Turn it down to protect smaller speakers.'),
       h('div.row', {}, h('div.grow', {}, slider({ min: 30, max: 100, value: a.max_volume, 'aria-label': 'Volume limit',
@@ -271,6 +272,15 @@ function loudnessCard() {
   return h('div.card', {}, h('h2', {}, 'Loudness'), rows);
 }
 
+// which side the speaker output plays (Lite); SUB OUT follows it
+function channelCard() {
+  const ch = S.audio.channel || 'stereo';
+  return h('div.card', {}, h('h2', {}, 'Speaker output'),
+    h('p.dim', {}, 'Stereo for a pair. For one speaker on its own, pick Mono, or Left or Right ' +
+      'when two receivers each play one side.'),
+    seg({ stereo: 'Stereo', left: 'Left', right: 'Right', mono: 'Mono' }, ch, (v) => set('channel', { channel: v })));
+}
+
 function subCard() {
   const s = S.audio.sub, c = I.caps.sub;
   const rows = [h('div.row', {}, h('span.grow', {}, 'Sub outputs'), onOff(s.on, (on) => set('sub', { on })))];
@@ -304,7 +314,7 @@ function pageSetup() {
     n.mode === 'ap' && h('div.card.warn', {}, h('b', {}, 'Welcome. '),
       'Choose your home Wi-Fi below. The receiver joins it and you then find it at ',
       h('b', {}, `http://${n.hostname}.local`), '.'),
-    wifiCard(), nameCard(), remoteCard(), updateCard(), diagCard(),
+    wifiCard(), nameCard(), remoteCard(), (I.caps.led || I.caps.backlight) && lightsCard(), updateCard(), diagCard(),
   ];
 }
 
@@ -430,6 +440,16 @@ function diagCard() {
           'Then join the HiFi-… Wi-Fi to set it up again.' : 'Reset. Join the HiFi-… Wi-Fi to set it up again.', 20000);
       } catch (e) { toast(e.message); }
     } }, 'Factory reset')));
+}
+
+// the LED test and the front-panel backlight, on models that have them
+function lightsCard() {
+  const c = I.caps, bl = (S.controls && S.controls.backlight) || 'auto';
+  return h('div.card', {}, h('h2', {}, 'Lights'),
+    c.backlight && h('div.row', {}, h('span.grow', {}, 'Backlight'),
+      seg({ auto: 'Auto', on: 'On', off: 'Off' }, bl, (mode) => set('backlight', { mode }))),
+    c.led && h('div.row', {}, h('span.grow', {}, 'Light every LED for a few seconds'),
+      h('button', { onclick: () => api('led', { mode: 'test' }).then(() => toast('LEDs on'), (e) => toast(e.message)) }, 'Test')));
 }
 
 function uptime(s) {
