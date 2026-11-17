@@ -22,15 +22,21 @@
  * The stop forgets any pairing that source made here, so the next run from
  * it pairs afresh instead of meeting a stale key the source has already
  * dropped. It forgets whether or not the source got as far as connecting
- * (pairing ends before the A2DP connect does). A forget only drops a link if
- * it is still up, so with the source still connected at the stop (a stop for
- * low RAM, or the sink's deadline first) the forget waits for the next sink
- * start rather than cutting the stream. In the result, forgot is "yes" (asked
- * of Bluedroid, which drops the key), "pending" (the next start does it), or
- * the error. The next start's result says how a pending one went
- * (forgot_last). peer_connected: the source was connected at some point in
- * the run; peer_up: it still is. Without a peer nothing is forgotten: a
- * phone's pairing is never touched, as only the named address is. For the
+ * (pairing ends before the A2DP connect does). A forget drops the link too
+ * if it is up, so with the source still connected at the stop (a stop for
+ * low RAM, or the sink's deadline first) it waits for the next sink start,
+ * and is done there once that source is down. Connected is what the lab's
+ * callback saw, or what the sink's own task has (patch 0018's
+ * hifi_bt_sink_peer), so a source that connected before the sink run began
+ * counts too. In the result, forgot is "yes" (Bluedroid took the request and
+ * drops the key), "pending" (a later start does it), or the error; the next
+ * start's forgot_last says how a pending one went ("pending" again while
+ * that source is still up, "this run's" when the new run names the same
+ * source and its stop takes it over). A source that reconnects to the plain
+ * sink before then still meets its stale key. peer_connected: the source was
+ * connected at some point in the run; peer_up: it still is. Without a peer
+ * nothing is forgotten: a phone's pairing is never touched, as only the
+ * named address is (don't name a phone). For the
  * run the lab's A2DP callback sits in front of the sink's own and passes
  * every event on.
  *
@@ -113,6 +119,7 @@ extern void bt_app_rc_ct_cb(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param_t
 extern void bt_app_rc_tg_cb(esp_avrc_tg_cb_event_t event, esp_avrc_tg_cb_param_t *param) __attribute__((weak));
 extern esp_err_t hifi_bt_sink_rearm(void) __attribute__((weak));
 extern bool hifi_bt_sink_phone(void) __attribute__((weak));
+extern bool hifi_bt_sink_peer(uint8_t out[6]) __attribute__((weak));
 /* btc_av.c: an A2DP role is up (on_init), or none is (on_deinit); written on
  * Bluedroid's task */
 extern bool g_a2dp_on_init __attribute__((weak));
@@ -309,21 +316,14 @@ static void rc_tg_quiet(esp_avrc_tg_cb_event_t e, esp_avrc_tg_cb_param_t *p) { (
 
 /* Bluedroid's BTC task: keep it short, never wait here */
 static void a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *p) {
-	if (mode == MODE_SINK) {
-		/* a sink run's (or the instant give_back makes the sink the receiver
-		 * again): every event is the sink's, its init and deinit too */
-		/* the sink's own task learns of a phone later than this */
-		if (watch_phone && event == ESP_A2D_CONNECTION_STATE_EVT) phone_moved = true;
-		if (sink_peer_set && event == ESP_A2D_CONNECTION_STATE_EVT &&
-		    !memcmp(p->conn_stat.remote_bda, sink_peer, sizeof(sink_peer))) {
-			if (p->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) sink_peer_seen = sink_peer_up = true;
-			else if (p->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) sink_peer_up = false;
-		}
-		if (bt_app_a2d_cb) bt_app_a2d_cb(event, p);
-		return;
-	}
 	if (event == ESP_A2D_PROF_STATE_EVT) {
-		if (!ev) return; /* no source run since boot: nobody waits */
+		/* a role's init or teardown the lab asked for (a source run, its
+		 * hand-back), in either mode. With no source run since boot nobody
+		 * waits, and it is the sink's own */
+		if (!ev) {
+			if (mode == MODE_SINK) goto sink;
+			return;
+		}
 		if (p->a2d_prof_stat.init_state == ESP_A2D_INIT_SUCCESS) {
 			xEventGroupSetBits(ev, EV_INIT);
 			return;
@@ -344,6 +344,20 @@ static void a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *p) {
 				sink_back = sink_back_err;
 			}
 		}
+		return;
+	}
+	if (mode == MODE_SINK) {
+sink:
+		/* a sink run's (or the instant give_back makes the sink the receiver
+		 * again): every other event is the sink's */
+		/* the sink's own task learns of a phone later than this */
+		if (watch_phone && event == ESP_A2D_CONNECTION_STATE_EVT) phone_moved = true;
+		if (sink_peer_set && event == ESP_A2D_CONNECTION_STATE_EVT &&
+		    !memcmp(p->conn_stat.remote_bda, sink_peer, sizeof(sink_peer))) {
+			if (p->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) sink_peer_seen = sink_peer_up = true;
+			else if (p->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) sink_peer_up = false;
+		}
+		if (bt_app_a2d_cb) bt_app_a2d_cb(event, p);
 		return;
 	}
 	if (mode != MODE_SOURCE) return;
@@ -648,12 +662,38 @@ static int start_source(const char *body, char *err, size_t n) {
 	return 0;
 }
 
-/* drop a source's pairing; "yes" means Bluedroid took the request (it drops
- * the key, and the link if one is up) */
+/* drop a source's pairing; "yes" means Bluedroid took the request (it then
+ * drops the key, and the link if one is up) */
 static void forget_now(const esp_bd_addr_t a, char *out, size_t n) {
 	esp_err_t e = esp_bt_gap_remove_bond_device((uint8_t *)a);
 	snprintf(out, n, "%s", e == ESP_OK ? "yes" : esp_err_to_name(e));
 	ESP_LOGI(TAG, "sink: the source's pairing forgotten: %s", out);
+}
+
+/* the source at a is connected to the sink, as the sink's own task has it
+ * (it learns of a link a moment after Bluedroid's task does) */
+static bool sink_has(const esp_bd_addr_t a) {
+	uint8_t b[6];
+	return hifi_bt_sink_peer(b) && !memcmp(a, b, sizeof(b));
+}
+
+/* the last stop's forget, if its source is down now: before that source
+ * can meet the stale key. Still up: it waits again (keep, the address a
+ * new run names: its own stop then forgets it, with the same care) */
+static void forget_left(const esp_bd_addr_t keep) {
+	forgot_last[0] = 0;
+	if (!forget_pending) return;
+	if (keep && !memcmp(keep, forget_addr, sizeof(forget_addr))) {
+		forget_pending = false;
+		snprintf(forgot_last, sizeof(forgot_last), "this run's");
+		return;
+	}
+	if (sink_has(forget_addr)) {
+		snprintf(forgot_last, sizeof(forgot_last), "pending");
+		return;
+	}
+	forget_now(forget_addr, forgot_last, sizeof(forgot_last));
+	forget_pending = false;
 }
 
 /* a sink run's optional peer: its events seen through the lab's callback.
@@ -666,16 +706,15 @@ static int start_sink(const char *body, char *err, size_t n) {
 		snprintf(err, n, "peer must be the source's Bluetooth address, aa:bb:cc:dd:ee:ff");
 		return 400;
 	}
+	bool hooks = esp_a2d_register_callback && bt_app_a2d_cb && esp_bt_gap_remove_bond_device && hifi_bt_sink_peer;
 	if (!named) {
-		if (forget_pending && esp_bt_gap_remove_bond_device && bt_up()) {
-			forget_now(forget_addr, forgot_last, sizeof(forgot_last));
-			forget_pending = false;
-		} else forgot_last[0] = 0;
+		if (hooks && bt_up()) forget_left(NULL);
+		else forgot_last[0] = 0;
 		sink_peer_set = sink_peer_seen = sink_peer_up = false;
 		forgot[0] = 0;
 		return 0;
 	}
-	if (!esp_a2d_register_callback || !bt_app_a2d_cb || !esp_bt_gap_remove_bond_device) {
+	if (!hooks) {
 		snprintf(err, n, "no A2DP sink in this image");
 		return 503;
 	}
@@ -687,30 +726,33 @@ static int start_sink(const char *body, char *err, size_t n) {
 		snprintf(err, n, "the sink isn't back from the last source run");
 		return 409;
 	}
-	/* the last stop's forget, before the source can meet the stale key */
-	forgot_last[0] = 0;
-	if (forget_pending) {
-		forget_now(forget_addr, forgot_last, sizeof(forgot_last));
-		forget_pending = false;
-	}
-	sink_peer_set = sink_peer_seen = sink_peer_up = false;
-	forgot[0] = 0;
-	memcpy(sink_peer, a, sizeof(sink_peer));
+	/* the callback first: from here every link event of the peer is seen */
 	esp_err_t e = esp_a2d_register_callback(a2d_cb);
 	if (e != ESP_OK) {
 		snprintf(err, n, "esp_a2d_register_callback: %s", esp_err_to_name(e));
 		return 503;
 	}
+	sink_peer_set = false;
+	forget_left(a);
+	forgot[0] = 0;
+	memcpy(sink_peer, a, sizeof(sink_peer));
+	sink_peer_seen = sink_peer_up = false;
 	sink_peer_set = true;
+	/* already connected (a source run started first): the callback missed it */
+	if (sink_has(a)) sink_peer_seen = sink_peer_up = true;
 	return 0;
 }
 
 /* the sink's own callback back, and the peer's pairing forgotten: now if
- * its link is down, else at the next sink start (a forget would cut it) */
+ * its link is down, else at the next sink start (a forget would cut it).
+ * Up is what the lab's callback saw until the swap, or what the sink's
+ * own task has; a link that comes up in the instant between (its event
+ * after the swap, the sink's task not yet told) is the one case missed. */
 static void stop_sink(void) {
 	if (!sink_peer_set) return;
 	esp_a2d_register_callback(bt_app_a2d_cb);
-	if (sink_peer_up) {
+	if (sink_peer_up || sink_has(sink_peer)) {
+		sink_peer_up = true;
 		memcpy(forget_addr, sink_peer, sizeof(forget_addr));
 		forget_pending = true;
 		snprintf(forgot, sizeof(forgot), "pending");

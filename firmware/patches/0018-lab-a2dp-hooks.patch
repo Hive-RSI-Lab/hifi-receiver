@@ -1,7 +1,7 @@
 diff --git a/components/driver_bt/bt_app_sink.c b/components/driver_bt/bt_app_sink.c
 --- a/components/driver_bt/bt_app_sink.c
 +++ b/components/driver_bt/bt_app_sink.c
-@@ -747,3 +747,23 @@
+@@ -747,3 +747,31 @@
  
  
  
@@ -23,6 +23,14 @@ diff --git a/components/driver_bt/bt_app_sink.c b/components/driver_bt/bt_app_si
 +/* hifi: a phone (or any source) is connected to the sink: the lab's A2DP
 + * source refuses to start then, as it would drop it */
 +bool hifi_bt_sink_phone(void) {
++	return s_remote_connected;
++}
++
++/* hifi: the source connected to the sink, if one is (its address in out).
++ * The lab's sink runs ask before they forget a source's pairing, which
++ * would drop its link */
++bool hifi_bt_sink_peer(uint8_t out[6]) {
++	if (s_remote_connected) memcpy(out, s_remote_bda, 6);
 +	return s_remote_connected;
 +}
 diff --git a/components/squeezelite/decode_external.c b/components/squeezelite/decode_external.c
