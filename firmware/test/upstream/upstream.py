@@ -63,7 +63,10 @@ def pristine(path: str, cache: Path) -> bytes | None:
             with urllib.request.urlopen(url, timeout=30) as resp:
                 data = resp.read()
         except urllib.error.HTTPError as e:
-            raise Broken(f"GitHub has no {path} at {lk['commit']} ({e})") from e
+            if e.code == 404:
+                raise Broken(f"GitHub has no {path} at {lk['commit']} ({e})") from e
+            print(f"upstream.py: can't get {path} ({e}); set HIFI_UPSTREAM to a checkout", file=sys.stderr)
+            return None
         except OSError as e:
             print(f"upstream.py: can't get {path} ({e}); set HIFI_UPSTREAM to a checkout", file=sys.stderr)
             return None

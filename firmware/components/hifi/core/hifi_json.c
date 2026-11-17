@@ -225,6 +225,11 @@ bool hj_get_num(const char *json, const char *k, double *out) {
 	return true;
 }
 
+bool hj_num_bad(const char *json, const char *k) {
+	const char *p = find(json, k);
+	return p && (*p == '-' || isdigit((unsigned char) *p)) && !isfinite(strtod(p, NULL));
+}
+
 bool hj_get_bool(const char *json, const char *k, bool *out) {
 	const char *p = find(json, k);
 	if (!p) return false;
