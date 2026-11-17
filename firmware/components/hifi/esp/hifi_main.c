@@ -38,6 +38,7 @@
 #include "hifi_api.h"
 #include "hifi_board.h"
 #include "hifi_bsp.h"
+#include "hifi_gate.h"
 #include "hifi_crash.h"
 #include "hifi_esp.h"
 #include "hifi_gov.h"
@@ -941,7 +942,8 @@ static void bt_test_boot(void) {
 		ESP_LOGW(TAG, "Bluetooth test boot: this boot plays to another board over Bluetooth");
 	} else if (flag && !strcmp(flag, "used")) {
 		char *ax = config_alloc_get_str("hifi_bt_save", NULL, NULL);
-		if (ax && *ax) config_set_value(NVS_TYPE_STR, "autoexec1", ax);
+		if (ax && *ax && hifi_autoexec_ok(ax)) config_set_value(NVS_TYPE_STR, "autoexec1", ax);
+		else if (ax && *ax) ESP_LOGE(TAG, "the saved command line isn't squeezelite's: not put back");
 		free(ax);
 		config_set_value(NVS_TYPE_STR, "hifi_bttest", "off");
 		ESP_LOGW(TAG, "Bluetooth test over: the usual command line is back");

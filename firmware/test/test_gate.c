@@ -131,6 +131,25 @@ int main(void) {
 	CHECK(!hifi_lan_config_ok("hifi_relay_key", "x"));
 	CHECK(!hifi_lan_config_ok("hifi_update_url", "http://evil"));
 	CHECK(!hifi_lan_config_ok("", "x"));
+	/* every hifi_* key is the firmware's own: the Bluetooth test's saved line
+	 * goes back into autoexec1 at boot, the rollback notes feed the relay */
+	CHECK(!hifi_lan_config_ok("hifi_bt_save", "nvs_set hifi_relay_key str -v x"));
+	CHECK(!hifi_lan_config_ok("hifi_bt_save", "squeezelite -n kitchen"));
+	CHECK(!hifi_lan_config_ok("hifi_bttest", "used"));
+	CHECK(!hifi_lan_config_ok("hifi_rb_why", "x"));
+	CHECK(!hifi_lan_config_ok("hifi_name", "kitchen"));
+	/* autoexecN runs at every boot: squeezelite or cfg-* only */
+	CHECK(!hifi_lan_config_ok("autoexec1", "restart"));
+	CHECK(!hifi_lan_config_ok("autoexec1", "  restart"));
+	CHECK(!hifi_lan_config_ok("autoexec2", "version"));
+	CHECK(!hifi_lan_config_ok("autoexec2", "tasks"));
+	CHECK(hifi_lan_config_ok("autoexec2", "cfg-hw-dac -m 1"));
+	CHECK(hifi_autoexec_ok("squeezelite -o BT -n kitchen"));
+	CHECK(!hifi_autoexec_ok("restart"));
+	CHECK(!hifi_autoexec_ok("nvs_set hifi_relay_key str -v x"));
+	CHECK(!hifi_autoexec_ok("squeezelite\nrecovery"));
+	CHECK(!hifi_autoexec_ok(NULL));
+	CHECK(!hifi_autoexec_ok(""));
 	CHECK(hifi_lan_config_secret("hifi_relay_pass"));
 	CHECK(hifi_lan_config_secret("hifi_relay_key"));
 	CHECK(!hifi_lan_config_secret("hifi_relay_url"));

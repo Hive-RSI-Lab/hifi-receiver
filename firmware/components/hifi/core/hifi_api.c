@@ -908,6 +908,16 @@ int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *meth
 	if (post && (!body || !*body)) body = "{}";
 	if (post && !hj_valid_object(body)) return error(out, cap, 400, "body must be a JSON object");
 
+	/* while new firmware is on trial, a lost Wi-Fi rolls it back: the LAN
+	 * may not change or forget the Wi-Fi, or erase settings, until it is kept */
+	if (lan && post && ops->ota_status &&
+	    (!strcmp(route, "wifi") || !strcmp(route, "wifi/forget") || !strcmp(route, "reset"))) {
+		hifi_ota_status_t o = {0};
+		ops->ota_status(&o);
+		if (o.state && !strcmp(o.state, "pending_verify"))
+			return error(out, cap, 409, "new firmware is on trial; try again in a few minutes");
+	}
+
 	int status;
 	if (!strcmp(route, "info")) status = get ? r_info(ops, out, cap) : -1;
 	else if (!strcmp(route, "state")) status = get ? r_state(ops, out, cap) : -1;

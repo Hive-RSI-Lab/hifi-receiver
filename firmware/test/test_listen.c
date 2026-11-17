@@ -59,9 +59,14 @@ int main(void) {
 	CHECK(hifi_listen_check(planted, N(planted), planted, N(planted), false, why, sizeof(why)) == 2);
 	CHECK_STR(why, "2 open: tcp/23 udp/1900");
 	/* the same port on loopback in the first scan isn't the same socket */
-	static const hifi_sock_t lo23[] = {LO_T(23)}, lan23[] = {T(23)};
-	CHECK(hifi_listen_check(lo23, 1, lan23, 1, false, why, sizeof(why)) == 0);
-	CHECK(hifi_listen_check(lan23, 1, lan23, 1, false, why, sizeof(why)) == 1);
+	static const hifi_sock_t lo1900[] = {LO_U(1900)}, lan1900[] = {U(1900)};
+	CHECK(hifi_listen_check(lo1900, 1, lan1900, 1, false, why, sizeof(why)) == 0);
+	CHECK(hifi_listen_check(lan1900, 1, lan1900, 1, false, why, sizeof(why)) == 1);
+	/* a TCP listener counts from one scan: a quick open/close can't slip past */
+	static const hifi_sock_t lan23[] = {T(23)};
+	CHECK(hifi_listen_check(NULL, 0, lan23, 1, false, why, sizeof(why)) == 1);
+	CHECK(hifi_listen_check(later, N(later), lan23, 1, false, why, sizeof(why)) == 1);
+	CHECK_STR(why, "1 open: tcp/23");
 	/* tcp/53 is not udp/53 */
 	static const hifi_sock_t dns_t[] = {T(53)};
 	CHECK(hifi_listen_check(dns_t, 1, dns_t, 1, true, why, sizeof(why)) == 1);

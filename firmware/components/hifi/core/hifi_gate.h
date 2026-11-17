@@ -33,9 +33,9 @@ bool hifi_gate_host_is_ip(const char *host);
  * A LAN page may still set up Wi-Fi, audio, hardware and the player. */
 
 /* config.json POST: may the LAN set key to strval (strval NULL: not a string)?
- * Refused: fwurl (an unsigned update from any URL), telnet*, hifi_relay*,
- * hifi_update*, hifi_remote*; autoexecN only when its line is one the LAN
- * may run (hifi_lan_command_ok), since it runs on the console at boot. */
+ * Refused: fwurl (an unsigned update from any URL), telnet*, every hifi_*
+ * key (the relay, the update URL, the Bluetooth test's saved command line);
+ * autoexecN only when its line may run at every boot (hifi_autoexec_ok). */
 bool hifi_lan_config_ok(const char *key, const char *strval);
 
 /* config.json GET: is key a secret to blank out (the Hive's credentials)? */
@@ -45,6 +45,11 @@ bool hifi_lan_config_secret(const char *key);
  * commands (cfg-*), squeezelite, restart and read-only system info; never
  * nvs_*, api, hifi, update, recovery, restart_ota, join, i2c*, sleep. */
 bool hifi_lan_command_ok(const char *line);
+
+/* A line that may be kept in autoexecN (run at every boot): squeezelite's
+ * command line or a cfg-* setter, one line. Also checked where the firmware
+ * copies a saved line back into autoexec1 (the Bluetooth test). */
+bool hifi_autoexec_ok(const char *line);
 
 /* ---- the setup access point (security.md, firmware/patches/0009) ----
  * First setup keeps the public password (nothing on the board to protect

@@ -111,7 +111,10 @@ static bool has_prefix(const char *s, const char *p) {
 	return strncmp(s, p, strlen(p)) == 0;
 }
 
-bool hifi_lan_command_ok(const char *line) {
+/* boot: lines kept in autoexecN run on the console at every boot, so only
+ * squeezelite's own command line and the cfg-* setters may live there
+ * ("restart" in autoexec1 would reboot the board forever) */
+static bool command_ok(const char *line, bool boot) {
 	if (!line) return false;
 	/* one line, one command: a newline or other control character could
 	 * carry a second command past the check on the first word */
@@ -122,19 +125,31 @@ bool hifi_lan_command_ok(const char *line) {
 	if (!n) return false;
 	if (n > 4 && has_prefix(line, "cfg-")) return true;
 	static const char *const ok[] = {"squeezelite", "restart", "version", "free", "heap", "tasks"};
-	for (size_t i = 0; i < sizeof(ok) / sizeof(ok[0]); i++)
+	size_t count = boot ? 1 : sizeof(ok) / sizeof(ok[0]);
+	for (size_t i = 0; i < count; i++)
 		if (strlen(ok[i]) == n && strncmp(line, ok[i], n) == 0) return true;
 	return false;
+}
+
+bool hifi_lan_command_ok(const char *line) {
+	return command_ok(line, false);
+}
+
+bool hifi_autoexec_ok(const char *line) {
+	return command_ok(line, true);
 }
 
 bool hifi_lan_config_ok(const char *key, const char *strval) {
 	if (!key || !*key) return false;
 	if (!strcmp(key, "fwurl")) return false;
-	static const char *const no[] = {"telnet", "hifi_relay", "hifi_update", "hifi_remote"};
+	/* hifi_* keys are this firmware's own (relay, update URL, the saved
+	 * command line of the Bluetooth test, rollback notes): its own API sets
+	 * the ones a user may change, squeezelite's settings page never does */
+	static const char *const no[] = {"telnet", "hifi_"};
 	for (size_t i = 0; i < sizeof(no) / sizeof(no[0]); i++)
 		if (has_prefix(key, no[i])) return false;
 	if (has_prefix(key, "autoexec") && key[8]) /* autoexec1.. hold console lines; "autoexec" is the on/off flag */
-		return strval && (!*strval || hifi_lan_command_ok(strval));
+		return strval && (!*strval || hifi_autoexec_ok(strval));
 	return true;
 }
 

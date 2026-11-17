@@ -30,7 +30,8 @@ int hifi_listen_check(const hifi_sock_t *prev, int nprev, const hifi_sock_t *s, 
 	size_t len = 0;
 	for (int i = 0; i < n; i++) {
 		if (hifi_listen_allowed(&s[i], ap_on)) continue;
-		if (prev && !seen(prev, nprev, &s[i])) continue; /* came and went: a DNS query */
+		/* a UDP pcb that came and went is a client query (DNS); a TCP listener is never that */
+		if (!s[i].tcp && prev && !seen(prev, nprev, &s[i])) continue;
 		bad++;
 		int w = snprintf(list + len, sizeof(list) - len, "%s%s/%u", len ? " " : "", s[i].tcp ? "tcp" : "udp",
 				 (unsigned) s[i].port);
