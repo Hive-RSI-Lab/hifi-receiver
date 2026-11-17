@@ -96,15 +96,18 @@ static int f_open(void *ctx, size_t size, const char **slot, const char **err) {
 	*slot = "ota_1";
 	return 0;
 }
+static bool fail_write, fail_commit;
 static int f_write(void *ctx, const uint8_t *d, size_t n) {
 	(void) ctx;
+	if (fail_write) return -1;
 	if (flash_n + n > sizeof(flash)) return -1;
 	memcpy(flash + flash_n, d, n);
 	flash_n += n;
 	return 0;
 }
 static int f_commit(void *ctx, const char **err) {
-	(void) ctx, (void) err;
+	(void) ctx;
+	if (fail_commit) return *err = "image does not verify", -1;
 	committed = true;
 	return 0;
 }
@@ -288,6 +291,35 @@ static void test_ota_core(void) {
 	CHECK(hifi_ota_begin(&ota, sizeof(img), sha, "0.2.0", &err) == 200);
 	CHECK(ota.check_sha);
 	hifi_ota_abort(&ota);
+
+	/* the hash in any case, and not a hash at all */
+	char up[65];
+	for (int i = 0; i < 65; i++) up[i] = (char) (sha[i] >= 'a' && sha[i] <= 'f' ? sha[i] - 32 : sha[i]);
+	CHECK(hifi_ota_begin(&ota, sizeof(img), up, "0.2.0", &err) == 200);
+	hifi_ota_abort(&ota);
+	up[10] = 'g';
+	CHECK(hifi_ota_begin(&ota, sizeof(img), up, "0.2.0", &err) == 400);
+
+	/* the flash fails mid-image (full, worn): the slot is given up */
+	CHECK(hifi_ota_begin(&ota, sizeof(img), sha, "0.2.0", &err) == 200);
+	CHECK(hifi_ota_chunk(&ota, 0, img, 4096, &err) == 200);
+	fail_write = true;
+	CHECK(hifi_ota_chunk(&ota, 4096, img + 4096, 4096, &err) == 500);
+	CHECK_STR(err, "flash write failed");
+	CHECK(aborted && !ota.active && !committed);
+	fail_write = false;
+
+	/* the board's own check of the image refuses it at commit */
+	CHECK(hifi_ota_begin_local(&ota, sizeof(img), NULL, &err) == 200);
+	for (size_t off = 0; off < sizeof(img); off += 4096) {
+		size_t n = sizeof(img) - off < 4096 ? sizeof(img) - off : 4096;
+		hifi_ota_chunk(&ota, off, img + off, n, &err);
+	}
+	fail_commit = true;
+	CHECK(hifi_ota_finish(&ota, &err) == 500);
+	CHECK_STR(err, "image does not verify");
+	CHECK(aborted && !ota.active && !ota.done);
+	fail_commit = false;
 }
 
 static char out[200000];
@@ -595,6 +627,32 @@ static void test_remote(void) {
 	CHECK(remote(m, 0) == 400);
 	free(m);
 	CHECK(rem.accepted == 3 && rem.rejected >= 8);
+
+	/* ids out of a uint64's range, before any signature is checked: no
+	 * undefined cast (fuzzing found it), just a rejection */
+	CHECK(remote("{\"v\":1,\"id\":1e30}\nAAAA", 0) == 401);
+	CHECK(remote("{\"v\":1,\"id\":-1e300}\nAAAA", 0) == 401);
+	CHECK(remote("{\"v\":1,\"id\":18446744073709551616}\nAAAA", 0) == 401);
+	m = signed_msg("{\"v\":1,\"dev\":\"240ac4123456\",\"id\":1e30,\"ts\":1761700004,\"method\":\"GET\",\"path\":\"/api/v1/info\",\"body\":null}");
+	unsigned long long last = rem.last_id;
+	CHECK(remote(m, 0) == 400); /* signed, but no usable id: it can't jam the id clock */
+	CHECK(rem.last_id == last);
+	free(m);
+
+	/* keys in capitals count too */
+	char upk[80];
+	snprintf(upk, sizeof(upk), "%s", PUB_HEX);
+	for (char *c = upk; *c; c++)
+		if (*c >= 'a' && *c <= 'f') *c = (char) (*c - 32);
+	CHECK(hifi_remote_set_keys(&rem, upk) == 1);
+	CHECK(hifi_remote_set_keys(&rem, PUB_HEX) == 1);
+
+	/* a reply buffer too small for even the envelope */
+	m = signed_msg("{\"v\":1,\"dev\":\"240ac4123456\",\"id\":1761700001700,\"ts\":1761700005,\"method\":\"GET\",\"path\":\"/api/v1/info\",\"body\":{}}");
+	char small[48];
+	CHECK(hifi_remote_handle(&rem, &ops, m, strlen(m), 0, small, sizeof(small)) == 500);
+	CHECK(strlen(small) < sizeof(small));
+	free(m);
 }
 
 static void test_trial(void) {

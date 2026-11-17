@@ -1,3 +1,4 @@
+#include <string.h>
 /* The core board's (Plus/Ultra) logic: the expander's knob and buttons, the
  * PD request, its power and governor numbers, and the update manifest. */
 #include "check.h"
@@ -295,6 +296,19 @@ static void manifest(void) {
 	CHECK(hifi_update_parse("[1]", NULL, "any", &o, &err) == -1);
 	CHECK(hifi_update_parse("{\"latest\":\"1\",\"url\":\"a\",\"sha256\":\"xyz\"}", NULL, "any", &o, &err) == -1);
 	CHECK_STR(hifi_update_state_name(HIFI_UPD_FLASHING), "flashing");
+	CHECK_STR(hifi_update_state_name(HIFI_UPD_IDLE), "idle");
+	CHECK_STR(hifi_update_state_name(HIFI_UPD_DOWNLOADING), "downloading");
+	CHECK_STR(hifi_update_state_name(HIFI_UPD_DONE), "done");
+	CHECK_STR(hifi_update_state_name(HIFI_UPD_ERROR), "error");
+	CHECK_STR(hifi_update_state_name((hifi_upd_state_t) 99), "idle");
+
+	/* a url that won't fit the board's buffer is refused, not cut short */
+	char big[400];
+	int n = snprintf(big, sizeof(big), "{\"latest\":\"1\",\"url\":\"");
+	memset(big + n, 'a', 200);
+	snprintf(big + n + 200, sizeof(big) - n - 200, ".bin\"}");
+	CHECK(hifi_update_parse(big, "http://h/fw/m.json", "any", &o, &err) == -1);
+	CHECK_STR(err, "the image's url is too long");
 }
 
 int main(void) {

@@ -82,7 +82,8 @@ int hifi_remote_handle(hifi_remote_t *r, const hifi_ops_t *ops, const char *msg,
 	line[n] = '\0';
 
 	double idd = 0;
-	uint64_t id = hj_get_num(line, "id", &idd) && idd > 0 ? (uint64_t) idd : 0;
+	/* range-checked before the cast: an unsigned id past 2^64 is undefined */
+	uint64_t id = hj_get_num(line, "id", &idd) && idd > 0 && idd < 18446744073709551616.0 ? (uint64_t) idd : 0;
 	int st;
 	uint8_t sig[64];
 	bool good = false;

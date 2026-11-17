@@ -110,6 +110,10 @@ static void pd(void) {
 	CHECK(!c.known && c.proto == HIFI_PROTO_NONE && !c.epr);
 	CHECK_NEAR(c.w, 7.5, 1e-6);
 	CHECK_STR(hifi_proto_name(HIFI_PROTO_PD), "pd");
+	CHECK_STR(hifi_proto_name(HIFI_PROTO_BC), "bc");
+	CHECK_STR(hifi_proto_name(HIFI_PROTO_QC2), "qc2");
+	CHECK_STR(hifi_proto_name(HIFI_PROTO_QC3), "qc3");
+	CHECK_STR(hifi_proto_name(HIFI_PROTO_NONE), "none");
 }
 
 int main(void) {
