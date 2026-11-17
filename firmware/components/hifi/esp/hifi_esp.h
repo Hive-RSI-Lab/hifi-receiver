@@ -18,6 +18,7 @@
 /* hifi_main.c */
 extern const hifi_ops_t hifi_ops;
 void hifi_main_trial_inputs(hifi_trial_t *t); /* what the trial boot needs from the board */
+void hifi_main_note_boot_heap(void); /* takes the boot heap (hifi_boot.h), once */
 esp_err_t hifi_i2c_read(uint8_t addr, uint8_t reg, uint8_t *val);
 esp_err_t hifi_i2c_write(uint8_t addr, uint8_t reg, uint8_t val);
 void hifi_i2c_ensure(void);       /* installs the I2C driver if squeezelite hasn't */

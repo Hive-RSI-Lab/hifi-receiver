@@ -29,3 +29,19 @@ hifi_trial_verdict_t hifi_trial_judge(const hifi_trial_t *t, uint32_t elapsed_s,
 	snprintf(why, n, "%s", missing);
 	return HIFI_TRIAL_WAIT;
 }
+
+bool hifi_heap_boot_due(uint32_t up_s, bool net_up, bool relay_configured, bool relay_up) {
+	if (up_s >= HIFI_HEAP_BOOT_LATEST_S) return true;
+	return up_s >= HIFI_HEAP_BOOT_AFTER_S && net_up && (!relay_configured || relay_up);
+}
+
+bool hifi_heap_line(uint32_t now_free, uint32_t boot_free, char *out, size_t n) {
+	if (boot_free)
+		snprintf(out, n, "%u B free, %u B at boot, %u %s the %u floor", (unsigned) now_free, (unsigned) boot_free,
+			 (unsigned) (boot_free >= HIFI_HEAP_MIN ? boot_free - HIFI_HEAP_MIN : HIFI_HEAP_MIN - boot_free),
+			 boot_free >= HIFI_HEAP_MIN ? "over" : "under", (unsigned) HIFI_HEAP_MIN);
+	else
+		snprintf(out, n, "%u B free, boot not measured yet (floor %u)", (unsigned) now_free,
+			 (unsigned) HIFI_HEAP_MIN);
+	return now_free > HIFI_HEAP_MIN;
+}
