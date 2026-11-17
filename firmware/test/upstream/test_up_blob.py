@@ -22,9 +22,13 @@ ThreadSanitizer, and runs blob/harness.cpp's two cases:
           the account before it stays
   race    alice's login is on its way to the access point when bob's POST
           lands: no data race, and the session logs in as alice
+  snap    bob's POST lands while the cspot task copies alice's login out of
+          the blob for a session: no data race, and the session is bob's
 
 It then builds the same two files with 0027 taken back out and checks that
-both cases fail, so the test is known to catch the bug.
+keeps and race fail, and builds the patched Shim.cpp with the POST handler's
+lock taken out and checks that snap fails, so the test is known to catch
+each of them.
 
 Skipped, loudly, when this compiler's ThreadSanitizer can't run here;
 UPSTREAM_REQUIRED=1 makes that a failure.
@@ -52,6 +56,13 @@ FAKED = ["Session.h", "PlainConnection.h", "ApResolve.h", "BellTask.h", "MDNSSer
 REAL = [f"{SPOT}/cspot_private.h", f"{SPOT}/cspot_sink.h", f"{CSPOT}/include/LoginBlob.h",
         f"{CSPOT}/include/ConstantParameters.h", f"{CSPOT}/bell/external/cJSON/cJSON.h"]
 TSAN = "halt_on_error=1:exitcode=66:report_signal_unsafe=0"
+# the POST handler's lock in the patched Shim.cpp, and what snap's
+# before-check puts in its place: a lock nobody else takes
+POST_LOCK = ("                std::unique_lock blobLock(blobMutex);\n"
+             "                blob->loadZeroconfQuery(queryMap);\n")
+NO_POST_LOCK = ("                std::mutex nobody;\n"
+                "                std::unique_lock blobLock(nobody);\n"
+                "                blob->loadZeroconfQuery(queryMap);\n")
 fails = checks = 0
 
 
@@ -144,10 +155,22 @@ def main(argv: list[str]) -> int:
     exe = build("patched", up / SPOT / "Shim.cpp", up / CSPOT / "src/LoginBlob.cpp", inc, cjson, out)
     rc, log = case(exe, "keeps")
     check(rc == 0, f"keeps (patched) exit {rc}:\n{log}")
-    # the race case three times: each must be clean
-    for n in range(3):
-        rc, log = case(exe, "race")
-        check(rc == 0, f"race (patched, run {n + 1}) exit {rc}:\n{log[-4000:]}")
+    # the race cases three times each: each must be clean
+    for what in ("race", "snap"):
+        for n in range(3):
+            rc, log = case(exe, what)
+            check(rc == 0, f"{what} (patched, run {n + 1}) exit {rc}:\n{log[-4000:]}")
+
+    shim = (up / SPOT / "Shim.cpp").read_text()
+    check(shim.count(POST_LOCK) == 1, "the POST handler's lock isn't where this test looks for it (Shim.cpp changed?)")
+    if shim.count(POST_LOCK) == 1:
+        nolock = out / "src-nolock" / "Shim.cpp"
+        nolock.parent.mkdir(parents=True, exist_ok=True)
+        nolock.write_text(shim.replace(POST_LOCK, NO_POST_LOCK))
+        exe = build("nolock", nolock, up / CSPOT / "src/LoginBlob.cpp", inc, cjson, out)
+        rc, log = case(exe, "snap")
+        check(rc == 66 and "data race" in log,
+              f"snap without the POST handler's lock should find the race (exit 66), got {rc}:\n{log[-2000:]}")
 
     before = unpatched(up, out / "src-unpatched")
     if before:

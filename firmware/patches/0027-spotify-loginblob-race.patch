@@ -87,7 +87,7 @@ diff --git a/components/spotify/Shim.cpp b/components/spotify/Shim.cpp
 diff --git a/components/spotify/cspot/src/LoginBlob.cpp b/components/spotify/cspot/src/LoginBlob.cpp
 --- a/components/spotify/cspot/src/LoginBlob.cpp
 +++ b/components/spotify/cspot/src/LoginBlob.cpp
-@@ -138,12 +138,15 @@
+@@ -138,16 +138,21 @@
    blobSkipPosition = 1;
    blobSkipPosition += readBlobInt(loginData);
    blobSkipPosition += 1;
@@ -100,7 +100,17 @@ diff --git a/components/spotify/cspot/src/LoginBlob.cpp b/components/spotify/csp
    if ((size_t)blobSkipPosition + authSize > loginData.size()) {
      throw std::runtime_error("Zeroconf auth data truncated");
    }
+-  this->username = username;
+-  this->authData =
+-      std::vector<uint8_t>(loginData.begin() + blobSkipPosition,
+-                           loginData.begin() + blobSkipPosition + authSize);
++  // copied first: running out of memory here leaves the old account whole
++  std::string user = username;
++  std::vector<uint8_t> data(loginData.begin() + blobSkipPosition,
++                            loginData.begin() + blobSkipPosition + authSize);
 +  this->authType = authType;
-   this->username = username;
-   this->authData =
-       std::vector<uint8_t>(loginData.begin() + blobSkipPosition,
++  this->username = std::move(user);
++  this->authData = std::move(data);
+ }
+ 
+ void LoginBlob::loadUserPass(const std::string& username,

@@ -7,6 +7,10 @@
 //                   while the cspot task is logging the first one in; TSan
 //                   stops the run (its exit code) on a data race, and exit 2
 //                   if the session logged in as an account it wasn't made for
+//   harness snap    the second account's POST lands while the cspot task is
+//                   copying the first one out of the blob for its session
+//                   (loginSnapshot); TSan's exit code on a data race, exit 2
+//                   if the session logged in as an account it wasn't made for
 //
 // A login blob here is written in the clear: fakes.h's Crypto decodes it
 // back to what the harness wrote. Its layout, as LoginBlob parses it:
@@ -115,10 +119,64 @@ static int race() {
   return 0;
 }
 
+// the cspot task's second LoginBlob is the copy it makes for a session
+// (the first is the speaker's own): hold it there until the harness has
+// sent a POST, which then lands while that copy is being taken
+static std::atomic<int> dh_inits{0};
+static bool snapshotting = false;  // under fake::mu
+static void hold_second_blob() {
+  if (++dh_inits != 2) return;
+  {
+    std::lock_guard l(fake::mu);
+    snapshotting = true;
+    fake::cv.notify_all();
+  }
+  usleep(150 * 1000);
+}
+
+static int snap() {
+  fake::on_dh_init = hold_second_blob;
+  cspot_create("hifi", (httpd_handle_t)1, 80, cmd_cb, data_cb);
+  if (!wait_for([] { return fake::post != nullptr; })) {
+    fprintf(stderr, "snap: the zeroconf handlers were never registered\n");
+    return 1;
+  }
+  if (post("alice", "alice-token").find("\"status\":101") == std::string::npos) {
+    fprintf(stderr, "snap: alice's login was refused\n");
+    return 1;
+  }
+  if (!wait_for([] { return snapshotting; })) {
+    fprintf(stderr, "snap: the cspot task never copied the login for a session\n");
+    return 1;
+  }
+  if (post("bob", "bob-token-longer").find("\"status\":101") == std::string::npos) {
+    fprintf(stderr, "snap: bob's login was refused\n");
+    return 1;
+  }
+  if (!wait_for([] { return fake::logged_in; })) {
+    fprintf(stderr, "snap: the session never logged in\n");
+    return 1;
+  }
+  std::lock_guard l(fake::mu);
+  std::string data(fake::auth_data.begin(), fake::auth_data.end());
+  // the POST went in before the copy was taken, so the session is bob's
+  if (fake::ctx_user != "bob" || fake::auth_user != "bob" || data != "bob-token-longer") {
+    fprintf(stderr, "snap: a session made for %s logged in as %s with the token %s\n", fake::ctx_user.c_str(),
+            fake::auth_user.c_str(), data.c_str());
+    return 2;
+  }
+  printf("snap: the session made for %s logged in as %s, no data race\n", fake::ctx_user.c_str(),
+         fake::auth_user.c_str());
+  return 0;
+}
+
 int main(int argc, char** argv) {
   setvbuf(stdout, NULL, _IONBF, 0);
   std::string what = argc > 1 ? argv[1] : "";
-  int rc = what == "keeps" ? keeps() : what == "race" ? race() : (fprintf(stderr, "harness keeps|race\n"), 64);
+  int rc = what == "keeps"  ? keeps()
+           : what == "race" ? race()
+           : what == "snap" ? snap()
+                            : (fprintf(stderr, "harness keeps|race|snap\n"), 64);
   // the cspot task is still parked in its second session: leave without
   // tearing down what it uses
   _exit(rc);

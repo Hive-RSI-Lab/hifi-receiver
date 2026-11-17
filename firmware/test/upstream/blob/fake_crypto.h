@@ -9,6 +9,11 @@
 #include <string>
 #include <vector>
 
+namespace fake {
+// called from every LoginBlob's constructor (dhInit), when the harness sets it
+inline void (*on_dh_init)() = nullptr;
+}  // namespace fake
+
 // ---- the Crypto LoginBlob uses: identity transforms (see the top) -------------
 class Crypto {
  public:
@@ -31,7 +36,9 @@ class Crypto {
   void aesECBdecrypt(const std::vector<uint8_t>&, std::vector<uint8_t>& d) {
     for (size_t k = 16; k < d.size(); k++) d[k] ^= d[k - 16];
   }
-  void dhInit() {}
+  void dhInit() {
+    if (fake::on_dh_init) fake::on_dh_init();
+  }
   std::vector<uint8_t> dhCalculateShared(const std::vector<uint8_t>&) { return std::vector<uint8_t>(96, 0x22); }
   std::vector<uint8_t> pbkdf2HmacSha1(const std::vector<uint8_t>&, const std::vector<uint8_t>&, int, int len) {
     return std::vector<uint8_t>(len, 0x33);
