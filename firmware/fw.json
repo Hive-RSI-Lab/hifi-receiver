@@ -1,4 +1,98 @@
-{"idf": "v4.4.8", "target": "esp32", "host_tests": "test",
+{"idf": "v4.4.8", "target": "esp32", "host_tests": "test", "fuzz_tests": "test/fuzz",
+ "prepare": "sh tools/fetch.sh {src}",
  "python": ["setuptools<70", "protobuf>=3.20,<4", "grpcio-tools>=1.48,<1.49"],
  "pinmap": {"board": "../boards/lite-main/kicad/lite-main.kicad_pcb",
-            "sources": ["components/hifi/esp/hifi_board_lite.h", "patches/*.patch"]}}
+            "sources": ["components/hifi/esp/hifi_board_lite.h", "patches/*.patch"]},
+ "qemu": {
+  "psram": "4M", "flash": "8MB", "timeout": 300, "settle": 10,
+  "expect": "hifi: hifi-lite on \\S+, firmware",
+  "sdkconfig": ["CONFIG_ESP32_REV_MIN_0=y", "CONFIG_ESP32_REV_MIN=0",
+                "# CONFIG_ESPTOOLPY_FLASHMODE_QIO is not set", "CONFIG_ESPTOOLPY_FLASHMODE_DIO=y"],
+  "eth": "emac",
+  "nvs": {"settings": {"config": {"eth_config": "model=LAN8720,mdc=23,mdio=18"}}},
+  "wifi": "off",
+  "boot": "ota_0",
+  "adc1": {"6": 2100, "3": 2100},
+  "gpio": {"4": 0, "23": 1},
+  "http": [
+   {"get": "/api/v1/info", "expect": "\"model\":\"hifi-lite\",\"board\":\"lite-main\""},
+   {"get": "/api/v1/state", "expect": "^\\{\"uptime_s\":\\d+,\"power\":\\{\"state\":"},
+   {"post": "/api/v1/volume", "json": {"volume": 40}, "expect": "\"volume\":40,"},
+   {"post": "/api/v1/volume", "json": {"volume": 400}, "status": 400},
+   {"get": "/api/v1/state", "expect": "\"volume\":40,"},
+   {"get": "/api/v1/nothing", "status": 404}
+  ],
+  "scenarios": {
+   "selftest": {
+    "about": "The self-test, with the PD sink powered at 20 V and the amp's FAULTZ high: what QEMU can stand in for passes, the I2C parts (no chips behind the bus) fail and say so",
+    "steps": [
+     {"get": "/api/v1/state", "expect": "\"power\":\\{\"state\":\"on\"", "retry": 30},
+     {"post": "/api/v1/selftest", "expect": "\"name\":\"pvdd_on\",\"pass\":true"},
+     {"post": "/api/v1/selftest", "expect": "\"name\":\"pvdd_sensed\",\"pass\":true.*\"name\":\"amp_no_fault\",\"pass\":true"},
+     {"post": "/api/v1/selftest", "expect": "\"name\":\"psram\",\"pass\":true.*\"name\":\"heap\",\"pass\":true.*\"name\":\"network\",\"pass\":true"},
+     {"post": "/api/v1/selftest", "expect": "\"name\":\"pd_sink_i2c\",\"pass\":false"},
+     {"send": "hifi info", "expect": "\"model\":\"hifi-lite\"", "timeout": 20}
+    ]
+   },
+   "brownout": {
+    "about": "VBUS and PVDD sag to about 12 V with the amp on: the power sequencer leaves on for undervolt, and comes back once the supply has been good for a second",
+    "steps": [
+     {"get": "/api/v1/state", "expect": "\"power\":\\{\"state\":\"on\"", "retry": 30},
+     {"set": ["fw_adc1_raw[6] = 1250", "fw_adc1_raw[3] = 1250"]},
+     {"get": "/api/v1/state", "expect": "\"power\":\\{\"state\":\"undervolt\".*\"amp\":\\{\"enabled\":false", "retry": 10},
+     {"set": ["fw_adc1_raw[6] = 2100", "fw_adc1_raw[3] = 2100"]},
+     {"get": "/api/v1/state", "expect": "\"power\":\\{\"state\":\"on\"", "retry": 15}
+    ]
+   },
+   "pd_loss": {
+    "about": "The PD contract drops (PG goes high, VBUS falls to 5 V): the sequencer goes back to waiting on PD with PVDD off, and powers up again once the contract is back",
+    "steps": [
+     {"get": "/api/v1/state", "expect": "\"power\":\\{\"state\":\"on\"", "retry": 30},
+     {"set": ["fw_gpio_level |= 1ULL << 4", "fw_adc1_raw[6] = 560", "fw_adc1_raw[3] = 0"]},
+     {"get": "/api/v1/state", "expect": "\"power\":\\{\"state\":\"wait_pd\".*\"pvdd_on\":false", "retry": 10},
+     {"set": ["fw_gpio_level &= ~(1ULL << 4)", "fw_adc1_raw[6] = 2100", "fw_adc1_raw[3] = 2100"]},
+     {"get": "/api/v1/state", "expect": "\"power\":\\{\"state\":\"on\"", "retry": 15}
+    ]
+   },
+   "i2s_stall": {
+    "about": "QEMU has no I2S: whatever the firmware writes to it never drains, so a tone is a stalled output. The tone must be taken and stay on, the API and the controls must still answer through it, and the tone must stop",
+    "steps": [
+     {"get": "/api/v1/state", "expect": "\"power\":\\{\"state\":\"on\"", "retry": 30},
+     {"post": "/api/v1/tone", "json": {"type": "sine", "freq_hz": 1000, "level_dbfs": -30, "duration_s": 20}, "expect": "\"tone\":\\{\"type\":\"sine\""},
+     {"wait": 3},
+     {"post": "/api/v1/volume", "json": {"volume": 30}, "expect": "\"tone\":\\{\"type\":\"sine\".*\"volume\":30,"},
+     {"post": "/api/v1/control", "json": {"action": "next"}},
+     {"post": "/api/v1/control", "json": {"action": "prev"}},
+     {"post": "/api/v1/control", "json": {"action": "volup"}},
+     {"get": "/api/v1/state", "expect": "\"volume\":3[1-9],"},
+     {"post": "/api/v1/tone", "json": {"type": "stop"}, "expect": "\"tone\":null"},
+     {"get": "/api/v1/info", "expect": "\"model\":\"hifi-lite\""}
+    ]
+   },
+   "full_flash": {
+    "about": "The settings partition is full when the firmware boots: it must still come up, and saving a setting must fail without a crash",
+    "overrides": {"nvs_fill": {"settings": "config"}},
+    "steps": [
+     {"get": "/api/v1/info", "expect": "\"model\":\"hifi-lite\"", "retry": 30},
+     {"post": "/api/v1/volume", "json": {"volume": 33}},
+     {"post": "/api/v1/name", "json": {"name": "Full Flash"}, "status": "any"},
+     {"log": "Error comitting value to nvs for key hifi_name", "timeout": 30},
+     {"get": "/api/v1/state", "expect": "\"volume\":33,"},
+     {"get": "/api/v1/info", "expect": "\"model\":\"hifi-lite\""}
+    ]
+   },
+   "heap_squeeze": {
+    "about": "Internal RAM squeezed to 10 KB free: the self-test's heap check fails and says so, the API still answers, and all is well once it is given back",
+    "steps": [
+     {"get": "/api/v1/state", "expect": "\"power\":\\{\"state\":\"on\"", "retry": 30},
+     {"set": "fw_heap_leave = 10000"},
+     {"wait": 3},
+     {"get": "/api/v1/state", "expect": "\"uptime_s\"", "retry": 20},
+     {"post": "/api/v1/selftest", "expect": "\"name\":\"heap\",\"pass\":false", "retry": 20},
+     {"set": "fw_heap_leave = 0"},
+     {"wait": 3},
+     {"post": "/api/v1/selftest", "expect": "\"name\":\"heap\",\"pass\":true", "retry": 10}
+    ]
+   }
+  }
+ }}
