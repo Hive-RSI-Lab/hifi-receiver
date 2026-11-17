@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "esp_attr.h"
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "esp_wifi.h"
@@ -65,12 +66,13 @@ static bool ap_on(void) {
 
 static SemaphoreHandle_t lock;
 static StaticSemaphore_t lock_buf;
-static hifi_sock_t prev[HIFI_LISTEN_MAX], cur[HIFI_LISTEN_MAX];
+/* in PSRAM (only tasks touch them): internal RAM is the lab image's limit */
+EXT_RAM_ATTR static hifi_sock_t prev[HIFI_LISTEN_MAX], cur[HIFI_LISTEN_MAX];
 static int nprev = -2; /* -2: no scan yet */
 static bool prev_up;
 static int verdict = -1; /* strays in the newest pair of scans; -1: none yet */
 static bool verdict_up;  /* both scans of that pair had the network up */
-static char verdict_why[64];
+EXT_RAM_ATTR static char verdict_why[64];
 static int64_t last_scan;
 static hifi_listen_report_t report = {.strays = -1};
 

@@ -200,7 +200,12 @@ static void gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *p) {
 		if (!run || phase != PH_SCAN) break;
 		if (p->scan_rst.search_evt == ESP_GAP_SEARCH_INQ_RES_EVT) {
 			seen_adv++;
-			if (!adv_is_peer(p->scan_rst.ble_adv, p->scan_rst.adv_data_len)) break;
+			/* the mark is public, so a copy of it from another address is
+			 * skipped too (the address can be spoofed as well: this only
+			 * keeps a plain copycat out, security.md "Radio") */
+			if (!adv_is_peer(p->scan_rst.ble_adv, p->scan_rst.adv_data_len) ||
+			    p->scan_rst.ble_addr_type != BLE_ADDR_TYPE_PUBLIC || memcmp(p->scan_rst.bda, peer_bt, 6))
+				break;
 			phase = PH_OPEN;
 			esp_ble_gap_stop_scanning();
 			memcpy(remote, p->scan_rst.bda, 6);
