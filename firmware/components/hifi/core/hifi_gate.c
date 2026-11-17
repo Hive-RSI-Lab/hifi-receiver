@@ -153,19 +153,23 @@ static bool split_words(const char *line, char *buf, size_t cap, char **argv, in
 
 /* squeezelite's command line as this build parses it (components/squeezelite
  * main.c): an unknown option, a word left over, -t (license) or -? (help)
- * makes it exit, and an exit reboots the board 60 s later, at every boot.
- * Only the options this build knows and that keep it running pass: the ones
- * with a value, then -W, and -u/-R (resampling, with an optional value).
- * Bare "squeezelite" gets -? added by the console (help, then exit), so at
- * least one option is needed; without -o the output is I2S. -N is refused
- * (with -n it exits; there is no file system for it anyway), and -d needs
- * what squeezelite's strtok needs: a name, '=', a level.
- * -b sets the stream and output buffers in KB (next_param on ':'); if a
- * malloc fails squeezelite exits (stream_init, output_init_common), so the
- * sizes squeezelite would end with are checked: stream >= 64, output >= 256,
- * together <= 3000 (stock 500:2000 leaves 1.2 MB of PSRAM free, its largest
- * block 1.15 MB). With -u/-R and no output size, squeezelite multiplies its
- * 1450 KB default by up to 8, so resampling needs -b with an output size. */
+ * makes it exit(0), and cmd_squeezelite.c then reboots the board 60 s later,
+ * at every boot; exit(1) or exit(2) (a failed malloc) leaves a dead player
+ * until the next reboot. Only the options this build knows and that keep it
+ * running pass: the ones with a value, then -W, and -u/-R (resampling, with
+ * an optional value). Bare "squeezelite" gets -? added by the console (help,
+ * then exit), so at least one option is needed; without -o the output is
+ * I2S. -N is refused (with -n it exits; there is no file system for it
+ * anyway), and -d needs what squeezelite's strtok needs: a name, '=', a level.
+ * -b sets the stream and output buffers in KB (next_param on ':'). The sizes
+ * squeezelite would end with are checked: stream >= 64, output >= 256, and
+ * together <= 2600 KB, counting the default 1450 KB output as the 1740 KB a
+ * crossfade grows it to (stock 500:2000 is 2500 and leaves 1.2 MB of PSRAM
+ * free, its largest block 1.15 MB, for codecs, cspot and AirPlay). With
+ * -u/-R and no output size, squeezelite multiplies the 1450 KB default by
+ * the first rate / 44100 (1 to 8; 8 with no -r). -r: squeezelite's range
+ * form writes one past rates[] when the top rate is above 768000 (it zeroes
+ * the MAC), so every rate must be 768000 or less. */
 static bool debug_ok(const char *v) {
 	while (*v == '=') v++;
 	size_t l = strcspn(v, "=");
@@ -175,10 +179,14 @@ static bool debug_ok(const char *v) {
 	return *v != 0;
 }
 
-#define SQ_STREAM_KB 480 /* STREAMBUF_SIZE on ESP32 */
+#define SQ_STREAM_KB 480  /* STREAMBUF_SIZE on ESP32 */
+#define SQ_OUTPUT_KB 1450 /* OUTPUTBUF_SIZE */
+#define SQ_OUTPUT_XFADE_KB 1740 /* OUTPUTBUF_SIZE_CROSSFADE */
 #define SQ_STREAM_MIN_KB 64
 #define SQ_OUTPUT_MIN_KB 256
-#define SQ_BUFFERS_MAX_KB 3000
+#define SQ_BUFFERS_MAX_KB 2600
+#define SQ_RATE_MAX 768000
+#define SQ_RATES_MAX 18 /* MAX_SUPPORTED_SAMPLERATES */
 
 /* one -b value: "S", "S:O", ":O" or "S:", each part 1-4 digits; an empty
  * part leaves that size as it was (next_param returns NULL for "") */
@@ -201,9 +209,47 @@ static bool buffers_ok(const char *v, unsigned *stream_kb, unsigned *output_kb) 
 	return true;
 }
 
+/* one -r value: "<rates>[:<delay>]", rates a comma list of up to 18
+ * ("44100,48000") or "<max>", "<min>-<max>" (either side may be empty);
+ * digits only, each rate <= 768000, the delay up to 5 digits. An empty
+ * rates part leaves the rates as they were. *top: squeezelite's rates[0],
+ * the highest rate given. */
+static bool rates_ok(const char *v, unsigned *top) {
+	unsigned n = 0, hi = 0;
+	int digits = 0, commas = 0, dashes = 0, any = 0;
+	for (; *v && *v != ':'; v++) {
+		if (*v >= '0' && *v <= '9') {
+			if (++digits > 6) return false;
+			n = n * 10 + (unsigned) (*v - '0');
+			if (n > SQ_RATE_MAX) return false;
+			any = 1;
+			continue;
+		}
+		if (*v == ',') {
+			if (!digits || dashes || ++commas >= SQ_RATES_MAX) return false;
+		} else if (*v == '-') {
+			if (commas || ++dashes > 1) return false;
+		} else {
+			return false;
+		}
+		if (n > hi) hi = n;
+		n = 0, digits = 0;
+	}
+	if (commas && !digits) return false; /* "44100," */
+	if (dashes && !any) return false;    /* "-" means 768000 to squeezelite */
+	if (n > hi) hi = n;
+	if (*v == ':') {
+		int d = 0;
+		for (v++; *v; v++)
+			if (*v < '0' || *v > '9' || ++d > 5) return false;
+	}
+	if (any) *top = hi;
+	return true;
+}
+
 static bool squeezelite_args_ok(char **argv, int argc) {
 	if (argc < 2) return false;
-	unsigned stream_kb = SQ_STREAM_KB, output_kb = 0;
+	unsigned stream_kb = SQ_STREAM_KB, output_kb = 0, top_rate = 0;
 	bool resample = false;
 	for (int i = 1; i < argc;) {
 		const char *a = argv[i];
@@ -212,6 +258,7 @@ static bool squeezelite_args_ok(char **argv, int argc) {
 			if (i + 1 >= argc) return false;
 			if (a[1] == 'd' && !debug_ok(argv[i + 1])) return false;
 			if (a[1] == 'b' && !buffers_ok(argv[i + 1], &stream_kb, &output_kb)) return false;
+			if (a[1] == 'r' && !rates_ok(argv[i + 1], &top_rate)) return false;
 			i += 2;
 		} else if (a[1] == 'W') {
 			i += 1;
@@ -224,11 +271,17 @@ static bool squeezelite_args_ok(char **argv, int argc) {
 		}
 	}
 	if (!output_kb) {
-		if (resample) return false;
-		output_kb = 1450; /* OUTPUTBUF_SIZE on ESP32 */
+		unsigned scale = 1;
+		if (resample) {
+			scale = top_rate ? top_rate / 44100 : 8;
+			if (scale > 8) scale = 8;
+			if (scale < 1) scale = 1;
+		}
+		output_kb = SQ_OUTPUT_KB * scale;
 	}
+	unsigned held = output_kb == SQ_OUTPUT_KB ? SQ_OUTPUT_XFADE_KB : output_kb;
 	return stream_kb >= SQ_STREAM_MIN_KB && output_kb >= SQ_OUTPUT_MIN_KB &&
-	       stream_kb + output_kb <= SQ_BUFFERS_MAX_KB;
+	       stream_kb + held <= SQ_BUFFERS_MAX_KB;
 }
 
 /* the settings commands a LAN page may run, and an autoexecN line may hold.

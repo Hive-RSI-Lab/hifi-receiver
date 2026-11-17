@@ -173,14 +173,46 @@ int main(void) {
 	/* -b: sizes squeezelite can allocate (a failed malloc exits) */
 	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 500"));           /* output 1450 */
 	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 500:"));
-	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b :2500"));         /* stream 480 */
-	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 1000:2000"));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b :2100"));         /* stream 480 */
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 600:2000"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b :2500"));        /* 2980 KB */
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 1000:2000"));    /* 3000 KB */
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 860"));           /* 860 + 1740 (crossfade) */
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 861"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 1100:1450"));    /* 1450 grows to 1740 */
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 1100:1451"));
 	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 0500:2000"));
 	CHECK(hifi_autoexec_ok("squeezelite -o I2S -b 64:256"));
 	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 100000:2000"));
 	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 500:999999"));
-	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 1001:2000"));    /* 3001 KB */
-	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b :2521"));        /* 480 + 2521 */
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 601:2000"));     /* 2601 KB */
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b :2121"));        /* 480 + 2121 */
+	/* -u/-R with no -b output: 1450 KB times the top rate / 44100 (1 to 8) */
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -R -r 44100"));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -R -r 48000,44100:500"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -R -r 96000"));     /* 2900 KB */
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -R -r 44100 -r 96000"));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -R -r 44100 -r :100"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -R -r 0"));         /* 0: x8 */
+	/* -r: squeezelite writes past rates[] above 768000 */
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -r 768000"));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -r 8000-96000"));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -r -96000"));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -r 44100-:12345"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -r 800000"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -r 0-999999"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -r 4294967296"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -r -"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -r 1-2-3"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -r 44100,48000-96000"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -r 44100,"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -r ,44100"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -r 44100,,48000"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -r 44100:1:2"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -r 44100:123456"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -r 44.1k"));
+	CHECK(hifi_autoexec_ok("squeezelite -o I2S -r 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18"));
+	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -r 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"));
 	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 2000"));         /* 2000 + 1450 */
 	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b -1:2000"));
 	CHECK(!hifi_autoexec_ok("squeezelite -o I2S -b 500:2000:9"));
