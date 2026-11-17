@@ -82,17 +82,20 @@ static void on_net(void *arg, esp_event_base_t base, int32_t id, void *data) {
 
 void hifi_diag_tick(void) {
 	/* the default event loop comes up with the network, after hifi_init */
-	if (!events_on && esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, on_net, NULL) == ESP_OK) {
-		esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, on_net, NULL);
-		events_on = true;
-	}
-	/* an address that came before the handlers did: once, while associated
-	 * (later losses and gains reach on_net) */
+	/* (network_manager creates it with ESP_ERROR_CHECK, so it can't be made
+	 * earlier here; the catch-up below covers a connect before this) */
+	static bool wifi_on, ip_on;
+	if (!wifi_on) wifi_on = esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, on_net, NULL) == ESP_OK;
+	if (!ip_on) ip_on = esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, on_net, NULL) == ESP_OK;
+	events_on = wifi_on && ip_on;
+	/* an association and an address that came before the handlers did: once
+	 * (later losses and gains reach on_net). The connect it missed counts;
+	 * the IP time stays 0 (unknown) rather than the time of the catch-up. */
 	static bool caught_up;
 	wifi_ap_record_t ap;
 	if (events_on && !caught_up && hifi_net_ip(NULL, 0) && esp_wifi_sta_get_ap_info(&ap) == ESP_OK) {
 		caught_up = true;
-		if (!boot_ip_ms) boot_ip_ms = now_ms();
+		if (!connects) connects = 1;
 		int64_t t = esp_timer_get_time();
 		portENTER_CRITICAL(&ip_mux);
 		if (!ip_since_us) ip_since_us = t;
@@ -127,7 +130,9 @@ static void sys(hifi_diag_sys_t *o) {
 	o->boot_ip_ms = boot_ip_ms;
 	hifi_diag_net_t n = {0};
 	hifi_remote_link(&n, &o->boot_link_ms);
-	heap(&o->internal, MALLOC_CAP_INTERNAL);
+	/* byte-addressable internal RAM, as `state` and the self-test count it
+	 * (MALLOC_CAP_INTERNAL alone adds IRAM that takes only 32-bit access) */
+	heap(&o->internal, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 	heap(&o->psram, MALLOC_CAP_SPIRAM);
 	o->reset_reason = hifi_crash_reset_reason();
 	memcpy(o->reset_hist, hist, sizeof(hist));
@@ -185,10 +190,10 @@ static int tasks(hifi_diag_tasks_t *out, bool fresh) {
 				hifi_diag_cpu(a, na, b, el);
 				*last = *b;
 			} else {
-				r = -1;
+				r = b->n < 0 ? -b->n : -2;
 			}
 		} else {
-			r = b && b->n < 0 ? -b->n : -1;
+			r = !(st && a && b) ? -2 : b->n < 0 ? -b->n : -1;
 		}
 		free(st);
 		free(a);

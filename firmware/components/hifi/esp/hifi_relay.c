@@ -502,5 +502,6 @@ void hifi_remote_start(const hifi_ops_t *o) {
 
 	inbox = xQueueCreate(4, sizeof(msg_t));
 	xTaskCreate(worker, "hifi_cmd", 6144, NULL, ESP_TASK_PRIO_MIN + 2, NULL);
-	xTaskCreate(relay_task, "hifi_relay", 4096, NULL, ESP_TASK_PRIO_MIN + 1, NULL);
+	/* 5 KB: it parses JSON, and 4 KB left only 708 B unused on a bench run */
+	xTaskCreate(relay_task, "hifi_relay", 5120, NULL, ESP_TASK_PRIO_MIN + 1, NULL);
 }

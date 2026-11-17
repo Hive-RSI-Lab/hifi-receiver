@@ -609,6 +609,7 @@ static int r_diag(const hifi_ops_t *ops, const char *what, bool post, const char
 			snprintf(m, sizeof(m), "%d tasks, more than the %d the list holds", rc, HIFI_DIAG_TASKS_MAX);
 			return error(out, cap, 507, m);
 		}
+		if (rc == -2) return error(out, cap, 503, "the CPU sample failed, try again");
 		return rc ? error(out, cap, 404, "this build keeps no task stats") : 200;
 	}
 	if (!strcmp(what, "/net") && d->net) {
@@ -634,7 +635,8 @@ static int r_diag(const hifi_ops_t *ops, const char *what, bool post, const char
 		if (!d->echo) return error(out, cap, 404, "this build has no throughput test");
 		double bytes = HIFI_DIAG_ECHO_DEFAULT;
 		if (hj_get_raw(body, "bytes", &(const char *) {0}, &(size_t) {0}) &&
-		    (!hj_get_num(body, "bytes", &bytes) || bytes < 1 || bytes > HIFI_DIAG_ECHO_MAX))
+		    (!hj_get_num(body, "bytes", &bytes) || !(bytes >= 1 && bytes <= HIFI_DIAG_ECHO_MAX) ||
+		     bytes != floor(bytes)))
 			return error(out, cap, 400, "bytes: 1 to 1048576");
 		hifi_diag_echo_t e = {0};
 		const char *err = "the test failed";

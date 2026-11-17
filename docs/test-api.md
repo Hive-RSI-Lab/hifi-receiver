@@ -354,8 +354,11 @@ fits a remote bench's reply line; the task list pages. On the console:
 - `boot_ms`: ms from the app's start (the `esp_timer` clock, which starts
   with the app: the ROM's and the bootloader's time before it isn't counted)
   to the hifi code starting, the first IP and the
-  remote link first up; `null` until each happens.
-- `heap` is internal RAM, `psram` the PSRAM (`null` with none fitted): free
+  remote link first up; `null` until each happens. `ip` stays `null` when
+  the station had its IP before the diag handlers came up (a few seconds
+  after boot), since the real time isn't known then.
+- `heap` is internal, byte-addressable RAM (what `malloc` of an internal
+  buffer can use; the IRAM-only part isn't counted), `psram` the PSRAM (`null` with none fitted): free
   now, the least free since boot, the largest free block and the size.
 - `resets` is the reset history, newest first, up to 8 reasons, kept in NVS
   (namespace `hifi_diag`) with the `boots` counter. The reasons are
@@ -378,7 +381,9 @@ when the list is done. `diag/tasks/N` is the page from N with no body, for a
 remote bench that takes only bodiless lines from a lane that doesn't hold the
 board; `diag/tasks/0` takes a new sample like the first page. A start past 48
 (the most the list holds) is a 400; a board running more than 48 tasks
-answers 507 with the count in `error`.
+answers 507 with the count in `error`, and a sample that fails (no memory
+for it) a 503: try again. Another client's first page in between replaces
+the sample, so pages read across it can mix two samples.
 
 ```json
 {"n": 31, "from": 0, "sample_ms": 1000, "idle_pct": [71.2, 88.0],
@@ -400,7 +405,8 @@ core's idle task, so 100 minus it is that core's load.
 
 `rssi`, `channel`, `bssid` and `phy` are `null` while the station isn't
 associated. `connects` and `disconnects` count the station's associations since the
-handlers came up (a few seconds after boot); `last_reason` is the last
+handlers came up (a few seconds after boot); an association already up then
+counts as one connect. `last_reason` is the last
 disconnect's `wifi_err_reason_t`. `link` is the remote link: for wss:// the
 bytes on the socket, for MQTT `0` (not counted).
 
@@ -412,10 +418,14 @@ bytes on the socket, for MQTT `0` (not counted).
 ```
 
 `underruns` counts the times the output ran dry while a stream was playing
-(once per dry spell): an LMS (squeezelite), AirPlay or Spotify stream. A
-Bluetooth stream feeds the output its own way and isn't counted. `buffer_ms` is decoded audio waiting in the output
+(once per dry spell): an LMS (squeezelite), AirPlay or Spotify stream. It
+counts only once the output has played since it started or was flushed, so
+a start that is still filling (Spotify's play comes before its data) or a
+seek isn't one. A Bluetooth stream feeds the output its own way and isn't
+counted. `buffer_ms` is decoded audio waiting in the output
 buffer, `dma_ms` the I2S DMA's fixed delay; `latency_ms` is their sum, from
-decode to the pins. `played_s` is the output's total since boot. A build
+decode to the pins (on an idle board, the DMA's floor alone). `played_s` is
+the time the output has run since boot, silence in a dry spell included. A build
 without the output's counters answers `{"underruns": null}`.
 
 ### `GET /api/v1/diag/ota`
@@ -431,9 +441,13 @@ erasing and writing flash, `boot` the boot count when it was written.
 `{"bytes": N}` (1 to 1048576, default 131072): sends N bytes of filler up the
 wss:// bench link in 8 KB messages (`{"t":"sink",...}`, which the bench drops)
 and times it: `{"bytes", "ms", "kbps"}`. The board's upload throughput to the
-bench. The test stops after 20 s, so on a slow link `bytes` (what was sent)
-can be less than asked. 409 when the link isn't wss:// or isn't up, 503 when
-it drops during the test.
+bench. The test stops after 20 s (checked between messages, so a stalled send
+can run over), so on a slow link `bytes` (what was sent) can be less than
+asked; the last message is padded to at least 21 bytes, so it can also be up
+to 20 more. 409 when the link isn't wss:// or isn't up, 503 when it drops
+during the test: a failed send drops the bench link, which then reconnects.
+The test runs in the command worker, which queues 4 commands, so a bench
+should wait for its reply before sending more.
 
 ## Remote bring-up: `capture`, `ota`, `wifi`, `remote`
 

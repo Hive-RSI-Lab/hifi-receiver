@@ -1,33 +1,67 @@
+diff --git a/components/squeezelite/decode_external.c b/components/squeezelite/decode_external.c
+--- a/components/squeezelite/decode_external.c
++++ b/components/squeezelite/decode_external.c
+@@ -128,6 +128,7 @@ static uint32_t sink_data_handler(const uint8_t *data, uint32_t len, int retries
+  */
+ static u32_t hifi_gain_l, hifi_gain_r;
+ static bool hifi_unity;
++extern bool hifi_output_flushed; /* output.c: emptied on purpose, not an underrun */
+ 
+ static bool hifi_owns_output(void) {
+ 	return output.external == DECODE_HIFI_TEST || output.external == DECODE_HIFI_LINE;
+@@ -145,6 +146,7 @@ static void hifi_take_output(u32_t rate, int kind, bool unity) {
+ 	}
+ 	hifi_unity = unity;
+ 	_buf_flush(outputbuf);
++	hifi_output_flushed = true;
+ 	_buf_limit(outputbuf, 0);
+ 	output.next_sample_rate = output.current_sample_rate = rate;
+ 	output.external = kind;
+@@ -481,6 +483,7 @@ static bool cspot_cmd_handler(cspot_event_t cmd, va_list args)
+ 		break;
+ 	case CSPOT_SEEK:
+ 		_buf_flush(outputbuf);		
++		hifi_output_flushed = true; // hifi: a seek isn't an underrun (output.c)
+ 		sink_state = SINK_ABORT;
+ 		LOG_INFO("CSpot seek by %d", va_arg(args, uint32_t));
+ 		break;
 diff --git a/components/squeezelite/output.c b/components/squeezelite/output.c
 --- a/components/squeezelite/output.c
 +++ b/components/squeezelite/output.c
-@@ -38,6 +38,15 @@
+@@ -38,6 +38,22 @@ u8_t *silencebuf_dsd;
  
  bool user_rates = false;
  
 +/* hifi: times the output ran dry while a stream was still coming in (the
-+ * board's `api diag/audio`); one count per dry spell, not per call. LMS,
-+ * AirPlay (3) and Spotify (4) by hifi_sink_source(): a Bluetooth pause plays
-+ * silence with the output running, so it can't be told from a dropout */
++ * board's `api diag/audio`), by hifi_diag_underrun_step's rule
++ * (components/hifi/core/hifi_diag.h): one per dry spell, and only once the
++ * output has played since it started or was flushed. Live is LMS's stream,
++ * or AirPlay (3) and Spotify (4) by hifi_sink_source(): a Bluetooth pause
++ * plays silence with the output running, so it can't be told from a
++ * dropout. decode_external.c sets hifi_output_flushed when it empties the
++ * buffer while running (a seek). Weak: recovery links this file without
++ * either. */
 +extern struct streamstate stream;
-+extern int hifi_sink_source(void) __attribute__((weak)); /* none in recovery */
++extern int hifi_sink_source(void) __attribute__((weak));
++extern int hifi_diag_underrun_step(u8_t *state, bool running, u32_t frames, bool live, bool flushed) __attribute__((weak));
 +u32_t hifi_output_underruns;
-+static bool hifi_dry;
++bool hifi_output_flushed;
++static u8_t hifi_underrun;
 +
  #define LOCK   mutex_lock(outputbuf->mutex)
  #define UNLOCK mutex_unlock(outputbuf->mutex)
  
-@@ -109,6 +118,14 @@
+@@ -109,6 +125,14 @@ frames_t _output_frames(frames_t avail) {
  	}
  	
  	// play silence if buffering or no frames
-+	if (output.state == OUTPUT_RUNNING && frames == 0 &&
-+	    (stream.state > DISCONNECT ||
-+	     (hifi_sink_source && (hifi_sink_source() == 3 || hifi_sink_source() == 4)))) {
-+		if (!hifi_dry) hifi_output_underruns++;
-+		hifi_dry = true;
-+	} else if (frames) {
-+		hifi_dry = false;
++	if (hifi_diag_underrun_step) {
++		bool running = output.state == OUTPUT_RUNNING;
++		bool live = running && !frames && (stream.state > DISCONNECT ||
++		            (hifi_sink_source && (hifi_sink_source() == 3 || hifi_sink_source() == 4)));
++		if (hifi_diag_underrun_step(&hifi_underrun, running, frames, live, hifi_output_flushed))
++			hifi_output_underruns++;
++		hifi_output_flushed = false;
 +	}
  	if (output.state <= OUTPUT_BUFFER || frames == 0) {
  		silence = true;
@@ -35,7 +69,7 @@ diff --git a/components/squeezelite/output.c b/components/squeezelite/output.c
 diff --git a/components/squeezelite/output_i2s.c b/components/squeezelite/output_i2s.c
 --- a/components/squeezelite/output_i2s.c
 +++ b/components/squeezelite/output_i2s.c
-@@ -116,6 +116,8 @@
+@@ -116,6 +116,8 @@ static struct {
  	u8_t *buf;
  } spdif;
  static size_t dma_buf_frames;
@@ -44,7 +78,7 @@ diff --git a/components/squeezelite/output_i2s.c b/components/squeezelite/output
  static TaskHandle_t output_i2s_task;
  static struct {
  	int gpio, active;
-@@ -589,6 +591,10 @@
+@@ -589,6 +591,10 @@ static void output_thread_i2s(void *arg) {
  		_output_frames( iframes );
  		// oframes must be a global updated by the write callback
  		output.frames_in_process = oframes;
@@ -55,7 +89,7 @@ diff --git a/components/squeezelite/output_i2s.c b/components/squeezelite/output
                						
  		SET_MIN_MAX_SIZED(oframes,rec,iframes);
  		SET_MIN_MAX_SIZED(_buf_used(outputbuf),o,outputbuf->size);
-@@ -834,3 +840,15 @@
+@@ -834,3 +840,15 @@ static void IRAM_ATTR spdif_convert(ISAMPLE_T *src, size_t frames, u32_t *dst) {
  		*dst++ = ((u32_t)lo << 16) | hi;
  	}
  }
