@@ -1144,6 +1144,7 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 	if (src == HIFI_CAP_LOOPBACK && !has_taps()) return *err = "this board revision has no loopback taps", 409;
 	if (!tone_active && !audio_active && input != HIFI_INPUT_DJ_DIRECT)
 		return *err = "output idle: play a tone or a stream first", 409;
+	if (!codec_up) return *err = "codec not started yet", 409; /* squeezelite's init still writes CHIPPOWER */
 	if (capture_busy) return *err = "a capture is running", 409;
 	capture_busy = true;
 	/* squeezelite's init leaves the ADC powered down in CHIPPOWER (0xAA), so
@@ -1190,7 +1191,10 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 		info->v_per_fs[0] = info->v_per_fs[1] = ADC_FS_PEAK_V * LINE_DIVIDER;
 	}
 out:
-	hifi_i2c_write(ES8388_ADDR, ES8388_CHIPPOWER, chip | ES8388_CHIPPOWER_ADC_DOWN); /* the ADC down again */
+	/* the ADC down again, keeping the DAC's bits as they are now */
+	if (hifi_i2c_read(ES8388_ADDR, ES8388_CHIPPOWER, &chip) != ESP_OK ||
+	    hifi_i2c_write(ES8388_ADDR, ES8388_CHIPPOWER, (chip & 0x55) | ES8388_CHIPPOWER_ADC_DOWN) != ESP_OK)
+		ESP_LOGW(TAG, "capture: couldn't power the ADC down again");
 	capture_busy = false;
 	codec_dirty = true; /* back to the routing for the input in use */
 	return st;
