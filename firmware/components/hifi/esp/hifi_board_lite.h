@@ -58,8 +58,9 @@
 #define HIFI_HAS_CHANNEL 1 /* the output mixers pick the side (core/hifi_chan.h) */
 #define HIFI_HAS_CAPTURE 1 /* the ES8388's ADC: line in and the loopback taps */
 
-/* ES8388 ADC, for the captures (docs/remote.md). Values from the datasheet,
- * not yet checked on a board. */
+/* ES8388 ADC, for the captures (docs/remote.md). Values from the datasheet;
+ * checked on Lite 2 (2026-11-17): with CHIPPOWER below, a -6 dBFS tone reads
+ * about 0.13 fs on each loopback tap and the floor about 0.0002 fs. */
 #define ES8388_ADCCONTROL1 0x09  /* PGA gain, 0 = 0 dB */
 #define ES8388_ADCCONTROL2 0x0A  /* bits 7:6 LINSEL, 5:4 RINSEL: 00 = input 1, 01 = input 2 */
 #define ES8388_ADCCONTROL4 0x0C  /* I2S, 16 bit */
