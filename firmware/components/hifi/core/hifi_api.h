@@ -13,6 +13,7 @@
 #include "hifi_ir.h"
 #include "hifi_meta.h"
 #include "hifi_capture.h"
+#include "hifi_diag.h"
 #include "hifi_ota.h"
 #include "hifi_pd.h"
 #include "hifi_power.h"
@@ -212,6 +213,8 @@ typedef struct {
 	 * with no phone; the boot after that is back to normal. Restarts the
 	 * board. 0, or -1 with *err set; NULL: 404 */
 	int (*bt_test)(const char *sink, const char **err);
+	/* on-board diagnostics (hifi_diag.h); NULL: diag answers 404 */
+	const hifi_diag_ops_t *diag;
 } hifi_ops_t;
 
 /* Returns the HTTP status; the reply (always a JSON object) is in out. */
