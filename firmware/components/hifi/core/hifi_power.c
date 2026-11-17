@@ -109,15 +109,27 @@ static void pvdd_fail(hifi_power_t *p, uint32_t now) {
 	enter(p, HIFI_PWR_NO_PVDD, now);
 }
 
-static void record_fault(hifi_power_t *p, uint32_t now) {
-	p->faults++;
-	p->fault_t[p->fault_n % 8] = now;
-	p->fault_n++;
+static int recent_faults(const hifi_power_t *p, uint32_t now) {
 	int recent = 0;
 	for (int i = 0; i < 8 && i < p->fault_n; i++) {
 		if (ELAPSED(now, p->fault_t[i]) <= p->cfg.fault_window_ms) recent++;
 	}
-	if (recent >= p->cfg.fault_latch) p->latched = true;
+	return recent;
+}
+
+void hifi_power_forgive_fault(hifi_power_t *p, uint32_t now) {
+	if (!p->fault_n) return;
+	/* ages the newest fault out of the window: it stays in faults (the
+	 * count since boot) and its back-off runs, but it can't latch */
+	p->fault_t[(p->fault_n - 1) % 8] = now - p->cfg.fault_window_ms - 1;
+	p->latched = recent_faults(p, now) >= p->cfg.fault_latch;
+}
+
+static void record_fault(hifi_power_t *p, uint32_t now) {
+	p->faults++;
+	p->fault_t[p->fault_n % 8] = now;
+	p->fault_n++;
+	if (recent_faults(p, now) >= p->cfg.fault_latch) p->latched = true;
 	p->backoff = true;
 	p->t_backoff = now;
 }

@@ -154,6 +154,12 @@ function powerNotice() {
     'Unplug the charger and plug it back in. If this comes back, the box needs service.');
   if (p.state === 'undervolt' || p.state === 'overvolt') return h('div.card.err', {},
     h('b', {}, 'Speakers off: the supply is out of range. '), `It reads ${p.vbus_v?.toFixed(1)} V. Try another charger or cable.`);
+  if (a.hot) return h('div.card.warn', {}, h('b', {}, 'Amplifier hot. '),
+    'It is turning itself down until it cools. A fan, or a lower Heat cap on the Sound page, keeps it playing.');
+  if (g.limiting && g.gain_db < -0.5 && (g.reason === 'heat' || g.reason === 'amp_hot'))
+    return h('div.card.warn', {}, h('b', {}, 'Heat limit. '),
+      `Turned down ${(-g.gain_db).toFixed(1)} dB to keep the amplifier under ${g.heat_cap_w} W a channel. ` +
+      'You can raise the Heat cap on the Sound page.');
   if (g.limiting && g.gain_db < -0.5) return h('div.card.warn', {}, h('b', {}, 'Power limit. '),
     `Turned down ${(-g.gain_db).toFixed(1)} dB to stay within the charger's ${Math.round(c.w)} W.`);
   return null;
@@ -224,24 +230,63 @@ function pageSound() {
           (v) => { gains[i] = v; set('eq', { gains }); }),
         fmt(f))))),
     subCard(),
+    c.channel && channelCard(),
     h('div.card', {}, h('h2', {}, 'Volume limit'),
       h('p.dim', {}, 'The highest the volume can go, from the app, buttons or remote. Turn it down to protect smaller speakers.'),
       h('div.row', {}, h('div.grow', {}, slider({ min: 30, max: 100, value: a.max_volume, 'aria-label': 'Volume limit',
         show: (v) => { $('#maxv').textContent = v; } }, (v) => set('volume', { max_volume: v }))),
       h('span.big', { id: 'maxv' }, String(a.max_volume)))),
+    loudnessCard(),
   ];
+}
+
+// a labelled slider with its value beside it
+function line(label, attrs, value, unit, send) {
+  const v = h('span.dim', { style: 'min-width:64px;text-align:right' }, value + unit);
+  return h('div.row', {}, h('span', { style: 'min-width:84px' }, label),
+    h('div.grow', {}, slider({ ...attrs, value, show: (x) => { v.textContent = x + unit; } }, send)), v);
+}
+
+// Boost (digital gain past full scale, under a peak limiter) and the heat cap
+function loudnessCard() {
+  const L = I.caps.loudness, b = S.audio.boost, g = S.governor;
+  if (!L || !b) return null;
+  const hc = L.heat_cap_w;
+  const rows = [
+    h('p.dim', {}, 'Boost makes everything louder. A fast limiter keeps the loud peaks from clipping, ' +
+      'so loud songs sound a little squeezed at high Boost.'),
+    line('Boost', { min: 0, max: L.boost_max_db, step: 0.5 }, b.db, ' dB', (x) => set('loudness', { boost_db: x })),
+  ];
+  if (b.db > 0) rows.push(h('p.dim', {}, b.limiting
+    ? `Limiting now: peaks ${(-b.limit_db).toFixed(1)} dB down.` : 'Not limiting now.'));
+  if (g.heat_cap_w != null) {
+    rows.push(line('Heat cap', { min: hc.min, max: hc.max, step: 0.5 }, g.heat_cap_w, ' W',
+      (x) => set('loudness', { heat_cap_w: x })),
+    h('p.dim', {}, `How much sustained power each channel may give. ${hc.default} W is the safe default. ` +
+      `Above ${hc.default} W the amplifier may cut out when it gets hot, more so in a closed box; a fan helps.`));
+    if (g.reason === 'heat' || g.reason === 'amp_hot' || S.amp.hot)
+      rows.push(h('p', {}, h('b', {}, S.amp.hot || g.reason === 'amp_hot'
+        ? 'The amplifier is hot and is turning itself down.'
+        : `Held at the heat cap now (${g.heat_w} W a channel).`)));
+  }
+  return h('div.card', {}, h('h2', {}, 'Loudness'), rows);
+}
+
+// which side the speaker output plays (Lite); SUB OUT follows it
+function channelCard() {
+  const ch = S.audio.channel || 'stereo';
+  return h('div.card', {}, h('h2', {}, 'Speaker output'),
+    h('p.dim', {}, 'Stereo for a pair. For one speaker on its own, pick Mono, or Left or Right ' +
+      'when two receivers each play one side.'),
+    seg({ stereo: 'Stereo', left: 'Left', right: 'Right', mono: 'Mono' }, ch, (v) => set('channel', { channel: v })));
 }
 
 function subCard() {
   const s = S.audio.sub, c = I.caps.sub;
-  const line = (label, attrs, value, unit, send) => {
-    const v = h('span.dim', { style: 'min-width:64px;text-align:right' }, value + unit);
-    return h('div.row', {}, h('span', { style: 'min-width:84px' }, label),
-      h('div.grow', {}, slider({ ...attrs, value, show: (x) => { v.textContent = x + unit; } }, send)), v);
-  };
   const rows = [h('div.row', {}, h('span.grow', {}, 'Sub outputs'), onOff(s.on, (on) => set('sub', { on })))];
   if (s.on) {
-    rows.push(line('Level', { min: -30, max: 6, step: 0.5 }, s.level_db, ' dB', (x) => set('sub', { level_db: x })));
+    rows.push(line('Level', { min: -30, max: c.max_db ?? 6, step: 0.5 }, s.level_db, ' dB', (x) => set('sub', { level_db: x })));
+    if ((c.max_db ?? 6) < 0) rows.push(h('p.dim', {}, `This model's sub outputs top out at ${c.max_db} dB.`));
     if (c.crossover) {
       rows.push(line('Crossover', { min: 40, max: 160, step: 5 }, s.xover_hz, ' Hz', (x) => set('sub', { xover_hz: x })));
       rows.push(h('div.row', {}, h('span.grow', {}, 'Take the deep bass off the main speakers'),
@@ -270,7 +315,7 @@ function pageSetup() {
     n.mode === 'ap' && h('div.card.warn', {}, h('b', {}, 'Welcome. '),
       'Choose your home Wi-Fi below. The receiver joins it and you then find it at ',
       h('b', {}, `http://${n.hostname}.local`), '.'),
-    wifiCard(), nameCard(), remoteCard(), updateCard(), diagCard(),
+    wifiCard(), nameCard(), remoteCard(), (I.caps.led || I.caps.backlight) && lightsCard(), updateCard(), diagCard(),
   ];
 }
 
@@ -396,6 +441,16 @@ function diagCard() {
           'Then join the HiFi-… Wi-Fi to set it up again.' : 'Reset. Join the HiFi-… Wi-Fi to set it up again.', 20000);
       } catch (e) { toast(e.message); }
     } }, 'Factory reset')));
+}
+
+// the LED test and the front-panel backlight, on models that have them
+function lightsCard() {
+  const c = I.caps, bl = (S.controls && S.controls.backlight) || 'auto';
+  return h('div.card', {}, h('h2', {}, 'Lights'),
+    c.backlight && h('div.row', {}, h('span.grow', {}, 'Backlight'),
+      seg({ auto: 'Auto', on: 'On', off: 'Off' }, bl, (mode) => set('backlight', { mode }))),
+    c.led && h('div.row', {}, h('span.grow', {}, 'Light every LED for a few seconds'),
+      h('button', { onclick: () => api('led', { mode: 'test' }).then(() => toast('LEDs on'), (e) => toast(e.message)) }, 'Test')));
 }
 
 function uptime(s) {
