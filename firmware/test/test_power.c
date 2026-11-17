@@ -289,6 +289,102 @@ static void pvdd_unsensed(void) {
 	CHECK(p.state == HIFI_PWR_ON && o->amp_on);
 }
 
+/* a short PG drop (a plug that shifts, a PD hiccup) while playing: the amp and
+ * PVDD open on the first tick, nothing is latched or counted as a fault, and
+ * it comes back by itself after settle + soft start with no operator reset */
+static void on_and_playing(void) {
+	setup(0);
+	in.pg = true;
+	in.vbus_v = 20.0f;
+	run(1000);
+	CHECK(p.state == HIFI_PWR_ON && p.out.amp_on);
+}
+
+static void short_pg_glitch_rides_through(void) {
+	for (uint32_t glitch = 10; glitch <= 150; glitch += 70) {
+		on_and_playing();
+		in.pg = false;
+		const hifi_power_out_t *o = run(glitch);
+		CHECK(!o->amp_on && !o->pvdd_en && p.state == HIFI_PWR_WAIT_PD); /* off at once, amp before PVDD */
+		in.pg = true;
+		o = run(150);
+		CHECK(!o->pvdd_en); /* still settling: no re-close into a flapping supply */
+		o = run(100);
+		CHECK(o->pvdd_en && !o->amp_on); /* PVDD first, amp after the ramp */
+		o = run(300);
+		CHECK(!o->amp_on);
+		o = run(200);
+		CHECK(p.state == HIFI_PWR_ON && o->amp_on);
+		CHECK(!p.latched && !p.backoff && p.faults == 0 && p.pvdd_fails == 0);
+	}
+}
+
+/* a long cut with VBUS gone: WAIT_PD, then the normal start when it returns */
+static void long_vbus_loss_restarts_cleanly(void) {
+	on_and_playing();
+	in.pg = false;
+	in.vbus_v = 0.0f;
+	const hifi_power_out_t *o = run(5000);
+	CHECK(p.state == HIFI_PWR_WAIT_PD && !o->pvdd_en && !o->amp_on);
+	in.pg = true;
+	in.vbus_v = 20.0f;
+	run(250);
+	CHECK(p.state == HIFI_PWR_SOFT_START);
+	o = run(500);
+	CHECK(p.state == HIFI_PWR_ON && o->amp_on && !p.latched);
+}
+
+/* a plug rattling: ten glitches in a minute never latch the amp off */
+static void repeated_glitches_never_latch(void) {
+	on_and_playing();
+	for (int i = 0; i < 10; i++) {
+		in.pg = false;
+		in.vbus_v = 4.0f;
+		run(30);
+		in.pg = true;
+		in.vbus_v = 20.0f;
+		run(1500);
+		CHECK(p.state == HIFI_PWR_ON && p.out.amp_on && !p.latched);
+	}
+}
+
+/* the PD source renegotiates (20 V to 15 V and back, PG high throughout but
+ * VBUS dips under the floor): UNDERVOLT opens everything, it recovers after recover_ms */
+static void renegotiation_dip(void) {
+	on_and_playing();
+	in.vbus_v = 5.0f; /* the source's hard reset: VBUS falls to vSafe5V, PG may stay up */
+	const hifi_power_out_t *o = run(100);
+	CHECK(!o->amp_on && !o->pvdd_en);
+	in.vbus_v = 15.0f;
+	o = run(300);
+	CHECK(!o->amp_on);
+	o = run(1500);
+	CHECK(p.state == HIFI_PWR_ON && o->amp_on && !p.latched);
+}
+
+/* VBUS collapses while PVDD (sensed) follows it down faster than the VBUS
+ * reading: still opens cleanly, and three such cuts in a minute don't latch
+ * the PVDD-fail counter (it would need a reset to play again) */
+static void collapse_with_pvdd_ahead_of_vbus(void) {
+	on_and_playing();
+	for (int i = 0; i < 4; i++) {
+		in.vbus_v = 18.0f; /* the sense still shows a good contract... */
+		in.pvdd_v = 2.0f;  /* ...but PVDD is already down */
+		in.pg = true;
+		sw = SW_STUCK;     /* run() pins PVDD at 0 */
+		run(100);
+		in.pg = false;
+		in.vbus_v = 0.0f;
+		run(500);
+		CHECK(p.state == HIFI_PWR_WAIT_PD);
+		sw = SW_WORKS;
+		in.pg = true;
+		in.vbus_v = 20.0f;
+		run(1500);
+		CHECK(p.state == HIFI_PWR_ON && p.out.amp_on && !p.latched);
+	}
+}
+
 int main(void) {
 	laptop_port_never_powers_amp();
 	normal_power_up();
@@ -302,6 +398,11 @@ int main(void) {
 	pvdd_slow_close();
 	pvdd_drops_while_on();
 	pvdd_unsensed();
+	short_pg_glitch_rides_through();
+	long_vbus_loss_restarts_cleanly();
+	repeated_glitches_never_latch();
+	renegotiation_dip();
+	collapse_with_pvdd_ahead_of_vbus();
 	CHECK_STR(hifi_power_state_name(HIFI_PWR_SOFT_START), "soft_start");
 	return check_report("power");
 }

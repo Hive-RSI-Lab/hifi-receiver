@@ -50,6 +50,9 @@ void hifi_diag_cpu(const hifi_diag_task_t *a, int na, hifi_diag_tasks_t *b, uint
 /* The reset history, newest first, comma-separated, at most HIFI_DIAG_RESETS
  * reasons: adds reason at the front of hist (cap bytes). */
 void hifi_diag_hist_push(char *hist, size_t cap, const char *reason);
+/* A restart that looks like the power went: reason power_on or brownout on a
+ * board whose counter says it had booted before (a first boot is a plug-in). */
+bool hifi_diag_is_power_cut(const char *reason, uint32_t boots_before);
 
 /*
  * The output's underrun count, one step per output call (patch 0009, in
@@ -96,6 +99,7 @@ typedef struct {
 	const char *reset_reason;
 	char reset_hist[HIFI_DIAG_HIST_CAP];
 	uint32_t boots; /* since the counter was first written */
+	uint32_t power_cuts; /* restarts that looked like a power cut (hifi_diag_is_power_cut), kept in NVS */
 	hifi_diag_nvs_t nvs[2];
 	hifi_diag_power_t power; /* the API fills it from the snapshot */
 } hifi_diag_sys_t;
