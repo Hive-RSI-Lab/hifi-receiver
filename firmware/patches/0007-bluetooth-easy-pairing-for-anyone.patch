@@ -39,7 +39,7 @@ diff --git a/components/driver_bt/bt_app_sink.c b/components/driver_bt/bt_app_si
  /* hifi: let a new phone pair (play button held). Dropping the connected
   * phone leaves the sink discoverable, as a disconnect always does here.
   * False when the Bluetooth sink is not running, so the button keeps its
-@@ -155,6 +165,19 @@
+@@ -155,12 +165,27 @@
  	return true;
  }
  
@@ -59,15 +59,32 @@ diff --git a/components/driver_bt/bt_app_sink.c b/components/driver_bt/bt_app_si
  /* disconnection */
  void bt_disconnect(void) {
  	displayer_control(DISPLAYER_SHUTDOWN);
-@@ -295,6 +318,7 @@
+ 	if (s_audio == AUDIO_PLAYING) esp_avrc_ct_send_passthrough_cmd(tl++ & 0x0f, ESP_AVRC_PT_CMD_STOP, ESP_AVRC_PT_CMD_STATE_PRESSED);
+ 	actrls_unset();
+ 	ESP_LOGD(BT_AV_TAG, "forced disconnection %d", s_audio);
++	/* another source took over: this phone no longer counts as playing */
++	if (s_audio == AUDIO_PLAYING) s_audio = AUDIO_CONNECTED;
+ }
+ 
+ /* update metadata if any */
+@@ -295,8 +320,16 @@
          uint8_t *bda = a2d->conn_stat.remote_bda;
          ESP_LOGD(BT_AV_TAG, "A2DP connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
               s_a2d_conn_state_str[a2d->conn_stat.state], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
 +        s_idle_s = 0;
          if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) {
              s_remote_connected = false;
++            /* a link dropped mid-song reports no audio stop first: clear it
++             * here, or the next phone looks busy and is never let go */
++            if (s_audio != AUDIO_IDLE) {
++                (*bt_app_a2d_cmd_cb)(BT_SINK_AUDIO_STOPPED);
++                actrls_unset();
++                s_audio = AUDIO_IDLE;
++            }
              esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
-@@ -696,6 +720,11 @@
+ 			(*bt_app_a2d_cmd_cb)(BT_SINK_DISCONNECTED);
+         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED){
+@@ -696,6 +729,11 @@
          esp_a2d_sink_register_data_callback(bt_app_a2d_data_cb);
          esp_a2d_sink_init();
  
