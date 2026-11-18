@@ -98,6 +98,10 @@ static EXT_RAM_ATTR hifi_boost_t boost;
 static volatile bool amp_hot; /* the amp's over-temperature warning is held */
 static hifi_chan_t channel = HIFI_CHAN_STEREO;
 static volatile bool codec_dirty = true; /* re-apply input/sub to the codec */
+/* the power task's routes: started counts each one begun, routed is the
+ * started count of the last one that went through. A route begun after a
+ * request reads that request's settings (selftest_loopback waits for one). */
+static volatile uint32_t codec_started, codec_routed;
 /* the amps stay in shutdown until then: across an input change (the analog
  * switch moves only with them off, firmware requirement C5) and for 2.5 s
  * after the codec first takes its routing, so its VMID has settled before
@@ -118,6 +122,9 @@ static uint32_t heat_trip_ms, trim_hold_until, amp_off_ms;
 static bool heat_trip_any;
 static volatile uint32_t selftest_hold_until; /* keeps the amp awake for the self-test */
 static volatile bool capture_busy;   /* the codec's ADC is ours until the capture ends */
+/* the self-test's loopback check measures with the user's sound settings
+ * out: no EQ or loudness (hifi_eq_bypass), stereo on the codec */
+static volatile bool loop_flat;
 
 static hifi_vol_t vol;               /* under lock, like what follows */
 static bool vol_dirty, vol_from_source;
@@ -235,8 +242,13 @@ static void power_task(void *arg) {
 			float db = sub_db;
 			hifi_vol_t v = vol;
 			UNLOCK();
-			if (hifi_bsp_route(in, on, db, &v, now)) {
-				codec_dirty = false;
+			/* cleared before the route, so a request made while it runs
+			 * (it may have read the old settings) routes again */
+			uint32_t gen = ++codec_started;
+			codec_dirty = false;
+			if (!hifi_bsp_route(in, on, db, &v, now)) codec_dirty = true;
+			else {
+				codec_routed = gen;
 				if (!codec_up) {
 					codec_up = true;
 					amp_hold_until = now + 2500;
@@ -1037,8 +1049,8 @@ static int op_set_channel(hifi_chan_t c) {
 	LOCK();
 	channel = c;
 	gov.chan = c;
+	if (!loop_flat) hifi_bsp_channel(c); /* else the loopback check puts it on the codec when it ends */
 	UNLOCK();
-	hifi_bsp_channel(c);
 	config_set_value(NVS_TYPE_STR, "hifi_channel", hifi_chan_name(c));
 	codec_dirty = true;
 	return 0;
@@ -1413,16 +1425,18 @@ out:
 
 /*
  * The self-test's speaker path, end to end: a quiet 1 kHz tone on the left
- * side, then the right, read back on the loopback taps and judged against
- * the channel mode's routing (hifi_loop_judge). -50 dBFS is a faint beep on
- * a speaker; on Lite 2 the quiet legs read 40 to 58 dB under it in the
- * 1 kHz bin (once 28 dB, the first run after a boot). 4800 frames hold
- * whole cycles of 1 kHz, so a constant DC drops out of the Goertzel;
- * op_capture's settling wait keeps the ADC's decaying offset out. The
- * test tone goes through the user's EQ, so the tolerance on a fed leg
- * widens by the EQ's largest band. LOOP_TAP_GAIN is the taps' RMS per RMS
- * of the tone, measured on Lite 2 (2026-11-17) with the EQ flat: one leg of
- * the bridge, 1.2 dB under the nominal chain.
+ * side, then the right, read back on the loopback taps and judged as
+ * stereo (hifi_loop_judge). -50 dBFS is a faint beep on a speaker; on
+ * Lite 2 the quiet legs read 40 to 58 dB under it in the 1 kHz bin (once
+ * 28 dB on the first run after a boot, before the detrend). 4800 frames hold
+ * whole cycles of 1 kHz, and hifi_capture_tone_rms takes off the ADC's
+ * offset and its drift while it settles after a boot. It measures the
+ * board, not the user's sound: the tone plays at unity with Boost out
+ * (hifi_dsp_process), the EQ and loudness out (hifi_eq_bypass) and the codec
+ * routed stereo whatever the channel mode, so it is judged as stereo, and
+ * the user's routing goes back on the codec when it ends. LOOP_TAP_GAIN is
+ * the taps' RMS per RMS of the tone, measured on Lite 2 (2026-11-17) with
+ * the EQ flat: one leg of the bridge, 1.2 dB under the nominal chain.
  */
 #define LOOP_TONE_DBFS -50.0f
 #define LOOP_FRAMES 4800
@@ -1435,6 +1449,18 @@ static const char *loop_busy(void) {
 }
 
 static bool loop_running; /* under LOCK: one loopback check at a time */
+
+/* squeezelite's equalizer_process asks on every block (firmware/patches) */
+bool hifi_eq_bypass(void) { return loop_flat; }
+
+/* the codec back to the user's channel mode, and the EQ back in */
+static void loop_unflat(void) {
+	LOCK();
+	loop_flat = false;
+	hifi_bsp_channel(channel);
+	UNLOCK();
+	codec_dirty = true;
+}
 
 static void selftest_loopback(hifi_selftest_t *t, bool amp_on) {
 	if (!has_taps()) return;
@@ -1457,6 +1483,15 @@ static void selftest_loopback(hifi_selftest_t *t, bool amp_on) {
 	}
 	float got[2][2] = {{0}};
 	const char *err = NULL;
+	LOCK();
+	loop_flat = true;
+	hifi_bsp_channel(HIFI_CHAN_STEREO);
+	UNLOCK();
+	uint32_t asked = codec_started;
+	codec_dirty = true;
+	/* the power task routes it: wait for a route begun after the request */
+	for (int i = 0; i < 100 && (int32_t) (codec_routed - asked) <= 0; i++) vTaskDelay(pdMS_TO_TICKS(10));
+	if ((int32_t) (codec_routed - asked) <= 0) err = "the codec didn't take the test's stereo routing";
 	for (int side = 0; side < 2 && !err; side++) {
 		hifi_tone_params_t p = {.type = HIFI_TONE_SINE, .freq_hz = 1000, .level_dbfs = LOOP_TONE_DBFS,
 					.duration_s = 2, .channel = side ? HIFI_CH_RIGHT : HIFI_CH_LEFT};
@@ -1469,11 +1504,12 @@ static void selftest_loopback(hifi_selftest_t *t, bool amp_on) {
 	}
 	op_tone_stop();
 	free(pcm);
-	float eq[HIFI_EQ_BANDS], eq_max = 0;
-	read_eq(eq);
-	for (int i = 0; i < HIFI_EQ_BANDS; i++) eq_max = fmaxf(eq_max, fabsf(eq[i]));
+	/* the tone's fade and the 100 ms queued behind it go out under the
+	 * bypass: the EQ comes back in on silence */
+	for (int i = 0; i < 50 && tone_active; i++) vTaskDelay(pdMS_TO_TICKS(10));
+	vTaskDelay(pdMS_TO_TICKS(150));
+	loop_unflat();
 	LOCK();
-	hifi_chan_t c = channel;
 	loop_running = false;
 	UNLOCK();
 	const char *src = source_name(); /* not audio_active: our own tone counts in it */
@@ -1483,10 +1519,8 @@ static void selftest_loopback(hifi_selftest_t *t, bool amp_on) {
 		hifi_selftest_add(t, "loopback", false, "%s", err);
 	else {
 		char v[64];
-		bool ok = hifi_loop_judge(c, got, LOOP_TAP_GAIN * powf(10, LOOP_TONE_DBFS / 20) / sqrtf(2),
-					  HIFI_LOOP_TOL_DB + eq_max, v, sizeof(v));
-		size_t l = strlen(v);
-		if (eq_max > 0) snprintf(v + l, sizeof(v) - l, ", EQ %.0f dB", eq_max);
+		bool ok = hifi_loop_judge(HIFI_CHAN_STEREO, got, LOOP_TAP_GAIN * powf(10, LOOP_TONE_DBFS / 20) / sqrtf(2),
+					  HIFI_LOOP_TOL_DB, v, sizeof(v));
 		hifi_selftest_add(t, "loopback", ok, "%s", v);
 	}
 }

@@ -400,15 +400,17 @@ it always passes, and its value is how long ago and why
 On a board with loopback taps (the Lite; see `capture`), `loopback` checks
 the speaker path end to end: a 1 kHz tone at -50 dBFS on the left side, then
 the right, each read back on both taps. A speaker plugged in gives a faint
-beep. Its value is the channel mode, then for the left tone and the right
-tone what the left and right taps read, in dB against the level the path
-should give (`"stereo: L +0.1/-43.4, R -42.1/-0.1 dB"`: the left tone reaches
-the left output only, the right tone the right). An output the channel mode
-feeds must read within 3 dB of its gain (0 dB, or -6 dB per side in mono);
-one it doesn't feed must read 20 dB down or more. The quiet legs read the
-taps' noise in the 1 kHz bin, so expect about -40 to -60 dB, and once in a
-while about -28 dB on the first run after boot. With the EQ not flat, the
-3 dB widens by the largest band's gain and the value ends in `", EQ 6 dB"`.
+beep. The check measures the bare path, not the user's sound settings: for
+the measurement it routes stereo and skips the EQ (Boost already skips test
+tones), then puts the user's channel mode and EQ back. Its value is the mode
+it measured in (always `stereo`), then for the left tone and the right tone
+what the left and right taps read, in dB against the level the path should
+give (`"stereo: L +0.1/-43.4, R -42.1/-0.1 dB"`: the left tone reaches the
+left output only, the right tone the right). A fed output must read within
+3 dB of 0 dB; the other must read 20 dB down or more. The quiet legs read the
+taps' noise in the 1 kHz bin, with the capture's mean and slope taken out
+first so a DC offset still settling after boot doesn't leak into it; expect
+about -40 to -60 dB.
 With a stream, a test tone, a connected source or DJ direct playing, the
 check is skipped and passes (`"skipped: a stream plays"`, `"skipped: a source
 is connected"`), and the same if a source connects while it runs; a second

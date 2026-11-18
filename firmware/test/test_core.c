@@ -375,6 +375,20 @@ static void loop_check(void) {
 	CHECK(fabsf(l - 0.01f / sqrtf(2)) < 0.0002f);
 	CHECK(r < 1e-5f);
 	CHECK(hifi_capture_tone_rms(pcm, 0, 0, 1000, 48000) == 0);
+	/* the first run after boot: a DC offset of 0.05 FS still settling
+	 * (time constants 50 to 150 ms). On the quiet leg it must stay 40 dB
+	 * under the -50 dBFS test tone; on the fed leg the tone reads true. */
+	const float tone = 0.00316f; /* -50 dBFS peak */
+	for (int tau = 50; tau <= 150; tau += 50) {
+		for (int i = 0; i < 4800; i++) {
+			double dc = 0.05 * exp(-i / (48.0 * tau));
+			pcm[2 * i] = (int16_t) lrint(32768 * (tone * sin(2 * M_PI * 1000 * i / 48000.0 + 1.1) + dc));
+			pcm[2 * i + 1] = (int16_t) lrint(32768 * dc);
+		}
+		float fed = hifi_capture_tone_rms(pcm, 4800, 0, 1000, 48000), quiet = hifi_capture_tone_rms(pcm, 4800, 1, 1000, 48000);
+		CHECK(fabsf(20 * log10f(fed / (tone / sqrtf(2)))) < 0.5f);
+		CHECK(quiet < tone / sqrtf(2) * 0.01f);
+	}
 
 	char v[64];
 	float w = 0.001f, x = w * powf(10, -40 / 20.0f); /* x: a leg 40 dB down */
@@ -395,7 +409,8 @@ static void loop_check(void) {
 	float dead[2][2] = {{0}};                                 /* the ADC sends zeros */
 	CHECK(!hifi_loop_judge(HIFI_CHAN_RIGHT, dead, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
 	CHECK(strlen(v) < sizeof(((hifi_check_t *) 0)->value));
-	/* the tolerance's edge, and the EQ widening it */
+	/* the tolerance's edge (the self-test passes HIFI_LOOP_TOL_DB; the
+	 * judge still takes a wider one) */
 	float edge[2][2] = {{w * powf(10, 2.9f / 20), x}, {x, w}};
 	CHECK(hifi_loop_judge(HIFI_CHAN_STEREO, edge, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
 	edge[0][0] = w * powf(10, 3.1f / 20);
@@ -403,7 +418,7 @@ static void loop_check(void) {
 	edge[0][0] = w * powf(10, 7.0f / 20); /* a 1 kHz band at +6 dB */
 	CHECK(!hifi_loop_judge(HIFI_CHAN_STEREO, edge, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
 	CHECK(hifi_loop_judge(HIFI_CHAN_STEREO, edge, w, HIFI_LOOP_TOL_DB + 6, v, sizeof(v)));
-	/* the off limit stays 20 dB whatever the EQ */
+	/* the off limit stays 20 dB whatever the tolerance */
 	CHECK(!hifi_loop_judge(HIFI_CHAN_STEREO, leak, w, HIFI_LOOP_TOL_DB + 12, v, sizeof(v)));
 }
 
