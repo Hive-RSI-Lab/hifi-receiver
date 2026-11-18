@@ -182,6 +182,41 @@ static void faults_retry_then_latch(void) {
 	CHECK(o->amp_on && p.faults == 0);
 }
 
+/* heat answered by a lower cap: the trip backs off but doesn't latch */
+static void forgiven_fault_doesnt_latch(void) {
+	setup(0);
+	in.pg = true;
+	in.vbus_v = 20.0f;
+	run(800);
+	const hifi_power_out_t *o = NULL;
+	for (int k = 0; k < 3; k++) {
+		in.fault = true;
+		o = run(10);
+		CHECK(!o->amp_on && p.faults == k + 1);
+		hifi_power_forgive_fault(&p, in.now_ms);
+		CHECK(!p.latched);
+		in.fault = false;
+		o = run(500);
+		CHECK(!o->amp_on); /* the back-off still runs */
+		o = run(700);
+		CHECK(o->amp_on);
+	}
+	/* the forgiven ones are out of the window: it takes three more to latch */
+	for (int k = 0; k < 2; k++) {
+		in.fault = true;
+		run(10);
+		in.fault = false;
+		run(1200);
+	}
+	CHECK(!p.latched);
+	in.fault = true;
+	o = run(10);
+	CHECK(p.latched && !o->amp_on && p.faults == 6);
+	/* forgiving the latching fault unlatches it */
+	hifi_power_forgive_fault(&p, in.now_ms);
+	CHECK(!p.latched);
+}
+
 static void idle_off(void) {
 	setup(0);
 	in.pg = true;
@@ -398,6 +433,7 @@ int main(void) {
 	low_contract_keeps_amp_off();
 	pg_drop_turns_off();
 	faults_retry_then_latch();
+	forgiven_fault_doesnt_latch();
 	idle_off();
 	timer_wraparound();
 	pvdd_switch_stuck_open();

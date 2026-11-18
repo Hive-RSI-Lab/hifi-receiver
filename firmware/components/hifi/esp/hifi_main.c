@@ -17,6 +17,7 @@
 
 #include "driver/i2c.h"
 #include "driver/i2s.h"
+#include "esp_attr.h"
 #include "esp_console.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
@@ -38,6 +39,7 @@
 #include "platform_config.h"
 
 #include "hifi_api.h"
+#include "hifi_boost.h"
 #include "hifi_board.h"
 #include "hifi_bsp.h"
 #include "hifi_chan.h"
@@ -88,6 +90,10 @@ static uint8_t pd_status;
 static hifi_input_t input = HIFI_INPUT_STREAM;
 static bool sub_on = true;
 static float sub_db = 0;
+/* Boost and its lookahead limiter (k2388); ~1 KB, in PSRAM to spare the
+ * internal heap */
+static EXT_RAM_ATTR hifi_boost_t boost;
+static volatile bool amp_hot; /* the amp's over-temperature warning is held */
 static hifi_chan_t channel = HIFI_CHAN_STEREO;
 static volatile bool codec_dirty = true; /* re-apply input/sub to the codec */
 /* the amps stay in shutdown until then: across an input change (the analog
@@ -97,6 +103,10 @@ static volatile bool codec_dirty = true; /* re-apply input/sub to the codec */
 static volatile uint32_t amp_hold_until, route_at;
 static bool codec_up;
 static uint32_t otw_ms, otw_clear_ms, otw_high_ms; /* the OTW step-down (C2) */
+/* a trip taken as heat (Lite, cap above the default): the last one, the
+ * gain trim held until, and when the amp was last off (a short trips at once) */
+static uint32_t heat_trip_ms, trim_hold_until, amp_off_ms;
+static bool heat_trip_any;
 static volatile uint32_t selftest_hold_until; /* keeps the amp awake for the self-test */
 static volatile bool capture_busy;   /* the codec's ADC is ours until the capture ends */
 
@@ -229,6 +239,7 @@ static void power_task(void *arg) {
 		vbus_v = bp.vbus_v;
 		vbus_i_a = bp.vbus_i_a;
 		pvdd_v = bp.pvdd_v;
+		hifi_gov_set_pvdd(&gov, bp.pvdd_v);
 		pg = bp.pg;
 		fault = bp.fault;
 		if (bp.pd_read) {
@@ -244,6 +255,7 @@ static void power_task(void *arg) {
 		 * clipped PWM cycle, which is not heat (R5-DAL-5) */
 		if (!bp.otw) otw_high_ms = now;
 		bool otw_held = bp.otw && now - otw_high_ms >= 200;
+		amp_hot = otw_held;
 		if (otw_held) {
 			otw_clear_ms = now;
 			if (now - otw_ms >= 2000) {
@@ -251,7 +263,8 @@ static void power_task(void *arg) {
 				gov.trim = fmaxf(gov.trim * 0.708f, 0.25f);
 				ESP_LOGW(TAG, "amp too hot: gain ceiling %.1f dB", 20 * log10f(gov.trim));
 			}
-		} else if (gov.trim < 1.0f && now - otw_clear_ms >= 10000 && now - otw_ms >= 10000) {
+		} else if (gov.trim < 1.0f && now - otw_clear_ms >= 10000 && now - otw_ms >= 10000 &&
+			   (int32_t) (trim_hold_until - now) <= 0) {
 			otw_ms = now;
 			gov.trim = fminf(gov.trim * 1.122f, 1.0f);
 		}
@@ -283,7 +296,33 @@ static void power_task(void *arg) {
 		int save_v = vol.volume, save_max = vol.max_volume;
 		if (save_vol) vol_dirty = false;
 		hifi_pwr_state_t before = power.state;
+		int faults_before = power.faults;
 		hifi_power_out_t o = *hifi_power_step(&power, &in);
+		/* Lite's TPA3118 has no warning pin: heat shows only as its 150 C
+		 * shutdown on FAULTZ, which also flags a short or DC. A trip is
+		 * taken as heat only when the heat cap is over the default, the
+		 * amps have played for 5 s (a short trips at once), the sustained
+		 * power is over the default, and no trip was forgiven in the last
+		 * fault window. Then the cap drops 2 W (saved), the gain 3 dB (held
+		 * 60 s), the amp rests 15 s, and the trip doesn't count towards the
+		 * latch. Every other trip latches as before. */
+		float cap_w = hifi_gov_heat_w(&gov), def_w = hifi_gov_heat_def_w(&gov);
+		float heat_cap_saved = NAN;
+		if (power.faults > faults_before && def_w > 0 && cap_w > def_w + 0.25f &&
+		    now - amp_off_ms >= 5000 && hifi_gov_heat_now_w(&gov) > def_w &&
+		    (!heat_trip_any || now - heat_trip_ms > power.cfg.fault_window_ms)) {
+			float w = hifi_gov_set_heat_w(&gov, fmaxf(cap_w - 2.0f, def_w));
+			hifi_power_forgive_fault(&power, now);
+			gov.trim = fmaxf(gov.trim * 0.708f, 0.25f);
+			otw_ms = otw_clear_ms = now;
+			trim_hold_until = now + 60000;
+			amp_hold_until = now + 15000;
+			heat_trip_ms = now;
+			heat_trip_any = true;
+			heat_cap_saved = w;
+			ESP_LOGW(TAG, "amp tripped with the heat cap at %.1f W: taken as heat, cap now %.1f W, gain "
+				      "ceiling %.1f dB, amp off 15 s", cap_w, w, 20 * log10f(gov.trim));
+		}
 		if (power.state != before)
 			ESP_LOGI(TAG, "power %s -> %s (VBUS %.2f V, PVDD %.2f V, PG %d)", hifi_power_state_name(before),
 				 hifi_power_state_name(power.state), bp.vbus_v, bp.pvdd_v, bp.pg);
@@ -292,7 +331,13 @@ static void power_task(void *arg) {
 		 * remembered, so a restart after its OCP comes back governed */
 		if (dj_trip) input_changed(HIFI_INPUT_LINE, !strcmp(dj_trip, "contract"));
 		if (!codec_up || (int32_t) (amp_hold_until - now) > 0) o.amp_on = false;
+		if (!o.amp_on) amp_off_ms = now;
 		hifi_bsp_power_out(&o);
+		if (!isnan(heat_cap_saved)) {
+			char hv[12];
+			snprintf(hv, sizeof(hv), "%.1f", heat_cap_saved);
+			config_set_value(NVS_TYPE_STR, "hifi_heat_w", hv);
+		}
 		if (save_vol) {
 			char sv[8];
 			snprintf(sv, sizeof(sv), "%d", save_v);
@@ -685,6 +730,14 @@ static void op_info(hifi_info_t *i) {
 	free(s);
 	i->flash_mb = spi_flash_get_chip_size() >> 20;
 	hifi_bsp_info(i);
+#if HIFI_HAS_BOOST
+	i->caps.boost_max_db = HIFI_BOOST_MAX_DB;
+#endif
+	if (hifi_gov_heat_max_w(&gov) > hifi_gov_heat_def_w(&gov)) {
+		i->caps.heat_min_w = HIFI_GOV_HEAT_MIN_W;
+		i->caps.heat_max_w = hifi_gov_heat_max_w(&gov);
+		i->caps.heat_def_w = hifi_gov_heat_def_w(&gov);
+	}
 }
 
 static const char *source_name(void) {
@@ -746,6 +799,15 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	s->gov_gain_db = hifi_gov_gain_db(&gov);
 	s->gov_limiting = gov.limiting;
 	s->gov_events = gov.events;
+	s->loudness = true;
+	s->gov_why = hifi_gov_why(&gov);
+	s->heat_cap_w = hifi_gov_heat_w(&gov);
+	s->heat_w = hifi_gov_heat_now_w(&gov);
+	s->amp_hot = amp_hot;
+	s->boost_db = boost.db;
+	s->boost_limit_db = hifi_boost_reduction_db(&boost);
+	s->boost_limiting = boost.limiting;
+	s->boost_events = boost.events;
 	s->level_dbfs = hifi_gov_level_dbfs(&gov);
 	s->source = source_name();
 	/* LMS sends its track text only as display graphics: the state, no text */
@@ -829,6 +891,27 @@ static int op_set_input(hifi_input_t in) {
 	return 0;
 }
 
+/* Boost (dB) and the heat cap (W a channel); NaN leaves one. Both take
+ * effect at once; nonzero when one couldn't be saved for the next start. */
+static int op_set_loudness(float boost_db, float heat_w) {
+	char v[16];
+	int err = 0;
+	if (!isnan(boost_db)) {
+		hifi_boost_set_db(&boost, boost_db);
+		snprintf(v, sizeof(v), "%.1f", boost.db);
+		err |= config_set_value(NVS_TYPE_STR, "hifi_boost_db", v) != ESP_OK;
+	}
+	if (!isnan(heat_w)) {
+		LOCK();
+		float w = hifi_gov_set_heat_w(&gov, heat_w);
+		UNLOCK();
+		snprintf(v, sizeof(v), "%.1f", w);
+		err |= config_set_value(NVS_TYPE_STR, "hifi_heat_w", v) != ESP_OK;
+	}
+	if (err) ESP_LOGW(TAG, "loudness: set, but not saved to NVS");
+	return err;
+}
+
 static float op_set_sub(int on, float db) {
 	char v[16];
 	LOCK();
@@ -848,6 +931,7 @@ static float op_set_sub(int on, float db) {
 static int op_set_channel(hifi_chan_t c) {
 	LOCK();
 	channel = c;
+	gov.chan = c;
 	UNLOCK();
 	hifi_bsp_channel(c);
 	config_set_value(NVS_TYPE_STR, "hifi_channel", hifi_chan_name(c));
@@ -1352,7 +1436,7 @@ void hifi_main_trial_inputs(hifi_trial_t *t) {
 const hifi_ops_t hifi_ops = {
 	.info = op_info, .snapshot = op_snapshot, .tone_start = op_tone_start, .tone_stop = op_tone_stop,
 	.amp_enable = op_amp_enable, .amp_reset = op_amp_reset, .set_input = op_set_input,
-	.set_sub = op_set_sub,
+	.set_sub = op_set_sub, .set_loudness = op_set_loudness,
 #if HIFI_HAS_CHANNEL
 	.set_channel = op_set_channel,
 #endif
@@ -1481,6 +1565,14 @@ static void services_task(void *arg) {
 /* ------------------------------------------------------------------ hooks */
 
 void hifi_dsp_process(uint8_t *buf, uint32_t frames, int bytes_per_frame, uint32_t rate) {
+	/* Boost first, under its limiter at the amp's clip point; a test tone
+	 * and DJ direct's line copy play at unity */
+	if (tone_active || line_unity) {
+		hifi_boost_bypass(&boost); /* drops at most 1 ms of delayed audio */
+	} else if (hifi_boost_active(&boost)) {
+		hifi_boost_set_ceiling(&boost, hifi_gov_clip_fs(&gov));
+		hifi_boost_process(&boost, buf, frames, bytes_per_frame, rate);
+	}
 	hifi_gov_process(&gov, buf, frames, bytes_per_frame, rate);
 	audio_active = gov.ms_avg > 1e-8f; /* above about -77 dBFS */
 	hifi_bsp_audio(buf, frames, bytes_per_frame);
@@ -1521,6 +1613,13 @@ static bool hifi_init(void) {
 	char *s = config_alloc_get_str("hifi_sub_db", NULL, "0");
 	sub_db = s ? strtof(s, NULL) : 0;
 	free(s);
+	hifi_boost_init(&boost);
+	s = config_alloc_get_str("hifi_boost_db", NULL, "0");
+	hifi_boost_set_db(&boost, s && HIFI_HAS_BOOST ? strtof(s, NULL) : 0);
+	free(s);
+	s = config_alloc_get_str("hifi_heat_w", NULL, NULL);
+	if (s) hifi_gov_set_heat_w(&gov, strtof(s, NULL));
+	free(s);
 	s = config_alloc_get_str("hifi_sub_on", NULL, "1");
 	sub_on = !s || strcmp(s, "0");
 	free(s);
@@ -1528,6 +1627,7 @@ static bool hifi_init(void) {
 	s = config_alloc_get_str("hifi_channel", NULL, "stereo");
 	if (!s || !hifi_chan_parse(s, &channel)) channel = HIFI_CHAN_STEREO;
 	free(s);
+	gov.chan = channel;
 	hifi_bsp_channel(channel);
 #endif
 	char *sv = config_alloc_get_str("hifi_volume", NULL, "30");

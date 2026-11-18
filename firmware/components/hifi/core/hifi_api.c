@@ -77,6 +77,7 @@ static void write_amp(hj_t *j, const char *key, const hifi_snapshot_t *s) {
 	hj_int(j, "faults", s->amp_faults);
 	hj_bool(j, "latched", s->amp_latched);
 	hj_num(j, "temp_c", s->amp_temp_c, 1);
+	if (s->loudness) hj_bool(j, "hot", s->amp_hot);
 	hj_obj_end(j);
 }
 
@@ -149,6 +150,11 @@ void hifi_api_write_state_part(const hifi_snapshot_t *s, const char *part, char 
 		hj_num(&j, "gain_db", s->gov_gain_db, 1);
 		hj_bool(&j, "limiting", s->gov_limiting);
 		hj_int(&j, "limit_events", s->gov_events);
+		if (s->loudness) {
+			str_or_null(&j, "reason", s->gov_why);
+			hj_num(&j, "heat_cap_w", s->heat_cap_w, 1);
+			hj_num(&j, "heat_w", s->heat_w, 1);
+		}
 		hj_obj_end(&j);
 	}
 
@@ -178,6 +184,14 @@ void hifi_api_write_state_part(const hifi_snapshot_t *s, const char *part, char 
 		hj_int(&j, "volume", s->volume);
 		hj_bool(&j, "mute", s->mute);
 		hj_int(&j, "max_volume", s->max_volume);
+		if (s->loudness) {
+			hj_obj(&j, "boost");
+			hj_num(&j, "db", s->boost_db, 1);
+			hj_num(&j, "limit_db", s->boost_limit_db, 1);
+			hj_bool(&j, "limiting", s->boost_limiting);
+			hj_int(&j, "limit_events", s->boost_events);
+			hj_obj_end(&j);
+		}
 		write_playing(&j, &s->playing);
 		if (s->zones > 1) {
 			hj_obj(&j, "zone_b");
@@ -305,10 +319,26 @@ static int r_info(const hifi_ops_t *ops, char *out, size_t cap) {
 	hj_int(&j, "count", i.caps.sub_count);
 	hj_bool(&j, "crossover", i.caps.sub_crossover);
 	hj_bool(&j, "per_sub", i.caps.sub_per_sub);
+	hj_num(&j, "max_db", i.caps.sub_max_db, 1);
 	hj_obj_end(&j);
 	hj_int(&j, "zones", i.caps.zones);
 	hj_bool(&j, "eth", i.caps.eth);
 	hj_num(&j, "pdo_v_max", i.caps.pdo_v_max, 0);
+	/* the settings the model has a route for (ask k2391), so the app shows
+	 * only those: the speaker side (POST channel), the LED test, the backlight */
+	hj_bool(&j, "channel", ops->set_channel != NULL);
+	hj_bool(&j, "led", ops->set_led != NULL);
+	hj_bool(&j, "backlight", ops->set_backlight != NULL);
+	if (i.caps.boost_max_db > 0 && ops->set_loudness) {
+		hj_obj(&j, "loudness");
+		hj_num(&j, "boost_max_db", i.caps.boost_max_db, 1);
+		hj_obj(&j, "heat_cap_w");
+		hj_num(&j, "min", i.caps.heat_min_w, 1);
+		hj_num(&j, "max", i.caps.heat_max_w, 1);
+		hj_num(&j, "default", i.caps.heat_def_w, 1);
+		hj_obj_end(&j);
+		hj_obj_end(&j);
+	}
 	hj_obj_end(&j);
 	hj_obj_end(&j);
 	return 200;
@@ -423,8 +453,32 @@ static int r_sub(const hifi_ops_t *ops, const char *body, char *out, size_t cap)
 	bool on, has_on = hj_get_bool(body, "on", &on), has_db = hj_get_num(body, "level_db", &db) ||
 	     hj_num_bad(body, "level_db");
 	if (!has_on && !has_db) return error(out, cap, 400, "send level_db and/or on");
-	if (has_db && !(db >= -30 && db <= 6)) return error(out, cap, 400, "level_db must be -30 to +6");
+	hifi_info_t i;
+	memset(&i, 0, sizeof(i));
+	ops->info(&i);
+	if (has_db && !(db >= -30 && db <= i.caps.sub_max_db)) {
+		char m[64];
+		snprintf(m, sizeof(m), "level_db must be -30 to %+.1f on this model", i.caps.sub_max_db);
+		return error(out, cap, 400, m);
+	}
 	ops->set_sub(has_on ? on : -1, (float) db);
+	return r_state(ops, NULL, out, cap);
+}
+
+static int r_loudness(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	hifi_info_t i;
+	memset(&i, 0, sizeof(i));
+	ops->info(&i);
+	if (!ops->set_loudness || !(i.caps.boost_max_db > 0)) return error(out, cap, 404, "this model has no Boost");
+	double b = NAN, w = NAN;
+	bool has_b = hj_get_num(body, "boost_db", &b) || hj_num_bad(body, "boost_db");
+	bool has_w = hj_get_num(body, "heat_cap_w", &w) || hj_num_bad(body, "heat_cap_w");
+	if (!has_b && !has_w) return error(out, cap, 400, "send boost_db and/or heat_cap_w");
+	if (has_b && !(b >= 0 && b <= i.caps.boost_max_db)) return error(out, cap, 400, "boost_db is out of range");
+	if (has_w && !(w >= i.caps.heat_min_w && w <= i.caps.heat_max_w))
+		return error(out, cap, 400, "heat_cap_w is out of range");
+	if (ops->set_loudness(has_b ? (float) b : NAN, has_w ? (float) w : NAN))
+		return error(out, cap, 500, "the loudness is set but couldn't be saved");
 	return r_state(ops, NULL, out, cap);
 }
 
@@ -1126,6 +1180,7 @@ int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *meth
 	else if (!strcmp(route, "amp")) status = post ? r_amp(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "input")) status = post ? r_input(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "sub")) status = post ? r_sub(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "loudness")) status = post ? r_loudness(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "channel")) status = post ? r_channel(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "eq")) status = post ? r_eq(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "name")) status = post ? r_name(ops, body, out, cap) : -1;

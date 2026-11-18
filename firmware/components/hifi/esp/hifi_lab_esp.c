@@ -181,14 +181,18 @@ void hifi_lab_esp_init(void) {
 	hifi_lab_register(&lab, &lab_lanscan);
 	hifi_lab_register(&lab, &lab_forge);
 	hifi_lab_register(&lab, &lab_wifidrop);
+	hifi_lab_register(&lab, &lab_crafted);
 	hifi_lab_register(&lab, &lab_i2c);
-	hifi_lab_register(&lab, &lab_party);
+	if (&lab_party) hifi_lab_register(&lab, &lab_party); /* the app only (NULL in recovery) */
 #if CONFIG_BT_CLASSIC_ENABLED
 	if (&lab_bt) hifi_lab_register(&lab, &lab_bt); /* NULL in recovery */
 	if (&lab_a2dp) hifi_lab_register(&lab, &lab_a2dp);
 #endif
 #if CONFIG_BT_BLE_ENABLED
 	if (&lab_ble) hifi_lab_register(&lab, &lab_ble); /* NULL in recovery */
+#endif
+#if CONFIG_HIFI_LAB_PSRAM_STACKS
+	if (&lab_flac) hifi_lab_register(&lab, &lab_flac); /* the lab-radio app only (NULL in recovery) */
 #endif
 	lab_lock = xSemaphoreCreateMutex();
 	StackType_t *stack = NULL;

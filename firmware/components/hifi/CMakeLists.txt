@@ -2,7 +2,7 @@
 # the test API (HTTP + console + mDNS) and the web app. core/ is plain C and
 # host-tested (firmware/test); esp/ ties it to ESP-IDF and squeezelite-esp32.
 set(srcs
-	core/hifi_api.c core/hifi_b64.c core/hifi_boot.c core/hifi_capture.c core/hifi_diag.c core/hifi_exp.c core/hifi_gate.c
+	core/hifi_api.c core/hifi_b64.c core/hifi_boost.c core/hifi_boot.c core/hifi_capture.c core/hifi_diag.c core/hifi_exp.c core/hifi_gate.c
 	core/hifi_gov.c core/hifi_ir.c core/hifi_json.c core/hifi_lab.c core/hifi_line.c core/hifi_link.c core/hifi_listen.c core/hifi_meta.c core/hifi_ota.c core/hifi_pd.c
 	core/hifi_power.c core/hifi_remote.c core/hifi_scan.c core/hifi_sha256.c core/hifi_tap.c core/hifi_tone.c core/hifi_update.c
 	core/hifi_chan.c core/hifi_vol.c core/hifi_ws_proto.c esp/hifi_main.c esp/hifi_crash.c esp/hifi_diag_esp.c esp/hifi_http.c esp/hifi_listen_esp.c esp/hifi_net.c esp/hifi_relay.c esp/hifi_ws.c)
@@ -16,7 +16,7 @@ endif()
 
 # the lab build (board/lite-lab): experiments a signed command starts and stops
 if(CONFIG_HIFI_LAB)
-	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c esp/lab_forge.c esp/lab_wifidrop.c
+	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c esp/lab_forge.c esp/lab_wifidrop.c esp/lab_crafted.c
 		core/hifi_party.c core/hifi_party_sync.c esp/lab_party.c)
 	# reads the board's I2C chips through hive-fw's i2c-device driver (esp/i2cdev)
 	list(APPEND srcs esp/lab_i2c.c esp/i2cdev/i2cdev.c esp/i2cdev/i2cdev_esp.c)
@@ -29,6 +29,12 @@ if(CONFIG_HIFI_LAB)
 	# the BLE lab image (board/lite-lab-ble): a GATT link beside A2DP
 	if(CONFIG_BT_BLE_ENABLED)
 		list(APPEND srcs esp/lab_ble.c)
+	endif()
+	# the lab-radio image (board/lite-lab-radio): 96/24 FLAC decoded on a
+	# PSRAM stack beside the radios, from a clip in the image
+	if(CONFIG_HIFI_LAB_PSRAM_STACKS)
+		list(APPEND srcs esp/lab_flac.c)
+		set(lab_embed esp/lab_assets/clip96k24.flac)
 	endif()
 endif()
 
@@ -46,11 +52,12 @@ idf_component_register(
 	SRCS ${srcs}
 	INCLUDE_DIRS core
 	PRIV_INCLUDE_DIRS esp ${webapp_dir} ${lab_inc}
+	EMBED_FILES ${lab_embed}
 	REQUIRES esp_http_server
-	PRIV_REQUIRES driver esp_adc_cal mdns console nvs_flash esp_wifi
+	PRIV_REQUIRES driver esp_adc_cal mdns console nvs_flash esp_wifi pthread
 		      platform_config services wifi-manager tools
 		      app_update mqtt libsodium mbedtls lwip esp_http_client json
-		      tcp_transport esp-tls bt)
+		      tcp_transport esp-tls bt codecs)
 
 # The Hive's signing key(s), an optional built-in relay and update manifest,
 # from the build's environment (firmware/tools/build.sh; docs/remote.md).

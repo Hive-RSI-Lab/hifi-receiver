@@ -55,6 +55,11 @@ fi
 rm -rf "$DEST/components/hifi"
 cp -R "$FW/components/hifi" "$DEST/components/hifi"
 
+# libmad from source with Debian's fixes (third_party/libmad/README.md),
+# which components/codecs builds in place of lib/libmad.a (patch 0029)
+rm -rf "$DEST/components/codecs/libmad"
+cp -R "$FW/third_party/libmad/src" "$DEST/components/codecs/libmad"
+
 # The web app (app/, built by app/build.py) is served at '/'; without it the
 # firmware serves a placeholder page that links to squeezelite's own UI.
 if [ -f "$REPO/app/build.py" ]; then

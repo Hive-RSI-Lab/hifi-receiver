@@ -39,9 +39,15 @@ What the box is.
  "caps": {"line_modes": ["dj_direct"],
           "eq_bands": [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000],
           "eq_min": -12, "eq_max": 12,
-          "sub": {"count": 2, "crossover": false, "per_sub": false},
-          "zones": 1, "eth": false, "pdo_v_max": 20}}
+          "sub": {"count": 2, "crossover": false, "per_sub": false, "max_db": -9.0},
+          "zones": 1, "eth": false, "pdo_v_max": 20,
+          "channel": true, "led": false, "backlight": false}}
 ```
+
+`channel`, `led` and `backlight` say whether this model answers
+`POST channel`, `POST led` and `POST backlight` (a 404 where false): Lite
+has the speaker side and neither of the others; Plus and Ultra have the LED
+test; only Ultra has the backlight.
 
 `name` is the player name people see in AirPlay, Bluetooth, Spotify and
 LMS. `caps` says what this tier can do, so one web app serves all three:
@@ -213,7 +219,8 @@ subs apply, about 0.1 s behind.
 turns them off (either or both). Lite: the ES8388's LOUT2/ROUT2, 1.5 dB steps
 up to +4.5 dB, so the level it reports is the one it could set. Plus/Ultra:
 a digital gain on the sub DAC's stream, −40 to 0 dB in 0.5 dB steps (more
-would clip). Kept across restarts. Reply: the full `/state`.
+would clip). A level above the board's `info.caps.sub.max_db` is a 400, not
+clamped. Kept across restarts. Reply: the full `/state`.
 
 ## `POST /api/v1/channel`
 
@@ -225,11 +232,53 @@ mixers) follows it. `stereo` is the default and the old behaviour. Kept
 across restarts. Shown as `audio.channel` in `/state`. Reply: the full
 `/state`; 400 on a bad value.
 
+## `POST /api/v1/led` and `POST /api/v1/backlight`
+
+`{"mode": "test"|"auto"}` lights the board's LEDs (Ultra: the front LED too)
+for a few seconds, then hands them back. `{"mode": "on"|"off"|"auto"}` sets
+Ultra's front-panel backlight, shown as `controls.backlight` in `/state`.
+Not kept across restarts. Only on models whose `info.caps` has `led` or
+`backlight` true (404 elsewhere); reply `{"ok": true}`, 400 on a bad mode.
+
 ## `POST /api/v1/eq`
 
 `{"gains": [0, 0, 2, 0, 0, 0, 0, 0, -1, 0]}`: squeezelite-esp32's 10-band
 equalizer (bands in `info.caps.eq_bands`), whole dB, `eq_min` to `eq_max`.
 Applied at once and kept. Reply: the full `/state`.
+
+## `POST /api/v1/loudness`
+
+`{"boost_db": 6}`, `{"heat_cap_w": 12}`, or both; each is optional, and a
+body with neither is a 400. Only boards whose `info.caps.loudness` is there
+take it (Lite); elsewhere it is a 404 and `caps.loudness` is missing.
+- **`boost_db`:** 0 to `caps.loudness.boost_max_db` (9), a number. Digital
+  gain before the power governor, with a lookahead peak limiter (1 ms
+  lookahead at 48 kHz, 25 ms hold, 0.15 s release) that keeps the boosted
+  signal under the governor's clip ceiling, so a loud master gets louder
+  without hard clipping. While Boost is on, the audio runs 48 frames late;
+  turning Boost up from 0 crossfades into that delay over 4 ms, with no
+  gap. The ceiling is the amp's clip point from the lower of the charger
+  contract and the measured PVDD, 0.5 dB under the datasheet swing; while
+  audio plays it ignores moves under 2% (PVDD read noise). Test tones and
+  line-in at unity skip it, and after one Boost ramps up from unity again.
+- **`heat_cap_w`:** sustained watts a channel the governor allows, from
+  `heat_min_w` to `heat_max_w` (15), default `heat_def_w` (9). Above 9 W
+  the amp may cut out when it gets hot; a fan helps. Lite's TPA3118 has no
+  warning pin, so a trip is forgiven (not counted towards the amp's
+  3-trips latch) only when the cap is above the default, the amp had been
+  on at least 5 s, the governor's heat estimate is above the default, and
+  no other trip was forgiven in the last fault window. A forgiven trip
+  lowers the cap by 2 W (saved, shown in `heat_cap_w`), holds the gain 3 dB
+  down for 60 s and keeps the amp off 15 s. Any other trip (a short trips
+  at once, or again soon) counts and latches as before. The cap tops out
+  at 15 W: the thermal model reaches the 150 C shutdown near there, so
+  more needs a fan, a heatsink and a measurement.
+
+Both are checked before either is set, and kept across restarts. Shown as
+`audio.boost` (`db`, `limit_db`: the gain the limiter is taking off now,
+`limiting`, `limit_events`) and `governor.heat_cap_w` / `heat_w` in
+`/state`, with `amp.hot` when the warning pin is low. Reply: the full
+`/state`; 400 on a bad value.
 
 ## `POST /api/v1/name`
 

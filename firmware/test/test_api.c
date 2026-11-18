@@ -31,6 +31,9 @@ static struct {
 	bool core;        /* answer as Plus: the line in through the ADC */
 	bool dj_guard;
 	const char *dj_tripped;
+	bool loud; /* the board has Boost and a heat cap */
+	float boost_db, heat_w;
+	int loud_calls;
 } m;
 
 static void m_info(hifi_info_t *i) {
@@ -43,8 +46,14 @@ static void m_info(hifi_info_t *i) {
 	i->flash_mb = 8;
 	i->psram_mb = 8;
 	snprintf(i->name, sizeof(i->name), "%s", m.name[0] ? m.name : "Living room");
-	i->caps = (hifi_caps_t) {.dj_direct = true, .line = m.core, .eq_min_db = -12, .eq_max_db = 12, .sub_count = 2,
+	i->caps = (hifi_caps_t) {.dj_direct = true, .line = m.core, .eq_min_db = -12, .eq_max_db = 12, .sub_count = 2, .sub_max_db = m.core ? 0 : -9,
 				 .zones = 1, .pdo_v_max = 20};
+	if (m.loud) {
+		i->caps.boost_max_db = 9;
+		i->caps.heat_min_w = 2;
+		i->caps.heat_max_w = 15;
+		i->caps.heat_def_w = 9;
+	}
 }
 
 static void m_snapshot(hifi_snapshot_t *s) {
@@ -76,6 +85,17 @@ static void m_snapshot(hifi_snapshot_t *s) {
 	s->volume = m.vol.volume;
 	s->mute = m.vol.mute;
 	s->max_volume = m.vol.max_volume;
+	if (m.loud) {
+		s->loudness = true;
+		s->gov_why = m.heat_w > 9 ? "heat" : "";
+		s->heat_cap_w = m.heat_w;
+		s->heat_w = 3.25f;
+		s->amp_hot = m.heat_w > 12;
+		s->boost_db = m.boost_db;
+		s->boost_limit_db = m.boost_db > 0 ? -1.5f : 0;
+		s->boost_limiting = m.boost_db > 0;
+		s->boost_events = 7;
+	}
 	s->playing = m.playing;
 	s->ir_learning = m.ir_learning;
 	memcpy(s->ir_learned, m.ir_learned, sizeof(m.ir_learned));
@@ -111,6 +131,12 @@ static float m_set_sub(int on, float db) {
 	if (on >= 0) m.sub_on = on;
 	if (!isnan(db)) m.sub_db = db > 4.5f ? 4.5f : db;
 	return m.sub_db;
+}
+static int m_set_loudness(float b, float w) {
+	m.loud_calls++;
+	if (!isnan(b)) m.boost_db = b;
+	if (!isnan(w)) m.heat_w = w;
+	return 0;
 }
 static int m_set_channel(hifi_chan_t c) {
 	m.channel = c;
@@ -152,7 +178,7 @@ static const hifi_ops_t ops = {
 	.amp_enable = m_amp_enable, .amp_reset = m_amp_reset, .set_input = m_set_input,
 	.set_sub = m_set_sub, .set_channel = m_set_channel, .set_eq = m_set_eq, .set_name = m_set_name, .reboot = m_reboot,
 	.factory_reset = m_factory_reset, .control = m_control, .selftest = m_selftest,
-	.set_volume = m_set_volume, .ir_learn = m_ir_learn, .ir_forget = m_ir_forget};
+	.set_volume = m_set_volume, .ir_learn = m_ir_learn, .ir_forget = m_ir_forget, .set_loudness = m_set_loudness};
 
 static char out[2048];
 
@@ -170,8 +196,8 @@ static void info_and_state(void) {
 		       "\"upstream\":\"squeezelite-esp32 master-v4.3 ee1720c\",\"api\":1,\"name\":\"Living room\","
 		       "\"mac\":\"24:0a:c4:12:34:56\",\"hostname\":\"squeezelite-123456\",\"flash_mb\":8,\"psram_mb\":8,"
 		       "\"caps\":{\"line_modes\":[\"dj_direct\"],\"eq_bands\":[31,62,125,250,500,1000,2000,4000,8000,16000],"
-		       "\"eq_min\":-12,\"eq_max\":12,\"sub\":{\"count\":2,\"crossover\":false,\"per_sub\":false},"
-		       "\"zones\":1,\"eth\":false,\"pdo_v_max\":20}}");
+		       "\"eq_min\":-12,\"eq_max\":12,\"sub\":{\"count\":2,\"crossover\":false,\"per_sub\":false,\"max_db\":-9.0},"
+		       "\"zones\":1,\"eth\":false,\"pdo_v_max\":20,\"channel\":true,\"led\":false,\"backlight\":false}}");
 
 	m.power_on = true;
 	m.amp_enabled = true;
@@ -267,10 +293,12 @@ static void amp_input_sub_control(void) {
 	m.core = m.dj_guard = false;
 	m.input = HIFI_INPUT_DJ_DIRECT;
 
-	CHECK(call("POST", "/api/v1/sub", "{\"level_db\":6}") == 200);
-	CHECK_HAS(out, "\"sub\":{\"on\":false,\"level_db\":4.5}"); /* what the codec could do */
+	CHECK(call("POST", "/api/v1/sub", "{\"level_db\":-8.5}") == 400); /* over caps.sub.max_db */
+	CHECK_HAS(out, "-30 to -9.0 on this model");
+	CHECK(call("POST", "/api/v1/sub", "{\"level_db\":-10.5}") == 200);
+	CHECK_HAS(out, "\"sub\":{\"on\":false,\"level_db\":-10.5}"); /* what the codec could do */
 	CHECK(call("POST", "/api/v1/sub", "{\"on\":true}") == 200);
-	CHECK(m.sub_on == 1 && m.sub_db == 4.5f);
+	CHECK(m.sub_on == 1 && m.sub_db == -10.5f);
 	CHECK(call("POST", "/api/v1/sub", "{\"level_db\":-40}") == 400);
 	CHECK(call("POST", "/api/v1/sub", "{}") == 400);
 
@@ -404,7 +432,7 @@ static void state_parts(void) {
 	m.power_on = true;
 	CHECK(call("GET", "/api/v1/state/audio", NULL) == 200);
 	CHECK_STR(out, "{\"audio\":{\"source\":\"lms\",\"input\":\"dj_direct\",\"tone\":null,\"level_dbfs\":-23.4,\"channel\":\"stereo\","
-		       "\"sub\":{\"on\":true,\"level_db\":4.5},\"eq\":[1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,-12.0],"
+		       "\"sub\":{\"on\":true,\"level_db\":-10.5},\"eq\":[1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,-12.0],"
 		       "\"volume\":20,\"mute\":false,\"max_volume\":100,\"playing\":null}}");
 	CHECK(call("GET", "/api/v1/state/sys", NULL) == 200);
 	CHECK_STR(out, "{\"sys\":{\"heap_free\":81234,\"heap_min\":60123,\"heap_boot\":17890,\"psram_free\":3912345}}");
@@ -700,6 +728,11 @@ static void core_routes(void) {
 	CHECK(call("GET", "/api/v1/update/check", NULL) == 404);
 	CHECK(call("POST", "/api/v1/update", "{\"url\":\"http://h/a.bin\"}") == 404);
 
+	/* info says which of the settings routes the model has (k2391) */
+	CHECK(ccall("GET", "/api/v1/info", NULL) == 200);
+	CHECK_HAS(out, "\"channel\":false,\"led\":true,\"backlight\":true");
+	CHECK(ccall("POST", "/api/v1/channel", "{\"channel\":\"left\"}") == 404);
+
 	CHECK(ccall("GET", "/api/v1/wifi/scan", NULL) == 200);
 	CHECK_STR(out, "{\"networks\":[{\"ssid\":\"home\",\"rssi\":-48,\"secure\":true},"
 		       "{\"ssid\":\"cafe \\\"free\\\"\",\"rssi\":-81,\"secure\":false}]}");
@@ -950,6 +983,40 @@ static void bttest(void) {
 	CHECK_STR(bt_sink, "HiFi Lite 3");
 }
 
+static void loudness(void) {
+	/* a board without Boost: no caps entry, no state fields, 404 */
+	CHECK(call("GET", "/api/v1/info", NULL) == 200);
+	CHECK(!strstr(out, "loudness"));
+	CHECK(call("POST", "/api/v1/loudness", "{\"boost_db\":3}") == 404);
+	CHECK(m.loud_calls == 0);
+	m.loud = true;
+	m.heat_w = 9;
+	CHECK(call("GET", "/api/v1/info", NULL) == 200);
+	CHECK_HAS(out, "\"loudness\":{\"boost_max_db\":9.0,\"heat_cap_w\":{\"min\":2.0,\"max\":15.0,\"default\":9.0}}");
+	CHECK(call("GET", "/api/v1/loudness", NULL) == 405);
+	CHECK(call("POST", "/api/v1/loudness", "{}") == 400);
+	CHECK(call("POST", "/api/v1/loudness", "{\"boost_db\":9.5}") == 400);
+	CHECK(call("POST", "/api/v1/loudness", "{\"boost_db\":-1}") == 400);
+	CHECK(call("POST", "/api/v1/loudness", "{\"boost_db\":1e999}") == 400);
+	CHECK(call("POST", "/api/v1/loudness", "{\"heat_cap_w\":1}") == 400);
+	CHECK(call("POST", "/api/v1/loudness", "{\"heat_cap_w\":15.5}") == 400);
+	CHECK(call("POST", "/api/v1/loudness", "{\"boost_db\":\"6\"}") == 400);
+	CHECK(call("POST", "/api/v1/loudness", "{\"boost_db\":3,\"heat_cap_w\":30}") == 400);
+	CHECK(m.loud_calls == 0 && m.boost_db == 0); /* a bad half sets neither */
+	CHECK(call("POST", "/api/v1/loudness", "{\"boost_db\":6}") == 200);
+	CHECK(m.boost_db == 6 && m.heat_w == 9);
+	CHECK_HAS(out, "\"boost\":{\"db\":6.0,\"limit_db\":-1.5,\"limiting\":true,\"limit_events\":7}");
+	CHECK_HAS(out, "\"reason\":null,\"heat_cap_w\":9.0,\"heat_w\":3.2");
+	CHECK_HAS(out, "\"hot\":false");
+	CHECK(call("POST", "/api/v1/loudness", "{\"heat_cap_w\":13}") == 200);
+	CHECK(m.boost_db == 6 && m.heat_w == 13);
+	CHECK_HAS(out, "\"reason\":\"heat\",\"heat_cap_w\":13.0");
+	CHECK_HAS(out, "\"hot\":true");
+	CHECK(call("POST", "/api/v1/loudness", "{\"boost_db\":0,\"heat_cap_w\":9}") == 200);
+	CHECK(m.boost_db == 0 && m.heat_w == 9 && m.loud_calls == 3);
+	m.loud = false;
+}
+
 int main(void) {
 	hifi_vol_init(&m.vol, 35, 100);
 	m.ir_learning = -1;
@@ -964,5 +1031,6 @@ int main(void) {
 	i2c_console();
 	crash();
 	bttest();
+	loudness();
 	return check_report("api");
 }

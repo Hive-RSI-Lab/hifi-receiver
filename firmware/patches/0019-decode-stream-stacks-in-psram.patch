@@ -1,6 +1,7 @@
-hifi lab (CONFIG_HIFI_LAB_PSRAM_STACKS, board/lite-lab-radio): the decode and
-stream threads' stacks in PSRAM, about 19 KB of internal RAM back for a
-second radio beside a live A2DP stream. Lab images only.
+hifi (CONFIG_HIFI_PSRAM_STACKS): the decode and stream threads' stacks in
+PSRAM, about 19 KB of internal RAM back. Set by board/lite-main (the product
+Lite ran out of internal RAM with Spotify playing, then panicked) and so by
+every image built on it; the lab-radio image's HIFI_LAB_PSRAM_STACKS selects it.
 
 diff --git a/components/squeezelite/decode.c b/components/squeezelite/decode.c
 --- a/components/squeezelite/decode.c
@@ -9,8 +10,8 @@ diff --git a/components/squeezelite/decode.c b/components/squeezelite/decode.c
  	}
  }
  
-+#if CONFIG_HIFI_LAB_PSRAM_STACKS
-+static void *psram_thread; /* hifi lab: its stack in PSRAM (embedded.h) */
++#if CONFIG_HIFI_PSRAM_STACKS
++static void *psram_thread; /* hifi: its stack in PSRAM (embedded.h) */
 +#else
  static thread_type thread;
 +#endif
@@ -21,7 +22,7 @@ diff --git a/components/squeezelite/decode.c b/components/squeezelite/decode.c
  #ifdef PTHREAD_STACK_MIN
  	pthread_attr_setstacksize(&attr, PTHREAD_STACK_MIN + DECODE_THREAD_STACK_SIZE);
  #endif
-+#if CONFIG_HIFI_LAB_PSRAM_STACKS
++#if CONFIG_HIFI_PSRAM_STACKS
 +	psram_thread_create(&psram_thread, decode_thread, NULL, PTHREAD_STACK_MIN + DECODE_THREAD_STACK_SIZE, "decode");
 +#else
  	pthread_create_name(&thread, &attr, decode_thread, NULL, "decode");
@@ -34,7 +35,7 @@ diff --git a/components/squeezelite/decode.c b/components/squeezelite/decode.c
  	running = false;
  	UNLOCK_D;
 -#if LINUX || OSX || FREEBSD || EMBEDDED
-+#if CONFIG_HIFI_LAB_PSRAM_STACKS
++#if CONFIG_HIFI_PSRAM_STACKS
 +	psram_thread_join(psram_thread);
 +#elif LINUX || OSX || FREEBSD || EMBEDDED
  	pthread_join(thread, NULL);
@@ -47,7 +48,7 @@ diff --git a/components/squeezelite/embedded.c b/components/squeezelite/embedded
  	return pthread_create(thread, attr, start_routine, arg);
  }
  
-+#if CONFIG_HIFI_LAB_PSRAM_STACKS
++#if CONFIG_HIFI_PSRAM_STACKS
 +#include "esp_heap_caps.h"
 +#include "freertos/semphr.h"
 +
@@ -115,8 +116,8 @@ diff --git a/components/squeezelite/embedded.h b/components/squeezelite/embedded
  				   void *(*start_routine)( void * ), void *arg, char *name);
  
 +#include "sdkconfig.h"
-+#if CONFIG_HIFI_LAB_PSRAM_STACKS
-+/* hifi lab: a thread whose stack is in PSRAM (its control block stays in
++#if CONFIG_HIFI_PSRAM_STACKS
++/* hifi: a thread whose stack is in PSRAM (its control block stays in
 + * internal RAM), for the decode and stream threads, whose 14 and 4 KB stacks
 + * are internal RAM as pthreads. Such a thread must never touch flash, reads
 + * included (NVS, a partition, mmap or OTA: the IDF asserts its stack is
@@ -136,8 +137,8 @@ diff --git a/components/squeezelite/stream.c b/components/squeezelite/stream.c
  	return 0;
  }
  
-+#if CONFIG_HIFI_LAB_PSRAM_STACKS
-+static void *psram_thread; /* hifi lab: its stack in PSRAM (embedded.h) */
++#if CONFIG_HIFI_PSRAM_STACKS
++static void *psram_thread; /* hifi: its stack in PSRAM (embedded.h) */
 +#else
  static thread_type thread;
 +#endif
@@ -148,7 +149,7 @@ diff --git a/components/squeezelite/stream.c b/components/squeezelite/stream.c
  #ifdef PTHREAD_STACK_MIN	
  	pthread_attr_setstacksize(&attr, PTHREAD_STACK_MIN + STREAM_THREAD_STACK_SIZE);
  #endif
-+#if CONFIG_HIFI_LAB_PSRAM_STACKS
++#if CONFIG_HIFI_PSRAM_STACKS
 +	psram_thread_create(&psram_thread, stream_thread, NULL, PTHREAD_STACK_MIN + STREAM_THREAD_STACK_SIZE, "stream");
 +#else
  	pthread_create_name(&thread, &attr, stream_thread, NULL, "stream");
@@ -161,7 +162,7 @@ diff --git a/components/squeezelite/stream.c b/components/squeezelite/stream.c
  	running = false;
  	UNLOCK;
 -#if LINUX || OSX || FREEBSD || EMBEDDED
-+#if CONFIG_HIFI_LAB_PSRAM_STACKS
++#if CONFIG_HIFI_PSRAM_STACKS
 +	psram_thread_join(psram_thread);
 +#elif LINUX || OSX || FREEBSD || EMBEDDED
  	pthread_join(thread, NULL);

@@ -81,10 +81,19 @@ fi
 # the lab's Bluetooth experiments are weak symbols that only patch 0017's
 # -u flags pull into the app: if the flags and the sdkconfig ever disagree,
 # the experiment would vanish without a link error, so fail here instead
-for lab in "lab_bt:CONFIG_BT_CLASSIC_ENABLED" "lab_a2dp:CONFIG_BT_CLASSIC_ENABLED" "lab_ble:CONFIG_BT_BLE_ENABLED"; do
+for lab in "lab_bt:CONFIG_BT_CLASSIC_ENABLED" "lab_a2dp:CONFIG_BT_CLASSIC_ENABLED" "lab_ble:CONFIG_BT_BLE_ENABLED" \
+	"lab_flac:CONFIG_HIFI_LAB_PSRAM_STACKS" "lab_party:CONFIG_HIFI_LAB"; do
 	if grep -q '^CONFIG_HIFI_LAB=y' sdkconfig && grep -q "^${lab#*:}=y" sdkconfig &&
 		! grep -q "(${lab%%:*}.c.obj)" build/squeezelite.map; then
-		echo "build.sh: ${lab%%:*} is enabled but not linked into the app (patch 0017)" >&2
+		echo "build.sh: ${lab%%:*} is enabled but not linked into the app (patches 0017, 0027, 0031)" >&2
+		exit 1
+	fi
+done
+# and the FLAC and party experiments (libFLAC and its clip; the party sync)
+# stay out of recovery's slot
+for lab in lab_flac:0027 lab_party:0031; do
+	if grep -q "(${lab%%:*}.c.obj)" build/recovery.map; then
+		echo "build.sh: ${lab%%:*} is linked into the recovery image (patch ${lab#*:})" >&2
 		exit 1
 	fi
 done

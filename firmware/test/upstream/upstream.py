@@ -87,17 +87,22 @@ def file_patches(path: str) -> list[str]:
 
 def files(out: Path, paths: list[str]) -> int:
     for path in paths:
-        try:
-            data = pristine(path, out / ".pristine")
-        except Broken as e:
-            print(f"upstream.py: {e}", file=sys.stderr)
-            return 1
-        if data is None:
-            return 3
+        parts = file_patches(path)
         dest = out / path
         dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_bytes(data)
-        for part in file_patches(path):
+        if parts and "\n--- /dev/null\n" in parts[0]:
+            # a file our patches add: there is no upstream copy, the patch makes it
+            dest.unlink(missing_ok=True)
+        else:
+            try:
+                data = pristine(path, out / ".pristine")
+            except Broken as e:
+                print(f"upstream.py: {e}", file=sys.stderr)
+                return 1
+            if data is None:
+                return 3
+            dest.write_bytes(data)
+        for part in parts:
             r = subprocess.run(["patch", "-p1", "-s", "-N", "-d", str(out)], input=part.encode(),
                                capture_output=True)
             if r.returncode:

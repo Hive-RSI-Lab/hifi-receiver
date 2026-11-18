@@ -611,6 +611,13 @@ static void sender(void) {
 	CHECK(hifi_link_tx_rtt_pct(t, 50) < 0);
 	double ppm;
 	CHECK(!hifi_link_tx_drift_ppm(t, &ppm));
+	static hifi_link_ow_t ow[150]; /* fewer than the pongs: the rest are dropped, counted */
+	static int32_t scratch[150];
+	hifi_link_ow_stats_t fwd, back;
+	bool fit;
+	CHECK(!hifi_link_tx_oneway(t, scratch, &fwd, &back, &fit)); /* no buffer */
+	hifi_link_tx_keep_oneway(t, ow, 150);
+	CHECK(!hifi_link_tx_oneway(t, scratch, &fwd, &back, &fit)); /* nothing kept yet */
 
 	/* The echo's clock reads ours + 5 s, running 20 ppm fast. 10 pings a
 	 * second for 20 s; the round trip is 2 ms, every tenth 10 ms (and
@@ -649,6 +656,41 @@ static void sender(void) {
 	CHECK_NEAR(ppm, 20.0, 0.5);
 	/* the last second is still open: the fit counts it */
 	CHECK(t->win_any);
+	/* one-way: 950 us each way, every tenth ping 9000 out and 900 back.
+	 * Through the drift line (the echo is 5 s and 20 ppm off), the forward
+	 * median is 950 and its 99th percentile the slow 9000 */
+	CHECK(t->ow_n == 150 && t->ow_dropped == 49);
+	CHECK(hifi_link_tx_oneway(t, scratch, &fwd, &back, &fit) && fit);
+	CHECK(fwd.n == 150 && back.n == 150);
+	CHECK_NEAR(fwd.min, 950, 15);
+	CHECK_NEAR(fwd.p50, 950, 15);
+	CHECK_NEAR(fwd.p90, 950, 15); /* 15 of 150 are slow, ranks 136-150: rank 135 is still quick */
+	CHECK_NEAR(fwd.p99, 9000, 15);
+	CHECK_NEAR(fwd.max, 9000, 15);
+	CHECK_NEAR(back.min, 900, 15);
+	CHECK_NEAR(back.p50, 950, 15);
+	CHECK_NEAR(back.max, 950, 15);
+	{
+		/* without the line (the 5 s offset alone, no drift) the 20 ppm
+		 * over 20 s would smear the forward delay by up to 400 us */
+		hifi_link_tx_t *u = calloc(1, sizeof(*u));
+		*u = *t;
+		u->windows = 0;
+		u->win_any = false;
+		CHECK(hifi_link_tx_oneway(u, scratch, &fwd, &back, &fit) && !fit);
+		CHECK(fwd.min < 700); /* the first second's, read with the last second's offset */
+		free(u);
+	}
+	{
+		char js[512];
+		hj_t j;
+		hj_init(&j, js, sizeof(js));
+		hj_obj(&j, NULL);
+		hifi_link_tx_oneway_json(t, scratch, &j);
+		hj_obj_end(&j);
+		CHECK(strstr(js, "\"kept\":150") && strstr(js, "\"dropped\":49") && strstr(js, "\"clock\":\"drift line\""));
+		CHECK(strstr(js, "\"fwd\":{") && strstr(js, "\"jitter_p99\":"));
+	}
 	{
 		/* 2.5 s of pings: two windows closed, the third still open, and
 		 * the fit has three points */

@@ -176,6 +176,9 @@ typedef struct {
 	int64_t offset_us;             /* the newest window's best offset */
 	int64_t offset_delay_us;
 	hifi_link_seen_t seen;
+	/* one-way delays, if a buffer was given (hifi_link_tx_keep_oneway) */
+	struct hifi_link_ow *ow;
+	uint32_t ow_cap, ow_n, ow_dropped;
 } hifi_link_tx_t;
 
 void hifi_link_tx_init(hifi_link_tx_t *t, uint32_t session);
@@ -202,6 +205,30 @@ typedef enum {
 	HIFI_LINK_GOT_BAD,   /* not one of ours, or damaged: counted in rx->bad */
 	HIFI_LINK_GOT_OTHER, /* a good frame this end has no use for (or a PING it answered already) */
 } hifi_link_got_t;
+
+/* One-way delays, for a sync beacon's latency and arrival jitter. Each
+ * PONG taken keeps its t1, t2 - t1 and t4 - t3 in a buffer the caller gives
+ * (PSRAM on the boards; give it after hifi_link_tx_init, which clears it).
+ * hifi_link_tx_oneway then puts the echo's clock on the pinger's along the
+ * drift fit's line (or the best offset, under three windows) and gives the
+ * order statistics of the forward (PING) and back (PONG) delays. As the
+ * offset itself does, it takes the quickest trips to be the same both ways:
+ * the spread (jitter) is measured, the level rests on that. A pong past the
+ * buffer's end is counted in ow_dropped, not kept. */
+typedef struct hifi_link_ow {
+	int64_t t1, fwd_raw, back_raw;
+} hifi_link_ow_t;
+typedef struct {
+	uint32_t n;
+	int32_t min, p50, p90, p99, max; /* us */
+} hifi_link_ow_stats_t;
+void hifi_link_tx_keep_oneway(hifi_link_tx_t *t, hifi_link_ow_t *buf, uint32_t cap);
+/* scratch: ow_n int32s. False if nothing was kept. fit: the drift line
+ * was used (else the best offset) */
+bool hifi_link_tx_oneway(const hifi_link_tx_t *t, int32_t *scratch, hifi_link_ow_stats_t *fwd,
+                         hifi_link_ow_stats_t *back, bool *fit);
+/* the members of "oneway_us", into an open JSON object (an hj_t *) */
+void hifi_link_tx_oneway_json(const hifi_link_tx_t *t, int32_t *scratch, void *hj);
 
 /* A radio callback's copy of a received value into its queue item's buffer
  * (cap bytes): the length copied, 0 (nothing copied) when there is nothing

@@ -1,0 +1,20 @@
+hifi lab (CONFIG_HIFI_LAB_PSRAM_STACKS, board/lite-lab-radio): the FLAC
+experiment (components/hifi/esp/lab_flac.c) links into the app only, like
+patch 0017 does for the Bluetooth ones. Lab images only.
+
+diff --git a/components/platform_console/app_squeezelite/CMakeLists.txt b/components/platform_console/app_squeezelite/CMakeLists.txt
+index d514666..6259715 100644
+--- a/components/platform_console/app_squeezelite/CMakeLists.txt
++++ b/components/platform_console/app_squeezelite/CMakeLists.txt
+@@ -22,6 +22,11 @@ endif()
+ if(CONFIG_HIFI_LAB AND CONFIG_BT_BLE_ENABLED)
+ 	target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=lab_ble")
+ endif()
++# hifi: and the lab-radio image's FLAC experiment (lab_flac.c, with libFLAC
++# and its clip), which would not fit recovery's slot
++if(CONFIG_HIFI_LAB_PSRAM_STACKS)
++	target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=lab_flac")
++endif()
+ 
+ idf_build_get_property(project_ver PROJECT_VER)
+ message("******************* ${project_ver}")
