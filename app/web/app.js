@@ -3,7 +3,9 @@
 // the calls only the app uses are listed in docs/app.md, "The API"). It reads
 // GET info once (what the box is and can do: info.caps, so one app serves
 // Lite, Plus and Ultra) and polls GET state; every write answers with the new
-// state.
+// state. The Speakers page reaches the other receivers on the Wi-Fi too: it
+// lists them from GET peers and talks to each at its own address, which the
+// firmware allows from a LAN page (docs/app.md, "Speakers").
 'use strict';
 
 const POLL_MS = 2000;
@@ -39,7 +41,7 @@ const CHECKS = { pd_sink_i2c: 'Charger chip', pd_contract: 'Charger contract', v
 
 let I = null;          // GET info: what the box is
 let S = null;          // the last GET state
-let tab = 'play';
+let tab = 'speakers';
 let online = false;
 let slow = 0;          // polls in a row that ran out of time: the board answers one request at a time, so a long one (an update check) holds the rest
 let uploading = false; // a firmware file is going up: the board answers nothing else until it is written
@@ -76,15 +78,18 @@ function toast(msg, ms = 3000) {
   clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, ms);
 }
 
-async function api(path, body, waitMs) {
+// base: '' for this receiver, 'http://<ip>/' for another one. A POST to
+// another one goes as text/plain, a CORS "simple" request with no preflight
+// (the firmware reads the JSON body whatever its type).
+async function api(path, body, waitMs, base = '') {
   const opt = body === undefined ? {} : {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+    method: 'POST', headers: { 'Content-Type': base ? 'text/plain' : 'application/json' }, body: JSON.stringify(body) };
   // AbortController, not AbortSignal.timeout: that one is iOS 16+ only
   const c = waitMs ? new AbortController() : null;
   const t = c && setTimeout(() => c.abort(), waitMs);
   if (c) opt.signal = c.signal;
   try {
-    const r = await fetch('api/v1/' + path, opt);
+    const r = await fetch(base + 'api/v1/' + path, opt);
     // a body cut off by the limit is no answer, not an empty one
     const j = await r.json().catch((e) => { if (e.name === 'AbortError') throw e; return {}; });
     if (!r.ok) throw Object.assign(new Error(j.error || r.statusText), { status: r.status });
@@ -297,7 +302,9 @@ async function poll(boot) {
   if (uploading) { setTimeout(() => poll(boot), POLL_MS); return; }
   try {
     const w = POLL_WAIT_MS;
-    const party = P !== null && tab === 'play' ? api('party', undefined, w).catch((e) => (e.status === 404 ? null : P)) : P;
+    const party = P !== null && tab !== 'sound'
+      ? api('party', undefined, w).catch((e) => (e.status === 404 ? null : P)) : P;
+    const others = tab === 'speakers' && I ? pollSpeakers() : null;
     // info too while there is none or the board was out of reach
     const fresh = !I || !online;
     const [i, st, p] = await Promise.all([fresh ? api('info', undefined, w) : I, api('state', undefined, w), party]);
@@ -305,6 +312,7 @@ async function poll(boot) {
     // and again after a restart (an update changes the firmware version)
     else if (S && st.uptime_s < S.uptime_s) I = await api('info', undefined, w);
     P = p;
+    await others;
     if (boot && st.net && st.net.mode === 'ap' && !PAGES[want]) tab = 'setup';
     if (st && st.audio) { S = st; remember(st); }
     online = true; slow = 0;
@@ -321,7 +329,7 @@ function draw() {
   const typing = document.activeElement && /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName) &&
     document.activeElement.type !== 'range';
   if (holding || typing) return;
-  if (I) $('#name').textContent = I.name;
+  if (I) $('#name').textContent = tab === 'speakers' ? 'Speakers' : I.name;
   for (const b of document.querySelectorAll('#tabs button')) b.classList.toggle('on', b.dataset.tab === tab);
   const view = $('#view');
   const y = window.scrollY;
@@ -344,6 +352,236 @@ function offline() {
       `http://${(S && S.net.hostname) || 'hifi'}.local. If not, its own HiFi-… network comes back: join that and try again.`
       : 'Check that it is powered and that this phone is on the same Wi-Fi. ' +
       'If it is new, join its own Wi-Fi network (named HiFi-…) and this page opens by itself.'));
+}
+
+// ---- Speakers -----------------------------------------------------------
+// Every receiver on this Wi-Fi (the design: ~/designs/hifi-lite-speakers-af9de,
+// docs/app.md "Speakers"): GET peers from this one (it asks mDNS for the
+// others), then each other one's state and party at its own address. A card
+// opens that receiver's own Play, Sound and Setup: this one's here, another's
+// at its own address, which serves the same app.
+
+const PEERS_MS = 10000; // the list is read again this often (the firmware asks mDNS at most every 10 s)
+const PARTY_MAX = 3;    // followers a leader takes (hifi_party_group.h)
+let PEERS = null;       // GET peers' rows, this one first; null before the first read, false on a build without it
+let peersAt = 0;
+const R = {};           // ip -> {st, party, ok, fails, err}: what the other receivers last said
+// the party sheet: null (shut), 'off', 'lead', 'join' (starting one) or 'on'
+let sheet = null, pickLead = null, pickJoin = new Set(), partyErr = '';
+const at = (p) => (p.self ? '' : `http://${p.ip}/`);
+
+async function pollSpeakers() {
+  const w = POLL_WAIT_MS;
+  if (PEERS !== false && Date.now() - peersAt > PEERS_MS) {
+    peersAt = Date.now();
+    const r = await api('peers', undefined, w).catch((e) => (e.status === 404 ? false : null));
+    if (r === false) PEERS = false;
+    else if (r && r.peers) PEERS = r.peers;
+  }
+  await Promise.all((PEERS || []).filter((p) => !p.self).map(async (p) => {
+    const r = R[p.ip] || (R[p.ip] = { fails: 0 });
+    try {
+      const [st, party] = await Promise.all([api('state', undefined, w, at(p)),
+        api('party', undefined, w, at(p)).catch((e) => (e.status === 404 ? null : r.party))]);
+      Object.assign(r, { st, party, ok: true, fails: 0 });
+    } catch (e) {
+      // as for this one: a second miss in a row is a lost one
+      r.ok = r.ok && ++r.fails < 2;
+    }
+  }));
+}
+
+// one row per receiver, the ones that answer first: {name, ip, model, self, st, party, ok, seen_s, err}
+function speakers() {
+  const self = { name: I.name, ip: S.net.ip, model: I.model, self: true };
+  const all = (PEERS || [self]).map((p) => (p.self ? { ...p, name: I.name, st: S, party: P, ok: online }
+    : { ...p, ...R[p.ip], name: (R[p.ip] && R[p.ip].ok && R[p.ip].st.name) || p.name }));
+  return all.filter((p) => p.ok).concat(all.filter((p) => !p.ok));
+}
+
+// a change on one receiver: this one's state through take(), another's into R.
+// An error stays on that card (or the party sheet) with what it said.
+async function to(p, path, body) {
+  try {
+    const r = await api(path, body, POLL_WAIT_MS, at(p));
+    const x = p.self ? null : R[p.ip];
+    if (x) x.err = '';
+    if (path === 'party') { if (x) x.party = r; else P = r; } else if (x) x.st = r; else take(r);
+    draw();
+    return r;
+  } catch (e) {
+    const why = e.status ? `It said: “${e.message}”.` : 'It may be off or out of Wi-Fi range.';
+    if (path === 'party') partyErr = `${p.name} didn’t take that. ${why}`;
+    else if (p.self) toast(e.message);
+    else R[p.ip].err = `${p.name} didn’t answer. ${why}`;
+    draw();
+    return null;
+  }
+}
+
+const leaderOf = (all) => all.find((p) => p.ok && p.party && p.party.on && p.party.role === 'leader');
+const inParty = (all) => all.filter((p) => p.ok && p.party && p.party.on);
+
+function pageSpeakers() {
+  const all = speakers(), L = leaderOf(all);
+  return [
+    powerNotice(), // this box's own power trouble shows on the first page too
+    h('div.grid', {}, all.map((p) => speakerCard(p, L))),
+    PEERS === false ? h('p.dim', {}, 'This receiver’s firmware lists only itself: update it to see the others here.')
+      : all.length < 2 && (PEERS ? h('div.card', {}, h('b', {}, 'Only this speaker found'),
+        h('p.dim', {}, 'Others show here when they are on the same Wi-Fi. Check that they are plugged in and set up.'))
+        : h('div.look', {}, h('span.spin', {}), 'Looking for other speakers on this Wi-Fi…')),
+    partyDock(all, L),
+    ...(sheet ? partySheet(all, L) : []),
+  ];
+}
+
+const MODELS = { 'hifi-lite': 'Lite', 'hifi-plus': 'Plus', 'hifi-ultra': 'Ultra', lite: 'Lite', plus: 'Plus', ultra: 'Ultra' };
+const mmss = (n) => `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`;
+
+// [dim lead-in, title, " — artist"] for the card's now-playing line
+function nowPlaying(p, L) {
+  const a = p.st.audio, np = a.playing || {};
+  if (p.party && p.party.role === 'follower' && L && L !== p) {
+    const n = L.st.audio.playing || {};
+    return n.title ? ['', n.title, n.artist ? ` — ${n.artist}` : ''] : [`Waiting for ${L.name} to play`, '', ''];
+  }
+  if (a.input && a.input !== 'stream') return [INPUTS[a.input] || a.input, '', ''];
+  if (np.state === 'play' || np.state === 'pause') {
+    return [`${np.state === 'pause' ? 'Paused' : SOURCES[a.source] || a.source}${np.title ? ' · ' : ''}`,
+      np.title || '', np.artist ? ` — ${np.artist}` : ''];
+  }
+  return [p.party && p.party.role === 'leader' ? `Waiting: play from your phone to ${p.name}` : 'Idle', '', ''];
+}
+
+function speakerCard(p, L) {
+  const open = () => {
+    if (!p.self) { location.href = at(p) + '#play'; return; }
+    tab = 'play'; draw(); window.scrollTo(0, 0);
+  };
+  const head = h('button.sp-h', { onclick: open, 'aria-label': `Open ${p.name}` },
+    h('span.dot' + (p.ok ? '.on' : ''), {}), h('span.sp-n', {}, p.name),
+    h('span.chip', {}, MODELS[p.model] || p.model || ''), p.self && h('span.self', {}, 'this one'), h('span.chev', {}, '›'));
+  if (!p.ok || !p.st || !p.st.audio) {
+    return h('div.card.sp.off', { 'data-ip': p.ip }, head,
+      h('p.note', {}, `Offline${p.seen_s ? ` · last heard ${ago(p.seen_s * 1000)}` : ''}`));
+  }
+  const a = p.st.audio, bt = p.st.bt, r = p.party || {};
+  const follows = r.on && r.role === 'follower';
+  const pills = [
+    r.on && r.role === 'leader' && h('span.pill.p', {}, 'Leads party'),
+    follows && h('span.pill.p', {}, L ? `Follows ${L.name}` : 'In the party'),
+    r.on && r.role === 'listening' && h('span.pill', {}, 'Looking for the party'),
+    bt && bt.pairing && h('span.pill.p', {}, `Pairing · ${mmss(bt.pairing_left_s)}`),
+    bt && !bt.pairing && bt.connected && h('span.pill', {}, 'Phone connected'),
+  ].filter(Boolean);
+  const np = a.playing || {}, [lead, title, artist] = nowPlaying(p, L);
+  const ctl = (action) => to(p, 'control', { action });
+  const num = h('span.n' + (a.mute ? '.muted' : ''), {}, String(a.volume));
+  return h('div.card.sp', { 'data-ip': p.ip }, head,
+    pills.length ? h('div.pills', {}, pills) : null,
+    h('div.np', {}, h('span.t', {}, lead, title && h('b', {}, title), artist),
+      !follows && (np.state === 'play' || np.state === 'pause') && [
+        h('button.sm', { 'aria-label': `${np.state === 'play' ? 'Pause' : 'Play'} ${p.name}`,
+          onclick: () => ctl(np.state === 'play' ? 'pause' : 'play') }, np.state === 'play' ? '⏸' : '▶'),
+        h('button.sm', { 'aria-label': `Next on ${p.name}`, onclick: () => ctl('next') }, '⏭')]),
+    h('div.vol', {},
+      h('button.sm', { 'aria-label': `${a.mute ? 'Unmute' : 'Mute'} ${p.name}`, onclick: () => to(p, 'volume', { mute: !a.mute }) },
+        a.mute ? '🔇' : '🔊'),
+      h('div.grow', {}, slider({ min: 0, max: a.max_volume, value: a.volume, 'aria-label': `Volume of ${p.name}`,
+        show: (v) => { num.textContent = v; } }, (v) => to(p, 'volume', { volume: v }))),
+      num),
+    p.err && h('div.pw-msg.bad', {}, h('span', {}, p.err), h('button', { onclick: () => { R[p.ip].err = ''; draw(); } }, 'OK')));
+}
+
+// the bar at the bottom: what the party is doing, and the way into it
+function partyDock(all, L) {
+  const can = all.filter((p) => p.ok && p.party && p.party.key);
+  const n = inParty(all).length;
+  const label = n ? (L ? `Party · ${L.name} leads${n > 1 ? `, ${n - 1} follow${n > 2 ? '' : 's'}` : ''}` : 'Party · looking for a leader')
+    : can.length < 2 ? 'Party needs a second speaker' : 'Start a party';
+  return h('div.dock', {}, h('button' + (n ? '.party' : ''), {
+    disabled: !n && can.length < 2,
+    onclick: () => { sheet = n ? 'on' : 'off'; partyErr = ''; draw(); },
+  }, '♫ ', label));
+}
+
+async function partyOp(p, op) {
+  partyErr = '';
+  const r = await to(p, 'party', { op });
+  if (r) setTimeout(poll, 300);
+  return r;
+}
+
+function partySheet(all, L) {
+  const can = all.filter((p) => p.ok && p.party && p.party.key);
+  const inIt = inParty(all), fol = inIt.filter((p) => p !== L);
+  if (sheet === 'on' && !inIt.length) sheet = 'off';
+  const shut = () => { sheet = null; draw(); };
+  const body = [];
+  if (sheet === 'off') {
+    body.push(h('p.lede', {}, `Play the same music on several speakers, in step, over Wi-Fi. One speaker leads; up to ${PARTY_MAX} follow it.`),
+      h('p.lede.note', {}, 'Each one keeps its own volume. Followers turn their Bluetooth off.'),
+      h('div.acts', {}, h('button.pri', { onclick: () => {
+        const playing = can.find((p) => (p.st.audio.playing || {}).state === 'play');
+        pickLead = (playing || can.find((p) => p.self) || can[0]).ip; pickJoin = new Set(); sheet = 'lead'; draw();
+      } }, 'Start a party')));
+  } else if (sheet === 'lead') {
+    body.push(h('h2', {}, 'Step 1 of 2 · Who leads?'),
+      h('p.lede.note', {}, 'Pick the speaker your phone plays to. It keeps its Bluetooth and sends the music to the others.'),
+      h('ul.pick', {}, can.map((p) => h('li', {}, h('label', {},
+        h('input', { type: 'radio', name: 'lead', checked: p.ip === pickLead, onchange: () => { pickLead = p.ip; } }),
+        h('span.x', {}, h('b', {}, p.name), h('span.s', {}, nowPlaying(p, null).join(''))))))),
+      h('div.acts', {}, h('button', { onclick: () => { sheet = 'off'; draw(); } }, 'Back'),
+        h('button.pri', { onclick: () => { sheet = 'join'; draw(); } }, 'Next')));
+  } else if (sheet === 'join') {
+    const lead = can.find((p) => p.ip === pickLead) || can[0];
+    const rest = can.filter((p) => p !== lead);
+    body.push(h('h2', {}, `Step 2 of 2 · Who joins ${lead.name}?`),
+      h('p.lede.note', {}, `Tick up to ${PARTY_MAX}. A phone on a follower’s Bluetooth disconnects.`),
+      h('ul.pick', {}, rest.map((p) => {
+        const no = !pickJoin.has(p.ip) && pickJoin.size >= PARTY_MAX;
+        return h('li', {}, h('label' + (no ? '.no' : ''), {},
+          h('input', { type: 'checkbox', checked: pickJoin.has(p.ip), disabled: no,
+            onchange: (e) => { if (e.target.checked) pickJoin.add(p.ip); else pickJoin.delete(p.ip); draw(); } }),
+          h('span.x', {}, h('b', {}, p.name), p.st.bt && p.st.bt.connected && h('span.s', {}, 'Its phone disconnects'))));
+      })),
+      h('div.acts', {}, h('button', { onclick: () => { sheet = 'lead'; draw(); } }, 'Back'),
+        h('button.pri', { disabled: !pickJoin.size, onclick: async () => {
+          // the first one switched on leads; the others then join it by themselves
+          if (!await partyOp(lead, 'on')) return;
+          for (const p of rest) if (pickJoin.has(p.ip)) await partyOp(p, 'on');
+          sheet = 'on'; draw();
+        } }, 'Start')));
+  } else {
+    const out = can.filter((p) => !p.party.on);
+    const full = L && (L.party.followers || []).length >= PARTY_MAX;
+    const status = (p) => (p.party.why ? h('span.st.w', {}, h('i'), `Not in step: ${p.party.why}`)
+      : p.party.role === 'follower' ? h('span.st.k', {}, h('i'), 'In step') : h('span.st.j', {}, h('i'), 'Joining…'));
+    body.push(h('h2', {}, 'Leads'),
+      h('div.card', {}, L ? h('b', {}, L.name) : h('span.dim', {}, 'Looking for a leader…')),
+      h('h2', {}, 'Following'),
+      h('div.card', {}, fol.length ? h('ul.pick.fl', {}, fol.map((p) => h('li', {}, h('div.row', {},
+        h('span.x', {}, h('b', {}, p.name), status(p))),
+        h('div.acts.s', {}, h('button', { onclick: () => partyOp(p, 'lead') }, 'Lead from this one'),
+          h('button', { onclick: () => partyOp(p, 'off') }, 'Remove')))))
+        : h('p.dim', {}, 'No one follows yet. Add a speaker below.')),
+      h('h2', {}, 'Add a speaker'),
+      h('div.card', {}, full ? h('p.dim', {}, `Full: a party takes up to ${PARTY_MAX} followers. Remove one to add another.`)
+        : out.length ? h('ul.pick.fl', {}, out.map((p) => h('li', {}, h('div.row', {}, h('b.grow', {}, p.name),
+          h('button', { onclick: () => partyOp(p, 'on') }, 'Add')))))
+          : h('p.dim', {}, 'Every speaker that’s on is in the party.')),
+      h('button.stop', { onclick: async () => {
+        // followers first: a leader that leaves first hands the lead on
+        for (const p of [...fol, ...inIt.filter((x) => x === L)]) await partyOp(p, 'off');
+        sheet = null; draw();
+      } }, 'Stop party'),
+      h('p.note', {}, 'Every speaker goes back to playing on its own.'));
+  }
+  return [h('button.scrim', { 'aria-label': 'Close', onclick: shut }),
+    h('div.sheet', { role: 'dialog', 'aria-label': 'Party' }, h('div.grab'),
+      h('div.sh-h', {}, h('h1', {}, 'Party'), h('button', { onclick: shut }, 'Done')),
+      partyErr && h('div.pw-msg.bad', {}, partyErr), body)];
 }
 
 // ---- Play ---------------------------------------------------------------
@@ -542,7 +780,7 @@ function pageSetup() {
     n.mode === 'ap' && h('div.card.warn', {}, h('b', {}, 'Welcome. '),
       'Choose your home Wi-Fi below. The receiver joins it and you then find it at ',
       h('b', {}, `http://${n.hostname}.local`), '.'),
-    wifiCard(), nameCard(), btCard(), remoteCard(), (I.caps.led || I.caps.backlight) && lightsCard(), updateCard(), diagCard(),
+    wifiCard(), nameCard(), remoteCard(), (I.caps.led || I.caps.backlight) && lightsCard(), updateCard(), diagCard(),
   ];
 }
 
@@ -594,32 +832,64 @@ function bars(rssi) {
   return rssi > -55 ? '▂▄▆█' : rssi > -67 ? '▂▄▆' : rssi > -78 ? '▂▄' : '▂';
 }
 
-function nameCard() {
-  const inp = h('input', { type: 'text', value: I.name, maxLength: 32 });
-  return h('div.card', {}, h('h2', {}, 'Name'),
-    h('p.dim', {}, 'What Spotify, AirPlay and Bluetooth show this receiver as.'),
-    h('div.row', {}, h('div.grow', {}, inp), h('button', { onclick: async () => {
-      inp.blur();
-      if (!await set('name', { name: inp.value.trim() })) return;
-      I = await api('info').catch(() => I); draw(); toast('Renamed');
-    } }, 'Save')));
-}
+// Name and Bluetooth (the design's Setup card): rename, and "Pair a new
+// phone" (POST bt/pair: findable for 2 minutes). pairing is what this page
+// last asked: null, 'on', then 'ok' (a phone connected) or 'out' (it ran out).
+let renaming = false, pairing = null;
+const PAIR_S = 120;
 
-// Bluetooth: the receiver is hidden from new phones unless pairing mode is on
-// (POST bt/pair, or − and + held together for 2 s on the box); phones
-// already paired reconnect whenever.
-function btCard() {
-  const b = S.bt;
-  if (!b) return null;
-  const m = Math.floor(b.pairing_left_s / 60), sec = String(b.pairing_left_s % 60).padStart(2, '0');
-  return h('div.card', {}, h('h2', {}, 'Bluetooth'),
-    h('p.dim', {}, !b.on ? 'Bluetooth is off on this receiver.'
-      : b.pairing ? `Pairing: on your phone, open Bluetooth and pick “${I.name}”. Hidden again in ${m}:${sec}.`
-      : 'Phones already paired connect whenever. A new phone can only find this receiver in pairing mode: ' +
-        'tap Pair a new phone, or hold − and + on the receiver for 2 seconds.'),
-    b.on && h('div.row', {}, h('span.grow', { className: b.connected ? 'ok' : 'dim' }, b.connected ? 'A phone is connected' : 'No phone connected'),
-      b.pairing ? h('button', { onclick: () => set('bt/pair', { on: false }) }, 'Cancel')
-        : h('button.pri', { onclick: async () => { if (await set('bt/pair', {})) toast('Pairing for 2 minutes'); } }, 'Pair a new phone')));
+function nameCard() {
+  const bt = S.bt, follows = P && P.on && P.role === 'follower';
+  if (bt && bt.pairing && !pairing) pairing = 'on'; // started on the box (− and + held) or another phone
+  if (pairing === 'on' && bt && !bt.pairing) pairing = bt.connected ? 'ok' : 'out';
+  const pair = async (on) => {
+    try {
+      S.bt = (await api('bt/pair', on ? {} : { on: false })).bt; // it answers {bt: {...}}, as GET state/bt
+      pairing = on ? 'on' : null;
+    } catch (e) { toast(e.status === 404 ? "Pairing isn't on this speaker's firmware yet" : e.message); }
+    draw();
+  };
+  let top;
+  if (!renaming) {
+    top = [h('p.dim', {}, 'What Spotify, AirPlay and Bluetooth show this speaker as.'),
+      h('div.row', {}, h('span.big.grow', {}, I.name), h('button', { onclick: () => { renaming = true; draw(); } }, 'Rename'))];
+  } else {
+    const inp = h('input', { type: 'text', value: I.name, maxLength: 32, 'aria-label': 'New name' });
+    top = [h('label.dim', {}, 'New name'), inp,
+      h('div.acts', {}, h('button', { onclick: () => { renaming = false; draw(); } }, 'Cancel'),
+        h('button.pri', { onclick: async () => {
+          inp.blur();
+          if (!await set('name', { name: inp.value.trim() })) return;
+          renaming = false;
+          I = await api('info').catch(() => I); draw(); toast('Renamed');
+        } }, 'Save'))];
+  }
+  if (!bt) return h('div.card', {}, h('h2', {}, 'Name'), top);
+  const off = follows || !bt.on;
+  const box = pairing === 'on' && bt.pairing ? h('div.pairbox', { role: 'status' },
+    h('div.row', {}, h('span.cd', {}, mmss(bt.pairing_left_s)), h('span.sub.grow', {}, 'left to pair'),
+      h('button', { onclick: () => pair(false) }, 'Cancel')),
+    h('div.bar', { style: 'margin:12px 0' }, h('i', { style: `width:${Math.round(bt.pairing_left_s / PAIR_S * 100)}%` })),
+    h('p', { style: 'margin:0' }, 'Now pick ', h('b', {}, `“${I.name}”`), ' in your phone’s Bluetooth list.'))
+    : pairing === 'ok' ? h('div.pairbox', { role: 'status' },
+      h('div.row', {}, h('b.grow.ok', {}, '✓ Phone connected'), h('button', { onclick: () => { pairing = null; draw(); } }, 'Done')),
+      h('p.note', {}, `Play from it and pick “${I.name}”.`))
+      : pairing === 'out' ? h('div.pairbox', { role: 'status' },
+        h('p', { style: 'margin:0 0 4px' }, h('b', {}, 'No phone paired in 2 minutes')),
+        h('p.note', {}, 'Keep the phone close, with its Bluetooth settings open.'),
+        h('div.acts', {}, h('button', { onclick: () => { pairing = null; draw(); } }, 'Close'),
+          h('button.pri', { onclick: () => pair(true) }, 'Try again')))
+        : [h('button', { style: 'width:100%;min-height:48px;margin-top:12px', disabled: off, onclick: () => pair(true) },
+          'Pair a new phone'),
+        h('p.note', {}, follows ? `Bluetooth is off while ${I.name} follows the party.`
+          : !bt.on ? 'Bluetooth is off on this speaker.'
+            : `${I.name} shows up on phones for 2 minutes.${bt.connected ? ' The phone on it now disconnects.' : ''}` +
+              ' Or hold − and + on the speaker for 2 s. Phones paired before connect whenever.')];
+  return h('div.card', {}, h('h2', {}, 'Name and Bluetooth'), top,
+    h('div.row', { style: 'margin-top:14px;padding-top:12px;border-top:1px solid var(--line)' },
+      h('span.grow', {}, 'Phone on Bluetooth'),
+      h('span', { className: bt.connected && !off ? 'ok' : 'dim' }, off ? 'Off' : bt.connected ? 'Connected' : 'None')),
+    box);
 }
 
 function remoteCard() {
@@ -724,12 +994,13 @@ function uptime(s) {
   return (d ? d + 'd ' : '') + (d || hr ? hr + 'h ' : '') + m + 'm';
 }
 
-const PAGES = { play: pagePlay, sound: pageSound, setup: pageSetup };
+const PAGES = { speakers: pageSpeakers, play: pagePlay, sound: pageSound, setup: pageSetup };
 
 for (const b of document.querySelectorAll('#tabs button')) {
   b.addEventListener('click', () => { tab = b.dataset.tab; pickF = null; draw(); window.scrollTo(0, 0); });
 }
 const want = location.hash.slice(1);
 if (PAGES[want]) tab = want;
+if (want === 'party') { tab = 'speakers'; sheet = 'on'; } // the party sheet, from a bookmark
 poll(true);
 if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('sw.js').catch(() => {});

@@ -42,6 +42,8 @@ void hifi_quiet_release(void);
  * station or Ethernet; never the setup access point's). False, and ip "",
  * with none up. ip may be NULL. */
 bool hifi_net_ip(char *ip, size_t n);
+/* the LAN address and netmask the API answers on (host order); false: none */
+bool hifi_net_lan(uint32_t *net, uint32_t *mask);
 
 /* hifi_net.c */
 int hifi_net_wifi_scan(hifi_wifi_ap_t *aps, int max);
@@ -56,6 +58,10 @@ void hifi_listen_tick(bool up);          /* every couple of seconds; scans every
 void hifi_listen_trial(hifi_trial_t *t); /* fills listen_wait / listen_open */
 int hifi_listen_now(char *why, size_t n); /* a fresh scan for the self-test: strays */
 void hifi_listen_diag(hifi_diag_net_t *n); /* L4: the running report, for /api/diag */
+
+/* hifi_peers_esp.c: GET /api/v1/peers, the speakers on this LAN (core/hifi_peers.h) */
+void hifi_peers_init(void); /* before the API serves */
+int hifi_peers_op(char *out, size_t cap);
 
 /* hifi_relay.c */
 extern hifi_ota_t hifi_ota_session;

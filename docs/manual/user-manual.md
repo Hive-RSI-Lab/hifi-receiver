@@ -298,6 +298,9 @@ press **Join**.
   **Setup → Name**. That is the name Spotify, AirPlay and Bluetooth show.
   The `.local` address stays the same. If two receivers of the same tier
   are on one network, the second answers as `hifi-lite-2.local`.
+- **One address for all of them:** you don't need each receiver's address.
+  Open any one of them (`hifi-lite.local` is fine) and the app's
+  **Speakers** page lists every receiver on the same Wi-Fi.
 - **If the `.local` address doesn't open**, which happens on some Android phones and
   older Windows:
   - find the receiver's IP address in your router's list of devices, and
@@ -321,7 +324,7 @@ know, so neighbours can't find it. Phones that have paired before still
 connect whenever they like. To pair a new phone:
 
 1. Hold **−** and **+** together for 2 seconds (Lite), or hold **▶** for
-   1 second, or tap **Setup → Bluetooth → Pair a new phone** in the app.
+   1 second, or tap **Setup → Name and Bluetooth → Pair a new phone** in the app.
    The receiver plays three rising notes.
 2. Within 2 minutes, pick the receiver in the phone's Bluetooth settings.
    It plays two rising notes when the phone connects, and is hidden again.
@@ -337,10 +340,13 @@ nothing else is playing; when muted there are none.
 **Bluetooth with two phones:** to switch from one paired phone to another,
 disconnect the first one in its Bluetooth settings, then connect the second.
 
-**Party mode:** to play the same music in step on several receivers, start
-the music on one (connect your phone first), then in the app switch **Play →
-Party** on there and on the others: they join it on their own. Bluetooth is
-off on the ones that follow.
+**Party mode:** to play the same music in step on several receivers, open
+the app's **Speakers** page and tap **Start a party**. Pick the one your
+phone plays to (it leads), then tick up to three to join it, and tap
+**Start**. Tap the party bar again to add or remove a speaker, to lead from
+another one, or to **Stop party**. Each receiver keeps its own volume.
+Bluetooth is off on the ones that follow. (On one receiver's own **Play**
+page, **Party** switches just that one on or off.)
 
 **Switching source:**
 
@@ -368,19 +374,24 @@ Open **http://hifi-lite.local** (Plus: `hifi-plus.local`, Ultra:
   - Android: Chrome → ⋮ → **Add to Home screen**. It is a shortcut, not
     a full install, because Chrome only installs from `https` sites, and
     a device on your home network can't have one. It works the same way.
-- **What's in it:** three tabs along the bottom. The app shows only the
+- **What's in it:** four tabs along the bottom. The app shows only the
   controls your tier has.
+  - **Speakers:** every receiver on the same Wi-Fi, with what it is playing,
+    its volume and whether a phone is on its Bluetooth, and **Party** across
+    them (section 7). A grey card is a receiver that stopped answering. Tap
+    a card to open that receiver's own **Play**, **Sound** and **Setup**.
   - **Play:** what is playing and from where, **Previous**, **Play /
     pause** and **Next**, **Volume** and **Mute**, and **Input**:
     **Streaming** or **DJ direct** (Plus and Ultra add **Line in**, Ultra
     adds **Optical**). On Ultra, **Zone B speakers**.
   - **Sound:** the **Equaliser**, the **Subwoofers** and the **Volume
     limit**.
-  - **Setup:** **Wi-Fi**, **Name**, **Remote**, **Updates**, and **About and
+  - **Setup:** **Wi-Fi**, **Name and Bluetooth** (rename it, see whether a
+    phone is connected, **Pair a new phone**), **Remote**, **Updates**, and **About and
     diagnostics**: the model, firmware, address, charger, supply voltage,
     the amplifier's state (and temperature on Plus and Ultra), **Run
     self-test**, **Restart** and **Factory reset**.
-- **Notices** at the top of **Play**:
+- **Notices** at the top of **Play** and **Speakers**:
   - **Speakers off: charger too weak.** The port gives too little voltage
     for the amplifier (section 5).
   - **Speakers off: the supply is out of range.** The charger's voltage is

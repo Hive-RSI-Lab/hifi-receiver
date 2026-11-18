@@ -95,7 +95,7 @@ class Paths(unittest.TestCase):
         self.see("http://hifi-lite.local")
 
     def test_losing_the_receiver_and_finding_it_again(self):
-        p = self.open()
+        p = self.open("#play")
         self.see("Teardrop")
         self.m.srv.rx.fail["state"] = (503, "gone")
         self.see("Looking for the receiver")
@@ -113,7 +113,7 @@ class Paths(unittest.TestCase):
         # An update restarts the receiver mid-poll: that request never gets an
         # answer. The page must notice within a poll's limit, not the browser's
         # own timeout (minutes), and see the receiver as soon as it is back.
-        self.open()
+        self.open("#play")
         self.see("Teardrop")
         self.m.srv.rx.fail["state"] = (None, "restarting")
         time.sleep(8.5)  # past the first poll's limit: one poll out of time is a busy receiver, not a lost one
@@ -137,7 +137,7 @@ class Paths(unittest.TestCase):
         self.see("Joined Home.")
 
     def test_a_bug_in_a_page_is_not_a_lost_receiver(self):
-        p = self.open()
+        p = self.open("#play")
         self.see("Teardrop")
         infos = len([u for m, u in [c[:2] for c in p.calls("GET")] if u.endswith("api/v1/info")])
         p.js("window.__play = PAGES.play; PAGES.play = () => { throw new Error('a bug'); }")
@@ -160,25 +160,27 @@ class Paths(unittest.TestCase):
 
     def test_rename(self):
         p = self.open("#setup")
-        p.type("input[type=text]", "Lounge", within="Name")
-        p.click("Save", within="Name")
+        p.click("Rename", within="Name and Bluetooth")
+        p.type("input[type=text]", "Lounge", within="Name and Bluetooth")
+        p.click("Save", within="Name and Bluetooth")
         self.toast_is("Renamed")
         self.assertEqual(p.js("document.querySelector('#name').textContent"), "Lounge")
         p.tab("Play")
         self.see("Playing from Spotify")
         p.tab("Setup")
-        self.assertEqual(p.js("__t.card('Name').querySelector('input').value"), "Lounge")
+        self.assertEqual(p.js("__t.card('Name and Bluetooth').querySelector('.big').textContent"), "Lounge")
 
     def test_a_refused_name_says_why_and_keeps_the_old_one(self):
         p = self.open("#setup")
-        p.type("input[type=text]", 'Tom "the" room', within="Name")
-        p.click("Save", within="Name")
+        p.click("Rename", within="Name and Bluetooth")
+        p.type("input[type=text]", 'Tom "the" room', within="Name and Bluetooth")
+        p.click("Save", within="Name and Bluetooth")
         self.toast_is('may not have "')
         time.sleep(0.5)
         self.toast_is('may not have "', 0.1)  # not "Renamed"
         self.assertEqual(p.js("document.querySelector('#name').textContent"), "HiFi Lite")
-        p.type("input[type=text]", "   ", within="Name")
-        p.click("Save", within="Name")
+        p.type("input[type=text]", "   ", within="Name and Bluetooth")
+        p.click("Save", within="Name and Bluetooth")
         self.toast_is("name is required")
 
     # ---- sources: what each looks like, with the name and volume
@@ -191,7 +193,7 @@ class Paths(unittest.TestCase):
                     what=f"the title {want_title!r}")
 
     def test_each_source_shows_what_plays(self):
-        p = self.open()
+        p = self.open("#play")
         self.see("Playing from Spotify")
         for src, head in (("airplay", "AirPlay"), ("lms", "Lyrion"), ("bt", "Bluetooth")):
             self.source(src, {"state": "play", "title": f"Song on {head}", "artist": "A", "album": "B"},
@@ -209,7 +211,7 @@ class Paths(unittest.TestCase):
         self.assertFalse(p.js("!!__t.find('Pause', 'button.icon') || !!__t.find('Play', 'button.icon')"))
 
     def test_transport_buttons(self):
-        p = self.open()
+        p = self.open("#play")
         p.click("Pause")
         p.wait("!!__t.find('Play', 'button.icon')", POLL, what="the Play button")
         p.click("Next")
@@ -217,7 +219,7 @@ class Paths(unittest.TestCase):
         self.assertEqual([b["action"] for b in p.posts("control")], ["pause", "next", "prev"])
 
     def test_dj_direct_and_back(self):
-        p = self.open()
+        p = self.open("#play")
         p.click("DJ direct", within="Input")
         self.see("Playing from an input")
         self.see("The RCA line in, straight to the amplifier.")
@@ -232,7 +234,7 @@ class Paths(unittest.TestCase):
     # ---- volume
 
     def test_volume_mute_and_the_limit(self):
-        p = self.open()
+        p = self.open("#play")
         p.slide("Volume", 60)
         p.wait("__t.card('Volume').querySelector('.big').textContent === '60'", POLL, what="volume 60")
         p.click("Mute")
@@ -321,7 +323,7 @@ class Paths(unittest.TestCase):
     # ---- power
 
     def test_weak_charger_then_a_good_one(self):
-        p = self.open(pdo=(5.0, 3.0))
+        p = self.open("#play", pdo=(5.0, 3.0))
         self.see("Speakers off: charger too weak.")
         self.see("This port gives 5 V.")
         p.tab("Setup")
@@ -330,7 +332,7 @@ class Paths(unittest.TestCase):
                               ".find((l) => l.textContent.startsWith('Amplifier')).lastChild.textContent"), "off")
 
     def test_amp_fault_clear(self):
-        p = self.open(fault=True)
+        p = self.open("#play", fault=True)
         self.see("Amplifier fault.")
         p.click("Clear")
         p.wait("!document.body.innerText.includes('Amplifier fault.')", POLL, what="the fault cleared")
@@ -357,7 +359,7 @@ class Paths(unittest.TestCase):
     # ---- party
 
     def test_party_on_lead_and_off(self):
-        p = self.open()
+        p = self.open("#play")
         p.click("On", within="Party")
         self.see("Leading: 1 more receiver plays along.")
         with self.m.srv.rx.lock:  # another one took the lead

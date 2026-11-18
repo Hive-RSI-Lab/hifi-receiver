@@ -1,6 +1,7 @@
 #include "hifi_gate.h"
 
 #include <ctype.h>
+#include <stdio.h>
 #include <string.h>
 #include <strings.h>
 
@@ -111,6 +112,90 @@ bool hifi_gate_allow(const char *host, const char *origin, const char *const *na
 	/* Origin "null" comes from sandboxed frames and file pages: refused */
 	if (strncasecmp(origin, "http://", 7)) return false;
 	return !strcasecmp(origin + 7, host);
+}
+
+/* ---- the Speakers app across boxes ---- */
+
+static bool word_in(const char *w, size_t n, const char *const *list, size_t count);
+
+static bool v4_parts(const char *s, unsigned a[4]) {
+	char tail;
+	return is_ipv4(s) && sscanf(s, "%u.%u.%u.%u%c", &a[0], &a[1], &a[2], &a[3], &tail) == 4;
+}
+
+bool hifi_gate_private_v4(const char *s) {
+	unsigned a[4];
+	if (!s || !v4_parts(s, a)) return false;
+	return a[0] == 10 || (a[0] == 172 && a[1] >= 16 && a[1] <= 31) || (a[0] == 192 && a[1] == 168) ||
+	       (a[0] == 169 && a[1] == 254);
+}
+
+bool hifi_gate_on_net(const char *ip, uint32_t net, uint32_t mask) {
+	unsigned a[4];
+	if (!mask || !hifi_gate_private_v4(ip) || !v4_parts(ip, a)) return false;
+	uint32_t x = (uint32_t) a[0] << 24 | (uint32_t) a[1] << 16 | (uint32_t) a[2] << 8 | (uint32_t) a[3];
+	return ((x ^ net) & mask) == 0;
+}
+
+/* a speaker's own mDNS name: hifi-lite, hifi-plus or hifi-ultra, then
+ * maybe -N from mDNS's rename of a second box, then ".local" */
+static bool speaker_local(const char *s) {
+	static const char *const models[] = {"hifi-lite", "hifi-plus", "hifi-ultra"};
+	for (size_t m = 0; m < sizeof(models) / sizeof(models[0]); m++) {
+		size_t l = strlen(models[m]);
+		if (strncasecmp(s, models[m], l)) continue;
+		const char *r = s + l;
+		if (*r == '-') {
+			int d = 0;
+			while (isdigit((unsigned char) r[1 + d]) && d < 4) d++;
+			if (!d || r[1] == '0') return false;
+			r += 1 + d;
+		}
+		return !strcasecmp(r, ".local");
+	}
+	return false;
+}
+
+bool hifi_gate_lan_origin(const char *origin, uint32_t net, uint32_t mask) {
+	if (!origin || strncasecmp(origin, "http://", 7)) return false;
+	const char *h = origin + 7;
+	/* an Origin is scheme://host[:port], nothing after */
+	if (strpbrk(h, "/?#@[]")) return false;
+	char host[80];
+	bool v6;
+	if (!host_part(h, host, sizeof(host), &v6) || v6) return false;
+	/* host_part dropped a trailing dot; an Origin never has one */
+	if (h[strcspn(h, ":") - 1] == '.') return false;
+	return hifi_gate_on_net(host, net, mask) || speaker_local(host);
+}
+
+bool hifi_gate_cross_path(const char *path, const char *method) {
+	static const char pre[] = "/api/v1/";
+	if (!path || !method || strncmp(path, pre, sizeof(pre) - 1) || strchr(path, '#')) return false;
+	const char *r = path + sizeof(pre) - 1;
+	size_t n = strcspn(r, "?");
+	if (!strcmp(method, "GET")) {
+		static const char *const get[] = {"info", "state", "peers", "party"};
+		if (word_in(r, n, get, sizeof(get) / sizeof(get[0]))) return true;
+		/* state/<section>: one word of letters and '_' */
+		if (n > 6 && !strncmp(r, "state/", 6)) {
+			for (size_t i = 6; i < n; i++)
+				if (!islower((unsigned char) r[i]) && r[i] != '_') return false;
+			return true;
+		}
+		return false;
+	}
+	if (!strcmp(method, "POST")) {
+		static const char *const post[] = {"volume", "name", "control", "party", "bt/pair"};
+		return word_in(r, n, post, sizeof(post) / sizeof(post[0]));
+	}
+	return false;
+}
+
+bool hifi_gate_allow_cross(const char *host, const char *origin, const char *const *names, size_t n,
+			   uint32_t net, uint32_t mask, const char *path, const char *method) {
+	return origin && *origin && hifi_gate_allow(host, NULL, names, n) && hifi_gate_lan_origin(origin, net, mask) &&
+	       hifi_gate_cross_path(path, method);
 }
 
 /* ---- squeezelite's UI from the LAN ---- */

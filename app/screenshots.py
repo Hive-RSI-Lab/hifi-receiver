@@ -3,11 +3,14 @@
 
     python3 app/screenshots.py [--out docs/app]
 
-Needs Google Chrome or Chromium on PATH.
+Needs Google Chrome or Chromium on PATH; the Speakers, party and pairing
+shots (against the mock's --house, clicked through by app/tests/drive.mjs)
+also need Node 22 or later, and are skipped without it.
 """
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 import subprocess
 import sys
@@ -30,6 +33,42 @@ SHOTS = [  # file, mock settings, page[, window height]
     ("plus-sound", {"model": "plus"}, "sound", 1500),
     ("ultra-play", {"model": "ultra"}, "play"),
 ]
+
+# against the house (Kitchen leads, Living room follows, Bedroom has a phone
+# on Bluetooth, Garage is off), from Kitchen: drive.mjs steps with {shot}
+HOUSE_SHOTS = [
+    ("", [{"see": "Bedroom"}, {"see": "Follows Kitchen"}, {"shot": "speakers.png"},
+          {"click": "Party ·"}, {"see": "In step"}, {"shot": "party-on.png"},
+          {"click": "Stop party"}, {"gone": "Leads party"}, {"click": "Start a party"},
+          {"click": "Start a party"}, {"see": "Who leads?"}, {"shot": "party-lead.png"}]),
+    ("setup", [{"click": "Pair a new phone"}, {"see": "left to pair"},
+               {"js": "document.querySelector('.pairbox').scrollIntoView({block: 'center'})"},
+               {"shot": "pairing.png"}]),
+]
+
+
+def house_shots(chrome: str, out: Path) -> None:
+    node = shutil.which("node")
+    ok = node and subprocess.run([node, "-e", "process.exit(typeof WebSocket === 'function' ? 0 : 1)"]).returncode == 0
+    if not ok:
+        print("no Node 22+: the Speakers shots are skipped", file=sys.stderr)
+        return
+    for page, steps in HOUSE_SHOTS:
+        srvs = server.serve_house(0)
+        for s in srvs:
+            threading.Thread(target=s.serve_forever, daemon=True).start()
+        url = f"http://127.0.0.1:{srvs[0].server_address[1]}/" + (f"#{page}" if page else "")
+        steps = [{**s, "shot": str(out / s["shot"])} if "shot" in s else s for s in steps]
+        r = subprocess.run([node, str(APP / "tests" / "drive.mjs"), chrome, url, json.dumps(steps)],
+                           capture_output=True, text=True, timeout=240)
+        for s in srvs:
+            s.shutdown()
+            s.server_close()
+        if r.returncode:
+            raise SystemExit(f"drive.mjs failed:\n{r.stdout}{r.stderr}")
+        for s in steps:
+            if "shot" in s:
+                print(s["shot"])
 
 
 def main(argv=None) -> int:
@@ -54,6 +93,7 @@ def main(argv=None) -> int:
         srv.shutdown()
         srv.server_close()
         print(o.out / (name + ".png"))
+    house_shots(chrome, o.out)
     return 0
 
 

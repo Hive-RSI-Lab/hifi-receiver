@@ -6,6 +6,12 @@ the firmware's docs/test-api.md plus the calls only the app uses (docs/app.md,
 
     python3 app/mock/server.py [--port 8080] [--model lite|plus|ultra]
                                [--ap] [--pdo 20x3.25] [--fault] [--host 0.0.0.0]
+    python3 app/mock/server.py --house [--port 8080]
+
+--house serves a household of speakers instead of one, each on its own port
+from --port up, that list each other in GET peers: Kitchen (a Lite leading a
+party), Living room (a Lite following it), Bedroom (a Plus with a phone on
+Bluetooth) and Garage (listed but switched off: nothing answers at its address).
 
 --ap starts in first-run setup (the receiver's own Wi-Fi), --pdo sets the
 charger's contract (5x3 is a laptop port: the amplifier stays off), --fault
@@ -118,14 +124,39 @@ class Receiver:
         # is on and waiting, so switching party on here makes this one lead
         self.party = {"on": False, "role": "off", "key_id": 42, "key": True, "term": 0, "picked": False,
                       "followers": [], "why": "", "bt": True}
+        self.house = None  # the House this one is in (--house), which keeps party mode and the peers
+        self.pair_until = 0.0  # Bluetooth pairing mode ends then
+
+    def party_get(self) -> dict:
+        if self.house:
+            return self.house.party(self)
+        with self.lock:
+            return copy.deepcopy(self.party)
+
+    def pair(self, b: dict) -> dict:
+        """POST bt/pair: {} starts pairing mode for PAIR_S, {"on": false}
+        stops it; the reply is the bt section. 409 while Bluetooth is off."""
+        with self.lock:
+            off = not self.s["bt"]["on"]  # a test may switch the sink off by hand
+            self._tick()
+            if off or not self.s["bt"]["on"]:
+                raise Conflict("the Bluetooth sink isn't running (a receiver that follows another in party mode turns it off)")
+            on = b.get("on", True)
+            if not isinstance(on, bool):
+                raise ValueError("on must be true or false")
+            self.pair_until = time.time() + PAIR_S if on else 0.0
+            self._tick()
+            return {"bt": copy.deepcopy(self.s["bt"])}
 
     def party_op(self, b: dict) -> dict:
         """POST party from the LAN: op on, off or lead (key and tone are the
         Hive's or USB's only: 403)."""
+        if b.get("op") in ("key", "tone"):
+            raise Forbidden("the party key and the test tone are set by the Hive or over USB, not from the LAN")
+        if self.house:
+            return self.house.party_op(self, b.get("op"))
         with self.lock:
             p, op = self.party, b.get("op")
-            if op in ("key", "tone"):
-                raise Forbidden("the party key and the test tone are set by the Hive or over USB, not from the LAN")
             if op == "on":
                 p.update(on=True, role="leader", leader=self.info["name"], followers=["192.168.1.31"], term=p["term"] + 1)
             elif op == "off":
@@ -174,17 +205,18 @@ class Receiver:
         g, a = s["governor"], s["audio"]
         g["gain_db"] = -round(max(0.0, (a["volume"] - 80) * 0.3), 1) if g["budget_w"] < 60 else 0.0
         g["limiting"] = g["gain_db"] < 0
+        bt = s["bt"]
+        bt["on"] = (self.house.role(self) if self.house else self.party["role"]) != "follower"
+        left = max(0, math.ceil(self.pair_until - time.time())) if bt["on"] else 0
+        if not left:
+            self.pair_until = 0.0
+        bt.update(pairing=left > 0, pairing_left_s=left)
         # An IR learn ends with the next key the remote sends; here, at once.
         ir = s["ir"]
         if ir["learning"] and time.time() - ir.get("_since", 0) > 3:
             ir["learned"] = [x for x in IR_ACTIONS if x in set(ir["learned"]) | {ir["learning"]}]
             ir["learning"] = None
             ir["last_code"] = "0x00ff40bf"
-        # pairing mode runs out after PAIR_S, as the firmware's
-        bt = s.get("bt")
-        if bt and bt["pairing"]:
-            left = math.ceil(getattr(self, "pair_until", 0) - time.time())
-            bt.update(pairing=left > 0, pairing_left_s=max(0, left))
 
     def post(self, path: str, b: dict) -> dict:
         """Apply one write; return the reply. Raises ValueError for a request
@@ -338,16 +370,6 @@ class Receiver:
                     raise ValueError("url must be http(s)")
                 s["update"] = {"state": "downloading", "progress": 0}
                 threading.Thread(target=self._fake_update, daemon=True).start()
-            elif path == "bt/pair":
-                # as the firmware's op_bt_pair: {} starts PAIR_S of pairing mode, {"on": false} ends it
-                bt = s["bt"]
-                on = boolean(b, "on") if "on" in b else True
-                if not bt["on"]:
-                    raise Conflict("the Bluetooth sink isn't running")
-                self.pair_until = time.time() + PAIR_S
-                bt.update(pairing=on, pairing_left_s=PAIR_S if on else 0)
-                self._tick()
-                return {"bt": copy.deepcopy(bt)}
             elif path == "reboot":
                 self.t0 = time.time()
             elif path == "reset":
@@ -443,6 +465,81 @@ class Receiver:
             self.t0 = time.time()
 
 
+class House:
+    """Several receivers on one Wi-Fi (--house): each finds the others in
+    GET peers, and party mode is one group across them, as the firmware's
+    (docs/test-api.md, "Party mode"): the first switched on leads, the
+    others join it, lead moves the lead, and when the leader leaves the
+    next one still on takes over. A box that follows has Bluetooth off.
+    It never takes a receiver's lock, so a receiver may call it holding its own."""
+
+    def __init__(self):
+        self.rx = []      # the receivers, in the order they were added
+        self.ip = {}      # receiver -> its address ("127.0.0.1:port")
+        self.gone = []    # rows of speakers listed but not answering
+        self.on = set()
+        self.leader = None
+        self.picked = False
+        self.term = 0
+        self.lock = threading.Lock()
+
+    def add(self, rx, ip):
+        rx.house = self
+        self.rx.append(rx)
+        self.ip[rx] = ip
+
+    def role(self, rx):
+        with self.lock:
+            return self._role(rx)
+
+    def _role(self, rx):
+        if rx not in self.on:
+            return "off"
+        return "leader" if self.leader is rx else "follower" if self.leader else "listening"
+
+    def party(self, rx):
+        with self.lock:
+            role = self._role(rx)
+            p = {"on": rx in self.on, "role": role, "key_id": 42, "key": True, "term": self.term,
+                 "picked": self.picked and role == "leader", "followers": [], "why": "", "bt": role != "follower"}
+            if role == "leader":
+                p["leader"] = rx.info["name"]
+                p["followers"] = [self.ip[r] for r in self.rx if r in self.on and r is not rx]
+            elif role == "follower":
+                p.update(leader=self.leader.info["name"], leader_ip=self.ip[self.leader])
+            return p
+
+    def party_op(self, rx, op):
+        with self.lock:
+            if op == "on":
+                self.on.add(rx)
+                if not self.leader:
+                    self.leader, self.picked, self.term = rx, False, self.term + 1
+            elif op == "off":
+                self.on.discard(rx)
+                if self.leader is rx:
+                    self.leader = next((r for r in self.rx if r in self.on), None)
+                    self.picked, self.term = False, self.term + 1
+            elif op == "lead":
+                if rx not in self.on:
+                    raise Conflict("party is off")
+                self.leader, self.picked, self.term = rx, True, self.term + 1
+            else:
+                raise ValueError("op must be on, off, lead, key or tone")
+        return self.party(rx)
+
+    def peers(self, me):
+        """GET peers as the firmware answers it (core/hifi_peers.h): this one
+        first, then the rest by name."""
+        def row(r, seen):
+            i = r.info
+            return {"name": i["name"], "host": i["hostname"], "ip": self.ip[r], "model": i["model"],
+                    "fw": i["fw"], "self": r is me, "seen_s": 0 if r is me else seen}
+        rest = [row(r, 4) for r in self.rx if r is not me] + [dict(g) for g in self.gone]
+        rest.sort(key=lambda x: (x["name"].lower(), x["ip"]))
+        return {"peers": [row(me, 0)] + rest, "searching": False}
+
+
 class Conflict(Exception):
     pass
 
@@ -529,8 +626,20 @@ def handler(rx: Receiver):
             if p == "state":
                 return self.send(200, Receiver._public(rx.state()))
             if p == "party":
+                return self.send(200, rx.party_get())
+            if p == "peers":
+                if rx.house:
+                    return self.send(200, rx.house.peers(rx))
                 with rx.lock:
-                    return self.send(200, copy.deepcopy(rx.party))
+                    i = rx.info
+                    return self.send(200, {"peers": [{"name": i["name"], "host": i["hostname"], "ip": "127.0.0.1",
+                                                      "model": i["model"], "fw": i["fw"], "self": True, "seen_s": 0}],
+                                           "searching": False})
+            if p.startswith("state/"):
+                st = Receiver._public(rx.state())
+                if p[6:] not in st:
+                    return self.send(404, {"error": "no such section"})
+                return self.send(200, {p[6:]: st[p[6:]]})
             if p == "wifi/scan":
                 return self.send(200, {"networks": SCAN})
             if p == "update/check":
@@ -561,6 +670,8 @@ def handler(rx: Receiver):
                         return self.send(200, rx.selftest())
                 if p == "party":
                     return self.send(200, rx.party_op(body))
+                if p == "bt/pair":
+                    return self.send(200, rx.pair(body))
                 return self.send(200, rx.post(p, body))
             except KeyError:
                 self.send(404, {"error": "no such path"})
@@ -582,6 +693,40 @@ def serve(port=8080, host="127.0.0.1", **kw) -> ThreadingHTTPServer:
     return srv
 
 
+HOUSE = [  # name, model, party on, phone on Bluetooth, volume, playing
+    ("Kitchen", "lite", True, False, 40, True),
+    ("Living room", "lite", True, False, 55, True),
+    ("Bedroom", "plus", False, True, 25, True),
+]
+
+
+def serve_house(port=8080, host="127.0.0.1", gone=True) -> list:
+    """The household: one server per receiver, the first on port (0: any
+    free port), the others on the next free ones; Kitchen leads a party
+    that Living room follows. Returns the servers, Kitchen's first."""
+    house, srvs = House(), []
+    for k, (name, model, party, phone, vol, playing) in enumerate(HOUSE):
+        srv = serve(port + k if port else 0, host, model=model)
+        rx = srv.rx
+        rx.info.update(name=name, hostname=f"hifi-{model}-{k + 2}", mac=f"24:0a:c4:12:34:{0x56 + k:02x}")
+        rx.s["net"].update(ip=f"192.168.1.{40 + k}", hostname=rx.info["hostname"])
+        rx.s["audio"]["volume"] = vol
+        rx.s["bt"]["connected"] = phone
+        if phone:
+            rx.s["audio"]["source"] = "bt"
+        if not playing:
+            rx.s["audio"].update(source="idle", playing=None)
+        house.add(rx, f"{host}:{srv.server_address[1]}")
+        srvs.append(srv)
+    for name, model, party, *_ in HOUSE:
+        if party:
+            house.party_op(next(r for r in house.rx if r.info["name"] == name), "on")
+    if gone:  # listed from an old mDNS answer, switched off since: nothing listens at port 9 (discard)
+        house.gone.append({"name": "Garage", "host": "hifi-lite-9", "ip": f"{host}:9", "model": "hifi-lite",
+                           "fw": "0.1.0", "self": False, "seen_s": 70})
+    return srvs
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--port", type=int, default=8080)
@@ -590,7 +735,16 @@ def main():
     ap.add_argument("--ap", action="store_true", help="start in first-run Wi-Fi setup")
     ap.add_argument("--pdo", default="20x3.25", help="charger contract, volts x amps (default 20x3.25, a 65 W charger)")
     ap.add_argument("--fault", action="store_true", help="start with the amplifier latched off")
+    ap.add_argument("--house", action="store_true", help="several receivers that find each other, from --port up")
     o = ap.parse_args()
+    if o.house:
+        srvs = serve_house(o.port, o.host)
+        for s in srvs[1:]:
+            threading.Thread(target=s.serve_forever, daemon=True).start()
+        for s in srvs:
+            print(f"mock {s.rx.info['name']} on http://{o.host}:{s.server_address[1]}/", flush=True)
+        srvs[0].serve_forever()
+        return
     v, a = (float(x) for x in o.pdo.lower().split("x"))
     srv = serve(o.port, o.host, model=o.model, ap=o.ap, pdo=(v, a), fault=o.fault)
     print(f"mock {o.model} receiver on http://{o.host}:{o.port}/", flush=True)

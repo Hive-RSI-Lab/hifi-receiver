@@ -9,6 +9,7 @@
 #include "hifi_b64.h"
 #include "hifi_gate.h"
 #include "hifi_json.h"
+#include "hifi_peers.h"
 #include "hifi_vol.h"
 #include "hifi_ws_proto.h"
 
@@ -1165,6 +1166,8 @@ size_t hifi_api_reply_cap(const char *path, const char *body) {
 		return hifi_b64_len((size_t) f * 4) + 1024;
 	}
 	if (path && strstr(path, PREFIX "crash") == path) return 2 * CRASH_LOG_MAX + 256;
+	/* self and HIFI_PEERS_MAX rows, every field escaped at its longest */
+	if (path && strstr(path, PREFIX "peers") == path) return HIFI_PEERS_REPLY;
 	return 4096;
 }
 
@@ -1242,6 +1245,8 @@ int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *meth
 	else if (!strncmp(route, "party", 5) && (!route[5] || route[5] == '/'))
 		status = !ops->party ? error(out, cap, 404, "this build has no party mode")
 		       : get || post ? ops->party(route[5] ? route + 6 : "", post, lan, body, out, cap) : -1;
+	else if (!strcmp(route, "peers"))
+		status = !get ? -1 : ops->peers ? ops->peers(out, cap) : error(out, cap, 404, "this build doesn't list speakers");
 	else if (!strncmp(route, "diag", 4) && (!route[4] || route[4] == '/'))
 		status = get || post ? r_diag(ops, route + 4, post, lan, body, out, cap) : -1;
 	else return error(out, cap, 404, "no such path");

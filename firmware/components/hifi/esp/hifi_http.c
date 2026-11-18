@@ -38,22 +38,28 @@ static const char *status_line(int st) {
 
 /* ---- the LAN gate (core/hifi_gate.h) ---- */
 
-static bool gate_ok(httpd_req_t *req) {
-	char host[128] = "", origin[128] = "";
+/* 0: refuse; 1: same origin; 2: another speaker's page (the Speakers app,
+ * hifi_gate_allow_cross): origin then holds the Origin to send back */
+static int gate_ok(httpd_req_t *req, char origin[128]) {
+	char host[128] = "";
+	origin[0] = 0;
 	size_t hl = httpd_req_get_hdr_value_len(req, "Host"), ol = httpd_req_get_hdr_value_len(req, "Origin");
 	/* a header too long for the buffer is not one the gate can vouch for */
-	if (hl >= sizeof(host) || ol >= sizeof(origin)) return false;
+	if (hl >= sizeof(host) || ol >= 128) return 0;
 	if (hl) httpd_req_get_hdr_value_str(req, "Host", host, sizeof(host));
-	if (ol) httpd_req_get_hdr_value_str(req, "Origin", origin, sizeof(origin));
+	if (ol) httpd_req_get_hdr_value_str(req, "Origin", origin, 128);
 	const char *names[4];
 	size_t n = 0;
 	for (esp_netif_t *nif = esp_netif_next(NULL); nif && n < 4; nif = esp_netif_next(nif)) {
 		const char *h = NULL;
 		if (esp_netif_get_hostname(nif, &h) == ESP_OK && h && *h) names[n++] = h;
 	}
-	if (hifi_gate_allow(host, origin, names, n)) return true;
+	if (hifi_gate_allow(host, origin, names, n)) return 1;
+	uint32_t net, mask;
+	hifi_net_lan(&net, &mask);
+	if (hifi_gate_allow_cross(host, origin, names, n, net, mask, req->uri, http_method_str(req->method))) return 2;
 	ESP_LOGW(TAG, "refused %s: Host '%s' Origin '%s'", req->uri, host, origin);
-	return false;
+	return 0;
 }
 
 static esp_err_t refuse(httpd_req_t *req) {
@@ -79,7 +85,17 @@ static bool on_trial(httpd_req_t *req) {
 
 static esp_err_t gate_trampoline(httpd_req_t *req) {
 	const gated_t *g = req->user_ctx;
-	if (!gate_ok(req)) return refuse(req);
+	/* until the handler has sent its reply; one server task, so static (its
+	 * 4 KB stack has no room to spare) */
+	static char origin[128];
+	int gate = gate_ok(req, origin);
+	if (!gate) return refuse(req);
+	if (gate == 2) {
+		/* the app's requests are CORS-simple (GET, or POST with a text/plain
+		 * body): no preflight, so no OPTIONS route */
+		httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", origin);
+		httpd_resp_set_hdr(req, "Vary", "Origin");
+	}
 	if (on_trial(req)) {
 		static const char msg[] = "{\"error\":\"new firmware is on trial; try again in a few minutes\"}";
 		httpd_resp_set_status(req, status_line(409));
