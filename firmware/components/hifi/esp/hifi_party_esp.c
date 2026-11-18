@@ -41,6 +41,9 @@
 #include "esp_task.h"
 #include "esp_timer.h"
 #include "esp_wifi.h"
+#if CONFIG_BT_ENABLED
+#include "esp_bt.h"
+#endif
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
@@ -1095,8 +1098,24 @@ void hifi_party_init(void) {
 
 void hifi_party_volume(uint32_t gain) { party_gain = gain; }
 
+static bool bt_stopped(void) {
+#if CONFIG_BT_ENABLED
+	return esp_bt_controller_get_status() != ESP_BT_CONTROLLER_STATUS_ENABLED;
+#else
+	return true;
+#endif
+}
+
+static bool ps_none(bool none) {
+	esp_err_t e = esp_wifi_set_ps(none ? WIFI_PS_NONE : WIFI_PS_MIN_MODEM);
+	if (e != ESP_OK) ESP_LOGW(TAG, "Wi-Fi power save %s: %s", none ? "none" : "min", esp_err_to_name(e));
+	else ESP_LOGI(TAG, "Wi-Fi power save %s", none ? "none (following, Bluetooth off)" : "min");
+	return e == ESP_OK;
+}
+
 /* From the relay's task, every couple of seconds: keeps the term and the
- * pick across a reboot, and puts Bluetooth where party wants it. */
+ * pick across a reboot, and puts Bluetooth and the Wi-Fi power save where
+ * party wants them. */
 void hifi_party_poll(void) {
 	if (!st || !gmx) return;
 	glock();
@@ -1116,11 +1135,16 @@ void hifi_party_poll(void) {
 	}
 	/* A phone can't join a follower (it would take the board out of the
 	 * group), nor a board that may yet follow: Bluetooth stays on only for a
-	 * picked leader, or while it plays (the phone came first). */
+	 * picked leader, or while it plays (the phone came first). A follower's
+	 * Wi-Fi stays awake once Bluetooth is off (hifi_party_radio). */
 	if (!hifi_bt_sink_set || !hifi_bt_sink_is_off) return;
-	bool on = active;
-	bool want = !on || (role != HIFI_PARTY_ROLE_FOLLOWER && (pick || source() == SRC_BT));
-	if (want == hifi_bt_sink_is_off()) hifi_bt_sink_set(want);
+	/* only a none party set itself is party's to undo (a lab run's isn't) */
+	static bool ps_mine;
+	wifi_ps_type_t ps;
+	bool awake = ps_mine && esp_wifi_get_ps(&ps) == ESP_OK && ps == WIFI_PS_NONE;
+	hifi_party_radio_ops_t o = {hifi_bt_sink_set, hifi_bt_sink_is_off, bt_stopped, ps_none};
+	hifi_party_radio(&o, &awake, active, role, pick, source() == SRC_BT);
+	ps_mine = awake;
 }
 
 void hifi_party_selftest(hifi_selftest_t *t) {

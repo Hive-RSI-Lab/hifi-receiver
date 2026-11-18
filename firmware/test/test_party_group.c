@@ -2,6 +2,7 @@
  * each other real encoded packets. The cases are those of
  * projects/hifi-lite-lab/party-mode.md, 8.9. */
 #include <stdlib.h>
+#include <string.h>
 
 #include "check.h"
 #include "hifi_party_group.h"
@@ -1066,6 +1067,132 @@ static void units(void) {
 	CHECK(hifi_party_group_lead(&g, 0xfffff000u + 25u * 86400000u, 5) == HIFI_PARTY_DO_ANNOUNCE); /* 25 days on */
 }
 
+/* hifi_party_radio: a fake Bluetooth sink, controller and power save. The
+ * coexistence code's rule is checked on every call: never power save none
+ * while the controller runs. log: b0/b1 bt_set(false/true), p0/p1 ps_none */
+static struct {
+	bool sink_off, ctl_on, ps_none; /* the fake's state */
+	bool off_fails, stop_late, ps_fails;
+	char log[64];
+	int panics;
+} R;
+
+static void rlog(const char *e) {
+	strncat(R.log, e, sizeof(R.log) - strlen(R.log) - 1);
+}
+
+static bool r_bt_set(bool on) {
+	rlog(on ? "b1 " : "b0 ");
+	if (on) {
+		if (R.ps_none) R.panics++;
+		R.sink_off = false;
+		R.ctl_on = true;
+		return true;
+	}
+	if (R.off_fails) return false;
+	R.sink_off = true;
+	R.ctl_on = R.stop_late;
+	return !R.stop_late; /* hifi_bt_sink_set(false) is true once the controller stopped */
+}
+static bool r_bt_is_off(void) { return R.sink_off; }
+static bool r_bt_stopped(void) { return !R.ctl_on; }
+static bool r_ps_none(bool none) {
+	rlog(none ? "p1 " : "p0 ");
+	if (R.ps_fails) return false;
+	if (none && R.ctl_on) R.panics++;
+	R.ps_none = none;
+	return true;
+}
+static const hifi_party_radio_ops_t RO = {r_bt_set, r_bt_is_off, r_bt_stopped, r_ps_none};
+
+/* one poll; the log of its calls */
+static const char *rpoll(bool on, hifi_party_role_t role, bool picked, bool bt_plays) {
+	bool awake = R.ps_none; /* as hifi_party_poll reads it */
+	R.log[0] = 0;
+	hifi_party_radio(&RO, &awake, on, role, picked, bt_plays);
+	CHECK(awake == R.ps_none);
+	return R.log;
+}
+
+static void radio(void) {
+	const hifi_party_role_t F = HIFI_PARTY_ROLE_FOLLOWER, L = HIFI_PARTY_ROLE_LEADER, N = HIFI_PARTY_ROLE_LISTENING;
+	/* off the party: Bluetooth on, power save at the default, nothing to do */
+	memset(&R, 0, sizeof(R));
+	R.ctl_on = true;
+	CHECK_STR(rpoll(false, HIFI_PARTY_ROLE_OFF, false, false), "");
+	/* listening: Bluetooth off, the Wi-Fi not kept awake (it may yet lead) */
+	CHECK_STR(rpoll(true, N, false, false), "b0 ");
+	CHECK(R.sink_off && !R.ps_none);
+	CHECK_STR(rpoll(true, N, false, false), "");
+	/* following: power save none, as Bluetooth is already off */
+	CHECK_STR(rpoll(true, F, false, false), "p1 ");
+	CHECK(R.ps_none);
+	CHECK_STR(rpoll(true, F, false, false), ""); /* and nothing more while it follows */
+	/* party off: the default first, then Bluetooth */
+	CHECK_STR(rpoll(false, HIFI_PARTY_ROLE_OFF, false, false), "p0 b1 ");
+	CHECK(!R.ps_none && R.ctl_on && !R.sink_off);
+
+	/* a follower with Bluetooth on (it followed at once): off first, then none */
+	CHECK_STR(rpoll(true, F, false, false), "b0 p1 ");
+	CHECK(R.ps_none && !R.ctl_on);
+	/* it leads, picked (a phone): min, then Bluetooth back on */
+	CHECK_STR(rpoll(true, L, true, false), "p0 b1 ");
+	CHECK(!R.ps_none && R.ctl_on);
+	/* follows again; then leads unpicked: min, Bluetooth stays off */
+	CHECK_STR(rpoll(true, F, false, false), "b0 p1 ");
+	CHECK_STR(rpoll(true, L, false, false), "p0 ");
+	CHECK(!R.ps_none && R.sink_off);
+	/* a phone plays on that leader: Bluetooth on, power save untouched */
+	CHECK_STR(rpoll(true, L, false, true), "b1 ");
+	CHECK(!R.ps_none);
+
+	/* Bluetooth won't go off (hifi_bt_sink_set false): no none */
+	R.off_fails = true;
+	CHECK_STR(rpoll(true, F, false, false), "b0 ");
+	CHECK(!R.ps_none && R.ctl_on);
+	R.off_fails = false;
+	/* the sink disabled in the settings (hifi_bt_sink_set false, never off),
+	 * its controller never started: none all the same */
+	CHECK(R.panics == 0);
+	memset(&R, 0, sizeof(R));
+	R.off_fails = true;
+	CHECK_STR(rpoll(true, F, false, false), "b0 p1 ");
+	CHECK(R.ps_none && !R.sink_off);
+	CHECK_STR(rpoll(true, F, false, false), "b0 ");
+	/* party off: min; Bluetooth can't start (still disabled), so not asked */
+	CHECK_STR(rpoll(false, HIFI_PARTY_ROLE_OFF, false, false), "p0 ");
+	CHECK(!R.ps_none && !R.ctl_on);
+	/* back to the sink that was on, with its controller running */
+	R.off_fails = false;
+	R.sink_off = false;
+	R.ctl_on = true;
+	/* the sink is off but its controller hasn't stopped yet: not until it has */
+	R.stop_late = true;
+	CHECK_STR(rpoll(true, F, false, false), "b0 ");
+	CHECK(!R.ps_none && R.sink_off);
+	CHECK_STR(rpoll(true, F, false, false), "");
+	R.ctl_on = R.stop_late = false; /* it stopped */
+	CHECK_STR(rpoll(true, F, false, false), "p1 ");
+	CHECK(R.ps_none);
+
+	/* min fails as the party goes off: Bluetooth waits for the next poll */
+	R.ps_fails = true;
+	CHECK_STR(rpoll(false, HIFI_PARTY_ROLE_OFF, false, false), "p0 ");
+	CHECK(R.ps_none && R.sink_off);
+	R.ps_fails = false;
+	CHECK_STR(rpoll(false, HIFI_PARTY_ROLE_OFF, false, false), "p0 b1 ");
+	CHECK(!R.ps_none && R.ctl_on);
+
+	/* a board that boots following: the sink never started, none at once */
+	CHECK(R.panics == 0);
+	memset(&R, 0, sizeof(R));
+	R.sink_off = true;
+	CHECK_STR(rpoll(true, F, false, false), "p1 ");
+	CHECK(R.ps_none);
+	/* none of it ever had none with the controller on */
+	CHECK(R.panics == 0);
+}
+
 int main(void) {
 	units();
 	first_on(0);
@@ -1089,5 +1216,6 @@ int main(void) {
 	played_back_groups();
 	hop_just_joined();
 	new_address();
+	radio();
 	return check_report("party_group");
 }
