@@ -105,13 +105,18 @@ The receiver doesn't know the Wi-Fi yet, so it makes its own network,
    `http://192.168.4.1`.
 2. The app sees `net.mode == "ap"` and opens on Setup with a welcome note.
 3. The user scans, chooses the home network and types the password.
-4. The receiver joins while keeping its own network up, and reports the
-   result in `net.join`.
+4. The receiver answers `{"ok": true}` at once and joins while keeping its own
+   network up. The firmware reports nothing more: the app watches `net` and
+   counts the join done when `net.mode` is `sta` on the network it asked for,
+   with an IP.
 5. The app says "Joined Home. Reconnect this phone to it and open
-   http://hifi-lite.local".
+   http://hifi-lite.local". If the phone loses the receiver first, the
+   "Looking for the receiver" card says the same.
 
-A wrong password shows "Could not join Home: wrong password" and the user can
-try again. Nothing is lost, because the receiver's own network stays up.
+A join that hasn't landed after 45 s shows "Could not join Home: check the
+password and that it is a 2.4 GHz network", and the user can try again.
+Nothing is lost, because the receiver's own network stays up. (A `net.join`
+field, if a later firmware adds one, is used instead of the 45 s guess.)
 
 ## Installing on a phone
 
@@ -182,7 +187,7 @@ those controls the app shows.
 | `controls.backlight` | `on`, `off` or `auto` (Ultra) |
 | `net.mode` | `sta` or `ap` |
 | `net.ssid`, `net.hostname`, `net.eth` | the network it is on, its name, and whether Ethernet is connected |
-| `net.join` | `{ssid, state: "joining"\|"ok"\|"failed", ip, reason}` |
+| `net.join` | not sent by the firmware yet; if sent, `{ssid, state: "joining"\|"ok"\|"failed", ip, reason}` |
 | `update` | `{state: "idle"\|"downloading"\|"flashing"\|"done"\|"error", progress, error}` |
 | `ir` | `{learning: <action>\|null, learned: [<action>…], last_code}` |
 
