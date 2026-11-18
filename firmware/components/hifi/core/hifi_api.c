@@ -509,14 +509,7 @@ static int r_eq(const hifi_ops_t *ops, const char *body, char *out, size_t cap) 
 
 static int r_name(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
 	char name[65];
-	if (!hj_get_str(body, "name", name, sizeof(name))) {
-		const char *v;
-		size_t n;
-		/* a string hj_get_str won't decode holds \u0000 or a bad escape */
-		bool str = hj_get_raw(body, "name", &v, &n) && *v == '"';
-		return error(out, cap, 400, str ? "name has a control character or a bad escape" : "name is required");
-	}
-	if (!name[0]) return error(out, cap, 400, "name is required");
+	if (!hj_get_str(body, "name", name, sizeof(name)) || !name[0]) return error(out, cap, 400, "name is required");
 	if (strlen(name) > 32) return error(out, cap, 400, "name must be 32 characters or fewer");
 	/* the name goes into squeezelite's command line (autoexec1, -n "<name>"):
 	 * a quote or backslash there would end the word and add options */

@@ -99,6 +99,22 @@ static void reader(void) {
 	char four[4];
 	CHECK(hj_get_str("{\"s\":\"a\\u20acb\"}", "s", four, sizeof(four)) && !strcmp(four, "a"));
 	CHECK(hj_get_str("{\"s\":\"ab\\u00e9c\"}", "s", four, sizeof(four)) && !strcmp(four, "ab"));
+	/* raw UTF-8, as JSON.stringify sends it, is cut the same way */
+	CHECK(hj_get_str("{\"s\":\"ab\xc3\xa9\"}", "s", four, sizeof(four)) && !strcmp(four, "ab"));
+	CHECK(hj_get_str("{\"s\":\"a\xe2\x82\xac" "b\"}", "s", four, sizeof(four)) && !strcmp(four, "a"));
+	CHECK(hj_get_str("{\"s\":\"\xf0\x9f\x98\x80\"}", "s", four, sizeof(four)) && !strcmp(four, ""));
+	char five[5];
+	CHECK(hj_get_str("{\"s\":\"ab\xc3\xa9\"}", "s", five, sizeof(five)) && !strcmp(five, "ab\xc3\xa9"));
+	/* a stray lead or continuation byte passes through as it came */
+	CHECK(hj_get_str("{\"s\":\"a\xc3" "b\x80\"}", "s", e, sizeof(e)) && !strcmp(e, "a\xc3" "b\x80"));
+	/* a bad string anywhere refuses the whole text: no field reads as missing */
+	CHECK(!hj_valid_object("{\"a\":\"\\q\"}"));
+	CHECK(!hj_valid_object("{\"a\":{\"b\":[\"\\u0000\"]}}"));
+	CHECK(!hj_valid_object("{\"\\ud800\":1}"));
+	CHECK(!hj_valid_object("{\"a\":\"\\u12\"}"));
+	CHECK(hj_valid_object("{\"a\":\"\\ud83d\\ude00 \\r\\/\"}"));
+	strcpy(e, "x");
+	CHECK(!hj_get_str("{\"s\":\"ok\",\"t\":\"\\q\"}", "s", e, sizeof(e)) && !e[0]);
 
 	CHECK(hj_valid_object("{}"));
 	CHECK(!hj_valid_object("{"));

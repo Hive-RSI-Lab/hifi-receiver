@@ -334,8 +334,9 @@ static void amp_input_sub_control(void) {
 	CHECK(call("POST", "/api/v1/name", "{\"name\":\"Kitchen\\r\"}") == 400);
 	CHECK_HAS(out, "control character");
 	CHECK(call("POST", "/api/v1/name", "{\"name\":\"a\\u001fb\"}") == 400);
+	/* \u0000 and a bad escape aren't text we take: the body is refused */
 	CHECK(call("POST", "/api/v1/name", "{\"name\":\"a\\u0000b\"}") == 400);
-	CHECK_HAS(out, "control character");
+	CHECK_HAS(out, "JSON object");
 	CHECK(call("POST", "/api/v1/name", "{\"name\":\"a\\qb\"}") == 400);
 	CHECK_STR(m.name, "Kitchen");
 	CHECK(call("POST", "/api/v1/name", "{\"name\":\"Caf\\u00e9 \\/ Bar\"}") == 200);
@@ -818,6 +819,12 @@ static void core_routes(void) {
 				   "{\"url\":\"http://hive.local/fw/plus.bin\"}", out, sizeof(out)) == 200);
 	CHECK(c.need_sig);
 	c.upd = (hifi_update_status_t) {0};
+	/* a typo in the hash refuses the update: it must not read as no hash */
+	c.url[0] = '\0';
+	CHECK(ccall("POST", "/api/v1/update", "{\"url\":\"http://hive.local/fw/plus.bin\",\"sha256\":\"\\q0\"}") == 400);
+	CHECK_HAS(out, "JSON object");
+	CHECK_STR(c.url, "");
+	CHECK(c.upd.state != HIFI_UPD_DOWNLOADING);
 
 	/* new firmware on trial: a lost Wi-Fi rolls it back, so the LAN may not
 	 * change or forget the Wi-Fi, or erase settings, until it is kept */
