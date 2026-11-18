@@ -170,7 +170,18 @@ static int m_remote_set(const char *url, const char *user, const char *pw, const
 	return 0;
 }
 
+static int arm_wait;
+static hifi_cap_chime_t chime_cap;
+static int m_capture_arm(hifi_cap_src_t src, int wait_s, const char **err) {
+	if (src == HIFI_CAP_LINE) return *err = "no line input", 409;
+	arm_wait = wait_s;
+	chime_cap = (hifi_cap_chime_t){.state = HIFI_CAPCH_ARMED};
+	return 0;
+}
+static void m_capture_chime(hifi_cap_chime_t *out) { *out = chime_cap; }
+
 static hifi_ops_t ops = {.info = m_info, .snapshot = m_snapshot, .reboot = m_reboot, .capture = m_capture,
+			 .capture_arm = m_capture_arm, .capture_chime = m_capture_chime,
 			 .set_wifi = m_set_wifi, .remote_status = m_remote_status, .remote_set = m_remote_set,
 			 .ota = &ota, .ota_status = m_ota_status};
 
@@ -770,6 +781,38 @@ static void test_capture_api(void) {
 	CHECK(hifi_api_handle(&ops, "POST", "/api/v1/capture", "{}", small, sizeof(small)) == 500);
 }
 
+/* the armed chime capture: armed, then its notes once a chime played */
+static void test_capture_chime_api(void) {
+	CHECK(hifi_api_reply_cap("/api/v1/capture/chime", "{}") == 4096);
+	CHECK(api("GET", "/api/v1/capture/chime", NULL) == 200);
+	CHECK_HAS(out, "\"state\":\"idle\"");
+	CHECK(api("POST", "/api/v1/capture/chime", "{\"wait_s\":90}") == 200);
+	CHECK_HAS(out, "\"state\":\"armed\"");
+	CHECK(arm_wait == 90);
+	CHECK(api("POST", "/api/v1/capture/chime", "{}") == 200 && arm_wait == 60);
+	CHECK(api("POST", "/api/v1/capture/chime", "{\"wait_s\":0}") == 400);
+	CHECK(api("POST", "/api/v1/capture/chime", "{\"wait_s\":\"x\"}") == 400);
+	CHECK(api("POST", "/api/v1/capture/chime", "{\"source\":\"mic\"}") == 400);
+	CHECK(api("POST", "/api/v1/capture/chime", "{\"source\":5}") == 400);
+	CHECK(api("POST", "/api/v1/capture/chime", "{\"source\":\"loopbackloopbackx\"}") == 400);
+	CHECK(api("POST", "/api/v1/capture/chime", "{\"wait_s\":1.5}") == 400);
+	CHECK(api("POST", "/api/v1/capture/chime", "{\"wait_s\":601}") == 400);
+	CHECK(api("POST", "/api/v1/capture/chime", "{\"source\":\"line\"}") == 409);
+	CHECK_HAS(out, "no line input");
+	chime_cap = (hifi_cap_chime_t){.state = HIFI_CAPCH_DONE, .kind = "pair", .frames = 33600, .start_ms = 512,
+				       .armed_ms = 2100, .info = {.rate = 48000, .v_per_fs = {14, 14}},
+				       .floor_fs = {0.0002f, 0.0003f}, .n = 1,
+				       .notes = {{.hz = 1046.5f, .on_ms = 90, .len_ms = 100, .rms_fs = {0.01f, 0.012f}}}};
+	CHECK(api("GET", "/api/v1/capture/chime", NULL) == 200);
+	CHECK_HAS(out, "\"kind\":\"pair\"");
+	CHECK_HAS(out, "\"start_ms\":512");
+	CHECK_HAS(out, "\"notes\":[{\"hz\":1046.5,\"on_ms\":90,\"len_ms\":100,\"rms_fs\":[0.010000,0.012000]}]");
+	chime_cap = (hifi_cap_chime_t){.state = HIFI_CAPCH_FAILED, .err = "no chime in 60 s"};
+	CHECK(api("GET", "/api/v1/capture/chime", NULL) == 200);
+	CHECK_HAS(out, "\"error\":\"no chime in 60 s\"");
+	CHECK(api("DELETE", "/api/v1/capture/chime", NULL) != 200);
+}
+
 static void test_wifi_remote_api(void) {
 	CHECK(api("POST", "/api/v1/wifi", "{\"ssid\":\"home\",\"password\":\"p w\\\"x\"}") == 200);
 	CHECK_STR(wifi_ssid, "home");
@@ -1239,6 +1282,7 @@ int main(int argc, char **argv) {
 	test_lan_api();
 	test_ota_held();
 	test_capture_api();
+	test_capture_chime_api();
 	test_wifi_remote_api();
 	test_ws_proto();
 	test_ws_drop();

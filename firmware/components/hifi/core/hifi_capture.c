@@ -42,3 +42,68 @@ float hifi_capture_tone_rms(const int16_t *pcm, int frames, int ch, float freq_h
 	double p = s1 * s1 + s2 * s2 - cw * s1 * s2; /* |X|^2 at the tone's frequency */
 	return (float) (sqrt(2 * (p > 0 ? p : 0)) / frames);
 }
+
+const char *hifi_capch_state_name(hifi_capch_state_t s) {
+	static const char *n[] = {"idle", "armed", "recording", "done", "failed"};
+	return (unsigned) s < sizeof(n) / sizeof(n[0]) ? n[s] : "idle";
+}
+
+int hifi_capture_find_notes(const int16_t *pcm, int frames, int rate, const float *hz, int nhz,
+			    float min_fs, int min_blocks, hifi_cap_note_t *out, int max, float floor_fs[2]) {
+	int bf = rate * HIFI_CAP_BLOCK_MS / 1000, nb = bf > 0 ? frames / bf : 0, found = 0;
+	if (floor_fs) floor_fs[0] = floor_fs[1] = 0;
+	if (nb <= 0 || nhz <= 0 || max <= 0) return 0;
+	if (min_blocks < 1) min_blocks = 1;
+	int run_f = -1, run_at = 0, run_len = 0, gap = 0;
+	float run_lvl[2] = {0, 0}, best_floor[2] = {-1, -1};
+	for (int b = 0; b <= nb; b++) {
+		int f = -1;
+		float lvl[2] = {0, 0};
+		if (b < nb) {
+			const int16_t *blk = pcm + 2 * (size_t) b * bf;
+			for (int c = 0; c < 2; c++) {
+				hifi_cap_stats_t st;
+				hifi_capture_stats(blk, bf, c, &st);
+				if (best_floor[c] < 0 || st.rms_fs < best_floor[c]) best_floor[c] = st.rms_fs;
+			}
+			float top = min_fs;
+			for (int k = 0; k < nhz; k++) {
+				float l = hifi_capture_tone_rms(blk, bf, 0, hz[k], rate);
+				float r = hifi_capture_tone_rms(blk, bf, 1, hz[k], rate);
+				float m = l > r ? l : r;
+				if (m > top) {
+					top = m;
+					f = k;
+					lvl[0] = l;
+					lvl[1] = r;
+				}
+			}
+		}
+		if (f == run_f && f >= 0) {
+			run_len += gap + 1; /* a one-block dip inside a note stays part of it */
+			gap = 0;
+			for (int c = 0; c < 2; c++)
+				if (lvl[c] > run_lvl[c]) run_lvl[c] = lvl[c];
+			continue;
+		}
+		if (f < 0 && run_f >= 0 && b < nb && !gap) {
+			gap = 1;
+			continue;
+		}
+		gap = 0;
+		if (run_f >= 0 && run_len >= min_blocks && found < max) {
+			out[found++] = (hifi_cap_note_t){.hz = hz[run_f],
+							 .on_ms = run_at * HIFI_CAP_BLOCK_MS,
+							 .len_ms = run_len * HIFI_CAP_BLOCK_MS,
+							 .rms_fs = {run_lvl[0], run_lvl[1]}};
+		}
+		run_f = f;
+		run_at = b;
+		run_len = 1;
+		run_lvl[0] = lvl[0];
+		run_lvl[1] = lvl[1];
+	}
+	if (floor_fs)
+		for (int c = 0; c < 2; c++) floor_fs[c] = best_floor[c] > 0 ? best_floor[c] : 0;
+	return found;
+}

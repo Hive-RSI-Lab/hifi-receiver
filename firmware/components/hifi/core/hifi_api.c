@@ -1013,6 +1013,63 @@ static int r_capture(const hifi_ops_t *ops, const char *body, char *out, size_t 
 	return 200;
 }
 
+/* POST arms a capture of the next chime; GET gives the last one's notes */
+static int r_capture_chime(const hifi_ops_t *ops, bool post, const char *body, char *out, size_t cap) {
+	if (!ops->capture_arm || !ops->capture_chime) return error(out, cap, 404, "no chime capture in this build");
+	if (post) {
+		char src[16] = "loopback";
+		if (hj_get_raw(body, "source", &(const char *){NULL}, &(size_t){0}) &&
+		    hj_get_str_fit(body, "source", src, sizeof(src)) != HJ_STR_OK)
+			return error(out, cap, 400, "source must be loopback or line");
+		hifi_cap_src_t s;
+		if (!strcmp(src, "loopback")) s = HIFI_CAP_LOOPBACK;
+		else if (!strcmp(src, "line")) s = HIFI_CAP_LINE;
+		else return error(out, cap, 400, "source must be loopback or line");
+		double w = 60;
+		if (hj_get_raw(body, "wait_s", &(const char *){NULL}, &(size_t){0}) && !hj_get_num(body, "wait_s", &w))
+			return error(out, cap, 400, "wait_s must be a whole number, 1 to 600");
+		if (!(w >= 1 && w <= 600) || w != (int) w) return error(out, cap, 400, "wait_s must be a whole number, 1 to 600");
+		const char *err = "can't arm now";
+		int st = ops->capture_arm(s, (int) w, &err);
+		if (st) return error(out, cap, st, err);
+	}
+	hifi_cap_chime_t c;
+	memset(&c, 0, sizeof(c));
+	ops->capture_chime(&c);
+	hj_t j;
+	hj_init(&j, out, cap);
+	hj_obj(&j, NULL);
+	hj_str(&j, "state", hifi_capch_state_name(c.state));
+	if (c.err) hj_str(&j, "error", c.err);
+	if (c.state == HIFI_CAPCH_DONE) {
+		if (c.kind) hj_str(&j, "kind", c.kind);
+		hj_int(&j, "rate", c.info.rate);
+		hj_int(&j, "frames", c.frames);
+		hj_int(&j, "armed_ms", c.armed_ms);
+		hj_int(&j, "start_ms", c.start_ms);
+		hj_arr(&j, "v_per_fs");
+		for (int k = 0; k < 2; k++) hj_num(&j, NULL, c.info.v_per_fs[k], 3);
+		hj_arr_end(&j);
+		hj_arr(&j, "floor_fs");
+		for (int k = 0; k < 2; k++) hj_num(&j, NULL, c.floor_fs[k], 6);
+		hj_arr_end(&j);
+		hj_arr(&j, "notes");
+		for (int i = 0; i < c.n && i < HIFI_CAP_NOTES_MAX; i++) {
+			hj_obj(&j, NULL);
+			hj_num(&j, "hz", c.notes[i].hz, 1);
+			hj_int(&j, "on_ms", c.notes[i].on_ms);
+			hj_int(&j, "len_ms", c.notes[i].len_ms);
+			hj_arr(&j, "rms_fs");
+			for (int k = 0; k < 2; k++) hj_num(&j, NULL, c.notes[i].rms_fs[k], 6);
+			hj_arr_end(&j);
+			hj_obj_end(&j);
+		}
+		hj_arr_end(&j);
+	}
+	hj_obj_end(&j);
+	return j.overflow ? error(out, cap, 500, "reply buffer too small") : 200;
+}
+
 static int r_wifi(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
 	if (!ops->set_wifi) return error(out, cap, 404, "no Wi-Fi setup in this build");
 	char ssid[33] = "", pw[65] = "";
@@ -1159,6 +1216,7 @@ static int r_update(const hifi_ops_t *ops, bool lan, const char *body, char *out
 }
 
 size_t hifi_api_reply_cap(const char *path, const char *body) {
+	if (path && strstr(path, PREFIX "capture/chime") == path) return 4096;
 	if (path && strstr(path, PREFIX "capture") == path) {
 		int f = capture_frames(body);
 		if (f < 64) f = 64;
@@ -1225,6 +1283,7 @@ int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *meth
 	else if (!strcmp(route, "bt/pair")) status = post ? r_bt_pair(ops, body, out, cap) : -1;
 	else if (!strncmp(route, "ota/", 4)) status = post ? r_ota(ops, lan, route + 4, body, out, cap) : -1;
 	else if (!strcmp(route, "capture")) status = post ? r_capture(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "capture/chime")) status = get || post ? r_capture_chime(ops, post, body, out, cap) : -1;
 	else if (!strcmp(route, "wifi")) status = post ? r_wifi(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "wifi/scan")) status = get ? r_wifi_scan(ops, out, cap) : -1;
 	else if (!strcmp(route, "wifi/forget")) status = post ? r_wifi_forget(ops, out, cap) : -1;

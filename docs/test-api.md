@@ -663,6 +663,36 @@ too on a board revision without taps.
 jack) for an ADC full scale: the divider times the ADC's full scale, a
 datasheet figure until bring-up calibrates it.
 
+### `POST|GET /api/v1/capture/chime`
+
+A chime lasts under half a second, and `capture` takes about 370 ms to bring
+the ADC up, so it can't catch one. `POST {"source": "loopback", "wait_s": 60}`
+arms a capture of the next chime instead (`wait_s` 1 to 600; 409 if one is
+armed already or the board has no taps). When a chime plays while armed, it
+starts with 450 ms of silence so the ADC is up, the board records 900 ms
+as soon as the ADC is, and keeps silence going until the recording ends.
+It then looks for the chimes' notes (784, 1046.5, 1318.5 and 1568 Hz) in
+10 ms blocks and keeps no PCM. GET (and the POST's own reply) gives the
+state: `armed`, `recording`, `done`, `failed` (with `error`, e.g. no chime
+within `wait_s`), or `idle`.
+
+```json
+{"state": "done", "kind": "pair", "rate": 48000, "frames": 43200,
+ "armed_ms": 2140, "start_ms": 372, "v_per_fs": [13.970, 13.970],
+ "floor_fs": [0.000041, 0.000039],
+ "notes": [{"hz": 1046.5, "on_ms": 80, "len_ms": 100, "rms_fs": [0.031, 0.030]}, {...}]}
+```
+
+`kind` is the chime that played (`pair`, `connect`, `disconnect`).
+`armed_ms` is how long after arming the chime was asked for, `start_ms` how
+long after that the recording began (about 370 ms), `on_ms` a note's start in
+the recording. A note's time from the chime's request is `start_ms + on_ms`;
+the first note comes at about 450 ms, after the lead-in. `rms_fs` is a
+note's level on each tap in ADC full scale (times `v_per_fs` for
+volts RMS), `floor_fs` the quietest block's. A note's length is where it
+stays over the floor, so the decaying last note reads shorter than it plays.
+lab/tools/chime_capture.py in hifi-lite-lab arms this before each trigger.
+
 ### `GET /api/v1/ota`, `POST /api/v1/ota/begin|chunk|finish|abort`
 
 ```json
