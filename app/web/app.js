@@ -234,7 +234,7 @@ function diagGraphs() {
     h('div.c-h', {}, h('span', {}, h('b', {}, name), ' · ' + unit), h('span.now' + (bad ? '.bad' : ''), {}, now_)),
     legend, h('div', { innerHTML: chart(W, ht, label, paths) }));
   const cs = h('div.cs', {
-    onpointerdown: pick, onpointermove: pick,
+    onpointerdown: pickAt, onpointermove: pickAt,
     onpointerleave: (e) => { if (e.pointerType === 'mouse') { pickT = null; showPick(e.currentTarget); } } },
   ch('Power', 'W', `out ${fx(L[2])} · in ${fx(L[1])} W`, false, 96,
     `Out and in power, last 15 minutes` + (bud ? `, with the ${bud} W budget` : ''),
@@ -257,7 +257,7 @@ function diagGraphs() {
   return gs;
 }
 
-function pick(e) {
+function pickAt(e) {
   const r = e.currentTarget.getBoundingClientRect();
   pickT = Date.now() - (1 - Math.max(0, Math.min(1, (e.clientX - r.left) / r.width))) * DIAG_SPAN;
   showPick(e.currentTarget);
@@ -290,7 +290,7 @@ async function poll(boot) {
     else if (S && st.uptime_s < S.uptime_s) I = await api('info');
     P = p;
     if (boot && st.net && st.net.mode === 'ap' && !PAGES[want]) tab = 'setup';
-    if (st && st.audio) S = st;
+    if (st && st.audio) { S = st; remember(st); }
     online = true;
   } catch { online = false; }
   // one draw per poll; a bug in a page isn't the receiver going away, and
