@@ -1448,7 +1448,7 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 	 * fills after the settle. */
 	vTaskDelay(pdMS_TO_TICKS(200));
 	size_t got = 0, want = (size_t) frames * 4;
-	for (int i = 0; i < 64; i++) {
+	for (size_t drained = 0; drained < 256 * 1024; drained += got) { /* over 1 s of input: a bound, never reached */
 		if (i2s_read(CONFIG_I2S_NUM, pcm, want < 4096 ? want : 4096, &got, 0) != ESP_OK || !got) break;
 	}
 	size_t have = 0;
