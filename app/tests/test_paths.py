@@ -137,6 +137,9 @@ class Paths(unittest.TestCase):
         p = self.first_run_join("hunter22")
         self.m.srv.rx.fail["state"] = (503, "gone")  # the phone left the receiver's network
         self.see("reconnect this phone to Home and open http://hifi-lite.local")
+        p.js("(() => { const n = Date.now; Date.now = () => n() + 301000; })()")  # long after the join
+        self.see("Check that it is powered")
+        self.no("If it joined")
 
     # ---- the name
 

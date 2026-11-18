@@ -150,7 +150,14 @@ function draw() {
   window.scrollTo(0, y);
 }
 
+// the join this page asked for, while it is recent enough to mention
+function recentJoin() {
+  if (joining && Date.now() - joining.at > JOIN_KEEP_MS) joining = null;
+  return joining;
+}
+
 function offline() {
+  const joining = recentJoin();
   return h('div.card.err', {}, h('div.big', {}, 'Looking for the receiver…'),
     h('p.dim', {}, joining ? `If it joined ${joining.ssid}, reconnect this phone to ${joining.ssid} and open ` +
       `http://${(S && S.net.hostname) || 'hifi'}.local. If not, its own HiFi-… network comes back: join that and try again.`
@@ -393,8 +400,7 @@ function wifiCard() {
 // The firmware answers a join at once and says nothing more: the result
 // shows in net (on the network asked for, or not yet when the wait is up).
 function joinNow(n) {
-  if (joining && Date.now() - joining.at > JOIN_KEEP_MS) joining = null;
-  if (!joining) return null;
+  if (!recentJoin()) return null;
   const { ssid, at, was } = joining;
   // already on it: the firmware hasn't tried the new password yet, so wait a little
   const settled = was !== ssid || Date.now() - at > JOIN_SAME_MS;
