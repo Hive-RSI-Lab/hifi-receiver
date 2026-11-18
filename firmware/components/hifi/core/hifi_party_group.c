@@ -87,6 +87,29 @@ uint8_t hifi_party_secret_id(const uint8_t secret[HIFI_PARTY_SECRET]) {
 	return h[0];
 }
 
+static int hexval(char c) {
+	if (c >= '0' && c <= '9') return c - '0';
+	if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+	if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+	return -1;
+}
+
+bool hifi_party_parse_secret(const char *s, uint8_t secret[HIFI_PARTY_SECRET]) {
+	if (!s || strlen(s) != 2 * HIFI_PARTY_SECRET) return false;
+	uint8_t k[HIFI_PARTY_SECRET];
+	for (int i = 0; i < HIFI_PARTY_SECRET; i++) {
+		int hi = hexval(s[2 * i]), lo = hexval(s[2 * i + 1]);
+		if (hi < 0 || lo < 0) {
+			hifi_link_wipe(k, sizeof(k));
+			return false;
+		}
+		k[i] = (uint8_t) (hi << 4 | lo);
+	}
+	memcpy(secret, k, sizeof(k));
+	hifi_link_wipe(k, sizeof(k));
+	return true;
+}
+
 /* ------------------------------------------------------------ the group */
 
 /* a's rank is above (picked, term, ip) */

@@ -233,6 +233,11 @@ typedef struct {
 	 * stops or reads one. Returns the HTTP status with the reply in out;
 	 * NULL outside a lab build: 404 */
 	int (*lab)(bool post, const char *body, char *out, size_t cap);
+	/* party mode (esp/hifi_party_esp.c): sub is "" for party, "stats" for
+	 * party/stats; lan says the request came from port 80 (it may switch
+	 * party on and off and pick the leader, not set the key). Returns the
+	 * HTTP status with the reply in out; NULL: 404 */
+	int (*party)(const char *sub, bool post, bool lan, const char *body, char *out, size_t cap);
 	/* on-board diagnostics (hifi_diag.h); NULL: diag answers 404 */
 	const hifi_diag_ops_t *diag;
 } hifi_ops_t;

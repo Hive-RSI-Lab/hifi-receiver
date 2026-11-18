@@ -9,6 +9,8 @@
  *   tcp 5000  AirPlay (RTSP)
  *   udp 5353  mDNS
  *   udp 68    the DHCP client
+ *   udp 4951  party mode, only while it is switched on (bound to the station's
+ *             address; every datagram's tag is checked under the Hive key)
  *   udp 67, 53  DHCP server and captive-portal DNS, only while the setup AP is up
  *   udp 49152-65535: reply ports lwIP hands to clients (DNS, SNTP,
  *             squeezelite discovery, AirPlay's RTP while it plays)

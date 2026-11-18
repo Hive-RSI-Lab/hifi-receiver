@@ -98,6 +98,7 @@ typedef enum {
 
 /* flags of an AUDIO packet */
 #define HIFI_PARTY_F_SILENCE 1 /* silence (the leader's player paused or idle): n frames of it, no samples sent */
+#define HIFI_PARTY_F_MARKS 2   /* the stream carries the test tone's markers (a follower looks for them) */
 /* flags of a CLOCK */
 #define HIFI_PARTY_F_NOAUDIO 1 /* the leader sends no audio (its output stopped, or a rate party can't carry) */
 

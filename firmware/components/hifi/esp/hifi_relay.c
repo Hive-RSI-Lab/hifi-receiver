@@ -443,6 +443,7 @@ static void relay_task(void *arg) {
 	for (;;) {
 		vTaskDelay(pdMS_TO_TICKS(2000));
 		hifi_diag_tick();
+		hifi_party_poll();
 		uint32_t now = esp_timer_get_time() / 1000000;
 		bool up = hifi_net_ip(NULL, 0);
 		hifi_listen_tick(up);

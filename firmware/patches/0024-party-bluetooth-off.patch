@@ -1,0 +1,127 @@
+diff --git a/components/driver_bt/bt_app_core.c b/components/driver_bt/bt_app_core.c
+--- a/components/driver_bt/bt_app_core.c
++++ b/components/driver_bt/bt_app_core.c
+@@ -56,7 +56,7 @@
+ 
+ static bool bt_app_send_msg(bt_app_msg_t *msg)
+ {
+-    if (msg == NULL) {
++    if (msg == NULL || s_bt_app_task_queue == NULL) {
+         return false;
+     }
+ 
+@@ -177,6 +177,7 @@
+ 
+ exit:
+ 	vQueueDelete(s_bt_app_task_queue);
++	s_bt_app_task_queue = NULL;
+ 	running = false;		
+     vTaskDelete(NULL);
+ }
+@@ -189,4 +190,8 @@
+ void bt_app_task_shut_down(void)
+ {
+ 	running = false;
++	/* hifi: wake the task, which otherwise waits for a message before it
++	 * sees running is false and stops the stack (party switches the sink
++	 * off and on without a reboot) */
++	if (s_bt_app_task_queue) bt_app_work_dispatch(NULL, 0, NULL, 0, NULL);
+ }
+diff --git a/components/driver_bt/bt_app_sink.c b/components/driver_bt/bt_app_sink.c
+--- a/components/driver_bt/bt_app_sink.c
++++ b/components/driver_bt/bt_app_sink.c
+@@ -665,9 +665,16 @@
+ {
+ 	s_sink_active = false;
+ 	s_remote_connected = false;
++	s_audio = AUDIO_IDLE;
+ 	bt_app_task_shut_down();
+ }
+ 
++/* hifi: the controller has stopped (squeezelite has no esp_bt.h to ask) */
++bool bt_sink_controller_idle(void)
++{
++	return esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_IDLE;
++}
++
+ /* hifi: the Classic ACL links up here, as Bluedroid's GAP events tell this
+  * callback (on Bluedroid's task): a source that is pairing or connecting
+  * has its ACL up before any A2DP event. hifi_bt_sink_acl reads it */
+diff --git a/components/squeezelite/decode_external.c b/components/squeezelite/decode_external.c
+--- a/components/squeezelite/decode_external.c
++++ b/components/squeezelite/decode_external.c
+@@ -540,6 +540,56 @@
+ }
+ #endif
+ 
++#if CONFIG_BT_SINK
++/* hifi: party switches the Bluetooth sink off on every member while it is
++ * on (Bluetooth and the group's Wi-Fi share one radio) and back on after.
++ * Waits for the stack to stop, up to about 3 s; not for the audio task */
++#include "freertos/task.h"
++extern bool bt_sink_controller_idle(void); /* driver_bt/bt_app_sink.c */
++#include "esp_wifi.h"
++static bool bt_sink_off;
++bool hifi_bt_sink_set(bool on) {
++	if (!enable_bt_sink || strcasestr(output.device, "BT")) return false;
++	if (on == !bt_sink_off) return true;
++	if (!on) {
++		LOCK_O;
++		if (output.external == DECODE_BT) {
++			_buf_flush(outputbuf);
++			if (output.state > OUTPUT_STOPPED) output.state = OUTPUT_STOPPED;
++			output.external = 0;
++			output.stop_time = gettime_ms();
++			sink_state = SINK_ABORT;
++		}
++		UNLOCK_O;
++		bt_sink_deinit();
++		bt_sink_off = true;
++		for (int i = 0; i < 30 && !bt_sink_controller_idle(); i++)
++			vTaskDelay(pdMS_TO_TICKS(100));
++		LOG_INFO("Bluetooth sink off for party");
++		return bt_sink_controller_idle();
++	}
++	if (!bt_sink_controller_idle()) return false;
++	/* the coexistence code won't start the controller with power save off */
++	wifi_ps_type_t ps;
++	if (esp_wifi_get_ps(&ps) == ESP_OK && ps == WIFI_PS_NONE) esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
++	bt_sink_init(bt_sink_cmd_handler, bt_sink_data_handler);
++	bt_sink_off = false;
++	LOG_INFO("Bluetooth sink back on after party");
++	return true;
++}
++
++/* hifi: the sink is switched off by party */
++bool hifi_bt_sink_is_off(void) {
++	return bt_sink_off;
++}
++
++/* hifi: a board that boots with party on as a follower never starts the
++ * sink (called before register_external; hifi_bt_sink_set(true) starts it) */
++void hifi_bt_sink_boot_off(void) {
++	bt_sink_off = true;
++}
++#endif
++
+ /****************************************************************************************
+  * We provide the generic codec register option
+  */
+@@ -550,7 +600,7 @@
+ 	if ((p = config_alloc_get(NVS_TYPE_STR, "enable_bt_sink")) != NULL) {
+ 		enable_bt_sink = !strcmp(p,"1") || !strcasecmp(p,"y");
+ 		free(p);
+-		if (!strcasestr(output.device, "BT") && enable_bt_sink) {
++		if (!strcasestr(output.device, "BT") && enable_bt_sink && !bt_sink_off) {
+ 			bt_sink_init(bt_sink_cmd_handler,  bt_sink_data_handler);
+ 		}	
+ 	}
+@@ -581,7 +631,7 @@
+ 
+ void deregister_external(void) {
+ #if CONFIG_BT_SINK
+-	if (!strcasestr(output.device, "BT") && enable_bt_sink) {
++	if (!strcasestr(output.device, "BT") && enable_bt_sink && !bt_sink_off) {
+ 		bt_sink_deinit();
+ 	}
+ #endif

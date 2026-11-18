@@ -3,9 +3,10 @@
 # host-tested (firmware/test); esp/ ties it to ESP-IDF and squeezelite-esp32.
 set(srcs
 	core/hifi_api.c core/hifi_b64.c core/hifi_boot.c core/hifi_capture.c core/hifi_diag.c core/hifi_exp.c core/hifi_gate.c
-	core/hifi_gov.c core/hifi_ir.c core/hifi_json.c core/hifi_lab.c core/hifi_line.c core/hifi_link.c core/hifi_listen.c core/hifi_meta.c core/hifi_ota.c core/hifi_pd.c
+	core/hifi_gov.c core/hifi_ir.c core/hifi_json.c core/hifi_lab.c core/hifi_line.c core/hifi_link.c core/hifi_listen.c core/hifi_meta.c core/hifi_ota.c core/hifi_party.c
+	core/hifi_party_group.c core/hifi_party_sync.c core/hifi_pd.c
 	core/hifi_power.c core/hifi_remote.c core/hifi_scan.c core/hifi_sha256.c core/hifi_tap.c core/hifi_tone.c core/hifi_update.c
-	core/hifi_chan.c core/hifi_vol.c core/hifi_ws_proto.c esp/hifi_main.c esp/hifi_crash.c esp/hifi_diag_esp.c esp/hifi_http.c esp/hifi_listen_esp.c esp/hifi_net.c esp/hifi_relay.c esp/hifi_ws.c)
+	core/hifi_chan.c core/hifi_vol.c core/hifi_ws_proto.c esp/hifi_main.c esp/hifi_crash.c esp/hifi_diag_esp.c esp/hifi_http.c esp/hifi_listen_esp.c esp/hifi_net.c esp/hifi_party_esp.c esp/hifi_relay.c esp/hifi_ws.c)
 
 # the board's own code (esp/hifi_bsp.h), from the Kconfig board choice
 if(CONFIG_HIFI_PLUS OR CONFIG_HIFI_ULTRA)
@@ -16,8 +17,7 @@ endif()
 
 # the lab build (board/lite-lab): experiments a signed command starts and stops
 if(CONFIG_HIFI_LAB)
-	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c esp/lab_forge.c esp/lab_wifidrop.c
-		core/hifi_party.c core/hifi_party_sync.c esp/lab_party.c)
+	list(APPEND srcs esp/hifi_lab_esp.c esp/lab_espnow.c esp/lab_lanscan.c esp/lab_forge.c esp/lab_wifidrop.c)
 	# reads the board's I2C chips through hive-fw's i2c-device driver (esp/i2cdev)
 	list(APPEND srcs esp/lab_i2c.c esp/i2cdev/i2cdev.c esp/i2cdev/i2cdev_esp.c)
 	set(lab_inc esp/i2cdev)
@@ -68,6 +68,12 @@ endif()
 
 target_compile_options(${COMPONENT_LIB} PRIVATE -Wall -Wno-format-truncation)
 
+# party mode carries 16-bit frames; squeezelite built 32-bit (DEPTH 32) calls
+# none of its output hooks (patches/0021), so party says it can't play there
+if(DEFINED DEPTH AND DEPTH EQUAL 32)
+	target_compile_definitions(${COMPONENT_LIB} PRIVATE HIFI_PARTY_NO_AUDIO=1)
+endif()
+
 # esp/hifi_crash.c keeps a copy of everything the console prints (crash
 # reports included) across a restart, by wrapping the UART's FIFO write
 target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=uart_hal_write_txfifo")
@@ -80,6 +86,6 @@ target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=esp_restart")
 # gate and leave port 80 open (security.md L1)
 foreach(sym hifi_lan_register hifi_lan_command_ok hifi_lan_config_ok hifi_lan_config_secret
 	    hifi_ap_password_pick hifi_ap_password_make hifi_ap_due hifi_http_register
-	    hifi_restart_note)
+	    hifi_restart_note hifi_party_i2s_restart hifi_party_i2s_block hifi_party_i2s_wrote)
 	target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,-u,${sym}")
 endforeach()

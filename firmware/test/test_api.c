@@ -514,7 +514,7 @@ static void selftest(void) {
 
 static void console(void) {
 	const char *method, *path;
-	char body[256], msg[512];
+	char body[256], msg[1024];
 #define CLI(...)                                                                     \
 	({                                                                           \
 		const char *argv_[] = {__VA_ARGS__};                                 \
@@ -587,6 +587,20 @@ static void console(void) {
 	CHECK(!CLI("led", "on"));
 	CHECK(!CLI("backlight", "test"));
 	CHECK(!CLI("backlight"));
+	CHECK(CLI("party"));
+	CHECK_STR(method, "GET");
+	CHECK_STR(path, "/api/v1/party");
+	CHECK(CLI("party", "stats"));
+	CHECK_STR(method, "GET");
+	CHECK_STR(path, "/api/v1/party/stats");
+	CHECK(CLI("party", "lead"));
+	CHECK_STR(method, "POST");
+	CHECK_STR(path, "/api/v1/party");
+	CHECK_STR(body, "{\"op\":\"lead\"}");
+	CHECK(CLI("party", "off"));
+	CHECK_STR(body, "{\"op\":\"off\"}");
+	CHECK(!CLI("party", "key"));
+	CHECK(!CLI("party", "on", "now"));
 	/* i2c isn't an API request: the console handles it (hifi_i2c_cli) */
 	CHECK(!CLI("i2c", "0x20", "0"));
 	CHECK_HAS(msg, "i2c <addr> <reg> [val]");
@@ -644,6 +658,15 @@ static int c_set_backlight(const char *mode) {
 	snprintf(c.backlight, sizeof(c.backlight), "%s", mode);
 	return 0;
 }
+static char party_sub[16];
+static bool party_post, party_lan;
+static int c_party(const char *sub, bool post, bool lan, const char *body, char *o, size_t cap) {
+	(void)body;
+	snprintf(party_sub, sizeof(party_sub), "%s", sub);
+	party_post = post, party_lan = lan;
+	snprintf(o, cap, "{\"on\":false}");
+	return 200;
+}
 static int c_wifi_scan(hifi_wifi_ap_t *aps, int max) {
 	if (c.scan_busy) return -1;
 	CHECK(max == HIFI_WIFI_SCAN_MAX);
@@ -683,7 +706,7 @@ static const hifi_ops_t core_ops = {
 	.set_volume = m_set_volume, .ir_learn = m_ir_learn, .ir_forget = m_ir_forget,
 	.wifi_scan = c_wifi_scan, .wifi_forget = c_wifi_forget, .set_zone = c_set_zone,
 	.update_check = c_update_check, .update_start = c_update_start, .set_led = c_set_led,
-	.set_backlight = c_set_backlight, .ota_status = c_ota_status};
+	.set_backlight = c_set_backlight, .ota_status = c_ota_status, .party = c_party};
 
 static int ccall(const char *method, const char *path, const char *body) {
 	int st = hifi_api_handle(&core_ops, method, path, body, out, sizeof(out));
@@ -699,6 +722,17 @@ static void core_routes(void) {
 	CHECK_STR(out, "{\"error\":\"this model has one zone\"}");
 	CHECK(call("GET", "/api/v1/update/check", NULL) == 404);
 	CHECK(call("POST", "/api/v1/update", "{\"url\":\"http://h/a.bin\"}") == 404);
+	CHECK(call("GET", "/api/v1/party", NULL) == 404);
+	CHECK_HAS(out, "no party mode");
+
+	/* party: the route hands the sub-path and the source to the op */
+	CHECK(ccall("GET", "/api/v1/party", NULL) == 200 && !party_post && !strcmp(party_sub, ""));
+	CHECK(ccall("GET", "/api/v1/party/stats", NULL) == 200 && !strcmp(party_sub, "stats"));
+	CHECK(ccall("POST", "/api/v1/party", "{\"op\":\"on\"}") == 200 && party_post && !party_lan);
+	CHECK(hifi_api_handle_from(&core_ops, HIFI_SRC_LAN, "POST", "/api/v1/party", "{\"op\":\"off\"}", out, sizeof(out)) == 200);
+	CHECK(party_lan);
+	CHECK(ccall("DELETE", "/api/v1/party", NULL) == 405);
+	CHECK(ccall("GET", "/api/v1/partyx", NULL) == 404);
 
 	CHECK(ccall("GET", "/api/v1/wifi/scan", NULL) == 200);
 	CHECK_STR(out, "{\"networks\":[{\"ssid\":\"home\",\"rssi\":-48,\"secure\":true},"

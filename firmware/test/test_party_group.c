@@ -726,6 +726,22 @@ static void units(void) {
 	hifi_party_announce_key(s1, k2);
 	CHECK(memcmp(k1, k2, 16));
 	CHECK(hifi_party_secret_id(s1) == hifi_party_secret_id(s1));
+	{ /* the secret as the Hive gives it: 64 hex digits, nothing else */
+		char hex[65];
+		uint8_t got[32], want[32];
+		for (int i = 0; i < 32; i++) {
+			want[i] = (uint8_t) (i * 37 + 5);
+			snprintf(hex + 2 * i, 3, i & 1 ? "%02X" : "%02x", want[i]);
+		}
+		CHECK(hifi_party_parse_secret(hex, got) && !memcmp(got, want, 32));
+		memset(got, 0x55, 32);
+		hex[63] = 'g';
+		CHECK(!hifi_party_parse_secret(hex, got));
+		hex[63] = 0;
+		CHECK(!hifi_party_parse_secret(hex, got));
+		CHECK(!hifi_party_parse_secret("", got) && !hifi_party_parse_secret(NULL, got));
+		CHECK(got[0] == 0x55 && got[31] == 0x55); /* untouched on a failure */
+	}
 	/* HMAC-SHA256 itself, RFC 4231 case 2 does not fit a 32 B key; check
 	 * the construction against a key of 0x0b * 32 computed with OpenSSL:
 	 * HMAC(key, "hifi-party-id-v1")[0] */

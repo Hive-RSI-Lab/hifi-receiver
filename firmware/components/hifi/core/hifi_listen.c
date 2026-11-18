@@ -9,6 +9,7 @@ bool hifi_listen_allowed(const hifi_sock_t *s, bool ap_on) {
 	if (s->loopback) return true;
 	if (s->tcp) return s->port == 80 || s->port == 5000;
 	if (s->port == 5353 || s->port == 68) return true;
+	if (s->port == 4951) return true; /* party mode (HIFI_PARTY_PORT), while it is on */
 	if (s->port == 67 || s->port == 53) return ap_on;
 	return s->port >= EPHEMERAL_LO; /* a client's reply port */
 }

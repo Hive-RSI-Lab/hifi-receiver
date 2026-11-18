@@ -186,6 +186,9 @@ bool hifi_party_same_subnet(uint32_t ip, uint32_t self_ip, uint32_t mask);
 void hifi_party_group_key(const uint8_t secret[HIFI_PARTY_SECRET], uint32_t group, uint8_t key[HIFI_LINK_KEY]);
 void hifi_party_announce_key(const uint8_t secret[HIFI_PARTY_SECRET], uint8_t key[HIFI_LINK_KEY]);
 uint8_t hifi_party_secret_id(const uint8_t secret[HIFI_PARTY_SECRET]);
+/* the secret from 64 hex digits (as the Hive gives it and NVS keeps it);
+ * false, and secret untouched, for anything else */
+bool hifi_party_parse_secret(const char *s, uint8_t secret[HIFI_PARTY_SECRET]);
 
 /* The leader's announce: the packet header (type, group, term, TSF, n,
  * flags) and its payload. */

@@ -1,6 +1,6 @@
 /*
  * Party mode: one board's clocks, without the radio or the I2S driver. This is
- * the part of lab_party.c that turns timestamps into "which stream frame
+ * the part of esp/hifi_party_esp.c that turns timestamps into "which stream frame
  * should this block start with", moved here so the host simulation
  * (test/sim_party.c) runs the same code the board does.
  *
