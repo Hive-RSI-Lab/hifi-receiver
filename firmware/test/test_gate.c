@@ -521,10 +521,12 @@ int main(void) {
 	CHECK(hifi_gate_cross_path("/api/v1/peers", "GET"));
 	CHECK(hifi_gate_cross_path("/api/v1/party", "GET"));
 	CHECK(hifi_gate_cross_path("/api/v1/volume", "POST"));
-	CHECK(hifi_gate_cross_path("/api/v1/name", "POST"));
 	CHECK(hifi_gate_cross_path("/api/v1/control", "POST"));
 	CHECK(hifi_gate_cross_path("/api/v1/party", "POST"));
-	CHECK(hifi_gate_cross_path("/api/v1/bt/pair", "POST"));
+	/* rename and pairing stay same-origin (the card opens that box's page) */
+	CHECK(!hifi_gate_cross_path("/api/v1/name", "POST"));
+	CHECK(!hifi_gate_cross_path("/api/v1/bt/pair", "POST"));
+	CHECK(!hifi_gate_cross_path("/api/v1/bt/pair?on=1", "POST"));
 	CHECK(!hifi_gate_cross_path("/api/v1/state/", "GET"));
 	CHECK(!hifi_gate_cross_path("/api/v1/state/../wifi", "GET"));
 	CHECK(!hifi_gate_cross_path("/api/v1/state/Party", "GET"));
@@ -555,5 +557,8 @@ int main(void) {
 	CHECK(!hifi_gate_allow_cross("192.168.1.50", "", names, 2, NET, M24, "/api/v1/peers", "GET"));
 	CHECK(!hifi_gate_allow_cross("192.168.1.50", "http://192.168.9.20", names, 2, NET, M24, "/api/v1/peers", "GET"));
 	CHECK(!hifi_gate_allow_cross("192.168.1.50", "http://nas.local", names, 2, NET, M24, "/api/v1/volume", "POST"));
+	/* a speaker's own page may not open pairing or rename another box */
+	CHECK(!hifi_gate_allow_cross("192.168.1.50", "http://192.168.1.20", names, 2, NET, M24, "/api/v1/bt/pair", "POST"));
+	CHECK(!hifi_gate_allow_cross("192.168.1.50", "http://hifi-lite.local", names, 2, NET, M24, "/api/v1/name", "POST"));
 	return check_report("gate");
 }

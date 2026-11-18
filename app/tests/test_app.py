@@ -431,10 +431,11 @@ class House:
         with OPEN(self.urls[who] + "api/v1/" + path) as r:
             return json.loads(r.read())
 
-    def post(self, who, path, body, ctype="text/plain"):
+    def post(self, who, path, body, ctype="text/plain", same_origin=False):
         # text/plain, as the app sends to another speaker: a simple request, no preflight
+        origin = (self.urls[who] if same_origin else self.url).rstrip("/")
         req = urllib.request.Request(self.urls[who] + "api/v1/" + path, json.dumps(body).encode(),
-                                     {"Content-Type": ctype, "Origin": self.url.rstrip("/")})
+                                     {"Content-Type": ctype, "Origin": origin})
         try:
             with OPEN(req) as r:
                 return r.status, json.loads(r.read()), r.headers
@@ -485,14 +486,23 @@ class HouseAPI(unittest.TestCase):
             self.assertFalse(self.h.get(who, "party")["on"])
 
     def test_pairing_starts_and_stops_and_a_follower_has_no_bluetooth(self):
-        s, b, _ = self.h.post("Bedroom", "bt/pair", {})
+        # on the speaker's own page: another speaker's page may not open pairing
+        s, b, _ = self.h.post("Bedroom", "bt/pair", {}, same_origin=True)
         self.assertEqual(s, 200)
         self.assertEqual(set(b), {"bt"})
         self.assertTrue(b["bt"]["pairing"])
         self.assertEqual(b["bt"]["pairing_left_s"], 120)
         self.assertEqual(self.h.get("Bedroom", "state/bt"), b)
-        self.assertFalse(self.h.post("Bedroom", "bt/pair", {"on": False})[1]["bt"]["pairing"])
-        self.assertEqual(self.h.post("Living room", "bt/pair", {})[0], 409)  # it follows Kitchen
+        self.assertFalse(self.h.post("Bedroom", "bt/pair", {"on": False}, same_origin=True)[1]["bt"]["pairing"])
+        self.assertEqual(self.h.post("Living room", "bt/pair", {}, same_origin=True)[0], 409)  # it follows Kitchen
+
+    def test_another_speakers_page_may_not_rename_or_open_pairing(self):
+        for path, body in (("name", {"name": "Hacked"}), ("bt/pair", {}), ("bt/pair", {"on": True})):
+            s, b, _ = self.h.post("Bedroom", path, body)
+            self.assertEqual(s, 403, path)
+        self.assertFalse(self.h.get("Bedroom", "state/bt")["bt"]["pairing"])
+        self.assertEqual(self.h.get("Bedroom", "info")["name"], "Bedroom")
+        self.assertEqual(self.h.post("Bedroom", "name", {"name": "Bedroom"}, same_origin=True)[0], 200)
         self.assertFalse(self.h.get("Living room", "state/bt")["bt"]["on"])
 
 
