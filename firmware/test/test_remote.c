@@ -783,15 +783,18 @@ static void test_wifi_remote_api(void) {
 	CHECK_STR(wifi_ssid, "012345678901234567890123456789\xc3\xa9");
 	{
 		char b[256], pw[80];
+		char good[80];
+		memset(good, 'q', 64);
+		good[64] = '\0';
+		snprintf(b, sizeof(b), "{\"ssid\":\"home\",\"password\":\"%s\"}", good);
+		CHECK(api("POST", "/api/v1/wifi", b) == 200);
+		CHECK_STR(wifi_pw, good);
 		memset(pw, 'p', 64);
 		pw[64] = '\0';
-		snprintf(b, sizeof(b), "{\"ssid\":\"home\",\"password\":\"%s\"}", pw);
-		CHECK(api("POST", "/api/v1/wifi", b) == 200);
-		CHECK(strlen(wifi_pw) == 64);
 		snprintf(b, sizeof(b), "{\"ssid\":\"home\",\"password\":\"%s\\/\"}", pw);
 		CHECK(api("POST", "/api/v1/wifi", b) == 400);
 		CHECK_HAS(out, "password must be 64");
-		CHECK(strlen(wifi_pw) == 64); /* the last good one, not a cut one */
+		CHECK_STR(wifi_pw, good); /* the last good one, not the cut 64 p's */
 	}
 	CHECK(api("POST", "/api/v1/wifi", "{\"ssid\":\"home\",\"password\":\"p w\\\"x\"}") == 200);
 	CHECK(api("GET", "/api/v1/remote", NULL) == 200);

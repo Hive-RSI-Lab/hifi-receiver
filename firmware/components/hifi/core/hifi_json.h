@@ -44,7 +44,8 @@ bool hj_get_str(const char *json, const char *key, char *out, size_t n);
  * SSID, a name): HJ_STR_OK when the whole decoded string fit in out,
  * HJ_STR_NONE when the key is missing or not a string, HJ_STR_CUT when it
  * didn't fit. A missing key leaves out as it was (the caller's default); a
- * cut one leaves it "", never a prefix of the value. Escapes count as the bytes
+ * cut one leaves it "", never a prefix of the value. Text that isn't a valid
+ * object is HJ_STR_NONE with out "" (default lost), as hj_get_str leaves it. Escapes count as the bytes
  * they decode to, so the limit is the same whatever way a client writes it. */
 enum { HJ_STR_CUT = -1, HJ_STR_NONE = 0, HJ_STR_OK = 1 };
 int hj_get_str_fit(const char *json, const char *key, char *out, size_t n);

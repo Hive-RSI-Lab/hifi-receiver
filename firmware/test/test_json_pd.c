@@ -129,7 +129,7 @@ static void reader(void) {
 		CHECK(hj_get_str_fit("{\"s\":\"abc\\u00e9\"}", "s", f, sizeof(f)) == HJ_STR_CUT && !f[0]);
 		CHECK(hj_get_str_fit("{\"s\":\"\\ud83d\\ude00\"}", "s", f, sizeof(f)) == HJ_STR_OK && !strcmp(f, "\xf0\x9f\x98\x80"));
 		CHECK(hj_get_str_fit("{\"s\":\"a\\ud83d\\ude00\"}", "s", f, sizeof(f)) == HJ_STR_CUT && !f[0]);
-		CHECK(hj_get_str_fit("{\"s\":\"ab\xc3\xa9\"}", "s", f, sizeof(f)) == HJ_STR_OK);
+		CHECK(hj_get_str_fit("{\"s\":\"ab\xc3\xa9\"}", "s", f, sizeof(f)) == HJ_STR_OK && !strcmp(f, "ab\xc3\xa9"));
 		CHECK(hj_get_str_fit("{\"s\":\"abc\xc3\xa9\"}", "s", f, sizeof(f)) == HJ_STR_CUT && !f[0]);
 		/* missing or not a string: the caller's default stays */
 		strcpy(f, "dflt");
