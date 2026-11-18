@@ -452,5 +452,108 @@ int main(void) {
 	CHECK(!hifi_ap_due(HIFI_AP_AFTER_US - 1, 0));
 	CHECK(hifi_ap_due(HIFI_AP_AFTER_US, 0));
 	CHECK(!hifi_ap_due(HIFI_AP_AFTER_US + 5, 10));
+
+	/* the Speakers app: a page another box served may drive this one.
+	 * This box: 192.168.1.50/24 (O: origin check on that subnet) */
+#define NET 0xC0A80132u
+#define M24 0xFFFFFF00u
+#define O(x) hifi_gate_lan_origin(x, NET, M24)
+	CHECK(O("http://192.168.1.20"));
+	CHECK(O("http://192.168.1.20:80"));
+	CHECK(O("http://192.168.1.255:8080"));
+	CHECK(O("http://hifi-lite.local"));
+	CHECK(O("http://hifi-plus.local"));
+	CHECK(O("http://hifi-ultra.local:80"));
+	CHECK(O("HTTP://HiFi-Lite-2.LOCAL"));
+	CHECK(O("http://hifi-lite-12.local"));
+	/* private, but not this subnet: another LAN segment, a VPN, a router's
+	 * other side */
+	CHECK(!O("http://192.168.2.20"));
+	CHECK(!O("http://10.1.2.3"));
+	CHECK(!O("http://172.16.0.9"));
+	CHECK(!O("http://169.254.7.7"));
+	CHECK(hifi_gate_lan_origin("http://10.1.2.3", 0x0A000001u, 0xFF000000u));
+	CHECK(hifi_gate_lan_origin("http://172.31.255.1:8080", 0xAC1F0001u, 0xFFFF0000u));
+	CHECK(hifi_gate_lan_origin("http://169.254.7.7", 0xA9FE0101u, 0xFFFF0000u));
+	/* a public subnet (a misconfigured LAN) is still not private */
+	CHECK(!hifi_gate_lan_origin("http://8.8.8.9", 0x08080808u, M24));
+	/* no address yet: no IPv4 origin passes; a speaker's name still does */
+	CHECK(!hifi_gate_lan_origin("http://192.168.1.20", 0, 0));
+	CHECK(hifi_gate_lan_origin("http://hifi-lite.local", 0, 0));
+	/* .local names other than a speaker's: a printer's or a NAS's page */
+	CHECK(!O("http://Kitchen-2.LOCAL:80"));
+	CHECK(!O("http://printer.local"));
+	CHECK(!O("http://hifi-lite-.local"));
+	CHECK(!O("http://hifi-lite-0.local"));
+	CHECK(!O("http://hifi-lite-12345.local"));
+	CHECK(!O("http://hifi-litex.local"));
+	CHECK(!O("http://hifi-lite-2x.local"));
+	CHECK(!O("http://hifi.local"));
+	CHECK(!O(NULL));
+	CHECK(!O(""));
+	CHECK(!O("null"));
+	CHECK(!O("http://8.8.8.8"));
+	CHECK(!O("http://192.169.1.1"));
+	CHECK(!O("http://192.168.1.256"));
+	CHECK(!O("https://192.168.1.20"));
+	CHECK(!O("ftp://192.168.1.20"));
+	CHECK(!O("http://192.168.1.20/"));
+	CHECK(!O("http://192.168.1.20/x"));
+	CHECK(!O("http://user@192.168.1.20"));
+	CHECK(!O("http://192.168.1.20.evil.example"));
+	CHECK(!O("http://hifi-lite.local."));
+	CHECK(!O("http://a.hifi-lite.local"));
+	CHECK(!O("http://hifi-lite.local.evil.example"));
+	CHECK(!O("http://.local"));
+	CHECK(!O("http://evil.example"));
+	CHECK(!O("http://localhost"));
+	CHECK(!O("http://[fe80::1]"));
+	CHECK(!O("http://192.168.1.20?x"));
+	CHECK(hifi_gate_private_v4("192.168.0.1") && hifi_gate_private_v4("169.254.1.1"));
+	CHECK(!hifi_gate_private_v4("8.8.8.8") && !hifi_gate_private_v4("hifi-lite") && !hifi_gate_private_v4(NULL));
+	CHECK(hifi_gate_on_net("192.168.1.7", NET, M24) && !hifi_gate_on_net("192.168.3.7", NET, M24));
+	CHECK(!hifi_gate_on_net("192.168.1.7", NET, 0));
+#undef O
+	CHECK(hifi_gate_cross_path("/api/v1/info", "GET"));
+	CHECK(hifi_gate_cross_path("/api/v1/state", "GET"));
+	CHECK(hifi_gate_cross_path("/api/v1/state/party", "GET"));
+	CHECK(hifi_gate_cross_path("/api/v1/state/power_in?x=1", "GET"));
+	CHECK(hifi_gate_cross_path("/api/v1/peers", "GET"));
+	CHECK(hifi_gate_cross_path("/api/v1/party", "GET"));
+	CHECK(hifi_gate_cross_path("/api/v1/volume", "POST"));
+	CHECK(hifi_gate_cross_path("/api/v1/name", "POST"));
+	CHECK(hifi_gate_cross_path("/api/v1/control", "POST"));
+	CHECK(hifi_gate_cross_path("/api/v1/party", "POST"));
+	CHECK(hifi_gate_cross_path("/api/v1/bt/pair", "POST"));
+	CHECK(!hifi_gate_cross_path("/api/v1/state/", "GET"));
+	CHECK(!hifi_gate_cross_path("/api/v1/state/../wifi", "GET"));
+	CHECK(!hifi_gate_cross_path("/api/v1/state/Party", "GET"));
+	CHECK(!hifi_gate_cross_path("/api/v1/peers/x", "GET"));
+	CHECK(!hifi_gate_cross_path("/api/v1/peersx", "GET"));
+	CHECK(!hifi_gate_cross_path("/api/v1/wifi", "POST"));
+	CHECK(!hifi_gate_cross_path("/api/v1/update", "POST"));
+	CHECK(!hifi_gate_cross_path("/api/v1/reboot", "POST"));
+	CHECK(!hifi_gate_cross_path("/api/v1/factory_reset", "POST"));
+	CHECK(!hifi_gate_cross_path("/api/v1/remote", "POST"));
+	CHECK(!hifi_gate_cross_path("/api/v1/crash", "GET"));
+	CHECK(!hifi_gate_cross_path("/api/v1/info", "POST"));
+	CHECK(!hifi_gate_cross_path("/api/v1/volume", "GET"));
+	CHECK(!hifi_gate_cross_path("/api/v1/volume", "PUT"));
+	CHECK(!hifi_gate_cross_path("/api/v1/volume", "OPTIONS"));
+	CHECK(!hifi_gate_cross_path("/config.json", "GET"));
+	CHECK(!hifi_gate_cross_path("/api/v2/info", "GET"));
+	CHECK(!hifi_gate_cross_path("/api/v1/info#x", "GET"));
+	CHECK(!hifi_gate_cross_path(NULL, "GET"));
+	CHECK(!hifi_gate_cross_path("/api/v1/info", NULL));
+	/* the Host test still applies: no DNS rebinding through it */
+	CHECK(hifi_gate_allow_cross("192.168.1.50", "http://192.168.1.20", names, 2, NET, M24, "/api/v1/peers", "GET"));
+	CHECK(hifi_gate_allow_cross("hifi-lite-4.local", "http://hifi-lite.local", names, 2, NET, M24, "/api/v1/party", "POST"));
+	CHECK(!hifi_gate_allow_cross("evil.example", "http://192.168.1.20", names, 2, NET, M24, "/api/v1/peers", "GET"));
+	CHECK(!hifi_gate_allow_cross("192.168.1.50", "http://evil.example", names, 2, NET, M24, "/api/v1/peers", "GET"));
+	CHECK(!hifi_gate_allow_cross("192.168.1.50", "http://192.168.1.20", names, 2, NET, M24, "/api/v1/wifi", "POST"));
+	CHECK(!hifi_gate_allow_cross("192.168.1.50", NULL, names, 2, NET, M24, "/api/v1/peers", "GET"));
+	CHECK(!hifi_gate_allow_cross("192.168.1.50", "", names, 2, NET, M24, "/api/v1/peers", "GET"));
+	CHECK(!hifi_gate_allow_cross("192.168.1.50", "http://192.168.9.20", names, 2, NET, M24, "/api/v1/peers", "GET"));
+	CHECK(!hifi_gate_allow_cross("192.168.1.50", "http://nas.local", names, 2, NET, M24, "/api/v1/volume", "POST"));
 	return check_report("gate");
 }

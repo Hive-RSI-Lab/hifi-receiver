@@ -1,0 +1,209 @@
+The Bluetooth sink is hidden unless pairing mode is on, and a chime output.
+
+- bt_app_sink.c: idle, the sink is connectable but not discoverable, so
+  phones already paired reconnect and a new one can't find it.
+  bt_sink_set_discoverable() turns pairing mode on (dropping a connected
+  phone first) or off; a phone connecting turns it off. The firmware times
+  it (components/hifi/core/hifi_pair.h) and hears of connects and
+  disconnects through the weak hifi_bt_link() (its chimes).
+- decode_external.c: DECODE_HIFI_CHIME, a short chime at the volume
+  (hifi_chime_sink_start). hifi_source_decide lets every source's event
+  through while a chime owns the output, so a phone's audio starting just
+  after the connect chime is never refused.
+
+diff --git a/components/driver_bt/bt_app_sink.c b/components/driver_bt/bt_app_sink.c
+--- a/components/driver_bt/bt_app_sink.c
++++ b/components/driver_bt/bt_app_sink.c
+@@ -154,17 +154,45 @@
+ static TimerHandle_t s_idle_timer;
+ static int s_idle_s;
+ 
+-/* hifi: let a new phone pair (play button held). Dropping the connected
+- * phone leaves the sink discoverable, as a disconnect always does here.
+- * False when the Bluetooth sink is not running, so the button keeps its
+- * usual meaning */
+-bool bt_sink_pair_mode(void) {
++/* hifi: the sink is hidden (connectable, not discoverable) unless pairing
++ * mode is on: phones already paired reconnect as before, a new one only
++ * finds it while the owner asked (hifi_pair.h; the firmware times it). A
++ * phone connecting ends pairing mode */
++static volatile bool s_discoverable;
++
++static void scan_idle(void) {
++	esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, s_discoverable ? ESP_BT_GENERAL_DISCOVERABLE : ESP_BT_NON_DISCOVERABLE);
++}
++
++/* the firmware hears of a phone connecting or going (its chimes); weak, as
++ * the sink runs without it */
++extern void hifi_bt_link(bool up) __attribute__((weak));
++
++/* hifi: pairing mode on or off. On drops a connected phone first (only one
++ * can be connected, and a connected sink is hidden), and the disconnect
++ * makes it discoverable. False when the Bluetooth sink is not running */
++bool bt_sink_set_discoverable(bool on) {
+ 	if (!s_sink_active) return false;
+-	if (s_remote_connected) esp_a2d_sink_disconnect(s_remote_bda);
+-	else esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
++	s_discoverable = on;
++	if (on && s_remote_connected) esp_a2d_sink_disconnect(s_remote_bda);
++	else if (!s_remote_connected) scan_idle();
++	ESP_LOGI(BT_AV_TAG, "pairing mode %s", on ? "on" : "off");
+ 	return true;
+ }
+ 
++bool bt_sink_discoverable(void) {
++	return s_discoverable && s_sink_active;
++}
++
++/* hifi: whether the sink runs, and whether a phone is connected */
++bool bt_sink_running(void) { return s_sink_active; }
++bool bt_sink_connected(void) { return s_sink_active && s_remote_connected; }
++
++/* hifi: let a new phone pair (play button held, or − and + held together) */
++bool bt_sink_pair_mode(void) {
++	return bt_sink_set_discoverable(true);
++}
++
+ static void idle_check(TimerHandle_t timer) {
+ 	if (!s_remote_connected || s_audio == AUDIO_PLAYING) {
+ 		s_idle_s = 0;
+@@ -408,15 +436,18 @@
+                 actrls_unset();
+                 s_audio = AUDIO_IDLE;
+             }
+-            esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
++            scan_idle(); /* hidden again, unless pairing mode is on */
+ 			(*bt_app_a2d_cmd_cb)(BT_SINK_DISCONNECTED);
++			if (hifi_bt_link) hifi_bt_link(false);
+         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED){
+             memcpy(s_remote_bda, bda, sizeof(s_remote_bda));
+             s_remote_connected = true;
+ 			abs_volume = -1;
+ 			s_volume = sink_volume;
++            s_discoverable = false; /* a phone connected: pairing mode is over */
+             esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+ 			(*bt_app_a2d_cmd_cb)(BT_SINK_CONNECTED);
++			if (hifi_bt_link) hifi_bt_link(true);
+         }
+         break;
+     }
+@@ -753,6 +784,7 @@
+ {
+ 	s_sink_active = false;
+ 	s_remote_connected = false;
++	s_discoverable = false;
+ 	hold_cancel();
+ 	s_rc_playing = false;
+ 	s_audio = AUDIO_IDLE;
+@@ -866,8 +898,8 @@
+             if (s_idle_timer) xTimerStart(s_idle_timer, 0);
+         }
+ 
+-        /* set discoverable and connectable mode, wait to be connected */
+-        esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
++        /* hifi: connectable, and discoverable only in pairing mode; wait to be connected */
++        scan_idle();
+         break;
+     }
+     default:
+diff --git a/components/driver_bt/bt_app_sink.h b/components/driver_bt/bt_app_sink.h
+--- a/components/driver_bt/bt_app_sink.h
++++ b/components/driver_bt/bt_app_sink.h
+@@ -42,4 +42,14 @@
+  */
+ bool bt_sink_pair_mode(void);
+ 
++/* hifi: pairing mode (discoverable) on or off; the sink is connectable but
++ * hidden otherwise, and a phone connecting turns it off. False when the
++ * sink isn't running */
++bool bt_sink_set_discoverable(bool on);
++/* hifi: whether pairing mode is on */
++bool bt_sink_discoverable(void);
++/* hifi: whether the sink runs, and whether a phone is connected */
++bool bt_sink_running(void);
++bool bt_sink_connected(void);
++
+ #endif /* __BT_APP_SINK_H__*/
+diff --git a/components/squeezelite/decode_external.c b/components/squeezelite/decode_external.c
+--- a/components/squeezelite/decode_external.c
++++ b/components/squeezelite/decode_external.c
+@@ -55,7 +55,8 @@
+ #define LOCK_D   mutex_lock(decode.mutex);
+ #define UNLOCK_D mutex_unlock(decode.mutex);
+ 
+-enum { DECODE_BT = 1, DECODE_RAOP, DECODE_CSPOT, DECODE_HIFI_TEST, DECODE_HIFI_LINE, DECODE_HIFI_PARTY };
++enum { DECODE_BT = 1, DECODE_RAOP, DECODE_CSPOT, DECODE_HIFI_TEST, DECODE_HIFI_LINE, DECODE_HIFI_PARTY,
++       DECODE_HIFI_CHIME /* hifi: a short chime, at the volume; yields to every source (hifi_source.c) */ };
+ 
+ extern struct outputstate output;
+ extern struct decodestate decode;
+@@ -191,7 +192,7 @@
+ 
+ static bool hifi_owns_output(void) {
+ 	return output.external == DECODE_HIFI_TEST || output.external == DECODE_HIFI_LINE ||
+-	       output.external == DECODE_HIFI_PARTY;
++	       output.external == DECODE_HIFI_PARTY || output.external == DECODE_HIFI_CHIME;
+ }
+ 
+ static void hifi_take_output(u32_t rate, int kind, bool unity) {
+@@ -218,7 +219,7 @@
+ 	UNLOCK_O;
+ 	UNLOCK_D;
+ 	LOG_INFO("hifi %s started at %u", kind == DECODE_HIFI_LINE ? "line in" :
+-	         kind == DECODE_HIFI_PARTY ? "party" : "test signal", rate);
++	         kind == DECODE_HIFI_PARTY ? "party" : kind == DECODE_HIFI_CHIME ? "chime" : "test signal", rate);
+ }
+ 
+ void hifi_sink_start(u32_t rate) {
+@@ -235,14 +236,21 @@
+ 	hifi_take_output(rate, DECODE_HIFI_PARTY, true);
+ }
+ 
++/* hifi: a chime (pairing mode, a phone connected or gone) plays at the
++ * volume and gives the output up to any source that starts (hifi_source.c),
++ * so it never holds off a phone's audio */
++void hifi_chime_sink_start(u32_t rate) {
++	hifi_take_output(rate, DECODE_HIFI_CHIME, false);
++}
++
+ uint32_t hifi_sink_write(const uint8_t *data, uint32_t len) {
+ 	if (!hifi_owns_output()) return 0;
+ 	return sink_data_handler(data, len, 10, output.external);
+ }
+ 
+-void hifi_sink_stop(void) {
++static void hifi_stop(bool chime_only) {
+ 	LOCK_O;
+-	if (hifi_owns_output()) {
++	if (hifi_owns_output() && (!chime_only || output.external == DECODE_HIFI_CHIME)) {
+ 		_buf_flush(outputbuf);
+ 		output.state = OUTPUT_STOPPED;
+ 		output.external = 0;
+@@ -257,13 +265,18 @@
+ 	UNLOCK_O;
+ }
+ 
++void hifi_sink_stop(void) { hifi_stop(false); }
++
++/* hifi: ends the chime only: a source that took the output meanwhile plays on */
++void hifi_chime_sink_stop(void) { hifi_stop(true); }
++
+ /* how much is queued ahead of the DAC, so the caller can keep it short */
+ uint32_t hifi_sink_queued_ms(void) {
+ 	if (!hifi_owns_output() || !output.current_sample_rate) return 0;
+ 	return (_buf_used(outputbuf) * 1000ULL) / (output.current_sample_rate * BYTES_PER_FRAME);
+ }
+ 
+-/* 0 idle, 1 LMS, 2 Bluetooth, 3 AirPlay, 4 Spotify, 5 test signal, 6 line in, 7 party */
++/* 0 idle, 1 LMS, 2 Bluetooth, 3 AirPlay, 4 Spotify, 5 test signal, 6 line in, 7 party, 8 chime */
+ int hifi_sink_source(void) {
+ 	if (output.external == DECODE_BT) return 2;
+ 	if (output.external == DECODE_RAOP) return 3;
+@@ -271,6 +284,7 @@
+ 	if (output.external == DECODE_HIFI_TEST) return 5;
+ 	if (output.external == DECODE_HIFI_LINE) return 6;
+ 	if (output.external == DECODE_HIFI_PARTY) return 7;
++	if (output.external == DECODE_HIFI_CHIME) return 8;
+ 	return output.state > OUTPUT_STOPPED ? 1 : 0;
+ }
+ 

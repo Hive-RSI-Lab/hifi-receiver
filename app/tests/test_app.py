@@ -16,6 +16,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
 import urllib.error
 import urllib.request
@@ -145,6 +146,27 @@ class API(unittest.TestCase):
         self.assertEqual(self.m.post("party", {"op": "dance"})[0], 400)
         code, p = self.m.post("party", {"op": "off"})
         self.assertEqual((code, p["on"], p["role"]), (200, False, "off"))
+
+    def test_bt_pair_starts_counts_down_and_cancels(self):
+        bt = self.m.get("api/v1/state")["bt"]
+        self.assertEqual(bt, {"on": True, "pairing": False, "pairing_left_s": 0, "connected": False})  # hidden by default
+        code, r = self.m.post("bt/pair", {})
+        self.assertEqual((code, r["bt"]["pairing"], r["bt"]["pairing_left_s"]), (200, True, server.PAIR_S))
+        self.assertTrue(self.m.get("api/v1/state")["bt"]["pairing"])
+        self.assertEqual(self.m.post("bt/pair", {"on": "yes"})[0], 400)
+        code, r = self.m.post("bt/pair", {"on": False})
+        self.assertEqual((code, r["bt"]["pairing"], r["bt"]["pairing_left_s"]), (200, False, 0))
+        # it runs out by itself
+        self.m.post("bt/pair", {})
+        self.m.srv.RequestHandlerClass.rx.pair_until = 0
+        bt = self.m.get("api/v1/state")["bt"]
+        self.assertEqual((bt["pairing"], bt["pairing_left_s"]), (False, 0))
+
+    def test_bt_pair_without_the_sink_is_409(self):
+        self.m.srv.RequestHandlerClass.rx.s["bt"]["on"] = False
+        code, r = self.m.post("bt/pair", {})
+        self.assertEqual(code, 409)
+        self.assertIn("isn't running", r["error"])
 
     def test_wifi_join_and_forget(self):
         # as the firmware: {"ok": true} either way, and no net.join; the result shows in net
@@ -283,7 +305,7 @@ class Browser(unittest.TestCase):
     def test_play_page_shows_the_track_and_sources(self):
         m = Mock()
         try:
-            d = self.dom(m)
+            d = self.dom(m, "#play")
             for want in ("Teardrop", "Massive Attack", "Spotify", "DJ direct", "Volume", "Party", "connecting your phone first"):
                 self.assertIn(want, d)
         finally:
@@ -300,7 +322,7 @@ class Browser(unittest.TestCase):
         m = Mock()
         try:
             d = self.dom(m, "#setup")
-            for want in ("Scan for networks", "Teach", "Check for updates", "Factory reset"):
+            for want in ("Scan for networks", "Pair a new phone", "hold − and +", "Teach", "Check for updates", "Factory reset"):
                 self.assertIn(want, d)
         finally:
             m.close()
@@ -328,14 +350,15 @@ class Browser(unittest.TestCase):
     def test_weak_charger_banner(self):
         m = Mock(pdo=(5.0, 3.0))
         try:
-            self.assertIn("charger too weak", self.dom(m))
+            self.assertIn("charger too weak", self.dom(m))  # on Speakers, the first page
+            self.assertIn("charger too weak", self.dom(m, "#play"))
         finally:
             m.close()
 
     def test_power_card_on_play(self):
         m = Mock()
         try:
-            d = self.dom(m)
+            d = self.dom(m, "#play")
             for want in ('aria-label="Power"', "20 V · 65 W charger", "Graph fills in · ", "Out", "Budget"):
                 self.assertIn(want, d)
             self.assertNotIn("Limiting.", d)
@@ -347,7 +370,7 @@ class Browser(unittest.TestCase):
         m = Mock()
         try:
             self.assertEqual(m.post("volume", {"volume": 95})[0], 200)
-            d = self.dom(m)
+            d = self.dom(m, "#play")
             self.assertIn("Limiting.", d)
             self.assertIn("to stay within the 65 W charger", d)
             self.assertNotIn("Power limit.", d)  # said once, in the card
@@ -363,7 +386,7 @@ class Browser(unittest.TestCase):
             rx.s["power"]["vbus_v"] = 16.8
         rx._power = sag
         try:
-            d = self.dom(m)
+            d = self.dom(m, "#play")
             self.assertIn("Supply sagging.", d)
             self.assertIn("16.8 V from a 20 V charger", d)
         finally:
@@ -372,7 +395,7 @@ class Browser(unittest.TestCase):
     def test_graphs_fill_in_and_diagnostics_has_them(self):
         m = Mock()
         try:
-            d = self.dom(m, ms=40000)
+            d = self.dom(m, "#play", ms=40000)
             self.assertNotIn("Graph fills in", d)
             self.assertRegex(d, r'<path class="o" d="M[0-9.]+,[0-9.]+L')
             d = self.dom(m, "#setup", ms=12000)
@@ -390,6 +413,169 @@ class Browser(unittest.TestCase):
         finally:
             m.close()
 
+
+
+class House:
+    """Several speakers on one Wi-Fi (server.serve_house): Kitchen leads a
+    party that Living room follows, Bedroom (a Plus) has a phone on
+    Bluetooth, and Garage is listed but switched off."""
+
+    def __init__(self):
+        self.srvs = server.serve_house(0)
+        for s in self.srvs:
+            threading.Thread(target=s.serve_forever, daemon=True).start()
+        self.urls = {s.rx.info["name"]: f"http://127.0.0.1:{s.server_address[1]}/" for s in self.srvs}
+        self.url = self.urls["Kitchen"]
+
+    def get(self, who, path):
+        with OPEN(self.urls[who] + "api/v1/" + path) as r:
+            return json.loads(r.read())
+
+    def post(self, who, path, body, ctype="text/plain"):
+        # text/plain, as the app sends to another speaker: a simple request, no preflight
+        req = urllib.request.Request(self.urls[who] + "api/v1/" + path, json.dumps(body).encode(),
+                                     {"Content-Type": ctype, "Origin": self.url.rstrip("/")})
+        try:
+            with OPEN(req) as r:
+                return r.status, json.loads(r.read()), r.headers
+        except urllib.error.HTTPError as e:
+            with e:
+                return e.code, json.loads(e.read()), e.headers
+
+    def close(self):
+        for s in self.srvs:
+            s.shutdown()
+            s.server_close()
+
+
+class HouseAPI(unittest.TestCase):
+    def setUp(self):
+        self.h = House()
+
+    def tearDown(self):
+        self.h.close()
+
+    def test_peers_lists_this_one_first_then_the_rest_by_name(self):
+        for who in ("Kitchen", "Bedroom"):
+            p = self.h.get(who, "peers")
+            self.assertEqual([x["name"] for x in p["peers"]][0], who)
+            self.assertTrue(p["peers"][0]["self"])
+            rest = [x["name"] for x in p["peers"][1:]]
+            self.assertEqual(rest, sorted(rest, key=str.lower))
+            self.assertEqual(set(rest) | {who}, {"Kitchen", "Living room", "Bedroom", "Garage"})
+            for x in p["peers"]:
+                self.assertEqual(set(x), {"name", "host", "ip", "model", "fw", "self", "seen_s"})
+
+    def test_another_speaker_takes_the_apps_calls_across_origins(self):
+        s, b, hd = self.h.post("Bedroom", "volume", {"volume": 31})
+        self.assertEqual((s, b["audio"]["volume"]), (200, 31))
+        self.assertEqual(hd["Access-Control-Allow-Origin"], "*")
+
+    def test_party_is_one_group_across_the_house(self):
+        k = self.h.get("Kitchen", "party")
+        self.assertEqual((k["role"], len(k["followers"])), ("leader", 1))
+        self.assertEqual(self.h.get("Living room", "party")["leader"], "Kitchen")
+        self.assertEqual(self.h.post("Bedroom", "party", {"op": "on"})[1]["role"], "follower")
+        self.assertEqual(len(self.h.get("Kitchen", "party")["followers"]), 2)
+        self.assertEqual(self.h.post("Bedroom", "party", {"op": "lead"})[1]["role"], "leader")
+        self.assertEqual(self.h.get("Kitchen", "party")["role"], "follower")
+        for who in ("Kitchen", "Living room", "Bedroom"):
+            self.h.post(who, "party", {"op": "off"})
+        for who in ("Kitchen", "Living room", "Bedroom"):
+            self.assertFalse(self.h.get(who, "party")["on"])
+
+    def test_pairing_starts_and_stops_and_a_follower_has_no_bluetooth(self):
+        s, b, _ = self.h.post("Bedroom", "bt/pair", {})
+        self.assertEqual(s, 200)
+        self.assertEqual(set(b), {"bt"})
+        self.assertTrue(b["bt"]["pairing"])
+        self.assertEqual(b["bt"]["pairing_left_s"], 120)
+        self.assertEqual(self.h.get("Bedroom", "state/bt"), b)
+        self.assertFalse(self.h.post("Bedroom", "bt/pair", {"on": False})[1]["bt"]["pairing"])
+        self.assertEqual(self.h.post("Living room", "bt/pair", {})[0], 409)  # it follows Kitchen
+        self.assertFalse(self.h.get("Living room", "state/bt")["bt"]["on"])
+
+
+@unittest.skipUnless(CHROME, "no Chrome on this machine")
+class HouseBrowser(unittest.TestCase):
+    """The Speakers page with a house of speakers, from Kitchen's address."""
+
+    def setUp(self):
+        self.h = House()
+
+    def tearDown(self):
+        self.h.close()
+
+    def test_speakers_lists_the_house_from_one_address(self):
+        d = Browser.dom(self, self.h, ms=8000)
+        for want in ("Kitchen", "this one", "Living room", "Bedroom", "Phone connected", "Garage", "Offline",
+                     'aria-label="Volume of Bedroom"', "Party · Kitchen leads, 1 follows"):
+            self.assertIn(want, d)
+
+    def test_party_link_opens_the_sheet(self):
+        d = Browser.dom(self, self.h, "#party", ms=8000)
+        for want in ('role="dialog"', "Leads", "Following", "Living room", "In step", "Stop party"):
+            self.assertIn(want, d)
+
+
+def _node_ws():
+    node = shutil.which("node")
+    if not node:
+        return None
+    r = subprocess.run([node, "-e", "process.exit(typeof WebSocket === 'function' ? 0 : 1)"], capture_output=True)
+    return node if r.returncode == 0 else None
+
+
+NODE = _node_ws()
+
+
+@unittest.skipUnless(CHROME and NODE, "needs Chrome and Node 22+ (tests/drive.mjs)")
+class Clicks(unittest.TestCase):
+    """Clicks through the app in Chrome (tests/drive.mjs) against a house."""
+
+    def setUp(self):
+        self.h = House()
+
+    def tearDown(self):
+        self.h.close()
+
+    def drive(self, frag, steps):
+        r = subprocess.run([NODE, str(APP / "tests" / "drive.mjs"), CHROME, self.h.url + frag, json.dumps(steps)],
+                           capture_output=True, text=True, timeout=180)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_stop_and_start_a_party(self):
+        self.drive("#party", [{"see": "In step"}, {"click": "Stop party"}, {"see": "Start a party"}, {"gone": "leads"}])
+        for who in ("Kitchen", "Living room", "Bedroom"):
+            self.assertFalse(self.h.get(who, "party")["on"], who)
+        self.drive("", [{"see": "Bedroom"}, {"click": "Start a party"}, {"see": "Play the same music"},
+                        {"click": "Start a party"}, {"see": "Who leads?"}, {"click": "Next"},
+                        {"see": "Who joins Kitchen?"}, {"tick": "Bedroom"}, {"tick": "Living room"},
+                        {"click": "Start"}, {"see": "In step"}, {"click": "Done"},
+                        {"see": "Kitchen leads, 2 follow"}])
+        self.assertEqual(sorted(self.h.get("Kitchen", "party")["followers"]),
+                         sorted(self.h.urls[w][7:-1] for w in ("Living room", "Bedroom")))
+
+    def test_volume_of_another_speaker(self):
+        self.drive("", [{"see": "Bedroom"}, {"range": "Volume of Bedroom", "value": 33}])
+        for _ in range(30):
+            if self.h.get("Bedroom", "state/audio")["audio"]["volume"] == 33:
+                break
+            time.sleep(0.1)
+        self.assertEqual(self.h.get("Bedroom", "state/audio")["audio"]["volume"], 33)
+        self.assertEqual(self.h.get("Kitchen", "state/audio")["audio"]["volume"], 40)
+
+    def test_pair_a_phone_and_rename(self):
+        self.drive("#setup", [{"see": "Name and Bluetooth"}, {"click": "Pair a new phone"}, {"see": "left to pair"},
+                              {"click": "Cancel"}, {"gone": "left to pair"}, {"click": "Rename"},
+                              {"type": "New name", "value": "Cucina"}, {"click": "Save"}, {"see": "Renamed"}])
+        self.assertFalse(self.h.get("Kitchen", "state/bt")["bt"]["pairing"])
+        self.assertEqual(self.h.get("Kitchen", "info")["name"], "Cucina")
+
+    def test_pairing_started_on_the_box_shows_with_cancel(self):
+        self.h.post("Kitchen", "bt/pair", {})
+        self.drive("#setup", [{"see": "left to pair"}, {"click": "Cancel"}, {"see": "Pair a new phone"}])
+        self.assertFalse(self.h.get("Kitchen", "state/bt")["bt"]["pairing"])
 
 if __name__ == "__main__":
     unittest.main(verbosity=1)

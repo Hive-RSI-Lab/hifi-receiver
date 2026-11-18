@@ -62,9 +62,10 @@ Plug the USB-C charger into the **USB-C** port at the back.
   (**hifi-lite** unless you renamed it). This needs Spotify Premium.
 - **AirPlay (iPhone, iPad, Mac):** in Control Centre, tap AirPlay and choose
   the receiver.
-- **Bluetooth:** in your phone's Bluetooth settings, pick **hifi-lite**. No
-  pairing button is needed: it can be found whenever no other phone is
-  connected to it.
+- **Bluetooth:** the first time, hold **−** and **+** together for 2 s
+  (or tap **Setup → Bluetooth → Pair a new phone** in the app). Three notes
+  play. Then, within 2 minutes, pick **hifi-lite** in your phone's Bluetooth
+  settings. After that the phone reconnects on its own.
 - **LINE IN:** in the app, choose **Play → Input → DJ direct**. Choose
   **Streaming** to go back.
 
@@ -74,8 +75,10 @@ Plug the USB-C charger into the **USB-C** port at the back.
   `hifi-ultra.local`) on any phone or computer on the same network. Choose **Add to Home Screen** to keep it like an app.
 - **Buttons:**
   - Lite: **−**, **+** and **▶** on top. Press **−**/**+** for volume and
-    **▶** to play or pause. Hold **−**/**+** for 1 s for the previous or
-    next track, and **▶** for standby.
+    **▶** to play or pause (twice: next track, three times: previous).
+    Hold **−**/**+** for 1 s for the previous or next track. Hold **−**
+    and **+** together for 2 s (or **▶** for 1 s) to pair a new Bluetooth
+    phone.
   - Plus and Ultra: turn the knob for volume, and press it to play or pause.
 - **Remote:** Plus and Ultra come with one. Any tier can be taught your TV
   remote in **Setup → Remote** once its firmware supports it (manual,

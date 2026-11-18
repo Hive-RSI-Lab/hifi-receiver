@@ -7,7 +7,9 @@ a time. It is the same on Lite, Plus and Ultra; fields a board can't measure
 are `null`, never made up.
 
 - **Finding the box:** it advertises `_hifi._tcp` over mDNS, with TXT records
-  `model=hifi-lite`, `board=lite-main`, `fw=<version>` and `api=1`. Its
+  `model=hifi-lite`, `board=lite-main`, `fw=<version>`, `api=1` and
+  `name=<player name>` (updated on a rename). `GET peers` (below) lists the
+  boxes it hears. Its
   hostname is `hifi-lite` (Plus and Ultra: `hifi-plus`, `hifi-ultra`), so
   `http://hifi-lite.local` opens it; if two boxes share a network, ESP-IDF's
   mDNS answers the second as `hifi-lite-2.local`.
@@ -23,6 +25,18 @@ are `null`, never made up.
   gets `/api/v2/`.
 - **Safety:** nothing here can push the amp past what the power governor
   allows, and tones are capped at −6 dBFS unless `"force": true`.
+- **From another box's page:** a request carrying another box's `Origin`
+  (`http://` and a private IPv4 address on this box's subnet, or a
+  speaker's `.local` name: `hifi-lite`, `hifi-plus`, `hifi-ultra`, with an
+  optional `-N`, as in `hifi-lite-2.local`) is
+  served, with `Access-Control-Allow-Origin` set to it, on `GET info`,
+  `state`, `state/<section>`, `peers` and `party`, and `POST volume`, `name`,
+  `control`, `party` and `bt/pair` only; any other route, or any other
+  Origin, is 403 as before. That is how the app's Speakers page drives every
+  box from one. The Host header must still be this box's own name or IP.
+  There is no `OPTIONS` route: send `POST` bodies as `text/plain` (still
+  JSON), so the browser sends no preflight. See
+  [app.md](app.md#from-another-speakers-page-cors).
 
 The code is `firmware/components/hifi/core/hifi_api.c`; its host tests in
 `firmware/test/` pin down every reply below.
@@ -114,8 +128,9 @@ Everything the bench logs, in one read. Poll it at up to 10 Hz.
   estimated (Lite) or measured (Plus/Ultra) input power, averaged over 1 s;
   `out_w` the estimated speaker power. `gain_db` ≤ 0 is what the limiter is
   taking off now. `limit_events` counts the times it started limiting.
-- **`audio.source`:** `idle`, `lms`, `airplay`, `spotify`, `bt`, `test` or
-  `line` (Plus/Ultra: the line in through the ADC is playing).
+- **`audio.source`:** `idle`, `lms`, `airplay`, `spotify`, `bt`, `test`,
+  `line` (Plus/Ultra: the line in through the ADC is playing) or `chime`
+  (a Bluetooth chime, under half a second; below).
   `input` is `stream`, `dj_direct` (Lite: the ES8388's analog bypass from
   the RCA line in) or `line` (Plus/Ultra). `tone` is the running tone (below) or `null`.
 - **`audio.dj_guard`** (Plus/Ultra only): `{"in_w", "limit_w", "tripped"}`,
@@ -153,7 +168,7 @@ Everything the bench logs, in one read. Poll it at up to 10 Hz.
 ### `GET /api/v1/state/<section>`
 
 One top-level section of the state, as `{"<section>": {...}}`: `power`,
-`amp`, `governor`, `audio`, `net`, `sys`, `ir`, `controls` or `update`
+`amp`, `governor`, `audio`, `net`, `sys`, `ir`, `controls`, `update` or `bt`
 (`{}` when the board has none of it now; any other name is a 404). The
 whole state runs near 1000 characters on a Lite, which a serial line cuts
 at; a section stays at or under 850 even at its worst (`audio`, with the
@@ -327,6 +342,11 @@ How it works:
 - **`mute`** holds the gain at 0. A source's volume change while muted is
   remembered, not played. A volume step from the remote or the buttons
   unmutes.
+- **`bt`** (builds with the Bluetooth sink): `{"on": true, "pairing": false,
+  "pairing_left_s": 0, "connected": false}`. `on`: the sink runs (it is off
+  in party mode and while the box is a Bluetooth source for the bench).
+  `pairing`: pairing mode is on, for `pairing_left_s` more seconds;
+  `connected`: a phone is connected. See `POST /api/v1/bt/pair`.
 - **In DJ direct** the line in skips squeezelite. The volume goes on the
   ES8388's speaker outputs instead (LOUT1/ROUT1, 1.5 dB steps below their
   −4.5 dB cap), down to −45 dB. Mute takes the line in out of the mix. The
@@ -363,6 +383,31 @@ The receiver decodes NEC by default (`set_GPIO` `14=ir:nec`), which most
 cheap remotes and TVs' universal remotes send. An RC5 remote needs
 `14=ir:rc5` in squeezelite's settings.
 
+## `POST /api/v1/bt/pair`
+
+The Bluetooth sink is connectable but hidden: phones already paired
+reconnect, a new one can't find it. Pairing mode makes it discoverable.
+- **Body:** `{}` or `{"on": true}` starts pairing mode for 120 s (again from
+  now if it was on). `{"on": false}` ends it. Any other `on` is a 400.
+- **Starting it drops a connected phone**, so a new one can connect; that
+  drop plays no disconnect chime.
+- **It ends** after 120 s, when a phone connects, or with `{"on": false}`;
+  the sink is hidden again.
+- **On the box:** − and + held together for 2 s (Lite), or ▶ (Ultra: the
+  knob) held 1 s, do the same.
+- **Reply:** `{"bt": {...}}`, as `GET /api/v1/state/bt`. 409 `"the
+  Bluetooth sink isn't running"` when it is off (party mode, the Bluetooth
+  source test, or a build without it).
+- **Console:** `hifi bt pair` / `hifi bt pair off`; `hifi state bt`.
+
+**Chimes.** The box plays a short chime when pairing mode starts (three
+notes up), when a phone connects (two up) and when one goes (two down).
+They are sine notes generated on the fly, 0.33–0.44 s, at −14 dBFS scaled
+by the volume and never above −20 dBFS; none when muted. A chime plays only
+when nothing else holds the output (not over a stream, a test tone or the
+line in); while it plays `audio.source` is `chime`, and a stream that
+starts stops it at once.
+
 ## `POST /api/v1/control`
 
 `{"action": "volup"}`: what a button press does, sent to whatever is
@@ -370,9 +415,8 @@ playing (LMS, AirPlay, Spotify, Bluetooth). Actions: `volup`, `voldown`,
 `toggle`, `play`, `pause`, `stop`, `next`, `prev`, `power`, plus the
 receiver's own `mute` (toggles it) and `input` (stream ↔ DJ direct).
 `volup`/`voldown` step the receiver's own volume when nothing streams or in
-DJ direct, as the remote does. (There is no
-Bluetooth pairing action: squeezelite-esp32's Bluetooth sink is discoverable
-whenever no other phone is connected.)
+DJ direct, as the remote does. Bluetooth pairing mode is its own call,
+`POST /api/v1/bt/pair` (below).
 Reply: `{"ok": true}`.
 
 ## `POST /api/v1/selftest`
@@ -661,6 +705,41 @@ restarts). Both amps go into reset for 10 ms and come out together, since
 zone B runs off zone A's clock. `volume` is refused (400): zone B plays at
 the main volume. Plus and Lite answer 404. Reply `{"ok": true}`.
 
+## `GET /api/v1/peers`
+
+The speakers this box hears on the LAN, for the app's Speakers page: this
+box first (`self: true`), then the others by name, then IP.
+
+```json
+{"peers": [
+  {"name": "Kitchen", "host": "hifi-lite", "ip": "192.168.1.40", "model": "hifi-lite", "fw": "0.4.0", "self": true, "seen_s": 0},
+  {"name": "Living room", "host": "hifi-lite-2", "ip": "192.168.1.41", "model": "hifi-lite", "fw": "0.4.0", "self": false, "seen_s": 4}],
+ "searching": true}
+```
+
+- Each read collects what the last mDNS question for `_hifi._tcp` heard and,
+  if none is running and the last began over 10 s ago, asks again. Nothing
+  is asked while no one reads the list, and the reply never waits on the
+  radio: the first read after boot lists only this box, with `searching:
+  true`, and the others come in on the next reads.
+- `seen_s`: seconds since that box last answered. A box silent for 90 s is
+  dropped. A box seen at a new IP replaces its old row (by `host`). Up to 12
+  others are kept. Only boxes on this box's own subnet are listed (before
+  it has an address, private addresses only); control characters in a
+  name come back as spaces.
+- `host` is the name mDNS settled on, without `.local`. Boxes that share a
+  host name (every Lite starts as `hifi-lite`) are renamed `hifi-lite-2`,
+  `hifi-lite-3` and so on, in the order they came up. mDNS never hands a box
+  its own answer, and IDF 4.4 can't be asked for the name, only whether a
+  name is ours, so the self row tries the set name and then mDNS's renames
+  in order (up to `-33`) and shows the first that is ours. Self is matched by
+  IP, so the box that kept plain `hifi-lite` is listed on the others.
+- 500 `{"error":"the speakers list is too long"}` should never happen (the
+  reply buffer fits 12 full rows); it replaces a cut-off list.
+- `name` is the TXT `name` (the player name), else the host; `model` and `fw`
+  are `null` when the TXT doesn't say.
+- From the LAN, USB and the Hive alike.
+
 ## Party mode: `party`, `party/stats`
 
 Receivers on the same Wi-Fi play in step: one leads and sends what it plays,
@@ -707,7 +786,10 @@ answers `on` with 409 (party carries 16-bit).
 
 `GET /api/v1/party/stats` (409 when party is off): the clock offsets, the
 jitter buffer's counts (`got`, `dup`, `old`, `skip`, `gaps`, `miss`), the
-rate controller and the heap, for the bench's `party_run.py`.
+rate controller and the heap, for the bench's `party_run.py`. Of `old`,
+`od` counts packets that had played already, and `ol` the rest by how late
+they came: up to 6 packets behind the one playing, 12, 37, 75, more (about
+50, 100, 300, 600 ms).
 
 ## Wi-Fi and updates from the app
 

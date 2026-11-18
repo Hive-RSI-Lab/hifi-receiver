@@ -298,6 +298,9 @@ press **Join**.
   **Setup → Name**. That is the name Spotify, AirPlay and Bluetooth show.
   The `.local` address stays the same. If two receivers of the same tier
   are on one network, the second answers as `hifi-lite-2.local`.
+- **One address for all of them:** you don't need each receiver's address.
+  Open any one of them (`hifi-lite.local` is fine) and the app's
+  **Speakers** page lists every receiver on the same Wi-Fi.
 - **If the `.local` address doesn't open**, which happens on some Android phones and
   older Windows:
   - find the receiver's IP address in your router's list of devices, and
@@ -310,19 +313,40 @@ press **Join**.
 |---|---|---|
 | **Spotify** | In the Spotify app, tap the devices icon and choose the receiver. | Needs Spotify Premium. The phone, the receiver and Spotify must be on the same network the first time. |
 | **AirPlay** | iPhone/iPad: Control Centre → AirPlay. Mac: the sound menu. Any app: the AirPlay icon. | AirPlay 1. It shows as an AirPlay speaker. It does not join AirPlay 2 multi-room groups in the Home app. |
-| **Bluetooth** | In your phone's Bluetooth settings, pick the receiver (`hifi-lite` unless you renamed it). | There is no pairing button: the receiver can be found whenever no other phone is connected to it. Remembers [TBD: bring-up: how many phones]. |
+| **Bluetooth** | First time: put the receiver in pairing mode (below), then pick it in your phone's Bluetooth settings (`hifi-lite` unless you renamed it). After that the phone connects to it on its own. | New phones can only find it in pairing mode. Remembers [TBD: bring-up: how many phones]. |
 | **Tidal, Qobuz, Deezer, radio** | Play from the service's app over AirPlay. Or use a home music server (below). | |
 | **Home music server** | Run Lyrion Music Server (free) on any always-on computer or NAS. The receiver finds it on its own. | Your own files, internet radio and many services. Also multi-room: several receivers in sync. |
 | **Line in** | In the app, **Play → Input → DJ direct** (Plus, Ultra: or **Line in**). | Section 4. |
 | **Optical** (Ultra) | In the app, **Play → Input → Optical**. | |
 
-**Bluetooth:** to switch to another phone, disconnect the first one in its
-Bluetooth settings. The receiver can then be found again.
+**Bluetooth pairing mode:** the receiver is hidden from phones it doesn't
+know, so neighbours can't find it. Phones that have paired before still
+connect whenever they like. To pair a new phone:
 
-**Party mode:** to play the same music in step on several receivers, start
-the music on one (connect your phone first), then in the app switch **Play →
-Party** on there and on the others: they join it on their own. Bluetooth is
-off on the ones that follow.
+1. Hold **−** and **+** together for 2 seconds (Lite), or hold **▶** for
+   1 second, or tap **Setup → Name and Bluetooth → Pair a new phone** in the app.
+   The receiver plays three rising notes.
+2. Within 2 minutes, pick the receiver in the phone's Bluetooth settings.
+   It plays two rising notes when the phone connects, and is hidden again.
+
+If no phone connects, pairing mode ends after 2 minutes. **Cancel** in the
+app ends it sooner. Starting pairing mode lets go of a phone that is
+connected, so the new one can connect.
+
+**Chimes:** two rising notes mean a phone connected, two falling notes mean
+it went. The chimes follow the volume, are never loud, and only play when
+nothing else is playing; when muted there are none.
+
+**Bluetooth with two phones:** to switch from one paired phone to another,
+disconnect the first one in its Bluetooth settings, then connect the second.
+
+**Party mode:** to play the same music in step on several receivers, open
+the app's **Speakers** page and tap **Start a party**. Pick the one your
+phone plays to (it leads), then tick up to three to join it, and tap
+**Start**. Tap the party bar again to add or remove a speaker, to lead from
+another one, or to **Stop party**. Each receiver keeps its own volume.
+Bluetooth is off on the ones that follow. (On one receiver's own **Play**
+page, **Party** switches just that one on or off.)
 
 **Switching source:**
 
@@ -350,19 +374,24 @@ Open **http://hifi-lite.local** (Plus: `hifi-plus.local`, Ultra:
   - Android: Chrome → ⋮ → **Add to Home screen**. It is a shortcut, not
     a full install, because Chrome only installs from `https` sites, and
     a device on your home network can't have one. It works the same way.
-- **What's in it:** three tabs along the bottom. The app shows only the
+- **What's in it:** four tabs along the bottom. The app shows only the
   controls your tier has.
+  - **Speakers:** every receiver on the same Wi-Fi, with what it is playing,
+    its volume and whether a phone is on its Bluetooth, and **Party** across
+    them (section 7). A grey card is a receiver that stopped answering. Tap
+    a card to open that receiver's own **Play**, **Sound** and **Setup**.
   - **Play:** what is playing and from where, **Previous**, **Play /
     pause** and **Next**, **Volume** and **Mute**, and **Input**:
     **Streaming** or **DJ direct** (Plus and Ultra add **Line in**, Ultra
     adds **Optical**). On Ultra, **Zone B speakers**.
   - **Sound:** the **Equaliser**, the **Subwoofers** and the **Volume
     limit**.
-  - **Setup:** **Wi-Fi**, **Name**, **Remote**, **Updates**, and **About and
+  - **Setup:** **Wi-Fi**, **Name and Bluetooth** (rename it, see whether a
+    phone is connected, **Pair a new phone**), **Remote**, **Updates**, and **About and
     diagnostics**: the model, firmware, address, charger, supply voltage,
     the amplifier's state (and temperature on Plus and Ultra), **Run
     self-test**, **Restart** and **Factory reset**.
-- **Notices** at the top of **Play**:
+- **Notices** at the top of **Play** and **Speakers**:
   - **Speakers off: charger too weak.** The port gives too little voltage
     for the amplifier (section 5).
   - **Speakers off: the supply is out of range.** The charger's voltage is
@@ -395,9 +424,8 @@ On Lite the three buttons are on top, along the front edge, left to right:
 |---|---|---|
 | **−** | volume down | previous track |
 | **+** | volume up | next track |
-| **▶** | play/pause | standby |
-
-There is no double press.
+| **▶** | play/pause; twice: next track; three times: previous track | Bluetooth pairing mode |
+| **−** and **+** together | | hold 2 s: Bluetooth pairing mode |
 
 | Plus | Turn | Press | Hold |
 |---|---|---|---|
@@ -410,7 +438,7 @@ screen, left to right:
 
 | Ultra | Turn | Press | Hold 1 s |
 |---|---|---|---|
-| **Knob** | volume | play/pause | standby |
+| **Knob** | volume | play/pause | Bluetooth pairing mode |
 | **Button 1** | | next input (Streaming, Line in, DJ direct) | mute |
 | **Button 2** | | previous track | |
 | **Button 3** | | next track | |
@@ -538,7 +566,8 @@ screen. Their patterns come with their firmware.]
 | Spotify doesn't list it | Different network, or a guest network | Put the phone on the same Wi-Fi. Restart the Spotify app. |
 | AirPlay doesn't list it | Same as above | Same as above. |
 | The `.local` address won't open | Android or Windows lacks mDNS | Use the IP address from the router (section 6). |
-| The phone doesn't list it in Bluetooth | Another phone is connected to it | Disconnect that phone, then look again (section 7). |
+| The phone doesn't list it in Bluetooth | It is hidden from new phones | Put it in pairing mode: hold − and + for 2 s, or **Pair a new phone** in the app (section 7). |
+| A paired phone doesn't connect | Another phone is connected to it | Disconnect that phone, then connect again (section 7). |
 | DJ deck is late against the headphones | **Input** is **Line in** | Choose **DJ direct** (Plus, Ultra). |
 | No sound from the DJ deck | **Input** is **Streaming** | Choose **Play → Input → DJ direct**. |
 | Line in distorts | The source is too loud | Turn down the deck's master or the phone's volume to about 75%. |

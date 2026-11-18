@@ -9,7 +9,8 @@ Spotify (patch 0006): the person's partner couldn't take the speaker over
 from their own account. Bluetooth pairing (0007): phones were asked to
 compare a number on a speaker with no screen. Spotify login (0026): a
 login that threw ended the Spotify task and rebooted the speaker. Wi-Fi events (0011): `diag`
-missed the first connect and never had the boot's IP time (S8).
+missed the first connect and never had the boot's IP time (S8). Page scan (0036): with Wi-Fi
+audio playing, a phone's connect sometimes went unanswered.
 """
 import re
 import sys
@@ -37,6 +38,7 @@ blob = (up / "components/spotify/cspot/src/LoginBlob.cpp").read_text()
 shim = (up / "components/spotify/Shim.cpp").read_text()
 net = (up / "components/wifi-manager/network_manager_handlers.c").read_text()
 app = (up / "main/esp_app_main.c").read_text()
+cmake = (up / "CMakeLists.txt").read_text()
 diag = (Path(__file__).resolve().parents[2] / "components/hifi/esp/hifi_diag_esp.c").read_text()
 
 # 0007: just-works pairing, no number to compare
@@ -95,6 +97,12 @@ check("esp_ota_get_state_partition" not in hook and "portENTER_CRITICAL" in hook
       "hifi_restart_after_trial reads otadata (blank while it is rewritten) instead of the hold in RAM")
 # held, the connection carries on: mDNS and CONNECTED_BIT below still run
 check("return" not in ipc[held:], "a held IP-change restart returns early and skips the rest of the connection")
+
+# 0036: Bluedroid's bt component pages every 640 ms, not 1.28 s, so a phone's
+# connect still lands when Wi-Fi coex takes a scan window; the window stays default
+check(re.search(r"(?m)^target_compile_definitions\(__idf_bt PRIVATE BTM_DEFAULT_CONN_INTERVAL=0x0400\)", cmake)
+      is not None, "the bt component isn't built with BTM_DEFAULT_CONN_INTERVAL=0x0400")
+check("BTM_DEFAULT_CONN_WINDOW" not in cmake, "the page scan window is changed too (air time)")
 
 print(f"{'up_source':<12} {checks} checks, {fails} failed")
 sys.exit(1 if fails else 0)

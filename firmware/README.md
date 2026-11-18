@@ -222,3 +222,15 @@ from the relay's tick, after the board had already joined. The tick still regist
 them as a fallback. `test/upstream/test_up_source.py` checks where the call sits.
 Like 0003, drop this file's hunk from 0001 when you regenerate.
 
+`patches/0036-bt-page-scan-640ms.patch` is a fix in upstream's top `CMakeLists.txt`:
+it builds IDF's `bt` component with `BTM_DEFAULT_CONN_INTERVAL=0x0400`, so a
+connectable board listens for a phone's page every 640 ms instead of Bluedroid's
+1.28 s. Wi-Fi and Bluetooth share the radio, and with Wi-Fi audio playing the coex
+arbiter can take a scan window, so a phone paging for about 5 s sometimes got no
+answer ("connect failed, reason 0" on the handover bench). The window stays
+11.25 ms, so connectable Bluetooth takes about 1.8% more air time. `bt_target.h`
+guards the default with `#ifndef`, and `esp_bt_gap_set_scan_mode` passes 0, which
+`BTM_SetConnectability` replaces with it. No IDF file is patched.
+`test/upstream/test_up_source.py` checks the define is there and the window isn't
+changed. Drop this file's hunk from 0001 when you regenerate.
+
