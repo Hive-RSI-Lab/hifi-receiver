@@ -662,7 +662,7 @@ static void got(uint32_t src, const uint8_t *d, size_t len, int64_t now) {
 		glock();
 		int ok = hifi_party_announce_parse(&p, pl, pn, src, self_ip, self_mask, tsf, &a);
 		if (ok > 0) r = hifi_party_group_announce(&st->g, ms, &a);
-		else if (ok < 0) hifi_party_group_other_ap(&st->g, ms);
+		else if (ok < 0) hifi_party_group_other_ap(&st->g, ms, src, p.t);
 		gunlock();
 		break;
 	}

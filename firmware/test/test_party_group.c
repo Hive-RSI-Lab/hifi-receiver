@@ -175,7 +175,7 @@ static void receive(board_t *b, const dgram_t *d) {
 		if (r > 0)
 			act(b, hifi_party_group_announce(&b->g, L.now, &a));
 		else if (r < 0)
-			hifi_party_group_other_ap(&b->g, L.now);
+			hifi_party_group_other_ap(&b->g, L.now, d->src, p.t);
 		break;
 	}
 	case HIFI_PARTY_JOIN: {
@@ -531,11 +531,14 @@ static void replays(void) {
 	}
 	CHECK(L.b[b].lost == 1 && role(b) == HIFI_PARTY_ROLE_LISTENING);
 
-	/* an announce played back: its TSF is off ours, so it's another AP */
+	/* an announce played back, again and again: its TSF is off ours but
+	 * never moves on, so it isn't taken for another AP */
 	run(5000);
-	inject(&ann);
-	run(20);
-	CHECK(L.b[b].g.other_aps == 1 && role(b) == HIFI_PARTY_ROLE_LISTENING);
+	for (int i = 0; i < 3; i++) {
+		inject(&ann);
+		run(1000);
+	}
+	CHECK(L.b[b].g.other_aps == 0 && !L.b[b].g.other_ap && role(b) == HIFI_PARTY_ROLE_LISTENING);
 	/* the AP restarts and its TSF comes round to the capture's: joined,
 	 * no CLOCK, so the group is dead and its announces skipped after */
 	run(3000);
@@ -583,7 +586,7 @@ static void flood(void) {
 	}
 	CHECK(L.b[b].lost == 0 && L.b[c].lost == 0 && L.b[a].g.npeers == 2);
 	CHECK(L.b[a].g.dropped > 40000);
-	CHECK(L.b[a].bad_tag - tags <= 11 * HIFI_PARTY_STRANGERS_PER_S); /* hashed at most 20 a second */
+	CHECK(L.b[a].bad_tag - tags <= 11 * HIFI_PARTY_STRANGER_SRC_PER_S); /* one address: hashed at most 4 a second */
 }
 
 static void local_source(void) {
@@ -819,12 +822,32 @@ static void units(void) {
 	/* the stranger budget */
 	int ok = 0;
 	for (int i = 0; i < 100; i++) ok += hifi_party_group_admit(&g, 5000, n | 50, HIFI_PARTY_JOIN);
-	CHECK(ok == HIFI_PARTY_STRANGERS_PER_S);
+	CHECK(ok == HIFI_PARTY_STRANGER_SRC_PER_S); /* one address gets its share */
+	for (uint32_t i = 60; i < 100; i++) ok += hifi_party_group_admit(&g, 5000, n | i, HIFI_PARTY_ANNOUNCE);
+	CHECK(ok == HIFI_PARTY_STRANGERS_PER_S); /* the others the rest, up to the cap */
 	CHECK(hifi_party_group_admit(&g, 5000, n | 9, HIFI_PARTY_NACK)); /* a follower, past the budget */
 	CHECK(!hifi_party_group_admit(&g, 5000, n | 50, HIFI_PARTY_NACK));
 	CHECK(!hifi_party_group_admit(&g, 5000, n | 50, HIFI_PARTY_AUDIO));
 	CHECK(hifi_party_group_admit(&g, 6000, n | 50, HIFI_PARTY_ANNOUNCE));
 	CHECK(hifi_party_group_off(&g) == HIFI_PARTY_DO_ROLE && !hifi_party_group_admit(&g, 9000, n | 9, HIFI_PARTY_JOIN));
+
+	/* another AP: two announces from one address whose TSF moves on with ours */
+	hifi_party_group_init(&g, n | 1, MASK, 0, false);
+	int64_t t0 = 900000000;
+	for (int i = 0; i < 5; i++) hifi_party_group_other_ap(&g, 1000u + 1000u * (uint32_t) i, n | 7, t0); /* one replayed */
+	CHECK(!g.other_ap && g.other_aps == 0);
+	hifi_party_group_other_ap(&g, 7000, n | 7, t0 + 5000000); /* moved on, but not by the 2 s since */
+	CHECK(!g.other_ap);
+	hifi_party_group_other_ap(&g, 8000, n | 8, t0 + 6000000); /* another address */
+	CHECK(!g.other_ap);
+	hifi_party_group_other_ap(&g, 8500, n | 8, t0 + 1000000); /* an older one in between */
+	hifi_party_group_other_ap(&g, 9000, n | 8, t0 + 7000000 + 30000);
+	CHECK(g.other_ap && g.other_ap_at == 9000 && g.other_aps == 1);
+	hifi_party_group_other_ap(&g, 9000, n | 8, t0 + 7000000 + 30000); /* the same again */
+	hifi_party_group_other_ap(&g, 10000, n | 8, t0 + 8000000);
+	CHECK(g.other_aps == 2 && g.other_ap_at == 10000);
+	hifi_party_group_other_ap(&g, 14000, n | 8, t0 + 12000000); /* after HIFI_PARTY_LOSS_MS: starts over */
+	CHECK(g.other_aps == 2);
 
 	/* times far apart, and a ms clock about to wrap: a fresh state counts as long ago */
 	hifi_party_group_init(&g, n | 1, MASK, 0, false);
