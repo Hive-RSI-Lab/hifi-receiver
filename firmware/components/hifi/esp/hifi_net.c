@@ -147,10 +147,12 @@ static void download(void *arg) {
 		fail("the server didn't say the image's size");
 	} else if (hifi_ota_begin_ex(o, len, job_sha[0] ? job_sha : NULL, NULL, job_need_sig, &err) != 200) {
 		fail(err);
-	} else if (hifi_dl_pump && (st = hifi_dl_pump(o, h, buf, &upd.progress, &err)) >= 0) {
-		if (st) fail(err);
 	} else {
-		while (o->active && o->written < o->size) {
+		/* the app reads the next chunk while this one is written (hifi_dl.c);
+		 * recovery, or the app short of memory for it, one after the other */
+		if (hifi_dl_pump && (st = hifi_dl_pump(o, h, buf, &upd.progress, &err)) >= 0) {
+			if (st) fail(err);
+		} else while (o->active && o->written < o->size) {
 			int want = o->size - o->written < HIFI_OTA_CHUNK_MAX ? o->size - o->written : HIFI_OTA_CHUNK_MAX;
 			int got = 0, r;
 			while (got < want && (r = esp_http_client_read(h, (char *) buf + got, want - got)) > 0) got += r;
