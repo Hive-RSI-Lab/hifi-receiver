@@ -454,7 +454,7 @@ fits a remote bench's reply line; the task list pages. On the console:
  "power": {"state": "on", "vbus_v": 20.08, "vbus_i_a": 0.31, "pvdd_v": 19.9, "pg": true,
            "proto": "pd", "contract_v": 20.0, "contract_a": 3.25,
            "amp_on": true, "amp_fault": false, "amp_faults": 0, "amp_temp_c": null},
- "alloc_fail": {"n": 2, "size": 1024, "caps": "8BIT|DEFAULT", "fn": "heap_caps_malloc",
+ "alloc_fail": {"n": 2, "size": 1024, "caps": "DEFAULT", "fn": "heap_caps_malloc_default",
                 "at_s": 4410, "largest": 896},
  "restart_cause": "api_reboot by esp_timer at 0x400e9a10 after 329 s"}
 ```
@@ -475,8 +475,9 @@ fits a remote bench's reply line; the task list pages. On the console:
 - `alloc_fail` counts the allocations that failed since boot (`n`, always
   there; the heap's failed-allocation callback, after its own fallbacks to
   other RAM have failed). From the first one on it also has the last one: its
-  `size` in bytes, its `caps` (the `MALLOC_CAP_` bits by name, `8BIT|DEFAULT`
-  for a plain `malloc`; bits without a name show as `0x...`), `fn` (the heap
+  `size` in bytes, its `caps` (the `MALLOC_CAP_` bits by name: `DEFAULT` with
+  `fn` `heap_caps_malloc_default` for a plain `malloc`, which has tried internal
+  RAM and PSRAM by then; bits without a name show as `0x...`), `fn` (the heap
   function that failed), `at_s` (the uptime then) and `largest` (internal
   RAM's largest free block then). The first 20 failures also go to the
   console.
@@ -491,13 +492,21 @@ fits a remote bench's reply line; the task list pages. On the console:
   `power_on`, `external`, `restart` (a software restart: an update, `restart`
   from the API), `panic`, `interrupt_watchdog`, `task_watchdog`, `watchdog`,
   `deep_sleep`, `brownout`, `sdio` and `unknown`.
-- `restart_cause` (only when `reset_reason` is `restart`) names who restarted
+- `restart_cause` (when `reset_reason` is `restart`) names who restarted
   it: every `esp_restart` is link-wrapped to keep, in RTC memory across the
   restart, a note of why (when the path set one), the calling task, the
   call's address and the uptime: `<note> by <task> at 0x<pc> after <n> s`.
   With no note it reads `esp_restart by ...`: feed the address to
   `xtensa-esp32-elf-addr2line -e squeezelite.elf` to name the caller.
   `unrecorded` means a software restart that didn't pass the wrapper.
+  When another reset (`watchdog`, `panic`, ...) cut a restart short, it is
+  there too, with how far the way down got: `, then cut short going quiet`
+  (the audio's quiet stop hadn't finished), `, then cut short in shutdown`
+  (a shutdown handler, such as Wi-Fi's or Bluetooth's, hadn't returned),
+  `, then cut short after shutdown` (the handlers all returned: the reset
+  came in IDF's last steps, the bootloader or early start-up, all under the
+  RTC watchdog that `watchdog` names) or `, then ?` (no mark: the restart
+  was by an image without one, or RTC memory held garbage).
   `GET /api/v1/state/sys` carries it too; here it is left out when the reply
   would pass the page. Notes: `api_reboot`, `api_factory_reset`,
   `factory_reset`, `update_done`, `lab_offline` and `lab_stuck` (the lab's

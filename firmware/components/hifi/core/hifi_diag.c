@@ -114,9 +114,9 @@ int hifi_diag_underrun_step(uint8_t *state, bool running, uint32_t frames, bool 
 
 /* ------------------------------------------------------------------ writers */
 
-/* floor: the self-test's floor; under: say whether the low since boot went
- * to it or under, as a warning; with floor 0 too, only that */
-static void heap(hj_t *j, const char *key, const hifi_diag_heap_t *h, uint32_t floor, bool under) {
+/* floor: the self-test's floor, 0 for none; show: write its value; under:
+ * say whether the low since boot went to it or under, as a warning */
+static void heap(hj_t *j, const char *key, const hifi_diag_heap_t *h, uint32_t floor, bool show, bool under) {
 	if (!h->total) {
 		hj_null(j, key);
 		return;
@@ -126,8 +126,8 @@ static void heap(hj_t *j, const char *key, const hifi_diag_heap_t *h, uint32_t f
 	hj_int(j, "min", h->min);
 	hj_int(j, "largest", h->largest);
 	hj_int(j, "total", h->total);
-	if (floor) hj_int(j, "floor", floor);
-	if (under) hj_bool(j, "under_floor", h->min <= floor);
+	if (floor && show) hj_int(j, "floor", floor);
+	if (floor && under) hj_bool(j, "under_floor", h->min <= floor);
 	hj_obj_end(j);
 }
 
@@ -171,9 +171,8 @@ static bool write_sys(const hifi_diag_sys_t *s, char *out, size_t lim, int level
 	ms_or_null(&j, "ip", s->boot_ip_ms);
 	ms_or_null(&j, "link", s->boot_link_ms);
 	hj_obj_end(&j);
-	bool floor = s->heap_floor && level < 4;
-	heap(&j, "heap", &s->internal, floor && level < 2 ? s->heap_floor : 0, floor);
-	heap(&j, "psram", &s->psram, 0, false);
+	heap(&j, "heap", &s->internal, s->heap_floor, level < 2, level < 4);
+	heap(&j, "psram", &s->psram, 0, false, false);
 	hj_str(&j, "reset_reason", s->reset_reason);
 	hj_str(&j, "resets", s->reset_hist);
 	hj_int(&j, "boots", s->boots);
@@ -230,8 +229,8 @@ static bool write_sys(const hifi_diag_sys_t *s, char *out, size_t lim, int level
 
 void hifi_diag_write_sys(const hifi_diag_sys_t *s, char *out, size_t cap) {
 	size_t lim = cap < HIFI_DIAG_PAGE + 1 ? cap : HIFI_DIAG_PAGE + 1;
-	for (int level = 0; !write_sys(s, out, lim, level) && level < SYS_LEVELS - 1; level++) {
-	}
+	int level = 0;
+	while (!write_sys(s, out, lim, level) && level < SYS_LEVELS - 1) level++;
 }
 
 void hifi_diag_write_tasks(const hifi_diag_tasks_t *t, int from, char *out, size_t cap) {

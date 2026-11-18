@@ -57,6 +57,9 @@ bool hifi_diag_is_power_cut(const char *reason, uint32_t boots_before);
  * "<note> by <task> at 0x<pc> after <n> s"; with no note, "esp_restart by ...".
  * The address names the caller (addr2line on the build's ELF). */
 #define HIFI_RESTART_CAUSE_CAP 80
+/* the same after another reset cut the restart short, with how far it got
+ * (hifi_crash_restart_cause): ", then cut short after shutdown" at most */
+#define HIFI_RESTART_CAUSE_MAX (HIFI_RESTART_CAUSE_CAP + 32)
 void hifi_restart_cause_fmt(char *out, size_t cap, const char *note, const char *task, uint32_t pc,
 			    uint32_t up_s);
 
@@ -90,7 +93,7 @@ typedef struct {
 	uint32_t largest;
 } hifi_diag_alloc_t;
 
-/* caps as names joined by '|' ("8BIT|DEFAULT"), bits it doesn't know as one
+/* caps as names joined by '|' ("8BIT|INTERNAL"), bits it doesn't know as one
  * 0x... term; "0" for none. Cut to cap like snprintf. */
 void hifi_diag_caps_text(char *out, size_t cap, uint32_t caps);
 

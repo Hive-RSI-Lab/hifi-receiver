@@ -174,11 +174,11 @@ static void writers(void) {
 	CHECK(!strstr(out, "\"psram\":{")); /* psram has no floor */
 	s.internal.min = 16539;
 	/* the last failed allocation */
-	s.alloc_fail = (hifi_diag_alloc_t) {.n = 3, .size = 2048, .caps = (1u << 2) | (1u << 12),
-					    .fn = "heap_caps_malloc", .at_s = 412, .largest = 1980};
+	s.alloc_fail = (hifi_diag_alloc_t) {.n = 3, .size = 2048, .caps = 1u << 12,
+					    .fn = "heap_caps_malloc_default", .at_s = 412, .largest = 1980};
 	hifi_diag_write_sys(&s, out, sizeof(out));
 	CHECK(hj_valid_object(out));
-	CHECK_HAS(out, "\"alloc_fail\":{\"n\":3,\"size\":2048,\"caps\":\"8BIT|DEFAULT\",\"fn\":\"heap_caps_malloc\","
+	CHECK_HAS(out, "\"alloc_fail\":{\"n\":3,\"size\":2048,\"caps\":\"DEFAULT\",\"fn\":\"heap_caps_malloc_default\","
 		       "\"at_s\":412,\"largest\":1980}");
 	s.alloc_fail.fn = NULL;
 	hifi_diag_write_sys(&s, out, sizeof(out));
@@ -243,10 +243,12 @@ static void writers(void) {
 	CHECK_HAS(out, "\"kbps\":null");
 
 	/* the widest sys reply there can be still fits a page whole */
-	char w_cause[HIFI_RESTART_CAUSE_CAP];
-	hifi_restart_cause_fmt(w_cause, sizeof(w_cause), "xxxxxxxxxxxxxxxxxxxxxxx", "xxxxxxxxxxxxxxx", UINT32_MAX,
+	char w_cause[HIFI_RESTART_CAUSE_MAX];
+	hifi_restart_cause_fmt(w_cause, HIFI_RESTART_CAUSE_CAP, "xxxxxxxxxxxxxxxxxxxxxxx", "xxxxxxxxxxxxxxx", UINT32_MAX,
 			       UINT32_MAX);
-	CHECK(strlen(w_cause) < sizeof(w_cause) - 1); /* never cut */
+	CHECK(strlen(w_cause) < HIFI_RESTART_CAUSE_CAP - 1); /* never cut */
+	strcat(w_cause, ", then cut short after shutdown"); /* the widest way down (hifi_crash.c) */
+	CHECK(strlen(w_cause) < sizeof(w_cause));
 	hifi_diag_sys_t w = {
 		.uptime_s = UINT32_MAX, .boot_app_ms = UINT32_MAX, .boot_ip_ms = UINT32_MAX, .boot_link_ms = UINT32_MAX,
 		.internal = {UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX},
@@ -271,12 +273,14 @@ static void writers(void) {
 	CHECK(!strstr(out, "under_floor")); /* the extras give way first: the old reply */
 	CHECK(!strstr(out, "alloc_fail"));
 	w.reset_hist[4] = '\0'; /* room for the cause again: in, whole, before the extras */
+	w.power.known = false;
 	hifi_diag_write_sys(&w, out, sizeof(out));
 	CHECK(strlen(out) <= HIFI_DIAG_PAGE);
 	CHECK(hj_valid_object(out));
 	CHECK_HAS(out, w_cause);
-	w.power.known = false; /* room for them too: each in, whole */
-	w.psram.total = 0;
+	CHECK(!strstr(out, "\"caps\":"));
+	w.psram.total = 0; /* room for them too: each in, whole */
+	w.nvs[1].name = NULL;
 	hifi_diag_write_sys(&w, out, sizeof(out));
 	CHECK(strlen(out) <= HIFI_DIAG_PAGE);
 	CHECK(hj_valid_object(out));
@@ -289,6 +293,7 @@ static void writers(void) {
 	memset(w.reset_hist, 'x', sizeof(w.reset_hist) - 1);
 	w.power.known = true;
 	w.psram.total = UINT32_MAX;
+	w.nvs[1].name = "settings";
 	hifi_diag_write_sys(&w, out, sizeof(out));
 	CHECK(strlen(out) <= HIFI_DIAG_PAGE);
 	CHECK(hj_valid_object(out));
@@ -299,6 +304,14 @@ static void writers(void) {
 	CHECK(hj_valid_object(out));
 	CHECK_HAS(out, "\"under_floor\":false}");
 	CHECK_HAS(out, "\"alloc_fail\":{\"n\":4294967295}");
+	CHECK(!strstr(out, "\"floor\":")); /* the floor's value gave way */
+	w.internal.min = 11999; /* 5 digits fewer, 5 more of the history: the same width */
+	w.reset_hist[60] = 'x';
+	w.reset_hist[65] = '\0';
+	hifi_diag_write_sys(&w, out, sizeof(out));
+	CHECK(hj_valid_object(out));
+	CHECK(!strstr(out, "\"floor\":"));
+	CHECK_HAS(out, "\"min\":11999,\"largest\":4294967295,\"total\":4294967295,\"under_floor\":true}");
 
 	/* caps in words */
 	char ct[96];
