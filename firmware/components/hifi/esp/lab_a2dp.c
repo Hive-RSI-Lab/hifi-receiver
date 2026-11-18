@@ -57,7 +57,9 @@
  * first (Bluedroid has one A2DP role at a time), the board goes
  * non-connectable and its AVRCP callbacks drop every event for the run (so
  * the peer can't change this board's volume or playback), then the source is set up,
- * connects and starts. Only the peer's A2DP events count. The stop suspends
+ * connects and starts. "hold_ms" (0 to 10000, default 0) holds the stream
+ * that long after the link comes up, so the peer's own connect chime isn't
+ * cut short by it (lab/tools/chime_capture.py). Only the peer's A2DP events count. The stop suspends
  * the stream, disconnects, takes the source down, sets the sink up again and
  * waits for it (patch 0018's hifi_bt_sink_rearm), puts the sink's own
  * callbacks back, makes the board connectable and discoverable as an idle
@@ -244,6 +246,12 @@ static esp_bd_addr_t peer;
 static bool bonded; /* the source ran: the peer's pairing to forget */
 static volatile bool stopping;
 static volatile src_state_t sst; /* written on Bluedroid's task, read under mux */
+static uint32_t hold_ms; /* the stream waits this long after the connect */
+static esp_timer_handle_t hold_t;
+static void hold_done(void *a) {
+	(void)a;
+	if (!stopping && sst == SRC_CONNECTED) esp_a2d_media_ctrl(ESP_A2D_MEDIA_CTRL_CHECK_SRC_RDY);
+}
 static struct { /* under mux: the BTC and media tasks write, result() reads */
 	uint32_t calls, gaps50, gaps100, disconnects, acks_failed;
 	uint64_t bytes;
@@ -387,7 +395,12 @@ sink:
 			/* the sink's task may still have made the board discoverable
 			 * (a late event from before it went down): hidden again */
 			esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
-			if (!stopping) esp_a2d_media_ctrl(ESP_A2D_MEDIA_CTRL_CHECK_SRC_RDY);
+			if (stopping) {
+			} else if (hold_ms && (hold_t || esp_timer_create(&(esp_timer_create_args_t){.callback = hold_done,
+			                                                   .name = "a2d_hold"}, &hold_t) == ESP_OK)) {
+				esp_timer_stop(hold_t);
+				esp_timer_start_once(hold_t, hold_ms * 1000ULL);
+			} else esp_a2d_media_ctrl(ESP_A2D_MEDIA_CTRL_CHECK_SRC_RDY);
 		} else if (p->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) {
 			if (sst != SRC_CONNECTING && sst != SRC_DOWN && sst != SRC_LOST) {
 				portENTER_CRITICAL(&mux);
@@ -566,6 +579,12 @@ static int start_source(const char *body, char *err, size_t n) {
 		snprintf(err, n, "peer must be the sink's Bluetooth address, aa:bb:cc:dd:ee:ff");
 		return 400;
 	}
+	double h = 0;
+	if (strstr(body, "\"hold_ms\"") && (!hj_get_num(body, "hold_ms", &h) || h < 0 || h > 10000)) {
+		snprintf(err, n, "hold_ms is 0 to 10000");
+		return 400;
+	}
+	hold_ms = (uint32_t)h;
 	if (!esp_a2d_source_init || !esp_a2d_sink_deinit || !hifi_bt_sink_rearm || !hifi_bt_sink_phone ||
 	    !bt_app_a2d_cb || !bt_app_rc_ct_cb || !bt_app_rc_tg_cb || !esp_bt_gap_remove_bond_device ||
 	    !&g_a2dp_on_init || !&g_a2dp_on_deinit) {
