@@ -262,3 +262,28 @@ void hifi_party_hist_init(hifi_party_hist_t *h, void *mem, int nslots);
 void hifi_party_hist_put(hifi_party_hist_t *h, int64_t k, const uint8_t *pkt, size_t len);
 /* the encoded packet for k, or NULL if it is no longer held */
 const uint8_t *hifi_party_hist_get(const hifi_party_hist_t *h, int64_t k, size_t *len);
+
+/* ------------------------------------------------------------ bursts */
+
+/* A short log of trouble in bursts, for telling one side's problems from the
+ * other's: the leader logs its failed sends (with the errno), a follower the
+ * frames it had to conceal. Events closer than HIFI_PARTY_BURST_GAP_MS join
+ * one burst; the newest HIFI_PARTY_BURSTS are kept. Times are the board's
+ * own milliseconds since boot. */
+#define HIFI_PARTY_BURSTS 12
+#define HIFI_PARTY_BURST_GAP_MS 250
+
+typedef struct {
+	uint32_t at_ms, dur_ms, count;
+	int32_t code; /* the last nonzero code seen in it (an errno), or 0 */
+} hifi_party_burst_t;
+
+typedef struct {
+	hifi_party_burst_t b[HIFI_PARTY_BURSTS];
+	int head, n;
+	uint32_t total; /* bursts ever started, so a reader sees how many fell off */
+} hifi_party_bursts_t;
+
+void hifi_party_bursts_add(hifi_party_bursts_t *r, uint32_t now_ms, uint32_t count, int32_t code);
+/* the i-th newest burst (0 = the newest), or NULL past the end */
+const hifi_party_burst_t *hifi_party_bursts_get(const hifi_party_bursts_t *r, int i);

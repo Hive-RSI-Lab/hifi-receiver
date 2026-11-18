@@ -27,6 +27,7 @@
  * key), is never logged or shown (only a one-byte id), and the keys made
  * from it are wiped when party goes off.
  */
+#include <errno.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -185,6 +186,11 @@ static uint32_t clk_sent_seq;
 static int64_t clk_sent_us, noaudio_us, grace_until;
 static uint32_t sent, send_fail, send_skipped, resent, resend_gone, nacks_sent, rx_ok, rx_bad, rx_other, clocks_sent, noaudio_sent;
 static uint32_t heap_start, heap_min;
+/* the leader's failed sends by errno (ENOMEM, EAGAIN, any other) and in
+ * bursts, and a follower's concealed frames in bursts: with both boards'
+ * clocks in the stats, a run can tell sending trouble from the radio's */
+static uint32_t txe_nomem, txe_again, txe_other;
+static hifi_party_bursts_t tx_bursts, gap_bursts; /* one writer each: the radio task, the audio task */
 
 static uint32_t heap_now(void) { return heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); }
 static uint32_t ms_now(void) { return (uint32_t) (esp_timer_get_time() / 1000); }
@@ -215,6 +221,29 @@ static void counters_reset(void) {
 	marks_missed = 0;
 	sent = send_fail = send_skipped = resent = resend_gone = nacks_sent = rx_ok = rx_bad = rx_other = 0;
 	clocks_sent = noaudio_sent = 0;
+	txe_nomem = txe_again = txe_other = 0;
+	memset(&tx_bursts, 0, sizeof(tx_bursts));
+	memset(&gap_bursts, 0, sizeof(gap_bursts));
+}
+
+static void bursts_json(hj_t *j, const char *key, const hifi_party_bursts_t *r) {
+	hifi_party_bursts_t c = *r; /* a copy: its task may add to it meanwhile */
+	if (!c.total) return;
+	hj_obj(j, key);
+	hj_int(j, "n", c.total);
+	hj_arr(j, "b");
+	for (int i = 0; i < HIFI_PARTY_BURSTS; i++) {
+		const hifi_party_burst_t *e = hifi_party_bursts_get(&c, i);
+		if (!e) break;
+		hj_arr(j, NULL);
+		hj_int(j, NULL, e->at_ms);
+		hj_int(j, NULL, e->dur_ms);
+		hj_int(j, NULL, e->count);
+		hj_int(j, NULL, e->code);
+		hj_arr_end(j);
+	}
+	hj_arr_end(j);
+	hj_obj_end(j);
 }
 
 /* ------------------------------------------------------------------ hooks */
@@ -292,7 +321,9 @@ static void follower_block(uint32_t *b, int n, int64_t now) {
 	double target;
 	int32_t gain = (int32_t) party_gain;
 	if (hifi_party_sync_target(&st->sync, w_pos, now, &target)) {
+		uint32_t miss0 = st->jb.missing_frames;
 		hifi_party_render(&st->ctl, &st->jb, target, b, n, 65536, 65536);
+		if (st->jb.missing_frames != miss0) hifi_party_bursts_add(&gap_bursts, (uint32_t) (now / 1000), st->jb.missing_frames - miss0, 0);
 		if (now - marks_seen_us < MARKS_FOR_US)
 			for (int i = 0; i < n; i++)
 				if (b[i] == MARKER && (i ? b[i - 1] : prev_out) != MARKER) {
@@ -354,8 +385,17 @@ void hifi_party_i2s_wrote(frames_t frames, int64_t t0, int64_t t1) {
 static void send_to(uint32_t ip, const uint8_t *p, size_t n) {
 	if (sock < 0) return;
 	struct sockaddr_in to = {.sin_family = AF_INET, .sin_port = htons(HIFI_PARTY_PORT), .sin_addr.s_addr = htonl(ip)};
-	if (sendto(sock, p, n, 0, (struct sockaddr *) &to, sizeof(to)) == (int) n) sent++;
-	else send_fail++; /* the radio's queue is full: a follower asks again */
+	int r = sendto(sock, p, n, 0, (struct sockaddr *) &to, sizeof(to));
+	if (r == (int) n) {
+		sent++;
+		return;
+	}
+	send_fail++; /* mostly the radio's queue is full: a follower asks again */
+	int e = r < 0 ? errno : 0;
+	if (e == ENOMEM) txe_nomem++;
+	else if (e == EAGAIN || e == EWOULDBLOCK) txe_again++;
+	else txe_other++;
+	hifi_party_bursts_add(&tx_bursts, ms_now(), 1, e);
 }
 
 static int64_t tsf_now(void) { return esp_wifi_get_tsf_time(WIFI_IF_STA); }
@@ -1049,6 +1089,13 @@ static void stats_json(hj_t *j) {
 	hj_obj(j, "net");
 	hj_int(j, "tx", sent);
 	hj_int(j, "txf", send_fail);
+	if (send_fail) {
+		hj_arr(j, "txe");
+		hj_int(j, NULL, txe_nomem);
+		hj_int(j, NULL, txe_again);
+		hj_int(j, NULL, txe_other);
+		hj_arr_end(j);
+	}
 	hj_int(j, "rx", rx_ok);
 	hj_int(j, "bad", rx_bad);
 	hj_int(j, "oth", rx_other);
@@ -1088,6 +1135,12 @@ static void stats_json(hj_t *j) {
 	hj_int(j, NULL, heap_now());
 	hj_arr_end(j);
 	if (marks_missed) hj_int(j, "mm", marks_missed);
+	/* the bursts, newest first: "evt" failed sends, "evg" concealed frames,
+	 * each [at ms, length ms, count, errno]; "ms" is now on the same clock,
+	 * so a poller can place them in wall time */
+	hj_int(j, "ms", ms_now());
+	bursts_json(j, "evt", &tx_bursts);
+	if (!lead) bursts_json(j, "evg", &gap_bursts);
 	int on = offs_n;
 	if (on && sorted) {
 		double sum = 0, mx_abs = 0;
