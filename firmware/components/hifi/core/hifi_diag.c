@@ -183,6 +183,12 @@ void hifi_diag_write_tasks(const hifi_diag_tasks_t *t, int from, char *out, size
 	hj_num(&j, NULL, t->idle_pct[0], 1);
 	hj_num(&j, NULL, t->idle_pct[1], 1);
 	hj_arr_end(&j);
+	if (t->free_pct[0] > 0 || t->free_pct[1] > 0) {
+		hj_arr(&j, "free_pct");
+		hj_num(&j, NULL, t->free_pct[0], 1);
+		hj_num(&j, NULL, t->free_pct[1], 1);
+		hj_arr_end(&j);
+	}
 	hj_arr(&j, "cols");
 	hj_str(&j, NULL, "name");
 	hj_str(&j, NULL, "stack_free");
