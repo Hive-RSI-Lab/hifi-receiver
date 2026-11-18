@@ -87,6 +87,7 @@ extern bool hifi_bt_sink_is_off(void) __attribute__((weak));
 #define STACK 6144
 #define SEND_GUARD 2048       /* the largest block the output writes */
 #define SEND_BURST 8          /* AUDIO packets per pass (64 ms of stream): the worker then blocks, so IDLE1 runs */
+#define LATE_MARGIN HIFI_PARTY_FRAMES /* a packet sent less than this (8 ms) before its play time comes too late */
 #define RCVBUF (8 * HIFI_PARTY_MAX)
 #define HEAP_FLOOR 10240      /* internal RAM under this: no board leads (the leader's sends need it) */
 #define GRACE_US 1000000      /* after the party output starts: the source is not yet the party's */
@@ -185,6 +186,18 @@ static int64_t k_sent;
 static uint32_t clk_sent_seq;
 static int64_t clk_sent_us, noaudio_us, grace_until, retake_at;
 static uint32_t sent, send_fail, send_skipped, resent, resend_gone, nacks_sent, rx_ok, rx_bad, rx_other, clocks_sent, noaudio_sent;
+/* the AUDIO packet the radio's queue had no room for (Bluetooth or a busy
+ * channel took the air): the next pass sends it again to the followers it
+ * hasn't reached, and nothing newer goes before it, until its play time.
+ * Its bytes stay in the resend history, which nothing writes meanwhile. */
+static bool held;
+static int64_t held_k;
+static uint32_t held_ips[HIFI_PARTY_FOLLOWERS];
+static int held_n;
+/* held packets that went on a later pass, and that reached their play time
+ * first; resends asked for too late to be played, and dropped while the
+ * queue was full */
+static uint32_t held_ok, held_late, resend_late, resend_busy;
 static uint32_t heap_start, heap_min;
 /* the leader's failed sends by errno (ENOMEM, EAGAIN, any other) and in
  * bursts, and a follower's concealed frames in bursts: with both boards'
@@ -220,6 +233,7 @@ static void counters_reset(void) {
 	last_mark_k = 0;
 	marks_missed = 0;
 	sent = send_fail = send_skipped = resent = resend_gone = nacks_sent = rx_ok = rx_bad = rx_other = 0;
+	held_ok = held_late = resend_late = resend_busy = 0;
 	clocks_sent = noaudio_sent = 0;
 	txe_nomem = txe_again = txe_other = 0;
 	memset(&tx_bursts, 0, sizeof(tx_bursts));
@@ -382,13 +396,14 @@ void hifi_party_i2s_wrote(frames_t frames, int64_t t0, int64_t t1) {
 
 /* ------------------------------------------------------------------ worker: the radio */
 
-static void send_to(uint32_t ip, const uint8_t *p, size_t n) {
-	if (sock < 0) return;
+/* 0 when the packet went, else the errno (-1 for a short send or no socket) */
+static int send_to(uint32_t ip, const uint8_t *p, size_t n) {
+	if (sock < 0) return -1;
 	struct sockaddr_in to = {.sin_family = AF_INET, .sin_port = htons(HIFI_PARTY_PORT), .sin_addr.s_addr = htonl(ip)};
 	int r = sendto(sock, p, n, 0, (struct sockaddr *) &to, sizeof(to));
 	if (r == (int) n) {
 		sent++;
-		return;
+		return 0;
 	}
 	send_fail++; /* mostly the radio's queue is full: a follower asks again */
 	int e = r < 0 ? errno : 0;
@@ -396,7 +411,11 @@ static void send_to(uint32_t ip, const uint8_t *p, size_t n) {
 	else if (e == EAGAIN || e == EWOULDBLOCK) txe_again++;
 	else txe_other++;
 	hifi_party_bursts_add(&tx_bursts, ms_now(), 1, e);
+	return e ? e : -1;
 }
+
+/* the radio's transmit buffers are all taken: worth trying again shortly */
+static bool queue_full(int e) { return e == ENOMEM || e == EAGAIN || e == EWOULDBLOCK; }
 
 static int64_t tsf_now(void) { return esp_wifi_get_tsf_time(WIFI_IF_STA); }
 
@@ -497,7 +516,7 @@ static void act(int r) {
 		if (now == HIFI_PARTY_ROLE_LEADER && was != HIFI_PARTY_ROLE_LEADER) hifi_party_hist_init(&st->hist, hist_mem, HIST_SLOTS);
 		clk_ok = false;
 		unlock();
-		sending = false;
+		sending = held = false;
 		if (now == HIFI_PARTY_ROLE_FOLLOWER) follower_start();
 		else if ((was == HIFI_PARTY_ROLE_FOLLOWER || now != HIFI_PARTY_ROLE_LEADER) && source() == SRC_PARTY && hifi_sink_stop) {
 			hifi_sink_stop();
@@ -536,6 +555,46 @@ static int peers_now(uint32_t *ips) {
 	return n;
 }
 
+/* packet k is due while it can still reach a follower before it plays: the
+ * follower plays frame k as the leader writes frame k + DELAY (pos) */
+static bool too_late(int64_t k, int64_t pos) { return k + HIFI_PARTY_FRAMES <= pos - DELAY + LATE_MARGIN; }
+
+/* the first packet still due at pos */
+static int64_t first_due(int64_t pos) {
+	int64_t s = pos - DELAY + LATE_MARGIN;
+	return s > 0 ? s / HIFI_PARTY_FRAMES * HIFI_PARTY_FRAMES : 0;
+}
+
+/* AUDIO packet k to each of ips; with the queue full at one, it and the
+ * rest are held for the next pass (false). Another error moves on: the
+ * follower asks again. */
+static bool send_all(int64_t k, const uint8_t *p, size_t n, const uint32_t *ips, int np) {
+	for (int i = 0; i < np; i++) {
+		if (!queue_full(send_to(ips[i], p, n))) continue;
+		held = true;
+		held_k = k;
+		held_n = np - i;
+		memmove(held_ips, ips + i, sizeof(uint32_t) * (size_t) held_n);
+		return false;
+	}
+	return true;
+}
+
+/* the held packet again: false while the queue is still full */
+static bool held_send(int64_t pos) {
+	if (!held) return true;
+	held = false;
+	size_t n;
+	const uint8_t *q = hifi_party_hist_get(&st->hist, held_k, &n);
+	if (!q || too_late(held_k, pos)) {
+		held_late++;
+		return true;
+	}
+	if (!send_all(held_k, q, n, held_ips, held_n)) return false;
+	held_ok++;
+	return true;
+}
+
 static void leader_send(int64_t now) {
 	uint32_t *ips = st->peers;
 	int np = peers_now(ips);
@@ -545,26 +604,29 @@ static void leader_send(int64_t now) {
 	want_delay = np || (alone_since && now - alone_since < ALONE_US) ? DELAY : 0;
 	if (hrole != HIFI_PARTY_ROLE_LEADER) want_delay = 0;
 	bool ready = np && cur_delay == DELAY && !xfade;
-	if (ready && !sending) {
-		int64_t s = s_pos - DELAY;
-		k_sent = s > 0 ? s / HIFI_PARTY_FRAMES * HIFI_PARTY_FRAMES : 0;
-	}
+	if (ready && !sending) k_sent = first_due(s_pos);
 	unlock();
 	sending = ready;
-	if (!sending) return;
+	if (!sending) {
+		held = false;
+		return;
+	}
 	uint32_t group = hgroup;
 	bool marks = tone_on;
 	for (int burst = 0; burst < SEND_BURST; burst++) {
 		lock();
-		int64_t avail = s_pos - k_sent;
-		if (avail > RING - SEND_GUARD) { /* the worker fell more than a ring behind */
-			int64_t to = (s_pos - DELAY) / HIFI_PARTY_FRAMES * HIFI_PARTY_FRAMES;
-			if (to > k_sent) {
-				send_skipped += (uint32_t) ((to - k_sent) / HIFI_PARTY_FRAMES);
-				k_sent = to;
-			}
-			avail = s_pos - k_sent;
+		int64_t pos = s_pos;
+		unlock();
+		if (!held_send(pos)) return; /* the queue is full: the next pass tries again */
+		lock();
+		/* past its play time (the queue held the stream back, or the worker
+		 * fell behind): what the followers can't play any more isn't sent */
+		if (too_late(k_sent, s_pos)) {
+			int64_t to = first_due(s_pos);
+			send_skipped += (uint32_t) ((to - k_sent) / HIFI_PARTY_FRAMES);
+			k_sent = to;
 		}
+		int64_t avail = s_pos - k_sent;
 		if (avail < HIFI_PARTY_FRAMES) {
 			unlock();
 			break;
@@ -575,11 +637,12 @@ static void leader_send(int64_t now) {
 		hifi_party_pkt_t p = {.type = HIFI_PARTY_AUDIO, .group = group, .seq = ++tx_seq, .k = k_sent, .rate = RATE,
 				      .n = HIFI_PARTY_FRAMES, .flags = (any ? 0 : HIFI_PARTY_F_SILENCE) | (marks ? HIFI_PARTY_F_MARKS : 0)};
 		size_t n = hifi_party_encode(&st->gkey, &p, st->frames, st->pkt, sizeof(st->pkt));
-		if (n) {
-			hifi_party_hist_put(&st->hist, k_sent, st->pkt, n);
-			for (int i = 0; i < np; i++) send_to(ips[i], st->pkt, n);
-		}
+		int64_t k = k_sent;
 		k_sent += HIFI_PARTY_FRAMES;
+		if (n) {
+			hifi_party_hist_put(&st->hist, k, st->pkt, n);
+			if (!send_all(k, st->pkt, n, ips, np)) return;
+		}
 	}
 }
 
@@ -704,14 +767,33 @@ static void got(uint32_t src, const uint8_t *d, size_t len, int64_t now) {
 		bool ok = st->g.role == HIFI_PARTY_ROLE_LEADER && p.group == st->g.group && hifi_party_group_nack_ok(&st->g, src, p.seq);
 		gunlock();
 		if (!ok) break;
+		/* a resend goes only while it can still be played, and not while
+		 * the stream itself waits for room in the queue: a late one would
+		 * only stand in the queue before packets that are still due */
+		lock();
+		int64_t pos = s_pos;
+		unlock();
 		for (int i = 0; i < p.n; i++) {
+			int64_t k = hifi_party_nack_k(pl, i);
+			if (held) {
+				resend_busy += (uint32_t) (p.n - i);
+				break;
+			}
+			if (too_late(k, pos)) {
+				resend_late++;
+				continue;
+			}
 			size_t n;
-			const uint8_t *q = hifi_party_hist_get(&st->hist, hifi_party_nack_k(pl, i), &n);
-			if (q) {
-				send_to(src, q, n);
-				resent++;
-			} else
+			const uint8_t *q = hifi_party_hist_get(&st->hist, k, &n);
+			if (!q) {
 				resend_gone++;
+				continue;
+			}
+			resent++;
+			if (queue_full(send_to(src, q, n))) {
+				resend_busy += (uint32_t) (p.n - i - 1);
+				break;
+			}
 		}
 		break;
 	}
@@ -742,7 +824,7 @@ static void party_up(void) {
 	sock_close();
 	have_bssid = false;
 	tx_seq = esp_random() >> 8; /* a reboot doesn't start the seqs from 0 again */
-	sending = false;
+	sending = held = false;
 	clk_sent_us = noaudio_us = grace_until = retake_at = 0;
 	glock();
 	uint8_t raw[HIFI_LINK_KEY];
@@ -800,7 +882,7 @@ static void party_down(void) {
 	hifi_link_key_wipe(&st->akey);
 	hifi_link_key_wipe(&st->lkey);
 	gunlock();
-	sending = false;
+	sending = held = false;
 	active = false;
 	ESP_LOGI(TAG, "off: sent %u, received %u", (unsigned) sent, (unsigned) rx_ok);
 }
@@ -1112,6 +1194,12 @@ static void stats_json(hj_t *j) {
 		hj_int(j, "rs", resent);
 		hj_int(j, "gone", resend_gone);
 		hj_int(j, "skip", send_skipped);
+		hj_int(j, "rsl", resend_late);
+		hj_int(j, "rsb", resend_busy);
+		hj_arr(j, "hold");
+		hj_int(j, NULL, held_ok);
+		hj_int(j, NULL, held_late);
+		hj_arr_end(j);
 		if (noaudio_sent) hj_int(j, "na", noaudio_sent);
 	} else {
 		hj_int(j, "nack", nacks_sent);

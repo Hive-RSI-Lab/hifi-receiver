@@ -830,16 +830,23 @@ CONFIG_ESP32_WIFI_SW_COEXIST_ENABLE=y
 # WIFI_LWIP doesn't move them). With Spotify playing, Lite 1 sat at 29.7 KB
 # internal free (goal 30 KB), so RX 8 -> 5 and TX 6 -> 4, about 8 KB back. IDF's
 # own PSRAM memory-saving profile runs RX 4 / TX 4; the stream needs at most
-# ~1.4 Mbit/s (AirPlay), AMPDU RX/TX are off, and management frames have their
+# ~1.4 Mbit/s (AirPlay), AMPDU RX is off, and management frames have their
 # own buffers. The 40 dynamic RX buffers stay in PSRAM.
+# Party mode under A2DP (projects/hifi-lite-lab/party-mode.md, the A2DP fix):
+# a leader's unicast stream, ~1.4 Mbit/s a follower, must fit in the Wi-Fi
+# slots coexistence leaves between Bluetooth's. One frame and one ACK per
+# packet didn't: the queue filled to ENOMEM and packets came late. AMPDU TX
+# (IDF's default, BA window 6) sends a run of them in one exchange, and TX
+# 4 -> 6 lets a whole window be in the air, for about 3.2 KB internal RAM.
 CONFIG_ESP32_WIFI_STATIC_RX_BUFFER_NUM=5
 CONFIG_ESP32_WIFI_DYNAMIC_RX_BUFFER_NUM=40
 CONFIG_ESP32_WIFI_STATIC_TX_BUFFER=y
 CONFIG_ESP32_WIFI_TX_BUFFER_TYPE=0
-CONFIG_ESP32_WIFI_STATIC_TX_BUFFER_NUM=4
+CONFIG_ESP32_WIFI_STATIC_TX_BUFFER_NUM=6
 CONFIG_ESP32_WIFI_CACHE_TX_BUFFER_NUM=32
 # CONFIG_ESP32_WIFI_CSI_ENABLED is not set
-# CONFIG_ESP32_WIFI_AMPDU_TX_ENABLED is not set
+CONFIG_ESP32_WIFI_AMPDU_TX_ENABLED=y
+CONFIG_ESP32_WIFI_TX_BA_WIN=6
 # CONFIG_ESP32_WIFI_AMPDU_RX_ENABLED is not set
 # CONFIG_ESP32_WIFI_AMSDU_TX_ENABLED is not set
 CONFIG_ESP32_WIFI_NVS_ENABLED=y
