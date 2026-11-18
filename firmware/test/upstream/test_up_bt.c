@@ -1,6 +1,8 @@
 /* Regression: the Bluetooth pairing bug (bring-up, patch 0007). A phone whose
  * link dropped mid-song left the sink marked as playing, so the speaker held
  * on to it and no other phone could connect; nothing let an idle phone go.
+ * And the source handover (patch 0034): a phone that loses the output to
+ * Spotify, AirPlay or LMS is paused and let go a second later.
  * Builds upstream's own bt_av_hdl_a2d_evt, bt_disconnect and idle_check, as
  * patched, against stubs of the ESP-IDF Bluetooth calls. */
 #include <stdarg.h>
@@ -15,6 +17,10 @@
 #define ESP_LOGI(...) ((void) 0)
 #define ESP_LOGE(...) ((void) 0)
 typedef void *TimerHandle_t;
+typedef void (*TimerCallbackFunction_t)(TimerHandle_t);
+#define pdMS_TO_TICKS(ms) (ms)
+#define pdFALSE 0
+#define pdPASS 1
 typedef uint8_t esp_bd_addr_t[6];
 typedef enum { BT_SINK_CONNECTED, BT_SINK_DISCONNECTED, BT_SINK_AUDIO_STARTED, BT_SINK_AUDIO_STOPPED, BT_SINK_PLAY,
 	       BT_SINK_STOP, BT_SINK_PAUSE, BT_SINK_RATE, BT_SINK_VOLUME, BT_SINK_METADATA, BT_SINK_PROGRESS } bt_sink_cmd_t;
@@ -23,7 +29,7 @@ enum { ESP_A2D_CONNECTION_STATE_DISCONNECTED, ESP_A2D_CONNECTION_STATE_CONNECTIN
 enum { ESP_A2D_AUDIO_STATE_REMOTE_SUSPEND, ESP_A2D_AUDIO_STATE_STOPPED, ESP_A2D_AUDIO_STATE_STARTED };
 enum { ESP_A2D_MCT_SBC };
 enum { ESP_BT_CONNECTABLE = 1, ESP_BT_NON_CONNECTABLE = 0, ESP_BT_GENERAL_DISCOVERABLE = 2, ESP_BT_NON_DISCOVERABLE = 0 };
-enum { ESP_AVRC_PT_CMD_STOP = 0x45, ESP_AVRC_PT_CMD_STATE_PRESSED = 0 };
+enum { ESP_AVRC_PT_CMD_STOP = 0x45, ESP_AVRC_PT_CMD_PAUSE = 0x46, ESP_AVRC_PT_CMD_STATE_PRESSED = 0 };
 enum { DISPLAYER_SHUTDOWN };
 typedef union {
 	struct { int state; esp_bd_addr_t remote_bda; } conn_stat;
@@ -45,7 +51,7 @@ static volatile bool s_remote_connected;
 static int s_idle_s;
 
 /* what the sink asked for */
-static int sent[16], n_sent, n_disconnect, n_stop_cmd, n_unset, scan_mode, decoder_free = 1;
+static int sent[16], n_sent, n_disconnect, n_stop_cmd, n_pause_cmd, n_unset, scan_mode, decoder_free = 1;
 static bool cmd_cb(bt_sink_cmd_t cmd, ...) {
 	if (n_sent < 16) sent[n_sent++] = cmd;
 	return cmd == BT_SINK_AUDIO_STARTED ? decoder_free : true;
@@ -58,17 +64,35 @@ static int was_sent(int cmd) {
 }
 static void esp_a2d_sink_disconnect(uint8_t *bda) { (void) bda; n_disconnect++; }
 static void displayer_control(int c) { (void) c; }
-static void esp_avrc_ct_send_passthrough_cmd(int t, int cmd, int st) { (void) t, (void) st; if (cmd == ESP_AVRC_PT_CMD_STOP) n_stop_cmd++; }
+static void esp_avrc_ct_send_passthrough_cmd(int t, int cmd, int st) {
+	(void) t, (void) st;
+	if (cmd == ESP_AVRC_PT_CMD_STOP) n_stop_cmd++;
+	if (cmd == ESP_AVRC_PT_CMD_PAUSE) n_pause_cmd++;
+}
 static void actrls_unset(void) { n_unset++; }
 static void actrls_set(const int *c, bool o, void *a, void *b) { (void) c, (void) o, (void) a, (void) b; }
 static void actrls_ir_action(void) {}
 static void esp_bt_gap_set_scan_mode(int c, int d) { scan_mode = c | d; }
 static void update_metadata(bool f) { (void) f; }
+/* one one-shot timer: armed, and fired by the test */
+static TimerCallbackFunction_t timer_cb;
+static int timer_armed, timer_fail;
+static TimerHandle_t s_let_go_timer;
+static TimerHandle_t xTimerCreate(const char *n, int t, int r, void *id, TimerCallbackFunction_t cb) {
+	(void) n, (void) t, (void) r, (void) id;
+	timer_cb = cb;
+	return timer_fail ? NULL : (TimerHandle_t) &timer_cb;
+}
+static int xTimerReset(TimerHandle_t h, int t) { (void) h, (void) t; timer_armed = 1; return pdPASS; }
+static void fire_timer(void) {
+	if (timer_armed) timer_cb(s_let_go_timer);
+	timer_armed = 0;
+}
 
 #include "bt_fns.c"
 
 static void reset(void) {
-	n_sent = n_disconnect = n_stop_cmd = n_unset = 0;
+	n_sent = n_disconnect = n_stop_cmd = n_pause_cmd = n_unset = 0;
 }
 static void conn(int state) {
 	esp_a2d_cb_param_t p = {0};
@@ -126,15 +150,56 @@ int main(void) {
 	for (int t = 0; t < 100; t++) idle_check(NULL);
 	CHECK(n_disconnect == 0);
 
-	/* another source takes over while the phone plays: it stops counting as playing */
+	/* another source takes over while the phone plays: it is paused (not
+	 * stopped, so it can come back), stops counting as playing, and is let go
+	 * a second later, so the next phone or source finds the speaker free */
 	conn(ESP_A2D_CONNECTION_STATE_CONNECTED);
 	audio(ESP_A2D_AUDIO_STATE_STARTED);
 	reset();
 	bt_disconnect();
-	CHECK(n_stop_cmd == 1);
+	CHECK(n_pause_cmd == 1 && n_stop_cmd == 0);
 	CHECK(s_audio != AUDIO_PLAYING);
-	for (int t = 0; t < IDLE_RELEASE_S / IDLE_CHECK_S; t++) idle_check(NULL);
+	CHECK(timer_armed && n_disconnect == 0);
+	CHECK(LET_GO_MS >= 200 && LET_GO_MS <= 5000);
+	fire_timer();
 	CHECK(n_disconnect == 1);
+
+	/* the phone starts again before the second is up: it keeps the speaker */
+	conn(ESP_A2D_CONNECTION_STATE_CONNECTED);
+	audio(ESP_A2D_AUDIO_STATE_STARTED);
+	reset();
+	bt_sink_let_go();
+	audio(ESP_A2D_AUDIO_STATE_STARTED);
+	fire_timer();
+	CHECK(n_disconnect == 0 && s_audio == AUDIO_PLAYING);
+
+	/* a connected phone that isn't playing: no pause, let go all the same */
+	audio(ESP_A2D_AUDIO_STATE_STOPPED);
+	reset();
+	bt_sink_let_go();
+	CHECK(n_pause_cmd == 0);
+	fire_timer();
+	CHECK(n_disconnect == 1);
+
+	/* no timer to be had: let go at once rather than hold on */
+	s_let_go_timer = NULL;
+	timer_fail = 1;
+	reset();
+	bt_sink_let_go();
+	CHECK(n_disconnect == 1);
+	timer_fail = 0;
+
+	/* no phone connected: nothing to do */
+	conn(ESP_A2D_CONNECTION_STATE_DISCONNECTED);
+	reset();
+	bt_sink_let_go();
+	CHECK(!timer_armed && n_disconnect == 0);
+
+	/* audio starting re-sends the phone's volume once the output is its own */
+	conn(ESP_A2D_CONNECTION_STATE_CONNECTED);
+	reset();
+	audio(ESP_A2D_AUDIO_STATE_STARTED);
+	CHECK(was_sent(BT_SINK_AUDIO_STARTED) && was_sent(BT_SINK_VOLUME));
 
 	/* decoder busy at audio start: the phone is told to stop, not marked playing */
 	conn(ESP_A2D_CONNECTION_STATE_DISCONNECTED);

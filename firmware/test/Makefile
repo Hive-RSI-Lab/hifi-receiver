@@ -11,7 +11,7 @@ LDLIBS := -lm
 
 SRCS := $(wildcard $(CORE)/*.c)
 BIN := build
-TESTS := test_json_pd test_power test_gov_tone test_boost test_vol_ir_meta test_api test_remote test_core test_line test_tap test_gate test_listen test_diag test_lab test_scan test_party test_party_group test_quiet sim_party
+TESTS := test_json_pd test_power test_gov_tone test_boost test_vol_ir_meta test_api test_remote test_core test_line test_tap test_gate test_listen test_diag test_lab test_scan test_party test_party_group test_quiet test_source sim_party
 
 # test_remote signs and checks commands with real Ed25519 where the host has
 # OpenSSL's libcrypto, and with a stand-in signature where it doesn't.
@@ -83,7 +83,8 @@ upstream:
 	python3 upstream/upstream.py extract $(UP)/components/squeezelite/controls.c \
 	  connect_cli_socket cli_send_cmd > $(UP)/gen/controls_fns.c && \
 	python3 upstream/upstream.py extract $(UP)/components/driver_bt/bt_app_sink.c \
-	  IDLE_RELEASE_S IDLE_CHECK_S idle_check bt_disconnect bt_av_hdl_a2d_evt > $(UP)/gen/bt_fns.c && \
+	  IDLE_RELEASE_S IDLE_CHECK_S idle_check LET_GO_MS let_go_check bt_sink_let_go bt_disconnect \
+	  bt_av_hdl_a2d_evt > $(UP)/gen/bt_fns.c && \
 	python3 upstream/upstream.py extract $(UP)/components/raop/rtp.c \
 	  rtp_take_from rtp_check_stalled > $(UP)/gen/rtp_fns.c && \
 	$(CC) $(UP_CFLAGS) -o $(UP)/test_up_controls upstream/test_up_controls.c && \

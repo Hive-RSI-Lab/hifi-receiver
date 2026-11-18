@@ -38,6 +38,9 @@ extern const hifi_lab_exp_t lab_ble __attribute__((weak)); /* the BLE lab image 
 /* the lab-radio image only (CONFIG_HIFI_LAB_PSRAM_STACKS): weak and pulled
  * into the app by patch 0027, so recovery leaves out libFLAC and the clip */
 extern const hifi_lab_exp_t lab_flac __attribute__((weak));
+/* images with the Spotify sink (CONFIG_CSPOT_SINK): weak and pulled into the
+ * app by patch 0034, so recovery leaves out the reach into squeezelite */
+extern const hifi_lab_exp_t lab_phone __attribute__((weak));
 /* lab_bt and lab_a2dp's source both change Bluetooth's state, so each refuses
  * to start while the other runs (weak: either may be left out) */
 bool hifi_lab_bt_busy(void) __attribute__((weak));

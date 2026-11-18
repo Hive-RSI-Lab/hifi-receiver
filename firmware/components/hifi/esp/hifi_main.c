@@ -466,6 +466,34 @@ void hifi_quiet_release(void) {
 	else apply_volume();
 }
 
+/* A phone source hands the output to another (decode_external.c's
+ * phone_takeover, patch 0034): squeezelite's gain fades to 0 before the old
+ * source is paused and the buffer emptied, and is held there until the new
+ * source owns the output, so the switch has no pop. Only the digital gain:
+ * the amps and the codec stay on, the next source plays at once */
+static volatile bool handover;
+
+void hifi_handover_quiet(bool down) {
+	if (!hifi_output_gain) return;
+	if (!down) {
+		handover = false;
+		if (!quiet_req) apply_volume();
+		return;
+	}
+	bool ramp = !handover && !quiet_busy && lock;
+	handover = true;
+	if (!ramp) return;
+	LOCK();
+	uint32_t base = tone_active || line_unity ? HIFI_VOL_UNITY : hifi_vol_gain(&vol);
+	UNLOCK();
+	for (int i = HIFI_QUIET_STEPS - 1; i >= 0; i--) {
+		uint32_t g = (uint32_t) ((uint64_t) base * i / HIFI_QUIET_STEPS);
+		hifi_output_gain(g, g);
+		vTaskDelay(pdMS_TO_TICKS(HIFI_QUIET_RAMP_MS / HIFI_QUIET_STEPS) ?: 1);
+	}
+	ESP_LOGI(TAG, "source handover: faded out");
+}
+
 /* ------------------------------------------------------------------ volume */
 
 /* Puts the volume where it plays: squeezelite's gain for streams, the codec
@@ -479,8 +507,8 @@ static void apply_volume(void) {
 	UNLOCK();
 	if (direct) codec_dirty = true;
 	if (hifi_party_volume) hifi_party_volume(g);
-	/* a stop holds squeezelite's gain at 0 until it is released */
-	if (hifi_output_gain && !tone_active && !line_unity && !quiet_req) hifi_output_gain(g, g);
+	/* a stop holds squeezelite's gain at 0 until it is released, a handover until it ends */
+	if (hifi_output_gain && !tone_active && !line_unity && !quiet_req && !handover) hifi_output_gain(g, g);
 }
 
 /* A source set its volume (set_volume in squeezelite). */
@@ -492,7 +520,7 @@ bool hifi_volume_hook(unsigned *left, unsigned *right) {
 	vol_dirty = true;
 	vol_changed_ms = now_ms();
 	UNLOCK();
-	*left = *right = quiet_req ? 0 : g; /* a stop holds the stream silent until released */
+	*left = *right = quiet_req || handover ? 0 : g; /* a stop (or a handover) holds the stream silent */
 	return !tone_active && !line_unity; /* a test signal (and DJ direct's line copy) plays at unity;
 					      * the volume comes back after */
 }
