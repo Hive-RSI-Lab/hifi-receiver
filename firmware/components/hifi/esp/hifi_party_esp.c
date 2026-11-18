@@ -163,7 +163,7 @@ static uint32_t prev_out;
 static frames_t last_block;
 static int cur_delay, old_delay, want_delay, xfade;
 static int64_t alone_since;
-static uint32_t wrong_rate, blocks, muted, output_lost, unaligned;
+static uint32_t wrong_rate, blocks, muted, output_lost, unaligned, retaken;
 static int64_t last_clock_us;
 static bool clk_ok;
 static int64_t clk_k, clk_t;
@@ -183,7 +183,7 @@ static uint32_t tx_seq;
 static bool sending;
 static int64_t k_sent;
 static uint32_t clk_sent_seq;
-static int64_t clk_sent_us, noaudio_us, grace_until;
+static int64_t clk_sent_us, noaudio_us, grace_until, retake_at;
 static uint32_t sent, send_fail, send_skipped, resent, resend_gone, nacks_sent, rx_ok, rx_bad, rx_other, clocks_sent, noaudio_sent;
 static uint32_t heap_start, heap_min;
 /* the leader's failed sends by errno (ENOMEM, EAGAIN, any other) and in
@@ -215,7 +215,7 @@ static void mark_add(int64_t k, double tsf, bool have_ref) {
 }
 
 static void counters_reset(void) {
-	wrong_rate = blocks = muted = output_lost = unaligned = 0;
+	wrong_rate = blocks = muted = output_lost = unaligned = retaken = 0;
 	marks_head = marks_n = offs_n = 0;
 	last_mark_k = 0;
 	marks_missed = 0;
@@ -743,7 +743,7 @@ static void party_up(void) {
 	have_bssid = false;
 	tx_seq = esp_random() >> 8; /* a reboot doesn't start the seqs from 0 again */
 	sending = false;
-	clk_sent_us = noaudio_us = grace_until = 0;
+	clk_sent_us = noaudio_us = grace_until = retake_at = 0;
 	glock();
 	uint8_t raw[HIFI_LINK_KEY];
 	hifi_party_announce_key(st->secret, raw);
@@ -839,6 +839,13 @@ static void task_main(void *arg) {
 			next_tick = now + TICK_US;
 		}
 		act(r);
+		/* a follower whose output something else took and then let go (a test
+		 * tone ends with the output idle) takes it back, at most once a second */
+		if (hrole == HIFI_PARTY_ROLE_FOLLOWER && now >= grace_until && now >= retake_at && source() == 0) {
+			retake_at = now + 1000000;
+			retaken++;
+			follower_start();
+		}
 		if (sock < 0) {
 			vTaskDelay(pdMS_TO_TICKS(20));
 			continue;
@@ -1128,6 +1135,7 @@ static void stats_json(hj_t *j) {
 		hj_obj_end(j);
 		hj_int(j, "mute", muted);
 		if (output_lost) hj_int(j, "lost", output_lost);
+		if (retaken) hj_int(j, "retake", retaken);
 	}
 	hj_arr(j, "heap"); /* internal RAM free: when party came on, the least since, now */
 	hj_int(j, NULL, heap_start);
