@@ -1437,10 +1437,20 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 		st = 500;
 		goto out;
 	}
-	/* the coupling capacitors settle, and what the DMA held from before goes */
+	/* the coupling capacitors settle; then everything the DMA ring holds goes.
+	 * Nothing reads the I2S input between captures, so the ring sits full
+	 * (squeezelite's 12 buffers of 512 frames, about 128 ms) and the reads
+	 * below would start on the oldest of it. Four 4 kB reads used to take
+	 * only part of it, and the capture began with data from about 40 ms
+	 * before the settle ended: on Lite 3 the first capture after a boot
+	 * then had its first 20 ms scrambled on one tap (2026-11-18). Reading
+	 * with no wait until the ring is empty leaves only buffers the DMA
+	 * fills after the settle. */
 	vTaskDelay(pdMS_TO_TICKS(200));
 	size_t got = 0, want = (size_t) frames * 4;
-	for (int i = 0; i < 4; i++) i2s_read(CONFIG_I2S_NUM, pcm, want < 4096 ? want : 4096, &got, pdMS_TO_TICKS(50));
+	for (int i = 0; i < 64; i++) {
+		if (i2s_read(CONFIG_I2S_NUM, pcm, want < 4096 ? want : 4096, &got, 0) != ESP_OK || !got) break;
+	}
 	size_t have = 0;
 	while (have < want) {
 		if (i2s_read(CONFIG_I2S_NUM, (uint8_t *) pcm + have, want - have, &got, pdMS_TO_TICKS(300)) != ESP_OK || !got) break;
