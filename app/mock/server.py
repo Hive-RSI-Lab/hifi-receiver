@@ -80,7 +80,7 @@ def initial_state(model: str, ap: bool, pdo: tuple[float, float], fault: bool) -
                   "eq": [0] * len(EQ_BANDS), "channel": "stereo",
                   "sub": sub, "playing": dict(PLAYING)},
         "net": {"mode": "sta", "ssid": "Home", "ip": "192.168.1.40", "rssi": -52,
-                "hostname": "hifi-" + model, "eth": model != "lite", "join": None},
+                "hostname": "hifi-" + model, "eth": model != "lite"},
         "sys": {"heap_free": 81234, "psram_free": 3912345},
         "update": {"state": "idle", "progress": 0},
         "ir": {"learning": None, "learned": [], "last_code": None},
@@ -108,6 +108,7 @@ class Receiver:
         self.s = initial_state(model, ap, pdo, fault)
         self.lock = threading.Lock()
         self.armed = None  # when a factory reset was armed
+        self.fail = {}  # tests: path -> (HTTP code, error) to answer instead, as a receiver that can't
         self.t0 = time.time() - (5 * 3600 + 17 * 60)
         # party mode (GET/POST party): the mock's one other receiver, Kitchen,
         # is on and waiting, so switching party on here makes this one lead
@@ -261,21 +262,30 @@ class Receiver:
                 a["tone"] = None if b.get("type") == "stop" else b
                 return {"ok": True, "tone": a["tone"]}
             elif path == "name":
-                name = str(b.get("name", "")).strip()
-                if not 1 <= len(name) <= 32:
-                    raise ValueError("name must be 1 to 32 characters")
+                # as the firmware's r_name: no trimming, and nothing that would break squeezelite's -n "<name>"
+                name = b.get("name")
+                if not isinstance(name, str) or not name:
+                    raise ValueError("name is required")
+                if len(name.encode()) > 32:
+                    raise ValueError("name must be 32 characters or fewer")
+                if any(ord(c) < 0x20 or ord(c) == 0x7f for c in name):
+                    raise ValueError("name has a control character")
+                if '"' in name or "\\" in name:
+                    raise ValueError('name may not have " or \\ in it')
                 self.info["name"] = name
             elif path == "wifi":
                 ssid = str(b.get("ssid", ""))
                 if not ssid:
                     raise ValueError("ssid is required")
-                ok = PASSWORDS.get(ssid) == b.get("password", "")
-                s["net"]["join"] = ({"ssid": ssid, "state": "ok", "ip": "192.168.1.40"} if ok
-                                    else {"ssid": ssid, "state": "failed", "reason": "wrong password"})
-                if ok and s["net"]["mode"] == "sta":
-                    s["net"].update(ssid=ssid, rssi=next((n["rssi"] for n in SCAN if n["ssid"] == ssid), -60))
+                # as the firmware: {"ok": true} at once, and the result shows
+                # only in net (on that network, or not); a wrong password changes nothing
+                if PASSWORDS.get(ssid) == b.get("password", ""):
+                    s["net"].update(mode="sta", ssid=ssid, ip="192.168.1.40",
+                                    rssi=next((n["rssi"] for n in SCAN if n["ssid"] == ssid), -60))
+                return {"ok": True}
             elif path == "wifi/forget":
-                s["net"].update(mode="ap", ssid="", rssi=None, ip="192.168.4.1", join=None)
+                s["net"].update(mode="ap", ssid="", rssi=None, ip="192.168.4.1")
+                return {"ok": True}
             elif path == "ir/learn":
                 if b.get("action") not in IR_ACTIONS:
                     raise ValueError("action must be one of " + ", ".join(IR_ACTIONS))
@@ -379,7 +389,11 @@ class Receiver:
                 time.sleep(0.3)
         with self.lock:
             self.s["update"] = {"state": "done", "progress": 100}
+        time.sleep(1)
+        with self.lock:  # the receiver restarts into the new firmware
+            self.s["update"] = {"state": "idle", "progress": 0}
             self.info["fw"] = "0.2.0"
+            self.t0 = time.time()
 
 
 class Conflict(Exception):
@@ -445,10 +459,19 @@ def handler(rx: Receiver):
             p = self.path.split("?")[0]
             return p[len("/api/v1/"):] if p.startswith("/api/v1/") else None
 
+        def failed(self, p):
+            if p in rx.fail:
+                code, msg = rx.fail[p]
+                self.send(code, {"error": msg})
+                return True
+            return False
+
         def do_GET(self):
             p = self.api()
             if p is None:
                 return super().do_GET()
+            if self.failed(p):
+                return
             if p == "info":
                 with rx.lock:
                     return self.send(200, copy.deepcopy(rx.info))
@@ -469,6 +492,8 @@ def handler(rx: Receiver):
             p = self.api()
             n = int(self.headers.get("Content-Length") or 0)
             raw = self.rfile.read(n)
+            if self.failed(p):
+                return
             if p == "update/upload":
                 if n < 1024:
                     return self.send(400, {"error": "that file is too small to be firmware"})

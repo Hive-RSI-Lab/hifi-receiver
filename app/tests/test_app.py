@@ -145,11 +145,17 @@ class API(unittest.TestCase):
         self.assertEqual((code, p["on"], p["role"]), (200, False, "off"))
 
     def test_wifi_join_and_forget(self):
-        code, s = self.m.post("wifi", {"ssid": "Home", "password": "wrong"})
-        self.assertEqual(s["net"]["join"]["state"], "failed")
-        code, s = self.m.post("wifi", {"ssid": "Home", "password": "hunter22"})
-        self.assertEqual(s["net"]["join"]["state"], "ok")
+        # as the firmware: {"ok": true} either way, and no net.join; the result shows in net
+        self.m.srv.rx.s["net"].update(mode="ap", ssid="", ip="192.168.4.1")
+        self.assertEqual(self.m.post("wifi", {"ssid": "Home", "password": "wrong"}), (200, {"ok": True}))
+        net = self.m.get("api/v1/state")["net"]
+        self.assertEqual((net["mode"], "join" in net), ("ap", False))
+        self.assertEqual(self.m.post("wifi", {"ssid": "Home", "password": "hunter22"}), (200, {"ok": True}))
+        net = self.m.get("api/v1/state")["net"]
+        self.assertEqual((net["mode"], net["ssid"]), ("sta", "Home"))
         code, s = self.m.post("wifi/forget", {})
+        self.assertEqual(s, {"ok": True})
+        s = self.m.get("api/v1/state")
         self.assertEqual(s["net"]["mode"], "ap")
         self.assertTrue(any(n["ssid"] == "Home" for n in self.m.get("api/v1/wifi/scan")["networks"]))
 

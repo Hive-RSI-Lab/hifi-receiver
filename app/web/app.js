@@ -38,7 +38,9 @@ let holding = false;   // a slider is under a finger: don't redraw over it
 let scan = null;       // Wi-Fi networks from the last scan
 let selftest = null;   // the last self-test result
 let P;                 // GET party, read on the Play page; null when the build has no party mode
-let check = null;      // the last online update check
+let check = null;      // the last online update check: the reply, or {error} when it failed
+let joining = null;    // {ssid, at}: the Wi-Fi join this page asked for
+const JOIN_WAIT_MS = 45000; // a join that hasn't landed by then has failed
 
 const $ = (sel, el = document) => el.querySelector(sel);
 
@@ -74,11 +76,13 @@ async function api(path, body) {
 
 // set() posts a change and takes the state it answers with; a call whose
 // reply isn't a state (the bench's amp/input/control) is followed by a read.
+// It answers true once the receiver took the change; a refusal is toasted.
 async function set(path, body) {
   try {
     const r = await api(path, body);
-    take(r.audio ? r : await api('state'));
-  } catch (e) { toast(e.message); }
+    take(r.audio ? r : await api('state').catch(() => null));
+    return true;
+  } catch (e) { toast(e.message); return false; }
 }
 
 // A slider sends while it moves, at most every 150 ms, and once when let go.
@@ -115,14 +119,15 @@ function take(state) {
 
 async function poll() {
   try {
-    if (!I) I = await api('info');
     const st = await api('state');
+    // info again after a restart (an update changes the firmware version) or a gap
+    if (!I || !online || (S && st.uptime_s < S.uptime_s)) I = await api('info');
     if (P !== null && tab === 'play') P = await api('party').catch((e) => (e.status === 404 ? null : P));
     take(st);
     online = true;
-  } catch { online = false; draw(); }
-  $('#conn').classList.toggle('on', online);
-  setTimeout(poll, POLL_MS);
+  } catch { online = false; }
+  // whatever went wrong, keep polling
+  try { draw(); } finally { $('#conn').classList.toggle('on', online); setTimeout(poll, POLL_MS); }
 }
 
 function draw() {
@@ -133,13 +138,17 @@ function draw() {
   for (const b of document.querySelectorAll('#tabs button')) b.classList.toggle('on', b.dataset.tab === tab);
   const view = $('#view');
   const y = window.scrollY;
-  view.replaceChildren(...(S && I ? PAGES[tab]() : [offline()]).flat().filter((k) => k != null && k !== false));
+  // lost after it was found: say so above the last state rather than show it as live
+  const page = S && I ? [!online && offline(), PAGES[tab]()] : [offline()];
+  view.replaceChildren(...page.flat().filter((k) => k != null && k !== false));
   window.scrollTo(0, y);
 }
 
 function offline() {
   return h('div.card.err', {}, h('div.big', {}, 'Looking for the receiver…'),
-    h('p.dim', {}, 'Check that it is powered and that this phone is on the same Wi-Fi. ' +
+    h('p.dim', {}, joining ? `If it joined ${joining.ssid}, reconnect this phone to ${joining.ssid} and open ` +
+      `http://${(S && S.net.hostname) || 'hifi'}.local. If not, its own HiFi-… network comes back: join that and try again.`
+      : 'Check that it is powered and that this phone is on the same Wi-Fi. ' +
       'If it is new, join its own Wi-Fi network (named HiFi-…) and this page opens by itself.'));
 }
 
@@ -171,15 +180,17 @@ function powerNotice() {
 function pagePlay() {
   const a = S.audio, np = a.playing || {};
   const direct = a.input !== 'stream';
-  const idle = direct || a.source === 'idle' || !np.title;
-  const title = direct ? INPUTS[a.input] : idle ? 'Nothing playing' : np.title;
+  // Bluetooth without track details still plays: show it, with its buttons
+  const idle = direct || a.source === 'idle' || !(np.title || np.state === 'play' || np.state === 'pause');
+  const title = direct ? INPUTS[a.input] : idle ? 'Nothing playing'
+    : np.title || (np.state === 'pause' ? 'Paused' : 'Playing');
   const sub = direct ? 'Playing what is plugged into the RCA line in.'
     : idle ? `Play to “${I.name}” from Spotify, AirPlay, Bluetooth or Lyrion.`
       : [np.artist, np.album].filter(Boolean).join(' — ');
   return [
     powerNotice(),
     h('div.card', {},
-      h('h2', {}, direct ? 'Input' : idle ? 'Ready' : `Playing from ${SOURCES[a.source] || a.source}`),
+      h('h2', {}, direct ? 'Line in' : idle ? 'Ready' : `Playing from ${SOURCES[a.source] || a.source}`),
       h('div.np-title', {}, title), h('div.np-sub', {}, sub),
       !idle && h('div.row', { style: 'justify-content:center;margin-top:14px' },
         h('button.icon', { 'aria-label': 'Previous', onclick: () => set('control', { action: 'prev' }) }, '⏮'),
@@ -345,12 +356,13 @@ function wifiCard() {
   const n = S.net;
   const pw = h('input', { type: 'password', placeholder: 'Wi-Fi password', autocomplete: 'off' });
   const other = h('input', { type: 'text', placeholder: 'Network name', autocapitalize: 'off' });
-  const join = (ssid) => {
+  const join = async (ssid) => {
     if (!ssid) return toast('Choose a network');
-    set('wifi', { ssid, password: pw.value }).then(() => toast(`Joining ${ssid}…`));
+    pw.blur(); other.blur(); // or the page stays as it was while the keyboard is up
+    if (await set('wifi', { ssid, password: pw.value })) { joining = { ssid, at: Date.now() }; toast(`Joining ${ssid}…`); draw(); }
   };
   const nets = scan || [];
-  const j = n.join;
+  const j = n.join || joinNow(n);
   return h('div.card', {}, h('h2', {}, 'Wi-Fi'),
     n.mode === 'sta' && h('div.row', {}, h('span.grow', {}, h('b', {}, n.ssid), h('div.dim', {},
       `${n.ip} · signal ${bars(n.rssi)}` + (n.eth ? ' · Ethernet connected' : ''))),
@@ -371,6 +383,16 @@ function wifiCard() {
     h('p.dim', {}, '2.4 GHz networks only.'));
 }
 
+// The firmware answers a join at once and says nothing more: the result
+// shows in net (on the network asked for, or not yet when the wait is up).
+function joinNow(n) {
+  if (!joining) return null;
+  const { ssid, at } = joining;
+  if (n.mode === 'sta' && n.ssid === ssid && n.ip) return { ssid, state: 'ok', ip: n.ip };
+  if (Date.now() - at > JOIN_WAIT_MS) return { ssid, state: 'failed', reason: 'check the password and that it is a 2.4 GHz network' };
+  return { ssid, state: 'joining' };
+}
+
 function bars(rssi) {
   return rssi > -55 ? '▂▄▆█' : rssi > -67 ? '▂▄▆' : rssi > -78 ? '▂▄' : '▂';
 }
@@ -381,7 +403,8 @@ function nameCard() {
     h('p.dim', {}, 'What Spotify, AirPlay and Bluetooth show this receiver as. Bluetooth: pick this name on your ' +
       'phone; the receiver can be found whenever no other phone is connected to it.'),
     h('div.row', {}, h('div.grow', {}, inp), h('button', { onclick: async () => {
-      await set('name', { name: inp.value.trim() });
+      inp.blur();
+      if (!await set('name', { name: inp.value.trim() })) return;
       I = await api('info').catch(() => I); draw(); toast('Renamed');
     } }, 'Save')));
 }
@@ -411,13 +434,15 @@ function updateCard() {
       h('div.bar', {}, h('i', { style: `width:${u.progress || 0}%` }))],
     u.state === 'done' && h('p.ok', {}, 'Updated. The receiver is restarting.'),
     u.state === 'error' && h('p.bad', {}, `Update failed: ${u.error || 'unknown error'}. The old firmware is still in place.`),
-    check && h('p', { className: newer ? '' : 'dim' }, newer ? `Version ${check.latest} is available. ${check.notes || ''}` : 'Up to date.'),
+    check && (check.error ? h('p.bad', {}, `Couldn't check for updates: ${check.error}. Try again, or install from a file.`)
+      : h('p', { className: newer ? '' : 'dim' }, newer ? `Version ${check.latest} is available. ${check.notes || ''}` : 'Up to date.')),
     !busy && h('div.row', {},
       newer ? h('button.pri', { onclick: () => set('update', { url: check.url }) }, 'Install')
-        : check !== false && h('button', { onclick: async () => {
-          try { check = await api('update/check'); } catch { check = false; toast('No update server: use a file'); }
+        : h('button', { onclick: async () => {
+          toast('Checking…');
+          try { check = await api('update/check'); } catch (e) { check = { error: e.message }; }
           draw();
-        } }, 'Check for updates'),
+        } }, check ? 'Check again' : 'Check for updates'),
       h('button', { onclick: () => file.click() }, 'From a file…'), file));
 }
 
@@ -453,7 +478,7 @@ function diagCard() {
       toast('Running self-test…');
       try { selftest = await api('selftest', {}); draw(); } catch (e) { toast(e.message); }
     } }, 'Run self-test'),
-    h('button', { onclick: () => confirm('Restart the receiver?') && set('reboot', {}).then(() => toast('Restarting…')) }, 'Restart'),
+    h('button', { onclick: () => confirm('Restart the receiver?') && set('reboot', {}).then((ok) => ok && toast('Restarting…')) }, 'Restart'),
     h('button', { onclick: async () => {
       if (!confirm('Erase Wi-Fi, name, remote and sound settings and start again from setup?')) return;
       // the receiver only erases once someone unplugs it (a page on the network can't)
