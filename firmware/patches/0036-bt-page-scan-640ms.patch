@@ -1,0 +1,21 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -135,6 +135,17 @@
+   add_dependencies(__idf_spotify set_cspot_permissions)
+ endif()
+ 
++# hifi-receiver: page scan every 640 ms rather than Bluedroid's 1.28 s.
++# Wi-Fi and Bluetooth share one radio, and with Wi-Fi audio playing the
++# coex arbiter can take a scan window, so a phone paging for about 5 s
++# (about 4 windows at 1.28 s) sometimes gets no answer ("connect failed,
++# reason 0" on the handover bench, 2026-11-18). The window stays
++# 11.25 ms, so connectable Bluetooth takes about 1.8% more air time from
++# Wi-Fi. bt_target.h guards the default with #ifndef, and the scan-mode
++# call (esp_bt_gap_set_scan_mode) passes 0, which BTM_SetConnectability
++# turns into this default.
++target_compile_definitions(__idf_bt PRIVATE BTM_DEFAULT_CONN_INTERVAL=0x0400)
++
+ # ======================= DEBUG FLAGS ============================
+ 
+ #target_compile_definitions(__idf_esp_eth PRIVATE -DLOG_LOCAL_LEVEL=ESP_LOG_INFO)

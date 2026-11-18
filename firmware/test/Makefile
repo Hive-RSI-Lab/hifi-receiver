@@ -49,7 +49,7 @@ UP_FILES = components/squeezelite/controls.c components/squeezelite/decode_exter
 	components/driver_bt/bt_app_core.c components/spotify/Shim.cpp components/spotify/cspot/src/LoginBlob.cpp \
 	components/spotify/cspot_private.h components/spotify/cspot_sink.h $(CSPOT)/include/LoginBlob.h \
 	$(CSPOT)/include/ConstantParameters.h $(CSPOT)/bell/external/cJSON/cJSON.c $(CSPOT)/bell/external/cJSON/cJSON.h \
-	components/wifi-manager/network_manager_handlers.c components/raop/dmap_parser.c components/raop/dmap_parser.h main/esp_app_main.c \
+	components/wifi-manager/network_manager_handlers.c components/raop/dmap_parser.c components/raop/dmap_parser.h main/esp_app_main.c CMakeLists.txt \
 	components/raop/rtp.c components/codecs/inc/mad/mad.h $(ALAC_FILES) \
 	$(BELL)/io/TLSSocket.cpp $(BELL)/io/include/TLSSocket.h $(BELL)/io/include/BellSocket.h \
 	$(BELL)/io/X509Bundle.cpp $(BELL)/io/include/X509Bundle.h \
