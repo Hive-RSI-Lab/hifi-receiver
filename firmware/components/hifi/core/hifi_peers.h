@@ -55,7 +55,9 @@ void hifi_peers_expire(hifi_peers_t *t, long long now_us);
 void hifi_peers_txt(hifi_peer_t *p, const char *key, const char *val, size_t len);
 
 /* the reply: {"peers":[self first, then the rest by name], "searching"}.
- * A row with self's IP or host is self (its own answer) and is left out.
+ * A row with self's IP (or, before self has one, its host) is self's own
+ * answer and is left out; self's row takes that answer's host, the name
+ * mDNS settled on (hifi-lite-2 when another box had hifi-lite).
  * Returns 200, or 500 with an error if cap was too small (HIFI_PEERS_REPLY
  * always fits). */
 int hifi_peers_json(const hifi_peers_t *t, const hifi_peer_t *self, bool searching, long long now_us,

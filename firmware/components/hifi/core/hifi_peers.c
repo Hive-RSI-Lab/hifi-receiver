@@ -78,9 +78,13 @@ static void row(hj_t *j, const hifi_peer_t *p, bool self, long long now_us) {
 	hj_obj_end(j);
 }
 
+/* by IP once self has one: two boxes set to the same host name both ask
+ * mDNS for it, and all but one end up as name-2, name-3; matching on the
+ * set name would hide the box that kept it */
 static bool is_self(const hifi_peer_t *p, const hifi_peer_t *self) {
-	return self && ((self->ip[0] && !strcmp(p->ip, self->ip)) ||
-			(self->host[0] && !strcasecmp(p->host, self->host)));
+	if (!self) return false;
+	if (self->ip[0]) return !strcmp(p->ip, self->ip);
+	return self->host[0] && !strcasecmp(p->host, self->host);
 }
 
 static const char *label(const hifi_peer_t *p) {
@@ -90,8 +94,14 @@ static const char *label(const hifi_peer_t *p) {
 int hifi_peers_json(const hifi_peers_t *t, const hifi_peer_t *self, bool searching, long long now_us,
 		    char *out, size_t cap) {
 	int idx[HIFI_PEERS_MAX], n = 0;
+	hifi_peer_t me;
+	if (self) me = *self;
 	for (int i = 0; t && i < t->n; i++) {
-		if (is_self(&t->p[i], self)) continue;
+		if (is_self(&t->p[i], self)) {
+			/* its own answer has the host name mDNS settled on */
+			if (self->ip[0]) memcpy(me.host, t->p[i].host, sizeof(me.host));
+			continue;
+		}
 		/* by name, then IP: the same order on every box */
 		int k = n++;
 		while (k > 0) {
@@ -107,7 +117,7 @@ int hifi_peers_json(const hifi_peers_t *t, const hifi_peer_t *self, bool searchi
 	hj_init(&j, out, cap);
 	hj_obj(&j, NULL);
 	hj_arr(&j, "peers");
-	if (self) row(&j, self, true, now_us);
+	if (self) row(&j, &me, true, now_us);
 	for (int k = 0; k < n; k++) row(&j, &t->p[idx[k]], false, now_us);
 	hj_arr_end(&j);
 	hj_bool(&j, "searching", searching);

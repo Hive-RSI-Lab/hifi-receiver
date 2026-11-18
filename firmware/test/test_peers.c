@@ -180,6 +180,24 @@ int main(void) {
 	hifi_peers_txt(&cc, "name", "Den\n\x01x", 6);
 	CHECK_STR(cc.name, "Den  x");
 
+	/* two boxes set to hifi-lite: mDNS renamed this one hifi-lite-3, and
+	 * the one that kept hifi-lite is listed, not taken for self (Lite 2
+	 * and 3, 2026-11-18) */
+	hifi_peers_t two = {0};
+	hifi_peer_t me2 = peer("192.168.2.220", "hifi-lite", "Lite 2");
+	hifi_peer_t heard = peer("192.168.2.220", "hifi-lite-3", "Lite 2");
+	hifi_peer_t kept = peer("192.168.2.218", "hifi-lite", "Lite 5");
+	hifi_peers_seen(&two, &heard, S(1));
+	hifi_peers_seen(&two, &kept, S(1));
+	CHECK(hifi_peers_json(&two, &me2, false, S(2), out, sizeof(out)) == 200);
+	CHECK(strstr(out, "{\"name\":\"Lite 2\",\"host\":\"hifi-lite-3\",\"ip\":\"192.168.2.220\"") != NULL);
+	CHECK(strstr(out, "{\"name\":\"Lite 5\",\"host\":\"hifi-lite\",\"ip\":\"192.168.2.218\"") != NULL);
+	CHECK(strstr(out, "\"self\":true") < strstr(out, "Lite 5"));
+	/* before it has an address, its host name is all it has */
+	hifi_peer_t noip = peer("", "hifi-lite", "Lite 2");
+	hifi_peers_json(&two, &noip, false, S(2), out, sizeof(out));
+	CHECK(strstr(out, "Lite 5") == NULL);
+
 	/* no table, no self */
 	CHECK(hifi_peers_json(NULL, NULL, false, 0, out, sizeof(out)) == 200);
 	CHECK_STR(out, "{\"peers\":[],\"searching\":false}");
