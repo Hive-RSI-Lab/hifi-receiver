@@ -289,6 +289,50 @@ static void jitter_buffer(void) {
 	free(mem);
 }
 
+/* Old packets are split: one already played (still in its slot) counts as
+ * old_dup, the rest go in late[] by how many packets behind the one playing
+ * they came. */
+static void late_packets(void) {
+	const int NS = 128;
+	void *mem = aligned_alloc(8, (hifi_party_jb_bytes(NS) + 7) & ~(size_t) 7);
+	hifi_party_jb_t jb;
+	hifi_party_jb_init(&jb, mem, NS);
+	uint32_t out[HIFI_PARTY_FRAMES];
+	/* 0..199 arrive but for 190 and 150; play 200 */
+	for (int64_t p = 0; p < 200; p++)
+		if (p != 190 && p != 150) put_packet(&jb, p, 0);
+	hifi_party_jb_read(&jb, 200 * HIFI_PARTY_FRAMES, out, HIFI_PARTY_FRAMES);
+	CHECK(jb.floor == 199);
+	uint32_t old0 = jb.old;
+	put_packet(&jb, 195, 0); /* played already: a late duplicate */
+	CHECK(jb.old_dup == 1);
+	put_packet(&jb, 190, 0); /* 10 behind: the 50-100 ms bin */
+	CHECK(jb.late[1] == 1);
+	put_packet(&jb, 150, 0); /* 50 behind: 300-600 ms */
+	CHECK(jb.late[3] == 1);
+	/* 0 arrived, but its slot holds 128 now: 200 behind counts as late */
+	put_packet(&jb, 0, 0);
+	CHECK(jb.late[4] == 1);
+	CHECK(jb.late[0] == 0 && jb.late[2] == 0);
+	/* the bounds: 6 behind is the first bin, 7 the second, 37 the third */
+	hifi_party_jb_t j2;
+	void *m2 = aligned_alloc(8, (hifi_party_jb_bytes(NS) + 7) & ~(size_t) 7);
+	hifi_party_jb_init(&j2, m2, NS);
+	put_packet(&j2, 300, 0);
+	hifi_party_jb_read(&j2, 300 * HIFI_PARTY_FRAMES, out, HIFI_PARTY_FRAMES);
+	CHECK(j2.floor == 299);
+	put_packet(&j2, 294, 0); /* 6 behind */
+	put_packet(&j2, 293, 0); /* 7 */
+	put_packet(&j2, 263, 0); /* 37 */
+	put_packet(&j2, 262, 0); /* 38 */
+	put_packet(&j2, 225, 0); /* 75 */
+	CHECK(j2.late[0] == 1 && j2.late[1] == 1 && j2.late[2] == 1 && j2.late[3] == 2 && j2.late[4] == 0);
+	CHECK(j2.old == 5 && j2.old_dup == 0);
+	CHECK(jb.old == old0 + 4);
+	free(m2);
+	free(mem);
+}
+
 /* The follower's crystal runs ppm off the leader's: each block of 2048
  * frames the follower writes covers 2048 * (1 + ppm) of the leader's. The
  * controller keeps it within two frames, slips at most once per block, and
@@ -429,6 +473,7 @@ int main(void) {
 	packets();
 	clock_fit();
 	jitter_buffer();
+	late_packets();
 	controller(0);
 	controller(30);
 	controller(-30);
