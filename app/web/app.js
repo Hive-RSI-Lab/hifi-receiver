@@ -7,6 +7,10 @@
 'use strict';
 
 const POLL_MS = 2000;
+// A poll gives up after this: a board that restarts mid-request (an update)
+// never answers it, and without a limit the page waited on the browser's own
+// timeout, minutes, before it noticed the receiver was back.
+const POLL_WAIT_MS = 5000;
 const EQ_PRESETS = {
   Flat: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   'Bass +': [6, 5, 3, 1, 0, 0, 0, 0, 0, 0],
@@ -37,6 +41,8 @@ let I = null;          // GET info: what the box is
 let S = null;          // the last GET state
 let tab = 'play';
 let online = false;
+let slow = 0;          // polls in a row that ran out of time: the board answers one request at a time, so a long one (an update check) holds the rest
+let uploading = false; // a firmware file is going up: the board answers nothing else until it is written
 let holding = false;   // a slider is under a finger: don't redraw over it
 let scan = null;       // Wi-Fi networks from the last scan
 let selftest = null;   // the last self-test result
@@ -70,13 +76,20 @@ function toast(msg, ms = 3000) {
   clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, ms);
 }
 
-async function api(path, body) {
+async function api(path, body, waitMs) {
   const opt = body === undefined ? {} : {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
-  const r = await fetch('api/v1/' + path, opt);
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw Object.assign(new Error(j.error || r.statusText), { status: r.status });
-  return j;
+  // AbortController, not AbortSignal.timeout: that one is iOS 16+ only
+  const c = waitMs ? new AbortController() : null;
+  const t = c && setTimeout(() => c.abort(), waitMs);
+  if (c) opt.signal = c.signal;
+  try {
+    const r = await fetch('api/v1/' + path, opt);
+    // a body cut off by the limit is no answer, not an empty one
+    const j = await r.json().catch((e) => { if (e.name === 'AbortError') throw e; return {}; });
+    if (!r.ok) throw Object.assign(new Error(j.error || r.statusText), { status: r.status });
+    return j;
+  } finally { clearTimeout(t); }
 }
 
 // set() posts a change and takes the state it answers with; a call whose
@@ -281,19 +294,24 @@ function showPick(cs, now = Date.now()) {
 // The calls go out together: each is a round trip, and through the relay one
 // costs about 120 ms, so four in a row held the first draw for half a second.
 async function poll(boot) {
+  if (uploading) { setTimeout(() => poll(boot), POLL_MS); return; }
   try {
-    const party = P !== null && tab === 'play' ? api('party').catch((e) => (e.status === 404 ? null : P)) : P;
+    const w = POLL_WAIT_MS;
+    const party = P !== null && tab === 'play' ? api('party', undefined, w).catch((e) => (e.status === 404 ? null : P)) : P;
     // info too while there is none or the board was out of reach
     const fresh = !I || !online;
-    const [i, st, p] = await Promise.all([fresh ? api('info') : I, api('state'), party]);
+    const [i, st, p] = await Promise.all([fresh ? api('info', undefined, w) : I, api('state', undefined, w), party]);
     if (fresh) I = i;
     // and again after a restart (an update changes the firmware version)
-    else if (S && st.uptime_s < S.uptime_s) I = await api('info');
+    else if (S && st.uptime_s < S.uptime_s) I = await api('info', undefined, w);
     P = p;
     if (boot && st.net && st.net.mode === 'ap' && !PAGES[want]) tab = 'setup';
     if (st && st.audio) { S = st; remember(st); }
-    online = true;
-  } catch { online = false; }
+    online = true; slow = 0;
+  } catch (e) {
+    // one poll out of time is a busy board; a second in a row, or any other failure, is a lost one
+    online = online && e.name === 'AbortError' && ++slow < 2;
+  }
   // one draw per poll; a bug in a page isn't the receiver going away, and
   // whatever went wrong, keep polling
   try { draw(); } finally { $('#conn').classList.toggle('on', online); setTimeout(() => poll(boot && !online), POLL_MS); }
@@ -628,6 +646,8 @@ function updateCard() {
 function upload(f) {
   if (!f) return;
   const x = new XMLHttpRequest();
+  uploading = true;
+  x.onloadend = () => { uploading = false; };
   x.open('POST', 'api/v1/update/upload');
   x.setRequestHeader('Content-Type', 'application/octet-stream');
   x.upload.onprogress = (e) => {
@@ -635,6 +655,8 @@ function upload(f) {
   };
   x.onload = () => { try { take(JSON.parse(x.responseText)); } catch { /* the next poll shows it */ } };
   x.onerror = () => toast('Upload failed');
+  x.timeout = 120000;   // a board gone after the last byte would otherwise hold the polls until the browser gives up
+  x.ontimeout = () => toast('Upload failed: no answer');
   x.send(f);
 }
 

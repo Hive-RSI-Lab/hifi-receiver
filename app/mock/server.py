@@ -109,7 +109,7 @@ class Receiver:
         self.s = initial_state(model, ap, pdo, fault)
         self.lock = threading.Lock()
         self.armed = None  # when a factory reset was armed
-        self.fail = {}  # tests: path -> (HTTP code, error) to answer instead, as a receiver that can't
+        self.fail = {}  # tests: path -> (HTTP code, error) to answer instead (code None: never answer), as a receiver that can't
         self.t0 = time.time() - (5 * 3600 + 17 * 60)
         # party mode (GET/POST party): the mock's one other receiver, Kitchen,
         # is on and waiting, so switching party on here makes this one lead
@@ -486,6 +486,10 @@ def handler(rx: Receiver):
         def failed(self, p):
             if p in rx.fail:
                 code, msg = rx.fail[p]
+                if code is None:  # a receiver that restarted mid-request: no answer at all
+                    time.sleep(30)
+                    self.close_connection = True
+                    return True
                 self.send(code, {"error": msg})
                 return True
             return False
