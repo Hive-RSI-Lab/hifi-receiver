@@ -58,7 +58,7 @@ config HIFI_PARTY_STANDIN
 		sends to one follower on the station's subnet, so the leader's internal RAM can be measured
 		with Bluetooth or another source playing before the real worker is
 		on a board. Needs SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY. The app only
-		(patch 0030), never recovery; the self-test names it a measurement image.
+		(patch 0032), never recovery; the self-test names it a measurement image.
 		Set only by board/lite-party-standin; never in a product image.
 
 config HIFI_PARTY_STANDIN_PEER

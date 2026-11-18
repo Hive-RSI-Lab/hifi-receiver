@@ -6,9 +6,9 @@ weakly, so the recovery image never sends. Measurement images only.
 diff --git a/components/platform_console/app_squeezelite/CMakeLists.txt b/components/platform_console/app_squeezelite/CMakeLists.txt
 --- a/components/platform_console/app_squeezelite/CMakeLists.txt
 +++ b/components/platform_console/app_squeezelite/CMakeLists.txt
-@@ -27,6 +27,11 @@ endif()
- if(CONFIG_HIFI_LAB_PSRAM_STACKS)
- 	target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=lab_flac")
+@@ -31,6 +31,11 @@ endif()
+ if(CONFIG_HIFI_LAB)
+ 	target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=lab_party")
  endif()
 +# hifi: and the party stand-in, a measurement task that sends to one board;
 +# the recovery app must never send

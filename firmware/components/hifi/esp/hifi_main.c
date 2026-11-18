@@ -55,7 +55,7 @@
 #endif
 #ifdef CONFIG_HIFI_PARTY_STANDIN
 /* esp/party_standin.c, a measurement image only, linked into the app alone
- * (patch 0030): weak, so the recovery image has none and never sends */
+ * (patch 0032): weak, so the recovery image has none and never sends */
 void hifi_party_standin_start(void) __attribute__((weak));
 #endif
 #include "hifi_json.h"

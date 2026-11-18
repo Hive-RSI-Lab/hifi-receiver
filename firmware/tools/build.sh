@@ -98,13 +98,13 @@ for lab in lab_flac:0027 lab_party:0031; do
 	fi
 done
 # the party stand-in (a measurement task that sends) is in the app when the
-# sdkconfig asks for it, and never in recovery (patch 0030)
+# sdkconfig asks for it, and never in recovery (patch 0032)
 if grep -q '^CONFIG_HIFI_PARTY_STANDIN=y' sdkconfig && ! grep -q "(party_standin.c.obj)" build/squeezelite.map; then
-	echo "build.sh: the party stand-in is enabled but not linked into the app (patch 0030)" >&2
+	echo "build.sh: the party stand-in is enabled but not linked into the app (patch 0032)" >&2
 	exit 1
 fi
 if grep -q "(party_standin.c.obj)" build/recovery.map; then
-	echo "build.sh: the party stand-in is linked into the recovery image (patch 0030)" >&2
+	echo "build.sh: the party stand-in is linked into the recovery image (patch 0032)" >&2
 	exit 1
 fi
 # boot the main app (ota_0) after a flash from scratch, not the recovery app
