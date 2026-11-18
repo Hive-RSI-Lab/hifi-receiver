@@ -26,12 +26,23 @@ static const char *TAG = "hifi_peers";
 static EXT_RAM_ATTR hifi_peers_t table;
 static mdns_search_once_t *search;
 static long long round_us = -HIFI_PEERS_ROUND_US;
+/* set once an mDNS question was made: mDNS is up (mdns_query_async_new
+ * refuses without a server) and the got-IP handler that starts it has set
+ * the host name on the line after mdns_init */
+static volatile bool mdns_up;
 /* the API task and the console's "api peers" both read the list */
 static SemaphoreHandle_t lock;
 static StaticSemaphore_t lock_buf;
 
 void hifi_peers_init(void) {
 	if (!lock) lock = xSemaphoreCreateMutexStatic(&lock_buf);
+}
+
+/* mdns_hostname_exists reads the mDNS server with no check, so it panics
+ * before mDNS starts (setup AP, Wi-Fi not joined yet): until then the
+ * configured name is the one we have */
+static bool ours(const char *host) {
+	return !mdns_up || mdns_hostname_exists(host);
 }
 
 static void collect(mdns_result_t *res, long long now) {
@@ -58,7 +69,7 @@ int hifi_peers_op(char *out, size_t cap) {
 	hifi_ops.info(&info);
 	hifi_net_ip(self.ip, sizeof(self.ip));
 	/* the name mDNS settled on: hifi-lite-2 when another box had hifi-lite */
-	hifi_peers_own_host(info.hostname, mdns_hostname_exists, self.host, sizeof(self.host));
+	hifi_peers_own_host(info.hostname, ours, self.host, sizeof(self.host));
 	snprintf(self.name, sizeof(self.name), "%s", info.name);
 	snprintf(self.model, sizeof(self.model), "%s", info.model ? info.model : "");
 	snprintf(self.fw, sizeof(self.fw), "%s", info.fw ? info.fw : "");
@@ -79,7 +90,7 @@ int hifi_peers_op(char *out, size_t cap) {
 	if (!search && self.ip[0] && now - round_us >= HIFI_PEERS_ROUND_US) {
 		/* its own answer takes a result too */
 		search = mdns_query_async_new(NULL, "_hifi", "_tcp", MDNS_TYPE_PTR, 3000, HIFI_PEERS_MAX + 1, NULL);
-		if (search) round_us = now;
+		if (search) round_us = now, mdns_up = true;
 		else ESP_LOGW(TAG, "no mDNS question (mDNS not up?)");
 	}
 	hifi_peers_expire(&table, now);
