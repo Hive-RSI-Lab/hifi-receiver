@@ -508,9 +508,10 @@ static int r_eq(const hifi_ops_t *ops, const char *body, char *out, size_t cap) 
 }
 
 static int r_name(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
-	char name[65];
-	if (!hj_get_str(body, "name", name, sizeof(name)) || !name[0]) return error(out, cap, 400, "name is required");
-	if (strlen(name) > 32) return error(out, cap, 400, "name must be 32 characters or fewer");
+	char name[65] = "";
+	int got = hj_get_str_fit(body, "name", name, sizeof(name));
+	if (got == HJ_STR_CUT || strlen(name) > 32) return error(out, cap, 400, "name must be 32 characters or fewer");
+	if (got != HJ_STR_OK || !name[0]) return error(out, cap, 400, "name is required");
 	/* the name goes into squeezelite's command line (autoexec1, -n "<name>"):
 	 * a quote or backslash there would end the word and add options */
 	for (const char *c = name; *c; c++) {
@@ -989,9 +990,13 @@ static int r_capture(const hifi_ops_t *ops, const char *body, char *out, size_t 
 
 static int r_wifi(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
 	if (!ops->set_wifi) return error(out, cap, 404, "no Wi-Fi setup in this build");
-	char ssid[33], pw[65] = "";
-	if (!hj_get_str(body, "ssid", ssid, sizeof(ssid)) || !ssid[0]) return error(out, cap, 400, "ssid is required");
-	hj_get_str(body, "password", pw, sizeof(pw));
+	char ssid[33] = "", pw[65] = "";
+	/* a cut ssid or password would join another network, or fail as a wrong password */
+	int got = hj_get_str_fit(body, "ssid", ssid, sizeof(ssid));
+	if (got == HJ_STR_CUT) return error(out, cap, 400, "ssid must be 32 bytes or fewer");
+	if (got != HJ_STR_OK || !ssid[0]) return error(out, cap, 400, "ssid is required");
+	if (hj_get_str_fit(body, "password", pw, sizeof(pw)) == HJ_STR_CUT)
+		return error(out, cap, 400, "password must be 64 characters or fewer");
 	if (ops->set_wifi(ssid, pw)) return error(out, cap, 500, "couldn't start joining");
 	return ok_reply(out, cap);
 }
@@ -1001,15 +1006,14 @@ static int r_remote(const hifi_ops_t *ops, bool post, const char *body, char *ou
 	if (post) {
 		char url[128] = "", user[48] = "", pw[96] = "", prefix[24] = "hifi", key[66] = "";
 		if (!ops->remote_set) return error(out, cap, 404, "no relay in this build");
-		const char *sv;
-		size_t sl;
-		/* a cut-off url or token would dial somewhere else, or fail without saying why */
-		if ((hj_get_str_span(body, "url", &sv, &sl) && sl >= sizeof(url)) ||
-		    (hj_get_str_span(body, "user", &sv, &sl) && sl >= sizeof(user)) ||
-		    (hj_get_str_span(body, "password", &sv, &sl) && sl >= sizeof(pw)))
+		/* a cut-off url, token or prefix would dial somewhere else, or fail without saying why */
+		if (hj_get_str_fit(body, "url", url, sizeof(url)) == HJ_STR_CUT ||
+		    hj_get_str_fit(body, "user", user, sizeof(user)) == HJ_STR_CUT ||
+		    hj_get_str_fit(body, "password", pw, sizeof(pw)) == HJ_STR_CUT)
 			return error(out, cap, 400, "url, user or password is too long");
-		hj_get_str(body, "url", url, sizeof(url));
-		hj_get_str(body, "key", key, sizeof(key));
+		if (hj_get_str_fit(body, "prefix", prefix, sizeof(prefix)) == HJ_STR_CUT)
+			return error(out, cap, 400, "prefix is too long");
+		hj_get_str_fit(body, "key", key, sizeof(key)); /* a cut key reads "": hifi_ws_key_ok refuses it below */
 		bool ws = !strncmp(url, "wss://", 6);
 		if (url[0] && !ws && strncmp(url, "mqtts://", 8) && strncmp(url, "mqtt://", 7))
 			return error(out, cap, 400, "url must be wss://host/path (the Hive's endpoint), mqtts://host:port "
@@ -1019,9 +1023,6 @@ static int r_remote(const hifi_ops_t *ops, bool post, const char *body, char *ou
 		if (ws && hifi_ws_url_parse(url, host, &port, path)) return error(out, cap, 400, "that wss:// url can't be dialled");
 		if (ws && !hifi_ws_key_ok(key)) return error(out, cap, 400, "a wss:// link needs its key: 64 hex digits");
 		if (!ws) key[0] = '\0';
-		hj_get_str(body, "user", user, sizeof(user));
-		hj_get_str(body, "password", pw, sizeof(pw));
-		hj_get_str(body, "prefix", prefix, sizeof(prefix));
 		if (!prefix[0] || strpbrk(prefix, "+#/ ")) return error(out, cap, 400, "prefix must be one topic level");
 		/* the service token goes into the dial's headers: nothing that could start another one */
 		char hd[HIFI_WS_HEADERS_MAX];

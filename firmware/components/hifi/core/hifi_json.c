@@ -276,24 +276,24 @@ static const char *find(const char *json, const char *k) {
 	return hj_valid_object(json) ? find_in(json, k) : NULL;
 }
 
-/* Decodes a JSON string (see str_char). Text that hj_valid_object refuses
- * (a bad string anywhere in it) leaves out "" and returns false. A long one is cut at a whole character,
- * escaped or raw UTF-8, and still terminated. */
-bool hj_get_str(const char *json, const char *k, char *out, size_t n) {
-	if (!n) return false;
+/* Decodes a JSON string (see str_char) into out, cut at a whole character
+ * when it doesn't fit; *cut says whether it was. 1 if read, 0 if the key is
+ * missing or not a string, -1 if the text isn't an object hj_valid_object
+ * takes (out is "" then, for a caller that ignores the answer). */
+static int get_str(const char *json, const char *k, char *out, size_t n, bool *cut) {
+	*cut = false;
 	if (!hj_valid_object(json)) {
-		out[0] = '\0'; /* a caller that ignores the answer reads "" */
-		return false;
+		out[0] = '\0';
+		return -1;
 	}
 	const char *p = find_in(json, k);
-	if (!p || *p != '"') return false;
+	if (!p || *p != '"') return 0;
 	size_t i = 0;
-	bool full = false;
 	char b[4];
 	int len;
 	for (p++; (len = str_char(&p, b)) > 0;) {
-		if (full || i + (size_t) len >= n) {
-			full = true; /* cut here: nothing after a character that didn't fit */
+		if (*cut || i + (size_t) len >= n) {
+			*cut = true; /* cut here: nothing after a character that didn't fit */
 			continue;
 		}
 		memcpy(out + i, b, (size_t) len);
@@ -301,10 +301,30 @@ bool hj_get_str(const char *json, const char *k, char *out, size_t n) {
 	}
 	if (len < 0) { /* can't happen: hj_valid_object read the same string */
 		out[0] = '\0';
-		return false;
+		return -1;
 	}
 	out[i] = '\0';
-	return true;
+	return 1;
+}
+
+/* Text that hj_valid_object refuses (a bad string anywhere in it) leaves out
+ * "" and returns false. A long string is cut at a whole character, escaped or
+ * raw UTF-8, and still terminated. */
+bool hj_get_str(const char *json, const char *k, char *out, size_t n) {
+	bool cut;
+	return n && get_str(json, k, out, n, &cut) > 0;
+}
+
+int hj_get_str_fit(const char *json, const char *k, char *out, size_t n) {
+	bool cut;
+	if (!n) return HJ_STR_CUT;
+	int r = get_str(json, k, out, n, &cut);
+	if (r <= 0) return HJ_STR_NONE;
+	if (cut) {
+		out[0] = '\0';
+		return HJ_STR_CUT;
+	}
+	return HJ_STR_OK;
 }
 
 bool hj_get_num(const char *json, const char *k, double *out) {

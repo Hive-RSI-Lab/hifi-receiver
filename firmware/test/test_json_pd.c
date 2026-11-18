@@ -116,6 +116,33 @@ static void reader(void) {
 	strcpy(e, "x");
 	CHECK(!hj_get_str("{\"s\":\"ok\",\"t\":\"\\q\"}", "s", e, sizeof(e)) && !e[0]);
 
+	/* hj_get_str_fit: whole or nothing. A value that doesn't fit says so and
+	 * leaves "", never a prefix of itself; escapes count as what they decode to. */
+	{
+		char f[5];
+		CHECK(hj_get_str_fit("{\"s\":\"abcd\"}", "s", f, sizeof(f)) == HJ_STR_OK && !strcmp(f, "abcd"));
+		CHECK(hj_get_str_fit("{\"s\":\"abcde\"}", "s", f, sizeof(f)) == HJ_STR_CUT && !f[0]);
+		/* six bytes on the wire, four once decoded: it fits */
+		CHECK(hj_get_str_fit("{\"s\":\"a\\rb\\/\"}", "s", f, sizeof(f)) == HJ_STR_OK && !strcmp(f, "a\rb/"));
+		/* each of these is short on the wire or in characters but too long decoded */
+		CHECK(hj_get_str_fit("{\"s\":\"abc\\r\\n\"}", "s", f, sizeof(f)) == HJ_STR_CUT && !f[0]);
+		CHECK(hj_get_str_fit("{\"s\":\"abc\\u00e9\"}", "s", f, sizeof(f)) == HJ_STR_CUT && !f[0]);
+		CHECK(hj_get_str_fit("{\"s\":\"\\ud83d\\ude00\"}", "s", f, sizeof(f)) == HJ_STR_OK && !strcmp(f, "\xf0\x9f\x98\x80"));
+		CHECK(hj_get_str_fit("{\"s\":\"a\\ud83d\\ude00\"}", "s", f, sizeof(f)) == HJ_STR_CUT && !f[0]);
+		CHECK(hj_get_str_fit("{\"s\":\"ab\xc3\xa9\"}", "s", f, sizeof(f)) == HJ_STR_OK);
+		CHECK(hj_get_str_fit("{\"s\":\"abc\xc3\xa9\"}", "s", f, sizeof(f)) == HJ_STR_CUT && !f[0]);
+		/* missing or not a string: the caller's default stays */
+		strcpy(f, "dflt");
+		CHECK(hj_get_str_fit("{\"t\":\"x\"}", "s", f, sizeof(f)) == HJ_STR_NONE && !strcmp(f, "dflt"));
+		CHECK(hj_get_str_fit("{\"s\":12}", "s", f, sizeof(f)) == HJ_STR_NONE && !strcmp(f, "dflt"));
+		/* a bad string anywhere: none, and "" as hj_get_str leaves it */
+		CHECK(hj_get_str_fit("{\"s\":\"ok\",\"t\":\"\\q\"}", "s", f, sizeof(f)) == HJ_STR_NONE && !f[0]);
+		CHECK(hj_get_str_fit("{\"s\":\"\"}", "s", f, sizeof(f)) == HJ_STR_OK && !f[0]);
+		CHECK(hj_get_str_fit("{\"s\":\"\"}", "s", f, 0) == HJ_STR_CUT);
+		/* hj_get_str still cuts, as its callers expect */
+		CHECK(hj_get_str("{\"s\":\"abc\\r\\n\"}", "s", f, sizeof(f)) && !strcmp(f, "abc\r"));
+	}
+
 	CHECK(hj_valid_object("{}"));
 	CHECK(!hj_valid_object("{"));
 	CHECK(!hj_valid_object("{\"a\":}"));

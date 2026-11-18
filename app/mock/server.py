@@ -301,6 +301,11 @@ class Receiver:
                 ssid = str(b.get("ssid", ""))
                 if not ssid:
                     raise ValueError("ssid is required")
+                # as the firmware: too long is refused, never joined cut short
+                if len(ssid.encode()) > 32:
+                    raise ValueError("ssid must be 32 bytes or fewer")
+                if len(str(b.get("password", "")).encode()) > 64:
+                    raise ValueError("password must be 64 characters or fewer")
                 # as the firmware: {"ok": true} at once, and the result shows
                 # only in net (on that network, or not); a wrong password changes nothing
                 if PASSWORDS.get(ssid) == b.get("password", ""):
