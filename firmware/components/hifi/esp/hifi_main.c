@@ -1125,6 +1125,9 @@ static int op_set_name(const char *name) {
 	if (set_squeezelite_player_name) err |= set_squeezelite_player_name(f, name) != 0;
 	if (set_cspot_player_name) err |= set_cspot_player_name(f, name) != 0;
 	fclose(f);
+	/* the other boxes' Speakers lists see it at their next question; a
+	 * box not advertising yet puts it in at its first advertise */
+	mdns_service_txt_item_set("_hifi", "_tcp", "name", name);
 	return err ? -1 : 0; /* the services pick it up at the next restart */
 }
 
@@ -1617,14 +1620,32 @@ static bool netif_ip(esp_netif_t *n, esp_netif_ip_info_t *ip) {
 	       esp_netif_get_ip_info(n, ip) == ESP_OK && ip->ip.addr;
 }
 
-bool hifi_net_ip(char *buf, size_t n) {
-	/* the Wi-Fi station first, then Ethernet, then any other that is up: on
-	 * Ethernet (Plus/Ultra, QEMU's open_eth) WIFI_STA_DEF has no address.
-	 * (ESP-IDF v4.4 has no esp_netif_get_default_netif) */
+/* the Wi-Fi station first, then Ethernet, then any other that is up: on
+ * Ethernet (Plus/Ultra, QEMU's open_eth) WIFI_STA_DEF has no address.
+ * (ESP-IDF v4.4 has no esp_netif_get_default_netif) */
+static bool lan_ip(esp_netif_ip_info_t *ip) {
+	bool ok = netif_ip(esp_netif_get_handle_from_ifkey("WIFI_STA_DEF"), ip) ||
+		  netif_ip(esp_netif_get_handle_from_ifkey("ETH_DEF"), ip);
+	for (esp_netif_t *i = esp_netif_next(NULL); !ok && i; i = esp_netif_next(i)) ok = netif_ip(i, ip);
+	return ok;
+}
+
+static uint32_t host_order(const esp_ip4_addr_t *a) {
+	return (uint32_t) esp_ip4_addr1(a) << 24 | (uint32_t) esp_ip4_addr2(a) << 16 |
+	       (uint32_t) esp_ip4_addr3(a) << 8 | (uint32_t) esp_ip4_addr4(a);
+}
+
+bool hifi_net_lan(uint32_t *net, uint32_t *mask) {
 	esp_netif_ip_info_t ip = {0};
-	bool ok = netif_ip(esp_netif_get_handle_from_ifkey("WIFI_STA_DEF"), &ip) ||
-		  netif_ip(esp_netif_get_handle_from_ifkey("ETH_DEF"), &ip);
-	for (esp_netif_t *i = esp_netif_next(NULL); !ok && i; i = esp_netif_next(i)) ok = netif_ip(i, &ip);
+	bool ok = lan_ip(&ip);
+	*net = ok ? host_order(&ip.ip) : 0;
+	*mask = ok ? host_order(&ip.netmask) : 0;
+	return ok;
+}
+
+bool hifi_net_ip(char *buf, size_t n) {
+	esp_netif_ip_info_t ip = {0};
+	bool ok = lan_ip(&ip);
 	if (buf && n) {
 		if (ok) snprintf(buf, n, IPSTR, IP2STR(&ip.ip));
 		else buf[0] = 0;
@@ -1677,6 +1698,7 @@ const hifi_ops_t hifi_ops = {
 	.lab = hifi_lab_esp_op,
 #endif
 	.party = hifi_party_op,
+	.peers = hifi_peers_op,
 #ifdef HIFI_HAS_LED_TEST
 	.set_led = hifi_bsp_set_led,
 #endif
@@ -1771,10 +1793,15 @@ static void services_task(void *arg) {
 		}
 		if (!mdns) {
 			if (hifi_net_ip(NULL, 0)) {
+				/* name: what the app's Speakers list shows (core/hifi_peers.h) */
+				hifi_info_t *info = calloc(1, sizeof(*info));
+				if (info) op_info(info);
 				mdns_txt_item_t txt[] = {
 					{"model", HIFI_MODEL}, {"board", HIFI_BOARD}, {"fw", HIFI_FW_VERSION}, {"api", "1"},
+					{"name", info ? info->name : HIFI_MODEL},
 				};
 				mdns = mdns_service_add(NULL, "_hifi", "_tcp", 80, txt, sizeof(txt) / sizeof(txt[0])) == ESP_OK;
+				free(info);
 				if (mdns) ESP_LOGI(TAG, "advertising _hifi._tcp");
 			}
 		}
@@ -1823,6 +1850,7 @@ static bool hifi_init(void) {
 	hifi_gate_reserve_pins(HIFI_LAN_RESERVED_PINS); /* first: bt_test_boot checks a line (L8) */
 	heap_caps_register_failed_alloc_callback(alloc_failed);
 	hifi_diag_init();
+	hifi_peers_init();
 	factory_boot();
 	bt_test_boot();
 	lock = xSemaphoreCreateMutex();

@@ -1048,6 +1048,22 @@ static void bttest(void) {
 	CHECK_STR(bt_sink, "HiFi Lite 3");
 }
 
+static int x_peers(char *o, size_t cap) {
+	snprintf(o, cap, "{\"peers\":[],\"searching\":true}");
+	return 200;
+}
+
+static void peers(void) {
+	CHECK(call("GET", "/api/v1/peers", NULL) == 404); /* a build without it */
+	CHECK_HAS(out, "doesn't list speakers");
+	hifi_ops_t x = ops;
+	x.peers = x_peers;
+	CHECK(hifi_api_handle(&x, "GET", "/api/v1/peers", NULL, out, sizeof(out)) == 200);
+	CHECK_STR(out, "{\"peers\":[],\"searching\":true}");
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/peers", "{}", out, sizeof(out)) == 405);
+	CHECK(hifi_api_reply_cap("/api/v1/peers", NULL) >= 6144);
+}
+
 static void loudness(void) {
 	/* a board without Boost: no caps entry, no state fields, 404 */
 	CHECK(call("GET", "/api/v1/info", NULL) == 200);
@@ -1096,6 +1112,7 @@ int main(void) {
 	i2c_console();
 	crash();
 	bttest();
+	peers();
 	loudness();
 	return check_report("api");
 }

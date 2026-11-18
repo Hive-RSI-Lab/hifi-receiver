@@ -8,6 +8,12 @@ is nothing to download from an app store, no account and no cloud. The same
 app serves all three tiers: it reads what the box can do from
 `GET /api/v1/info` and shows only those controls.
 
+Every receiver serves the whole app, and it opens on **Speakers**: every
+receiver on the same Wi-Fi, with its status and volume, and party mode
+across them. So one address reaches them all. The first box on a network
+answers at `hifi-lite.local`; mDNS renames the next ones `hifi-lite-2.local`
+and so on, and whichever one you open lists the others.
+
 Plan item 8. The code is in [`app/`](../app):
 
 | Path | What it is |
@@ -15,7 +21,8 @@ Plan item 8. The code is in [`app/`](../app):
 | `app/web/` | The app itself: `index.html`, `app.js`, `app.css`, the manifest, the service worker and the icons. Plain JavaScript with no framework and no build step, about 45 KB gzipped. |
 | `app/mock/server.py` | A mock receiver. It serves `app/web` and answers `/api/v1` the way the firmware does, for Lite, Plus or Ultra, on a good or weak charger, with or without a fault, or in first-run setup. Standard library only. |
 | `app/build.py` | Packs the app for the firmware: each file gzipped, plus `webapp_files.c`/`.h`, a table the firmware links in. It fails if the packed app is over 64 KB. |
-| `app/tests/test_app.py` | The tests: the API contract, the app's files, the pack, and the app rendered in headless Chrome against the mock. |
+| `app/tests/test_app.py` | The tests: the API contract, the app's files, the pack, the app rendered in headless Chrome against the mock, and a house of three mock speakers driven by clicks. |
+| `app/tests/drive.mjs` | Clicks through the app in headless Chrome over the DevTools protocol, for the `Clicks` tests. Node 22 or later. |
 | `app/screenshots.py` | Makes the screenshots on this page from the mock. |
 
 ## Screenshots
@@ -23,9 +30,17 @@ Plan item 8. The code is in [`app/`](../app):
 Taken against the mock at an iPhone's width (390 CSS px) by
 `python3 app/screenshots.py`.
 
+| Speakers | Starting a party | Party on |
+|---|---|---|
+| ![Speakers](app/speakers.png) | ![Who leads](app/party-lead.png) | ![Party](app/party-on.png) |
+
 | Play | Sound | Setup |
 |---|---|---|
 | ![Play](app/play.png) | ![Sound](app/sound.png) | ![Setup](app/setup.png) |
+
+| Pairing a phone |
+|---|
+| ![Pairing](app/pairing.png) |
 
 | First run (the receiver's own Wi-Fi) | Laptop port, 5 V | Amplifier fault |
 |---|---|---|
@@ -37,7 +52,46 @@ Taken against the mock at an iPhone's width (390 CSS px) by
 
 ## What it does
 
-There are three tabs.
+There are four tabs. Speakers is the whole house; Play, Sound and Setup are
+the receiver you opened.
+
+**Speakers** (the first page; the design is saved at
+`~/designs/hifi-lite-speakers-af9de`)
+- **A card for each receiver** on this Wi-Fi: a green dot when it answers,
+  its name and model, "this one" on the one you opened, what it is playing
+  (with play/pause and next), its volume and mute. Pills say "Leads party",
+  "Follows Kitchen", "Pairing · 1:42" or "Phone connected". A receiver that
+  stops answering goes grey to the bottom, "Offline · last heard 2 min ago".
+- **Volume stays per speaker**, in a party too: each receiver keeps its own
+  level (the firmware has no group volume).
+- **Tapping a card** opens that receiver: this one's Play page here, another
+  one's at its own address (`http://<its ip>/#play`), which serves the same
+  app.
+- **Party** (the bar at the bottom): *Start a party* opens a sheet in two
+  steps, who leads (the one playing is picked first), then who joins (up to
+  3). Start switches party on on the leader, then on each one joining. While
+  a party is on, the sheet shows the leader, each follower with "In step",
+  "Joining…" or "Not in step: why", and *Lead from this one*, *Remove*, *Add*
+  and *Stop party* (followers first, then the leader).
+- **Only this speaker found** when mDNS hears no other, and "This receiver's
+  firmware lists only itself" on a firmware without `GET peers`.
+- Power trouble on this receiver (a weak charger, a fault) shows at the top,
+  as on Play.
+
+**How it finds and drives the others.** The page asks the receiver it came
+from for `GET /api/v1/peers` every 10 s. That receiver asks mDNS for
+`_hifi._tcp` (every box advertises it, with its name, model and firmware in
+the TXT record) and answers `{peers: [this one first, then the others by
+name], searching}`. The page then reads each other one's `state` and
+`party` every 2 s **at that one's own address**, and sends its changes there
+too. A box answers such a request from another box's page through CORS, for
+a short list of routes only (below). Requests to another box go as
+`text/plain`, a CORS "simple" request, so there is no preflight. There is no
+proxy: a box never relays for another.
+
+**Rejected: Web Bluetooth.** It is Chrome-only (not Safari on iPhone), needs
+https, and the speakers are on the Wi-Fi anyway. The app shows whether a
+phone is on each speaker's Bluetooth and offers *Pair a new phone* instead.
 
 **Play**
 - **Now playing:** title, artist and album from Spotify, AirPlay, Bluetooth
@@ -87,7 +141,13 @@ what is playing; it doesn't choose it.
 
 **Setup**
 - **Wi-Fi:** scan, choose, password, join and forget. 2.4 GHz only.
-- **Name:** what Spotify, AirPlay and Bluetooth show the receiver as.
+- **Name and Bluetooth:** the name Spotify, AirPlay and Bluetooth show,
+  with *Rename*; whether a phone is on its Bluetooth; and *Pair a new phone*
+  (`POST bt/pair`), which makes it findable for 2 minutes with a countdown
+  and Cancel, then says "✓ Phone connected" or "No phone paired in 2
+  minutes" with *Try again*. It is off while the receiver follows a party
+  (followers turn their Bluetooth off). Pairing started on the box itself
+  shows the same countdown.
 - **Remote:** teach any IR remote. Tap Teach next to an action, then press
   the button on the remote. The actions are volume up/down, mute,
   play/pause, next, previous, input and standby.
@@ -104,7 +164,7 @@ what is playing; it doesn't choose it.
   - **Restart** and **Factory reset** (it asks you to unplug the receiver and
     plug it back in to finish: a page on the network can't erase it alone).
 
-**Notices** sit at the top of Play when something needs the user:
+**Notices** sit at the top of Play and Speakers when something needs the user:
 - **"Speakers off: charger too weak":** a 5 V port, so the amplifier is held
   off.
 - **"Speakers off: the supply is out of range":** under- or over-voltage.
@@ -220,6 +280,8 @@ those controls the app shows.
 | `POST led` | `{mode: "test"\|"auto"}` (where `caps.led`; replies `{ok: true}`) |
 | `POST backlight` | `{mode: "on"\|"off"\|"auto"}` (where `caps.backlight`; replies `{ok: true}`) |
 | `POST name` | `{name}` (1–32 characters) |
+| `GET peers` | replies `{peers: [{name, host, ip, model, fw, self, seen_s}], searching}`, this one first |
+| `POST bt/pair` | `{}` starts 2 minutes of pairing, `{on: false}` stops it; replies `{bt: {on, pairing, pairing_left_s, connected}}`, 409 while Bluetooth is off |
 | `GET wifi/scan` | replies `{networks: [{ssid, rssi, secure}]}` |
 | `POST wifi` | `{ssid, password}` |
 | `POST wifi/forget` | |
@@ -240,10 +302,34 @@ stable.
 **What was dropped from the first draft, and why:**
 - **A source picker.** squeezelite-esp32 can't start Spotify or AirPlay from
   the box.
-- **A Bluetooth pair button.** The sink is discoverable whenever no phone is
-  connected, so the Name card says that instead.
 - **Lite's "through EQ" line-in mode.** The Lite firmware routes the line in
   only through the ES8388's analog bypass.
+
+### From another speaker's page (CORS)
+
+A receiver answers a request whose `Origin` is another receiver on the LAN,
+with `Access-Control-Allow-Origin: <that origin>`, only when:
+- the Origin is `http://` and either a private IPv4 address on this box's
+  own subnet, or a speaker's own `.local` name (`hifi-lite`, `hifi-plus` or
+  `hifi-ultra`, maybe with `-2` and so on: `hifi-lite-2.local`);
+- the Host header is still this box's own name or IP (so DNS rebinding stays
+  shut);
+- and the route is one the Speakers page uses: `GET info`, `state`,
+  `state/<section>`, `peers` and `party`, and `POST volume`, `name`,
+  `control`, `party` and `bt/pair`.
+
+Wi-Fi, updates, reboot, reset, IR, the log and squeezelite's own pages stay
+same-origin. A page on the internet can't send such an Origin. This does
+widen what a browser allows: a page served by any other device on the same
+subnet (a printer, a NAS) could now drive those safe routes from a visitor's
+browser, which it could not before. Anything on the LAN could already call
+the API directly, so it gains nothing a device on the LAN didn't have; the
+routes that change Wi-Fi, firmware or settings stay shut to it. The code is
+`hifi_gate_allow_cross` in `firmware/components/hifi/core/hifi_gate.c`.
+
+The peers list keeps only boxes on the same subnet: a device that answers
+for `_hifi._tcp` with an address elsewhere is ignored, so the app never
+opens or polls it.
 
 ### How the firmware serves it
 
@@ -263,6 +349,7 @@ stable.
 
 ```sh
 python3 app/mock/server.py --model lite        # http://127.0.0.1:8080/
+python3 app/mock/server.py --house             # Kitchen, Living room, Bedroom from 8080 up; Kitchen leads a party
 python3 app/mock/server.py --ap                # first-run setup
 python3 app/mock/server.py --pdo 5x3           # a laptop port: amp off
 python3 app/mock/server.py --model ultra --fault
@@ -274,14 +361,22 @@ python3 app/screenshots.py                     # refresh the screenshots above
 To try it on a real phone, run the mock with `--host 0.0.0.0` on a laptop on
 the same Wi-Fi and open the laptop's address on port 8080.
 
-Against a real board, open the board's address. The app is same-origin, so
-nothing needs configuring.
+Against a real board, open the board's address. The app is same-origin for
+its own receiver and reaches the others through CORS, so nothing needs
+configuring.
 
 **Tested:** the API contract on all three models; every file the app
 references exists; `node --check` on the JS; the pack is under budget, the
 same bytes every time, and compiles with `cc -Wall -Werror`; and in headless
 Chrome against the mock, the Play page, first-run setup, the Setup page and
-the weak-charger notice.
+the weak-charger notice. Against `--house` (classes `House`, `HouseAPI`,
+`HouseBrowser`, `Clicks`): each box lists the others in `GET peers`, a
+request from another box's page gets CORS headers only on the safe routes,
+the Speakers page shows every card with its party role, and `drive.mjs`
+clicks through starting a party, removing a follower, stopping it, volume
+on another speaker, renaming and pairing a phone. The firmware side (the
+peers table and reply, the CORS gate) is in the host tests
+(`firmware/test/test_peers.c`, `test_gate.c`, `test_api.c`).
 
 **Not tested yet:** a real board (the firmware's API isn't built yet), a
 real iPhone or Android phone, and a captive-portal mini-browser.

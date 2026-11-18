@@ -27,6 +27,38 @@ bool hifi_gate_allow(const char *host, const char *origin, const char *const *na
 /* the Host header names an IPv4 or IPv6 address (port allowed) */
 bool hifi_gate_host_is_ip(const char *host);
 
+/* ---- the Speakers app: a page another speaker served (docs/app.md) ----
+ * The app on any box lists the speakers on the network and drives them, so
+ * a box also answers a request whose Origin is another speaker's page:
+ * http:// with a private IPv4 address (10/8, 172.16/12, 192.168/16,
+ * 169.254/16) on this box's own subnet (net and mask, host order; mask 0,
+ * no address yet: none), or a speaker's own mDNS name (hifi-lite,
+ * hifi-plus, hifi-ultra, maybe -N, then .local), any port. This widens
+ * what was same-origin only: any page served from this subnet (a router's
+ * or a printer's, say) could now use the routes below through a visitor's
+ * browser, which is no more than any device on the subnet can do itself.
+ * A page on the internet can't carry such an Origin. The Host test above
+ * still applies, so DNS rebinding stays shut, and only the routes the app
+ * uses across boxes pass (hifi_gate_cross_path): Wi-Fi, updates, reset,
+ * reboot, IR and squeezelite's own pages stay same-origin. The caller
+ * answers with Access-Control-Allow-Origin: <origin>. */
+bool hifi_gate_lan_origin(const char *origin, uint32_t net, uint32_t mask);
+
+/* a dotted private or link-local IPv4 address (the ranges above) */
+bool hifi_gate_private_v4(const char *ip);
+
+/* ip is private and on net/mask (host order; mask 0: false) */
+bool hifi_gate_on_net(const char *ip, uint32_t net, uint32_t mask);
+
+/* GET info, state, state/<section>, peers, party; POST volume, name,
+ * control, party, bt/pair (query allowed) */
+bool hifi_gate_cross_path(const char *path, const char *method);
+
+/* hifi_gate_allow refused it only for its Origin, and that Origin is a
+ * LAN page asking for a cross path: serve it, with CORS headers */
+bool hifi_gate_allow_cross(const char *host, const char *origin, const char *const *names, size_t n,
+			   uint32_t net, uint32_t mask, const char *path, const char *method);
+
 /* ---- what squeezelite's own UI (port 80) may change from the LAN ----
  * squeezelite's config.json and commands.json reach NVS and the console, which
  * also hold the Hive's dial-in (hifi_relay_*), the update URL and telnet.

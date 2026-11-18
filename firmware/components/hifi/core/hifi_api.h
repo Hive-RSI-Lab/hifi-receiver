@@ -256,6 +256,9 @@ typedef struct {
 	int (*party)(const char *sub, bool post, bool lan, const char *body, char *out, size_t cap);
 	/* on-board diagnostics (hifi_diag.h); NULL: diag answers 404 */
 	const hifi_diag_ops_t *diag;
+	/* the speakers on this network (hifi_peers.h): the reply in out, the
+	 * HTTP status returned; NULL: 404 */
+	int (*peers)(char *out, size_t cap);
 } hifi_ops_t;
 
 /* Where a request came from (security.md). The LAN (port 80) may play and
