@@ -1,0 +1,683 @@
+Bluetooth, AirPlay and Spotify hand the output over: the newest source to
+start audio takes it (hifi_source_decide, components/hifi/core/hifi_source.c),
+behind a short quiet fade (hifi_handover_quiet in hifi_main.c). The source
+that loses is ended properly: Spotify pauses then ends its session,
+Bluetooth gets an AVRCP pause and its link is dropped a second later
+(bt_sink_let_go), so the phone stops showing the Lite as its speaker. LMS
+taking over does the same to a phone (decode_phones_yield). Play, stop and
+rate events from a sink that doesn't hold the output are ignored, and its
+data is dropped: sink_data_handler checks ownership again under the output
+lock and after each wait for room. The two hooks are weak references,
+named with --undefined for the app only, as in 0031.
+
+A phone's Spotify login is accepted whenever its track could start, so a
+Bluetooth or AirPlay source holding the output doesn't turn it away. When
+a Spotify playlist ends (CSPOT_STOP), the output is let go and the title
+cleared, as for Bluetooth and AirPlay stopping. Lab images get
+hifi_lab_cspot/hifi_lab_cspot_data, the Spotify sink's handlers for the
+lab's "phone" stand-in (components/hifi/esp/lab_phone.c, -u lab_phone).
+
+A phone's audio start while another source plays (a notification sound, a
+paused app) is held, not taken: BT_SINK_CUTS_IN asks the rule first, and
+the phone takes over once AVRCP reports it playing, or after 1 s when it
+can't report play status (5 s when it can and doesn't); audio stopping
+first drops the hold. The LMS, AirPlay and Spotify yields to a phone happen
+only on a fresh start (a next track doesn't drop an idle phone), and a
+Spotify volume change refused during a handover is kept and applied once
+the track starts.
+diff --git a/components/driver_bt/bt_app_sink.c b/components/driver_bt/bt_app_sink.c
+index f620c74..8bdb2d6 100644
+--- a/components/driver_bt/bt_app_sink.c
++++ b/components/driver_bt/bt_app_sink.c
+@@ -178,14 +178,55 @@ static void idle_check(TimerHandle_t timer) {
+ 	}
+ }
+ 
++/* hifi: another source took the output, so the phone is paused and, a
++ * second later, dropped: it shows as paused rather than playing to a
++ * speaker that went quiet, and its notification sounds can't start A2DP and
++ * take the output back. The second lets it pause its app first; a phone
++ * that starts playing again meanwhile (taking the output back) is kept */
++#define LET_GO_MS 1000
++static TimerHandle_t s_let_go_timer;
++
++/* hifi: a phone that starts A2DP while another phone source plays, without
++ * having said it plays (AVRCP), is held: its audio is dropped and it doesn't
++ * take the output, as a notification sound starts A2DP the same way. It
++ * takes over once it reports playing, or after HOLD_NO_RN_MS when it can't
++ * report play status at all, or after HOLD_MAX_MS as a backstop for one
++ * that reports late. Its A2DP stopping first (the sound ended) cancels it */
++#define HOLD_NO_RN_MS 1000
++#define HOLD_MAX_MS 5000
++static TimerHandle_t s_hold_timer;
++static bool s_held, s_rc_playing;
++
++static void hold_cancel(void) {
++	s_held = false;
++	if (s_hold_timer) xTimerStop(s_hold_timer, 0);
++}
++
++static void let_go_check(TimerHandle_t timer) {
++	if (!s_remote_connected || s_audio == AUDIO_PLAYING) return;
++	ESP_LOGI(BT_AV_TAG, "another source has the output, letting the phone go");
++	esp_a2d_sink_disconnect(s_remote_bda);
++}
++
++void bt_sink_let_go(void) {
++	if (!s_remote_connected) return;
++	hold_cancel();
++	if (s_audio == AUDIO_PLAYING) {
++		esp_avrc_ct_send_passthrough_cmd(tl++ & 0x0f, ESP_AVRC_PT_CMD_PAUSE, ESP_AVRC_PT_CMD_STATE_PRESSED);
++		esp_avrc_ct_send_passthrough_cmd(tl++ & 0x0f, ESP_AVRC_PT_CMD_PAUSE, ESP_AVRC_PT_CMD_STATE_RELEASED);
++		/* this phone no longer counts as playing */
++		s_audio = AUDIO_CONNECTED;
++	}
++	s_rc_playing = false;
++	if (!s_let_go_timer || xTimerReset(s_let_go_timer, pdMS_TO_TICKS(100)) != pdPASS) esp_a2d_sink_disconnect(s_remote_bda);
++}
++
+ /* disconnection */
+ void bt_disconnect(void) {
+ 	displayer_control(DISPLAYER_SHUTDOWN);
+-	if (s_audio == AUDIO_PLAYING) esp_avrc_ct_send_passthrough_cmd(tl++ & 0x0f, ESP_AVRC_PT_CMD_STOP, ESP_AVRC_PT_CMD_STATE_PRESSED);
+-	actrls_unset();
+ 	ESP_LOGD(BT_AV_TAG, "forced disconnection %d", s_audio);
+-	/* another source took over: this phone no longer counts as playing */
+-	if (s_audio == AUDIO_PLAYING) s_audio = AUDIO_CONNECTED;
++	bt_sink_let_go();
++	actrls_unset();
+ }
+ 
+ /* update metadata if any */
+@@ -244,6 +285,41 @@ static bool cmd_handler(bt_sink_cmd_t cmd, ...) {
+ 	return true;
+ }
+ 
++/* the phone's audio started and may use the output: take it, or stop the
++ * phone when another source keeps it */
++static void bt_sink_take(void) {
++	hold_cancel();
++	if ((*bt_app_a2d_cmd_cb)(BT_SINK_AUDIO_STARTED, s_sample_rate)) {
++		
++		// hifi: the volume sent before is refused while another source owns the output
++		(*bt_app_a2d_cmd_cb)(BT_SINK_VOLUME, s_volume);
++
++		// if PLAY is sent before AUDIO_STARTED, generate the event here
++		s_audio = AUDIO_PLAYING;
++		(*bt_app_a2d_cmd_cb)(BT_SINK_PLAY);
++		
++		// force metadata update
++		update_metadata(true);
++		
++		actrls_set(controls, false, NULL, actrls_ir_action);
++	} else {
++		// if decoder is busy, stop it (would be better to not ACK this command, but don't know how)
++		esp_avrc_ct_send_passthrough_cmd(tl++ & 0x0f, ESP_AVRC_PT_CMD_STOP, ESP_AVRC_PT_CMD_STATE_PRESSED);	
++	}	
++}
++
++/* hifi: the hold ran out (on the BT task, as the timer task can't call
++ * into the sinks) */
++static void hold_expired(uint16_t event, void *param) {
++	if (!s_held || s_audio != AUDIO_CONNECTED) return;
++	ESP_LOGI(BT_AV_TAG, "phone kept its audio up, taking the output");
++	bt_sink_take();
++}
++
++static void hold_check(TimerHandle_t timer) {
++	bt_app_work_dispatch(hold_expired, 0, NULL, 0, NULL);
++}
++
+ /* callback for A2DP sink */
+ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
+ {
+@@ -323,6 +399,8 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
+         s_idle_s = 0;
+         if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) {
+             s_remote_connected = false;
++            hold_cancel();
++            s_rc_playing = false;
+             /* a link dropped mid-song reports no audio stop first: clear it
+              * here, or the next phone looks busy and is never let go */
+             if (s_audio != AUDIO_IDLE) {
+@@ -352,23 +430,22 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
+ 			// send memorized volume for devices that can't do absolute volume
+ 			(*bt_app_a2d_cmd_cb)(BT_SINK_VOLUME, s_volume);
+ 			
+-			// verify that we can take control
+-			if ((*bt_app_a2d_cmd_cb)(BT_SINK_AUDIO_STARTED, s_sample_rate)) {
+-				
+-				// if PLAY is sent before AUDIO_STARTED, generate the event here
+-				s_audio = AUDIO_PLAYING;
+-				(*bt_app_a2d_cmd_cb)(BT_SINK_PLAY);
+-				
+-				// force metadata update
+-				update_metadata(true);
+-				
+-				actrls_set(controls, false, NULL, actrls_ir_action);
++			// hifi: audio without a play report, while another phone source
++			// plays, may be a notification sound: hold it (above)
++			if (!s_rc_playing && (*bt_app_a2d_cmd_cb)(BT_SINK_CUTS_IN)) {
++				bool reports = esp_avrc_rn_evt_bit_mask_operation(ESP_AVRC_BIT_MASK_OP_TEST, &s_avrc_peer_rn_cap,
++				                                                  ESP_AVRC_RN_PLAY_STATUS_CHANGE);
++				s_held = true;
++				ESP_LOGI(BT_AV_TAG, "phone audio held until it plays");
++				if (!s_hold_timer || xTimerChangePeriod(s_hold_timer, pdMS_TO_TICKS(reports ? HOLD_MAX_MS : HOLD_NO_RN_MS),
++				                                        pdMS_TO_TICKS(100)) != pdPASS) bt_sink_take();
+ 			} else {
+-				// if decoder is busy, stop it (would be better to not ACK this command, but don't know how)
+-				esp_avrc_ct_send_passthrough_cmd(tl++ & 0x0f, ESP_AVRC_PT_CMD_STOP, ESP_AVRC_PT_CMD_STATE_PRESSED);	
+-			}	
++				// verify that we can take control
++				bt_sink_take();
++			}
+ 		} else if (ESP_A2D_AUDIO_STATE_STOPPED == a2d->audio_stat.state ||
+ 				   ESP_A2D_AUDIO_STATE_REMOTE_SUSPEND == a2d->audio_stat.state) {
++			hold_cancel();
+ 			(*bt_app_a2d_cmd_cb)(BT_SINK_AUDIO_STOPPED);
+ 			s_audio = AUDIO_IDLE;
+ 			actrls_unset();
+@@ -445,7 +522,14 @@ static void bt_av_notify_evt_handler(uint8_t event_id, esp_avrc_rn_param_t *even
+         break;
+     case ESP_AVRC_RN_PLAY_STATUS_CHANGE:
+         ESP_LOGD(BT_AV_TAG, "Playback status changed: 0x%x", event_parameter->playback);
+-		if (s_audio != AUDIO_IDLE) {
++		// hifi: whether the phone says it plays, kept even before its audio starts
++		if (event_parameter->playback == ESP_AVRC_PLAYBACK_PLAYING) s_rc_playing = true;
++		else if (event_parameter->playback == ESP_AVRC_PLAYBACK_PAUSED ||
++		         event_parameter->playback == ESP_AVRC_PLAYBACK_STOPPED) s_rc_playing = false;
++		if (s_held && s_rc_playing) {
++			// a held phone pressed play: it takes the output
++			bt_sink_take();
++		} else if (s_audio != AUDIO_IDLE) {
+ 			switch (event_parameter->playback) {
+ 			case ESP_AVRC_PLAYBACK_PLAYING:
+ 				// if decoder is busy then stop (would be better to not ACK this command, but don't know how)
+@@ -620,6 +704,10 @@ void bt_sink_init(bt_cmd_vcb_t cmd_cb, bt_data_cb_t data_cb)
+ 	bt_app_a2d_cmd_cb = cmd_handler;
+ 	cmd_handler_chain = cmd_cb;
+   	bt_app_a2d_data_cb = data_cb;
++
++	// hifi: the let-go and hold timers (above), made once
++	if (!s_let_go_timer) s_let_go_timer = xTimerCreate("bt_let_go", pdMS_TO_TICKS(LET_GO_MS), pdFALSE, NULL, let_go_check);
++	if (!s_hold_timer) s_hold_timer = xTimerCreate("bt_hold", pdMS_TO_TICKS(HOLD_MAX_MS), pdFALSE, NULL, hold_check);
+ 	
+ 	// create task and run event loop
+     bt_app_task_start_up(bt_av_hdl_stack_evt);
+@@ -665,6 +753,8 @@ void bt_sink_deinit(void)
+ {
+ 	s_sink_active = false;
+ 	s_remote_connected = false;
++	hold_cancel();
++	s_rc_playing = false;
+ 	s_audio = AUDIO_IDLE;
+ 	bt_app_task_shut_down();
+ }
+diff --git a/components/driver_bt/bt_app_sink.h b/components/driver_bt/bt_app_sink.h
+index f583bb5..f1f6ecc 100644
+--- a/components/driver_bt/bt_app_sink.h
++++ b/components/driver_bt/bt_app_sink.h
+@@ -14,7 +14,8 @@
+ 
+ #include "bt_app_core.h"
+ typedef enum { 	BT_SINK_CONNECTED, BT_SINK_DISCONNECTED, BT_SINK_AUDIO_STARTED, BT_SINK_AUDIO_STOPPED, BT_SINK_PLAY, BT_SINK_STOP, BT_SINK_PAUSE, 
+-				BT_SINK_RATE, BT_SINK_VOLUME, BT_SINK_METADATA, BT_SINK_PROGRESS } bt_sink_cmd_t;
++				BT_SINK_RATE, BT_SINK_VOLUME, BT_SINK_METADATA, BT_SINK_PROGRESS,
++				BT_SINK_CUTS_IN /* hifi: true if starting now would take the output from another phone source */ } bt_sink_cmd_t;
+ 				
+ typedef bool (*bt_cmd_vcb_t)(bt_sink_cmd_t cmd, va_list args);
+ typedef void (*bt_data_cb_t)(const uint8_t *data, uint32_t len);
+@@ -33,6 +34,8 @@ void bt_sink_deinit(void);
+  * @brief     force disconnection
+  */
+ void bt_disconnect(void);
++/* hifi: another source took over: pause the phone and drop it after a second */
++void bt_sink_let_go(void);
+ 
+ /**
+  * @brief     hifi: let a new phone pair (drop the connected one, or become discoverable)
+diff --git a/components/platform_console/app_squeezelite/CMakeLists.txt b/components/platform_console/app_squeezelite/CMakeLists.txt
+index f1e8be7..1ccd565 100644
+--- a/components/platform_console/app_squeezelite/CMakeLists.txt
++++ b/components/platform_console/app_squeezelite/CMakeLists.txt
+@@ -29,6 +29,16 @@ if(CONFIG_HIFI_LAB_PSRAM_STACKS)
+ endif()
+ # hifi: and party mode, which recovery has no use for and no room for
+ target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=hifi_party_op")
++# hifi: and the source handover's rule and quiet fade (decode_external.c
++# reaches them through weak references); in recovery they would drag
++# squeezelite in beside recovery's own decode stubs
++target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=hifi_source_decide")
++target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=hifi_handover_quiet")
++# hifi: and the lab's Spotify stand-in (lab_phone.c), which drives the
++# Spotify sink in decode_external.c
++if(CONFIG_HIFI_LAB AND CONFIG_CSPOT_SINK)
++	target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=lab_phone")
++endif()
+ 
+ idf_build_get_property(project_ver PROJECT_VER)
+ message("******************* ${project_ver}")
+diff --git a/components/spotify/cspot_sink.c b/components/spotify/cspot_sink.c
+index 8f6812e..25cdcbc 100644
+--- a/components/spotify/cspot_sink.c
++++ b/components/spotify/cspot_sink.c
+@@ -128,6 +128,10 @@ static bool cmd_handler(cspot_event_t event, ...) {
+ 	case CSPOT_PAUSE:
+ 		displayer_control(DISPLAYER_TIMER_PAUSE);
+ 		break;		
++	// hifi: the playlist has ended: nothing plays, so the title goes too
++	case CSPOT_STOP:
++		displayer_control(DISPLAYER_SUSPEND);
++		break;
+ 	case CSPOT_DISC:
+ 		actrls_unset();
+ 		displayer_control(DISPLAYER_SUSPEND);
+@@ -197,6 +201,9 @@ void cspot_sink_init(cspot_cmd_vcb_t cmd_cb, cspot_data_cb_t data_cb) {
+ void cspot_disconnect(void) {
+ 	ESP_LOGI(TAG, "forced disconnection");
+ 	displayer_control(DISPLAYER_SHUTDOWN);
++	/* hifi: pause first, so the Spotify app shows paused rather than playing
++	 * on a speaker that has gone quiet */
++	cspot_cmd(cspot, CSPOT_PAUSE, NULL);
+ 	cspot_cmd(cspot, CSPOT_DISC, NULL);
+ 	actrls_unset();
+ }
+diff --git a/components/squeezelite/decode_external.c b/components/squeezelite/decode_external.c
+index 3b44628..0230f97 100644
+--- a/components/squeezelite/decode_external.c
++++ b/components/squeezelite/decode_external.c
+@@ -63,22 +63,79 @@ extern struct buffer *outputbuf;
+ // this is the only system-wide loglevel variable
+ extern log_level loglevel;
+ 
++/****************************************************************************************
++ * hifi: who may use the output when a phone source (Bluetooth, AirPlay,
++ * Spotify) starts or acts: components/hifi/core/hifi_source.c decides. The
++ * newest phone source takes the output from another one, which is paused and
++ * let go behind a short fade (hifi_handover_quiet). Both are weak, so without
++ * them the old rule holds: the first source keeps the output while it plays
++ */
++enum { SRC_ALLOW, SRC_TAKEOVER, SRC_REFUSE, SRC_IGNORE };
++enum { SRC_EV_START, SRC_EV_OWN, SRC_EV_SESSION, SRC_EV_PLAY };
++extern int hifi_source_decide(int owner, bool busy, int own, int ev) __attribute__((weak));
++extern void hifi_handover_quiet(bool down) __attribute__((weak));
++extern bool hifi_output_flushed; /* output.c: emptied on purpose, not an underrun */
++
++static int source_decide(int own, int ev) {
++	int owner = output.external;
++	bool busy = output.state > OUTPUT_STOPPED;
++	if (hifi_source_decide) return hifi_source_decide(owner, busy, own, ev);
++	return owner != own && busy ? SRC_REFUSE : SRC_ALLOW;
++}
++
++/* the phone source old gives the output up: it is paused and let go
++ * (decode_restore) behind the fade, then the output is emptied for the new
++ * one. No lock is held, as the sinks' own handlers run synchronously.
++ * - The decision before this isn't under a lock: two phones starting in the
++ *   same instant can both take over, and the last one's start wins. A mutex
++ *   across decide and takeover could deadlock, as decode_restore calls into
++ *   the other sink's task.
++ * - The 200 ms fade blocks the calling sink's task.
++ * - The old source's own stop can arrive during the fade; it is a session
++ *   event, allowed, and only lets go of an output that is being given up.
++ * - If the old source already let go (Spotify's disconnect clears
++ *   output.external), nothing is flushed here; the new source's start
++ *   flushes the buffer itself */
++static void phone_takeover(int old, int own) {
++	bool busy = output.state > OUTPUT_STOPPED;
++	if (busy && hifi_handover_quiet) hifi_handover_quiet(true);
++	decode_restore(old);
++	LOCK_O;
++	if (output.external == old) {
++		_buf_flush(outputbuf);
++		hifi_output_flushed = true;
++		output.state = OUTPUT_STOPPED;
++		output.external = 0;
++		output.stop_time = gettime_ms();
++		sink_state = SINK_ABORT;
++	}
++	UNLOCK_O;
++	if (busy && hifi_handover_quiet) hifi_handover_quiet(false);
++	LOG_INFO("source %d took the output from %d%s", own, old, busy ? " while it played" : "");
++}
++
+ /****************************************************************************************
+  * Common sink data handler
+  */
+-static uint32_t sink_data_handler(const uint8_t *data, uint32_t len, int retries)
++static uint32_t sink_data_handler(const uint8_t *data, uint32_t len, int retries, int own)
+ {
+     size_t bytes, space;
+     uint32_t written = 0;    
+ 	int wait = retries + 1;
+ 		
+ 	// would be better to lock output, but really, it does not matter
+-	if (!output.external) {
+-		LOG_SDEBUG("Cannot use external sink while LMS is controlling player");
++	// hifi: only the owner writes, so a source that lost the output can't mix in
++	if (!output.external || output.external != own) {
++		LOG_SDEBUG("Cannot use external sink %d while %d is controlling player", own, output.external);
+ 		return 0;
+ 	} 
+ 
+ 	LOCK_O;
++	// hifi: checked again under the lock, as a takeover may have run since
++	if (output.external != own) {
++		UNLOCK_O;
++		return 0;
++	}
+ 	if (sink_state == SINK_ABORT) sink_state = SINK_RUNNING;
+ 
+ 	// there will always be room at some point
+@@ -109,10 +166,12 @@ static uint32_t sink_data_handler(const uint8_t *data, uint32_t len, int retries
+             if (!retries) break;
+ 			wait--;
+ 			UNLOCK_O; usleep(50000); LOCK_O;
++			// hifi: another source took the output while we waited
++			if (output.external != own) break;
+ 		}
+ 	}	
+ 
+-	if (!wait) {
++	if (!wait && output.external == own) {
+ 		LOG_WARN("Waited too long, dropping frames %d", len);
+ 	}
+     
+@@ -129,7 +188,6 @@ static uint32_t sink_data_handler(const uint8_t *data, uint32_t len, int retries
+  */
+ static u32_t hifi_gain_l, hifi_gain_r;
+ static bool hifi_unity;
+-extern bool hifi_output_flushed; /* output.c: emptied on purpose, not an underrun */
+ 
+ static bool hifi_owns_output(void) {
+ 	return output.external == DECODE_HIFI_TEST || output.external == DECODE_HIFI_LINE ||
+@@ -179,7 +237,7 @@ void hifi_party_sink_start(u32_t rate) {
+ 
+ uint32_t hifi_sink_write(const uint8_t *data, uint32_t len) {
+ 	if (!hifi_owns_output()) return 0;
+-	return sink_data_handler(data, len, 10);
++	return sink_data_handler(data, len, 10, output.external);
+ }
+ 
+ void hifi_sink_stop(void) {
+@@ -227,7 +285,7 @@ int hifi_sink_source(void) {
+ extern void hifi_lab_a2dp_rx(int64_t t, uint32_t len, uint32_t written, bool discarded) __attribute__((weak));
+ static void bt_sink_data_handler(const uint8_t *data, uint32_t len) {
+     int64_t t = hifi_lab_a2dp_rx ? esp_timer_get_time() : 0;
+-    uint32_t written = sink_data_handler(data, len, 10);
++    uint32_t written = sink_data_handler(data, len, 10, DECODE_BT);
+     if (hifi_lab_a2dp_rx)
+         hifi_lab_a2dp_rx(t, len, written, output.external != DECODE_BT || sink_state != SINK_RUNNING);
+ }    
+@@ -237,11 +295,24 @@ static void bt_sink_data_handler(const uint8_t *data, uint32_t len) {
+  */
+ static bool bt_sink_cmd_handler(bt_sink_cmd_t cmd, va_list args) 
+ {
++	// hifi: would this phone's audio cut off another phone source (bt_app_sink.c holds it until it plays)
++	if (cmd == BT_SINK_CUTS_IN) return source_decide(DECODE_BT, SRC_EV_START) == SRC_TAKEOVER;
+ 	// don't LOCK_O as there is always a chance that LMS takes control later anyway
+-	if (output.external != DECODE_BT && output.state > OUTPUT_STOPPED) {
++	// hifi: Bluetooth starting takes the output from AirPlay or Spotify
++	int ev = cmd == BT_SINK_AUDIO_STARTED ? SRC_EV_START : cmd == BT_SINK_PLAY ? SRC_EV_PLAY :
++	         cmd == BT_SINK_AUDIO_STOPPED || cmd == BT_SINK_CONNECTED || cmd == BT_SINK_DISCONNECTED ?
++	         SRC_EV_SESSION : SRC_EV_OWN;
++	int old = output.external;
++	switch (source_decide(DECODE_BT, ev)) {
++	case SRC_REFUSE:
+ 		LOG_WARN("Cannot use BT sink while LMS/AirPlay/CSpot are controlling player %d", output.external);
+ 		return false;
+-	} 	
++	case SRC_IGNORE:
++		return true;
++	case SRC_TAKEOVER:
++		phone_takeover(old, DECODE_BT);
++		break;
++	}
+ 
+ 	LOCK_D;
+ 
+@@ -311,7 +382,7 @@ static void raop_sink_data_handler(const uint8_t *data, uint32_t len, u32_t play
+ 	raop_sync.playtime = playtime;
+ 	raop_sync.len = len;
+ 
+-	sink_data_handler(data, len, 10);
++	sink_data_handler(data, len, 10, DECODE_RAOP);
+ }	
+ 
+ /****************************************************************************************
+@@ -322,10 +393,22 @@ static bool raop_sink_cmd_handler(raop_event_t event, va_list args)
+ 	// hifi: a cast to a party follower takes the output from the party (spec 8.4)
+ 	if (event == RAOP_SETUP && output.external == DECODE_HIFI_PARTY) hifi_sink_stop();
+ 	// don't LOCK_O as there is always a chance that LMS takes control later anyway
+-	if (output.external != DECODE_RAOP && output.state > OUTPUT_STOPPED) {
++	// hifi: an AirPlay session takes the output from Bluetooth or Spotify
++	int ev = event == RAOP_SETUP ? SRC_EV_START : event == RAOP_PLAY ? SRC_EV_PLAY :
++	         event == RAOP_STOP || event == RAOP_STALLED ? SRC_EV_SESSION : SRC_EV_OWN;
++	int old = output.external;
++	switch (source_decide(DECODE_RAOP, ev)) {
++	case SRC_REFUSE:
+ 		LOG_WARN("Cannot use Airplay sink while LMS/BT/CSpot are controlling player %d", output.external);
+ 		return false;
+-	} 	
++	case SRC_IGNORE:
++		return true;
++	case SRC_TAKEOVER:
++		phone_takeover(old, DECODE_RAOP);
++		break;
++	}
++	// hifi: only when AirPlay starts afresh, not at each new session of its own
++	if (event == RAOP_SETUP && old != DECODE_RAOP) decode_phones_yield(DECODE_RAOP);
+ 
+ 	LOCK_D;
+ 	
+@@ -455,27 +538,67 @@ static bool raop_sink_cmd_handler(raop_event_t event, va_list args)
+  */
+ #if CONFIG_CSPOT_SINK
+ static uint32_t cspot_sink_data_handler(const uint8_t *data, uint32_t len) {
+-    return sink_data_handler(data, len, 0);
++    return sink_data_handler(data, len, 0, DECODE_CSPOT);
+ }    
+ 
+ /****************************************************************************************
+  * cspot sink command handler
+  */
+ 
++/* hifi: a Spotify volume change that came while another source held the
++ * output, applied when Spotify's track takes it; -1 when none */
++static int cspot_volume_held = -1;
++
++static void cspot_volume_apply(u32_t volume) {
++	volume = 65536 * powf(volume / 65536.0f, 4);
++	set_volume(volume, volume);
++}
++
+ static bool cspot_cmd_handler(cspot_event_t cmd, va_list args) 
+ {
+ 	// hifi: a cast to a party follower takes the output from the party (spec 8.4)
+ 	if (cmd == CSPOT_START && output.external == DECODE_HIFI_PARTY) hifi_sink_stop();
++	// hifi: a source that lost the output still asks how much is queued
++	if ((cmd == CSPOT_QUERY_REMAINING || cmd == CSPOT_QUERY_STARTED) && output.external != DECODE_CSPOT) {
++		*va_arg(args, uint32_t*) = 0;
++		return true;
++	}
++	// hifi: a phone picking the Lite in the Spotify app asks first (the
++	// zeroconf login): yes whenever its track could start, so a Bluetooth or
++	// AirPlay source holding the output doesn't turn it away; the track's
++	// start takes the output
++	if (cmd == CSPOT_BUSY) return source_decide(DECODE_CSPOT, SRC_EV_START) != SRC_REFUSE;
++	// hifi: a held volume is the ended session's, whoever holds the output
++	if (cmd == CSPOT_DISC) cspot_volume_held = -1;
+ 	// don't LOCK_O as there is always a chance that LMS takes control later anyway
+-	if (output.external != DECODE_CSPOT && output.state > OUTPUT_STOPPED) {
++	// hifi: a Spotify track starting takes the output from Bluetooth or AirPlay
++	int ev = cmd == CSPOT_START ? SRC_EV_START : cmd == CSPOT_PLAY ? SRC_EV_PLAY :
++	         cmd == CSPOT_DISC || cmd == CSPOT_STOP ? SRC_EV_SESSION : SRC_EV_OWN;
++	int old = output.external;
++	switch (source_decide(DECODE_CSPOT, ev)) {
++	case SRC_REFUSE:
++		// hifi: the phone's volume is kept for when its track takes the output
++		if (cmd == CSPOT_VOLUME) {
++			cspot_volume_held = va_arg(args, u32_t);
++			return true;
++		}
+ 		LOG_WARN("Cannot use CSpot sink while LMS/BT/Airplay are controlling player %d", output.external);
+ 		return false;
+-	} 	
++	case SRC_IGNORE:
++		return true;
++	case SRC_TAKEOVER:
++		phone_takeover(old, DECODE_CSPOT);
++		break;
++	}
++	// hifi: only when Spotify starts afresh, not at each track: a phone that
++	// connected since is kept (its notification sounds are held, bt_app_sink.c)
++	if (cmd == CSPOT_START && old != DECODE_CSPOT) decode_phones_yield(DECODE_CSPOT);
+ 
+ 	LOCK_D;
+ 	
+ 	if (cmd != CSPOT_VOLUME) LOCK_O;
+ 
++	int volume_held = -1;
+ 	switch(cmd) {
+ 	case CSPOT_START:
+ 		output.current_sample_rate = output.next_sample_rate = va_arg(args, u32_t);
+@@ -489,6 +612,9 @@ static bool cspot_cmd_handler(cspot_event_t cmd, va_list args)
+         _buf_limit(outputbuf, 0);
+ 		if (decode.state != DECODE_STOPPED) decode.state = DECODE_ERROR;
+ 		LOG_INFO("CSpot start track");
++		// applied below, as set_volume takes the output lock
++		volume_held = cspot_volume_held;
++		cspot_volume_held = -1;
+ 		break;
+ 	case CSPOT_DISC:
+ 		_buf_flush(outputbuf);
+@@ -498,6 +624,15 @@ static bool cspot_cmd_handler(cspot_event_t cmd, va_list args)
+ 		output.stop_time = gettime_ms();
+ 		LOG_INFO("CSpot disconnected");
+ 		break;
++	// hifi: the last track of a playlist has played out (Shim.cpp sends this
++	// once nothing is queued): let the output go, as Bluetooth and AirPlay do
++	// when they stop, so it doesn't show playing and the next start is fresh
++	case CSPOT_STOP:
++		if (output.state > OUTPUT_STOPPED) output.state = OUTPUT_STOPPED;
++		output.external = 0;
++		output.stop_time = gettime_ms();
++		LOG_INFO("CSpot stopped");
++		break;
+ 	case CSPOT_PLAY:
+ 		sink_state = SINK_RUNNING;			
+ 		output.state = OUTPUT_RUNNING;
+@@ -538,8 +673,8 @@ static bool cspot_cmd_handler(cspot_event_t cmd, va_list args)
+ 	case CSPOT_VOLUME: {
+ 		u32_t volume = va_arg(args, u32_t);
+ 		LOG_INFO("CSpot volume %u", volume);
+-		volume = 65536 * powf(volume / 65536.0f, 4);
+-		set_volume(volume, volume);
++		cspot_volume_held = -1;
++		cspot_volume_apply(volume);
+ 		break;
+ 	default:
+ 		break;
+@@ -547,10 +682,47 @@ static bool cspot_cmd_handler(cspot_event_t cmd, va_list args)
+ 	}
+ 	
+ 	if (cmd != CSPOT_VOLUME) UNLOCK_O;
++	if (volume_held >= 0) cspot_volume_apply(volume_held);
+ 	UNLOCK_D;
+ 	
+ 	return true;
+ }
++
++#if CONFIG_HIFI_LAB
++/* hifi: the lab's "phone" experiment (components/hifi/esp/lab_phone.c)
++ * stands in for a Spotify app: it calls the Spotify sink's own handlers, as
++ * cspot does. op: 0 login (CSPOT_BUSY), 1 a track starts at rate, 2 play,
++ * 3 pause, 4 the session ends, 5 the playlist has ended (CSPOT_STOP), 6 true
++ * while audio is still queued (CSPOT_QUERY_REMAINING) */
++static bool lab_cspot_cmd(cspot_event_t cmd, ...) {
++	va_list args;
++	va_start(args, cmd);
++	bool ok = cspot_cmd_handler(cmd, args);
++	va_end(args);
++	return ok;
++}
++
++bool hifi_lab_cspot(int op, uint32_t rate) {
++	switch (op) {
++	case 0: return lab_cspot_cmd(CSPOT_BUSY);
++	case 1: return lab_cspot_cmd(CSPOT_START, rate);
++	case 2: return lab_cspot_cmd(CSPOT_PLAY);
++	case 3: return lab_cspot_cmd(CSPOT_PAUSE);
++	case 4: return lab_cspot_cmd(CSPOT_DISC);
++	case 5: return lab_cspot_cmd(CSPOT_STOP);
++	case 6: {
++		uint32_t ms = 0;
++		lab_cspot_cmd(CSPOT_QUERY_REMAINING, &ms);
++		return ms > 0;
++	}
++	default: return false;
++	}
++}
++
++uint32_t hifi_lab_cspot_data(const uint8_t *data, uint32_t len) {
++	return cspot_sink_data_handler(data, len);
++}
++#endif
+ #endif
+ 
+ #if CONFIG_BT_SINK
+@@ -664,6 +836,16 @@ void deregister_external(void) {
+ #endif
+ }
+ 
++/* hifi: a source other than keep starts, so a Bluetooth phone that is
++ * connected but idle is let go too: its notification sounds would otherwise
++ * start A2DP and take the output (bt_sink_let_go) */
++void decode_phones_yield(int keep) {
++#if CONFIG_BT_SINK
++	if (keep != DECODE_BT && enable_bt_sink && !bt_sink_off && !strcasestr(output.device, "BT"))
++		bt_sink_let_go();
++#endif
++}
++
+ void decode_restore(int external) {
+ 	switch (external) {
+ #if CONFIG_BT_SINK		
+diff --git a/components/squeezelite/embedded.h b/components/squeezelite/embedded.h
+index debab02..8b2d43e 100644
+--- a/components/squeezelite/embedded.h
++++ b/components/squeezelite/embedded.h
+@@ -83,6 +83,7 @@ int 		embedded_init(void);
+ void 		register_external(void);
+ void 		deregister_external(void);
+ void 		decode_restore(int external);
++void 		decode_phones_yield(int keep); // hifi: let an idle Bluetooth phone go
+ void        powering(bool on);
+ // used when other client wants to use slimproto socket to send messages
+ extern mutex_type slimp_mutex;
+diff --git a/components/squeezelite/slimproto.c b/components/squeezelite/slimproto.c
+index 54e9b31..0466d40 100644
+--- a/components/squeezelite/slimproto.c
++++ b/components/squeezelite/slimproto.c
+@@ -295,6 +295,9 @@ void sendIR(u32_t code, u32_t ts) {
+ }
+ #endif
+ 
++// hifi: weak, so recovery (slimproto without decode_external) still links
++extern void decode_phones_yield(int keep) __attribute__((weak));
++
+ static void process_strm(u8_t *pkt, int len) {
+ 	struct strm_packet *strm = (struct strm_packet *)pkt;
+ 
+@@ -401,7 +404,11 @@ static void process_strm(u8_t *pkt, int len) {
+ 			sentSTMu = sentSTMo = sentSTMl = false;
+ #if EMBEDDED
+ 			// not protected so that restore can call synchronously sink handlers
++			// hifi: when LMS starts afresh (not its next track), an idle
++			// Bluetooth phone lets go too
++			bool lms_starts = output.external || output.state <= OUTPUT_STOPPED;
+ 			if (output.external) decode_restore(output.external);
++			if (lms_starts && decode_phones_yield) decode_phones_yield(0);
+ 			LOCK_O;
+ 			output.external = 0;
+ 			_buf_limit(outputbuf, 0);

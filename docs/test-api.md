@@ -285,9 +285,13 @@ Both are checked before either is set, and kept across restarts. Shown as
 
 ## `POST /api/v1/name`
 
-`{"name": "Kitchen"}`, 1–32 characters: the player name in AirPlay,
-Bluetooth, Spotify and LMS. The services take it at the next restart. The
-hostname stays `hifi-lite`. Reply: the full `/state`.
+`{"name": "Kitchen"}`, 1–32 bytes of UTF-8 (`\u00e9` counts as two): the
+player name in AirPlay, Bluetooth, Spotify and LMS. The services take it at
+the next restart. The hostname stays `hifi-lite`. Reply: the full `/state`.
+A 400 for a control character (`\r`, `\u001f`, DEL), or `"` or `\`, which
+would reach squeezelite's command line. A body with `\u0000`, an unknown
+escape, bad hex or a lone surrogate in any string is refused whole ("body
+must be a JSON object"), on every POST.
 
 ## `POST /api/v1/reboot`, `POST /api/v1/reset`
 
@@ -682,7 +686,10 @@ on the router: no UPnP, no port forward, broadcast only on the subnet.
   takes; `other_ap: true` as in `why`. It needs two announces from one
   address whose TSF moves on with the time between them, so one replayed
   announce doesn't set it, but a recorded run of them played back at its own
-  pace can.
+  pace can. `skip_s` while a leader this board joined sent it no CLOCK:
+  the seconds until it tries that leader again (10 s, doubling up to 60 s
+  each time the same one fails again; with more than one such leader, the
+  longest wait).
 - `bt`: whether the Bluetooth sink is on. It stays on only on a picked
   leader or while Bluetooth plays: connect the phone before switching party on.
 

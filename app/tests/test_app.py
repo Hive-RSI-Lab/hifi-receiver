@@ -122,6 +122,8 @@ class API(unittest.TestCase):
                            ("loudness", {}), ("loudness", {"boost_db": 10}), ("loudness", {"boost_db": "6"}),
                            ("loudness", {"heat_cap_w": 1}), ("loudness", {"boost_db": 3, "heat_cap_w": 40}),
                            ("channel", {}), ("channel", {"channel": "centre"}),
+                           ("wifi", {"ssid": "x" * 31 + "\u00e9", "password": "p"}),  # 33 bytes
+                           ("wifi", {"ssid": "Home", "password": "p" * 65}),
                            ("sub", {"level_db": -8.5})):  # over Lite's caps.sub.max_db
             code, s = self.m.post(path, body)
             self.assertEqual(code, 400, (path, body))
@@ -145,11 +147,17 @@ class API(unittest.TestCase):
         self.assertEqual((code, p["on"], p["role"]), (200, False, "off"))
 
     def test_wifi_join_and_forget(self):
-        code, s = self.m.post("wifi", {"ssid": "Home", "password": "wrong"})
-        self.assertEqual(s["net"]["join"]["state"], "failed")
-        code, s = self.m.post("wifi", {"ssid": "Home", "password": "hunter22"})
-        self.assertEqual(s["net"]["join"]["state"], "ok")
+        # as the firmware: {"ok": true} either way, and no net.join; the result shows in net
+        self.m.srv.rx.s["net"].update(mode="ap", ssid="", ip="192.168.4.1")
+        self.assertEqual(self.m.post("wifi", {"ssid": "Home", "password": "wrong"}), (200, {"ok": True}))
+        net = self.m.get("api/v1/state")["net"]
+        self.assertEqual((net["mode"], "join" in net), ("ap", False))
+        self.assertEqual(self.m.post("wifi", {"ssid": "Home", "password": "hunter22"}), (200, {"ok": True}))
+        net = self.m.get("api/v1/state")["net"]
+        self.assertEqual((net["mode"], net["ssid"]), ("sta", "Home"))
         code, s = self.m.post("wifi/forget", {})
+        self.assertEqual(s, {"ok": True})
+        s = self.m.get("api/v1/state")
         self.assertEqual(s["net"]["mode"], "ap")
         self.assertTrue(any(n["ssid"] == "Home" for n in self.m.get("api/v1/wifi/scan")["networks"]))
 
@@ -265,10 +273,10 @@ class Pack(unittest.TestCase):
 class Browser(unittest.TestCase):
     """The app as a phone would load it, against the mock."""
 
-    def dom(self, m, frag=""):
+    def dom(self, m, frag="", ms=3000):
         with tempfile.TemporaryDirectory() as prof:
             r = subprocess.run([CHROME, "--headless=new", "--no-sandbox", "--disable-gpu", "--no-proxy-server", f"--user-data-dir={prof}",
-                                "--virtual-time-budget=3000", "--dump-dom", m.url + frag],
+                                f"--virtual-time-budget={ms}", "--dump-dom", m.url + frag],
                                capture_output=True, text=True, timeout=240)
         return r.stdout
 
@@ -321,6 +329,64 @@ class Browser(unittest.TestCase):
         m = Mock(pdo=(5.0, 3.0))
         try:
             self.assertIn("charger too weak", self.dom(m))
+        finally:
+            m.close()
+
+    def test_power_card_on_play(self):
+        m = Mock()
+        try:
+            d = self.dom(m)
+            for want in ('aria-label="Power"', "20 V · 65 W charger", "Graph fills in · ", "Out", "Budget"):
+                self.assertIn(want, d)
+            self.assertNotIn("Limiting.", d)
+            self.assertNotIn("Supply sagging.", d)
+        finally:
+            m.close()
+
+    def test_power_card_says_when_it_limits(self):
+        m = Mock()
+        try:
+            self.assertEqual(m.post("volume", {"volume": 95})[0], 200)
+            d = self.dom(m)
+            self.assertIn("Limiting.", d)
+            self.assertIn("to stay within the 65 W charger", d)
+            self.assertNotIn("Power limit.", d)  # said once, in the card
+        finally:
+            m.close()
+
+    def test_power_card_says_when_the_supply_sags(self):
+        m = Mock()
+        rx = m.srv.rx
+        power = rx._power
+        def sag():
+            power()
+            rx.s["power"]["vbus_v"] = 16.8
+        rx._power = sag
+        try:
+            d = self.dom(m)
+            self.assertIn("Supply sagging.", d)
+            self.assertIn("16.8 V from a 20 V charger", d)
+        finally:
+            m.close()
+
+    def test_graphs_fill_in_and_diagnostics_has_them(self):
+        m = Mock()
+        try:
+            d = self.dom(m, ms=40000)
+            self.assertNotIn("Graph fills in", d)
+            self.assertRegex(d, r'<path class="o" d="M[0-9.]+,[0-9.]+L')
+            d = self.dom(m, "#setup", ms=12000)
+            for want in ("Last 15 minutes", "Supply", "Wi-Fi signal", "Free memory", "low below 18.0 V",
+                         "Touch a graph to read the values"):
+                self.assertIn(want, d)
+            self.assertRegex(d, r'<path class="v" d="M[0-9.]+,[0-9.]+L')
+        finally:
+            m.close()
+
+    def test_sag_line_is_said_to_a_tenth_of_a_volt(self):
+        m = Mock(pdo=(5.0, 3.0))
+        try:
+            self.assertIn("low below 4.5 V", self.dom(m, "#setup", ms=12000))
         finally:
             m.close()
 

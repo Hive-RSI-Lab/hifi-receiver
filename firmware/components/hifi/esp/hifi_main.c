@@ -119,7 +119,8 @@ static TaskHandle_t power_task_h;
 static uint32_t otw_ms, otw_clear_ms, otw_high_ms; /* the OTW step-down (C2) */
 /* a trip taken as heat (Lite, cap above the default): the last one, the
  * gain trim held until, and when the amp was last off (a short trips at once) */
-static uint32_t heat_trip_ms, trim_hold_until, amp_off_ms;
+static uint32_t heat_trip_ms, trim_hold_until;
+static volatile uint32_t amp_off_ms; /* the last power-task pass with the amp off */
 static bool heat_trip_any;
 static volatile uint32_t selftest_hold_until; /* keeps the amp awake for the self-test */
 static volatile bool capture_busy;   /* the codec's ADC is ours until the capture ends */
@@ -466,6 +467,36 @@ void hifi_quiet_release(void) {
 	else apply_volume();
 }
 
+/* A phone source hands the output to another (decode_external.c's
+ * phone_takeover, patch 0034): squeezelite's gain fades to 0 before the old
+ * source is paused and the buffer emptied, and comes back once the buffer is
+ * empty, a moment before the new source claims the output: nothing plays in
+ * between, so the switch has no pop. Blocks the caller's task for the 200 ms
+ * of the ramp. Only the digital gain:
+ * the amps and the codec stay on, the next source plays at once */
+static volatile bool handover;
+
+void hifi_handover_quiet(bool down) {
+	if (!hifi_output_gain) return;
+	if (!down) {
+		handover = false;
+		if (!quiet_req) apply_volume();
+		return;
+	}
+	bool ramp = !handover && !quiet_busy && lock;
+	handover = true;
+	if (!ramp) return;
+	LOCK();
+	uint32_t base = tone_active || line_unity ? HIFI_VOL_UNITY : hifi_vol_gain(&vol);
+	UNLOCK();
+	for (int i = HIFI_QUIET_STEPS - 1; i >= 0; i--) {
+		uint32_t g = (uint32_t) ((uint64_t) base * i / HIFI_QUIET_STEPS);
+		hifi_output_gain(g, g);
+		vTaskDelay(pdMS_TO_TICKS(HIFI_QUIET_RAMP_MS / HIFI_QUIET_STEPS) ?: 1);
+	}
+	ESP_LOGI(TAG, "source handover: faded out");
+}
+
 /* ------------------------------------------------------------------ volume */
 
 /* Puts the volume where it plays: squeezelite's gain for streams, the codec
@@ -479,8 +510,8 @@ static void apply_volume(void) {
 	UNLOCK();
 	if (direct) codec_dirty = true;
 	if (hifi_party_volume) hifi_party_volume(g);
-	/* a stop holds squeezelite's gain at 0 until it is released */
-	if (hifi_output_gain && !tone_active && !line_unity && !quiet_req) hifi_output_gain(g, g);
+	/* a stop holds squeezelite's gain at 0 until it is released, a handover until it ends */
+	if (hifi_output_gain && !tone_active && !line_unity && !quiet_req && !handover) hifi_output_gain(g, g);
 }
 
 /* A source set its volume (set_volume in squeezelite). */
@@ -492,7 +523,7 @@ bool hifi_volume_hook(unsigned *left, unsigned *right) {
 	vol_dirty = true;
 	vol_changed_ms = now_ms();
 	UNLOCK();
-	*left = *right = quiet_req ? 0 : g; /* a stop holds the stream silent until released */
+	*left = *right = quiet_req || handover ? 0 : g; /* a stop (or a handover) holds the stream silent */
 	return !tone_active && !line_unity; /* a test signal (and DJ direct's line copy) plays at unity;
 					      * the volume comes back after */
 }
@@ -1360,6 +1391,8 @@ static bool has_taps(void) {
 	return on;
 }
 
+#define CAP_LEADIN_MS 100 /* fresh input op_capture drops ahead of what it keeps */
+
 /*
  * Records the codec's ADC: the loopback taps (LIN2/RIN2) or the RCA line in
  * (LIN1/RIN1). The ADC shares I2S with the DAC (squeezelite opens it full
@@ -1377,7 +1410,19 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 	/* squeezelite's init leaves the ADC powered down in CHIPPOWER (0xAA), so
 	 * without this the ADC sends zeros; the DAC's bits are kept as they are */
 	uint8_t chip = ES8388_CHIPPOWER_ADC_DOWN;
+	/* Vref and DLL first, with the ADC's digital part and state machine held
+	 * in reset; then its inputs and modulators (ADCPOWER), on a settled
+	 * reference; then the digital part let go. The ADC used to come up with
+	 * ADCPOWER (still at its reset value on the first capture after a boot)
+	 * ahead of everything in CHIPPOWER, released in one write, and sometimes
+	 * started scrambled: on Lite 3 the first capture after a boot read
+	 * broadband noise on both taps for its whole 100 ms (the 1 kHz bin at
+	 * -5 dB over 100 ms and about +5 dB in each 10 ms block, the quiet leg as
+	 * loud as the driven one), and the next capture, after the ADC went down
+	 * and up again, was clean (2026-11-18) */
 	esp_err_t e = hifi_i2c_read(ES8388_ADDR, ES8388_CHIPPOWER, &chip);
+	e |= hifi_i2c_write(ES8388_ADDR, ES8388_CHIPPOWER, (chip & 0x55) | ES8388_CHIPPOWER_ADC_RESET);
+	vTaskDelay(pdMS_TO_TICKS(50));
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL1, 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL2, src == HIFI_CAP_LOOPBACK ? 0x50 : 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL4, 0x0C);
@@ -1386,17 +1431,37 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL9, 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL10, 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCPOWER, ES8388_ADCPOWER_CAPTURE);
-	e |= hifi_i2c_write(ES8388_ADDR, ES8388_CHIPPOWER, chip & 0x55); /* the ADC's half up */
+	vTaskDelay(pdMS_TO_TICKS(20));
+	e |= hifi_i2c_write(ES8388_ADDR, ES8388_CHIPPOWER, chip & 0x55);
 	int st = 0;
 	if (e != ESP_OK) {
 		*err = "codec didn't take the ADC settings";
 		st = 500;
 		goto out;
 	}
-	/* the coupling capacitors settle, and what the DMA held from before goes */
+	/* the coupling capacitors settle; then everything the DMA ring holds goes.
+	 * Nothing reads the I2S input between captures, so the ring sits full
+	 * (squeezelite's 12 buffers of 512 frames, about 128 ms) and the reads
+	 * below would start on the oldest of it: reading with no wait until the
+	 * ring is empty leaves only buffers the DMA fills after the settle.
+	 * Then the first CAP_LEADIN_MS of fresh input goes too: emptying the
+	 * ring alone was not enough. On Lite 3, 1 boot in 10 still had the first
+	 * capture since power-on start with 20 ms of noise on both taps, as loud
+	 * on the quiet tap as on the driven one. It was live input from 190 ms to
+	 * 210 ms after the ADC's release, and every later capture was clean
+	 * (2026-11-18). The lead-in is five times that. */
 	vTaskDelay(pdMS_TO_TICKS(200));
 	size_t got = 0, want = (size_t) frames * 4;
-	for (int i = 0; i < 4; i++) i2s_read(CONFIG_I2S_NUM, pcm, want < 4096 ? want : 4096, &got, pdMS_TO_TICKS(50));
+	for (size_t drained = 0; drained < 256 * 1024; drained += got) { /* over 1 s of input: a bound, never reached */
+		if (i2s_read(CONFIG_I2S_NUM, pcm, want < 4096 ? want : 4096, &got, 0) != ESP_OK || !got) break;
+	}
+	const size_t lead_bytes = CAP_LEADIN_MS * TONE_RATE / 1000 * 4;
+	for (size_t lead = 0; lead < lead_bytes; lead += got) {
+		size_t n = lead_bytes - lead;
+		if (n > want) n = want;
+		if (n > 4096) n = 4096;
+		if (i2s_read(CONFIG_I2S_NUM, pcm, n, &got, pdMS_TO_TICKS(300)) != ESP_OK || !got) break;
+	}
 	size_t have = 0;
 	while (have < want) {
 		if (i2s_read(CONFIG_I2S_NUM, (uint8_t *) pcm + have, want - have, &got, pdMS_TO_TICKS(300)) != ESP_OK || !got) break;
@@ -1441,8 +1506,14 @@ out:
  * as stereo, and the user's mode comes back when it ends. LOOP_TAP_GAIN is
  * the taps' RMS per RMS of the tone, measured on Lite 2 (2026-11-17) with
  * the EQ flat: one leg of the bridge, 1.2 dB under the nominal chain.
+ * The check waits until the amp has been out of shutdown for
+ * LOOP_AMP_SETTLE_MS: on Lite 3 the first self-test after a boot, with the
+ * amp woken from cold about 0.5 s before the left side's capture, failed 2
+ * runs in 4 (L -11.2/+0.2, L +4.7/-4.6 dB: the taps aren't settled yet),
+ * and 4 runs in 4 passed when a tone had kept the amp on for 4 s first.
  */
 #define LOOP_TONE_DBFS -50.0f
+#define LOOP_AMP_SETTLE_MS 2000
 #define LOOP_FRAMES 4800
 #define LOOP_TAP_GAIN 0.386f
 static const char *loop_busy(void) {
@@ -1485,8 +1556,13 @@ static void selftest_loopback(hifi_selftest_t *t, bool amp_on) {
 		UNLOCK();
 		return;
 	}
+	/* the amp out of shutdown long enough for its output to settle; the
+	 * hold keeps it awake meanwhile */
+	selftest_hold_until = now_ms() + LOOP_AMP_SETTLE_MS + 1500;
+	for (int i = 0; i < LOOP_AMP_SETTLE_MS / 10 && now_ms() - amp_off_ms < LOOP_AMP_SETTLE_MS; i++)
+		vTaskDelay(pdMS_TO_TICKS(10));
 	float got[2][2] = {{0}};
-	const char *err = NULL;
+	const char *err = now_ms() - amp_off_ms < LOOP_AMP_SETTLE_MS ? "the amp didn't stay on for the 2 s it settles in" : NULL;
 	LOCK();
 	loop_flat = true;
 	hifi_bsp_channel(HIFI_CHAN_STEREO);

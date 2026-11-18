@@ -59,7 +59,7 @@ before(w, "hifi_quiet_stop(", "__real_esp_restart(", "__wrap_esp_restart: hifi_q
 # or a raw CPU/system reset anywhere but the wrap, in our code or our patches
 ROUND = re.compile(r"\b(__real_esp_restart|esp_restart_noos\w*|software_reset\w*|esp_cpu_reset|esp_rom_software_reset_\w+|rtc_\w*sw_\w*reset)\s*\(")
 for root, _, files in os.walk(FW):
-    if "/third_party" in root or "/test/build" in root or "/.git" in root:
+    if "/third_party" in root or "/test/build" in root or "/.git" in root or "/.fw-src" in root:
         continue
     for f in files:
         if not f.endswith((".c", ".h", ".cpp", ".patch")):

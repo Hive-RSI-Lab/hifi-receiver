@@ -59,9 +59,10 @@
 #include "alac_wrapper.h"
 #include "mad.h"
 
-/* weak: only the app links the decoders (rtp.c, mad.c); the recovery image
- * keeps the lab frame but not them, and a weak reference doesn't pull them
- * out of their archives into its slot. There a start answers 501. */
+/* weak, so an image without the decoders (rtp.c, mad.c) still links and a
+ * start there answers 501. This file itself is in the app only (weak in
+ * hifi_lab_esp.h, -u from patch 0035): in recovery the pragmas alone did not
+ * keep libmad and ALAC out of the slot. */
 #pragma weak alac_create_decoder
 #pragma weak alac_delete_decoder
 #pragma weak alac_to_pcm

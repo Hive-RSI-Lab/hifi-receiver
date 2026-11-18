@@ -77,6 +77,7 @@
  * (ADC down, DAC up), so a capture powers the ADC up and puts the value back. */
 #define ES8388_CHIPPOWER 0x02
 #define ES8388_CHIPPOWER_ADC_DOWN 0xAA
+#define ES8388_CHIPPOWER_ADC_RESET 0xA0 /* digital part and state machine held, DLL and Vref up */
 
 /* The loopback taps: each speaker's + leg through 100k over 10k into LIN2/RIN2.
  * The board the review-2 ECO built (and every one since) has them: R66-R69,

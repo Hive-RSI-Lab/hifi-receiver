@@ -775,10 +775,59 @@ static void test_wifi_remote_api(void) {
 	CHECK_STR(wifi_ssid, "home");
 	CHECK_STR(wifi_pw, "p w\"x");
 	CHECK(api("POST", "/api/v1/wifi", "{\"password\":\"x\"}") == 400);
+	/* a long ssid or password is refused, not joined cut short; escapes count as
+	 * what they decode to (32 bytes of ssid: 31 letters and an escaped e-acute is 33) */
+	CHECK(api("POST", "/api/v1/wifi", "{\"ssid\":\"0123456789012345678901234567890\\u00e9\",\"password\":\"x\"}") == 400);
+	CHECK_HAS(out, "ssid must be 32 bytes");
+	CHECK(api("POST", "/api/v1/wifi", "{\"ssid\":\"012345678901234567890123456789\\u00e9\",\"password\":\"x\"}") == 200);
+	CHECK_STR(wifi_ssid, "012345678901234567890123456789\xc3\xa9");
+	{
+		char b[256], pw[80];
+		char good[80];
+		memset(good, 'q', 64);
+		good[64] = '\0';
+		snprintf(b, sizeof(b), "{\"ssid\":\"home\",\"password\":\"%s\"}", good);
+		CHECK(api("POST", "/api/v1/wifi", b) == 200);
+		CHECK_STR(wifi_pw, good);
+		memset(pw, 'p', 64);
+		pw[64] = '\0';
+		snprintf(b, sizeof(b), "{\"ssid\":\"home\",\"password\":\"%s\\/\"}", pw);
+		CHECK(api("POST", "/api/v1/wifi", b) == 400);
+		CHECK_HAS(out, "password must be 64");
+		CHECK_STR(wifi_pw, good); /* the last good one, not the cut 64 p's */
+	}
+	CHECK(api("POST", "/api/v1/wifi", "{\"ssid\":\"home\",\"password\":\"p w\\\"x\"}") == 200);
 	CHECK(api("GET", "/api/v1/remote", NULL) == 200);
 	CHECK_HAS(out, "\"configured\":false");
 	CHECK(api("POST", "/api/v1/remote", "{\"url\":\"http://x\"}") == 400);
 	CHECK(api("POST", "/api/v1/remote", "{\"url\":\"mqtts://b.example:8883\",\"prefix\":\"a/b\"}") == 400);
+	{
+		/* a url, user, password or prefix too long once decoded is refused, with or
+		 * without escapes in it; it used to be stored cut when it held an escape */
+		char b[512], u[200];
+		memset(u, 'a', 112);
+		u[112] = '\0';
+		snprintf(b, sizeof(b), "{\"url\":\"mqtts://b.example:8883/%s\"}", u);
+		CHECK(api("POST", "/api/v1/remote", b) == 400);
+		CHECK_HAS(out, "too long");
+		snprintf(b, sizeof(b), "{\"url\":\"mqtts://b.example:8883/%s\\/\"}", u);
+		CHECK(api("POST", "/api/v1/remote", b) == 400);
+		CHECK_HAS(out, "too long");
+		CHECK(!relay_url[0]);
+		memset(u, 'u', 47);
+		u[47] = '\0';
+		snprintf(b, sizeof(b), "{\"url\":\"mqtts://b.example:8883\",\"user\":\"%s\\/\"}", u);
+		CHECK(api("POST", "/api/v1/remote", b) == 400);
+		CHECK_HAS(out, "too long");
+		memset(u, 'p', 95);
+		u[95] = '\0';
+		snprintf(b, sizeof(b), "{\"url\":\"mqtts://b.example:8883\",\"password\":\"%s\\u00e9\"}", u);
+		CHECK(api("POST", "/api/v1/remote", b) == 400);
+		CHECK_HAS(out, "too long");
+		CHECK(api("POST", "/api/v1/remote", "{\"url\":\"mqtts://b.example:8883\",\"prefix\":\"0123456789012345678901234\"}") == 400);
+		CHECK_HAS(out, "prefix is too long");
+		CHECK(!relay_url[0]);
+	}
 	CHECK(api("POST", "/api/v1/remote", "{\"url\":\"mqtts://b.example:8883\",\"user\":\"board\",\"password\":\"x\"}") == 200);
 	CHECK_HAS(out, "\"connected\":true");
 	CHECK_HAS(out, "\"dev\":\"240ac4123456\"");

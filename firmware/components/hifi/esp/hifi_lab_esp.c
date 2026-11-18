@@ -177,11 +177,13 @@ void hifi_lab_esp_init(void) {
 	kept_offline = 0;
 	kept_magic = KEPT_MAGIC;
 	kept_name[0] = 0;
-	hifi_lab_register(&lab, &lab_espnow);
-	hifi_lab_register(&lab, &lab_lanscan);
-	hifi_lab_register(&lab, &lab_forge);
-	hifi_lab_register(&lab, &lab_wifidrop);
-	hifi_lab_register(&lab, &lab_crafted);
+	/* weak, pulled into the app by patch 0035: recovery keeps only lab_i2c,
+	 * so its self-test still counts one experiment */
+	if (&lab_espnow) hifi_lab_register(&lab, &lab_espnow);
+	if (&lab_lanscan) hifi_lab_register(&lab, &lab_lanscan);
+	if (&lab_forge) hifi_lab_register(&lab, &lab_forge);
+	if (&lab_wifidrop) hifi_lab_register(&lab, &lab_wifidrop);
+	if (&lab_crafted) hifi_lab_register(&lab, &lab_crafted);
 	hifi_lab_register(&lab, &lab_i2c);
 #if CONFIG_BT_CLASSIC_ENABLED
 	if (&lab_bt) hifi_lab_register(&lab, &lab_bt); /* NULL in recovery */
@@ -192,6 +194,9 @@ void hifi_lab_esp_init(void) {
 #endif
 #if CONFIG_HIFI_LAB_PSRAM_STACKS
 	if (&lab_flac) hifi_lab_register(&lab, &lab_flac); /* the lab-radio app only (NULL in recovery) */
+#endif
+#if CONFIG_CSPOT_SINK
+	if (&lab_phone) hifi_lab_register(&lab, &lab_phone); /* NULL in recovery */
 #endif
 	lab_lock = xSemaphoreCreateMutex();
 	StackType_t *stack = NULL;
