@@ -1151,6 +1151,21 @@ static void radio(void) {
 	CHECK_STR(rpoll(true, F, false, false), "b0 ");
 	CHECK(!R.ps_none && R.ctl_on);
 	R.off_fails = false;
+	/* the sink disabled in the settings (hifi_bt_sink_set false, never off),
+	 * its controller never started: none all the same */
+	CHECK(R.panics == 0);
+	memset(&R, 0, sizeof(R));
+	R.off_fails = true;
+	CHECK_STR(rpoll(true, F, false, false), "b0 p1 ");
+	CHECK(R.ps_none && !R.sink_off);
+	CHECK_STR(rpoll(true, F, false, false), "b0 ");
+	/* party off: min; Bluetooth can't start (still disabled), so not asked */
+	CHECK_STR(rpoll(false, HIFI_PARTY_ROLE_OFF, false, false), "p0 ");
+	CHECK(!R.ps_none && !R.ctl_on);
+	/* back to the sink that was on, with its controller running */
+	R.off_fails = false;
+	R.sink_off = false;
+	R.ctl_on = true;
 	/* the sink is off but its controller hasn't stopped yet: not until it has */
 	R.stop_late = true;
 	CHECK_STR(rpoll(true, F, false, false), "b0 ");
@@ -1169,6 +1184,7 @@ static void radio(void) {
 	CHECK(!R.ps_none && R.ctl_on);
 
 	/* a board that boots following: the sink never started, none at once */
+	CHECK(R.panics == 0);
 	memset(&R, 0, sizeof(R));
 	R.sink_off = true;
 	CHECK_STR(rpoll(true, F, false, false), "p1 ");

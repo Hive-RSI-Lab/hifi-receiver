@@ -1138,10 +1138,13 @@ void hifi_party_poll(void) {
 	 * picked leader, or while it plays (the phone came first). A follower's
 	 * Wi-Fi stays awake once Bluetooth is off (hifi_party_radio). */
 	if (!hifi_bt_sink_set || !hifi_bt_sink_is_off) return;
+	/* only a none party set itself is party's to undo (a lab run's isn't) */
+	static bool ps_mine;
 	wifi_ps_type_t ps;
-	bool awake = esp_wifi_get_ps(&ps) == ESP_OK && ps == WIFI_PS_NONE;
+	bool awake = ps_mine && esp_wifi_get_ps(&ps) == ESP_OK && ps == WIFI_PS_NONE;
 	hifi_party_radio_ops_t o = {hifi_bt_sink_set, hifi_bt_sink_is_off, bt_stopped, ps_none};
 	hifi_party_radio(&o, &awake, active, role, pick, source() == SRC_BT);
+	ps_mine = awake;
 }
 
 void hifi_party_selftest(hifi_selftest_t *t) {

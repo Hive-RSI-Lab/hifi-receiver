@@ -773,7 +773,8 @@ on the router: no UPnP, no port forward, broadcast only on the subnet.
   leader or while Bluetooth plays: connect the phone before switching party on.
   A follower keeps its Wi-Fi awake (station power save none) once its
   Bluetooth is off, and goes back to power save min before Bluetooth comes
-  back on (party off, or it leads).
+  back on (party off, or it leads). Party undoes only its own none: a none
+  set by a lab run stays.
 
 `POST /api/v1/party` with `{"op": ...}` replies with the same JSON:
 

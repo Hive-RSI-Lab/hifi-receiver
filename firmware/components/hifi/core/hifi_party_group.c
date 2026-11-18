@@ -338,7 +338,9 @@ void hifi_party_radio(const hifi_party_radio_ops_t *o, bool *awake, bool on, hif
 		if (o->bt_is_off() && !*awake) o->bt_set(true); /* not over none: the next poll tries again */
 		return;
 	}
-	if (!o->bt_is_off() && !o->bt_set(false)) return;
+	/* bt_set(false) is false with the sink disabled in the settings, or when
+	 * the controller hasn't stopped yet: bt_stopped decides */
+	if (!o->bt_is_off()) o->bt_set(false);
 	if (stay_awake && !*awake && o->bt_stopped() && o->ps_none(true)) *awake = true;
 }
 
