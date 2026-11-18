@@ -385,8 +385,9 @@ void hifi_main_gov_amps(int n) { gov.amps = n; }
  * ramp: its Sabre's volume is squeezelite's); the BSP ramps the codec too */
 static void q_level(void *c, float f) {
 	/* a test tone and DJ direct's line copy play at unity, so they ramp from there;
-	 * a lock held too long skips this step rather than hold up the restart */
-	if (hifi_output_gain && xSemaphoreTake(lock, pdMS_TO_TICKS(20)) == pdTRUE) {
+	 * a lock held too long skips this step rather than hold up the restart;
+	 * a restart before hifi_init made the lock (factory_boot) has nothing to ramp */
+	if (hifi_output_gain && lock && xSemaphoreTake(lock, pdMS_TO_TICKS(20)) == pdTRUE) {
 		uint32_t base = tone_active || line_unity ? HIFI_VOL_UNITY : hifi_vol_gain(&vol);
 		UNLOCK();
 		uint32_t g = (uint32_t) (base * (f < 0 ? 0 : f > 1 ? 1 : f));
