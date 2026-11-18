@@ -793,6 +793,10 @@ static void test_capture_chime_api(void) {
 	CHECK(api("POST", "/api/v1/capture/chime", "{\"wait_s\":0}") == 400);
 	CHECK(api("POST", "/api/v1/capture/chime", "{\"wait_s\":\"x\"}") == 400);
 	CHECK(api("POST", "/api/v1/capture/chime", "{\"source\":\"mic\"}") == 400);
+	CHECK(api("POST", "/api/v1/capture/chime", "{\"source\":5}") == 400);
+	CHECK(api("POST", "/api/v1/capture/chime", "{\"source\":\"loopbackloopbackx\"}") == 400);
+	CHECK(api("POST", "/api/v1/capture/chime", "{\"wait_s\":1.5}") == 400);
+	CHECK(api("POST", "/api/v1/capture/chime", "{\"wait_s\":601}") == 400);
 	CHECK(api("POST", "/api/v1/capture/chime", "{\"source\":\"line\"}") == 409);
 	CHECK_HAS(out, "no line input");
 	chime_cap = (hifi_cap_chime_t){.state = HIFI_CAPCH_DONE, .kind = "pair", .frames = 33600, .start_ms = 512,

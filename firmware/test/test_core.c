@@ -435,6 +435,19 @@ static void chime_notes(void) {
 		}
 		CHECK(floor_fs[0] > 0 && floor_fs[0] < 0.0003f);
 	}
+	/* a one-block dip inside a note keeps it one note; two blocks split it */
+	for (int g = 1; g <= 2; g++) {
+		memset(pcm, 0, sizeof(pcm));
+		for (int i = 0; i < 9600; i++) {
+			if (i >= 4800 && i < 4800 + g * 480) continue;
+			int16_t v = (int16_t) (300 * sinf(2 * (float) M_PI * 1046.5f * i / 48000));
+			pcm[2 * i] = pcm[2 * i + 1] = v;
+		}
+		hifi_cap_note_t nn[HIFI_CAP_NOTES_MAX];
+		int got = hifi_capture_find_notes(pcm, 48000, 48000, hz, 4, 0.0005f, 3, nn, HIFI_CAP_NOTES_MAX, NULL);
+		if (g == 1) CHECK(got == 1 && nn[0].on_ms == 0 && nn[0].len_ms == 200);
+		else CHECK(got == 2 && nn[0].len_ms == 100 && nn[1].on_ms == 120 && nn[1].len_ms == 80);
+	}
 	/* nothing there: no notes, and a cut-short buffer finds nothing */
 	memset(pcm, 0, sizeof(pcm));
 	hifi_cap_note_t one[1];

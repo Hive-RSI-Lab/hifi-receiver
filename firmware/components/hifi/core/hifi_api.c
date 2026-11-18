@@ -1018,17 +1018,17 @@ static int r_capture_chime(const hifi_ops_t *ops, bool post, const char *body, c
 	if (!ops->capture_arm || !ops->capture_chime) return error(out, cap, 404, "no chime capture in this build");
 	if (post) {
 		char src[16] = "loopback";
-		hj_get_str(body, "source", src, sizeof(src));
+		if (hj_get_raw(body, "source", &(const char *){NULL}, &(size_t){0}) &&
+		    hj_get_str_fit(body, "source", src, sizeof(src)) != HJ_STR_OK)
+			return error(out, cap, 400, "source must be loopback or line");
 		hifi_cap_src_t s;
 		if (!strcmp(src, "loopback")) s = HIFI_CAP_LOOPBACK;
 		else if (!strcmp(src, "line")) s = HIFI_CAP_LINE;
 		else return error(out, cap, 400, "source must be loopback or line");
 		double w = 60;
-		const char *raw;
-		size_t rl;
-		bool has = hj_get_raw(body, "wait_s", &raw, &rl);
-		if (has && !hj_get_num(body, "wait_s", &w)) return error(out, cap, 400, "wait_s must be 1 to 600");
-		if (!(w >= 1 && w <= 600)) return error(out, cap, 400, "wait_s must be 1 to 600");
+		if (hj_get_raw(body, "wait_s", &(const char *){NULL}, &(size_t){0}) && !hj_get_num(body, "wait_s", &w))
+			return error(out, cap, 400, "wait_s must be a whole number, 1 to 600");
+		if (!(w >= 1 && w <= 600) || w != (int) w) return error(out, cap, 400, "wait_s must be a whole number, 1 to 600");
 		const char *err = "can't arm now";
 		int st = ops->capture_arm(s, (int) w, &err);
 		if (st) return error(out, cap, st, err);

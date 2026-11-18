@@ -54,7 +54,7 @@ int hifi_capture_find_notes(const int16_t *pcm, int frames, int rate, const floa
 	if (floor_fs) floor_fs[0] = floor_fs[1] = 0;
 	if (nb <= 0 || nhz <= 0 || max <= 0) return 0;
 	if (min_blocks < 1) min_blocks = 1;
-	int run_f = -1, run_at = 0, run_len = 0;
+	int run_f = -1, run_at = 0, run_len = 0, gap = 0;
 	float run_lvl[2] = {0, 0}, best_floor[2] = {-1, -1};
 	for (int b = 0; b <= nb; b++) {
 		int f = -1;
@@ -80,11 +80,17 @@ int hifi_capture_find_notes(const int16_t *pcm, int frames, int rate, const floa
 			}
 		}
 		if (f == run_f && f >= 0) {
-			run_len++;
+			run_len += gap + 1; /* a one-block dip inside a note stays part of it */
+			gap = 0;
 			for (int c = 0; c < 2; c++)
 				if (lvl[c] > run_lvl[c]) run_lvl[c] = lvl[c];
 			continue;
 		}
+		if (f < 0 && run_f >= 0 && b < nb && !gap) {
+			gap = 1;
+			continue;
+		}
+		gap = 0;
 		if (run_f >= 0 && run_len >= min_blocks && found < max) {
 			out[found++] = (hifi_cap_note_t){.hz = hz[run_f],
 							 .on_ms = run_at * HIFI_CAP_BLOCK_MS,
