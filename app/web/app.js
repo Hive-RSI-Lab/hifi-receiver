@@ -7,6 +7,10 @@
 'use strict';
 
 const POLL_MS = 2000;
+// A poll gives up after this: a board that restarts mid-request (an update)
+// never answers it, and without a limit the page waited on the browser's own
+// timeout, minutes, before it noticed the receiver was back.
+const POLL_WAIT_MS = 5000;
 const EQ_PRESETS = {
   Flat: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   'Bass +': [6, 5, 3, 1, 0, 0, 0, 0, 0, 0],
@@ -70,9 +74,10 @@ function toast(msg, ms = 3000) {
   clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, ms);
 }
 
-async function api(path, body) {
+async function api(path, body, waitMs) {
   const opt = body === undefined ? {} : {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+  if (waitMs && AbortSignal.timeout) opt.signal = AbortSignal.timeout(waitMs);
   const r = await fetch('api/v1/' + path, opt);
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw Object.assign(new Error(j.error || r.statusText), { status: r.status });
@@ -282,13 +287,14 @@ function showPick(cs, now = Date.now()) {
 // costs about 120 ms, so four in a row held the first draw for half a second.
 async function poll(boot) {
   try {
-    const party = P !== null && tab === 'play' ? api('party').catch((e) => (e.status === 404 ? null : P)) : P;
+    const w = POLL_WAIT_MS;
+    const party = P !== null && tab === 'play' ? api('party', undefined, w).catch((e) => (e.status === 404 ? null : P)) : P;
     // info too while there is none or the board was out of reach
     const fresh = !I || !online;
-    const [i, st, p] = await Promise.all([fresh ? api('info') : I, api('state'), party]);
+    const [i, st, p] = await Promise.all([fresh ? api('info', undefined, w) : I, api('state', undefined, w), party]);
     if (fresh) I = i;
     // and again after a restart (an update changes the firmware version)
-    else if (S && st.uptime_s < S.uptime_s) I = await api('info');
+    else if (S && st.uptime_s < S.uptime_s) I = await api('info', undefined, w);
     P = p;
     if (boot && st.net && st.net.mode === 'ap' && !PAGES[want]) tab = 'setup';
     if (st && st.audio) { S = st; remember(st); }
