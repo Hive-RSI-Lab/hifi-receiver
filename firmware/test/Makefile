@@ -11,7 +11,7 @@ LDLIBS := -lm
 
 SRCS := $(wildcard $(CORE)/*.c)
 BIN := build
-TESTS := test_json_pd test_power test_gov_tone test_boost test_vol_ir_meta test_api test_remote test_core test_line test_tap test_gate test_listen test_diag test_lab test_scan test_party sim_party
+TESTS := test_json_pd test_power test_gov_tone test_boost test_vol_ir_meta test_api test_remote test_core test_line test_tap test_gate test_listen test_diag test_lab test_scan test_party test_quiet sim_party
 
 # test_remote signs and checks commands with real Ed25519 where the host has
 # OpenSSL's libcrypto, and with a stand-in signature where it doesn't.
@@ -30,7 +30,7 @@ $(BIN)/%: %.c $(SRCS) $(wildcard $(CORE)/*.h) check.h | $(BIN)
 	$(CC) $(CFLAGS) -o $@ $< $(SRCS) $(LDLIBS)
 
 run: $(addprefix $(BIN)/,$(TESTS))
-	@fail=0; for t in $(abspath $^); do $$t || fail=1; done; python3 test_otadata.py || fail=1; TEST_REMOTE=$(abspath $(BIN))/test_remote python3 test_sign_fw.py || fail=1; \
+	@fail=0; for t in $(abspath $^); do $$t || fail=1; done; python3 test_otadata.py || fail=1; python3 test_quiet_paths.py || fail=1; TEST_REMOTE=$(abspath $(BIN))/test_remote python3 test_sign_fw.py || fail=1; \
 	  $(MAKE) --no-print-directory upstream || fail=1; \
 	  $(MAKE) --no-print-directory mad || fail=1; \
 	  $(MAKE) --no-print-directory fuzz || fail=1; \
