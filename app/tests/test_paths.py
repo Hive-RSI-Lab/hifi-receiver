@@ -321,6 +321,24 @@ class Paths(unittest.TestCase):
         p.wait("!document.body.innerText.includes('Amplifier fault.')", POLL, what="the fault cleared")
         self.assertEqual(p.posts("amp"), [{"reset": True}])
 
+    def test_power_graphs_read_back_and_go_quiet_when_the_receiver_is_lost(self):
+        p = self.open("#setup")
+        self.see("Last 15 minutes")
+        time.sleep(4.5)  # a few polls of history
+        # hover the right edge: the readout says the values now
+        p.js("(() => { const c = document.querySelector('.cs'), r = c.getBoundingClientRect();"
+             " c.dispatchEvent(new PointerEvent('pointermove', {bubbles: true, pointerType: 'mouse',"
+             " clientX: r.right - 1, clientY: r.top + 10})); })()")
+        self.assertRegex(p.js("document.querySelector('.rd').textContent"), r"out [0-9.]+ W · in [0-9.]+ W")
+        self.m.srv.rx.fail["state"] = (503, "gone")
+        self.see("Looking for the receiver")
+        self.see("last seen")
+        self.assertIn("–", p.js("document.querySelector('.c-h .now').textContent"))
+        self.assertFalse(p.js("!!document.querySelector('.c-h .now.bad')"))
+        p.tab("Play")  # the Power card dims and says when it last heard
+        self.assertTrue(p.js("!!document.querySelector('.pw-n[data-off]')"))
+        self.see("last seen")
+
     # ---- party
 
     def test_party_on_lead_and_off(self):

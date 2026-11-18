@@ -12,7 +12,7 @@ Plan item 8. The code is in [`app/`](../app):
 
 | Path | What it is |
 |---|---|
-| `app/web/` | The app itself: `index.html`, `app.js`, `app.css`, the manifest, the service worker and the icons. Plain JavaScript with no framework and no build step, about 36 KB gzipped. |
+| `app/web/` | The app itself: `index.html`, `app.js`, `app.css`, the manifest, the service worker and the icons. Plain JavaScript with no framework and no build step, about 45 KB gzipped. |
 | `app/mock/server.py` | A mock receiver. It serves `app/web` and answers `/api/v1` the way the firmware does, for Lite, Plus or Ultra, on a good or weak charger, with or without a fault, or in first-run setup. Standard library only. |
 | `app/build.py` | Packs the app for the firmware: each file gzipped, plus `webapp_files.c`/`.h`, a table the firmware links in. It fails if the packed app is over 64 KB. |
 | `app/tests/test_app.py` | The tests: the API contract, the app's files, the pack, and the app rendered in headless Chrome against the mock. |
@@ -43,6 +43,13 @@ There are three tabs.
 - **Now playing:** title, artist and album from Spotify, AirPlay, Bluetooth
   or Lyrion, with previous, play/pause and next.
 - **Volume:** a slider and mute.
+- **Power:** out and in watts now, the charger ("20 V · 65 W charger"), the
+  governor's budget and a graph of the last 5 minutes (out as an amber area,
+  in as a line, the budget dashed once the music comes near it). It says
+  **"Limiting."** with how many dB the governor took off, or **"Supply
+  sagging."** when VBUS is under 90 % of the contract. Hidden while the
+  speakers are off. While the receiver can't be reached it dims and says when
+  it was last seen.
 - **Input:** *Streaming* or *DJ direct*. DJ direct sends the RCA line in
   straight to the amplifier with zero delay, for the FLX4. Plus and Ultra add
   *Line in* (through the ADC, so EQ and the sub settings apply), and Ultra
@@ -52,6 +59,10 @@ There are three tabs.
   same Wi-Fi play in step: the first switched on leads, the others join it.
   Shown only when the firmware has party mode; "no party key yet" until the
   Hive gives one. See `GET|POST /api/v1/party` in [test-api.md](test-api.md).
+
+The power graphs need no firmware: the app keeps each `GET state` it polls
+(every 2 s) in memory, the last 15 minutes, 450 samples, and draws them as
+plain SVG. Closing the page forgets them.
 
 There is no source picker for streams. A stream starts when a phone plays to
 the receiver, as with any Spotify Connect or AirPlay speaker. The app shows
@@ -84,6 +95,10 @@ what is playing; it doesn't choose it.
 - **About and diagnostics:** model, firmware, address, the charger's
   contract, supply voltage, amplifier state, temperature (Plus/Ultra) and
   uptime.
+  - **Last 15 minutes:** graphs of power (out, in, the budget and when the
+    governor was limiting), supply voltage (against the contract, low below
+    90 % of it), Wi-Fi signal (weak below −75 dBm) and free memory (low
+    below 16 KB). Touch or hover a graph for every value at that moment.
   - **Run self-test:** the firmware's self-test, with each check named in
     plain words.
   - **Restart** and **Factory reset** (it asks you to unplug the receiver and
@@ -93,9 +108,11 @@ what is playing; it doesn't choose it.
 - **"Speakers off: charger too weak":** a 5 V port, so the amplifier is held
   off.
 - **"Speakers off: the supply is out of range":** under- or over-voltage.
-- **"Power limit. Turned down X dB…":** the governor is limiting.
 - **"Amplifier fault…":** a latched fault, with a Clear button.
 - **"Looking for the receiver…":** shown when the receiver can't be reached.
+
+The governor turning the volume down is said in the Power card, not here; a
+heat limit still shows here.
 
 ## First run
 
@@ -239,7 +256,7 @@ stable.
   reachable at `/squeezelite/` for advanced settings.
 - **Or a filesystem:** `app/dist/www/*.gz` are the same files, for a
   LittleFS image if the firmware would rather use one.
-- **Size:** about 36 KB packed, against a 64 KB budget that `build.py`
+- **Size:** about 45 KB packed, against a 64 KB budget that `build.py`
   enforces. The icons are half of it.
 
 ## Develop and test

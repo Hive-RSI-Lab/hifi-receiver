@@ -119,7 +119,163 @@ const onOff = (cur, pick) => seg({ false: 'Off', true: 'On' }, !!cur, (v) => pic
 function take(state) {
   if (!state || !state.audio) return;
   S = state;
+  remember(state);
   draw();
+}
+
+// ---- Power history ------------------------------------------------------
+// The firmware keeps no history: the app keeps the last ~15 minutes of polled
+// samples in memory and graphs them (Play: a short graph, Setup: the full one).
+const HIST_N = 450;    // 15 min at POLL_MS
+const H = [];          // [t ms, in W, out W, budget W, VBUS V, RSSI dBm, free heap B, limiting 0/1]
+
+function remember(st) {
+  const g = st.governor || {}, t = Date.now();
+  if (g.in_w == null || (H.length && t - H[H.length - 1][0] < POLL_MS / 2)) return;  // a write's reply right after a poll
+  H.push([t, g.in_w, g.out_w, g.budget_w, st.power && st.power.vbus_v, st.net && st.net.rssi,
+    st.sys && st.sys.heap_free, g.limiting ? 1 : 0]);
+  if (H.length > HIST_N) H.shift();
+}
+
+// The graphs are plain SVG built as strings of numbers. x is time, so a gap in
+// the polls (a phone asleep) stays a gap; y is clamped to lo..hi.
+const PLAY_SPAN = 300e3, DIAG_SPAN = 900e3;
+const niceTop = (v) => [5, 10, 15, 20, 30, 40, 60, 80, 100, 150, 200, 300].find((s) => s >= v) || 400;
+const yOf = (v, lo, hi, ht) => (ht - 1 - (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * (ht - 2)).toFixed(1);
+const level = (v, lo, hi, w, ht) => (v != null && v > lo && v < hi ? `M0 ${yOf(v, lo, hi, ht)}H${w}` : '');
+const ago = (ms) => { const s = Math.round(ms / 1000); return s < 60 ? s + ' s ago' : `${Math.floor(s / 60)} min ${s % 60} s ago`; };
+const fx = (v, d = 1) => (v == null ? '–' : v.toFixed(d));
+const dbm = (v) => (v == null ? '–' : '−' + Math.abs(Math.round(v)));
+const kb = (v) => (v == null ? '–' : String(Math.round(v / 1024)));
+
+// column k of H over the last `span` ms to `now`, in a w x ht box; fill: also the area under it
+function trace(k, lo, hi, w, ht, now, span, fill) {
+  let d = '', a = '', seg = [], prev = 0;
+  const end = () => {
+    if (seg.length) {
+      d += 'M' + seg.join('L');
+      if (fill) a += `M${seg[0][0]} ${ht}L${seg.join('L')}L${seg[seg.length - 1][0]} ${ht}Z`;
+    }
+    seg = [];
+  };
+  for (const r of H) {
+    if (r[0] < now - span) continue;
+    if (r[k] == null || r[0] - prev > 3 * POLL_MS) end();
+    prev = r[0];
+    if (r[k] != null) seg.push([(w - (now - r[0]) / span * w).toFixed(1), yOf(r[k], lo, hi, ht)]);
+  }
+  end();
+  return fill ? [d, a] : d;
+}
+
+function chart(w, ht, label, paths) {
+  return `<svg viewBox="0 0 ${w} ${ht}" preserveAspectRatio="none" style="height:${ht}px" role="img" aria-label="${label}">` +
+    paths.filter((p) => p[0]).map(([d, c]) => `<path class="${c}" d="${d}"/>`).join('') +
+    `<path class="z" d="M0 ${ht - 0.5}H${w}"/></svg>`;
+}
+
+const ICON = {
+  lim: '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.6" fill="none" stroke="#e8a33d" stroke-width="1.4"/><path d="M6 1.4a4.6 4.6 0 0 1 0 9.2z" fill="#e8a33d"/></svg>',
+  bad: '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1L11.2 10.5H.8z" fill="#e5534b"/></svg>',
+};
+
+// Play: out and in now, the last 5 minutes, the charger and the budget.
+function powerCard() {
+  const p = S.power, g = S.governor, c = p.contract || {};
+  if (p.state !== 'on') return null;  // powerNotice says why the speakers are off
+  const now = Date.now(), last = H[H.length - 1], bud = g.budget_w;
+  const sag = online && c.v && p.vbus_v != null && p.vbus_v < 0.9 * c.v;
+  const lim = online && g.limiting && g.gain_db < -0.5 && g.reason !== 'heat' && g.reason !== 'amp_hot';
+  const msg = lim ? ['lim', 'Limiting.', `Volume turned down ${(-g.gain_db).toFixed(1)} dB to stay within the ${Math.round(c.w)} W charger.`]
+    : sag ? ['bad', 'Supply sagging.', `${p.vbus_v.toFixed(1)} V from a ${c.v} V charger. Use a stronger charger or turn it down.`] : null;
+  let peak = 0;
+  for (const r of H) if (r[0] >= now - PLAY_SPAN) peak = Math.max(peak, r[1] || 0);
+  const budOn = bud > 0 && peak > 0.35 * bud, top = niceTop(Math.max(peak * 1.15, budOn ? bud * 1.08 : 1));
+  const [o, a] = trace(2, 0, top, 330, 64, now, PLAY_SPAN, true);
+  const v = (x) => (online ? fx(x) : '–'), off = online ? null : '';
+  const label = `Out and in power, last 5 minutes. Out ${v(g.out_w)} W, in ${v(g.in_w)} W` + (bud ? `, budget ${bud} W.` : '.');
+  return h('section.card.gr.pw', { 'aria-label': 'Power' },
+    h('div.pw-h', {}, h('h2', {}, 'Power'), c.v && h('span.pw-ct', {}, `${c.v} V · ${Math.round(c.w)} W charger`)),
+    msg && h('p.pw-msg.' + msg[0], { role: 'status', innerHTML: ICON[msg[0]] }, h('span', {}, h('b', {}, msg[1]), ' ' + msg[2])),
+    h('div.pw-n', { 'data-off': off },
+      h('div', {}, h('div.k', {}, h('i.sw'), 'Out'), h('div.v', {}, v(g.out_w), h('small', {}, 'W'))),
+      h('div', {}, h('div.k', {}, h('i.sw.in'), 'In'), h('div.v', {}, v(g.in_w), h('small', {}, 'W'))),
+      h('div.b', {}, sag ? 'Supply' : 'Budget', h('b', {}, sag ? fx(p.vbus_v) + ' V' : fx(bud) + ' W'))),
+    h('div.pw-g', { 'data-off': off,
+      innerHTML: chart(330, 64, label, [[a, 'a'], [budOn && level(bud, 0, top, 330, 64), 'b'],
+        [trace(1, 0, top, 330, 64, now, PLAY_SPAN), 'i'], [o, 'o']]) },
+    budOn && h('span.bl', { style: `top:${yOf(bud, 0, top, 64)}px` }, 'budget'),
+    online && H.length < 15 && h('span.wait', {},
+      `Graph fills in · ${last ? Math.round((last[0] - H[0][0]) / 1000) : 0} s so far`)),
+    h('div.ax', {}, h('span', {}, '5 min ago'), h('span', {}, online || !last ? 'now' : 'last seen ' + ago(now - last[0]))));
+}
+
+// Setup: power, supply, Wi-Fi and memory over the last 15 minutes, with one
+// crosshair: hover or touch a graph to read every value at that moment.
+let pickF = null;  // where on the graphs the pointer is (0 to 1 across), or null
+
+function diagGraphs() {
+  if (!H.length) return null;
+  const now = Date.now(), sp = DIAG_SPAN, W = 358, L = H[H.length - 1], c = S.power.contract || {};
+  const bud = S.governor.budget_w, n = (t) => (online ? t : '–');
+  let pk = 0, hk = 0, vlo = 99, vhi = 0, lim = '';
+  for (const r of H) {
+    if (r[0] < now - sp) continue;
+    pk = Math.max(pk, r[1] || 0); hk = Math.max(hk, r[6] || 0);
+    if (r[4] != null) { vlo = Math.min(vlo, r[4]); vhi = Math.max(vhi, r[4]); }
+    if (r[7]) lim += `M${(W - (now - r[0]) / sp * W).toFixed(1)} 94.5h${(POLL_MS / sp * W).toFixed(1)}`;
+  }
+  const top = niceTop(Math.max(pk * 1.15, bud > 0 && pk > 0.35 * bud ? bud * 1.08 : 1));
+  const [o, a] = trace(2, 0, top, W, 96, now, sp, true);
+  const sagV = c.v ? 0.9 * c.v : null;
+  const [lo, hi] = c.v ? [0.85 * c.v, 1.03 * c.v] : [vlo - 0.5, vhi + 0.5];
+  const hTop = Math.max(100, Math.ceil(hk / 1024 / 50) * 50) * 1024;
+  const ch = (name, unit, now_, bad, ht, label, paths, legend) => h('div.c', {},
+    h('div.c-h', {}, h('span', {}, h('b', {}, name), ' · ' + unit), h('span.now' + (bad ? '.bad' : ''), {}, now_)),
+    legend, h('div', { innerHTML: chart(W, ht, label, paths) }));
+  const cs = h('div.cs', {
+    onpointerdown: pickAt, onpointermove: pickAt,
+    onpointerleave: (e) => { if (e.pointerType === 'mouse') { pickF = null; showPick(e.currentTarget); } } },
+  ch('Power', 'W', n(`out ${fx(L[2])} · in ${fx(L[1])} W`), false, 96,
+    `Out and in power, last 15 minutes` + (bud ? `, with the ${bud} W budget` : ''),
+    [[lim, 'l'], [a, 'a'], [level(bud, 0, top, W, 96), 'b'], [trace(1, 0, top, W, 96, now, sp), 'i'], [o, 'o']],
+    h('div.lg', {}, h('span', {}, h('i.sw'), 'Out'), h('span', {}, h('i.sw.in'), 'In'),
+      bud != null && h('span', {}, h('i.sw.bu'), `Budget ${fx(bud)} W`), lim && h('span', {}, h('i.sw.li'), 'limiting'))),
+  ch('Supply', 'V', n(`${fx(L[4], 2)} V`) + (sagV ? ` · low below ${fx(sagV)} V` : ''), online && sagV && L[4] != null && L[4] < sagV, 48,
+    'Supply voltage, last 15 minutes',
+    [[level(c.v, lo, hi, W, 48), 'r'], [level(sagV, lo, hi, W, 48), 't'], [trace(4, lo, hi, W, 48, now, sp), 'v']]),
+  H.some((r) => r[5] != null) && ch('Wi-Fi signal', 'dBm', n(`${dbm(L[5])} dBm`) + ' · weak below −75 dBm', online && L[5] != null && L[5] < -75, 48,
+    'Wi-Fi signal, last 15 minutes', [[level(-75, -90, -40, W, 48), 't'], [trace(5, -90, -40, W, 48, now, sp), 'v']]),
+  ch('Free memory', 'KB', n(`${kb(L[6])} KB`) + ' · low below 16 KB', online && L[6] != null && L[6] < 16384, 48,
+    'Free memory, last 15 minutes', [[level(16384, 0, hTop, W, 48), 't'], [trace(6, 0, hTop, W, 48, now, sp), 'v']]),
+  h('div.ax', {}, h('span', {}, '15 min ago'), h('span', {}, '10'), h('span', {}, '5'), h('span', {}, 'now')),
+  h('div.xh', { hidden: true }));
+  const gs = h('div.gs.gr', {},
+    h('div.gs-h', {}, h('h3', {}, 'Last 15 minutes'), h('span.dim', {}, online ? 'kept while this page is open' : 'last seen ' + ago(now - L[0]))),
+    h('div.rd'), cs);
+  showPick(cs, now);
+  return gs;
+}
+
+function pickAt(e) {
+  const r = e.currentTarget.getBoundingClientRect();
+  pickF = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+  showPick(e.currentTarget);
+}
+
+// the readout and the crosshair, for pickF, without redrawing the page
+function showPick(cs, now = Date.now()) {
+  let r = null;
+  const pickT = pickF == null ? null : now - (1 - pickF) * DIAG_SPAN;
+  if (pickT != null && pickT >= now - DIAG_SPAN) for (const s of H) if (!r || Math.abs(s[0] - pickT) < Math.abs(r[0] - pickT)) r = s;
+  if (r && Math.abs(r[0] - pickT) > 2 * POLL_MS) r = null;
+  const xh = $('.xh', cs);
+  xh.hidden = !r;
+  if (r) xh.style.left = (100 - (now - r[0]) / DIAG_SPAN * 100).toFixed(2) + '%';
+  cs.previousSibling.replaceChildren(...(r ? [h('b', {}, now - r[0] < POLL_MS ? 'now' : ago(now - r[0])),
+    ' · out ', h('b', {}, fx(r[2]) + ' W'), ' · in ', h('b', {}, fx(r[1]) + ' W'), h('br'),
+    `${fx(r[4], 2)} V · ${dbm(r[5])} dBm · ${kb(r[6])} KB free`]
+    : [pickT == null ? 'Touch a graph to read the values at that moment.' : 'No reading at that moment.']));
 }
 
 // The calls go out together: each is a round trip, and through the relay one
@@ -135,7 +291,7 @@ async function poll(boot) {
     else if (S && st.uptime_s < S.uptime_s) I = await api('info');
     P = p;
     if (boot && st.net && st.net.mode === 'ap' && !PAGES[want]) tab = 'setup';
-    if (st && st.audio) S = st;
+    if (st && st.audio) { S = st; remember(st); }
     online = true;
   } catch { online = false; }
   // one draw per poll; a bug in a page isn't the receiver going away, and
@@ -192,8 +348,7 @@ function powerNotice() {
     return h('div.card.warn', {}, h('b', {}, 'Heat limit. '),
       `Turned down ${(-g.gain_db).toFixed(1)} dB to keep the amplifier under ${g.heat_cap_w} W a channel. ` +
       'You can raise the Heat cap on the Sound page.');
-  if (g.limiting && g.gain_db < -0.5) return h('div.card.warn', {}, h('b', {}, 'Power limit. '),
-    `Turned down ${(-g.gain_db).toFixed(1)} dB to stay within the charger's ${Math.round(c.w)} W.`);
+  // a power limit is said in the Power card under Volume
   return null;
 }
 
@@ -218,6 +373,7 @@ function pagePlay() {
           onclick: () => set('control', { action: np.state === 'play' ? 'pause' : 'play' }) }, np.state === 'play' ? '⏸' : '▶'),
         h('button.icon', { 'aria-label': 'Next', onclick: () => set('control', { action: 'next' }) }, '⏭'))),
     volumeCard(),
+    powerCard(),
     h('div.card', {}, h('h2', {}, 'Input'),
       seg(Object.fromEntries(['stream', ...I.caps.line_modes].map((m) => [m, INPUTS[m] || m])), a.input,
         (m) => set('input', { input: m })),
@@ -494,6 +650,7 @@ function diagCard() {
       kv('Amplifier', S.amp.latched || S.amp.fault ? 'fault' : p.state !== 'on' ? 'off' : S.amp.enabled ? 'on' : 'held off'),
       S.amp.temp_c != null && kv('Temperature', `${S.amp.temp_c} °C`),
       kv('Up', uptime(S.uptime_s))),
+    diagGraphs(),
     selftest && h('ul.list', { style: 'margin-top:10px' }, selftest.checks.map((t) => h('li', {},
       h('span', { className: t.pass ? 'ok' : 'bad' }, t.pass ? '✓' : '✗'),
       h('span.grow', {}, CHECKS[t.name] || t.name), h('span.dim', {}, t.value ?? '')))),
@@ -532,7 +689,7 @@ function uptime(s) {
 const PAGES = { play: pagePlay, sound: pageSound, setup: pageSetup };
 
 for (const b of document.querySelectorAll('#tabs button')) {
-  b.addEventListener('click', () => { tab = b.dataset.tab; draw(); window.scrollTo(0, 0); });
+  b.addEventListener('click', () => { tab = b.dataset.tab; pickF = null; draw(); window.scrollTo(0, 0); });
 }
 const want = location.hash.slice(1);
 if (PAGES[want]) tab = want;
