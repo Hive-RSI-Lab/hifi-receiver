@@ -113,14 +113,16 @@ class Paths(unittest.TestCase):
         # An update restarts the receiver mid-poll: that request never gets an
         # answer. The page must notice within a poll's limit, not the browser's
         # own timeout (minutes), and see the receiver as soon as it is back.
-        p = self.open()
+        self.open()
         self.see("Teardrop")
         self.m.srv.rx.fail["state"] = (None, "restarting")
-        self.see("Looking for the receiver", timeout=10)
+        time.sleep(8.5)  # past the first poll's limit: one poll out of time is a busy receiver, not a lost one
+        self.no("Looking for the receiver")
+        self.see("Looking for the receiver", timeout=14)
         del self.m.srv.rx.fail["state"]
         t = time.time()
         self.p.wait("document.querySelector('#conn').classList.contains('on')", 10, what="the receiver back")
-        self.assertLess(time.time() - t, 8)
+        self.assertLess(time.time() - t, 5)
 
     def test_rejoining_the_network_it_is_on_waits_for_the_firmware(self):
         p = self.open("#setup")

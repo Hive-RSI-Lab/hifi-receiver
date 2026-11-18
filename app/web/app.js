@@ -41,6 +41,8 @@ let I = null;          // GET info: what the box is
 let S = null;          // the last GET state
 let tab = 'play';
 let online = false;
+let slow = 0;          // polls in a row that ran out of time: the board answers one request at a time, so a long one (an update check) holds the rest
+let uploading = false; // a firmware file is going up: the board answers nothing else until it is written
 let holding = false;   // a slider is under a finger: don't redraw over it
 let scan = null;       // Wi-Fi networks from the last scan
 let selftest = null;   // the last self-test result
@@ -77,11 +79,17 @@ function toast(msg, ms = 3000) {
 async function api(path, body, waitMs) {
   const opt = body === undefined ? {} : {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
-  if (waitMs && AbortSignal.timeout) opt.signal = AbortSignal.timeout(waitMs);
-  const r = await fetch('api/v1/' + path, opt);
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw Object.assign(new Error(j.error || r.statusText), { status: r.status });
-  return j;
+  // AbortController, not AbortSignal.timeout: that one is iOS 16+ only
+  const c = waitMs ? new AbortController() : null;
+  const t = c && setTimeout(() => c.abort(), waitMs);
+  if (c) opt.signal = c.signal;
+  try {
+    const r = await fetch('api/v1/' + path, opt);
+    // a body cut off by the limit is no answer, not an empty one
+    const j = await r.json().catch((e) => { if (e.name === 'AbortError') throw e; return {}; });
+    if (!r.ok) throw Object.assign(new Error(j.error || r.statusText), { status: r.status });
+    return j;
+  } finally { clearTimeout(t); }
 }
 
 // set() posts a change and takes the state it answers with; a call whose
@@ -286,6 +294,7 @@ function showPick(cs, now = Date.now()) {
 // The calls go out together: each is a round trip, and through the relay one
 // costs about 120 ms, so four in a row held the first draw for half a second.
 async function poll(boot) {
+  if (uploading) { setTimeout(() => poll(boot), POLL_MS); return; }
   try {
     const w = POLL_WAIT_MS;
     const party = P !== null && tab === 'play' ? api('party', undefined, w).catch((e) => (e.status === 404 ? null : P)) : P;
@@ -298,8 +307,11 @@ async function poll(boot) {
     P = p;
     if (boot && st.net && st.net.mode === 'ap' && !PAGES[want]) tab = 'setup';
     if (st && st.audio) { S = st; remember(st); }
-    online = true;
-  } catch { online = false; }
+    online = true; slow = 0;
+  } catch (e) {
+    // one poll out of time is a busy board; a second in a row, or any other failure, is a lost one
+    online = online && e.name === 'AbortError' && ++slow < 2;
+  }
   // one draw per poll; a bug in a page isn't the receiver going away, and
   // whatever went wrong, keep polling
   try { draw(); } finally { $('#conn').classList.toggle('on', online); setTimeout(() => poll(boot && !online), POLL_MS); }
@@ -634,6 +646,8 @@ function updateCard() {
 function upload(f) {
   if (!f) return;
   const x = new XMLHttpRequest();
+  uploading = true;
+  x.onloadend = () => { uploading = false; };
   x.open('POST', 'api/v1/update/upload');
   x.setRequestHeader('Content-Type', 'application/octet-stream');
   x.upload.onprogress = (e) => {
