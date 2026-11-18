@@ -19,7 +19,7 @@
 /* the volume buttons, low = held (squeezelite's buttons own them: the
  * Kconfig default in patch 0001; read here only for the − + combo) */
 #define PIN_BTN_VOLUP 13
-#define PIN_BTN_VOLDOWN 36
+#define PIN_BTN_VOLDN 36
 /* The ESP32's I2S outputs (squeezelite sets them up from DAC_CONFIG): only named
  * here to slow their edges, see hifi_bsp_init */
 #define PIN_I2S_BCLK 27

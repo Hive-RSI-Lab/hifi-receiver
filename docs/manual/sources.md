@@ -114,7 +114,7 @@ Its `docs/app.md` and `app/web/app.js`.
 
 ## Bluetooth pairing mode and chimes (2026-11-18)
 
-From `firmware/components/hifi/core/hifi_pair.c/.h`, `hifi_main.c`, patch
+From `firmware/components/hifi/core/hifi_pair.c`, `hifi_pair.h`, `hifi_main.c`, patch
 `0037-bt-hidden-pairing-mode-chimes.patch`, `app/web/app.js` (`btCard`) and
 `docs/test-api.md` (`POST /api/v1/bt/pair`).
 

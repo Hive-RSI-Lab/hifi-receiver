@@ -50,7 +50,7 @@ void hifi_bsp_start(void) {}
 /* a pin squeezelite hasn't set up yet reads low (held): the combo waits
  * until it has seen both up before it counts a hold */
 bool hifi_bsp_vol_buttons(bool *down, bool *up) {
-	*down = !gpio_get_level(PIN_BTN_VOLDOWN);
+	*down = !gpio_get_level(PIN_BTN_VOLDN);
 	*up = !gpio_get_level(PIN_BTN_VOLUP);
 	return true;
 }
