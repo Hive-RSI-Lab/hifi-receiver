@@ -655,6 +655,8 @@ function upload(f) {
   };
   x.onload = () => { try { take(JSON.parse(x.responseText)); } catch { /* the next poll shows it */ } };
   x.onerror = () => toast('Upload failed');
+  x.timeout = 120000;   // a board gone after the last byte would otherwise hold the polls until the browser gives up
+  x.ontimeout = () => toast('Upload failed: no answer');
   x.send(f);
 }
 
