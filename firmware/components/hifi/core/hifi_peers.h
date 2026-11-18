@@ -63,4 +63,13 @@ void hifi_peers_txt(hifi_peer_t *p, const char *key, const char *val, size_t len
 int hifi_peers_json(const hifi_peers_t *t, const hifi_peer_t *self, bool searching, long long now_us,
 		    char *out, size_t cap);
 
+/* the host name mDNS settled on, into out: set if it is ours, else the
+ * names mDNS renames to after a clash, in its order (hifi-lite, then
+ * hifi-lite-2, -3 ...; hifi-lite-4 goes on to -5), the first that is ours.
+ * mDNS never gives a box its own answer and IDF 4.4 can't be asked for the
+ * name, only whether a name is ours (mdns_hostname_exists). set when no
+ * candidate up to -HIFI_PEERS_RENAMES is ours. */
+#define HIFI_PEERS_RENAMES 32
+void hifi_peers_own_host(const char *set, bool (*ours)(const char *host), char *out, size_t cap);
+
 #endif

@@ -699,10 +699,11 @@ box first (`self: true`), then the others by name, then IP.
   name come back as spaces.
 - `host` is the name mDNS settled on, without `.local`. Boxes that share a
   host name (every Lite starts as `hifi-lite`) are renamed `hifi-lite-2`,
-  `hifi-lite-3` and so on, in the order they came up. The self row takes its
-  host name from the box's own answer once one is heard; until then it shows
-  the name the box is set to. Self is matched by IP, so the box that kept
-  plain `hifi-lite` is listed on the others.
+  `hifi-lite-3` and so on, in the order they came up. mDNS never hands a box
+  its own answer, and IDF 4.4 can't be asked for the name, only whether a
+  name is ours, so the self row tries the set name and then mDNS's renames
+  in order (up to `-33`) and shows the first that is ours. Self is matched by
+  IP, so the box that kept plain `hifi-lite` is listed on the others.
 - 500 `{"error":"the speakers list is too long"}` should never happen (the
   reply buffer fits 12 full rows); it replaces a cut-off list.
 - `name` is the TXT `name` (the player name), else the host; `model` and `fw`

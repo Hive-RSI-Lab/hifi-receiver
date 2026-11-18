@@ -1,6 +1,7 @@
 #include "hifi_peers.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 
@@ -127,4 +128,30 @@ int hifi_peers_json(const hifi_peers_t *t, const hifi_peer_t *self, bool searchi
 		return 500;
 	}
 	return 200;
+}
+
+void hifi_peers_own_host(const char *set, bool (*ours)(const char *host), char *out, size_t cap) {
+	if (!cap) return;
+	snprintf(out, cap, "%s", set ? set : "");
+	if (!set || !*set || !ours || ours(set)) return;
+	/* mDNS's rename (_mdns_mangle_name): a numeric -N suffix (an empty one
+	 * reads as 0) becomes -N+1, anything else gets -2 */
+	size_t base = strlen(set);
+	long n = 1;
+	const char *dash = strrchr(set, '-');
+	if (dash) {
+		char *end = NULL;
+		long v = strtol(dash + 1, &end, 10);
+		if (*end == 0 && v >= 0 && v < 1000000) base = (size_t) (dash - set), n = v;
+	}
+	char cand[64];
+	for (int k = 0; k < HIFI_PEERS_RENAMES; k++) {
+		n++;
+		if (base > sizeof(cand) - 12) return;
+		snprintf(cand, sizeof(cand), "%.*s-%ld", (int) base, set, n);
+		if (ours(cand)) {
+			snprintf(out, cap, "%s", cand);
+			return;
+		}
+	}
 }

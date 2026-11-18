@@ -12,6 +12,12 @@ static hifi_peer_t peer(const char *ip, const char *host, const char *name) {
 	return p;
 }
 
+static int asked;
+static bool is_lite3(const char *h) { return strcmp(h, "hifi-lite-3") == 0; }
+static bool is_lounge2(const char *h) { return strcmp(h, "lounge-2") == 0; }
+static bool is_box1(const char *h) { return strcmp(h, "box-1") == 0; }
+static bool never(const char *h) { (void) h; asked++; return false; }
+
 int main(void) {
 	hifi_peers_t t = {0};
 	char out[6144];
@@ -197,6 +203,33 @@ int main(void) {
 	hifi_peer_t noip = peer("", "hifi-lite", "Lite 2");
 	hifi_peers_json(&two, &noip, false, S(2), out, sizeof(out));
 	CHECK(strstr(out, "Lite 5") == NULL);
+
+	/* own host: the name mDNS settled on, by its rename order */
+	char host[64];
+	hifi_peers_own_host("hifi-lite", is_lite3, host, sizeof(host));
+	CHECK_STR(host, "hifi-lite-3");
+	hifi_peers_own_host("hifi-lite-3", is_lite3, host, sizeof(host));
+	CHECK_STR(host, "hifi-lite-3");
+	hifi_peers_own_host("hifi-lite-2", is_lite3, host, sizeof(host));
+	CHECK_STR(host, "hifi-lite-3");
+	hifi_peers_own_host("hifi-lite-5", is_lite3, host, sizeof(host));
+	CHECK_STR(host, "hifi-lite-5"); /* never ours: what was set */
+	hifi_peers_own_host("hifi-lite", NULL, host, sizeof(host));
+	CHECK_STR(host, "hifi-lite");
+	hifi_peers_own_host("hifi-lite", never, host, sizeof(host));
+	CHECK_STR(host, "hifi-lite");
+	CHECK(asked == HIFI_PEERS_RENAMES + 1); /* bounded */
+	hifi_peers_own_host("lounge", is_lounge2, host, sizeof(host));
+	CHECK_STR(host, "lounge-2");
+	hifi_peers_own_host("box-", is_box1, host, sizeof(host));
+	CHECK_STR(host, "box-1");
+	char tiny[4];
+	hifi_peers_own_host("hifi-lite", is_lite3, tiny, sizeof(tiny));
+	CHECK_STR(tiny, "hif");
+	char longest[64];
+	memset(longest, 'a', 63), longest[63] = 0;
+	hifi_peers_own_host(longest, never, host, sizeof(host));
+	CHECK_STR(host, longest);
 
 	/* no table, no self */
 	CHECK(hifi_peers_json(NULL, NULL, false, 0, out, sizeof(out)) == 200);

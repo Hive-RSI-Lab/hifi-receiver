@@ -57,7 +57,8 @@ int hifi_peers_op(char *out, size_t cap) {
 	hifi_info_t info = {0};
 	hifi_ops.info(&info);
 	hifi_net_ip(self.ip, sizeof(self.ip));
-	snprintf(self.host, sizeof(self.host), "%s", info.hostname);
+	/* the name mDNS settled on: hifi-lite-2 when another box had hifi-lite */
+	hifi_peers_own_host(info.hostname, mdns_hostname_exists, self.host, sizeof(self.host));
 	snprintf(self.name, sizeof(self.name), "%s", info.name);
 	snprintf(self.model, sizeof(self.model), "%s", info.model ? info.model : "");
 	snprintf(self.fw, sizeof(self.fw), "%s", info.fw ? info.fw : "");
