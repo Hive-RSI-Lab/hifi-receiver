@@ -1,0 +1,17 @@
+The URL update's two-buffer download (components/hifi/esp/hifi_dl.c) links into
+the app only: hifi_esp.h declares hifi_dl_pump weak and this -u pulls it in, as
+patch 0031 does for party mode. Recovery keeps hifi_net.c's one-buffer loop, so
+its image doesn't grow.
+
+diff --git a/components/platform_console/app_squeezelite/CMakeLists.txt b/components/platform_console/app_squeezelite/CMakeLists.txt
+--- a/components/platform_console/app_squeezelite/CMakeLists.txt
++++ b/components/platform_console/app_squeezelite/CMakeLists.txt
+@@ -47,6 +47,8 @@
+ 		target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=${exp}")
+ 	endforeach()
+ endif()
++# hifi: and the URL update's two-buffer download, which recovery doesn't need
++target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=hifi_dl_pump")
+ 
+ idf_build_get_property(project_ver PROJECT_VER)
+ message("******************* ${project_ver}")

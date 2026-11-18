@@ -122,6 +122,8 @@ class API(unittest.TestCase):
                            ("loudness", {}), ("loudness", {"boost_db": 10}), ("loudness", {"boost_db": "6"}),
                            ("loudness", {"heat_cap_w": 1}), ("loudness", {"boost_db": 3, "heat_cap_w": 40}),
                            ("channel", {}), ("channel", {"channel": "centre"}),
+                           ("wifi", {"ssid": "x" * 31 + "\u00e9", "password": "p"}),  # 33 bytes
+                           ("wifi", {"ssid": "Home", "password": "p" * 65}),
                            ("sub", {"level_db": -8.5})):  # over Lite's caps.sub.max_db
             code, s = self.m.post(path, body)
             self.assertEqual(code, 400, (path, body))

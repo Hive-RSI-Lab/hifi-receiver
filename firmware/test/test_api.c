@@ -346,6 +346,14 @@ static void amp_input_sub_control(void) {
 					    "\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\"}") == 200);
 	CHECK(call("POST", "/api/v1/name", "{\"name\":\"\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9"
 					    "\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\"}") == 400);
+	/* 67 bytes decoded, past the reader's 64-byte buffer: refused as too long
+	 * (the length is checked before the control characters), the name kept */
+	CHECK(call("POST", "/api/v1/name", "{\"name\":\"Kitchen"
+					    "\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r"
+					    "\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r"
+					    "\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\\r\"}") == 400);
+	CHECK_HAS(out, "32 characters");
+	CHECK_STR(m.name, "\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9");
 	CHECK(call("POST", "/api/v1/name", "{\"name\":\"Kitchen\"}") == 200);
 
 	CHECK(call("POST", "/api/v1/reset", "{}") == 400);

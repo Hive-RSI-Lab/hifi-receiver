@@ -1391,6 +1391,8 @@ static bool has_taps(void) {
 	return on;
 }
 
+#define CAP_LEADIN_MS 100 /* fresh input op_capture drops ahead of what it keeps */
+
 /*
  * Records the codec's ADC: the loopback taps (LIN2/RIN2) or the RCA line in
  * (LIN1/RIN1). The ADC shares I2S with the DAC (squeezelite opens it full
@@ -1408,7 +1410,19 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 	/* squeezelite's init leaves the ADC powered down in CHIPPOWER (0xAA), so
 	 * without this the ADC sends zeros; the DAC's bits are kept as they are */
 	uint8_t chip = ES8388_CHIPPOWER_ADC_DOWN;
+	/* Vref and DLL first, with the ADC's digital part and state machine held
+	 * in reset; then its inputs and modulators (ADCPOWER), on a settled
+	 * reference; then the digital part let go. The ADC used to come up with
+	 * ADCPOWER (still at its reset value on the first capture after a boot)
+	 * ahead of everything in CHIPPOWER, released in one write, and sometimes
+	 * started scrambled: on Lite 3 the first capture after a boot read
+	 * broadband noise on both taps for its whole 100 ms (the 1 kHz bin at
+	 * -5 dB over 100 ms and about +5 dB in each 10 ms block, the quiet leg as
+	 * loud as the driven one), and the next capture, after the ADC went down
+	 * and up again, was clean (2026-11-18) */
 	esp_err_t e = hifi_i2c_read(ES8388_ADDR, ES8388_CHIPPOWER, &chip);
+	e |= hifi_i2c_write(ES8388_ADDR, ES8388_CHIPPOWER, (chip & 0x55) | ES8388_CHIPPOWER_ADC_RESET);
+	vTaskDelay(pdMS_TO_TICKS(50));
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL1, 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL2, src == HIFI_CAP_LOOPBACK ? 0x50 : 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL4, 0x0C);
@@ -1417,17 +1431,37 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL9, 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCCONTROL10, 0x00);
 	e |= hifi_i2c_write(ES8388_ADDR, ES8388_ADCPOWER, ES8388_ADCPOWER_CAPTURE);
-	e |= hifi_i2c_write(ES8388_ADDR, ES8388_CHIPPOWER, chip & 0x55); /* the ADC's half up */
+	vTaskDelay(pdMS_TO_TICKS(20));
+	e |= hifi_i2c_write(ES8388_ADDR, ES8388_CHIPPOWER, chip & 0x55);
 	int st = 0;
 	if (e != ESP_OK) {
 		*err = "codec didn't take the ADC settings";
 		st = 500;
 		goto out;
 	}
-	/* the coupling capacitors settle, and what the DMA held from before goes */
+	/* the coupling capacitors settle; then everything the DMA ring holds goes.
+	 * Nothing reads the I2S input between captures, so the ring sits full
+	 * (squeezelite's 12 buffers of 512 frames, about 128 ms) and the reads
+	 * below would start on the oldest of it: reading with no wait until the
+	 * ring is empty leaves only buffers the DMA fills after the settle.
+	 * Then the first CAP_LEADIN_MS of fresh input goes too: emptying the
+	 * ring alone was not enough. On Lite 3, 1 boot in 10 still had the first
+	 * capture since power-on start with 20 ms of noise on both taps, as loud
+	 * on the quiet tap as on the driven one. It was live input from 190 ms to
+	 * 210 ms after the ADC's release, and every later capture was clean
+	 * (2026-11-18). The lead-in is five times that. */
 	vTaskDelay(pdMS_TO_TICKS(200));
 	size_t got = 0, want = (size_t) frames * 4;
-	for (int i = 0; i < 4; i++) i2s_read(CONFIG_I2S_NUM, pcm, want < 4096 ? want : 4096, &got, pdMS_TO_TICKS(50));
+	for (size_t drained = 0; drained < 256 * 1024; drained += got) { /* over 1 s of input: a bound, never reached */
+		if (i2s_read(CONFIG_I2S_NUM, pcm, want < 4096 ? want : 4096, &got, 0) != ESP_OK || !got) break;
+	}
+	const size_t lead_bytes = CAP_LEADIN_MS * TONE_RATE / 1000 * 4;
+	for (size_t lead = 0; lead < lead_bytes; lead += got) {
+		size_t n = lead_bytes - lead;
+		if (n > want) n = want;
+		if (n > 4096) n = 4096;
+		if (i2s_read(CONFIG_I2S_NUM, pcm, n, &got, pdMS_TO_TICKS(300)) != ESP_OK || !got) break;
+	}
 	size_t have = 0;
 	while (have < want) {
 		if (i2s_read(CONFIG_I2S_NUM, (uint8_t *) pcm + have, want - have, &got, pdMS_TO_TICKS(300)) != ESP_OK || !got) break;
