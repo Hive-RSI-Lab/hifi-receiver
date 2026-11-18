@@ -206,18 +206,18 @@ function powerCard() {
         [trace(1, 0, top, 330, 64, now, PLAY_SPAN), 'i'], [o, 'o']]) },
     budOn && h('span.bl', { style: `top:${yOf(bud, 0, top, 64)}px` }, 'budget'),
     online && H.length < 15 && h('span.wait', {},
-      `Graph fills in as it plays · ${last ? Math.round((last[0] - H[0][0]) / 1000) : 0} s so far`)),
+      `Graph fills in · ${last ? Math.round((last[0] - H[0][0]) / 1000) : 0} s so far`)),
     h('div.ax', {}, h('span', {}, '5 min ago'), h('span', {}, online || !last ? 'now' : 'last seen ' + ago(now - last[0]))));
 }
 
 // Setup: power, supply, Wi-Fi and memory over the last 15 minutes, with one
 // crosshair: hover or touch a graph to read every value at that moment.
-let pickT = null;  // the moment picked (ms), or null
+let pickF = null;  // where on the graphs the pointer is (0 to 1 across), or null
 
 function diagGraphs() {
   if (!H.length) return null;
   const now = Date.now(), sp = DIAG_SPAN, W = 358, L = H[H.length - 1], c = S.power.contract || {};
-  const bud = S.governor.budget_w;
+  const bud = S.governor.budget_w, n = (t) => (online ? t : '–');
   let pk = 0, hk = 0, vlo = 99, vhi = 0, lim = '';
   for (const r of H) {
     if (r[0] < now - sp) continue;
@@ -235,37 +235,38 @@ function diagGraphs() {
     legend, h('div', { innerHTML: chart(W, ht, label, paths) }));
   const cs = h('div.cs', {
     onpointerdown: pickAt, onpointermove: pickAt,
-    onpointerleave: (e) => { if (e.pointerType === 'mouse') { pickT = null; showPick(e.currentTarget); } } },
-  ch('Power', 'W', `out ${fx(L[2])} · in ${fx(L[1])} W`, false, 96,
+    onpointerleave: (e) => { if (e.pointerType === 'mouse') { pickF = null; showPick(e.currentTarget); } } },
+  ch('Power', 'W', n(`out ${fx(L[2])} · in ${fx(L[1])} W`), false, 96,
     `Out and in power, last 15 minutes` + (bud ? `, with the ${bud} W budget` : ''),
     [[lim, 'l'], [a, 'a'], [level(bud, 0, top, W, 96), 'b'], [trace(1, 0, top, W, 96, now, sp), 'i'], [o, 'o']],
     h('div.lg', {}, h('span', {}, h('i.sw'), 'Out'), h('span', {}, h('i.sw.in'), 'In'),
-      bud != null && h('span', {}, h('i.sw.bu'), `Budget ${fx(bud)} W`), h('span', {}, h('i.sw.li'), 'limiting'))),
-  ch('Supply', 'V', `${fx(L[4], 2)} V` + (sagV ? ` · low below ${sagV.toFixed(0)} V` : ''), sagV && L[4] < sagV, 48,
+      bud != null && h('span', {}, h('i.sw.bu'), `Budget ${fx(bud)} W`), lim && h('span', {}, h('i.sw.li'), 'limiting'))),
+  ch('Supply', 'V', n(`${fx(L[4], 2)} V`) + (sagV ? ` · low below ${fx(sagV)} V` : ''), online && sagV && L[4] != null && L[4] < sagV, 48,
     'Supply voltage, last 15 minutes',
     [[level(c.v, lo, hi, W, 48), 'r'], [level(sagV, lo, hi, W, 48), 't'], [trace(4, lo, hi, W, 48, now, sp), 'v']]),
-  H.some((r) => r[5] != null) && ch('Wi-Fi signal', 'dBm', `${dbm(L[5])} dBm · weak below −75 dBm`, L[5] < -75, 48,
+  H.some((r) => r[5] != null) && ch('Wi-Fi signal', 'dBm', n(`${dbm(L[5])} dBm`) + ' · weak below −75 dBm', online && L[5] != null && L[5] < -75, 48,
     'Wi-Fi signal, last 15 minutes', [[level(-75, -90, -40, W, 48), 't'], [trace(5, -90, -40, W, 48, now, sp), 'v']]),
-  ch('Free memory', 'KB', `${kb(L[6])} KB · low below 16 KB`, L[6] < 16384, 48,
+  ch('Free memory', 'KB', n(`${kb(L[6])} KB`) + ' · low below 16 KB', online && L[6] != null && L[6] < 16384, 48,
     'Free memory, last 15 minutes', [[level(16384, 0, hTop, W, 48), 't'], [trace(6, 0, hTop, W, 48, now, sp), 'v']]),
   h('div.ax', {}, h('span', {}, '15 min ago'), h('span', {}, '10'), h('span', {}, '5'), h('span', {}, 'now')),
   h('div.xh', { hidden: true }));
   const gs = h('div.gs.gr', {},
-    h('div.gs-h', {}, h('h3', {}, 'Last 15 minutes'), h('span.dim', {}, 'kept while this page is open')),
-    h('div.rd', { role: 'status' }), cs);
+    h('div.gs-h', {}, h('h3', {}, 'Last 15 minutes'), h('span.dim', {}, online ? 'kept while this page is open' : 'last seen ' + ago(now - L[0]))),
+    h('div.rd'), cs);
   showPick(cs, now);
   return gs;
 }
 
 function pickAt(e) {
   const r = e.currentTarget.getBoundingClientRect();
-  pickT = Date.now() - (1 - Math.max(0, Math.min(1, (e.clientX - r.left) / r.width))) * DIAG_SPAN;
+  pickF = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
   showPick(e.currentTarget);
 }
 
-// the readout and the crosshair, for pickT, without redrawing the page
+// the readout and the crosshair, for pickF, without redrawing the page
 function showPick(cs, now = Date.now()) {
   let r = null;
+  const pickT = pickF == null ? null : now - (1 - pickF) * DIAG_SPAN;
   if (pickT != null && pickT >= now - DIAG_SPAN) for (const s of H) if (!r || Math.abs(s[0] - pickT) < Math.abs(r[0] - pickT)) r = s;
   if (r && Math.abs(r[0] - pickT) > 2 * POLL_MS) r = null;
   const xh = $('.xh', cs);
@@ -688,7 +689,7 @@ function uptime(s) {
 const PAGES = { play: pagePlay, sound: pageSound, setup: pageSetup };
 
 for (const b of document.querySelectorAll('#tabs button')) {
-  b.addEventListener('click', () => { tab = b.dataset.tab; draw(); window.scrollTo(0, 0); });
+  b.addEventListener('click', () => { tab = b.dataset.tab; pickF = null; draw(); window.scrollTo(0, 0); });
 }
 const want = location.hash.slice(1);
 if (PAGES[want]) tab = want;

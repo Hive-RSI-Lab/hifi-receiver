@@ -334,7 +334,7 @@ class Browser(unittest.TestCase):
         m = Mock()
         try:
             d = self.dom(m)
-            for want in ('aria-label="Power"', "20 V · 65 W charger", "Graph fills in as it plays", "Out", "Budget"):
+            for want in ('aria-label="Power"', "20 V · 65 W charger", "Graph fills in · ", "Out", "Budget"):
                 self.assertIn(want, d)
             self.assertNotIn("Limiting.", d)
             self.assertNotIn("Supply sagging.", d)
@@ -374,10 +374,17 @@ class Browser(unittest.TestCase):
             self.assertNotIn("Graph fills in", d)
             self.assertRegex(d, r'<path class="o" d="M[0-9.]+,[0-9.]+L')
             d = self.dom(m, "#setup", ms=12000)
-            for want in ("Last 15 minutes", "Supply", "Wi-Fi signal", "Free memory", "low below 18 V",
+            for want in ("Last 15 minutes", "Supply", "Wi-Fi signal", "Free memory", "low below 18.0 V",
                          "Touch a graph to read the values"):
                 self.assertIn(want, d)
             self.assertRegex(d, r'<path class="v" d="M[0-9.]+,[0-9.]+L')
+        finally:
+            m.close()
+
+    def test_sag_line_is_said_to_a_tenth_of_a_volt(self):
+        m = Mock(pdo=(5.0, 3.0))
+        try:
+            self.assertIn("low below 4.5 V", self.dom(m, "#setup", ms=12000))
         finally:
             m.close()
 

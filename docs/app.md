@@ -12,7 +12,7 @@ Plan item 8. The code is in [`app/`](../app):
 
 | Path | What it is |
 |---|---|
-| `app/web/` | The app itself: `index.html`, `app.js`, `app.css`, the manifest, the service worker and the icons. Plain JavaScript with no framework and no build step, about 36 KB gzipped. |
+| `app/web/` | The app itself: `index.html`, `app.js`, `app.css`, the manifest, the service worker and the icons. Plain JavaScript with no framework and no build step, about 45 KB gzipped. |
 | `app/mock/server.py` | A mock receiver. It serves `app/web` and answers `/api/v1` the way the firmware does, for Lite, Plus or Ultra, on a good or weak charger, with or without a fault, or in first-run setup. Standard library only. |
 | `app/build.py` | Packs the app for the firmware: each file gzipped, plus `webapp_files.c`/`.h`, a table the firmware links in. It fails if the packed app is over 64 KB. |
 | `app/tests/test_app.py` | The tests: the API contract, the app's files, the pack, and the app rendered in headless Chrome against the mock. |
@@ -256,7 +256,7 @@ stable.
   reachable at `/squeezelite/` for advanced settings.
 - **Or a filesystem:** `app/dist/www/*.gz` are the same files, for a
   LittleFS image if the firmware would rather use one.
-- **Size:** about 36 KB packed, against a 64 KB budget that `build.py`
+- **Size:** about 45 KB packed, against a 64 KB budget that `build.py`
   enforces. The icons are half of it.
 
 ## Develop and test
