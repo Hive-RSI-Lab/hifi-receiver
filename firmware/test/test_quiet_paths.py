@@ -112,6 +112,12 @@ check(len(sets) == 1 and "amp_off_req = true" in code(qa),
 check(re.search(r"hifi_quiet_stop\([^;]*,\s*true\)", code(read(HIFI, "esp", "hifi_crash.c"))) is not None,
       "hifi_crash.c: the esp_restart wrap must call hifi_quiet_stop(..., true)")
 check("quiet_final" in code(body(main, "void hifi_quiet_release(")), "hifi_quiet_release: must not undo a restart's stop")
+rel = code(body(main, "void hifi_quiet_release("))
+check("quiet_mux" in rel and "quiet_mux" in code(body(main, "void hifi_quiet_stop(")),
+      "hifi_quiet_release/stop: quiet_final and quiet_done must be checked under quiet_mux")
+# nothing raises squeezelite's gain while a stop holds it at 0
+check("!quiet_req" in code(body(main, "static void apply_volume(void) {")), "apply_volume: must not raise the gain during a stop")
+check("quiet_req" in code(body(main, "bool hifi_volume_hook(")), "hifi_volume_hook: must hold the stream at 0 during a stop")
 
 # 6. Lite's boot: SDZ is driven low before the pin becomes an output
 init = code(body(read(HIFI, "esp", "board_lite.c"), "void hifi_bsp_init("))

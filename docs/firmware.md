@@ -93,7 +93,7 @@ speaker. `hifi_quiet_stop()` (`esp/hifi_main.c`) runs once before any of them:
 
 1. ramp the outputs down over 200 ms in 10 steps: squeezelite's digital
    gain on every board (the core board's only ramp: the Sabre's volume is
-   that gain), and on Lite the codec's LOUT1/ROUT1 and sub outs LOUT2/ROUT2
+   that gain; from unity for a test tone or DJ direct's line copy), and on Lite the codec's LOUT1/ROUT1 and sub outs LOUT2/ROUT2
    toward 0, −45 dB. The routing stops from here, so nothing raises them;
 2. soft-mute the DAC (ES8388 DACCONTROL3 bit 2) and wait 25 ms;
 3. put the amp into shutdown (Lite: SDZ low at once; the core board: the
@@ -119,7 +119,9 @@ speaker. `hifi_quiet_stop()` (`esp/hifi_main.c`) runs once before any of them:
   the mute and the amp, and squeezelite stops when the chip restarts. A
   volume change from the source while it holds stays silent.
 - **A restart's stop is final** (`hifi_quiet_stop(why, true)`): no release
-  can undo it. An update's stop isn't, so the sound is off for the whole
+  can undo it (the release checks and clears the stop under one spinlock,
+  so a restart that comes in meanwhile runs its own stop afterwards). An
+  update's stop isn't, so the sound is off for the whole
   download and comes back (after a 300 ms hold for the amp) only if it
   fails or is aborted; the self-test reports no amp while one runs.
 - **Not covered:** a panic, a watchdog reset, a brown-out and the
@@ -128,7 +130,12 @@ speaker. `hifi_quiet_stop()` (`esp/hifi_main.c`) runs once before any of them:
   Lite). The `api reboot` callback runs its 300 ms on the esp_timer task.
   Squeezelite's own codec writes at its start aren't gated, as before; the
   recovery app's update path (upstream `squeezelite-ota.c`) isn't scanned
-  by the test, since the amp is never on in recovery.
+  by the test, since the amp is never on in recovery. A gain step waits at
+  most 20 ms for our lock and is skipped after that, but squeezelite's own
+  output lock inside `hifi_output_gain` can't be bounded from here. The
+  path test doesn't scan patched squeezelite, restarts through a function
+  pointer or `esp_system_abort`, or deep sleep; the boot test covers the
+  gate's pure function, not the boot sequence on a board.
 - **Checked by** `test/test_quiet.c` (the order and timings, the boot gate)
   and `test/test_quiet_paths.py` (every restart and update path calls it).
 
