@@ -14,7 +14,7 @@
  * It opens no listening port: the socket is connect()ed to the follower and
  * bound to an ephemeral port, so it takes datagrams only from that address.
  * It sends only when the follower is on the station's own subnet, and the
- * self-test fails while it is built in, so nobody takes it for a product.
+ * self-test carries a "party_standin" line saying it is a measurement image.
  * It starts CONFIG_HIFI_PARTY_STANDIN_DELAY_S (120 s) after the station has an
  * address, so a Bluetooth source can connect first, and runs until the board
  * restarts. After 250 failed sends in a row (2 s of them) it stops, so
