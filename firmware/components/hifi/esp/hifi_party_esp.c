@@ -1222,7 +1222,7 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 			}
 			hifi_link_wipe(hex, sizeof(hex));
 			hifi_link_wipe(sec, sizeof(sec));
-			if (!ok) return err(out, cap, 400, "secret must be 64 hex digits");
+			if (!ok) return err(out, cap, 400, "secret must be 64 hex digits, not all zeros");
 		} else if (tone) {
 			bool v;
 			if (!hj_get_bool(body, "on", &v)) return err(out, cap, 400, "on (true or false) is required");

@@ -96,7 +96,7 @@ static int hexval(char c) {
 
 bool hifi_party_parse_secret(const char *s, uint8_t secret[HIFI_PARTY_SECRET]) {
 	if (!s || strlen(s) != 2 * HIFI_PARTY_SECRET) return false;
-	uint8_t k[HIFI_PARTY_SECRET];
+	uint8_t k[HIFI_PARTY_SECRET], any = 0;
 	for (int i = 0; i < HIFI_PARTY_SECRET; i++) {
 		int hi = hexval(s[2 * i]), lo = hexval(s[2 * i + 1]);
 		if (hi < 0 || lo < 0) {
@@ -104,7 +104,9 @@ bool hifi_party_parse_secret(const char *s, uint8_t secret[HIFI_PARTY_SECRET]) {
 			return false;
 		}
 		k[i] = (uint8_t) (hi << 4 | lo);
+		any |= k[i];
 	}
+	if (!any) return false; /* all zeros: a blank, not a key */
 	memcpy(secret, k, sizeof(k));
 	hifi_link_wipe(k, sizeof(k));
 	return true;

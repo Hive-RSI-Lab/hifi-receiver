@@ -740,7 +740,12 @@ static void units(void) {
 		hex[63] = 0;
 		CHECK(!hifi_party_parse_secret(hex, got));
 		CHECK(!hifi_party_parse_secret("", got) && !hifi_party_parse_secret(NULL, got));
+		memset(hex, '0', 64);
+		hex[64] = 0;
+		CHECK(!hifi_party_parse_secret(hex, got)); /* all zeros is a blank */
 		CHECK(got[0] == 0x55 && got[31] == 0x55); /* untouched on a failure */
+		hex[5] = '1';
+		CHECK(hifi_party_parse_secret(hex, got) && got[2] == 0x01 && got[0] == 0);
 	}
 	/* HMAC-SHA256 itself, RFC 4231 case 2 does not fit a 32 B key; check
 	 * the construction against a key of 0x0b * 32 computed with OpenSSL:
