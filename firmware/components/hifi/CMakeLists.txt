@@ -93,6 +93,8 @@ target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=esp_restart")
 # gate and leave port 80 open (security.md L1)
 foreach(sym hifi_lan_register hifi_lan_command_ok hifi_lan_config_ok hifi_lan_config_secret
 	    hifi_ap_password_pick hifi_ap_password_make hifi_ap_due hifi_http_register
-	    hifi_restart_note hifi_party_i2s_restart hifi_party_i2s_block hifi_party_i2s_wrote)
+	    hifi_restart_note)
 	target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,-u,${sym}")
 endforeach()
+# party mode's output hooks (patch 0021) come with hifi_party_esp.c, which
+# patch 0031 links into the app only: naming them here would put it in recovery
