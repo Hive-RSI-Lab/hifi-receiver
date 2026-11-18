@@ -66,6 +66,15 @@ static char key[66]; /* the board's own key for a wss:// endpoint; never shown *
 static bool ws_on, ws_bad; /* the WebSocket is running; its settings won't dial */
 static char topic_cmd[64], topic_reply[64], topic_status[64], topic_event[64];
 static QueueHandle_t inbox;
+/* The inbox holds up to INBOX_N messages and INBOX_BYTES of them at once. An
+ * app's poll sends 2-3 calls together, so two apps (or an app and an agent)
+ * need more than 4 slots; the byte cap keeps the heap the queued messages
+ * hold under the old worst case (4 x MSG_MAX). Past either, a message is
+ * dropped, as before. */
+#define INBOX_N 12
+#define INBOX_BYTES (24 * 1024)
+static size_t inbox_bytes;
+static portMUX_TYPE inbox_mux = portMUX_INITIALIZER_UNLOCKED;
 static char *rx;      /* a message arriving in pieces */
 static size_t rx_len;
 static bool rollback_reported;
@@ -207,6 +216,27 @@ typedef struct {
 	size_t len;
 } msg_t;
 
+static void inbox_take(size_t len) { /* a queued message's bytes back */
+	portENTER_CRITICAL(&inbox_mux);
+	inbox_bytes -= len;
+	portEXIT_CRITICAL(&inbox_mux);
+}
+
+/* queue a whole message, or free it if the inbox is full */
+static void inbox_put(char *data, size_t len) {
+	bool room;
+	portENTER_CRITICAL(&inbox_mux);
+	room = inbox_bytes + len <= INBOX_BYTES;
+	if (room) inbox_bytes += len;
+	portEXIT_CRITICAL(&inbox_mux);
+	msg_t m = {.data = data, .len = len};
+	if (!room || xQueueSend(inbox, &m, 0) != pdTRUE) {
+		if (room) inbox_take(len);
+		ESP_LOGW(TAG, "inbox full: a %u B message dropped", (unsigned) len);
+		free(data);
+	}
+}
+
 static void worker(void *arg) {
 	msg_t m;
 	for (;;) {
@@ -220,6 +250,7 @@ static void worker(void *arg) {
 			if (st != 200) ESP_LOGW(TAG, "command answered %d", st);
 			free(out);
 		}
+		inbox_take(m.len);
 		free(m.data);
 	}
 }
@@ -261,8 +292,7 @@ static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data) {
 		rx_len = e->current_data_offset + e->data_len;
 		if (rx_len == (size_t) e->total_data_len) {
 			rx[rx_len] = '\0';
-			msg_t m = {.data = rx, .len = rx_len};
-			if (xQueueSend(inbox, &m, 0) != pdTRUE) free(rx);
+			inbox_put(rx, rx_len);
 			rx = NULL;
 		}
 		break;
@@ -272,8 +302,7 @@ static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data) {
 }
 
 static void on_ws_msg(char *data, size_t len) {
-	msg_t m = {.data = data, .len = len};
-	if (xQueueSend(inbox, &m, 0) != pdTRUE) free(data);
+	inbox_put(data, len);
 }
 
 static void on_ws_up(void) {
@@ -610,7 +639,7 @@ void hifi_remote_start(const hifi_ops_t *o) {
 	if (!build) ESP_LOGW(TAG, "no build number in this build: updates from the LAN are refused");
 	hifi_ota_set_running(&hifi_ota_session, app->project_name, build);
 
-	inbox = xQueueCreate(4, sizeof(msg_t));
+	inbox = xQueueCreate(INBOX_N, sizeof(msg_t));
 	xTaskCreate(worker, "hifi_cmd", 6144, NULL, ESP_TASK_PRIO_MIN + 2, NULL);
 	/* 5 KB: it parses JSON, and 4 KB left only 708 B unused on a bench run */
 	xTaskCreate(relay_task, "hifi_relay", 5120, NULL, ESP_TASK_PRIO_MIN + 1, NULL);

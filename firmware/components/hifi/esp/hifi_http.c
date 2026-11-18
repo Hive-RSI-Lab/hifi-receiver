@@ -3,6 +3,7 @@
  * squeezelite's own UI moves to /squeezelite/ (firmware/patches), so '/'
  * opens the web app.
  */
+#include <stdio.h>
 #include <string.h>
 
 #include "esp_heap_caps.h"
@@ -153,11 +154,28 @@ static esp_err_t api_handler(httpd_req_t *req) {
 	return err;
 }
 
+/* A file's tag: FNV-1a over its gzipped bytes and its length, worked out on
+ * each request (well under a millisecond for the largest file, from flash)
+ * so it needs no heap. A reload that sends it back gets a bodiless 304; the
+ * browser still asks each time (no-cache), so an update is seen at once. */
+static void file_tag(const webapp_file_t *f, char out[24]) {
+	uint32_t h = 2166136261u;
+	for (size_t i = 0; i < f->len; i++) h = (h ^ f->data[i]) * 16777619u;
+	snprintf(out, 24, "\"%08lx-%x\"", (unsigned long) h, (unsigned) f->len);
+}
+
 static esp_err_t file_handler(httpd_req_t *req) {
 	const webapp_file_t *f = req->user_ctx;
-	httpd_resp_set_type(req, f->content_type);
-	httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+	char tag[24], seen[24];
+	file_tag(f, tag);
+	httpd_resp_set_hdr(req, "ETag", tag);
 	httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
+	httpd_resp_set_type(req, f->content_type);
+	if (httpd_req_get_hdr_value_str(req, "If-None-Match", seen, sizeof(seen)) == ESP_OK && !strcmp(seen, tag)) {
+		httpd_resp_set_status(req, "304 Not Modified");
+		return httpd_resp_send(req, NULL, 0);
+	}
+	httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
 	return httpd_resp_send(req, (const char *) f->data, f->len);
 }
 

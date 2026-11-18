@@ -122,18 +122,25 @@ function take(state) {
   draw();
 }
 
-async function poll() {
+// The calls go out together: each is a round trip, and through the relay one
+// costs about 120 ms, so four in a row held the first draw for half a second.
+async function poll(boot) {
   try {
-    const st = await api('state');
-    // info again after a restart (an update changes the firmware version) or a gap
-    if (!I || !online || (S && st.uptime_s < S.uptime_s)) I = await api('info');
-    if (P !== null && tab === 'play') P = await api('party').catch((e) => (e.status === 404 ? null : P));
+    const party = P !== null && tab === 'play' ? api('party').catch((e) => (e.status === 404 ? null : P)) : P;
+    // info too while there is none or the board was out of reach
+    const fresh = !I || !online;
+    const [i, st, p] = await Promise.all([fresh ? api('info') : I, api('state'), party]);
+    if (fresh) I = i;
+    // and again after a restart (an update changes the firmware version)
+    else if (S && st.uptime_s < S.uptime_s) I = await api('info');
+    P = p;
+    if (boot && st.net && st.net.mode === 'ap' && !PAGES[want]) tab = 'setup';
     if (st && st.audio) S = st;
     online = true;
   } catch { online = false; }
   // one draw per poll; a bug in a page isn't the receiver going away, and
   // whatever went wrong, keep polling
-  try { draw(); } finally { $('#conn').classList.toggle('on', online); setTimeout(poll, POLL_MS); }
+  try { draw(); } finally { $('#conn').classList.toggle('on', online); setTimeout(() => poll(boot && !online), POLL_MS); }
 }
 
 function draw() {
@@ -529,5 +536,5 @@ for (const b of document.querySelectorAll('#tabs button')) {
 }
 const want = location.hash.slice(1);
 if (PAGES[want]) tab = want;
-api('state').then((s) => { if (s.net && s.net.mode === 'ap' && !PAGES[want]) tab = 'setup'; }).catch(() => {}).finally(poll);
+poll(true);
 if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('sw.js').catch(() => {});
