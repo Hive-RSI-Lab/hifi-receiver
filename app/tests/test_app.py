@@ -140,7 +140,7 @@ class API(unittest.TestCase):
         self.assertEqual((code, p["on"], p["role"]), (200, True, "leader"))
         code, p = self.m.post("party", {"op": "lead"})
         self.assertEqual((code, p["picked"]), (200, True))
-        for body in ({"op": "key", "secret": "00" * 32}, {"op": "tone", "on": True}):
+        for body in ({"op": "key", "secret": "00" * 32}, {"op": "tone", "on": True}, {"op": "pair", "n": 2}):
             self.assertEqual(self.m.post("party", body)[0], 403, body)  # the Hive's or USB's only
         self.assertEqual(self.m.post("party", {"op": "dance"})[0], 400)
         code, p = self.m.post("party", {"op": "off"})

@@ -117,12 +117,12 @@ class Receiver:
                       "followers": [], "why": "", "bt": True}
 
     def party_op(self, b: dict) -> dict:
-        """POST party from the LAN: op on, off or lead (key and tone are the
-        Hive's or USB's only: 403)."""
+        """POST party from the LAN: op on, off or lead (key, tone and pair are
+        the Hive's or USB's only: 403)."""
         with self.lock:
             p, op = self.party, b.get("op")
-            if op in ("key", "tone"):
-                raise Forbidden("the party key and the test tone are set by the Hive or over USB, not from the LAN")
+            if op in ("key", "tone", "pair"):
+                raise Forbidden("the party key, the test tone and pair sending are set by the Hive or over USB, not from the LAN")
             if op == "on":
                 p.update(on=True, role="leader", leader=self.info["name"], followers=["192.168.1.31"], term=p["term"] + 1)
             elif op == "off":
@@ -133,7 +133,7 @@ class Receiver:
                     raise Conflict("party is off")
                 p.update(role="leader", picked=True, leader=self.info["name"], followers=["192.168.1.31"], term=p["term"] + 1)
             else:
-                raise ValueError("op must be on, off, lead, key or tone")
+                raise ValueError("op must be on, off, lead, key, tone or pair")
             return copy.deepcopy(p)
 
     def state(self) -> dict:

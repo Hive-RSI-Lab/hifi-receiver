@@ -701,8 +701,9 @@ on the router: no UPnP, no port forward, broadcast only on the subnet.
 | `lead` | LAN, USB, Hive | this board leads; the old leader follows it. 409 when party is off or memory is low, 429 a few seconds after its own last `lead`. |
 | `key` | USB, Hive | `{"op": "key", "secret": "<64 hex>"}` sets the party key (all zeros is refused). Never shown back; `key_id` is one byte of its hash. |
 | `tone` | USB, Hive | `{"op": "tone", "on": true}`: the leader's sync test tone, for the bench. An idle leader takes the output at 44.1 kHz for it. |
+| `pair` | USB, Hive | `{"op": "pair", "n": 2}`: the leader starts a stream packet only with two ready and sends them back to back, so the radio can send both in one exchange. `n` is 1 (the default) or 2; it holds across party off and on until a restart. For the bench's A/B. |
 
-`key` and `tone` from the LAN are 403. An image built for 32-bit frames
+`key`, `tone` and `pair` from the LAN are 403. An image built for 32-bit frames
 answers `on` with 409 (party carries 16-bit).
 
 `GET /api/v1/party/stats` (409 when party is off): the clock offsets, the
@@ -711,6 +712,9 @@ rate controller and the heap, for the bench's `party_run.py`. Of `old`,
 `od` counts packets that had played already, and `ol` the rest by how late
 they came: up to 6 packets behind the one playing, 12, 37, 75, more (about
 50, 100, 300, 600 ms).
+On a leader, `net.pk` counts stream packets sent (no resends or clocks; one
+held and then dropped as too late is also in `net.hold[1]`) and `net.pair` is
+the `pair` setting.
 
 The a7fcd-r3 lab build only, for the power-save test
 (`projects/hifi-lite-lab/party-mode.md`, 8.13):
