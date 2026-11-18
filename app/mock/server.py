@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import math
 import threading
 import time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -138,7 +139,30 @@ class Receiver:
     def state(self) -> dict:
         with self.lock:
             self._tick()
+            self._power()
             return copy.deepcopy(self.s)
+
+    def _power(self):
+        """Move the power numbers a little on each poll, so the app's graphs
+        have something to draw: music swings with the volume, Wi-Fi and heap wander."""
+        self.n = n = getattr(self, "n", 0) + 1
+        s, g, a = self.s, self.s["governor"], self.s["audio"]
+        if s["power"]["state"] != "on" or a["mute"] or a["source"] == "idle":
+            out = 0.0
+        else:
+            beat = 0.55 + 0.3 * math.sin(n / 7) + 0.15 * math.sin(n * 1.7)
+            out = 90 * (a["volume"] / 100) ** 2 * beat * 10 ** (g["gain_db"] / 20)
+        if g["limiting"]:  # the governor holds the draw at its budget
+            out = min(out, (g["budget_w"] * (0.96 + 0.03 * math.sin(n)) - 2.4) * 0.86)
+        g["out_w"] = round(out, 1)
+        g["in_w"] = round(2.4 + out / 0.86, 1)
+        if g["limiting"] and n % 9 == 0:
+            g["limit_events"] += 1
+        c = s["power"]["contract"]
+        s["power"]["vbus_v"] = round(c["v"] * 1.006 - 0.004 * g["in_w"], 2)
+        if s["net"]["rssi"] is not None:
+            s["net"]["rssi"] = -52 + round(3 * math.sin(n / 23))
+        s["sys"]["heap_free"] = 81234 - 600 * (n % 40) // 4
 
     def _tick(self):
         s = self.s
