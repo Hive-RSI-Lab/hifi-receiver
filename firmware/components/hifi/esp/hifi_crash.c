@@ -15,11 +15,16 @@
  * address, its task, the uptime and, when the path set one first
  * (hifi_restart_note), why. The next boot reads it back
  * (hifi_crash_restart_cause), so a clean restart names its own cause.
+ * A restart that ends in some other reset (the RTC watchdog, a panic) still
+ * names its caller, and how far the way down got: the wrapper marks the
+ * start and the end of going quiet, and a wrap of esp_restart_noos (the step
+ * after every shutdown handler has returned) marks the rest.
  */
 #include <stdio.h>
 #include <string.h>
 #include "esp_attr.h"
 #include "esp_system.h"
+#include "esp_private/system_internal.h"
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -74,6 +79,15 @@ static RTC_NOINIT_ATTR restart_rec_t restart_rec;
 static restart_rec_t restart_last; /* the last boot's, moved out at boot */
 static char restart_note[24];
 
+/* how far the last esp_restart got: DOWN_CALLED as the wrapper starts going
+ * quiet, DOWN_QUIET once it has and the shutdown handlers (Wi-Fi, Bluetooth,
+ * esp_timer, ...) run, DOWN_HANDLERS once they have all returned */
+#define DOWN_CALLED 0x44776e31u   /* "Dwn1" */
+#define DOWN_QUIET 0x44776e32u    /* "Dwn2" */
+#define DOWN_HANDLERS 0x44776e33u /* "Dwn3" */
+static RTC_NOINIT_ATTR uint32_t down_mark;
+static uint32_t down_last;
+
 void hifi_restart_note(const char *why) {
 	snprintf(restart_note, sizeof(restart_note), "%s", why ? why : "");
 }
@@ -92,10 +106,23 @@ void __wrap_esp_restart(void) {
 	memcpy(r.note, restart_note, sizeof(r.note));
 	r.note[sizeof(r.note) - 1] = '\0';
 	restart_rec = r;
+	down_mark = DOWN_CALLED;
 	/* every planned restart, updates and rollbacks included, goes quiet
 	 * first: no pop or burst reaches a speaker (hifi_quiet.h) */
 	hifi_quiet_stop(r.note[0] ? r.note : "restart", true);
+	down_mark = DOWN_QUIET;
 	__real_esp_restart();
+}
+
+/* esp_restart calls this once its shutdown handlers have returned; a panic,
+ * a watchdog's panic and the brownout handler call it too, with a reset hint
+ * set first, so only a call with none moves the mark on (IRAM: the panic
+ * path runs with the flash cache off) */
+void __real_esp_restart_noos(void) __attribute__((noreturn));
+
+void IRAM_ATTR __wrap_esp_restart_noos(void) {
+	if (down_mark == DOWN_QUIET && esp_reset_reason_get_hint() == ESP_RST_UNKNOWN) down_mark = DOWN_HANDLERS;
+	__real_esp_restart_noos();
 }
 
 /* before app_main and before most of the boot log: swap the rings */
@@ -119,6 +146,8 @@ static void __attribute__((constructor)) crash_boot(void) {
 		restart_last.note[sizeof(restart_last.note) - 1] = '\0';
 	}
 	memset(&restart_rec, 0, sizeof(restart_rec));
+	down_last = down_mark;
+	down_mark = 0;
 }
 
 static const char *reason_name(esp_reset_reason_t r) {
@@ -155,10 +184,22 @@ size_t hifi_crash_last_log(char *out, size_t cap) {
 }
 
 const char *hifi_crash_restart_cause(void) {
-	static char out[HIFI_RESTART_CAUSE_CAP];
-	if (esp_reset_reason() != ESP_RST_SW) return NULL;
+	static char out[HIFI_RESTART_CAUSE_MAX];
+	esp_reset_reason_t why = esp_reset_reason();
 	const restart_rec_t *r = &restart_last;
-	if (r->magic != RESTART_MAGIC) return "unrecorded";
+	if (why == ESP_RST_SW) {
+		if (r->magic != RESTART_MAGIC) return "unrecorded";
+		hifi_restart_cause_fmt(out, sizeof(out), r->note, r->task, r->pc, r->up_s);
+		return out;
+	}
+	/* another reset cut a restart short: say where it was on the way down */
+	if (why == ESP_RST_POWERON || r->magic != RESTART_MAGIC) return NULL;
 	hifi_restart_cause_fmt(out, sizeof(out), r->note, r->task, r->pc, r->up_s);
+	size_t n = strlen(out);
+	snprintf(out + n, sizeof(out) - n, ", then %s",
+		 down_last == DOWN_CALLED     ? "cut short going quiet"
+		 : down_last == DOWN_QUIET    ? "cut short in shutdown"
+		 : down_last == DOWN_HANDLERS ? "cut short after shutdown"
+					      : "?");
 	return out;
 }

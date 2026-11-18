@@ -57,6 +57,9 @@ bool hifi_diag_is_power_cut(const char *reason, uint32_t boots_before);
  * "<note> by <task> at 0x<pc> after <n> s"; with no note, "esp_restart by ...".
  * The address names the caller (addr2line on the build's ELF). */
 #define HIFI_RESTART_CAUSE_CAP 80
+/* the same after another reset cut the restart short, with how far it got
+ * (hifi_crash_restart_cause): ", then cut short after shutdown" at most */
+#define HIFI_RESTART_CAUSE_MAX (HIFI_RESTART_CAUSE_CAP + 32)
 void hifi_restart_cause_fmt(char *out, size_t cap, const char *note, const char *task, uint32_t pc,
 			    uint32_t up_s);
 
@@ -78,6 +81,21 @@ int hifi_diag_underrun_step(uint8_t *state, bool running, uint32_t frames, bool 
 typedef struct {
 	uint32_t free, min, largest, total; /* bytes; total 0: none fitted */
 } hifi_diag_heap_t;
+
+/* Failed allocations since boot (heap_caps_register_failed_alloc_callback):
+ * how many, and the last one's size, caps (MALLOC_CAP_ bits), the heap
+ * function that failed, when, and internal RAM's largest free block then. */
+typedef struct {
+	uint32_t n;
+	uint32_t size, caps;
+	const char *fn; /* NULL: unknown */
+	uint32_t at_s;  /* uptime then */
+	uint32_t largest;
+} hifi_diag_alloc_t;
+
+/* caps as names joined by '|' ("8BIT|INTERNAL"), bits it doesn't know as one
+ * 0x... term; "0" for none. Cut to cap like snprintf. */
+void hifi_diag_caps_text(char *out, size_t cap, uint32_t caps);
 
 typedef struct {
 	const char *name; /* NULL: unused */
@@ -102,6 +120,11 @@ typedef struct {
 	 * remote link first up; 0: not yet */
 	uint32_t boot_app_ms, boot_ip_ms, boot_link_ms;
 	hifi_diag_heap_t internal, psram;
+	/* the self-test's internal-RAM floor (HIFI_HEAP_MIN): the reply sets
+	 * heap.under_floor when the low since boot went to it or under, as a
+	 * warning; the self-test still checks only the free RAM when it runs */
+	uint32_t heap_floor;
+	hifi_diag_alloc_t alloc_fail;
 	const char *reset_reason;
 	const char *restart_cause; /* who called esp_restart (hifi_crash_restart_cause); NULL: not a restart */
 	char reset_hist[HIFI_DIAG_HIST_CAP];

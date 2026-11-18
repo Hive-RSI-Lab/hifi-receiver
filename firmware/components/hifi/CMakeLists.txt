@@ -91,6 +91,8 @@ endif()
 target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=uart_hal_write_txfifo")
 # and notes who called esp_restart, so a clean restart names its cause
 target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=esp_restart")
+# and how far its way down got, past the shutdown handlers
+target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=esp_restart_noos")
 
 # squeezelite reaches the LAN gate's hooks through weak references
 # (firmware/patches/0009), which don't pull an object out of an archive by

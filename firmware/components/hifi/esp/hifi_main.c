@@ -2097,16 +2097,18 @@ void hifi_http_register(httpd_handle_t server) {
 	hifi_http_start(server, &hifi_ops);
 }
 
-/* Every failed allocation goes to the console (and so to the crash log): a
- * Bluetooth connect panicked in btu_start_timer when its timer couldn't be
- * made, and this tells running out of internal RAM from other causes. */
+/* Every failed allocation is counted for diag sys (alloc_fail), and the first
+ * 20 go to the console (and so to the crash log): a Bluetooth connect
+ * panicked in btu_start_timer when its timer couldn't be made, and this
+ * tells running out of internal RAM from other causes. */
 static void alloc_failed(size_t size, uint32_t caps, const char *fn) {
 	static int n;
+	uint32_t largest = (uint32_t) heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+	hifi_diag_alloc_failed(size, caps, fn, largest);
 	if (n++ >= 20) return;
 	ESP_LOGE(TAG, "alloc of %u B failed in %s (caps 0x%x); internal %u B free, largest %u B, lowest %u B",
 		 (unsigned) size, fn ? fn : "?", (unsigned) caps, (unsigned) heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT),
-		 (unsigned) heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT),
-		 (unsigned) heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
+		 (unsigned) largest, (unsigned) heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
 }
 
 static bool hifi_init(void) {

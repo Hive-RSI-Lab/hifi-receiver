@@ -80,6 +80,10 @@ bool hifi_restart_after_trial(const char *why);
 /* hifi_diag_esp.c: the board's side of `api diag` */
 extern const hifi_diag_ops_t hifi_diag_ops;
 void hifi_diag_init(void); /* at hifi_init: the boot counter and reset history */
+/* from the failed-allocation callback (hifi_main.c): counts it and keeps it
+ * as the last one, for diag sys's alloc_fail; largest is internal RAM's
+ * largest free block then */
+void hifi_diag_alloc_failed(size_t size, uint32_t caps, const char *fn, uint32_t largest);
 void hifi_diag_tick(void); /* every few seconds, from the relay's task */
 /* the station's disconnects since boot (each WIFI_EVENT_STA_DISCONNECTED) */
 uint32_t hifi_diag_wifi_disconnects(void);

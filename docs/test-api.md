@@ -489,7 +489,8 @@ fits a remote bench's reply line; the task list pages. On the console:
 ```json
 {"uptime_s": 5321,
  "boot_ms": {"app": 812, "ip": 4210, "link": 6034},
- "heap": {"free": 61234, "min": 38012, "largest": 31744, "total": 290000},
+ "heap": {"free": 61234, "min": 38012, "largest": 31744, "total": 290000,
+          "floor": 12000, "under_floor": false},
  "psram": {"free": 3911000, "min": 3700000, "largest": 3866624, "total": 4192000},
  "reset_reason": "restart", "resets": "restart,panic,power_on", "boots": 14,
  "nvs": {"nvs": {"used": 210, "free": 294, "total": 504, "namespaces": 6, "used_pct": 41.7},
@@ -497,6 +498,8 @@ fits a remote bench's reply line; the task list pages. On the console:
  "power": {"state": "on", "vbus_v": 20.08, "vbus_i_a": 0.31, "pvdd_v": 19.9, "pg": true,
            "proto": "pd", "contract_v": 20.0, "contract_a": 3.25,
            "amp_on": true, "amp_fault": false, "amp_faults": 0, "amp_temp_c": null},
+ "alloc_fail": {"n": 2, "size": 1024, "caps": "DEFAULT", "fn": "heap_caps_malloc_default",
+                "at_s": 4410, "largest": 896},
  "restart_cause": "api_reboot by esp_timer at 0x400e9a10 after 329 s"}
 ```
 
@@ -509,18 +512,45 @@ fits a remote bench's reply line; the task list pages. On the console:
 - `heap` is internal, byte-addressable RAM (what `malloc` of an internal
   buffer can use; the IRAM-only part isn't counted), `psram` the PSRAM (`null` with none fitted): free
   now, the least free since boot, the largest free block and the size.
+  `heap` also has `floor`, the self-test's internal RAM floor (12,000 B), and
+  `under_floor`, `true` once the least free since boot (`min`) has gone to the
+  floor or under it. That is a warning only: the self-test still checks just
+  the free RAM when it runs against the floor, and doesn't fail on the low.
+- `alloc_fail` counts the allocations that failed since boot (`n`, always
+  there; the heap's failed-allocation callback, after its own fallbacks to
+  other RAM have failed). From the first one on it also has the last one: its
+  `size` in bytes, its `caps` (the `MALLOC_CAP_` bits by name: `DEFAULT` with
+  `fn` `heap_caps_malloc_default` for a plain `malloc`, which has tried internal
+  RAM and PSRAM by then; bits without a name show as `0x...`), `fn` (the heap
+  function that failed), `at_s` (the uptime then) and `largest` (internal
+  RAM's largest free block then). The first 20 failures also go to the
+  console.
+- The reply stays within the page by leaving these extras out, the least
+  needed first, before anything it had already: first the last failure's
+  details, then `floor` (`under_floor` still says), then `alloc_fail`, then
+  `under_floor`. A real board's reply has room for all of them; only a reply
+  near its widest (the longest reset history with every count at its largest)
+  goes without.
 - `resets` is the reset history, newest first, up to 8 reasons, kept in NVS
   (namespace `hifi_diag`) with the `boots` counter. The reasons are
   `power_on`, `external`, `restart` (a software restart: an update, `restart`
   from the API), `panic`, `interrupt_watchdog`, `task_watchdog`, `watchdog`,
   `deep_sleep`, `brownout`, `sdio` and `unknown`.
-- `restart_cause` (only when `reset_reason` is `restart`) names who restarted
+- `restart_cause` (when `reset_reason` is `restart`) names who restarted
   it: every `esp_restart` is link-wrapped to keep, in RTC memory across the
   restart, a note of why (when the path set one), the calling task, the
   call's address and the uptime: `<note> by <task> at 0x<pc> after <n> s`.
   With no note it reads `esp_restart by ...`: feed the address to
   `xtensa-esp32-elf-addr2line -e squeezelite.elf` to name the caller.
   `unrecorded` means a software restart that didn't pass the wrapper.
+  When another reset (`watchdog`, `panic`, ...) cut a restart short, it is
+  there too, with how far the way down got: `, then cut short going quiet`
+  (the audio's quiet stop hadn't finished), `, then cut short in shutdown`
+  (a shutdown handler, such as Wi-Fi's or Bluetooth's, hadn't returned),
+  `, then cut short after shutdown` (the handlers all returned: the reset
+  came in IDF's last steps, the bootloader or early start-up, all under the
+  RTC watchdog that `watchdog` names) or `, then ?` (no mark: the restart
+  was by an image without one, or RTC memory held garbage).
   `GET /api/v1/state/sys` carries it too; here it is left out when the reply
   would pass the page. Notes: `api_reboot`, `api_factory_reset`,
   `factory_reset`, `update_done`, `lab_offline` and `lab_stuck` (the lab's
