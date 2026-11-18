@@ -39,7 +39,9 @@
  * JOIN that didn't get through) is joined again; each time the same group
  * and term is marked again the wait doubles, up to HIFI_PARTY_DEAD_MAX_MS,
  * so an announce played back again and again costs a short follow once a
- * minute at most. A CLOCK from the group clears the mark. A follower the
+ * minute at most. Up to HIFI_PARTY_DEAD_SLOTS groups are marked at once,
+ * each with its own wait, so old groups played back in turn don't reset
+ * each other's. A CLOCK from the group clears its mark. A follower the
  * leader has no room for (not in the announce's list) keeps sending JOINs
  * and waits, alive while the leader's announces come.
  *
@@ -68,6 +70,7 @@
 #define HIFI_PARTY_JOIN_SEEN 8         /* JOIN senders whose last TSF the leader keeps */
 #define HIFI_PARTY_DEAD_MS 10000u      /* a group joined with no CLOCK is skipped this long */
 #define HIFI_PARTY_DEAD_MAX_MS 60000u  /* the same group and term again: the wait doubles up to this */
+#define HIFI_PARTY_DEAD_SLOTS 4        /* groups marked dead at once */
 
 typedef enum {
 	HIFI_PARTY_ROLE_OFF = 0,
@@ -107,6 +110,16 @@ typedef struct {
 	int n;           /* hashed in that second */
 } hifi_party_stranger_t;
 
+/* a group joined with no CLOCK: its announces up to term are skipped while
+ * live, until at + ms. ms stays set after it expires, so the next wait for
+ * the same group and term doubles. group 0 is a free slot. */
+typedef struct {
+	uint32_t group;
+	int64_t term;
+	uint32_t at, ms;
+	bool live;
+} hifi_party_dead_t;
+
 typedef struct {
 	hifi_party_role_t role;
 	uint32_t self_ip, mask;
@@ -125,10 +138,7 @@ typedef struct {
 	hifi_party_announce_t best;
 	uint32_t best_at;
 	bool heap_low;        /* the last tick's low_heap */
-	uint32_t dead_group;  /* joined, never had a CLOCK: skipped while dead */
-	int64_t dead_term;
-	bool dead;            /* dead_group is skipped until dead_at + dead_ms */
-	uint32_t dead_at, dead_ms; /* dead_ms stays set after it expires: the next wait for the same group doubles */
+	hifi_party_dead_t dead[HIFI_PARTY_DEAD_SLOTS]; /* groups joined with no CLOCK */
 	uint32_t other_ap_at; /* last announce whose tag checked but whose TSF was off, confirmed by an earlier one */
 	bool other_ap;
 	uint32_t off_ip, off_at; /* the last off-TSF announce: from, when, its TSF */
@@ -203,6 +213,8 @@ bool hifi_party_group_join(hifi_party_group_t *g, uint32_t now, uint32_t ip, int
  * False (and nothing changes) when ip isn't the leader or seq isn't past the
  * last CLOCK's, so a CLOCK played back can't keep a gone leader alive. */
 bool hifi_party_group_heard(hifi_party_group_t *g, uint32_t now, uint32_t ip, uint32_t seq);
+/* the ms left before every dead mark has expired, 0 when none is live */
+uint32_t hifi_party_group_skip_ms(const hifi_party_group_t *g, uint32_t now);
 /* the leader sends to this follower */
 bool hifi_party_group_is_peer(const hifi_party_group_t *g, uint32_t ip);
 /* a NACK under the group key from ip with seq: true when ip is a follower

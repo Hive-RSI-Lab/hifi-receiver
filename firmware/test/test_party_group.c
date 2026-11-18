@@ -281,6 +281,14 @@ static int leaders(void) {
 	return n;
 }
 
+/* board i's dead mark for group, or NULL */
+static const hifi_party_dead_t *dead_mark(int i, uint32_t group) {
+	for (int k = 0; k < HIFI_PARTY_DEAD_SLOTS; k++) {
+		if (group && L.b[i].g.dead[k].group == group) return &L.b[i].g.dead[k];
+	}
+	return NULL;
+}
+
 /* ------------------------------------------------------------- the cases */
 
 static void first_on(uint32_t base) {
@@ -407,7 +415,7 @@ static void leader_loss(void) {
 	CHECK(L.b[b].lost == 1 && L.b[c].lost == 1);
 	CHECK(role(b) == HIFI_PARTY_ROLE_LISTENING && L.b[b].g.orphan);
 	CHECK_STR(L.b[b].g.why, "leader lost");
-	CHECK(L.b[b].g.dead_group == 0); /* it had CLOCKs: not a dead group */
+	CHECK(!L.b[b].g.dead[0].group); /* it had CLOCKs: no dead group */
 	run(20000);
 	CHECK(leaders() == 0); /* a follower never leads silence by itself */
 
@@ -553,7 +561,7 @@ static void replays(void) {
 	run(20);
 	CHECK(follows(b, a));
 	run(3100);
-	CHECK(role(b) == HIFI_PARTY_ROLE_LISTENING && L.b[b].g.dead_group == L.b[a].g.group);
+	CHECK(role(b) == HIFI_PARTY_ROLE_LISTENING && dead_mark(b, L.b[a].g.group) && dead_mark(b, L.b[a].g.group)->live);
 	CHECK(L.b[b].lost == 2);
 	rep = L.b[b].g.replays;
 	L.ap_tsf[0] = ann_tsf - L.ms * 1000;
@@ -733,6 +741,8 @@ static int until_role(int i, hifi_party_role_t r, uint32_t max) {
 	return -1;
 }
 
+static void backoff(uint32_t base);
+
 /* a follower that never had a CLOCK from its leader (the leader is real,
  * its CLOCKs were lost) skips it for a while, then joins it again by itself */
 static void missed_clock(void) {
@@ -744,8 +754,9 @@ static void missed_clock(void) {
 	switch_on(b);
 	CHECK(until_role(b, HIFI_PARTY_ROLE_FOLLOWER, 4000) >= 0);
 	CHECK(until_role(b, HIFI_PARTY_ROLE_LISTENING, 4000) >= 0);
-	CHECK(L.b[b].lost == 1 && L.b[b].g.orphan && L.b[b].g.dead && L.b[b].g.dead_group == L.b[a].g.group);
-	CHECK(L.b[b].g.dead_ms == HIFI_PARTY_DEAD_MS);
+	const hifi_party_dead_t *m = dead_mark(b, L.b[a].g.group);
+	CHECK(L.b[b].lost == 1 && L.b[b].g.orphan && m && m->live && m->ms == HIFI_PARTY_DEAD_MS);
+	CHECK(hifi_party_group_skip_ms(&L.b[b].g, L.now) > HIFI_PARTY_DEAD_MS - 1000);
 	L.b[b].deaf_clock = false; /* the air clears */
 	uint32_t rep = L.b[b].g.replays;
 	run(HIFI_PARTY_DEAD_MS - 500);
@@ -753,12 +764,18 @@ static void missed_clock(void) {
 	CHECK(until_role(b, HIFI_PARTY_ROLE_FOLLOWER, 1600) >= 0); /* the next announce after the wait */
 	run(1000);
 	CHECK(follows(b, a) && L.b[b].g.clocked && L.b[a].g.npeers == 1);
-	CHECK(!L.b[b].g.dead && L.b[b].g.dead_group == 0 && L.b[b].g.dead_ms == 0); /* a real leader: forgotten */
+	CHECK(!dead_mark(b, L.b[a].g.group) && hifi_party_group_skip_ms(&L.b[b].g, L.now) == 0); /* a real leader: forgotten */
 	run(30000);
 	CHECK(follows(b, a) && L.b[b].lost == 1);
 
-	/* the CLOCKs stay lost: each new try waits twice as long, up to the cap */
-	reset(0);
+	backoff(0);
+}
+
+/* the CLOCKs stay lost: each new try waits twice as long, up to the cap;
+ * the same across the ms clock's wrap, and skip_ms never more than the wait */
+static void backoff(uint32_t base) {
+	reset(base);
+	int a, b;
 	a = add("A", 10, 1);
 	b = add("B", 11, 1);
 	switch_on(a);
@@ -770,7 +787,8 @@ static void missed_clock(void) {
 	uint32_t want[] = {HIFI_PARTY_DEAD_MS, 2 * HIFI_PARTY_DEAD_MS, 4 * HIFI_PARTY_DEAD_MS, HIFI_PARTY_DEAD_MAX_MS,
 			   HIFI_PARTY_DEAD_MAX_MS};
 	for (int k = 0; k < 5; k++) {
-		CHECK(L.b[b].g.dead_ms == want[k] && L.b[b].lost == k + 1);
+		CHECK(dead_mark(b, L.b[a].g.group)->ms == want[k] && L.b[b].lost == k + 1);
+		CHECK(hifi_party_group_skip_ms(&L.b[b].g, L.now) <= want[k]);
 		int t = until_role(b, HIFI_PARTY_ROLE_FOLLOWER, want[k] + 1600);
 		CHECK(t >= (int) want[k] && t <= (int) want[k] + 1100);
 		CHECK(until_role(b, HIFI_PARTY_ROLE_LISTENING, 4000) >= 0);
@@ -779,7 +797,62 @@ static void missed_clock(void) {
 	L.b[b].deaf_clock = false;
 	CHECK(until_role(b, HIFI_PARTY_ROLE_FOLLOWER, HIFI_PARTY_DEAD_MAX_MS + 1600) >= 0);
 	run(1000);
-	CHECK(follows(b, a) && L.b[b].g.clocked && L.b[b].g.dead_ms == 0);
+	CHECK(follows(b, a) && L.b[b].g.clocked && !dead_mark(b, L.b[a].g.group));
+}
+
+/* a mark that expired with no announce after it stays expired, however
+ * long, across the ms clock's wrap */
+static void dead_wrap(void) {
+	hifi_party_group_t g;
+	hifi_party_group_init(&g, 0x0a00000b, MASK, 0, false);
+	g.dead[0] = (hifi_party_dead_t){.group = 5, .term = 1, .at = 0xfffff000u, .ms = HIFI_PARTY_DEAD_MS, .live = true};
+	CHECK(hifi_party_group_skip_ms(&g, 0xfffff000u + 4000) == HIFI_PARTY_DEAD_MS - 4000);
+	CHECK(hifi_party_group_skip_ms(&g, 0x7ffff000u) == 0); /* 24.8 days on, never live again */
+	CHECK(hifi_party_group_skip_ms(&g, 0xffffe000u) == 0); /* almost 49.7 days on */
+	hifi_party_group_tick(&g, 0xfffff000u + HIFI_PARTY_DEAD_MS, 1, false, false);
+	CHECK(!g.dead[0].live && g.dead[0].ms == HIFI_PARTY_DEAD_MS); /* expired by tick, its wait kept */
+	CHECK(hifi_party_group_skip_ms(&g, 0xfffff000u + 100) == 0); /* 49.7 days on */
+}
+
+/* announces of old groups played back over and over: each costs a short
+ * follow at most once a minute, however many take turns, up to the slots */
+static uint32_t played_back(int n) {
+	reset(0);
+	int a = add("A", 10, 1), b = add("B", 11, 1);
+	switch_on(a);
+	run(3000);
+	switch_on(b);
+	run(4000);
+	dgram_t anns[HIFI_PARTY_DEAD_SLOTS];
+	int64_t tsfs[HIFI_PARTY_DEAD_SLOTS];
+	for (int k = 0; k < n; k++) { /* each a group of its own */
+		anns[k] = L.b[a].last[HIFI_PARTY_ANNOUNCE];
+		tsfs[k] = L.ms * 1000;
+		switch_off(a);
+		run(5000);
+		switch_on(a);
+		run(6000);
+	}
+	power_cut(a);
+	run(8000);
+	uint32_t f0 = L.b[b].g.follows;
+	for (int i = 0; i < 300; i++) {
+		L.ap_tsf[0] = tsfs[i % n] - L.ms * 1000; /* the AP's TSF restarted where the announce was sent */
+		inject(&anns[i % n]);
+		run(1000);
+	}
+	CHECK(leaders() == 0);
+	return L.b[b].g.follows - f0;
+}
+
+static void played_back_groups(void) {
+	uint32_t one = played_back(1);
+	CHECK(one >= 1 && one <= 300 / (HIFI_PARTY_DEAD_MAX_MS / 1000) + 3);
+	for (int n = 2; n <= HIFI_PARTY_DEAD_SLOTS; n++) {
+		uint32_t f = played_back(n);
+		printf("played back: %d groups, %u follows in 300 s (one group: %u)\n", n, f, one);
+		CHECK(f <= (uint32_t) n * one + 1); /* each group its own wait */
+	}
 }
 
 static void new_address(void) {
@@ -979,6 +1052,10 @@ int main(void) {
 	other_ap();
 	lossy();
 	missed_clock();
+	backoff(0xffffffffu - 20000);
+	backoff(0xffffffffu - 100000);
+	dead_wrap();
+	played_back_groups();
 	new_address();
 	return check_report("party_group");
 }

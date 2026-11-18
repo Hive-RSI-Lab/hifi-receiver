@@ -14,6 +14,40 @@ static bool since(uint32_t now, uint32_t t, uint32_t ms) { /* ms or more since t
 	return now - t >= ms;
 }
 
+static void expire_dead(hifi_party_group_t *g, uint32_t now) {
+	for (int i = 0; i < HIFI_PARTY_DEAD_SLOTS; i++) {
+		if (g->dead[i].live && since(now, g->dead[i].at, g->dead[i].ms)) g->dead[i].live = false;
+	}
+}
+
+/* the group followed now had no CLOCK: skip it for a while, twice as long
+ * as last time when the same group and term was marked before */
+static void mark_dead(hifi_party_group_t *g, uint32_t now) {
+	hifi_party_dead_t *d = NULL;
+	for (int i = 0; i < HIFI_PARTY_DEAD_SLOTS && !d; i++) {
+		if (g->dead[i].group == g->group && g->dead[i].term == g->term && g->dead[i].ms) d = &g->dead[i];
+	}
+	uint32_t ms = !d ? HIFI_PARTY_DEAD_MS : d->ms >= HIFI_PARTY_DEAD_MAX_MS / 2 ? HIFI_PARTY_DEAD_MAX_MS : d->ms * 2;
+	if (!d) {
+		/* a free slot, else the longest expired, else the oldest */
+		for (int i = 0; i < HIFI_PARTY_DEAD_SLOTS; i++) {
+			hifi_party_dead_t *e = &g->dead[i];
+			if (!e->group) {
+				d = e;
+				break;
+			}
+			if (!d || (d->live && !e->live) ||
+			    (d->live == e->live && now - e->at > now - d->at))
+				d = e;
+		}
+	}
+	d->group = g->group;
+	d->term = g->term;
+	d->at = now;
+	d->ms = ms;
+	d->live = true;
+}
+
 static uint32_t get_be32(const uint8_t *p) {
 	return (uint32_t) p[0] << 24 | (uint32_t) p[1] << 16 | (uint32_t) p[2] << 8 | p[3];
 }
@@ -181,6 +215,8 @@ static int start_lead(hifi_party_group_t *g, uint32_t now, uint32_t rnd, bool pi
 }
 
 static int follow(hifi_party_group_t *g, uint32_t now, const hifi_party_announce_t *a) {
+	/* left before its first CLOCK, for an announce with a higher term: marked as if lost */
+	if (g->role == HIFI_PARTY_ROLE_FOLLOWER && !g->clocked && !g->full && a->group != g->group) mark_dead(g, now);
 	int r = leave_leader(g) | HIFI_PARTY_DO_ROLE | HIFI_PARTY_DO_JOIN;
 	g->role = HIFI_PARTY_ROLE_FOLLOWER;
 	g->orphan = false;
@@ -292,6 +328,7 @@ bool hifi_party_retakes(hifi_party_role_t role, int source) {
 int hifi_party_group_tick(hifi_party_group_t *g, uint32_t now, uint32_t rnd, bool local_source, bool low_heap) {
 	if (low_heap && !g->heap_low) g->low_heap++;
 	g->heap_low = low_heap;
+	expire_dead(g, now); /* every tick, so a mark can't come back when the ms clock wraps */
 	switch (g->role) {
 	case HIFI_PARTY_ROLE_OFF: return 0;
 	case HIFI_PARTY_ROLE_LISTENING:
@@ -342,14 +379,7 @@ int hifi_party_group_tick(hifi_party_group_t *g, uint32_t now, uint32_t rnd, boo
 				/* joined, never one CLOCK: a played-back announce, or a
 				 * leader that can't reach us. Skip it for a while, longer
 				 * each time the same one fails again. */
-				bool again = g->dead_ms && g->dead_group == g->group && g->dead_term == g->term;
-				g->dead_ms = !again ? HIFI_PARTY_DEAD_MS
-						    : g->dead_ms >= HIFI_PARTY_DEAD_MAX_MS / 2 ? HIFI_PARTY_DEAD_MAX_MS
-											: g->dead_ms * 2;
-				g->dead_group = g->group;
-				g->dead_term = g->term;
-				g->dead_at = now;
-				g->dead = true;
+				mark_dead(g, now);
 			}
 			g->losses++;
 			go_listen(g, now, rnd, true);
@@ -368,10 +398,12 @@ int hifi_party_group_tick(hifi_party_group_t *g, uint32_t now, uint32_t rnd, boo
 
 int hifi_party_group_announce(hifi_party_group_t *g, uint32_t now, const hifi_party_announce_t *a) {
 	if (g->role == HIFI_PARTY_ROLE_OFF || a->ip == g->self_ip) return 0;
-	if (g->dead && since(now, g->dead_at, g->dead_ms)) g->dead = false; /* tried again */
-	if (g->dead && a->group == g->dead_group && a->term <= g->dead_term) {
-		g->replays++;
-		return 0;
+	expire_dead(g, now); /* each expired one is tried again */
+	for (int i = 0; i < HIFI_PARTY_DEAD_SLOTS; i++) {
+		if (g->dead[i].live && a->group == g->dead[i].group && a->term <= g->dead[i].term) {
+			g->replays++;
+			return 0;
+		}
 	}
 	see_term(g, a->term);
 	switch (g->role) {
@@ -483,6 +515,15 @@ bool hifi_party_group_join(hifi_party_group_t *g, uint32_t now, uint32_t ip, int
 	return true;
 }
 
+uint32_t hifi_party_group_skip_ms(const hifi_party_group_t *g, uint32_t now) {
+	uint32_t left = 0;
+	for (int i = 0; i < HIFI_PARTY_DEAD_SLOTS; i++) {
+		const hifi_party_dead_t *d = &g->dead[i];
+		if (d->live && !since(now, d->at, d->ms) && d->ms - (now - d->at) > left) left = d->ms - (now - d->at);
+	}
+	return left;
+}
+
 bool hifi_party_group_heard(hifi_party_group_t *g, uint32_t now, uint32_t ip, uint32_t seq) {
 	if (g->role != HIFI_PARTY_ROLE_FOLLOWER || ip != g->leader_ip) return false;
 	if (g->clocked && (int32_t) (seq - g->clock_seq) <= 0) {
@@ -491,11 +532,8 @@ bool hifi_party_group_heard(hifi_party_group_t *g, uint32_t now, uint32_t ip, ui
 	}
 	g->clock_seq = seq;
 	g->clocked = true;
-	if (g->group == g->dead_group) { /* it was a real leader after all */
-		g->dead = false;
-		g->dead_group = 0;
-		g->dead_term = 0;
-		g->dead_ms = 0;
+	for (int i = 0; i < HIFI_PARTY_DEAD_SLOTS; i++) {
+		if (g->dead[i].group == g->group) memset(&g->dead[i], 0, sizeof(g->dead[i])); /* a real leader after all */
 	}
 	g->last_heard = now;
 	g->full = false;

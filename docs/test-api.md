@@ -688,7 +688,8 @@ on the router: no UPnP, no port forward, broadcast only on the subnet.
   announce doesn't set it, but a recorded run of them played back at its own
   pace can. `skip_s` while a leader this board joined sent it no CLOCK:
   the seconds until it tries that leader again (10 s, doubling up to 60 s
-  each time the same one fails again).
+  each time the same one fails again; with more than one such leader, the
+  longest wait).
 - `bt`: whether the Bluetooth sink is on. It stays on only on a picked
   leader or while Bluetooth plays: connect the phone before switching party on.
 
