@@ -1,0 +1,26 @@
+The lab's radio, LAN and decoder experiments (components/hifi/esp/lab_espnow.c,
+lab_forge.c, lab_lanscan.c, lab_wifidrop.c and lab_crafted.c) link into the app
+only: hifi_lab_esp.h declares them weak and this -u pulls them in, as patches
+0017, 0027 and 0034 do for the lab's Bluetooth, FLAC and Spotify ones. The
+lab's recovery image was 3232 bytes over its 0x1c0000 slot with them; it keeps
+the lab frame and the read-only lab_i2c, so its self-test still sees one
+experiment.
+
+diff --git a/components/platform_console/app_squeezelite/CMakeLists.txt b/components/platform_console/app_squeezelite/CMakeLists.txt
+--- a/components/platform_console/app_squeezelite/CMakeLists.txt
++++ b/components/platform_console/app_squeezelite/CMakeLists.txt
+@@ -39,6 +39,14 @@
+ if(CONFIG_HIFI_LAB AND CONFIG_CSPOT_SINK)
+ 	target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=lab_phone")
+ endif()
++# hifi: and the lab's radio, LAN and decoder experiments (lab_espnow.c,
++# lab_forge.c, lab_lanscan.c, lab_wifidrop.c, lab_crafted.c): recovery keeps
++# the lab frame and lab_i2c only, and would not fit its slot with them
++if(CONFIG_HIFI_LAB)
++	foreach(exp lab_espnow lab_forge lab_lanscan lab_wifidrop lab_crafted)
++		target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=${exp}")
++	endforeach()
++endif()
+ 
+ idf_build_get_property(project_ver PROJECT_VER)
+ message("******************* ${project_ver}")
