@@ -71,6 +71,7 @@
 #define HIFI_PARTY_DEAD_MS 10000u      /* a group joined with no CLOCK is skipped this long */
 #define HIFI_PARTY_DEAD_MAX_MS 60000u  /* the same group and term again: the wait doubles up to this */
 #define HIFI_PARTY_DEAD_SLOTS 4        /* groups marked dead at once */
+#define HIFI_PARTY_HOP_MARK_MS 500u    /* a group left this long after joining, with no CLOCK, is marked dead */
 
 typedef enum {
 	HIFI_PARTY_ROLE_OFF = 0,

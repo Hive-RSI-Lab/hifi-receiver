@@ -215,8 +215,12 @@ static int start_lead(hifi_party_group_t *g, uint32_t now, uint32_t rnd, bool pi
 }
 
 static int follow(hifi_party_group_t *g, uint32_t now, const hifi_party_announce_t *a) {
-	/* left before its first CLOCK, for an announce with a higher term: marked as if lost */
-	if (g->role == HIFI_PARTY_ROLE_FOLLOWER && !g->clocked && !g->full && a->group != g->group) mark_dead(g, now);
+	/* left with no CLOCK half a second after joining, for an announce with a higher
+	 * term: marked as if lost. A real leader's first CLOCK comes well inside
+	 * that, so one just joined isn't marked for a hop. */
+	if (g->role == HIFI_PARTY_ROLE_FOLLOWER && !g->clocked && !g->full && a->group != g->group &&
+	    since(now, g->last_heard, HIFI_PARTY_HOP_MARK_MS))
+		mark_dead(g, now);
 	int r = leave_leader(g) | HIFI_PARTY_DO_ROLE | HIFI_PARTY_DO_JOIN;
 	g->role = HIFI_PARTY_ROLE_FOLLOWER;
 	g->orphan = false;

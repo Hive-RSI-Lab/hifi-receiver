@@ -855,6 +855,37 @@ static void played_back_groups(void) {
 	}
 }
 
+/* B has just joined a real, idle leader A and has no CLOCK yet when a picked
+ * announce of an old group C is played back to it: B hops to C, but A isn't
+ * marked dead for it, so B is back with A as soon as C is lost */
+static void hop_just_joined(void) {
+	reset(0);
+	int a = add("A", 10, 1), b = add("B", 11, 1), c = add("C", 12, 1);
+	switch_on(c);
+	run(3000);
+	lead(c);
+	run(2000);
+	dgram_t ann = L.b[c].last[HIFI_PARTY_ANNOUNCE];
+	int64_t tsf = L.ms * 1000;
+	power_cut(c);
+	run(8000);
+	switch_on(a);
+	run(3000);
+	switch_on(b);
+	CHECK(until_role(b, HIFI_PARTY_ROLE_FOLLOWER, 6000));
+	CHECK(!L.b[b].g.clocked);
+	uint32_t t0 = L.now;
+	L.ap_tsf[0] = tsf - L.ms * 1000;
+	ann.dst = L.b[b].ip; /* to B only: A stays */
+	inject(&ann);
+	run(1);
+	CHECK(L.b[b].g.leader_ip == L.b[c].ip);
+	CHECK(hifi_party_group_skip_ms(&L.b[b].g, L.now) == 0); /* A not marked */
+	while (!(follows(b, a) && L.b[b].g.clocked) && L.now - t0 < 60000) run(10);
+	CHECK(follows(b, a) && L.b[b].g.clocked);
+	CHECK(L.now - t0 < 25000); /* C lost after 3 s, A rejoined at its next announce */
+}
+
 static void new_address(void) {
 	reset(0);
 	int a = add("A", 10, 1), b = add("B", 11, 1);
@@ -1056,6 +1087,7 @@ int main(void) {
 	backoff(0xffffffffu - 100000);
 	dead_wrap();
 	played_back_groups();
+	hop_just_joined();
 	new_address();
 	return check_report("party_group");
 }
