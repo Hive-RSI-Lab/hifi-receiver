@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include "esp_err.h"
+#include "esp_http_client.h"
 #include "esp_http_server.h"
 
 #include "hifi_api.h"
@@ -79,6 +80,16 @@ uint32_t hifi_diag_wifi_disconnects(void);
 /* a finished update over the relay: its size, time and the time spent in
  * flash writes, kept for `diag ota` */
 void hifi_diag_ota_done(uint32_t bytes, uint32_t total_ms, uint32_t write_ms, const char *version);
+
+/* hifi_dl.c: the URL update's download with two buffers, the next chunk read
+ * while this one is written. Weak, so only the app links it (patch 0036's -u
+ * hifi_dl_pump); in recovery it is NULL and download() reads with one buffer.
+ * buf is the caller's 4 KB buffer, used as one of the two. Returns 0 when the
+ * image is all written, -1 when it couldn't start (out of memory: nothing
+ * read, so the caller reads with one buffer), or else the error's status with
+ * *err set and the session aborted. */
+int hifi_dl_pump(hifi_ota_t *o, esp_http_client_handle_t h, uint8_t *buf, int *progress, const char **err)
+	__attribute__((weak));
 
 /* hifi_party_esp.c: party mode, several boards playing one stream in step.
  * Weak, so only the app links it (patch 0031's -u hifi_party_op); in recovery

@@ -99,7 +99,12 @@ if ! grep -q "(hifi_party_esp.c.obj)" build/squeezelite.map; then
 	echo "build.sh: party mode is not linked into the app (patch 0031)" >&2
 	exit 1
 fi
-for obj in lab_flac:0027 lab_phone:0034 lab_espnow:0035 lab_forge:0035 lab_lanscan:0035 lab_wifidrop:0035 lab_crafted:0035 hifi_party_esp:0031 hifi_party_sync:0031 hifi_party_group:0031 hifi_party:0031; do
+# and so is the URL update's two-buffer download (patch 0036), out of recovery
+if ! grep -q "(hifi_dl.c.obj)" build/squeezelite.map; then
+	echo "build.sh: the two-buffer download is not linked into the app (patch 0036)" >&2
+	exit 1
+fi
+for obj in lab_flac:0027 lab_phone:0034 hifi_dl:0036 lab_espnow:0035 lab_forge:0035 lab_lanscan:0035 lab_wifidrop:0035 lab_crafted:0035 hifi_party_esp:0031 hifi_party_sync:0031 hifi_party_group:0031 hifi_party:0031; do
 	if grep -q "(${obj%%:*}.c.obj)" build/recovery.map; then
 		echo "build.sh: ${obj%%:*} is linked into the recovery image (patch ${obj#*:})" >&2
 		exit 1
