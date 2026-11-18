@@ -1685,7 +1685,7 @@ static bool chime_ours(uint32_t gen) {
 static void chime_cap_task(void *arg) {
 	uint32_t gen = (uint32_t) (uintptr_t) arg;
 	hifi_cap_chime_t r = {.state = HIFI_CAPCH_FAILED, .err = "no chime while armed"};
-	while ((int32_t) (now_ms() - chime_cap_until) < 0 && !chime_ours(gen)) vTaskDelay(pdMS_TO_TICKS(5));
+	while ((int32_t) (now_ms() - chime_cap_until) < 0 && !chime_ours(gen)) vTaskDelay(1); /* one tick (10 ms at 100 Hz): pdMS_TO_TICKS(5) is 0 there, a spin that trips the task watchdog */
 	if (!chime_ours(gen)) {
 		chime_cap_done(&r);
 		vTaskDelete(NULL);
