@@ -56,6 +56,7 @@
 #include "hifi_json.h"
 #include "hifi_line.h"
 #include "hifi_meta.h"
+#include "hifi_pair.h"
 #include "hifi_tap.h"
 #include "hifi_pd.h"
 #include "hifi_power.h"
@@ -77,7 +78,12 @@ extern int hifi_sink_source(void) __attribute__((weak));
 extern void equalizer_set_gain(int8_t *gain) __attribute__((weak));
 extern int set_squeezelite_player_name(FILE *f, const char *name) __attribute__((weak));
 extern int set_cspot_player_name(FILE *f, const char *name) __attribute__((weak));
-extern bool bt_sink_pair_mode(void) __attribute__((weak));
+extern bool bt_sink_set_discoverable(bool on) __attribute__((weak));
+extern bool bt_sink_discoverable(void) __attribute__((weak));
+extern bool bt_sink_running(void) __attribute__((weak));
+extern bool bt_sink_connected(void) __attribute__((weak));
+extern void hifi_chime_sink_start(uint32_t rate) __attribute__((weak));
+extern void hifi_chime_sink_stop(void) __attribute__((weak));
 extern void hifi_bt_sink_boot_off(void) __attribute__((weak));
 extern bool hifi_output_gain(unsigned left, unsigned right) __attribute__((weak));
 
@@ -156,6 +162,15 @@ static hifi_tone_t tone;
 static volatile bool tone_active, tone_stop_req;
 static hifi_tone_params_t tone_params;
 
+/* Bluetooth pairing mode (hifi_pair.h): the sink is hidden unless it is on */
+static hifi_pair_t pair;              /* under lock */
+static hifi_combo_t combo;            /* − and + held together; the power task's */
+static volatile uint32_t pair_started_ms;
+/* a chime for the tone task to play: the kind, and when it was asked for */
+static volatile uint8_t chime_req;
+static volatile uint32_t chime_req_ms;
+static volatile bool chime_active;    /* keeps the amp awake while one plays */
+
 #define LOCK() xSemaphoreTake(lock, portMAX_DELAY)
 #define UNLOCK() xSemaphoreGive(lock)
 
@@ -225,6 +240,7 @@ void hifi_i2c_ensure(void) {
 }
 
 static void input_changed(hifi_input_t in, bool save);
+static void pair_poll(uint32_t now);
 
 /* ------------------------------------------------------------------ power task */
 
@@ -235,6 +251,7 @@ static void power_task(void *arg) {
 		vTaskDelayUntil(&wake, pdMS_TO_TICKS(10));
 		uint32_t now = now_ms();
 		hifi_bsp_power_in(now, &bp);
+		pair_poll(now);
 
 		/* the routing: re-applied once the board's parts take it, and on request */
 		if (codec_dirty && !capture_busy && !quiet_req && (int32_t) (now - route_at) >= 0) {
@@ -311,7 +328,7 @@ static void power_task(void *arg) {
 		}
 		hifi_power_in_t in = {
 			.now_ms = now, .vbus_v = bp.vbus_v, .pvdd_v = bp.pvdd_v, .pg = bp.pg, .fault = bp.fault,
-			.audio = audio_active || tone_active || input == HIFI_INPUT_DJ_DIRECT ||
+			.audio = audio_active || tone_active || chime_active || input == HIFI_INPUT_DJ_DIRECT ||
 				 (int32_t) (selftest_hold_until - now) > 0,
 		};
 		/* the volume goes to flash once it has settled for 3 s */
@@ -535,7 +552,7 @@ static bool volume_is_local(void) {
 	bool here = input == HIFI_INPUT_DJ_DIRECT || input == HIFI_INPUT_LINE;
 	UNLOCK();
 	int s = hifi_sink_source ? hifi_sink_source() : 0;
-	return here || s == 0 || s == 6 || s == 7; /* 7: party plays here at this volume */
+	return here || s == 0 || s == 6 || s == 7 || s == 8; /* 7: party plays here at this volume; 8: a chime */
 }
 
 /* A new input: the amps go to shutdown, the routing moves 30 ms later and
@@ -663,8 +680,71 @@ static void tap_main(void *arg) {
 	}
 }
 
+/* ------------------------------------------------------------------ pairing mode */
+
+static void chime_request(hifi_chime_kind_t k) {
+	chime_req_ms = now_ms();
+	chime_req = k;
+	if (tone_task) xTaskNotifyGive(tone_task);
+}
+
+/* Pairing mode on (for HIFI_PAIR_S, again from now if it was on) or off;
+ * false when the Bluetooth sink isn't running. On drops a connected phone. */
+static bool pair_set(bool on) {
+	if (!bt_sink_set_discoverable) return false;
+	uint32_t now = now_ms();
+	LOCK();
+	bool ok = bt_sink_set_discoverable(on);
+	if (ok && on) hifi_pair_start(&pair, now, HIFI_PAIR_S);
+	else if (ok) hifi_pair_stop(&pair);
+	UNLOCK();
+	if (ok && on) {
+		pair_started_ms = now ? now : 1;
+		chime_request(HIFI_CHIME_PAIR);
+	}
+	return ok;
+}
+
+/* Every power-task pass: the − + combo, and the end of pairing mode. */
+static void pair_poll(uint32_t now) {
+	bool down = false, up = false;
+	hifi_bsp_vol_buttons(&down, &up);
+	if (hifi_combo_poll(&combo, down, up, now)) {
+		bool ok = pair_set(true);
+		ESP_LOGI(TAG, "- and + held: %s", ok ? "pairing mode on" : "no Bluetooth to pair");
+		if (ok) control_seen_locked("button", "pair");
+	}
+	if (!bt_sink_discoverable) return;
+	LOCK();
+	if (hifi_pair_expired(&pair, now)) {
+		bt_sink_set_discoverable(false);
+		ESP_LOGI(TAG, "pairing mode timed out: hidden again");
+	}
+	/* a phone connected, or the sink stopped: pairing mode is over */
+	if (pair.on && !bt_sink_discoverable()) hifi_pair_stop(&pair);
+	UNLOCK();
+}
+
+/* The Bluetooth sink: a phone connected or went (its chimes). */
+void hifi_bt_link(bool up) {
+	/* pairing mode lets a connected phone go: that one is no news */
+	if (!up && pair_started_ms && now_ms() - pair_started_ms < 3000) return;
+	chime_request(up ? HIFI_CHIME_CONNECT : HIFI_CHIME_DISCONNECT);
+}
+
+static int op_bt_pair(bool on, const char **err) {
+	if (pair_set(on)) return 0;
+	*err = "the Bluetooth sink isn't running";
+	return 409;
+}
+
 /* A button press on the board (squeezelite's audio controls). */
 bool hifi_button_hook(int action, bool pressed) {
+	/* − and + held together are the pairing combo: their own presses (and
+	 * the long-press skips squeezelite makes of them) do nothing */
+	if (hifi_combo_owns(&combo) &&
+	    (action == ACTRLS_VOLUP || action == ACTRLS_VOLDOWN || action == ACTRLS_NEXT || action == ACTRLS_PREV))
+		return true;
 	/* play: counted as headphone taps (a short press arrives on release) */
 	if (action == ACTRLS_TOGGLE && tap_task) {
 		if (pressed) {
@@ -675,10 +755,10 @@ bool hifi_button_hook(int action, bool pressed) {
 		}
 		return true;
 	}
-	/* play held: let a new phone pair over Bluetooth */
-	if (action == ACTRLS_POWER && bt_sink_pair_mode) {
+	/* play held: pairing mode, as − and + held are */
+	if (action == ACTRLS_POWER && bt_sink_set_discoverable) {
 		static bool pairing; /* the release goes where the press went */
-		if (pressed) pairing = bt_sink_pair_mode();
+		if (pressed) pairing = pair_set(true);
 		if (pairing) {
 			if (pressed) control_seen_locked("button", "pair");
 			return true;
@@ -746,10 +826,50 @@ void hifi_display_timer(int elapsed, int duration) {
 
 /* ------------------------------------------------------------------ tones */
 
+/*
+ * A chime, when nothing else plays: at the volume, capped (hifi_pair.h). It
+ * gives the output up the moment a source takes it (a phone's audio that
+ * starts right after it connected), and a test tone or a quiet stop ends it.
+ */
+static void play_chime(int16_t *buf, size_t frames) {
+	hifi_chime_kind_t k = (hifi_chime_kind_t) chime_req;
+	chime_req = HIFI_CHIME_NONE;
+	if (k == HIFI_CHIME_NONE || now_ms() - chime_req_ms > 1500) return; /* stale: not now */
+	if (quiet_req || in_recovery || !hifi_chime_sink_start || !hifi_chime_sink_stop) return;
+	if (hifi_sink_source && hifi_sink_source() != 0) return; /* something plays */
+	LOCK();
+	float amp = hifi_chime_amp(hifi_vol_gain(&vol));
+	UNLOCK();
+	hifi_chime_t c;
+	if (!hifi_chime_start(&c, k, amp, TONE_RATE)) return; /* muted */
+	/* the amp wakes for it, and is let settle 100 ms */
+	chime_active = true;
+	for (int i = 0; i < 100 && now_ms() - amp_off_ms < 100; i++) vTaskDelay(pdMS_TO_TICKS(10));
+	if (!quiet_req && !tone_active && hifi_sink_source() == 0) {
+		ESP_LOGI(TAG, "chime: %s", hifi_chime_name(k));
+		hifi_chime_sink_start(TONE_RATE);
+		apply_volume();
+		size_t n;
+		while ((n = hifi_chime_render(&c, buf, frames)) > 0) {
+			while (hifi_sink_queued_ms() > 100 && hifi_sink_source() == 8) vTaskDelay(pdMS_TO_TICKS(10));
+			if (tone_active || quiet_req || hifi_sink_source() != 8) break;
+			hifi_sink_write((const uint8_t *) buf, n * 4);
+		}
+		for (int i = 0; i < 50 && hifi_sink_queued_ms() > 0 && hifi_sink_source() == 8 && !tone_active; i++)
+			vTaskDelay(pdMS_TO_TICKS(10));
+		hifi_chime_sink_stop(); /* only if it still holds the output */
+	}
+	chime_active = false;
+}
+
 static void tone_main(void *arg) {
 	static int16_t buf[2 * 256];
 	for (;;) {
 		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+		if (!tone_active) {
+			play_chime(buf, 256);
+			if (!tone_active) continue; /* a tone that came meanwhile plays now */
+		}
 		hifi_sink_start(TONE_RATE);
 		for (;;) {
 			xSemaphoreTake(tone_lock, portMAX_DELAY);
@@ -888,9 +1008,9 @@ static void op_info(hifi_info_t *i) {
 }
 
 static const char *source_name(void) {
-	static const char *names[] = {"idle", "lms", "bt", "airplay", "spotify", "test", "line", "party"};
+	static const char *names[] = {"idle", "lms", "bt", "airplay", "spotify", "test", "line", "party", "chime"};
 	int s = hifi_sink_source ? hifi_sink_source() : 0;
-	return s >= 0 && s <= 7 ? names[s] : "idle";
+	return s >= 0 && s < (int) (sizeof(names) / sizeof(names[0])) ? names[s] : "idle";
 }
 
 static void read_eq(float eq[HIFI_EQ_BANDS]) {
@@ -935,6 +1055,11 @@ static void op_snapshot(hifi_snapshot_t *s) {
 	for (int a = 0; a < HIFI_IR_N; a++) s->ir_learned[a] = ir.have[a];
 	s->ir_have_last = ir.have_last;
 	s->ir_last_code = ir.last_code;
+	s->bt_present = bt_sink_set_discoverable && bt_sink_running;
+	s->bt_on = s->bt_present && bt_sink_running();
+	s->bt_pairing = s->bt_on && pair.on;
+	s->bt_pairing_left_s = s->bt_pairing ? hifi_pair_left_s(&pair, t) : 0;
+	s->bt_connected = s->bt_on && bt_sink_connected && bt_sink_connected();
 	if (last_ctl[0]) {
 		snprintf(s->last_control, sizeof(s->last_control), "%s", last_ctl);
 		s->last_control_ago_s = (t - last_ctl_ms) / 1000;
@@ -1674,7 +1799,7 @@ void hifi_main_trial_inputs(hifi_trial_t *t) {
 }
 
 const hifi_ops_t hifi_ops = {
-	.info = op_info, .snapshot = op_snapshot, .tone_start = op_tone_start, .tone_stop = op_tone_stop,
+	.info = op_info, .snapshot = op_snapshot, .bt_pair = op_bt_pair, .tone_start = op_tone_start, .tone_stop = op_tone_stop,
 	.amp_enable = op_amp_enable, .amp_reset = op_amp_reset, .set_input = op_set_input,
 	.set_sub = op_set_sub, .set_loudness = op_set_loudness,
 #if HIFI_HAS_CHANNEL
@@ -1902,6 +2027,8 @@ static bool hifi_init(void) {
 	hifi_meta_init(&meta);
 	hifi_ir_init(&ir);
 	hifi_tap_init(&taps);
+	hifi_pair_init(&pair);
+	hifi_combo_init(&combo);
 	s = config_alloc_get_str("hifi_ir", NULL, "");
 	hifi_ir_load(&ir, s);
 	free(s);

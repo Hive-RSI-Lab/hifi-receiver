@@ -91,7 +91,7 @@ def initial_state(model: str, ap: bool, pdo: tuple[float, float], fault: bool) -
         "sys": {"heap_free": 81234, "psram_free": 3912345},
         "update": {"state": "idle", "progress": 0},
         "ir": {"learning": None, "learned": [], "last_code": None},
-        # Bluetooth (a4930's pairing call): on unless party follows another box
+        # the Bluetooth sink: hidden unless pairing mode is on (POST bt/pair)
         "bt": {"on": True, "pairing": False, "pairing_left_s": 0, "connected": False},
     }
     if CAPS[model]["backlight"]:
@@ -105,8 +105,8 @@ def initial_state(model: str, ap: bool, pdo: tuple[float, float], fault: bool) -
     return s
 
 
+PAIR_S = 120  # pairing mode's length (hifi_pair.h HIFI_PAIR_S)
 ARM_S = 600  # an armed factory reset waits this long for the unplug
-PAIR_S = 120  # Bluetooth pairing mode lasts this long
 
 class Receiver:
     """The state and the rules the firmware keeps, with a lock for the
@@ -137,9 +137,10 @@ class Receiver:
         """POST bt/pair: {} starts pairing mode for PAIR_S, {"on": false}
         stops it; the reply is the bt section. 409 while Bluetooth is off."""
         with self.lock:
+            off = not self.s["bt"]["on"]  # a test may switch the sink off by hand
             self._tick()
-            if not self.s["bt"]["on"]:
-                raise Conflict("Bluetooth is off on this receiver (it follows another in party mode)")
+            if off or not self.s["bt"]["on"]:
+                raise Conflict("the Bluetooth sink isn't running (a receiver that follows another in party mode turns it off)")
             on = b.get("on", True)
             if not isinstance(on, bool):
                 raise ValueError("on must be true or false")
@@ -680,6 +681,7 @@ def handler(rx: Receiver):
                 self.send(403, {"error": str(e)})
             except (ValueError, json.JSONDecodeError) as e:
                 self.send(400, {"error": str(e)})
+    H.rx = rx
     return H
 
 

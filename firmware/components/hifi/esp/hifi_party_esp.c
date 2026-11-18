@@ -1277,6 +1277,10 @@ static void stats_json(hj_t *j) {
 		hj_int(j, "got", st->jb.got);
 		hj_int(j, "dup", st->jb.dup);
 		hj_int(j, "old", st->jb.old);
+		hj_int(j, "od", st->jb.old_dup); /* of old: played already */
+		hj_arr(j, "ol"); /* of old: the rest, by lateness (HIFI_PARTY_LATE_BOUNDS) */
+		for (int i = 0; i < HIFI_PARTY_LATE_BINS; i++) hj_int(j, NULL, st->jb.late[i]);
+		hj_arr_end(j);
 		hj_int(j, "skip", st->jb.skipped);
 		hj_int(j, "gaps", st->jb.gaps);
 		hj_int(j, "miss", st->jb.missing_frames);

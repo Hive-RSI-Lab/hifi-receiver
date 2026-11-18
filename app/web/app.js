@@ -883,7 +883,8 @@ function nameCard() {
           'Pair a new phone'),
         h('p.note', {}, follows ? `Bluetooth is off while ${I.name} follows the party.`
           : !bt.on ? 'Bluetooth is off on this speaker.'
-            : `${I.name} shows up on phones for 2 minutes.${bt.connected ? ' The phone on it now disconnects.' : ''}`)];
+            : `${I.name} shows up on phones for 2 minutes.${bt.connected ? ' The phone on it now disconnects.' : ''}` +
+              ' Or hold − and + on the speaker for 2 s. Phones paired before connect whenever.')];
   return h('div.card', {}, h('h2', {}, 'Name and Bluetooth'), top,
     h('div.row', { style: 'margin-top:14px;padding-top:12px;border-top:1px solid var(--line)' },
       h('span.grow', {}, 'Phone on Bluetooth'),

@@ -388,6 +388,13 @@ void hifi_bsp_power_in(uint32_t now, hifi_bsp_power_t *p) {
 void hifi_bsp_quiet_level(float frac) { (void) frac; }
 void hifi_bsp_quiet_mute(bool on) { (void) on; }
 void hifi_bsp_quiet_release(void) {}
+/* the core board's buttons are squeezelite's alone: no − + combo (▶ held
+ * and the app still start pairing mode) */
+bool hifi_bsp_vol_buttons(bool *down, bool *up) {
+	*down = *up = false;
+	return false;
+}
+
 void hifi_bsp_amp_off_now(void) {
 	if (!exp_lock || xPortInIsrContext() || xTaskGetSchedulerState() != taskSCHEDULER_RUNNING) return;
 	if (xSemaphoreTake(exp_lock, pdMS_TO_TICKS(20)) != pdTRUE) return;

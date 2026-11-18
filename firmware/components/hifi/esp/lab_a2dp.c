@@ -111,6 +111,8 @@ static const char *TAG = "lab_a2dp";
 #pragma weak esp_bt_dev_get_address
 #pragma weak esp_bt_gap_remove_bond_device
 #pragma weak esp_bt_gap_set_scan_mode
+/* the sink is hidden unless pairing mode is on (hifi_pair.h) */
+extern bool bt_sink_discoverable(void) __attribute__((weak));
 #pragma weak esp_a2d_register_callback
 #pragma weak esp_a2d_sink_deinit
 #pragma weak esp_a2d_source_init
@@ -517,7 +519,8 @@ static void give_back(void) {
 	esp_avrc_tg_register_callback(bt_app_rc_tg_cb);
 	/* a source left up stays hidden: nobody could play to it */
 	if (src_up) esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
-	else esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+	else esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, bt_sink_discoverable && bt_sink_discoverable()
+							     ? ESP_BT_GENERAL_DISCOVERABLE : ESP_BT_NON_DISCOVERABLE);
 	if (bonded) esp_bt_gap_remove_bond_device(peer);
 	bonded = false;
 	sink_lost = how != NULL && strcmp(how, "yes");

@@ -143,11 +143,13 @@ what is playing; it doesn't choose it.
 - **Wi-Fi:** scan, choose, password, join and forget. 2.4 GHz only.
 - **Name and Bluetooth:** the name Spotify, AirPlay and Bluetooth show,
   with *Rename*; whether a phone is on its Bluetooth; and *Pair a new phone*
-  (`POST bt/pair`), which makes it findable for 2 minutes with a countdown
-  and Cancel, then says "✓ Phone connected" or "No phone paired in 2
-  minutes" with *Try again*. It is off while the receiver follows a party
-  (followers turn their Bluetooth off). Pairing started on the box itself
-  shows the same countdown.
+  (`POST bt/pair`). The receiver is hidden from new phones except in pairing
+  mode (2 minutes, or until a phone connects); the card counts it down with
+  *Cancel*, then says "✓ Phone connected" or "No phone paired in 2 minutes"
+  with *Try again*. The same as holding − and + on the box for 2 s, and
+  pairing started on the box shows the same countdown. The Bluetooth part is
+  shown when `state.bt` is there, and is off while the receiver follows a
+  party (followers turn their Bluetooth off).
 - **Remote:** teach any IR remote. Tap Teach next to an action, then press
   the button on the remote. The actions are volume up/down, mute,
   play/pause, next, previous, input and standby.
@@ -267,6 +269,7 @@ those controls the app shows.
 | `net.join` | not sent by the firmware yet; if sent, `{ssid, state: "joining"\|"ok"\|"failed", ip, reason}` |
 | `update` | `{state: "idle"\|"downloading"\|"flashing"\|"done"\|"error", progress, error}` |
 | `ir` | `{learning: <action>\|null, learned: [<action>…], last_code}` |
+| `bt` | `{on, pairing, pairing_left_s, connected}`: the Bluetooth sink running, pairing mode on and its seconds left, a phone connected |
 
 **Writes:**
 
@@ -287,6 +290,7 @@ those controls the app shows.
 | `POST wifi/forget` | |
 | `POST ir/learn` | `{action}`: the next IR code the receiver sees is bound to that action |
 | `POST ir/forget` | `{}` for all, or `{action}` for one |
+| `POST bt/pair` | `{}` starts 120 s of pairing mode, `{on: false}` ends it. Replies `{bt: {…}}` (as `state.bt`), not the full state; 409 when the Bluetooth sink isn't running |
 | `GET update/check` | replies `{current, latest, url, notes}`; optional |
 | `POST update` | `{url}` |
 | `POST update/upload` | a raw `.bin` body |
@@ -302,6 +306,9 @@ stable.
 **What was dropped from the first draft, and why:**
 - **A source picker.** squeezelite-esp32 can't start Spotify or AirPlay from
   the box.
+- **A Bluetooth pair button** was dropped at first, while the sink was
+  discoverable whenever no phone was connected. It came back on 2026-11-18
+  with the hidden-by-default sink and pairing mode (the Bluetooth card).
 - **Lite's "through EQ" line-in mode.** The Lite firmware routes the line in
   only through the ES8388's analog bypass.
 

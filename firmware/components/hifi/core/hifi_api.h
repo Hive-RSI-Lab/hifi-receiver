@@ -135,6 +135,11 @@ typedef struct {
 	const char *reset_reason; /* why it last restarted (power_on, panic...); NULL: unknown */
 	const char *restart_cause; /* for a restart: who called it (hifi_diag.h hifi_restart_cause_fmt); NULL: none */
 	hifi_update_status_t update; /* the app's updates; idle: not reported */
+	/* the Bluetooth sink (hifi_pair.h): reported when the build has one.
+	 * bt_on: it is running; bt_pairing: discoverable, for bt_pairing_left_s
+	 * more; bt_connected: a phone is connected */
+	bool bt_present, bt_on, bt_pairing, bt_connected;
+	int bt_pairing_left_s;
 } hifi_snapshot_t;
 
 #define HIFI_SELFTEST_MAX 16
@@ -241,6 +246,11 @@ typedef struct {
 	 * with no phone; the boot after that is back to normal. Restarts the
 	 * board. 0, or -1 with *err set; NULL: 404 */
 	int (*bt_test)(const char *sink, const char **err);
+	/* pairing mode (hifi_pair.h): on, a new phone can find the box for
+	 * HIFI_PAIR_S (a connected phone is let go first); off, it is hidden
+	 * again. 0, or the HTTP status with *err set (409: the Bluetooth sink
+	 * isn't running); NULL: 404 */
+	int (*bt_pair)(bool on, const char **err);
 	/* The LAN's factory reset (L6): arm it (0, else -1); the erase happens
 	 * only if the board next starts from power-on (unplugged and plugged
 	 * back in) within HIFI_RESET_ARM_US. NULL: the LAN can't reset. */
