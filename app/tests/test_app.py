@@ -131,6 +131,19 @@ class API(unittest.TestCase):
         self.assertEqual(self.m.post("led", {"mode": "test"})[0], 404)
         self.assertEqual(self.m.post("backlight", {"mode": "on"})[0], 404)
 
+    def test_party_on_lead_off_and_no_key_from_the_lan(self):
+        self.assertEqual(self.m.get("api/v1/party")["role"], "off")
+        self.assertEqual(self.m.post("party", {"op": "lead"})[0], 409)  # party is off
+        code, p = self.m.post("party", {"op": "on"})
+        self.assertEqual((code, p["on"], p["role"]), (200, True, "leader"))
+        code, p = self.m.post("party", {"op": "lead"})
+        self.assertEqual((code, p["picked"]), (200, True))
+        for body in ({"op": "key", "secret": "00" * 32}, {"op": "tone", "on": True}):
+            self.assertEqual(self.m.post("party", body)[0], 403, body)  # the Hive's or USB's only
+        self.assertEqual(self.m.post("party", {"op": "dance"})[0], 400)
+        code, p = self.m.post("party", {"op": "off"})
+        self.assertEqual((code, p["on"], p["role"]), (200, False, "off"))
+
     def test_wifi_join_and_forget(self):
         code, s = self.m.post("wifi", {"ssid": "Home", "password": "wrong"})
         self.assertEqual(s["net"]["join"]["state"], "failed")
@@ -263,7 +276,7 @@ class Browser(unittest.TestCase):
         m = Mock()
         try:
             d = self.dom(m)
-            for want in ("Teardrop", "Massive Attack", "Spotify", "DJ direct", "Volume"):
+            for want in ("Teardrop", "Massive Attack", "Spotify", "DJ direct", "Volume", "Party", "connecting your phone first"):
                 self.assertIn(want, d)
         finally:
             m.close()

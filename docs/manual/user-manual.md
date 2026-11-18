@@ -319,6 +319,11 @@ press **Join**.
 **Bluetooth:** to switch to another phone, disconnect the first one in its
 Bluetooth settings. The receiver can then be found again.
 
+**Party mode:** to play the same music in step on several receivers, start
+the music on one (connect your phone first), then in the app switch **Play →
+Party** on there and on the others: they join it on their own. Bluetooth is
+off on the ones that follow.
+
 **Switching source:**
 
 - **Streams:** there is no source picker. A stream starts when a phone or
