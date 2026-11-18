@@ -198,6 +198,24 @@ bool hifi_party_local_source(hifi_party_role_t role, int source);
 /* whether a follower takes its output back: the output is idle (a test signal
  * ended), or line in took it */
 bool hifi_party_retakes(hifi_party_role_t role, int source);
+/* Bluetooth and the station's power save, as hifi_party_poll keeps them
+ * (projects/hifi-lite-lab/party-mode.md 8.13). Bluetooth stays on only off
+ * the party, for a picked leader, or while it plays (bt_plays: the phone came
+ * first). A follower's Wi-Fi stays awake (power save none): under A2DP into
+ * the leader that cut its concealed audio from 4.1% to 0.16%. None only once
+ * the Bluetooth sink is off (or won't go off: disabled in the settings) and
+ * the controller has stopped; back to the default (min modem) before
+ * Bluetooth starts again, since none with the controller on panics the
+ * coexistence code. */
+typedef struct {
+	bool (*bt_set)(bool on);    /* hifi_bt_sink_set: true when done */
+	bool (*bt_is_off)(void);    /* hifi_bt_sink_is_off */
+	bool (*bt_stopped)(void);   /* the Bluetooth controller isn't running */
+	bool (*ps_none)(bool none); /* the station's power save to none, or to min: true when done */
+} hifi_party_radio_ops_t;
+/* awake: party's none is in force (party set it and it still reads none),
+ * updated here; a none set by anyone else is theirs to undo */
+void hifi_party_radio(const hifi_party_radio_ops_t *o, bool *awake, bool on, hifi_party_role_t role, bool picked, bool bt_plays);
 /* an announce that passed hifi_party_announce_parse */
 int hifi_party_group_announce(hifi_party_group_t *g, uint32_t now, const hifi_party_announce_t *a);
 /* an announce from ip whose tag passed but whose TSF (tsf_us) is off ours:

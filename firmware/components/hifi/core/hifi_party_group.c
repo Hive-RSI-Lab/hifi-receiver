@@ -329,6 +329,21 @@ bool hifi_party_retakes(hifi_party_role_t role, int source) {
 	return role == HIFI_PARTY_ROLE_FOLLOWER && (source == 0 || source == 6);
 }
 
+void hifi_party_radio(const hifi_party_radio_ops_t *o, bool *awake, bool on, hifi_party_role_t role, bool picked, bool bt_plays) {
+	bool bt = !on || (role != HIFI_PARTY_ROLE_FOLLOWER && (picked || bt_plays));
+	bool stay_awake = on && role == HIFI_PARTY_ROLE_FOLLOWER;
+	/* the default first, while Bluetooth is still off */
+	if (*awake && !stay_awake && o->ps_none(false)) *awake = false;
+	if (bt) {
+		if (o->bt_is_off() && !*awake) o->bt_set(true); /* not over none: the next poll tries again */
+		return;
+	}
+	/* bt_set(false) is false with the sink disabled in the settings, or when
+	 * the controller hasn't stopped yet: bt_stopped decides */
+	if (!o->bt_is_off()) o->bt_set(false);
+	if (stay_awake && !*awake && o->bt_stopped() && o->ps_none(true)) *awake = true;
+}
+
 int hifi_party_group_tick(hifi_party_group_t *g, uint32_t now, uint32_t rnd, bool local_source, bool low_heap) {
 	if (low_heap && !g->heap_low) g->low_heap++;
 	g->heap_low = low_heap;

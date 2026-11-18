@@ -21,6 +21,7 @@
 #include "soc/soc_memory_types.h"
 #include "nvs.h"
 
+#include "hifi_boot.h"
 #include "hifi_crash.h"
 #include "hifi_esp.h"
 #include "hifi_ws.h"
@@ -35,6 +36,10 @@ static volatile int last_reason;
 static int64_t ip_since_us; /* 64-bit: under ip_mux */
 static portMUX_TYPE ip_mux = portMUX_INITIALIZER_UNLOCKED;
 static bool events_on;
+
+/* failed allocations: hifi_diag_alloc_failed writes, sys() reads */
+static hifi_diag_alloc_t alloc_fail;
+static portMUX_TYPE alloc_mux = portMUX_INITIALIZER_UNLOCKED;
 
 static SemaphoreHandle_t task_lock;
 static hifi_diag_tasks_t *last; /* the last CPU sample, PSRAM */
@@ -128,6 +133,20 @@ void hifi_diag_tick(void) {
 	}
 }
 
+/* ------------------------------------------------------------------ failed allocations */
+
+void hifi_diag_alloc_failed(size_t size, uint32_t caps, const char *fn, uint32_t largest) {
+	uint32_t at_s = (uint32_t) (esp_timer_get_time() / 1000000);
+	portENTER_CRITICAL_SAFE(&alloc_mux);
+	alloc_fail.n++;
+	alloc_fail.size = (uint32_t) size;
+	alloc_fail.caps = caps;
+	alloc_fail.fn = fn; /* the heap's own __func__: a string that stays */
+	alloc_fail.at_s = at_s;
+	alloc_fail.largest = largest;
+	portEXIT_CRITICAL_SAFE(&alloc_mux);
+}
+
 /* ------------------------------------------------------------------ sys */
 
 static void heap(hifi_diag_heap_t *o, uint32_t caps) {
@@ -159,6 +178,10 @@ static void sys(hifi_diag_sys_t *o) {
 	 * (MALLOC_CAP_INTERNAL alone adds IRAM that takes only 32-bit access) */
 	heap(&o->internal, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 	heap(&o->psram, MALLOC_CAP_SPIRAM);
+	o->heap_floor = HIFI_HEAP_MIN;
+	portENTER_CRITICAL(&alloc_mux);
+	o->alloc_fail = alloc_fail;
+	portEXIT_CRITICAL(&alloc_mux);
 	o->reset_reason = hifi_crash_reset_reason();
 	o->restart_cause = hifi_crash_restart_cause();
 	memcpy(o->reset_hist, hist, sizeof(hist));

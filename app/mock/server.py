@@ -574,6 +574,10 @@ def clamp(v, lo, hi, kind):
     return kind(min(hi, max(lo, round(v, 1) if kind is float else round(v))))
 
 
+# the POSTs another speaker's page may make (core/hifi_gate.c)
+CROSS_POST = {"volume", "control", "party"}
+
+
 def handler(rx: Receiver):
     class H(SimpleHTTPRequestHandler):
         def __init__(self, *a, **kw):
@@ -648,10 +652,20 @@ def handler(rx: Receiver):
                                        "notes": "Faster Wi-Fi reconnect."})
             self.send(404, {"error": "no such path"})
 
+        def cross_refused(self, p):
+            # as the board's gate (core/hifi_gate.c, hifi_gate_allow_cross):
+            # another speaker's page may only set the volume, play/pause/next
+            # and party; it may not rename this one or open pairing
+            o = self.headers.get("Origin")
+            own = f"http://{self.headers.get('Host')}"
+            return bool(o) and o != own and p not in CROSS_POST
+
         def do_POST(self):
             p = self.api()
             n = int(self.headers.get("Content-Length") or 0)
             raw = self.rfile.read(n)
+            if self.cross_refused(p):
+                return self.send(403, {"error": "open the board by its IP address or name"})
             if self.failed(p):
                 return
             if p == "update/upload":
