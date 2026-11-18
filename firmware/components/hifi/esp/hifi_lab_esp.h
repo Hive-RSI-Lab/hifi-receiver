@@ -34,9 +34,6 @@ extern const hifi_lab_exp_t lab_lanscan;
 extern const hifi_lab_exp_t lab_wifidrop;
 extern const hifi_lab_exp_t lab_crafted; /* a crafted packet or stream for the ALAC and MP3 decoders */
 extern const hifi_lab_exp_t lab_i2c; /* read-only: the board's I2C chips (esp/lab_i2c.c) */
-/* weak and pulled into the app by patch 0031, so recovery leaves it out (with
- * hifi_party and hifi_party_sync it would not fit recovery's slot) */
-extern const hifi_lab_exp_t lab_party __attribute__((weak)); /* the party mode prototype: one board leads, one follows, in sync */
 extern const hifi_lab_exp_t lab_ble __attribute__((weak)); /* the BLE lab image only (CONFIG_BT_BLE_ENABLED) */
 /* the lab-radio image only (CONFIG_HIFI_LAB_PSRAM_STACKS): weak and pulled
  * into the app by patch 0027, so recovery leaves out libFLAC and the clip */

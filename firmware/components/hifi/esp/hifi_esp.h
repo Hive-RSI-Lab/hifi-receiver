@@ -79,3 +79,13 @@ uint32_t hifi_diag_wifi_disconnects(void);
 /* a finished update over the relay: its size, time and the time spent in
  * flash writes, kept for `diag ota` */
 void hifi_diag_ota_done(uint32_t bytes, uint32_t total_ms, uint32_t write_ms, const char *version);
+
+/* hifi_party_esp.c: party mode, several boards playing one stream in step.
+ * Weak, so only the app links it (patch 0031's -u hifi_party_op); in recovery
+ * every one is NULL, and callers check before calling. */
+void hifi_party_init(void) __attribute__((weak));   /* at hifi_init, after the settings are read */
+void hifi_party_poll(void) __attribute__((weak));   /* every few seconds, from the relay's task */
+void hifi_party_selftest(hifi_selftest_t *t) __attribute__((weak));
+int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *out, size_t cap) __attribute__((weak));
+bool hifi_party_saved_on(void) __attribute__((weak)); /* party was on when the board last ran */
+void hifi_party_volume(uint32_t gain) __attribute__((weak)); /* the board's volume, for the leader's stream */

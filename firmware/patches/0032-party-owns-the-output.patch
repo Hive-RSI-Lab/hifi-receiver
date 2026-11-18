@@ -1,0 +1,79 @@
+diff --git a/components/squeezelite/decode_external.c b/components/squeezelite/decode_external.c
+--- a/components/squeezelite/decode_external.c
++++ b/components/squeezelite/decode_external.c
+@@ -55,7 +55,7 @@ static enum { SINK_RUNNING, SINK_ABORT, SINK_DISCARD } sink_state;
+ #define LOCK_D   mutex_lock(decode.mutex);
+ #define UNLOCK_D mutex_unlock(decode.mutex);
+ 
+-enum { DECODE_BT = 1, DECODE_RAOP, DECODE_CSPOT, DECODE_HIFI_TEST, DECODE_HIFI_LINE };
++enum { DECODE_BT = 1, DECODE_RAOP, DECODE_CSPOT, DECODE_HIFI_TEST, DECODE_HIFI_LINE, DECODE_HIFI_PARTY };
+ 
+ extern struct outputstate output;
+ extern struct decodestate decode;
+@@ -132,7 +132,8 @@ static bool hifi_unity;
+ extern bool hifi_output_flushed; /* output.c: emptied on purpose, not an underrun */
+ 
+ static bool hifi_owns_output(void) {
+-	return output.external == DECODE_HIFI_TEST || output.external == DECODE_HIFI_LINE;
++	return output.external == DECODE_HIFI_TEST || output.external == DECODE_HIFI_LINE ||
++	       output.external == DECODE_HIFI_PARTY;
+ }
+ 
+ static void hifi_take_output(u32_t rate, int kind, bool unity) {
+@@ -158,7 +159,8 @@ static void hifi_take_output(u32_t rate, int kind, bool unity) {
+ 	if (decode.state != DECODE_STOPPED) decode.state = DECODE_ERROR;
+ 	UNLOCK_O;
+ 	UNLOCK_D;
+-	LOG_INFO("hifi %s started at %u", kind == DECODE_HIFI_LINE ? "line in" : "test signal", rate);
++	LOG_INFO("hifi %s started at %u", kind == DECODE_HIFI_LINE ? "line in" :
++	         kind == DECODE_HIFI_PARTY ? "party" : "test signal", rate);
+ }
+ 
+ void hifi_sink_start(u32_t rate) {
+@@ -169,6 +171,12 @@ void hifi_line_start(u32_t rate, bool unity) {
+ 	hifi_take_output(rate, DECODE_HIFI_LINE, unity);
+ }
+ 
++/* hifi: a party follower holds the output at unity gain; the I2S block hook
++ * writes the leader's stream into the silence the output plays meanwhile */
++void hifi_party_sink_start(u32_t rate) {
++	hifi_take_output(rate, DECODE_HIFI_PARTY, true);
++}
++
+ uint32_t hifi_sink_write(const uint8_t *data, uint32_t len) {
+ 	if (!hifi_owns_output()) return 0;
+ 	return sink_data_handler(data, len, 10);
+@@ -197,13 +205,14 @@ uint32_t hifi_sink_queued_ms(void) {
+ 	return (_buf_used(outputbuf) * 1000ULL) / (output.current_sample_rate * BYTES_PER_FRAME);
+ }
+ 
+-/* 0 idle, 1 LMS, 2 Bluetooth, 3 AirPlay, 4 Spotify, 5 test signal, 6 line in */
++/* 0 idle, 1 LMS, 2 Bluetooth, 3 AirPlay, 4 Spotify, 5 test signal, 6 line in, 7 party */
+ int hifi_sink_source(void) {
+ 	if (output.external == DECODE_BT) return 2;
+ 	if (output.external == DECODE_RAOP) return 3;
+ 	if (output.external == DECODE_CSPOT) return 4;
+ 	if (output.external == DECODE_HIFI_TEST) return 5;
+ 	if (output.external == DECODE_HIFI_LINE) return 6;
++	if (output.external == DECODE_HIFI_PARTY) return 7;
+ 	return output.state > OUTPUT_STOPPED ? 1 : 0;
+ }
+ 
+@@ -310,6 +319,8 @@ static void raop_sink_data_handler(const uint8_t *data, uint32_t len, u32_t play
+  */
+ static bool raop_sink_cmd_handler(raop_event_t event, va_list args)
+ {
++	// hifi: a cast to a party follower takes the output from the party (spec 8.4)
++	if (event == RAOP_SETUP && output.external == DECODE_HIFI_PARTY) hifi_sink_stop();
+ 	// don't LOCK_O as there is always a chance that LMS takes control later anyway
+ 	if (output.external != DECODE_RAOP && output.state > OUTPUT_STOPPED) {
+ 		LOG_WARN("Cannot use Airplay sink while LMS/BT/CSpot are controlling player %d", output.external);
+@@ -453,6 +464,8 @@ static uint32_t cspot_sink_data_handler(const uint8_t *data, uint32_t len) {
+ 
+ static bool cspot_cmd_handler(cspot_event_t cmd, va_list args) 
+ {
++	// hifi: a cast to a party follower takes the output from the party (spec 8.4)
++	if (cmd == CSPOT_START && output.external == DECODE_HIFI_PARTY) hifi_sink_stop();
+ 	// don't LOCK_O as there is always a chance that LMS takes control later anyway
+ 	if (output.external != DECODE_CSPOT && output.state > OUTPUT_STOPPED) {
+ 		LOG_WARN("Cannot use CSpot sink while LMS/BT/Airplay are controlling player %d", output.external);

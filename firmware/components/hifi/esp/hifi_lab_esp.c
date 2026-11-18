@@ -183,7 +183,6 @@ void hifi_lab_esp_init(void) {
 	hifi_lab_register(&lab, &lab_wifidrop);
 	hifi_lab_register(&lab, &lab_crafted);
 	hifi_lab_register(&lab, &lab_i2c);
-	if (&lab_party) hifi_lab_register(&lab, &lab_party); /* the app only (NULL in recovery) */
 #if CONFIG_BT_CLASSIC_ENABLED
 	if (&lab_bt) hifi_lab_register(&lab, &lab_bt); /* NULL in recovery */
 	if (&lab_a2dp) hifi_lab_register(&lab, &lab_a2dp);

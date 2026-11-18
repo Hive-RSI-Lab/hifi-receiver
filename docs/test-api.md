@@ -657,6 +657,48 @@ restarts). Both amps go into reset for 10 ms and come out together, since
 zone B runs off zone A's clock. `volume` is refused (400): zone B plays at
 the main volume. Plus and Lite answer 404. Reply `{"ok": true}`.
 
+## Party mode: `party`, `party/stats`
+
+Receivers on the same Wi-Fi play in step: one leads and sends what it plays,
+the others follow it within about 100 µs (`projects/hifi-lite-lab/party-mode.md`).
+Only boards holding the Hive's party key take part, and nothing is opened
+on the router: no UPnP, no port forward, broadcast only on the subnet.
+
+`GET /api/v1/party`:
+
+```json
+{"on": true, "role": "leader", "key_id": 41, "key": true, "term": 3, "picked": false,
+ "leader": "hifi-lite-2", "followers": ["192.168.2.221", "192.168.2.223"],
+ "why": "", "bt": true}
+```
+
+- `role`: `off`, `listening` (on, looking for a leader), `leader` or
+  `follower`. A follower also gives `leader_ip`.
+- `picked`: this leader was chosen with `lead`; otherwise the first board
+  switched on leads, and the others join it by themselves.
+- `why`: why it isn't playing in step yet: `low memory`, `another access
+  point` (the leader is on another AP, so their clocks differ), `leader lost`,
+  `no party key`. `full: true` when the leader has all the followers it
+  takes; `other_ap: true` as in `why`.
+- `bt`: whether the Bluetooth sink is on. It stays on only on a picked
+  leader or while Bluetooth plays: connect the phone before switching party on.
+
+`POST /api/v1/party` with `{"op": ...}` replies with the same JSON:
+
+| `op` | From | Does |
+|---|---|---|
+| `on`, `off` | LAN, USB, Hive | switch party on or off (kept across restarts). `on` without a key is 409. |
+| `lead` | LAN, USB, Hive | this board leads; the old leader follows it. 409 when party is off or memory is low, 429 a few seconds after its own last `lead`. |
+| `key` | USB, Hive | `{"op": "key", "secret": "<64 hex>"}` sets the party key. Never shown back; `key_id` is one byte of its hash. |
+| `tone` | USB, Hive | `{"op": "tone", "on": true}`: the leader's sync test tone, for the bench. An idle leader takes the output at 44.1 kHz for it. |
+
+`key` and `tone` from the LAN are 403. An image built for 32-bit frames
+answers `on` with 409 (party carries 16-bit).
+
+`GET /api/v1/party/stats` (409 when party is off): the clock offsets, the
+jitter buffer's counts (`got`, `dup`, `old`, `skip`, `gaps`, `miss`), the
+rate controller and the heap, for the bench's `party_run.py`.
+
 ## Wi-Fi and updates from the app
 
 ### `GET /api/v1/wifi/scan`
@@ -749,6 +791,7 @@ hifi mute on|off
 hifi maxvol <30-100>
 hifi ir learn <action>
 hifi ir forget [action]
+hifi party [on|off|lead|stats]
 hifi selftest
 ```
 

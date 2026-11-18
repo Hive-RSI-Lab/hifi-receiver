@@ -500,7 +500,8 @@ bool hifi_lan_throttled(const char *path, const char *method, long long now_us, 
 }
 
 bool hifi_lan_config_secret(const char *key) {
-	return key && (!strcmp(key, "hifi_relay_pass") || !strcmp(key, "hifi_relay_key"));
+	return key && (!strcmp(key, "hifi_relay_pass") || !strcmp(key, "hifi_relay_key") ||
+	               !strcmp(key, "hifi_party_key"));
 }
 
 /* ---- the setup access point ---- */

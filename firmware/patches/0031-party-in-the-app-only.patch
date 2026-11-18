@@ -1,0 +1,18 @@
+hifi party mode (components/hifi/esp/hifi_party_esp.c, with core/hifi_party.c,
+hifi_party_group.c and hifi_party_sync.c) links into the app only: its hooks
+are weak (hifi_esp.h) and this -u pulls them in, as patches 0017 and 0027 do
+for the lab's Bluetooth and FLAC ones. Recovery has no use for it, and the
+lab's recovery image was 0x110 bytes over its 0x1c0000 slot with it.
+
+diff --git a/components/platform_console/app_squeezelite/CMakeLists.txt b/components/platform_console/app_squeezelite/CMakeLists.txt
+--- a/components/platform_console/app_squeezelite/CMakeLists.txt
++++ b/components/platform_console/app_squeezelite/CMakeLists.txt
+@@ -27,6 +27,8 @@ endif()
+ if(CONFIG_HIFI_LAB_PSRAM_STACKS)
+ 	target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=lab_flac")
+ endif()
++# hifi: and party mode, which recovery has no use for and no room for
++target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=hifi_party_op")
+ 
+ idf_build_get_property(project_ver PROJECT_VER)
+ message("******************* ${project_ver}")

@@ -48,6 +48,10 @@ There are three tabs.
   *Line in* (through the ADC, so EQ and the sub settings apply), and Ultra
   adds *Optical*.
 - **Zone B (Ultra):** on/off and its own level.
+- **Party:** on/off, who leads, and *Lead from this one*. Receivers on the
+  same Wi-Fi play in step: the first switched on leads, the others join it.
+  Shown only when the firmware has party mode; "no party key yet" until the
+  Hive gives one. See `GET|POST /api/v1/party` in [test-api.md](test-api.md).
 
 There is no source picker for streams. A stream starts when a phone plays to
 the receiver, as with any Spotify Connect or AirPlay speaker. The app shows

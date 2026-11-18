@@ -78,6 +78,7 @@ extern void equalizer_set_gain(int8_t *gain) __attribute__((weak));
 extern int set_squeezelite_player_name(FILE *f, const char *name) __attribute__((weak));
 extern int set_cspot_player_name(FILE *f, const char *name) __attribute__((weak));
 extern bool bt_sink_pair_mode(void) __attribute__((weak));
+extern void hifi_bt_sink_boot_off(void) __attribute__((weak));
 extern bool hifi_output_gain(unsigned left, unsigned right) __attribute__((weak));
 
 /* ------------------------------------------------------------------ state */
@@ -476,6 +477,7 @@ static void apply_volume(void) {
 	vol_changed_ms = now_ms();
 	UNLOCK();
 	if (direct) codec_dirty = true;
+	if (hifi_party_volume) hifi_party_volume(g);
 	/* a stop holds squeezelite's gain at 0 until it is released */
 	if (hifi_output_gain && !tone_active && !line_unity && !quiet_req) hifi_output_gain(g, g);
 }
@@ -501,7 +503,7 @@ static bool volume_is_local(void) {
 	bool here = input == HIFI_INPUT_DJ_DIRECT || input == HIFI_INPUT_LINE;
 	UNLOCK();
 	int s = hifi_sink_source ? hifi_sink_source() : 0;
-	return here || s == 0 || s == 6;
+	return here || s == 0 || s == 6 || s == 7; /* 7: party plays here at this volume */
 }
 
 /* A new input: the amps go to shutdown, the routing moves 30 ms later and
@@ -854,9 +856,9 @@ static void op_info(hifi_info_t *i) {
 }
 
 static const char *source_name(void) {
-	static const char *names[] = {"idle", "lms", "bt", "airplay", "spotify", "test", "line"};
+	static const char *names[] = {"idle", "lms", "bt", "airplay", "spotify", "test", "line", "party"};
 	int s = hifi_sink_source ? hifi_sink_source() : 0;
-	return s >= 0 && s <= 6 ? names[s] : "idle";
+	return s >= 0 && s <= 7 ? names[s] : "idle";
 }
 
 static void read_eq(float eq[HIFI_EQ_BANDS]) {
@@ -1319,6 +1321,7 @@ static void op_selftest(hifi_selftest_t *t) {
 	}
 	int strays = hifi_listen_now(why, sizeof(why));
 	hifi_selftest_add(t, "listeners", strays == 0, "%s", why);
+	if (hifi_party_selftest) hifi_party_selftest(t);
 #ifdef CONFIG_HIFI_LAB
 	hifi_lab_esp_selftest(t);
 #endif
@@ -1596,6 +1599,7 @@ const hifi_ops_t hifi_ops = {
 #ifdef CONFIG_HIFI_LAB
 	.lab = hifi_lab_esp_op,
 #endif
+	.party = hifi_party_op,
 #ifdef HIFI_HAS_LED_TEST
 	.set_led = hifi_bsp_set_led,
 #endif
@@ -1807,6 +1811,13 @@ static bool hifi_init(void) {
 #ifdef CONFIG_HIFI_LAB
 	hifi_lab_esp_init();
 #endif
+	/* party on at boot: Bluetooth stays off (squeezelite registers it after
+	 * this), and the group starts once Wi-Fi is up */
+	if (hifi_party_init) { /* the app only */
+		if (hifi_party_saved_on() && hifi_bt_sink_boot_off) hifi_bt_sink_boot_off();
+		hifi_party_init();
+		hifi_party_volume(hifi_vol_gain(&vol));
+	}
 	hifi_remote_start(&hifi_ops);
 	hifi_bsp_start();
 	ESP_LOGI(TAG, "%s on %s, firmware %s", HIFI_MODEL, HIFI_BOARD, HIFI_FW_VERSION);

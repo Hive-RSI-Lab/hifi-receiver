@@ -82,18 +82,23 @@ fi
 # -u flags pull into the app: if the flags and the sdkconfig ever disagree,
 # the experiment would vanish without a link error, so fail here instead
 for lab in "lab_bt:CONFIG_BT_CLASSIC_ENABLED" "lab_a2dp:CONFIG_BT_CLASSIC_ENABLED" "lab_ble:CONFIG_BT_BLE_ENABLED" \
-	"lab_flac:CONFIG_HIFI_LAB_PSRAM_STACKS" "lab_party:CONFIG_HIFI_LAB"; do
+	"lab_flac:CONFIG_HIFI_LAB_PSRAM_STACKS"; do
 	if grep -q '^CONFIG_HIFI_LAB=y' sdkconfig && grep -q "^${lab#*:}=y" sdkconfig &&
 		! grep -q "(${lab%%:*}.c.obj)" build/squeezelite.map; then
-		echo "build.sh: ${lab%%:*} is enabled but not linked into the app (patches 0017, 0027, 0031)" >&2
+		echo "build.sh: ${lab%%:*} is enabled but not linked into the app (patches 0017, 0027)" >&2
 		exit 1
 	fi
 done
-# and the FLAC and party experiments (libFLAC and its clip; the party sync)
-# stay out of recovery's slot
-for lab in lab_flac:0027 lab_party:0031; do
-	if grep -q "(${lab%%:*}.c.obj)" build/recovery.map; then
-		echo "build.sh: ${lab%%:*} is linked into the recovery image (patch ${lab#*:})" >&2
+# party mode is in every app and out of recovery's slot (patch 0031's -u and
+# hifi_esp.h's weak hooks), and the lab's FLAC experiment (libFLAC and its
+# clip) stays out of recovery too (patch 0027)
+if ! grep -q "(hifi_party_esp.c.obj)" build/squeezelite.map; then
+	echo "build.sh: party mode is not linked into the app (patch 0031)" >&2
+	exit 1
+fi
+for obj in lab_flac:0027 hifi_party_esp:0031 hifi_party_sync:0031; do
+	if grep -q "(${obj%%:*}.c.obj)" build/recovery.map; then
+		echo "build.sh: ${obj%%:*} is linked into the recovery image (patch ${obj#*:})" >&2
 		exit 1
 	fi
 done

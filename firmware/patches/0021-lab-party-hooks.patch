@@ -14,11 +14,11 @@ diff --git a/components/squeezelite/output_i2s.c b/components/squeezelite/output
  static size_t dma_buf_frames;
  static u64_t hifi_played_us; /* hifi: audio played since boot, this task's only */
 +
-+/* hifi: the lab's party experiment (components/hifi/esp/lab_party.c) is told when
-+ * the I2S starts again or changes rate (the DMA ring is zeroed then), sees each
++/* hifi: party mode (components/hifi/esp/hifi_party_esp.c) is told when the
++ * I2S starts again or changes rate (the DMA ring is zeroed then), sees each
 + * block just before the equalizer and the DAC and may rewrite it (a follower plays
-+ * the leader's stream there), and stamps each write; weak, so only a lab image
-+ * links them. Frames are 16-bit stereo, so only that build calls them. */
++ * the leader's stream there), and stamps each write; weak, so an image without
++ * party mode links none. Frames are 16-bit stereo, so only that build calls them. */
 +extern void hifi_party_i2s_restart(int buf_frames, u32_t rate) __attribute__((weak));
 +extern void hifi_party_i2s_block(u8_t *buf, frames_t frames, u32_t rate) __attribute__((weak));
 +extern void hifi_party_i2s_wrote(frames_t frames, int64_t t0, int64_t t1) __attribute__((weak));
