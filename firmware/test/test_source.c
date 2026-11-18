@@ -4,7 +4,7 @@
 /* who may use the output when Bluetooth, Spotify Connect and AirPlay meet */
 
 enum { NONE = HIFI_SRC_NONE, BT = HIFI_SRC_BT, RAOP = HIFI_SRC_RAOP, CSPOT = HIFI_SRC_CSPOT,
-       TEST = HIFI_SRC_TEST, LINE = HIFI_SRC_LINE, PARTY = HIFI_SRC_PARTY };
+       TEST = HIFI_SRC_TEST, LINE = HIFI_SRC_LINE, PARTY = HIFI_SRC_PARTY, CHIME = HIFI_SRC_CHIME };
 
 static void a_phone_start_takes_the_output_from_another_phone(void) {
 	int phones[] = {BT, RAOP, CSPOT};
@@ -76,6 +76,20 @@ static void only_the_owner_resumes(void) {
 	CHECK(hifi_source_decide(PARTY, true, BT, HIFI_EV_PLAY) == HIFI_SRC_REFUSE);
 }
 
+/* a chime yields to every source: a phone's audio starting right after the
+ * connect chime isn't refused, nor any of its other events */
+static void a_chime_yields_to_everything(void) {
+	CHECK(CHIME == 7); /* decode_external.c's DECODE_HIFI_CHIME */
+	int all[] = {BT, RAOP, CSPOT, TEST, LINE, PARTY};
+	int evs[] = {HIFI_EV_START, HIFI_EV_OWN, HIFI_EV_SESSION, HIFI_EV_PLAY};
+	for (int i = 0; i < 6; i++)
+		for (int e = 0; e < 4; e++) {
+			CHECK(hifi_source_decide(CHIME, true, all[i], evs[e]) == HIFI_SRC_ALLOW);
+			CHECK(hifi_source_decide(CHIME, false, all[i], evs[e]) == HIFI_SRC_ALLOW);
+		}
+	CHECK(!hifi_source_is_phone(CHIME)); /* nothing to pause or let go */
+}
+
 int main(void) {
 	a_phone_start_takes_the_output_from_another_phone();
 	a_phone_start_with_nothing_playing_goes_ahead();
@@ -83,5 +97,6 @@ int main(void) {
 	a_source_that_lost_the_output_cannot_touch_it();
 	the_end_of_a_session_is_acknowledged();
 	only_the_owner_resumes();
+	a_chime_yields_to_everything();
 	return check_report("source");
 }

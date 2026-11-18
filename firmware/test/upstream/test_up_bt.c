@@ -5,6 +5,9 @@
  * Spotify, AirPlay or LMS is paused and let go a second later, and a phone
  * whose audio starts while another source plays, without saying it plays (a
  * notification sound), is held until it does.
+ * And pairing mode (patch 0037): the sink is connectable but hidden unless
+ * pairing mode is on, a phone connecting ends it, and the firmware hears of
+ * each connect and disconnect (its chimes).
  * Builds upstream's own bt_av_hdl_a2d_evt, bt_disconnect and idle_check, as
  * patched, against stubs of the ESP-IDF Bluetooth calls. */
 #include <stdarg.h>
@@ -134,6 +137,12 @@ static void fire(TimerHandle_t h) {
 #define timer_armed armed(s_let_go_timer)
 static void fire_timer(void) { fire(s_let_go_timer); }
 
+/* pairing mode, and the firmware's hook (weak on the board) */
+static volatile bool s_sink_active = true, s_discoverable;
+static int n_link_up, n_link_down;
+static void link_cb(bool up) { up ? n_link_up++ : n_link_down++; }
+static void (*hifi_bt_link)(bool up) = link_cb;
+
 #include "bt_fns.c"
 
 static void reset(void) {
@@ -155,6 +164,46 @@ static void play_status(int playback) {
 	bt_av_notify_evt_handler(ESP_AVRC_RN_PLAY_STATUS_CHANGE, &p);
 }
 
+static void pairing_mode(void) {
+	/* hidden by default; pairing mode makes it discoverable */
+	conn(ESP_A2D_CONNECTION_STATE_DISCONNECTED);
+	CHECK(scan_mode == ESP_BT_CONNECTABLE && !bt_sink_discoverable());
+	reset();
+	CHECK(bt_sink_set_discoverable(true) && bt_sink_discoverable());
+	CHECK(scan_mode == (ESP_BT_CONNECTABLE | ESP_BT_GENERAL_DISCOVERABLE) && n_disconnect == 0);
+	/* off again (timeout or cancel): hidden */
+	CHECK(bt_sink_set_discoverable(false) && !bt_sink_discoverable());
+	CHECK(scan_mode == ESP_BT_CONNECTABLE);
+
+	/* a new phone connects while it is on: hidden, and pairing mode is over */
+	bt_sink_set_discoverable(true);
+	int up = n_link_up;
+	conn(ESP_A2D_CONNECTION_STATE_CONNECTED);
+	CHECK(!bt_sink_discoverable() && scan_mode == 0 && n_link_up == up + 1);
+	/* when it goes, the box stays hidden */
+	conn(ESP_A2D_CONNECTION_STATE_DISCONNECTED);
+	CHECK(scan_mode == ESP_BT_CONNECTABLE);
+
+	/* on with a phone connected: the phone is dropped (only one at a time),
+	 * and its disconnect leaves the box discoverable */
+	conn(ESP_A2D_CONNECTION_STATE_CONNECTED);
+	reset();
+	CHECK(bt_sink_set_discoverable(true) && n_disconnect == 1 && scan_mode == 0);
+	conn(ESP_A2D_CONNECTION_STATE_DISCONNECTED);
+	CHECK(bt_sink_discoverable() && scan_mode == (ESP_BT_CONNECTABLE | ESP_BT_GENERAL_DISCOVERABLE));
+	/* off while a phone holds it: nothing to change but the flag */
+	conn(ESP_A2D_CONNECTION_STATE_CONNECTED);
+	bt_sink_set_discoverable(false);
+	CHECK(scan_mode == 0 && !bt_sink_discoverable());
+	conn(ESP_A2D_CONNECTION_STATE_DISCONNECTED);
+
+	/* the sink not running: refused, nothing changes */
+	s_sink_active = false;
+	reset();
+	CHECK(!bt_sink_set_discoverable(true) && !bt_sink_discoverable() && scan_mode == ESP_BT_CONNECTABLE);
+	s_sink_active = true;
+}
+
 int main(void) {
 	/* bt_sink_init makes both timers once */
 	s_let_go_timer = xTimerCreate("bt_let_go", LET_GO_MS, pdFALSE, NULL, let_go_check);
@@ -174,7 +223,8 @@ int main(void) {
 	CHECK(was_sent(BT_SINK_AUDIO_STOPPED));
 	CHECK(was_sent(BT_SINK_DISCONNECTED));
 	CHECK(n_unset == 1);
-	CHECK(scan_mode == (ESP_BT_CONNECTABLE | ESP_BT_GENERAL_DISCOVERABLE)); /* others can find it again */
+	CHECK(scan_mode == ESP_BT_CONNECTABLE); /* paired phones can come back; a new one can't find it */
+	CHECK(n_link_up == 1 && n_link_down == 1); /* the firmware heard both (chimes) */
 
 	/* phone B connects: not marked busy by A's song, so idle release works */
 	reset();
@@ -353,5 +403,6 @@ int main(void) {
 	CHECK(!s_held && !s_rc_playing && !armed(s_hold_timer) && n_pause_cmd == 0);
 	other_plays = 0;
 
+	pairing_mode();
 	return check_report("up_bt");
 }

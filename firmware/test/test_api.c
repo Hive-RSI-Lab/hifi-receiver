@@ -581,6 +581,18 @@ static void console(void) {
 	CHECK_STR(method, "GET");
 	CHECK_STR(path, "/api/v1/state/audio");
 	CHECK(!CLI("state", "nope"));
+	CHECK(CLI("state", "bt"));
+	CHECK_STR(path, "/api/v1/state/bt");
+	CHECK(CLI("bt", "pair"));
+	CHECK_STR(method, "POST");
+	CHECK_STR(path, "/api/v1/bt/pair");
+	CHECK_STR(body, "{}");
+	CHECK(CLI("bt", "pair", "on"));
+	CHECK_STR(body, "{}");
+	CHECK(CLI("bt", "pair", "off"));
+	CHECK_STR(body, "{\"on\":false}");
+	CHECK(!CLI("bt", "pair", "maybe"));
+	CHECK(!CLI("bt"));
 
 	CHECK(CLI("tone", "sine", "1000", "-20"));
 	CHECK_STR(method, "POST");
@@ -1048,6 +1060,68 @@ static void bttest(void) {
 	CHECK_STR(bt_sink, "HiFi Lite 3");
 }
 
+/* a Bluetooth sink that the fake pair op drives */
+static struct {
+	bool on, pairing, connected;
+	int calls;
+} bt;
+static void bt_snapshot(hifi_snapshot_t *s) {
+	m_snapshot(s);
+	s->bt_present = true;
+	s->bt_on = bt.on;
+	s->bt_pairing = bt.pairing;
+	s->bt_pairing_left_s = bt.pairing ? 120 : 0;
+	s->bt_connected = bt.connected;
+}
+static int x_bt_pair(bool on, const char **err) {
+	bt.calls++;
+	if (!bt.on) {
+		*err = "Bluetooth is off";
+		return 409;
+	}
+	bt.pairing = on;
+	if (on) bt.connected = false; /* a connected phone is let go */
+	return 0;
+}
+
+static void bt_pair(void) {
+	/* no Bluetooth: no state section, 404 */
+	CHECK(call("GET", "/api/v1/state", NULL) == 200);
+	CHECK(!strstr(out, "\"bt\""));
+	CHECK(call("GET", "/api/v1/state/bt", NULL) == 200);
+	CHECK_STR(out, "{}");
+	CHECK(call("POST", "/api/v1/bt/pair", "{}") == 404);
+
+	hifi_ops_t x = ops;
+	x.snapshot = bt_snapshot;
+	x.bt_pair = x_bt_pair;
+	CHECK(hifi_api_handle(&x, "GET", "/api/v1/state/bt", NULL, out, sizeof(out)) == 200);
+	CHECK_STR(out, "{\"bt\":{\"on\":false,\"pairing\":false,\"pairing_left_s\":0,\"connected\":false}}");
+	/* the sink isn't running */
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/bt/pair", "{}", out, sizeof(out)) == 409);
+	CHECK_HAS(out, "Bluetooth is off");
+	bt.on = bt.connected = true;
+	CHECK(hifi_api_handle(&x, "GET", "/api/v1/bt/pair", NULL, out, sizeof(out)) == 405);
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/bt/pair", "{\"on\":\"yes\"}", out, sizeof(out)) == 400);
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/bt/pair", "{\"on\":1}", out, sizeof(out)) == 400);
+	CHECK(bt.calls == 1 && !bt.pairing);
+	/* on (an empty body, or none): the reply is the bt state */
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/bt/pair", NULL, out, sizeof(out)) == 200);
+	CHECK_STR(out, "{\"bt\":{\"on\":true,\"pairing\":true,\"pairing_left_s\":120,\"connected\":false}}");
+	CHECK(hifi_api_handle(&x, "POST", "/api/v1/bt/pair", "{\"on\":true}", out, sizeof(out)) == 200);
+	CHECK(bt.pairing && bt.calls == 3);
+	/* the whole state has it too, from the LAN as well */
+	CHECK(hifi_api_handle_from(&x, HIFI_SRC_LAN, "GET", "/api/v1/state", NULL, out, sizeof(out)) == 200);
+	CHECK_HAS(out, "\"bt\":{\"on\":true,\"pairing\":true");
+	CHECK(hifi_api_handle_from(&x, HIFI_SRC_LAN, "POST", "/api/v1/bt/pair", "{\"on\":false}", out, sizeof(out)) == 200);
+	CHECK_STR(out, "{\"bt\":{\"on\":true,\"pairing\":false,\"pairing_left_s\":0,\"connected\":false}}");
+	/* a sink that stopped reports nothing on under it */
+	bt.on = false;
+	bt.pairing = bt.connected = true;
+	CHECK(hifi_api_handle(&x, "GET", "/api/v1/state/bt", NULL, out, sizeof(out)) == 200);
+	CHECK_STR(out, "{\"bt\":{\"on\":false,\"pairing\":false,\"pairing_left_s\":0,\"connected\":false}}");
+}
+
 static void loudness(void) {
 	/* a board without Boost: no caps entry, no state fields, 404 */
 	CHECK(call("GET", "/api/v1/info", NULL) == 200);
@@ -1096,6 +1170,7 @@ int main(void) {
 	i2c_console();
 	crash();
 	bttest();
+	bt_pair();
 	loudness();
 	return check_report("api");
 }

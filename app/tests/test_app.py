@@ -146,6 +146,27 @@ class API(unittest.TestCase):
         code, p = self.m.post("party", {"op": "off"})
         self.assertEqual((code, p["on"], p["role"]), (200, False, "off"))
 
+    def test_bt_pair_starts_counts_down_and_cancels(self):
+        bt = self.m.get("api/v1/state")["bt"]
+        self.assertEqual(bt, {"on": True, "pairing": False, "pairing_left_s": 0, "connected": False})  # hidden by default
+        code, r = self.m.post("bt/pair", {})
+        self.assertEqual((code, r["bt"]["pairing"], r["bt"]["pairing_left_s"]), (200, True, server.PAIR_S))
+        self.assertTrue(self.m.get("api/v1/state")["bt"]["pairing"])
+        self.assertEqual(self.m.post("bt/pair", {"on": "yes"})[0], 400)
+        code, r = self.m.post("bt/pair", {"on": False})
+        self.assertEqual((code, r["bt"]["pairing"], r["bt"]["pairing_left_s"]), (200, False, 0))
+        # it runs out by itself
+        self.m.post("bt/pair", {})
+        self.m.srv.RequestHandlerClass.rx.pair_until = 0
+        bt = self.m.get("api/v1/state")["bt"]
+        self.assertEqual((bt["pairing"], bt["pairing_left_s"]), (False, 0))
+
+    def test_bt_pair_without_the_sink_is_409(self):
+        self.m.srv.RequestHandlerClass.rx.s["bt"]["on"] = False
+        code, r = self.m.post("bt/pair", {})
+        self.assertEqual(code, 409)
+        self.assertIn("isn't running", r["error"])
+
     def test_wifi_join_and_forget(self):
         # as the firmware: {"ok": true} either way, and no net.join; the result shows in net
         self.m.srv.rx.s["net"].update(mode="ap", ssid="", ip="192.168.4.1")
@@ -300,7 +321,7 @@ class Browser(unittest.TestCase):
         m = Mock()
         try:
             d = self.dom(m, "#setup")
-            for want in ("Scan for networks", "Teach", "Check for updates", "Factory reset"):
+            for want in ("Scan for networks", "Pair a new phone", "hold − and +", "Teach", "Check for updates", "Factory reset"):
                 self.assertIn(want, d)
         finally:
             m.close()

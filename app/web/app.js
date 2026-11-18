@@ -542,7 +542,7 @@ function pageSetup() {
     n.mode === 'ap' && h('div.card.warn', {}, h('b', {}, 'Welcome. '),
       'Choose your home Wi-Fi below. The receiver joins it and you then find it at ',
       h('b', {}, `http://${n.hostname}.local`), '.'),
-    wifiCard(), nameCard(), remoteCard(), (I.caps.led || I.caps.backlight) && lightsCard(), updateCard(), diagCard(),
+    wifiCard(), nameCard(), btCard(), remoteCard(), (I.caps.led || I.caps.backlight) && lightsCard(), updateCard(), diagCard(),
   ];
 }
 
@@ -597,13 +597,29 @@ function bars(rssi) {
 function nameCard() {
   const inp = h('input', { type: 'text', value: I.name, maxLength: 32 });
   return h('div.card', {}, h('h2', {}, 'Name'),
-    h('p.dim', {}, 'What Spotify, AirPlay and Bluetooth show this receiver as. Bluetooth: pick this name on your ' +
-      'phone; the receiver can be found whenever no other phone is connected to it.'),
+    h('p.dim', {}, 'What Spotify, AirPlay and Bluetooth show this receiver as.'),
     h('div.row', {}, h('div.grow', {}, inp), h('button', { onclick: async () => {
       inp.blur();
       if (!await set('name', { name: inp.value.trim() })) return;
       I = await api('info').catch(() => I); draw(); toast('Renamed');
     } }, 'Save')));
+}
+
+// Bluetooth: the receiver is hidden from new phones unless pairing mode is on
+// (POST bt/pair, or − and + held together for 2 s on the box); phones
+// already paired reconnect whenever.
+function btCard() {
+  const b = S.bt;
+  if (!b) return null;
+  const m = Math.floor(b.pairing_left_s / 60), sec = String(b.pairing_left_s % 60).padStart(2, '0');
+  return h('div.card', {}, h('h2', {}, 'Bluetooth'),
+    h('p.dim', {}, !b.on ? 'Bluetooth is off on this receiver.'
+      : b.pairing ? `Pairing: on your phone, open Bluetooth and pick “${I.name}”. Hidden again in ${m}:${sec}.`
+      : 'Phones already paired connect whenever. A new phone can only find this receiver in pairing mode: ' +
+        'tap Pair a new phone, or hold − and + on the receiver for 2 seconds.'),
+    b.on && h('div.row', {}, h('span.grow', { className: b.connected ? 'ok' : 'dim' }, b.connected ? 'A phone is connected' : 'No phone connected'),
+      b.pairing ? h('button', { onclick: () => set('bt/pair', { on: false }) }, 'Cancel')
+        : h('button.pri', { onclick: async () => { if (await set('bt/pair', {})) toast('Pairing for 2 minutes'); } }, 'Pair a new phone')));
 }
 
 function remoteCard() {

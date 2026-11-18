@@ -101,7 +101,7 @@ static void write_playing(hj_t *j, const hifi_meta_t *m) {
 	hj_obj_end(j);
 }
 
-static const char *const STATE_PARTS[] = {"power", "amp", "governor", "audio", "net", "sys", "ir", "controls", "update"};
+static const char *const STATE_PARTS[] = {"power", "amp", "governor", "audio", "net", "sys", "ir", "controls", "update", "bt"};
 
 bool hifi_api_state_part_known(const char *part) {
 	if (!part) return true;
@@ -264,6 +264,15 @@ void hifi_api_write_state_part(const hifi_snapshot_t *s, const char *part, char 
 		hj_obj_end(&j);
 	}
 
+	if (WANT("bt") && s->bt_present) {
+		hj_obj(&j, "bt");
+		hj_bool(&j, "on", s->bt_on);
+		hj_bool(&j, "pairing", s->bt_on && s->bt_pairing);
+		hj_int(&j, "pairing_left_s", s->bt_on && s->bt_pairing ? s->bt_pairing_left_s : 0);
+		hj_bool(&j, "connected", s->bt_on && s->bt_connected);
+		hj_obj_end(&j);
+	}
+
 	if (WANT("update") && s->update.state != HIFI_UPD_IDLE) {
 		hj_obj(&j, "update");
 		hj_str(&j, "state", hifi_update_state_name(s->update.state));
@@ -346,7 +355,7 @@ static int r_info(const hifi_ops_t *ops, char *out, size_t cap) {
 
 static int r_state(const hifi_ops_t *ops, const char *part, char *out, size_t cap) {
 	if (!hifi_api_state_part_known(part))
-		return error(out, cap, 404, "no such state section; try power, amp, governor, audio, net, sys, ir, controls or update");
+		return error(out, cap, 404, "no such state section; try power, amp, governor, audio, net, sys, ir, controls, update or bt");
 	hifi_snapshot_t *s = calloc(1, sizeof(*s));
 	if (!s) return error(out, cap, 500, "out of memory");
 	ops->snapshot(s);
@@ -788,6 +797,21 @@ static int r_bttest(const hifi_ops_t *ops, const char *body, char *out, size_t c
 	return r_state(ops, NULL, out, cap);
 }
 
+/* pairing mode: {} or {"on":true} starts it, {"on":false} ends it; the
+ * reply is the bt state, as GET state/bt */
+static int r_bt_pair(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
+	if (!ops->bt_pair) return error(out, cap, 404, "this build has no Bluetooth");
+	bool on = true;
+	const char *v;
+	size_t vlen;
+	if (hj_get_raw(body, "on", &v, &vlen) && !hj_get_bool(body, "on", &on))
+		return error(out, cap, 400, "on must be true or false");
+	const char *err = NULL;
+	int st = ops->bt_pair(on, &err);
+	if (st) return error(out, cap, st, err ? err : "couldn't change pairing mode");
+	return r_state(ops, "bt", out, cap);
+}
+
 static int r_ota_get(const hifi_ops_t *ops, char *out, size_t cap) {
 	if (!ops->ota || !ops->ota_status) return error(out, cap, 404, "no OTA in this build");
 	hifi_ota_status_t st = {0};
@@ -1195,6 +1219,7 @@ int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *meth
 	else if (!strcmp(route, "ota")) status = get ? r_ota_get(ops, out, cap) : -1;
 	else if (!strcmp(route, "crash")) status = get ? r_crash(ops, NULL, out, cap) : post ? r_crash(ops, body ? body : "{}", out, cap) : -1;
 	else if (!strcmp(route, "bttest")) status = post ? r_bttest(ops, body, out, cap) : -1;
+	else if (!strcmp(route, "bt/pair")) status = post ? r_bt_pair(ops, body, out, cap) : -1;
 	else if (!strncmp(route, "ota/", 4)) status = post ? r_ota(ops, lan, route + 4, body, out, cap) : -1;
 	else if (!strcmp(route, "capture")) status = post ? r_capture(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "wifi")) status = post ? r_wifi(ops, body, out, cap) : -1;
@@ -1232,7 +1257,7 @@ static const char USAGE[] =
 	"tone sweep <from> <to> <dBFS> [s] | tone noise <dBFS> [s] | tone silence [s] | tone stop | "
 	"amp on|off|reset | input stream|dj_direct|line | sub <dB> | channel stereo|left|right|mono | control <action> | "
 	"volume <0-100> | mute on|off | maxvol <30-100> | ir learn <action> | ir forget [action] | "
-	"led test|auto | backlight on|off|auto | party [on|off|lead|stats] | i2c <addr> <reg> [val]";
+	"led test|auto | backlight on|off|auto | bt pair [on|off] | party [on|off|lead|stats] | i2c <addr> <reg> [val]";
 
 static bool usage(char *out, size_t cap) {
 	snprintf(out, cap, "%s", USAGE);
@@ -1261,7 +1286,8 @@ bool hifi_cli_request(int argc, const char *const *argv, const char **method,
 	if (!strcmp(cmd, "state") && argc == 2) {
 		static const char *const paths[] = {PREFIX "state/power", PREFIX "state/amp", PREFIX "state/governor",
 						    PREFIX "state/audio", PREFIX "state/net", PREFIX "state/sys",
-						    PREFIX "state/ir", PREFIX "state/controls", PREFIX "state/update"};
+						    PREFIX "state/ir", PREFIX "state/controls", PREFIX "state/update",
+						    PREFIX "state/bt"};
 		*method = "GET";
 		for (size_t i = 0; i < sizeof(paths) / sizeof(paths[0]); i++)
 			if (!strcmp(argv[1], paths[i] + strlen(PREFIX "state/"))) return *path = paths[i], true;
@@ -1297,6 +1323,13 @@ bool hifi_cli_request(int argc, const char *const *argv, const char **method,
 		*path = PREFIX "selftest";
 		snprintf(body, bc, "{}");
 		return argc == 1 || usage(out, cap);
+	}
+	if (!strcmp(cmd, "bt") && argc >= 2 && argc <= 3 && !strcmp(argv[1], "pair")) {
+		*path = PREFIX "bt/pair";
+		if (argc == 2 || !strcmp(argv[2], "on")) snprintf(body, bc, "{}");
+		else if (!strcmp(argv[2], "off")) snprintf(body, bc, "{\"on\":false}");
+		else return usage(out, cap);
+		return true;
 	}
 	if (!strcmp(cmd, "amp") && argc == 2) {
 		*path = PREFIX "amp";

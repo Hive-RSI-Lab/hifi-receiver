@@ -8,8 +8,8 @@
  * mode "off": Bluedroid and then the controller are disabled (as the sink's
  * own shutdown does, with its 400 ms between them), so the radio is Wi-Fi's
  * alone and modem sleep may be turned off (the espnow experiment's ps none).
- * The stop enables them again and makes the board connectable and
- * discoverable as it is when idle, but the A2DP sink isn't set up again:
+ * The stop enables them again and makes the board connectable (and
+ * discoverable only in pairing mode) as it is when idle, but the A2DP sink isn't set up again:
  * restart the board before playing over Bluetooth. A phone that is connected
  * is dropped. Not on the BLE lab image: lab_ble's GATT apps can't survive a
  * Bluedroid restart.
@@ -17,10 +17,10 @@
  * mode "quiet": Bluetooth stays up, but neither connectable nor discoverable
  * (no page or inquiry scans) and the coexistence prefers Wi-Fi: what a
  * product image could do while nothing is paired. The stop puts both back
- * (connectable, discoverable, balanced). It is for a board with no phone
- * on it: refused while Bluetooth plays. The sink keeps no "connected" state
- * the lab can read, so a phone connected but not playing at the stop leaves
- * the board discoverable until it drops (the sink hides it on a connect).
+ * (connectable, discoverable only in pairing mode, balanced). It is for a
+ * board with no phone on it: refused while Bluetooth plays. A phone
+ * connected but not playing at the stop leaves the board connectable until
+ * it drops (the sink makes it unconnectable on a connect).
  *
  * Nothing is sent or received; the run lasts until stopped or its deadline.
  */
@@ -50,6 +50,8 @@ static const char *TAG = "lab_bt";
 #pragma weak esp_bluedroid_enable
 #pragma weak esp_bluedroid_disable
 #pragma weak esp_bt_gap_set_scan_mode
+/* the sink is hidden unless pairing mode is on (hifi_pair.h) */
+extern bool bt_sink_discoverable(void) __attribute__((weak));
 
 static esp_bluedroid_status_t bd_status(void) {
 	return esp_bluedroid_get_status ? esp_bluedroid_get_status() : ESP_BLUEDROID_STATUS_UNINITIALIZED;
@@ -206,7 +208,8 @@ static bool stop(void) {
 	} else if ((e = esp_coex_preference_set(ESP_COEX_PREFER_BALANCE)) != ESP_OK)
 		note(err_stop, sizeof(err_stop), "esp_coex_preference_set", e);
 	if (bd_status() == ESP_BLUEDROID_STATUS_ENABLED && !(hifi_sink_source && hifi_sink_source() == 2) &&
-	    (e = esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE)) != ESP_OK)
+	    (e = esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, bt_sink_discoverable && bt_sink_discoverable()
+							      ? ESP_BT_GENERAL_DISCOVERABLE : ESP_BT_NON_DISCOVERABLE)) != ESP_OK)
 		note(err_stop, sizeof(err_stop), "esp_bt_gap_set_scan_mode", e);
 	on_ms = (uint32_t) ((esp_timer_get_time() - t_stop) / 1000);
 	active = false;
