@@ -22,17 +22,20 @@ void hifi_lab_esp_selftest(hifi_selftest_t *t);
  * Any task (not an ISR), never under the lab's lock. */
 void hifi_lab_esp_finished(const char *name, uint32_t run, bool ok);
 
-/* the experiments (esp/lab_*.c) */
-extern const hifi_lab_exp_t lab_espnow;
-extern const hifi_lab_exp_t lab_forge; /* a stranger forging the espnow run's frames */
+/* the experiments (esp/lab_*.c). All but lab_i2c are weak: only the app
+ * pulls them in (patch 0035 adds -u for espnow, forge, lanscan, wifidrop and
+ * crafted; 0017, 0027 and 0034 the rest), so the recovery image keeps the lab
+ * frame and the read-only I2C one and stays inside its slot. */
+extern const hifi_lab_exp_t lab_espnow __attribute__((weak));
+extern const hifi_lab_exp_t lab_forge __attribute__((weak)); /* a stranger forging the espnow run's frames */
 /* lab_bt, lab_a2dp and lab_ble are weak: only the app pulls them in (patch
  * 0017 adds -u lab_bt/lab_a2dp/lab_ble to its link), so the recovery image leaves them out and,
  * with them, the Bluedroid host they reach (it would not fit its slot). */
 extern const hifi_lab_exp_t lab_bt __attribute__((weak));  /* images with Classic Bluetooth (CONFIG_BT_CLASSIC_ENABLED) */
 extern const hifi_lab_exp_t lab_a2dp __attribute__((weak)); /* the same images: a real A2DP stream between two boards */
-extern const hifi_lab_exp_t lab_lanscan;
-extern const hifi_lab_exp_t lab_wifidrop;
-extern const hifi_lab_exp_t lab_crafted; /* a crafted packet or stream for the ALAC and MP3 decoders */
+extern const hifi_lab_exp_t lab_lanscan __attribute__((weak));
+extern const hifi_lab_exp_t lab_wifidrop __attribute__((weak));
+extern const hifi_lab_exp_t lab_crafted __attribute__((weak)); /* a crafted packet or stream for the ALAC and MP3 decoders */
 extern const hifi_lab_exp_t lab_i2c; /* read-only: the board's I2C chips (esp/lab_i2c.c) */
 extern const hifi_lab_exp_t lab_ble __attribute__((weak)); /* the BLE lab image only (CONFIG_BT_BLE_ENABLED) */
 /* the lab-radio image only (CONFIG_HIFI_LAB_PSRAM_STACKS): weak and pulled
