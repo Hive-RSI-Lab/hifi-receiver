@@ -712,6 +712,20 @@ rate controller and the heap, for the bench's `party_run.py`. Of `old`,
 they came: up to 6 packets behind the one playing, 12, 37, 75, more (about
 50, 100, 300, 600 ms).
 
+The a7fcd-r3 lab build only, for the power-save test
+(`projects/hifi-lite-lab/party-mode.md`, 8.13):
+
+- `POST /api/v1/party` `{"op": "ps", "mode": "none"|"min"}` from USB or the
+  Hive (403 from the LAN) sets the station's power save. `none` is 409
+  while the Bluetooth controller is on: with it, the coexistence code panics.
+  Works with party off too.
+- `GET /api/v1/party/wifi`: the power-save mode (`ps`), the Wi-Fi blob's own
+  counters, read from libpp's `g_lmac_cnt` and `g_pm_cnt` (IDF 4.4.8's
+  layout): `tx`, five queues of `[sent, long retries, short retries, aged,
+  timed out]` (the retry counts wrap at 256); `rx` by kind and the MAC's
+  `suc`, `end`, `full1`, `full2`; `pm`, the power-save counts with the time
+  asleep (`slept_s`) and the whole time (`total_s`).
+
 ## Wi-Fi and updates from the app
 
 ### `GET /api/v1/wifi/scan`

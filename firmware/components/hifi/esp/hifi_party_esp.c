@@ -41,6 +41,12 @@
 #include "esp_task.h"
 #include "esp_timer.h"
 #include "esp_wifi.h"
+/* LAB ONLY (a7fcd-r3): the power-save switch and Wi-Fi counters, built into
+ * a lite-main image so step 0 compares with round 2's images. */
+#define HIFI_PARTY_WIFI_LAB 1
+#if HIFI_PARTY_WIFI_LAB && CONFIG_BT_ENABLED
+#include "esp_bt.h"
+#endif
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
@@ -1345,6 +1351,76 @@ static void wake(void) {
 	if (worker) xTaskNotifyGive(worker);
 }
 
+#if HIFI_PARTY_WIFI_LAB
+/* The Wi-Fi blob's own counters (libpp's pp_debug.o, IDF 4.4.8), which it
+ * prints only to the console (esp_wifi_statis_dump). The layout is read off
+ * dbg_lmac_rxtx_statis_dump and dbg_lmac_ps_statis_dump: g_lmac_cnt holds, from
+ * byte 120, five tx queues of {u32 tx_all; u8 lrc, src, age, to} (the retry
+ * counts wrap at 256), then the rx counts by kind; g_pm_cnt the power-save
+ * counts, with the time asleep and the whole time as u64 microseconds. Lab
+ * images only: another IDF moves them. */
+extern uint32_t g_lmac_cnt[45];
+extern uint32_t g_pm_cnt[18];
+/* rx_suc, rx_end, full#1, full#2: the MAC's own registers, as the dump reads them */
+#define WIFI_RX_REG(a) (*(volatile uint32_t *) (a))
+
+static void wifi_json(hj_t *j) {
+	wifi_ps_type_t ps = WIFI_PS_NONE;
+	esp_wifi_get_ps(&ps);
+	hj_str(j, "ps", ps == WIFI_PS_NONE ? "none" : ps == WIFI_PS_MIN_MODEM ? "min" : "max");
+	const uint8_t *b = (const uint8_t *) g_lmac_cnt;
+	hj_arr(j, "tx"); /* per queue: [tx_all, lrc, src, age, to] */
+	for (int q = 0; q < 5; q++) {
+		const uint8_t *e = b + 120 + 8 * q;
+		uint32_t all;
+		memcpy(&all, e, 4);
+		hj_arr(j, NULL);
+		hj_int(j, NULL, all);
+		for (int i = 4; i < 8; i++) hj_int(j, NULL, e[i]);
+		hj_arr_end(j);
+	}
+	hj_arr_end(j);
+	hj_obj(j, "rx");
+	hj_int(j, "ampdu", g_lmac_cnt[40]);
+	hj_int(j, "mpdu", g_lmac_cnt[41]);
+	hj_int(j, "mgmt", g_lmac_cnt[42]);
+	hj_int(j, "ctrl", g_lmac_cnt[43]);
+	hj_int(j, "frag", (uint16_t) g_lmac_cnt[44]);
+	hj_int(j, "suc", WIFI_RX_REG(0x3ff732cc));
+	hj_int(j, "end", WIFI_RX_REG(0x3ff732d0));
+	hj_int(j, "full1", WIFI_RX_REG(0x3ff732ac));
+	hj_int(j, "full2", WIFI_RX_REG(0x3ff732dc));
+	hj_obj_end(j);
+	static const char *pm[] = {"beacon", "tbtt", "timset", "dtimset", "tbttdrm", "actto", "txwake", "null1", "null0", "bcndly", "sleep", "wake"};
+	hj_obj(j, "pm");
+	for (int i = 0; i < 12; i++) hj_int(j, pm[i], g_pm_cnt[i]);
+	uint64_t slept, total;
+	memcpy(&slept, &g_pm_cnt[12], 8);
+	memcpy(&total, &g_pm_cnt[16], 8);
+	hj_int(j, "waket", g_pm_cnt[14]);
+	hj_num(j, "slept_s", (double) slept / 1e6, 1);
+	hj_num(j, "total_s", (double) total / 1e6, 1);
+	hj_obj_end(j);
+}
+
+/* op ps: the station's power save, for the party power-save test
+ * (party-mode.md 8.13). none is refused while the Bluetooth controller is
+ * on: the coexistence code panics a few seconds later (lab_espnow.c). */
+static int set_ps(const char *body, char *out, size_t cap) {
+	char m[8];
+	if (!body || !hj_get_str(body, "mode", m, sizeof(m)) || (strcmp(m, "none") && strcmp(m, "min")))
+		return err(out, cap, 400, "mode must be none or min");
+	bool none = !strcmp(m, "none");
+#if CONFIG_BT_ENABLED
+	if (none && esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_ENABLED)
+		return err(out, cap, 409, "the Bluetooth controller is on: power save none would panic the coexistence code");
+#endif
+	esp_err_t e = esp_wifi_set_ps(none ? WIFI_PS_NONE : WIFI_PS_MIN_MODEM);
+	if (e != ESP_OK) return err(out, cap, 503, esp_err_to_name(e));
+	return 0;
+}
+#endif
+
 /* party (GET: the state; POST: op on|off|lead, and from the Hive or USB
  * only, key and tone) and party/stats. Returns the HTTP status. */
 int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *out, size_t cap) {
@@ -1358,12 +1434,30 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 		hj_obj_end(&j);
 		return 200;
 	}
+#if HIFI_PARTY_WIFI_LAB
+	if (sub && !strcmp(sub, "wifi")) {
+		if (post) return err(out, cap, 405, "party/wifi is read with GET");
+		hj_init(&j, out, cap);
+		hj_obj(&j, NULL);
+		wifi_json(&j);
+		hj_obj_end(&j);
+		return 200;
+	}
+#endif
 	if (sub && *sub) return err(out, cap, 404, "no such party route");
 	if (post) {
 		char op[16];
 		if (!body || !hj_get_str(body, "op", op, sizeof(op))) return err(out, cap, 400, "op must be on, off, lead, key or tone");
 		bool key = !strcmp(op, "key"), tone = !strcmp(op, "tone");
 		if ((key || tone) && lan) return err(out, cap, 403, "the party key and the test tone are set by the Hive or over USB, not from the LAN");
+#if HIFI_PARTY_WIFI_LAB
+		if (!strcmp(op, "ps")) {
+			if (lan) return err(out, cap, 403, "power save is set by the Hive or over USB, not from the LAN");
+			int r = set_ps(body, out, cap);
+			if (r) return r;
+			goto state;
+		}
+#endif
 		if (!alloc_once()) return err(out, cap, 503, "out of memory");
 		if (key) {
 			char hex[2 * HIFI_PARTY_SECRET + 2];
@@ -1426,6 +1520,9 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 		/* the worker takes on and off within its 200 ms wait */
 		for (int i = 0; i < 30 && (want_on && have_secret) != active; i++) vTaskDelay(pdMS_TO_TICKS(20));
 	}
+#if HIFI_PARTY_WIFI_LAB
+state:
+#endif
 	hj_init(&j, out, cap);
 	hj_obj(&j, NULL);
 	state_json(&j);
