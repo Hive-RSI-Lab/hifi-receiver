@@ -1190,6 +1190,11 @@ static void state_json(hj_t *j) {
 	hj_str(j, "why", active ? (g->why ? g->why : "") : (want_on && !have_secret ? "no party key" : ""));
 	if (active && g->full) hj_bool(j, "full", true);
 	if (active && g->other_ap) hj_bool(j, "other_ap", true);
+	if (active) {
+		/* a leader joined with no CLOCK: its announces skipped this much longer */
+		uint32_t left = hifi_party_group_skip_ms(g, ms_now());
+		if (left) hj_int(j, "skip_s", (int) ((left + 999) / 1000));
+	}
 	gunlock();
 	if (hifi_bt_sink_is_off) hj_bool(j, "bt", !hifi_bt_sink_is_off());
 }
