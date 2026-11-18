@@ -322,8 +322,10 @@ with `Access-Control-Allow-Origin: <that origin>`, only when:
 - the Host header is still this box's own name or IP (so DNS rebinding stays
   shut);
 - and the route is one the Speakers page uses: `GET info`, `state`,
-  `state/<section>`, `peers` and `party`, and `POST volume`, `name`,
-  `control`, `party` and `bt/pair`.
+  `state/<section>`, `peers` and `party`, and `POST volume`, `control` and
+  `party`. Renaming and *Pair a new phone* open that box's own page, so
+  they stay same-origin: a page elsewhere on the subnet can't make every
+  box findable to strangers' phones through a visitor's browser.
 
 Wi-Fi, updates, reboot, reset, IR, the log and squeezelite's own pages stay
 same-origin. A page on the internet can't send such an Origin. This does

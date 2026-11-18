@@ -186,7 +186,11 @@ bool hifi_gate_cross_path(const char *path, const char *method) {
 		return false;
 	}
 	if (!strcmp(method, "POST")) {
-		static const char *const post[] = {"volume", "name", "control", "party", "bt/pair"};
+		/* what a Speakers card sends to another box: renaming and "Pair a
+		 * new phone" open that box's own page and stay same-origin, so a
+		 * page elsewhere on the subnet can't make every box findable to
+		 * strangers' phones or rename it through a visitor's browser */
+		static const char *const post[] = {"volume", "control", "party"};
 		return word_in(r, n, post, sizeof(post) / sizeof(post[0]));
 	}
 	return false;
