@@ -340,9 +340,16 @@ int hifi_party_group_tick(hifi_party_group_t *g, uint32_t now, uint32_t rnd, boo
 		if (lost) {
 			if (!g->clocked && !g->full) {
 				/* joined, never one CLOCK: a played-back announce, or a
-				 * leader that can't reach us. Skip it from now on. */
+				 * leader that can't reach us. Skip it for a while, longer
+				 * each time the same one fails again. */
+				bool again = g->dead_ms && g->dead_group == g->group && g->dead_term == g->term;
+				g->dead_ms = !again ? HIFI_PARTY_DEAD_MS
+						    : g->dead_ms >= HIFI_PARTY_DEAD_MAX_MS / 2 ? HIFI_PARTY_DEAD_MAX_MS
+											: g->dead_ms * 2;
 				g->dead_group = g->group;
 				g->dead_term = g->term;
+				g->dead_at = now;
+				g->dead = true;
 			}
 			g->losses++;
 			go_listen(g, now, rnd, true);
@@ -361,7 +368,8 @@ int hifi_party_group_tick(hifi_party_group_t *g, uint32_t now, uint32_t rnd, boo
 
 int hifi_party_group_announce(hifi_party_group_t *g, uint32_t now, const hifi_party_announce_t *a) {
 	if (g->role == HIFI_PARTY_ROLE_OFF || a->ip == g->self_ip) return 0;
-	if (a->group == g->dead_group && a->term <= g->dead_term) {
+	if (g->dead && since(now, g->dead_at, g->dead_ms)) g->dead = false; /* tried again */
+	if (g->dead && a->group == g->dead_group && a->term <= g->dead_term) {
 		g->replays++;
 		return 0;
 	}
@@ -483,6 +491,12 @@ bool hifi_party_group_heard(hifi_party_group_t *g, uint32_t now, uint32_t ip, ui
 	}
 	g->clock_seq = seq;
 	g->clocked = true;
+	if (g->group == g->dead_group) { /* it was a real leader after all */
+		g->dead = false;
+		g->dead_group = 0;
+		g->dead_term = 0;
+		g->dead_ms = 0;
+	}
 	g->last_heard = now;
 	g->full = false;
 	g->why = "";

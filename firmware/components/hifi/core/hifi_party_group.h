@@ -33,10 +33,15 @@
  * one can be played back once an AP's TSF restarts). A follower that hears
  * no CLOCK for HIFI_PARTY_LOSS_MS mutes and listens again, but never leads
  * by itself (it would lead silence); and if it never had one CLOCK from that
- * group, the group is marked dead and its announces are skipped until one
- * comes with a higher term. A follower the leader has no room for (not in
- * the announce's list) keeps sending JOINs and waits, alive while the
- * leader's announces come.
+ * group, the group is marked dead and its announces are skipped for
+ * HIFI_PARTY_DEAD_MS, or until one comes with a higher term. The mark
+ * expires so that a real leader whose CLOCKs were lost (a busy channel, a
+ * JOIN that didn't get through) is joined again; each time the same group
+ * and term is marked again the wait doubles, up to HIFI_PARTY_DEAD_MAX_MS,
+ * so an announce played back again and again costs a short follow once a
+ * minute at most. A CLOCK from the group clears the mark. A follower the
+ * leader has no room for (not in the announce's list) keeps sending JOINs
+ * and waits, alive while the leader's announces come.
  *
  * IPv4 addresses are host-order uint32 here; times are ms from any clock
  * that wraps at 2^32 (compared by difference).
@@ -61,6 +66,8 @@
 #define HIFI_PARTY_STRANGER_SRCS 8     /* addresses whose share the board keeps */
 #define HIFI_PARTY_OTHER_AP_SLACK_US 500000 /* an off-TSF announce's clock may run this far from ours between two */
 #define HIFI_PARTY_JOIN_SEEN 8         /* JOIN senders whose last TSF the leader keeps */
+#define HIFI_PARTY_DEAD_MS 10000u      /* a group joined with no CLOCK is skipped this long */
+#define HIFI_PARTY_DEAD_MAX_MS 60000u  /* the same group and term again: the wait doubles up to this */
 
 typedef enum {
 	HIFI_PARTY_ROLE_OFF = 0,
@@ -118,8 +125,10 @@ typedef struct {
 	hifi_party_announce_t best;
 	uint32_t best_at;
 	bool heap_low;        /* the last tick's low_heap */
-	uint32_t dead_group;  /* joined, never had a CLOCK: skipped */
+	uint32_t dead_group;  /* joined, never had a CLOCK: skipped while dead */
 	int64_t dead_term;
+	bool dead;            /* dead_group is skipped until dead_at + dead_ms */
+	uint32_t dead_at, dead_ms; /* dead_ms stays set after it expires: the next wait for the same group doubles */
 	uint32_t other_ap_at; /* last announce whose tag checked but whose TSF was off, confirmed by an earlier one */
 	bool other_ap;
 	uint32_t off_ip, off_at; /* the last off-TSF announce: from, when, its TSF */

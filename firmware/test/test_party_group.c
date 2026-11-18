@@ -32,6 +32,7 @@ typedef struct {
 	uint32_t gkey_group;
 	uint32_t rnd;
 	bool source, low_heap;
+	bool deaf_clock; /* CLOCKs to it are lost on the air */
 	bool line; /* input=line, and line in holds the output (source 6) */
 	int64_t nvs_term; /* NVS: kept across a power cut */
 	bool nvs_picked;
@@ -187,6 +188,7 @@ static void receive(board_t *b, const dgram_t *d) {
 		break;
 	}
 	case HIFI_PARTY_CLOCK:
+		if (b->deaf_clock) break;
 		if (p.group == b->g.group && hifi_party_group_heard(&b->g, L.now, d->src, p.seq)) {
 			b->clocks++;
 			if (p.flags & HIFI_PARTY_F_NOAUDIO) b->noaudio_seen = true;
@@ -722,6 +724,64 @@ static void lossy(void) {
 	CHECK(L.b[b].lost + L.b[c].lost + L.b[d].lost == 0);
 }
 
+/* run until the follower's role is r, at most max ms: the ms it took, or -1 */
+static int until_role(int i, hifi_party_role_t r, uint32_t max) {
+	for (uint32_t t = 0; t <= max; t += STEP) {
+		if (role(i) == r) return (int) t;
+		step();
+	}
+	return -1;
+}
+
+/* a follower that never had a CLOCK from its leader (the leader is real,
+ * its CLOCKs were lost) skips it for a while, then joins it again by itself */
+static void missed_clock(void) {
+	reset(0);
+	int a = add("A", 10, 1), b = add("B", 11, 1);
+	switch_on(a);
+	run(3000);
+	L.b[b].deaf_clock = true;
+	switch_on(b);
+	CHECK(until_role(b, HIFI_PARTY_ROLE_FOLLOWER, 4000) >= 0);
+	CHECK(until_role(b, HIFI_PARTY_ROLE_LISTENING, 4000) >= 0);
+	CHECK(L.b[b].lost == 1 && L.b[b].g.orphan && L.b[b].g.dead && L.b[b].g.dead_group == L.b[a].g.group);
+	CHECK(L.b[b].g.dead_ms == HIFI_PARTY_DEAD_MS);
+	L.b[b].deaf_clock = false; /* the air clears */
+	uint32_t rep = L.b[b].g.replays;
+	run(HIFI_PARTY_DEAD_MS - 500);
+	CHECK(role(b) == HIFI_PARTY_ROLE_LISTENING && L.b[b].g.replays > rep); /* still skipped */
+	CHECK(until_role(b, HIFI_PARTY_ROLE_FOLLOWER, 1600) >= 0); /* the next announce after the wait */
+	run(1000);
+	CHECK(follows(b, a) && L.b[b].g.clocked && L.b[a].g.npeers == 1);
+	CHECK(!L.b[b].g.dead && L.b[b].g.dead_group == 0 && L.b[b].g.dead_ms == 0); /* a real leader: forgotten */
+	run(30000);
+	CHECK(follows(b, a) && L.b[b].lost == 1);
+
+	/* the CLOCKs stay lost: each new try waits twice as long, up to the cap */
+	reset(0);
+	a = add("A", 10, 1);
+	b = add("B", 11, 1);
+	switch_on(a);
+	run(3000);
+	L.b[b].deaf_clock = true;
+	switch_on(b);
+	CHECK(until_role(b, HIFI_PARTY_ROLE_FOLLOWER, 4000) >= 0);
+	CHECK(until_role(b, HIFI_PARTY_ROLE_LISTENING, 4000) >= 0);
+	uint32_t want[] = {HIFI_PARTY_DEAD_MS, 2 * HIFI_PARTY_DEAD_MS, 4 * HIFI_PARTY_DEAD_MS, HIFI_PARTY_DEAD_MAX_MS,
+			   HIFI_PARTY_DEAD_MAX_MS};
+	for (int k = 0; k < 5; k++) {
+		CHECK(L.b[b].g.dead_ms == want[k] && L.b[b].lost == k + 1);
+		int t = until_role(b, HIFI_PARTY_ROLE_FOLLOWER, want[k] + 1600);
+		CHECK(t >= (int) want[k] && t <= (int) want[k] + 1100);
+		CHECK(until_role(b, HIFI_PARTY_ROLE_LISTENING, 4000) >= 0);
+	}
+	CHECK(leaders() == 1 && role(a) == HIFI_PARTY_ROLE_LEADER); /* the orphan never leads */
+	L.b[b].deaf_clock = false;
+	CHECK(until_role(b, HIFI_PARTY_ROLE_FOLLOWER, HIFI_PARTY_DEAD_MAX_MS + 1600) >= 0);
+	run(1000);
+	CHECK(follows(b, a) && L.b[b].g.clocked && L.b[b].g.dead_ms == 0);
+}
+
 static void new_address(void) {
 	reset(0);
 	int a = add("A", 10, 1), b = add("B", 11, 1);
@@ -918,6 +978,7 @@ int main(void) {
 	low_heap();
 	other_ap();
 	lossy();
+	missed_clock();
 	new_address();
 	return check_report("party_group");
 }
