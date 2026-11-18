@@ -38,8 +38,9 @@ void hifi_chan_gain(hifi_chan_t c, int side, float g[2]);
  * The self-test's loopback check (docs/test-api.md, "loopback"): a tone on
  * the left side, then the right, read back on both taps, got[side][leg] in
  * RMS full scale. A leg the channel mode routes the side to reads within
- * tol_db of want_fs times its gain (hifi_chan_gain): HIFI_LOOP_TOL_DB, plus
- * whatever the EQ may add. One it doesn't route the side to reads
+ * tol_db of want_fs times its gain (hifi_chan_gain). The self-test measures
+ * with the EQ skipped and stereo routing, so it passes HIFI_CHAN_STEREO and
+ * HIFI_LOOP_TOL_DB. One it doesn't route the side to reads
  * HIFI_LOOP_OFF_DB under want_fs or more. Writes the value, each reading in
  * dB against want_fs, and returns whether all four pass.
  */
