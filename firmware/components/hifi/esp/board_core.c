@@ -380,6 +380,14 @@ void hifi_bsp_power_in(uint32_t now, hifi_bsp_power_t *p) {
 	}
 }
 
+/* The quiet stop (hifi_quiet.h): the core board's amps leave shutdown
+ * through the I/O expander, under its lock, so they go into it on the power
+ * task's next step (hifi_main.c holds them there); the Sabre's own volume is
+ * squeezelite's to ramp. */
+void hifi_bsp_quiet_level(float frac) { (void) frac; }
+void hifi_bsp_quiet_mute(bool on) { (void) on; }
+void hifi_bsp_amp_off_now(void) {}
+
 void hifi_bsp_power_out(const hifi_power_out_t *o) {
 	bool a = o->amp_on, b = a && (zone_b || HIFI_SPLIT);
 	/* zone B runs off zone A's clock and syncs only when both leave reset

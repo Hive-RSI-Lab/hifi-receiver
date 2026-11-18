@@ -27,6 +27,15 @@ void hifi_main_knob(int detents);
 bool hifi_main_amp_latched(void);
 bool hifi_main_audio_active(void); /* something plays above about -77 dBFS */
 void hifi_main_gov_amps(int n);    /* stereo amps playing: 2 with Ultra's zone B */
+/* The quiet stop (hifi_quiet.h): ramps the outputs down, mutes the DAC and
+ * puts the amps into shutdown, once, and holds them there. Every planned
+ * restart (the esp_restart wrap, hifi_crash.c) and every update (the OTA
+ * writer, before the slot opens) calls it first. From an ISR, or with the
+ * scheduler stopped, it only drops the amp. why goes to the log. */
+void hifi_quiet_stop(const char *why);
+/* An update that failed or was abandoned: the DAC unmutes, the routing goes
+ * back on and the amp comes back after a short hold. */
+void hifi_quiet_release(void);
 /* The address the box is reached at: the active network interface's (Wi-Fi
  * station or Ethernet; never the setup access point's). False, and ip "",
  * with none up. ip may be NULL. */

@@ -40,6 +40,8 @@
 /* ES8388 registers this component touches (datasheet rev 5.0) */
 #define ES8388_ADCPOWER 0x03 /* bit7/6 power down the analog inputs */
 #define ES8388_DACPOWER 0x04 /* bits 5..2: LOUT1 ROUT1 LOUT2 ROUT2 on */
+#define ES8388_DACCONTROL3 0x19  /* bit2 mutes the DAC (soft ramp: squeezelite's controlset sets bit5) */
+#define ES8388_DAC_MUTE 0x04
 #define ES8388_DACCONTROL17 0x27 /* left mixer: bit7 DAC, bit6 LIN, bits5:3 LIN gain */
 #define ES8388_DACCONTROL20 0x2A /* right mixer, same layout */
 #define ES8388_LOUT1VOL 0x2E /* speaker amp L: same scale as LOUT2 */

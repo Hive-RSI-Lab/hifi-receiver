@@ -86,6 +86,38 @@ designer on 2026-10-28.
 - **Idle:** after 10 minutes of digital silence the amp goes into shutdown
   (PVDD stays up); the first non-silent block wakes it.
 
+### The quiet stop (`core/hifi_quiet.c`)
+
+No planned restart or update may put a pop, click or burst on a connected
+speaker. `hifi_quiet_stop()` (`esp/hifi_main.c`) runs once before any of them:
+
+1. ramp the outputs down over 200 ms in 10 steps (Lite: LOUT1/ROUT1 and the
+   sub outs LOUT2/ROUT2 toward 0, −45 dB);
+2. soft-mute the DAC (ES8388 DACCONTROL3 bit 2) and wait 25 ms;
+3. put the amp into shutdown (Lite: SDZ low at once; the core board: the
+   power task's next step, which also stops the routing from raising the
+   outputs again) and wait 30 ms;
+4. only then restart, or open the app slot for an update.
+
+- **Every restart goes through it.** The link wraps `esp_restart`
+  (`-Wl,--wrap`), and `__wrap_esp_restart` (`esp/hifi_crash.c`) runs the
+  quiet stop after it notes the restart cause. That covers `api reboot`,
+  the Wi-Fi and network restarts, the restart after an update, the held
+  restart after a trial, and IDF's own rollback
+  (`esp_ota_mark_app_invalid_rollback_and_reboot` calls `esp_restart`).
+  From an ISR or before the scheduler runs, it only drops the amp.
+- **An update goes quiet before it writes.** The relay's OTA writer
+  (`esp/hifi_relay.c` `f_open`) calls it before `esp_ota_begin`, since
+  erasing the slot stalls the audio; an update that fails or is aborted
+  calls `hifi_quiet_release()`, which gives the sound back.
+- **At boot the amp stays off** until the codec answers, our routing is
+  on it and 2.5 s more have passed (`hifi_quiet_amp_allowed`); the recovery
+  app never turns it on.
+- **The stream isn't paused**, only muted: whatever plays is cut at −∞ by
+  the mute and the amp, and squeezelite stops when the chip restarts.
+- **Checked by** `test/test_quiet.c` (the order and timings, the boot gate)
+  and `test/test_quiet_paths.py` (every restart and update path calls it).
+
 ### The PD contract (`core/hifi_pd.c`)
 
 The CH224A's status register (0x09) says which protocol was negotiated and

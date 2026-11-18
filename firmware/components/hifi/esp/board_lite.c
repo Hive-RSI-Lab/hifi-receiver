@@ -16,6 +16,7 @@
 #include "hifi_chan.h"
 #include "hifi_esp.h"
 #include "hifi_pd.h"
+#include "hifi_quiet.h"
 
 static esp_adc_cal_characteristics_t adc_chars;
 static uint32_t last_pd;
@@ -76,6 +77,37 @@ void hifi_bsp_power_out(const hifi_power_out_t *o) {
 	gpio_set_level(PIN_PVDD_EN, o->pvdd_en);
 	if (o->amp_on) gpio_set_level(PIN_AMP_SDZ, 1);
 }
+
+/* The quiet stop (hifi_quiet.h). The speaker outputs (LOUT1/ROUT1, which
+ * also carry DJ direct's analog bypass) and the sub outs (LOUT2/ROUT2) ramp
+ * from the codes they held to 0 (-45 dB); the DAC then soft-mutes. The sub
+ * outs have no amp of their own to shut down: they end at -45 dB, muted. */
+static const uint8_t quiet_regs[4] = {ES8388_LOUT1VOL, ES8388_ROUT1VOL, ES8388_LOUT2VOL, ES8388_ROUT2VOL};
+static int quiet_start[4] = {-1, -1, -1, -1};
+static int quiet_dac3 = -1;
+
+void hifi_bsp_quiet_level(float frac) {
+	for (int i = 0; i < 4; i++) {
+		uint8_t v;
+		if (quiet_start[i] < 0 && hifi_i2c_read(ES8388_ADDR, quiet_regs[i], &v) == ESP_OK) quiet_start[i] = v & 0x3F;
+		if (quiet_start[i] >= 0) hifi_i2c_write(ES8388_ADDR, quiet_regs[i], hifi_quiet_code(quiet_start[i], frac));
+		if (frac >= 1) quiet_start[i] = -1; /* put back: the next ramp reads them again */
+	}
+}
+
+void hifi_bsp_quiet_mute(bool on) {
+	uint8_t v;
+	if (on) {
+		if (quiet_dac3 < 0 && hifi_i2c_read(ES8388_ADDR, ES8388_DACCONTROL3, &v) == ESP_OK) quiet_dac3 = v;
+		if (quiet_dac3 >= 0) hifi_i2c_write(ES8388_ADDR, ES8388_DACCONTROL3, quiet_dac3 | ES8388_DAC_MUTE);
+	} else if (quiet_dac3 >= 0) {
+		hifi_i2c_write(ES8388_ADDR, ES8388_DACCONTROL3, quiet_dac3);
+		quiet_dac3 = -1;
+	}
+}
+
+/* R52 holds SDZ low through the reset that follows */
+void hifi_bsp_amp_off_now(void) { gpio_set_level(PIN_AMP_SDZ, 0); }
 
 /* ------------------------------------------------------------------ codec */
 
