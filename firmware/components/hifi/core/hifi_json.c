@@ -193,25 +193,88 @@ static const char *find(const char *json, const char *k) {
 	return NULL;
 }
 
+static int hex4(const char *p) {
+	int v = 0;
+	for (int d = 0; d < 4; d++) {
+		char c = p[d];
+		v <<= 4;
+		if (c >= '0' && c <= '9') v |= c - '0';
+		else if (c >= 'a' && c <= 'f') v |= c - 'a' + 10;
+		else if (c >= 'A' && c <= 'F') v |= c - 'A' + 10;
+		else return -1;
+	}
+	return v;
+}
+
+/* Decodes a JSON string: every escape JSON has, \uXXXX as UTF-8 (a pair of
+ * surrogates as one character). A string that can't be a C string (\u0000)
+ * or isn't valid JSON (an unknown escape, bad hex, a lone surrogate) is
+ * refused, leaving out "". A long one is cut at a whole character and still terminated. */
 bool hj_get_str(const char *json, const char *k, char *out, size_t n) {
 	const char *p = find(json, k);
 	if (!p || *p != '"' || !n) return false;
 	size_t i = 0;
-	for (p++; *p && *p != '"'; p++) {
-		char c = *p;
-		if (c == '\\') {
-			c = *++p;
-			if (c == 'n') c = '\n';
-			else if (c == 't') c = '\t';
-			else if (c == 'u') { /* keep it simple: non-ASCII escapes become '?' */
-				c = '?';
-				for (int d = 0; d < 4 && p[1]; d++) p++;
+	bool full = false;
+	for (p++; *p != '"'; p++) {
+		if (!*p) goto bad;
+		char b[4];
+		int len = 1;
+		b[0] = *p;
+		if (*p == '\\') {
+			switch (*++p) {
+			case '"': case '\\': case '/': b[0] = *p; break;
+			case 'b': b[0] = '\b'; break;
+			case 'f': b[0] = '\f'; break;
+			case 'n': b[0] = '\n'; break;
+			case 'r': b[0] = '\r'; break;
+			case 't': b[0] = '\t'; break;
+			case 'u': {
+				long cp = hex4(p + 1);
+				if (cp < 0) goto bad;
+				p += 4;
+				if (cp >= 0xdc00 && cp <= 0xdfff) goto bad;
+				if (cp >= 0xd800 && cp <= 0xdbff) {
+					int lo = p[1] == '\\' && p[2] == 'u' ? hex4(p + 3) : -1;
+					if (lo < 0xdc00 || lo > 0xdfff) goto bad;
+					cp = 0x10000 + ((cp - 0xd800) << 10) + (lo - 0xdc00);
+					p += 6;
+				}
+				if (cp == 0) goto bad;
+				if (cp < 0x80) {
+					b[0] = (char) cp;
+				} else if (cp < 0x800) {
+					b[0] = (char) (0xc0 | cp >> 6);
+					b[1] = (char) (0x80 | (cp & 0x3f));
+					len = 2;
+				} else if (cp < 0x10000) {
+					b[0] = (char) (0xe0 | cp >> 12);
+					b[1] = (char) (0x80 | (cp >> 6 & 0x3f));
+					b[2] = (char) (0x80 | (cp & 0x3f));
+					len = 3;
+				} else {
+					b[0] = (char) (0xf0 | cp >> 18);
+					b[1] = (char) (0x80 | (cp >> 12 & 0x3f));
+					b[2] = (char) (0x80 | (cp >> 6 & 0x3f));
+					b[3] = (char) (0x80 | (cp & 0x3f));
+					len = 4;
+				}
+				break;
+			}
+			default: goto bad;
 			}
 		}
-		if (i + 1 < n) out[i++] = c;
+		if (full || i + len >= n) {
+			full = true; /* cut here: nothing after a character that didn't fit */
+			continue;
+		}
+		memcpy(out + i, b, (size_t) len);
+		i += (size_t) len;
 	}
 	out[i] = '\0';
 	return true;
+bad:
+	out[0] = '\0'; /* a caller that ignores the answer reads "" */
+	return false;
 }
 
 bool hj_get_num(const char *json, const char *k, double *out) {

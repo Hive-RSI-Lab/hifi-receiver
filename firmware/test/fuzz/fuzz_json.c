@@ -1,7 +1,8 @@
 /* hifi_json's readers on any text (byte 0 picks the key, the rest is the
  * document), the writer on any string, and the update manifest parser.
- * Properties: a printable ASCII string the writer quotes reads back the
- * same, and what the writer makes is one valid object. */
+ * Properties: any string the writer quotes (control characters and UTF-8
+ * included) reads back the same, and what the writer makes is one valid
+ * object. */
 #include "fuzz_board.h"
 #include "hifi_json.h"
 #include "hifi_update.h"
@@ -40,10 +41,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t n) {
 	FUZZ_ASSERT(strlen(w) < cap);
 	if (!j.overflow) {
 		FUZZ_ASSERT(hj_valid_object(w));
-		bool ascii = sl < 200;
-		for (size_t i = 0; i < sl && ascii; i++) ascii = s[i] >= 0x20 && s[i] < 0x7f;
 		char back[256];
-		if (ascii) {
+		if (sl < sizeof(back)) {
 			FUZZ_ASSERT(hj_get_str(w, key[0] ? key : "k", back, sizeof(back)));
 			FUZZ_ASSERT(!strcmp(back, s));
 		}

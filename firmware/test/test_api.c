@@ -330,6 +330,22 @@ static void amp_input_sub_control(void) {
 	CHECK(call("POST", "/api/v1/name", "{\"name\":\"a\\\\b\"}") == 400);
 	CHECK(call("POST", "/api/v1/name", "{\"name\":\"a\x7f" "b\"}") == 400);
 	CHECK(call("POST", "/api/v1/name", "{\"name\":\"0123456789012345678901234567890123\"}") == 400);
+	/* escapes are decoded before the check: a CR used to be saved as "r" */
+	CHECK(call("POST", "/api/v1/name", "{\"name\":\"Kitchen\\r\"}") == 400);
+	CHECK_HAS(out, "control character");
+	CHECK(call("POST", "/api/v1/name", "{\"name\":\"a\\u001fb\"}") == 400);
+	CHECK(call("POST", "/api/v1/name", "{\"name\":\"a\\u0000b\"}") == 400);
+	CHECK_HAS(out, "control character");
+	CHECK(call("POST", "/api/v1/name", "{\"name\":\"a\\qb\"}") == 400);
+	CHECK_STR(m.name, "Kitchen");
+	CHECK(call("POST", "/api/v1/name", "{\"name\":\"Caf\\u00e9 \\/ Bar\"}") == 200);
+	CHECK_STR(m.name, "Caf\xc3\xa9 / Bar");
+	/* 32 bytes, not characters, as the mock counts: 16 two-byte letters fit, 17 don't */
+	CHECK(call("POST", "/api/v1/name", "{\"name\":\"\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9"
+					    "\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\"}") == 200);
+	CHECK(call("POST", "/api/v1/name", "{\"name\":\"\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9"
+					    "\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\\u00e9\"}") == 400);
+	CHECK(call("POST", "/api/v1/name", "{\"name\":\"Kitchen\"}") == 200);
 
 	CHECK(call("POST", "/api/v1/reset", "{}") == 400);
 	CHECK(!m.reset);
