@@ -22,6 +22,7 @@
 #include "esp_heap_caps.h"
 #include "esp_log.h"
 #include "esp_netif.h"
+#include "esp_ota_ops.h"
 #include "esp_spi_flash.h"
 #include "esp_system.h"
 #include "esp_timer.h"
@@ -58,6 +59,7 @@
 #include "hifi_tap.h"
 #include "hifi_pd.h"
 #include "hifi_power.h"
+#include "hifi_quiet.h"
 #include "hifi_tone.h"
 #include "hifi_vol.h"
 #include "hifi_ws.h"
@@ -76,6 +78,7 @@ extern void equalizer_set_gain(int8_t *gain) __attribute__((weak));
 extern int set_squeezelite_player_name(FILE *f, const char *name) __attribute__((weak));
 extern int set_cspot_player_name(FILE *f, const char *name) __attribute__((weak));
 extern bool bt_sink_pair_mode(void) __attribute__((weak));
+extern void hifi_bt_sink_boot_off(void) __attribute__((weak));
 extern bool hifi_output_gain(unsigned left, unsigned right) __attribute__((weak));
 
 /* ------------------------------------------------------------------ state */
@@ -96,12 +99,23 @@ static EXT_RAM_ATTR hifi_boost_t boost;
 static volatile bool amp_hot; /* the amp's over-temperature warning is held */
 static hifi_chan_t channel = HIFI_CHAN_STEREO;
 static volatile bool codec_dirty = true; /* re-apply input/sub to the codec */
+/* the power task's routes: started counts each one begun, routed is the
+ * started count of the last one that went through. A route begun after a
+ * request reads that request's settings (selftest_loopback waits for one). */
+static volatile uint32_t codec_started, codec_routed;
 /* the amps stay in shutdown until then: across an input change (the analog
  * switch moves only with them off, firmware requirement C5) and for 2.5 s
  * after the codec first takes its routing, so its VMID has settled before
  * the amp hears it (L4); review-3 R3-SYSTEM-5 */
 static volatile uint32_t amp_hold_until, route_at;
 static bool codec_up;
+/* the quiet stop (hifi_quiet_stop): quiet_req stops the routing (and a
+ * step with it set acks in quiet_ack, so a write already begun has landed);
+ * amp_off_req, set only once the ramp and the mute are done, holds the amps
+ * in shutdown (a step with it set acks in amp_ack) */
+static volatile bool quiet_req, quiet_ack, amp_off_req, amp_ack;
+static bool in_recovery; /* recovery plays nothing: its amps stay off */
+static TaskHandle_t power_task_h;
 static uint32_t otw_ms, otw_clear_ms, otw_high_ms; /* the OTW step-down (C2) */
 /* a trip taken as heat (Lite, cap above the default): the last one, the
  * gain trim held until, and when the amp was last off (a short trips at once) */
@@ -109,6 +123,9 @@ static uint32_t heat_trip_ms, trim_hold_until, amp_off_ms;
 static bool heat_trip_any;
 static volatile uint32_t selftest_hold_until; /* keeps the amp awake for the self-test */
 static volatile bool capture_busy;   /* the codec's ADC is ours until the capture ends */
+/* the self-test's loopback check measures with the user's sound settings
+ * out: no EQ or loudness (hifi_eq_bypass), stereo (hifi_chan_mix and the codec) */
+static volatile bool loop_flat;
 
 static hifi_vol_t vol;               /* under lock, like what follows */
 static bool vol_dirty, vol_from_source;
@@ -219,15 +236,20 @@ static void power_task(void *arg) {
 		hifi_bsp_power_in(now, &bp);
 
 		/* the routing: re-applied once the board's parts take it, and on request */
-		if (codec_dirty && !capture_busy && (int32_t) (now - route_at) >= 0) {
+		if (codec_dirty && !capture_busy && !quiet_req && (int32_t) (now - route_at) >= 0) {
 			LOCK();
 			hifi_input_t in = input;
 			bool on = sub_on;
 			float db = sub_db;
 			hifi_vol_t v = vol;
 			UNLOCK();
-			if (hifi_bsp_route(in, on, db, &v, now)) {
-				codec_dirty = false;
+			/* cleared before the route, so a request made while it runs
+			 * (it may have read the old settings) routes again */
+			uint32_t gen = ++codec_started;
+			codec_dirty = false;
+			if (!hifi_bsp_route(in, on, db, &v, now)) codec_dirty = true;
+			else {
+				codec_routed = gen;
 				if (!codec_up) {
 					codec_up = true;
 					amp_hold_until = now + 2500;
@@ -330,9 +352,12 @@ static void power_task(void *arg) {
 		/* until it is chosen again; a charger too small for DJ direct is
 		 * remembered, so a restart after its OCP comes back governed */
 		if (dj_trip) input_changed(HIFI_INPUT_LINE, !strcmp(dj_trip, "contract"));
-		if (!codec_up || (int32_t) (amp_hold_until - now) > 0) o.amp_on = false;
+		bool quiet = quiet_req, amp_off = amp_off_req;
+		if (!hifi_quiet_amp_allowed(codec_up, amp_hold_until, amp_off || in_recovery, now)) o.amp_on = false;
 		if (!o.amp_on) amp_off_ms = now;
 		hifi_bsp_power_out(&o);
+		if (quiet) quiet_ack = true;
+		if (amp_off) amp_ack = true;
 		if (!isnan(heat_cap_saved)) {
 			char hv[12];
 			snprintf(hv, sizeof(hv), "%.1f", heat_cap_saved);
@@ -354,6 +379,93 @@ bool hifi_main_audio_active(void) { return audio_active || tone_active; }
 
 void hifi_main_gov_amps(int n) { gov.amps = n; }
 
+/* ------------------------------------------------------------------ quiet stop */
+
+/* every board ramps squeezelite's digital gain (the core board's only
+ * ramp: its Sabre's volume is squeezelite's); the BSP ramps the codec too */
+static void q_level(void *c, float f) {
+	/* a test tone and DJ direct's line copy play at unity, so they ramp from there;
+	 * a lock held too long skips this step rather than hold up the restart;
+	 * a restart before hifi_init made the lock (factory_boot) has nothing to ramp */
+	if (hifi_output_gain && lock && xSemaphoreTake(lock, pdMS_TO_TICKS(20)) == pdTRUE) {
+		uint32_t base = tone_active || line_unity ? HIFI_VOL_UNITY : hifi_vol_gain(&vol);
+		UNLOCK();
+		uint32_t g = (uint32_t) (base * (f < 0 ? 0 : f > 1 ? 1 : f));
+		hifi_output_gain(g, g);
+	}
+	hifi_bsp_quiet_level(f);
+}
+static void q_mute(void *c) { hifi_bsp_quiet_mute(true); }
+static void q_amp_off(void *c) {
+	amp_ack = false;
+	amp_off_req = true; /* only now, after the ramp and the mute */
+	hifi_bsp_amp_off_now();
+	/* the power task's step with amp_off_req set puts every board's amps
+	 * into shutdown; from the power task itself, the caller's own step does */
+	if (power_task_h && xTaskGetCurrentTaskHandle() != power_task_h)
+		for (int i = 0; i < 10 && !amp_ack; i++) vTaskDelay(pdMS_TO_TICKS(10));
+	hifi_bsp_amp_off_now(); /* once more, in case the power task's step raced the first */
+}
+static void q_sleep(void *c, uint32_t ms) { vTaskDelay(pdMS_TO_TICKS(ms) ? pdMS_TO_TICKS(ms) : 1); }
+static const hifi_quiet_ops_t quiet_ops = {.level = q_level, .mute = q_mute, .amp_off = q_amp_off, .sleep_ms = q_sleep};
+
+static volatile bool quiet_busy, quiet_done, quiet_final;
+static portMUX_TYPE quiet_mux = portMUX_INITIALIZER_UNLOCKED;
+static void apply_volume(void);
+
+void hifi_quiet_stop(const char *why, bool restart) {
+	if (xPortInIsrContext() || xTaskGetSchedulerState() != taskSCHEDULER_RUNNING) {
+		if (restart) quiet_final = true;
+		hifi_bsp_amp_off_now();
+		return;
+	}
+	if (restart) { /* a restart's stop is never released */
+		taskENTER_CRITICAL(&quiet_mux);
+		quiet_final = true;
+		taskEXIT_CRITICAL(&quiet_mux);
+	}
+	while (__atomic_exchange_n(&quiet_busy, true, __ATOMIC_SEQ_CST)) {
+		/* another path is ramping: restart only once it has finished; if a
+		 * release freed it meanwhile, run the whole stop here */
+		int i = 0;
+		while (i++ < 50 && !quiet_done && quiet_busy) vTaskDelay(pdMS_TO_TICKS(10));
+		if (quiet_done) return;
+		if (quiet_busy) {
+			hifi_bsp_amp_off_now();
+			return;
+		}
+	}
+	ESP_LOGI(TAG, "quiet stop: %s", why ? why : "?");
+	quiet_ack = false;
+	quiet_req = true; /* the routing stops here: nothing raises the outputs again */
+	/* a routing write the power task has begun lands before the ramp reads the levels */
+	if (power_task_h && xTaskGetCurrentTaskHandle() != power_task_h)
+		for (int i = 0; i < 5 && !quiet_ack; i++) vTaskDelay(pdMS_TO_TICKS(10));
+	hifi_quiet_run(&quiet_ops);
+	quiet_done = true;
+}
+
+void hifi_quiet_release(void) {
+	/* checked and taken together, so a restart's stop that comes in now
+	 * either finds the stop still done or runs its own afterwards */
+	taskENTER_CRITICAL(&quiet_mux);
+	bool ok = quiet_done && !quiet_final;
+	if (ok) quiet_done = false;
+	taskEXIT_CRITICAL(&quiet_mux);
+	if (!ok) return;
+	ESP_LOGI(TAG, "quiet stop released: the update didn't go ahead");
+	amp_hold_until = now_ms() + 300; /* the routing goes back on with the amps off */
+	hifi_bsp_quiet_release();
+	hifi_bsp_quiet_mute(false);
+	codec_dirty = true;
+	quiet_req = false;
+	amp_off_req = false;
+	__atomic_store_n(&quiet_busy, false, __ATOMIC_SEQ_CST);
+	/* squeezelite's gain back where it plays: unity for a test tone or DJ direct */
+	if (hifi_output_gain && (tone_active || line_unity)) hifi_output_gain(HIFI_VOL_UNITY, HIFI_VOL_UNITY);
+	else apply_volume();
+}
+
 /* ------------------------------------------------------------------ volume */
 
 /* Puts the volume where it plays: squeezelite's gain for streams, the codec
@@ -366,7 +478,9 @@ static void apply_volume(void) {
 	vol_changed_ms = now_ms();
 	UNLOCK();
 	if (direct) codec_dirty = true;
-	if (hifi_output_gain && !tone_active && !line_unity) hifi_output_gain(g, g);
+	if (hifi_party_volume) hifi_party_volume(g);
+	/* a stop holds squeezelite's gain at 0 until it is released */
+	if (hifi_output_gain && !tone_active && !line_unity && !quiet_req) hifi_output_gain(g, g);
 }
 
 /* A source set its volume (set_volume in squeezelite). */
@@ -378,7 +492,7 @@ bool hifi_volume_hook(unsigned *left, unsigned *right) {
 	vol_dirty = true;
 	vol_changed_ms = now_ms();
 	UNLOCK();
-	*left = *right = g;
+	*left = *right = quiet_req ? 0 : g; /* a stop holds the stream silent until released */
 	return !tone_active && !line_unity; /* a test signal (and DJ direct's line copy) plays at unity;
 					      * the volume comes back after */
 }
@@ -390,7 +504,7 @@ static bool volume_is_local(void) {
 	bool here = input == HIFI_INPUT_DJ_DIRECT || input == HIFI_INPUT_LINE;
 	UNLOCK();
 	int s = hifi_sink_source ? hifi_sink_source() : 0;
-	return here || s == 0 || s == 6;
+	return here || s == 0 || s == 6 || s == 7; /* 7: party plays here at this volume */
 }
 
 /* A new input: the amps go to shutdown, the routing moves 30 ms later and
@@ -621,6 +735,8 @@ static void tone_main(void *arg) {
 			hifi_sink_write((const uint8_t *) buf, n * 4);
 		}
 		for (int i = 0; i < 50 && hifi_sink_queued_ms() > 0; i++) vTaskDelay(pdMS_TO_TICKS(10));
+		/* squeezelite's stop puts its saved gain back past our gate: not during a stop */
+		while (quiet_req) vTaskDelay(pdMS_TO_TICKS(20));
 		hifi_sink_stop();
 		apply_volume(); /* anything set while the tone played */
 	}
@@ -655,11 +771,11 @@ static void line_main(void *arg) {
 		}
 		int src = hifi_sink_source ? hifi_sink_source() : 0;
 		if (owns && src != 6) owns = false; /* a tone or a stream took the output */
-		if (!want && owns) {
+		if (!want && owns && !quiet_req) { /* a stop holds the gain where it is */
 			hifi_sink_stop();
 			owns = false;
 		}
-		if (want && ((!owns && src == 0 && !tone_active) || (owns && owned_dj != dj))) {
+		if (want && !quiet_req && ((!owns && src == 0 && !tone_active) || (owns && owned_dj != dj))) {
 			hifi_line_start(LINE_RATE, dj);
 			owns = true;
 			owned_dj = dj;
@@ -741,9 +857,9 @@ static void op_info(hifi_info_t *i) {
 }
 
 static const char *source_name(void) {
-	static const char *names[] = {"idle", "lms", "bt", "airplay", "spotify", "test", "line"};
+	static const char *names[] = {"idle", "lms", "bt", "airplay", "spotify", "test", "line", "party"};
 	int s = hifi_sink_source ? hifi_sink_source() : 0;
-	return s >= 0 && s <= 6 ? names[s] : "idle";
+	return s >= 0 && s <= 7 ? names[s] : "idle";
 }
 
 static void read_eq(float eq[HIFI_EQ_BANDS]) {
@@ -843,6 +959,10 @@ static int op_tone_start(const hifi_tone_params_t *p, bool force, const char **e
 		*err = "this build has no audio output";
 		return 500;
 	}
+	if (quiet_req) { /* squeezelite's unity step would get past the stop's ramp */
+		*err = "a restart or an update is under way";
+		return 409;
+	}
 	LOCK();
 	hifi_pwr_state_t st = power.state;
 	bool latched = power.latched;
@@ -932,8 +1052,8 @@ static int op_set_channel(hifi_chan_t c) {
 	LOCK();
 	channel = c;
 	gov.chan = c;
+	if (!loop_flat) hifi_bsp_channel(c); /* else the loopback check does when it ends */
 	UNLOCK();
-	hifi_bsp_channel(c);
 	config_set_value(NVS_TYPE_STR, "hifi_channel", hifi_chan_name(c));
 	codec_dirty = true;
 	return 0;
@@ -1202,6 +1322,7 @@ static void op_selftest(hifi_selftest_t *t) {
 	}
 	int strays = hifi_listen_now(why, sizeof(why));
 	hifi_selftest_add(t, "listeners", strays == 0, "%s", why);
+	if (hifi_party_selftest) hifi_party_selftest(t);
 #ifdef CONFIG_HIFI_LAB
 	hifi_lab_esp_selftest(t);
 #endif
@@ -1308,16 +1429,18 @@ out:
 
 /*
  * The self-test's speaker path, end to end: a quiet 1 kHz tone on the left
- * side, then the right, read back on the loopback taps and judged against
- * the channel mode's routing (hifi_loop_judge). -50 dBFS is a faint beep on
- * a speaker; on Lite 2 the quiet legs read 40 to 58 dB under it in the
- * 1 kHz bin (once 28 dB, the first run after a boot). 4800 frames hold
- * whole cycles of 1 kHz, so a constant DC drops out of the Goertzel;
- * op_capture's settling wait keeps the ADC's decaying offset out. The
- * test tone goes through the user's EQ, so the tolerance on a fed leg
- * widens by the EQ's largest band. LOOP_TAP_GAIN is the taps' RMS per RMS
- * of the tone, measured on Lite 2 (2026-11-17) with the EQ flat: one leg of
- * the bridge, 1.2 dB under the nominal chain.
+ * side, then the right, read back on the loopback taps and judged as
+ * stereo (hifi_loop_judge). -50 dBFS is a faint beep on a speaker; on
+ * Lite 2 the quiet legs read 40 to 58 dB under it in the 1 kHz bin (once
+ * 28 dB on the first run after a boot, before the detrend). 4800 frames hold
+ * whole cycles of 1 kHz, and hifi_capture_tone_rms takes off the ADC's
+ * offset and its drift while it settles after a boot. It measures the
+ * board, not the user's sound: the tone plays at unity with Boost out
+ * (hifi_dsp_process), the EQ and loudness out (hifi_eq_bypass) and stereo
+ * whatever the channel mode (hifi_chan_mix, the codec), so it is judged
+ * as stereo, and the user's mode comes back when it ends. LOOP_TAP_GAIN is
+ * the taps' RMS per RMS of the tone, measured on Lite 2 (2026-11-17) with
+ * the EQ flat: one leg of the bridge, 1.2 dB under the nominal chain.
  */
 #define LOOP_TONE_DBFS -50.0f
 #define LOOP_FRAMES 4800
@@ -1330,6 +1453,18 @@ static const char *loop_busy(void) {
 }
 
 static bool loop_running; /* under LOCK: one loopback check at a time */
+
+/* squeezelite's equalizer_process asks on every block (firmware/patches) */
+bool hifi_eq_bypass(void) { return loop_flat; }
+
+/* the codec back to the user's channel mode, and the EQ back in */
+static void loop_unflat(void) {
+	LOCK();
+	loop_flat = false;
+	hifi_bsp_channel(channel);
+	UNLOCK();
+	codec_dirty = true;
+}
 
 static void selftest_loopback(hifi_selftest_t *t, bool amp_on) {
 	if (!has_taps()) return;
@@ -1352,6 +1487,15 @@ static void selftest_loopback(hifi_selftest_t *t, bool amp_on) {
 	}
 	float got[2][2] = {{0}};
 	const char *err = NULL;
+	LOCK();
+	loop_flat = true;
+	hifi_bsp_channel(HIFI_CHAN_STEREO);
+	UNLOCK();
+	uint32_t asked = codec_started;
+	codec_dirty = true;
+	/* the power task routes it: wait for a route begun after the request */
+	for (int i = 0; i < 100 && (int32_t) (codec_routed - asked) <= 0; i++) vTaskDelay(pdMS_TO_TICKS(10));
+	if ((int32_t) (codec_routed - asked) <= 0) err = "the codec didn't take the test's stereo routing";
 	for (int side = 0; side < 2 && !err; side++) {
 		hifi_tone_params_t p = {.type = HIFI_TONE_SINE, .freq_hz = 1000, .level_dbfs = LOOP_TONE_DBFS,
 					.duration_s = 2, .channel = side ? HIFI_CH_RIGHT : HIFI_CH_LEFT};
@@ -1364,11 +1508,12 @@ static void selftest_loopback(hifi_selftest_t *t, bool amp_on) {
 	}
 	op_tone_stop();
 	free(pcm);
-	float eq[HIFI_EQ_BANDS], eq_max = 0;
-	read_eq(eq);
-	for (int i = 0; i < HIFI_EQ_BANDS; i++) eq_max = fmaxf(eq_max, fabsf(eq[i]));
+	/* the tone's fade and the 100 ms queued behind it go out under the
+	 * bypass: the EQ comes back in on silence */
+	for (int i = 0; i < 50 && tone_active; i++) vTaskDelay(pdMS_TO_TICKS(10));
+	vTaskDelay(pdMS_TO_TICKS(150));
+	loop_unflat();
 	LOCK();
-	hifi_chan_t c = channel;
 	loop_running = false;
 	UNLOCK();
 	const char *src = source_name(); /* not audio_active: our own tone counts in it */
@@ -1378,10 +1523,8 @@ static void selftest_loopback(hifi_selftest_t *t, bool amp_on) {
 		hifi_selftest_add(t, "loopback", false, "%s", err);
 	else {
 		char v[64];
-		bool ok = hifi_loop_judge(c, got, LOOP_TAP_GAIN * powf(10, LOOP_TONE_DBFS / 20) / sqrtf(2),
-					  HIFI_LOOP_TOL_DB + eq_max, v, sizeof(v));
-		size_t l = strlen(v);
-		if (eq_max > 0) snprintf(v + l, sizeof(v) - l, ", EQ %.0f dB", eq_max);
+		bool ok = hifi_loop_judge(HIFI_CHAN_STEREO, got, LOOP_TAP_GAIN * powf(10, LOOP_TONE_DBFS / 20) / sqrtf(2),
+					  HIFI_LOOP_TOL_DB, v, sizeof(v));
 		hifi_selftest_add(t, "loopback", ok, "%s", v);
 	}
 }
@@ -1457,6 +1600,7 @@ const hifi_ops_t hifi_ops = {
 #ifdef CONFIG_HIFI_LAB
 	.lab = hifi_lab_esp_op,
 #endif
+	.party = hifi_party_op,
 #ifdef HIFI_HAS_LED_TEST
 	.set_led = hifi_bsp_set_led,
 #endif
@@ -1534,7 +1678,7 @@ static void services_task(void *arg) {
 			bool src = vol_from_source;
 			uint32_t g = hifi_vol_gain(&vol);
 			UNLOCK();
-			volume = src || (!tone_active && hifi_output_gain(g, g));
+			volume = src || quiet_req || (!tone_active && hifi_output_gain(g, g));
 		}
 		if (!console) {
 			const esp_console_cmd_t c = {
@@ -1575,6 +1719,10 @@ void hifi_dsp_process(uint8_t *buf, uint32_t frames, int bytes_per_frame, uint32
 	}
 	hifi_gov_process(&gov, buf, frames, bytes_per_frame, rate);
 	audio_active = gov.ms_avg > 1e-8f; /* above about -77 dBFS */
+	/* the channel mode, after the governor (it models it, and judges each
+	 * side as played): the codec can't cross sides itself. The loopback
+	 * check measures both sides apart, so it plays stereo */
+	hifi_chan_mix(loop_flat ? HIFI_CHAN_STEREO : channel, buf, frames, bytes_per_frame);
 	hifi_bsp_audio(buf, frames, bytes_per_frame);
 }
 
@@ -1654,7 +1802,9 @@ static bool hifi_init(void) {
 	hifi_ir_load(&ir, s);
 	free(s);
 
-	xTaskCreatePinnedToCore(power_task, "hifi_power", 3072, NULL, ESP_TASK_PRIO_MIN + 3, NULL, 0);
+	const esp_partition_t *run = esp_ota_get_running_partition();
+	in_recovery = run && run->subtype == ESP_PARTITION_SUBTYPE_APP_FACTORY;
+	xTaskCreatePinnedToCore(power_task, "hifi_power", 3072, NULL, ESP_TASK_PRIO_MIN + 3, &power_task_h, 0);
 	if (hifi_sink_start) tone_task = task_psram(tone_main, "hifi_tone", 4096, ESP_TASK_PRIO_MIN + 2, 1);
 	if (board_line) task_psram(line_main, "hifi_line", 4096, ESP_TASK_PRIO_MIN + 4, 1);
 	xTaskCreate(services_task, "hifi_svc", 3072, NULL, ESP_TASK_PRIO_MIN + 1, NULL);
@@ -1662,6 +1812,13 @@ static bool hifi_init(void) {
 #ifdef CONFIG_HIFI_LAB
 	hifi_lab_esp_init();
 #endif
+	/* party on at boot: Bluetooth stays off (squeezelite registers it after
+	 * this), and the group starts once Wi-Fi is up */
+	if (hifi_party_init) { /* the app only */
+		if (hifi_party_saved_on() && hifi_bt_sink_boot_off) hifi_bt_sink_boot_off();
+		hifi_party_init();
+		hifi_party_volume(hifi_vol_gain(&vol));
+	}
 	hifi_remote_start(&hifi_ops);
 	hifi_bsp_start();
 	ESP_LOGI(TAG, "%s on %s, firmware %s", HIFI_MODEL, HIFI_BOARD, HIFI_FW_VERSION);

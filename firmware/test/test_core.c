@@ -322,20 +322,39 @@ static void chan_regs(void) {
 	CHECK(r.mix[0] == 0x58 && r.mix[1] == 0x18 && r.mix[2] == 0x18 && r.mix[3] == 0x58 && r.dac_vol == 0);
 	hifi_chan_regs(HIFI_CHAN_STEREO, true, 3, false, &r); /* muted: nothing in the mix */
 	CHECK(r.mix[0] == 0x18 && r.mix[1] == 0x18 && r.mix[2] == 0x18 && r.mix[3] == 0x18);
-	/* left: the left side to both outputs, the right side nowhere */
-	hifi_chan_regs(HIFI_CHAN_LEFT, false, 7, true, &r);
-	CHECK(r.mix[0] == 0xB8 && r.mix[1] == 0x38 && r.mix[2] == 0xB8 && r.mix[3] == 0x38 && r.dac_vol == 0);
-	hifi_chan_regs(HIFI_CHAN_RIGHT, false, 7, true, &r);
-	CHECK(r.mix[0] == 0x38 && r.mix[1] == 0xB8 && r.mix[2] == 0x38 && r.mix[3] == 0xB8 && r.dac_vol == 0);
+	/* the cross mixes do nothing on the ES8388: a stream stays stereo on the
+	 * codec in every mode (hifi_chan_mix does the channel), at 0 dB */
+	for (int c = HIFI_CHAN_LEFT; c <= HIFI_CHAN_MONO; c++) {
+		hifi_chan_regs((hifi_chan_t) c, false, 7, true, &r);
+		CHECK(r.mix[0] == 0xB8 && r.mix[1] == 0x38 && r.mix[2] == 0x38 && r.mix[3] == 0xB8 && r.dac_vol == 0);
+	}
+	/* DJ direct can't cross: left or right plays that side on its own output */
+	hifi_chan_regs(HIFI_CHAN_LEFT, true, 3, true, &r);
+	CHECK(r.mix[0] == 0x58 && r.mix[1] == 0x18 && r.mix[2] == 0x18 && r.mix[3] == 0x18);
 	hifi_chan_regs(HIFI_CHAN_RIGHT, true, 3, true, &r);
-	CHECK(r.mix[0] == 0x18 && r.mix[1] == 0x58 && r.mix[2] == 0x18 && r.mix[3] == 0x58);
-	/* mono: both sides to both outputs at half level: DAC -6 dB, LIN a further -6 dB */
-	hifi_chan_regs(HIFI_CHAN_MONO, false, 7, true, &r);
-	CHECK(r.mix[0] == 0xB8 && r.mix[1] == 0xB8 && r.mix[2] == 0xB8 && r.mix[3] == 0xB8 && r.dac_vol == 12);
+	CHECK(r.mix[0] == 0x18 && r.mix[1] == 0x18 && r.mix[2] == 0x18 && r.mix[3] == 0x58);
+	/* and mono plays stereo, at the set level */
 	hifi_chan_regs(HIFI_CHAN_MONO, true, 3, true, &r);
-	CHECK(r.mix[0] == 0x68 && r.mix[1] == 0x68 && r.mix[2] == 0x68 && r.mix[3] == 0x68 && r.dac_vol == 0);
+	CHECK(r.mix[0] == 0x58 && r.mix[1] == 0x18 && r.mix[2] == 0x18 && r.mix[3] == 0x58 && r.dac_vol == 0);
 	hifi_chan_regs(HIFI_CHAN_MONO, true, 3, false, &r);
-	CHECK(r.mix[0] == 0x28 && r.mix[3] == 0x28);
+	CHECK(r.mix[0] == 0x18 && r.mix[3] == 0x18);
+
+	/* the channel in the DSP, on 16- and 32-bit frames */
+	int16_t s16[4] = {1000, -3000, 32767, 32767};
+	hifi_chan_mix(HIFI_CHAN_STEREO, s16, 2, 4);
+	CHECK(s16[0] == 1000 && s16[1] == -3000);
+	hifi_chan_mix(HIFI_CHAN_MONO, s16, 2, 4);
+	CHECK(s16[0] == -1000 && s16[1] == -1000 && s16[2] == 32767 && s16[3] == 32767); /* no wrap at full scale */
+	int16_t l16[2] = {5, 9}, r16[2] = {5, 9};
+	hifi_chan_mix(HIFI_CHAN_LEFT, l16, 1, 4);
+	hifi_chan_mix(HIFI_CHAN_RIGHT, r16, 1, 4);
+	CHECK(l16[0] == 5 && l16[1] == 5 && r16[0] == 9 && r16[1] == 9);
+	int32_t s32[4] = {INT32_MAX, INT32_MAX, INT32_MIN, 2};
+	hifi_chan_mix(HIFI_CHAN_MONO, s32, 2, 8);
+	CHECK(s32[0] == INT32_MAX && s32[1] == INT32_MAX && s32[2] == INT32_MIN / 2 + 1 && s32[3] == s32[2]);
+	int32_t l32[2] = {7, -7};
+	hifi_chan_mix(HIFI_CHAN_RIGHT, l32, 1, 8);
+	CHECK(l32[0] == -7 && l32[1] == -7);
 
 	/* the same routing as gains, for the self-test's loopback check */
 	float g[2];
@@ -375,6 +394,20 @@ static void loop_check(void) {
 	CHECK(fabsf(l - 0.01f / sqrtf(2)) < 0.0002f);
 	CHECK(r < 1e-5f);
 	CHECK(hifi_capture_tone_rms(pcm, 0, 0, 1000, 48000) == 0);
+	/* the first run after boot: a DC offset of 0.05 FS still settling
+	 * (time constants 50 to 150 ms). On the quiet leg it must stay 40 dB
+	 * under the -50 dBFS test tone; on the fed leg the tone reads true. */
+	const float tone = 0.00316f; /* -50 dBFS peak */
+	for (int tau = 50; tau <= 150; tau += 50) {
+		for (int i = 0; i < 4800; i++) {
+			double dc = 0.05 * exp(-i / (48.0 * tau));
+			pcm[2 * i] = (int16_t) lrint(32768 * (tone * sin(2 * M_PI * 1000 * i / 48000.0 + 1.1) + dc));
+			pcm[2 * i + 1] = (int16_t) lrint(32768 * dc);
+		}
+		float fed = hifi_capture_tone_rms(pcm, 4800, 0, 1000, 48000), quiet = hifi_capture_tone_rms(pcm, 4800, 1, 1000, 48000);
+		CHECK(fabsf(20 * log10f(fed / (tone / sqrtf(2)))) < 0.5f);
+		CHECK(quiet < tone / sqrtf(2) * 0.01f);
+	}
 
 	char v[64];
 	float w = 0.001f, x = w * powf(10, -40 / 20.0f); /* x: a leg 40 dB down */
@@ -395,7 +428,8 @@ static void loop_check(void) {
 	float dead[2][2] = {{0}};                                 /* the ADC sends zeros */
 	CHECK(!hifi_loop_judge(HIFI_CHAN_RIGHT, dead, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
 	CHECK(strlen(v) < sizeof(((hifi_check_t *) 0)->value));
-	/* the tolerance's edge, and the EQ widening it */
+	/* the tolerance's edge (the self-test passes HIFI_LOOP_TOL_DB; the
+	 * judge still takes a wider one) */
 	float edge[2][2] = {{w * powf(10, 2.9f / 20), x}, {x, w}};
 	CHECK(hifi_loop_judge(HIFI_CHAN_STEREO, edge, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
 	edge[0][0] = w * powf(10, 3.1f / 20);
@@ -403,7 +437,7 @@ static void loop_check(void) {
 	edge[0][0] = w * powf(10, 7.0f / 20); /* a 1 kHz band at +6 dB */
 	CHECK(!hifi_loop_judge(HIFI_CHAN_STEREO, edge, w, HIFI_LOOP_TOL_DB, v, sizeof(v)));
 	CHECK(hifi_loop_judge(HIFI_CHAN_STEREO, edge, w, HIFI_LOOP_TOL_DB + 6, v, sizeof(v)));
-	/* the off limit stays 20 dB whatever the EQ */
+	/* the off limit stays 20 dB whatever the tolerance */
 	CHECK(!hifi_loop_judge(HIFI_CHAN_STEREO, leak, w, HIFI_LOOP_TOL_DB + 12, v, sizeof(v)));
 }
 

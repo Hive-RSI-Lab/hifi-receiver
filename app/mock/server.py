@@ -109,6 +109,30 @@ class Receiver:
         self.lock = threading.Lock()
         self.armed = None  # when a factory reset was armed
         self.t0 = time.time() - (5 * 3600 + 17 * 60)
+        # party mode (GET/POST party): the mock's one other receiver, Kitchen,
+        # is on and waiting, so switching party on here makes this one lead
+        self.party = {"on": False, "role": "off", "key_id": 42, "key": True, "term": 0, "picked": False,
+                      "followers": [], "why": "", "bt": True}
+
+    def party_op(self, b: dict) -> dict:
+        """POST party from the LAN: op on, off or lead (key and tone are the
+        Hive's or USB's only: 403)."""
+        with self.lock:
+            p, op = self.party, b.get("op")
+            if op in ("key", "tone"):
+                raise Forbidden("the party key and the test tone are set by the Hive or over USB, not from the LAN")
+            if op == "on":
+                p.update(on=True, role="leader", leader=self.info["name"], followers=["192.168.1.31"], term=p["term"] + 1)
+            elif op == "off":
+                p.update(on=False, role="off", followers=[], why="")
+                p.pop("leader", None)
+            elif op == "lead":
+                if not p["on"]:
+                    raise Conflict("party is off")
+                p.update(role="leader", picked=True, leader=self.info["name"], followers=["192.168.1.31"], term=p["term"] + 1)
+            else:
+                raise ValueError("op must be on, off, lead, key or tone")
+            return copy.deepcopy(p)
 
     def state(self) -> dict:
         with self.lock:
@@ -362,6 +386,10 @@ class Conflict(Exception):
     pass
 
 
+class Forbidden(Exception):
+    pass
+
+
 def num(b, k):
     v = b.get(k)
     if isinstance(v, bool) or not isinstance(v, (int, float)):
@@ -426,6 +454,9 @@ def handler(rx: Receiver):
                     return self.send(200, copy.deepcopy(rx.info))
             if p == "state":
                 return self.send(200, Receiver._public(rx.state()))
+            if p == "party":
+                with rx.lock:
+                    return self.send(200, copy.deepcopy(rx.party))
             if p == "wifi/scan":
                 return self.send(200, {"networks": SCAN})
             if p == "update/check":
@@ -452,11 +483,15 @@ def handler(rx: Receiver):
                 if p == "selftest":
                     with rx.lock:
                         return self.send(200, rx.selftest())
+                if p == "party":
+                    return self.send(200, rx.party_op(body))
                 return self.send(200, rx.post(p, body))
             except KeyError:
                 self.send(404, {"error": "no such path"})
             except Conflict as e:
                 self.send(409, {"error": str(e)})
+            except Forbidden as e:
+                self.send(403, {"error": str(e)})
             except (ValueError, json.JSONDecodeError) as e:
                 self.send(400, {"error": str(e)})
     return H

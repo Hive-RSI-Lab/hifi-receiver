@@ -170,14 +170,19 @@ left. [TBD: Plus and Ultra rear panels: their enclosures aren't drawn yet]
 A Lite can play just one side, so two Lites make a stereo pair, one speaker
 each. Set the side with the API (`channel`) or the console command
 (`channel left`; the app has no control for it yet): **Stereo** (the default), **Left**, **Right** or **Mono**
-(both sides mixed). It applies to the speaker output on every input,
-including DJ direct, and is kept across restarts.
+(both sides mixed). It is kept across restarts. On a stream the chosen
+side plays on both speaker terminals. **DJ direct** is analog and can't
+move a side across: on **Left** only the left terminal plays (the left
+side), on **Right** only the right terminal (the right side), and **Mono**
+plays stereo.
 
 - **Streaming (Lyrion, AirPlay, Spotify):** set one Lite to **Left** and the
   other to **Right**. With Lyrion, put both players in one sync group so
   they play in step. The two Lites then give a stereo pair.
 - **From a deck or other line source:** feed the same source to both Lites
-  (a Y cable or splitter), with one on **Left** and one on **Right**. Or
+  (a Y cable or splitter), with one on **Left** and one on **Right**. On
+  DJ direct, wire the Left Lite's speaker to its left terminal and the
+  Right Lite's to its right terminal. Or
   take A's **SUB OUT** into B's **LINE IN** on **DJ direct**, which only
   works while A is on **Stereo**: SUB OUT follows the channel mode
   (below), so it cannot carry the full stereo signal once A is on Left,
@@ -187,7 +192,7 @@ including DJ direct, and is kept across restarts.
   not full-range stereo. Leave a Lite on **Stereo** if a subwoofer needs
   both sides.
 - **Mono** plays both sides mixed at half level each, so the sum does not
-  clip.
+  clip (not on DJ direct, which plays stereo).
 
 ### Optical (Ultra)
 
@@ -313,6 +318,11 @@ press **Join**.
 
 **Bluetooth:** to switch to another phone, disconnect the first one in its
 Bluetooth settings. The receiver can then be found again.
+
+**Party mode:** to play the same music in step on several receivers, start
+the music on one (connect your phone first), then in the app switch **Play →
+Party** on there and on the others: they join it on their own. Bluetooth is
+off on the ones that follow.
 
 **Switching source:**
 

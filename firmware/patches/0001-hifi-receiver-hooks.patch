@@ -203,7 +203,7 @@ index b02f5f0..6530271 100644
  #if BYTES_PER_FRAME == 4    
  	// don't want to process with output locked, so take the small risk to miss one parametric update
  	if (equalizer.update) {
-@@ -231,4 +235,12 @@ void equalizer_process(uint8_t *buf, uint32_t bytes) {
+@@ -231,4 +235,15 @@ void equalizer_process(uint8_t *buf, uint32_t bytes) {
  		esp_equalizer_process(equalizer.handle, buf, bytes, equalizer.samplerate, 2);
  	}
  #endif    
@@ -212,10 +212,13 @@ index b02f5f0..6530271 100644
 +}
 +
 +/****************************************************************************************
-+ * equalizer, then the hifi-receiver power governor on the equalized samples
++ * equalizer, then the hifi-receiver power governor on the equalized samples; the
++ * receiver's self-test measures its speakers with the equalizer and loudness out
 + */
++extern bool hifi_eq_bypass(void) __attribute__((weak));
++
 +void equalizer_process(uint8_t *buf, uint32_t bytes) {
-+	equalizer_apply(buf, bytes);
++	if (!hifi_eq_bypass || !hifi_eq_bypass()) equalizer_apply(buf, bytes);
 +	if (hifi_dsp_process) hifi_dsp_process(buf, bytes / BYTES_PER_FRAME, BYTES_PER_FRAME, equalizer.samplerate);
 +}
 diff --git a/components/squeezelite/output_embedded.c b/components/squeezelite/output_embedded.c

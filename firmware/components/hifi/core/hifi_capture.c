@@ -23,9 +23,19 @@ void hifi_capture_stats(const int16_t *pcm, int frames, int ch, hifi_cap_stats_t
 
 float hifi_capture_tone_rms(const int16_t *pcm, int frames, int ch, float freq_hz, int rate) {
 	if (frames <= 0 || rate <= 0) return 0;
+	/* the least-squares line through the samples comes off first: a DC
+	 * offset still settling (the taps' coupling capacitors, the first capture
+	 * after a boot) is a ramp from end to end, and its jump between the ends
+	 * would otherwise leak into every bin, 20 dB over a quiet leg's floor */
+	double n = frames, tm = (n - 1) / 2, sum = 0, st = 0;
+	for (int i = 0; i < frames; i++) {
+		sum += pcm[2 * i + ch];
+		st += (i - tm) * pcm[2 * i + ch];
+	}
+	double mean = sum / n, slope = frames > 1 ? st / (n * (n * n - 1) / 12) : 0;
 	double w = 2 * M_PI * freq_hz / rate, cw = 2 * cos(w), s1 = 0, s2 = 0;
 	for (int i = 0; i < frames; i++) {
-		double s0 = pcm[2 * i + ch] / 32768.0 + cw * s1 - s2;
+		double s0 = (pcm[2 * i + ch] - mean - slope * (i - tm)) / 32768.0 + cw * s1 - s2;
 		s2 = s1;
 		s1 = s0;
 	}

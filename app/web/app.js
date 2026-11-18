@@ -37,6 +37,7 @@ let online = false;
 let holding = false;   // a slider is under a finger: don't redraw over it
 let scan = null;       // Wi-Fi networks from the last scan
 let selftest = null;   // the last self-test result
+let P;                 // GET party, read on the Play page; null when the build has no party mode
 let check = null;      // the last online update check
 
 const $ = (sel, el = document) => el.querySelector(sel);
@@ -67,7 +68,7 @@ async function api(path, body) {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
   const r = await fetch('api/v1/' + path, opt);
   const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(j.error || r.statusText);
+  if (!r.ok) throw Object.assign(new Error(j.error || r.statusText), { status: r.status });
   return j;
 }
 
@@ -115,7 +116,9 @@ function take(state) {
 async function poll() {
   try {
     if (!I) I = await api('info');
-    take(await api('state'));
+    const st = await api('state');
+    if (P !== null && tab === 'play') P = await api('party').catch((e) => (e.status === 404 ? null : P));
+    take(st);
     online = true;
   } catch { online = false; draw(); }
   $('#conn').classList.toggle('on', online);
@@ -188,7 +191,26 @@ function pagePlay() {
       seg(Object.fromEntries(['stream', ...I.caps.line_modes].map((m) => [m, INPUTS[m] || m])), a.input,
         (m) => set('input', { input: m })),
       h('p.dim', {}, INPUT_NOTES[a.input] || '')),
+    partyCard(),
   ];
+}
+
+// Party: play in step with the other receivers on this Wi-Fi (docs/app.md).
+// The first one switched on leads unless one is picked; the others join it.
+function partyCard() {
+  if (!P) return null;
+  const go = (op) => api('party', { op }).then((r) => { P = r; draw(); }, (e) => toast(e.message));
+  const n = (P.followers || []).length;
+  const now = !P.on ? null
+    : P.role === 'leader' ? (n ? `Leading: ${n} more receiver${n > 1 ? 's play' : ' plays'} along.` : 'Leading. Switch party on on the others.')
+      : P.role === 'follower' ? `Playing along with ${P.leader || P.leader_ip}.` : 'Looking for the others…';
+  return h('div.card', {}, h('h2', {}, 'Party'),
+    h('p.dim', {}, 'Play in step with your other receivers on this Wi-Fi. Start the music on one, connecting your phone ' +
+      'first, then switch party on there and on the others: they join it. Bluetooth is off on the ones that follow.'),
+    P.key ? h('div.row', {}, h('span.grow', {}, 'Party'), onOff(P.on, (on) => go(on ? 'on' : 'off')))
+      : h('p.dim', {}, 'This receiver has no party key yet.'),
+    now && h('p', {}, now, P.why ? h('span.dim', {}, ` (${P.why})`) : ''),
+    P.on && P.role !== 'leader' && h('div.row', {}, h('button', { onclick: () => go('lead') }, 'Lead from this one')));
 }
 
 function volumeCard() {

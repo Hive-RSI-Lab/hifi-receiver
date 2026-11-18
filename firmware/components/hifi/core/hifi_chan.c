@@ -4,9 +4,8 @@
 #include "hifi_chan.h"
 
 #define SRC_STREAM_GAIN 0x38 /* squeezelite's own gain bits, as it sets them */
-#define DAC_VOL_M6DB 12      /* 0.5 dB a step: mono's sum of two sides, halved */
 
-/* which source side reaches which mixer: [LD2LO, RD2LO, LD2RO, RD2RO] */
+/* which source side reaches which output: [L to L, R to L, L to R, R to R] */
 static void chan_pick(hifi_chan_t c, bool pick[4]) {
 	pick[0] = pick[3] = true; /* stereo: left to left, right to right */
 	pick[1] = pick[2] = false;
@@ -19,24 +18,40 @@ static void chan_pick(hifi_chan_t c, bool pick[4]) {
 }
 
 void hifi_chan_regs(hifi_chan_t c, bool direct, int direct_lin_code, bool live, hifi_chan_regs_t *r) {
+	/* only the same-side paths: the cross ones (0x28, 0x29) do nothing on
+	 * the ES8388. The DAC path is always stereo (hifi_chan_mix does the
+	 * channel); DJ direct can only leave a side out */
 	bool pick[4];
-	chan_pick(c, pick);
-	/* mono sums two sides into each mixer: the analog path is 6 dB down per
-	 * side (3 dB a code), the DAC path through its digital volume */
-	int code = direct_lin_code + (c == HIFI_CHAN_MONO && direct ? 2 : 0);
-	if (code > 7) code = 7;
+	chan_pick(direct ? c : HIFI_CHAN_STEREO, pick);
+	pick[1] = pick[2] = false;
 	for (int i = 0; i < 4; i++) {
-		if (!pick[i] || !live) r->mix[i] = direct ? ((uint8_t) (code << 3)) : SRC_STREAM_GAIN;
-		else r->mix[i] = (direct ? 0x40 : 0x80) | (direct ? ((uint8_t) (code << 3)) : SRC_STREAM_GAIN);
+		uint8_t gain = direct ? ((uint8_t) (direct_lin_code << 3)) : SRC_STREAM_GAIN;
+		r->mix[i] = gain | (pick[i] && live ? (direct ? 0x40 : 0x80) : 0);
 	}
-	/* a stream with the DAC halved only in mono; DJ direct leaves it alone */
-	r->dac_vol = c == HIFI_CHAN_MONO && !direct ? DAC_VOL_M6DB : 0;
+	r->dac_vol = 0;
+}
+
+void hifi_chan_mix(hifi_chan_t c, void *buf, size_t frames, int bytes_per_frame) {
+	if (c != HIFI_CHAN_LEFT && c != HIFI_CHAN_RIGHT && c != HIFI_CHAN_MONO) return;
+	if (bytes_per_frame == 8) {
+		int32_t *s = buf;
+		for (size_t i = 0; i < frames; i++, s += 2) {
+			int32_t v = c == HIFI_CHAN_LEFT ? s[0] : c == HIFI_CHAN_RIGHT ? s[1] : (int32_t) (((int64_t) s[0] + s[1]) / 2);
+			s[0] = s[1] = v;
+		}
+	} else {
+		int16_t *s = buf;
+		for (size_t i = 0; i < frames; i++, s += 2) {
+			int16_t v = c == HIFI_CHAN_LEFT ? s[0] : c == HIFI_CHAN_RIGHT ? s[1] : (int16_t) (((int32_t) s[0] + s[1]) / 2);
+			s[0] = s[1] = v;
+		}
+	}
 }
 
 void hifi_chan_gain(hifi_chan_t c, int side, float g[2]) {
 	bool pick[4];
 	chan_pick(c, pick);
-	float k = c == HIFI_CHAN_MONO ? 0.5f : 1.0f; /* the DAC's -6 dB */
+	float k = c == HIFI_CHAN_MONO ? 0.5f : 1.0f; /* hifi_chan_mix's (L + R) / 2 */
 	g[0] = pick[side ? 1 : 0] ? k : 0;
 	g[1] = pick[side ? 3 : 2] ? k : 0;
 }

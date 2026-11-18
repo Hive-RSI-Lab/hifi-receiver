@@ -27,6 +27,7 @@
 #include "soc/uart_struct.h"
 #include "hifi_crash.h"
 #include "hifi_diag.h"
+#include "hifi_esp.h"
 
 #define RING 3072
 #define MAGIC 0x48694672u /* "HiFr" */
@@ -91,6 +92,9 @@ void __wrap_esp_restart(void) {
 	memcpy(r.note, restart_note, sizeof(r.note));
 	r.note[sizeof(r.note) - 1] = '\0';
 	restart_rec = r;
+	/* every planned restart, updates and rollbacks included, goes quiet
+	 * first: no pop or burst reaches a speaker (hifi_quiet.h) */
+	hifi_quiet_stop(r.note[0] ? r.note : "restart", true);
 	__real_esp_restart();
 }
 

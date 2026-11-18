@@ -52,20 +52,26 @@ static void tag(const hifi_link_key_t *k, const uint8_t *d, size_t n, uint8_t ou
 	memcpy(out, h, HIFI_PARTY_TAG);
 }
 
-/* the payload bytes a packet of this type and n carries; 0 when it can't */
-static size_t payload_len(uint8_t type, uint16_t n) {
+/* the payload bytes a packet of this type, n and flags carries; -1 when it
+ * can't (a silence AUDIO packet carries none) */
+static long payload_len(uint8_t type, uint16_t n, uint16_t flags) {
 	switch (type) {
-	case HIFI_PARTY_AUDIO: return (n >= 1 && n <= HIFI_PARTY_FRAMES) ? (size_t) n * HIFI_PARTY_FRAME_BYTES : 0;
-	case HIFI_PARTY_CLOCK: return n == 0 ? 6 : 0;
-	case HIFI_PARTY_NACK: return (n >= 1 && n <= HIFI_PARTY_NACK_MAX) ? (size_t) n * 8 : 0;
-	default: return 0;
+	case HIFI_PARTY_AUDIO:
+		if (n < 1 || n > HIFI_PARTY_FRAMES) return -1;
+		return (flags & HIFI_PARTY_F_SILENCE) ? 0 : (long) n * HIFI_PARTY_FRAME_BYTES;
+	case HIFI_PARTY_CLOCK: return n == 0 ? 6 : -1;
+	case HIFI_PARTY_NACK: return (n >= 1 && n <= HIFI_PARTY_NACK_MAX) ? (long) n * 8 : -1;
+	case HIFI_PARTY_ANNOUNCE: return n <= HIFI_PARTY_FOLLOWERS ? HIFI_PARTY_ANNOUNCE_LEN : -1;
+	case HIFI_PARTY_JOIN: return n == 0 ? 4 : -1;
+	default: return -1;
 	}
 }
 
 size_t hifi_party_encode(const hifi_link_key_t *key, const hifi_party_pkt_t *p, const void *payload, uint8_t *buf, size_t cap) {
 	if (!key || !key->ready || !p || !buf) return 0;
-	size_t pl = payload_len(p->type, p->n);
-	if (!pl || !payload) return 0;
+	long l = payload_len(p->type, p->n, p->flags);
+	if (l < 0 || (l && !payload)) return 0;
+	size_t pl = (size_t) l;
 	size_t len = HIFI_PARTY_HDR + pl + HIFI_PARTY_TAG;
 	if (len > cap || len > HIFI_PARTY_MAX) return 0;
 	buf[0] = HIFI_PARTY_MAGIC0;
@@ -80,7 +86,7 @@ size_t hifi_party_encode(const hifi_link_key_t *key, const hifi_party_pkt_t *p, 
 	put32(buf + 30, p->rate);
 	put16(buf + 34, p->n);
 	put16(buf + 36, p->flags);
-	memcpy(buf + HIFI_PARTY_HDR, payload, pl);
+	if (pl) memcpy(buf + HIFI_PARTY_HDR, payload, pl);
 	tag(key, buf, HIFI_PARTY_HDR + pl, buf + HIFI_PARTY_HDR + pl);
 	return len;
 }
@@ -106,8 +112,9 @@ int hifi_party_decode(const hifi_link_key_t *key, const uint8_t *buf, size_t n, 
 		.n = get16(buf + 34),
 		.flags = get16(buf + 36),
 	};
-	size_t pl = payload_len(q.type, q.n);
-	if (!pl || HIFI_PARTY_HDR + pl + HIFI_PARTY_TAG != n) return HIFI_PARTY_E_FORMAT;
+	long l = payload_len(q.type, q.n, q.flags);
+	if (l < 0 || HIFI_PARTY_HDR + (size_t) l + HIFI_PARTY_TAG != n) return HIFI_PARTY_E_FORMAT;
+	size_t pl = (size_t) l;
 	if (q.type == HIFI_PARTY_AUDIO && (q.k < 0 || q.k % HIFI_PARTY_FRAMES)) return HIFI_PARTY_E_FORMAT;
 	if (p) *p = q;
 	if (payload) *payload = buf + HIFI_PARTY_HDR;
@@ -285,7 +292,7 @@ void hifi_party_jb_init(hifi_party_jb_t *jb, void *mem, int nslots) {
 }
 
 int hifi_party_jb_put(hifi_party_jb_t *jb, int64_t k, const void *frames, int n, int64_t now_us) {
-	if (k < 0 || k % HIFI_PARTY_FRAMES || n != HIFI_PARTY_FRAMES || !frames) {
+	if (k < 0 || k % HIFI_PARTY_FRAMES || n != HIFI_PARTY_FRAMES) {
 		jb->bad++;
 		return HIFI_PARTY_PUT_BAD;
 	}
@@ -307,7 +314,10 @@ int hifi_party_jb_put(hifi_party_jb_t *jb, int64_t k, const void *frames, int n,
 		jb->dup++;
 		return HIFI_PARTY_PUT_DUP;
 	}
-	memcpy(jb->frames + (size_t) s * HIFI_PARTY_FRAMES, frames, SLOT_BYTES);
+	if (frames)
+		memcpy(jb->frames + (size_t) s * HIFI_PARTY_FRAMES, frames, SLOT_BYTES);
+	else
+		memset(jb->frames + (size_t) s * HIFI_PARTY_FRAMES, 0, SLOT_BYTES); /* a silence packet */
 	jb->have[s] = p;
 	if (jb->miss[s] == p) jb->miss[s] = -1;
 	if (jb->top >= 0 && p > jb->top + 1) {
@@ -386,6 +396,16 @@ int hifi_party_jb_read(hifi_party_jb_t *jb, int64_t k, uint32_t *out, int n) {
 	/* let go of what is wholly behind k, keeping one packet for a slip back */
 	int64_t nf = fdiv(k, HIFI_PARTY_FRAMES) - 1;
 	if (jb->floor >= 0 && nf > jb->floor) jb->floor = nf;
+	else if (jb->floor >= 0 && nf < jb->floor) {
+		/* a jump back (the leader's stream stepped back, or a slow
+		 * follower's first jump): take late and resent packets for the new
+		 * place again, not as old. The floor stays within a buffer of the
+		 * top, so no two wanted packets share a slot. */
+		int64_t lowest = jb->top - jb->nslots + 1;
+		if (nf < lowest) nf = lowest;
+		if (nf < 0) nf = 0;
+		if (nf < jb->floor) jb->floor = nf;
+	}
 	return missing;
 }
 
@@ -514,4 +534,28 @@ const uint8_t *hifi_party_hist_get(const hifi_party_hist_t *h, int64_t k, size_t
 	if (h->k[s] != k) return NULL;
 	if (len) *len = h->len[s];
 	return h->pkts + (size_t) s * HIFI_PARTY_MAX;
+}
+
+/* ---------------------------------------------------------------- bursts */
+
+void hifi_party_bursts_add(hifi_party_bursts_t *r, uint32_t now_ms, uint32_t count, int32_t code) {
+	if (r->n) {
+		hifi_party_burst_t *l = &r->b[(r->head + HIFI_PARTY_BURSTS - 1) % HIFI_PARTY_BURSTS];
+		uint32_t end = l->at_ms + l->dur_ms;
+		if (now_ms - end <= HIFI_PARTY_BURST_GAP_MS && now_ms - l->at_ms < 0x80000000u) {
+			l->dur_ms = now_ms - l->at_ms;
+			l->count += count;
+			if (code) l->code = code;
+			return;
+		}
+	}
+	r->b[r->head] = (hifi_party_burst_t){now_ms, 0, count, code};
+	r->head = (r->head + 1) % HIFI_PARTY_BURSTS;
+	if (r->n < HIFI_PARTY_BURSTS) r->n++;
+	r->total++;
+}
+
+const hifi_party_burst_t *hifi_party_bursts_get(const hifi_party_bursts_t *r, int i) {
+	if (i < 0 || i >= r->n) return NULL;
+	return &r->b[(r->head + HIFI_PARTY_BURSTS - 1 - i) % HIFI_PARTY_BURSTS];
 }

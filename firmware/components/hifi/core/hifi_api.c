@@ -1213,6 +1213,9 @@ int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *meth
 		status = !ops->lab ? error(out, cap, 404, "this build has no lab")
 			 : lan && post ? error(out, cap, 403, "lab runs are started over USB or by the Hive, not from the LAN")
 			 : ops->lab(post, body, out, cap);
+	else if (!strncmp(route, "party", 5) && (!route[5] || route[5] == '/'))
+		status = !ops->party ? error(out, cap, 404, "this build has no party mode")
+		       : get || post ? ops->party(route[5] ? route + 6 : "", post, lan, body, out, cap) : -1;
 	else if (!strncmp(route, "diag", 4) && (!route[4] || route[4] == '/'))
 		status = get || post ? r_diag(ops, route + 4, post, lan, body, out, cap) : -1;
 	else return error(out, cap, 404, "no such path");
@@ -1228,7 +1231,7 @@ static const char USAGE[] =
 	"tone sweep <from> <to> <dBFS> [s] | tone noise <dBFS> [s] | tone silence [s] | tone stop | "
 	"amp on|off|reset | input stream|dj_direct|line | sub <dB> | channel stereo|left|right|mono | control <action> | "
 	"volume <0-100> | mute on|off | maxvol <30-100> | ir learn <action> | ir forget [action] | "
-	"led test|auto | backlight on|off|auto | i2c <addr> <reg> [val]";
+	"led test|auto | backlight on|off|auto | party [on|off|lead|stats] | i2c <addr> <reg> [val]";
 
 static bool usage(char *out, size_t cap) {
 	snprintf(out, cap, "%s", USAGE);
@@ -1350,6 +1353,17 @@ bool hifi_cli_request(int argc, const char *const *argv, const char **method,
 		*path = learn ? PREFIX "ir/learn" : PREFIX "ir/forget";
 		if (argc == 3) snprintf(body, bc, "{\"action\":\"%s\"}", argv[2]);
 		else snprintf(body, bc, "{}");
+		return true;
+	}
+	if (!strcmp(cmd, "party") && argc <= 2) {
+		*path = PREFIX "party";
+		if (argc == 1 || !strcmp(argv[1], "stats")) {
+			*method = "GET";
+			if (argc == 2) *path = PREFIX "party/stats";
+			return true;
+		}
+		if (strcmp(argv[1], "on") && strcmp(argv[1], "off") && strcmp(argv[1], "lead")) return usage(out, cap);
+		snprintf(body, bc, "{\"op\":\"%s\"}", argv[1]);
 		return true;
 	}
 	if ((!strcmp(cmd, "led") || !strcmp(cmd, "backlight")) && argc == 2) {

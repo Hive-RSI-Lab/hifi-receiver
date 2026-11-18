@@ -225,10 +225,13 @@ clamped. Kept across restarts. Reply: the full `/state`.
 ## `POST /api/v1/channel`
 
 `{"channel": "stereo"|"left"|"right"|"mono"}`: which side the speaker output
-plays, on every input (stream, line, DJ direct). Lite only (404 on others).
-Done in the ES8388 output mixers (and, for mono, a -6 dB DAC volume or a
-lower analog gain in DJ direct), so SUB OUT (LOUT2/ROUT2, on the same
-mixers) follows it. `stereo` is the default and the old behaviour. Kept
+plays. Lite only (404 on others). A stream (and a test tone) gets it in the DSP,
+after the governor: `left` or `right` plays that side on both outputs,
+`mono` plays (L + R) / 2 on both. The ES8388's cross-mix registers do
+nothing, so the codec stays stereo. DJ direct is analog and can't cross
+sides: `left` or `right` plays that side on its own output only (the other
+is silent) and `mono` plays stereo. SUB OUT (LOUT2/ROUT2) follows the
+mode as played. `stereo` is the default and the old behaviour. Kept
 across restarts. Shown as `audio.channel` in `/state`. Reply: the full
 `/state`; 400 on a bad value.
 
@@ -400,15 +403,17 @@ it always passes, and its value is how long ago and why
 On a board with loopback taps (the Lite; see `capture`), `loopback` checks
 the speaker path end to end: a 1 kHz tone at -50 dBFS on the left side, then
 the right, each read back on both taps. A speaker plugged in gives a faint
-beep. Its value is the channel mode, then for the left tone and the right
-tone what the left and right taps read, in dB against the level the path
-should give (`"stereo: L +0.1/-43.4, R -42.1/-0.1 dB"`: the left tone reaches
-the left output only, the right tone the right). An output the channel mode
-feeds must read within 3 dB of its gain (0 dB, or -6 dB per side in mono);
-one it doesn't feed must read 20 dB down or more. The quiet legs read the
-taps' noise in the 1 kHz bin, so expect about -40 to -60 dB, and once in a
-while about -28 dB on the first run after boot. With the EQ not flat, the
-3 dB widens by the largest band's gain and the value ends in `", EQ 6 dB"`.
+beep. The check measures the bare path, not the user's sound settings: for
+the measurement it routes stereo and skips the EQ (Boost already skips test
+tones), then puts the user's channel mode and EQ back. Its value is the mode
+it measured in (always `stereo`), then for the left tone and the right tone
+what the left and right taps read, in dB against the level the path should
+give (`"stereo: L +0.1/-43.4, R -42.1/-0.1 dB"`: the left tone reaches the
+left output only, the right tone the right). A fed output must read within
+3 dB of 0 dB; the other must read 20 dB down or more. The quiet legs read the
+taps' noise in the 1 kHz bin, with the capture's mean and slope taken out
+first so a DC offset still settling after boot doesn't leak into it; expect
+about -40 to -60 dB.
 With a stream, a test tone, a connected source or DJ direct playing, the
 check is skipped and passes (`"skipped: a stream plays"`, `"skipped: a source
 is connected"`), and the same if a source connects while it runs; a second
@@ -652,6 +657,51 @@ restarts). Both amps go into reset for 10 ms and come out together, since
 zone B runs off zone A's clock. `volume` is refused (400): zone B plays at
 the main volume. Plus and Lite answer 404. Reply `{"ok": true}`.
 
+## Party mode: `party`, `party/stats`
+
+Receivers on the same Wi-Fi play in step: one leads and sends what it plays,
+the others follow it within about 100 µs (`projects/hifi-lite-lab/party-mode.md`).
+Only boards holding the Hive's party key take part, and nothing is opened
+on the router: no UPnP, no port forward, broadcast only on the subnet.
+
+`GET /api/v1/party`:
+
+```json
+{"on": true, "role": "leader", "key_id": 41, "key": true, "term": 3, "picked": false,
+ "leader": "hifi-lite-2", "followers": ["192.168.2.221", "192.168.2.223"],
+ "why": "", "bt": true}
+```
+
+- `role`: `off`, `listening` (on, looking for a leader), `leader` or
+  `follower`. A follower also gives `leader_ip`.
+- `picked`: this leader was chosen with `lead`; otherwise the first board
+  switched on leads, and the others join it by themselves.
+- `why`: why it isn't playing in step yet: `low memory`, `another access
+  point` (the leader is on another AP, so their clocks differ), `leader lost`,
+  `no party key`. `full: true` when the leader has all the followers it
+  takes; `other_ap: true` as in `why`. It needs two announces from one
+  address whose TSF moves on with the time between them, so one replayed
+  announce doesn't set it, but a recorded run of them played back at its own
+  pace can.
+- `bt`: whether the Bluetooth sink is on. It stays on only on a picked
+  leader or while Bluetooth plays: connect the phone before switching party on.
+
+`POST /api/v1/party` with `{"op": ...}` replies with the same JSON:
+
+| `op` | From | Does |
+|---|---|---|
+| `on`, `off` | LAN, USB, Hive | switch party on or off (kept across restarts). `on` without a key is 409. |
+| `lead` | LAN, USB, Hive | this board leads; the old leader follows it. 409 when party is off or memory is low, 429 a few seconds after its own last `lead`. |
+| `key` | USB, Hive | `{"op": "key", "secret": "<64 hex>"}` sets the party key (all zeros is refused). Never shown back; `key_id` is one byte of its hash. |
+| `tone` | USB, Hive | `{"op": "tone", "on": true}`: the leader's sync test tone, for the bench. An idle leader takes the output at 44.1 kHz for it. |
+
+`key` and `tone` from the LAN are 403. An image built for 32-bit frames
+answers `on` with 409 (party carries 16-bit).
+
+`GET /api/v1/party/stats` (409 when party is off): the clock offsets, the
+jitter buffer's counts (`got`, `dup`, `old`, `skip`, `gaps`, `miss`), the
+rate controller and the heap, for the bench's `party_run.py`.
+
 ## Wi-Fi and updates from the app
 
 ### `GET /api/v1/wifi/scan`
@@ -744,6 +794,7 @@ hifi mute on|off
 hifi maxvol <30-100>
 hifi ir learn <action>
 hifi ir forget [action]
+hifi party [on|off|lead|stats]
 hifi selftest
 ```
 

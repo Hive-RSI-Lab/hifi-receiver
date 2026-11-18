@@ -427,6 +427,9 @@ int main(void) {
 	}
 	CHECK(hifi_lan_config_secret("hifi_relay_pass"));
 	CHECK(hifi_lan_config_secret("hifi_relay_key"));
+	CHECK(hifi_lan_config_secret("hifi_party_key"));
+	CHECK(!hifi_lan_config_ok("hifi_party_key", "00"));
+	CHECK(!hifi_lan_command_ok("nvs_set hifi_party_key -t str -v 00"));
 	CHECK(!hifi_lan_config_secret("hifi_relay_url"));
 	CHECK(!hifi_lan_config_secret("ap_pwd"));
 

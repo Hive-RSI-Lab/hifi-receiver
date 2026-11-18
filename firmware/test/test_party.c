@@ -18,6 +18,19 @@ static double urand(void) { /* (0, 1) */
 	return ((double) (rng >> 11) + 0.5) / 9007199254740992.0;
 }
 
+/* signs a packet changed in place, as a board with the key would (the tag
+ * construction of hifi_party.c) */
+static void retag(const hifi_link_key_t *k, uint8_t *buf, size_t n) {
+	hifi_sha256_t s = k->in;
+	uint8_t h[32];
+	hifi_sha256_update(&s, buf, n - HIFI_PARTY_TAG);
+	hifi_sha256_final(&s, h);
+	s = k->out;
+	hifi_sha256_update(&s, h, sizeof(h));
+	hifi_sha256_final(&s, h);
+	memcpy(buf + n - HIFI_PARTY_TAG, h, HIFI_PARTY_TAG);
+}
+
 static void packets(void) {
 	hifi_link_key_t k, k2, none = {0};
 	hifi_link_key_init(&k, KEY);
@@ -81,6 +94,24 @@ static void packets(void) {
 	for (int i = 0; i < 3; i++) CHECK(hifi_party_nack_k(pl, i) == want[i]);
 	nk.n = HIFI_PARTY_NACK_MAX + 1;
 	CHECK(hifi_party_encode(&k, &nk, ks, buf, sizeof(buf)) == 0);
+
+	/* silence: n frames, no samples sent (46 bytes, not 1454), and no
+	 * payload needed; samples with the flag don't decode */
+	hifi_party_pkt_t sp = p;
+	sp.flags = HIFI_PARTY_F_SILENCE;
+	n = hifi_party_encode(&k, &sp, NULL, buf, sizeof(buf));
+	CHECK(n == HIFI_PARTY_HDR + HIFI_PARTY_TAG && n == 46);
+	CHECK(hifi_party_decode(&k, buf, n, &q, &pl, &plen) == HIFI_PARTY_OK);
+	CHECK(q.n == HIFI_PARTY_FRAMES && (q.flags & HIFI_PARTY_F_SILENCE) && plen == 0);
+	CHECK(hifi_party_encode(&k, &p, NULL, buf, sizeof(buf)) == 0); /* samples promised, none given */
+	n = hifi_party_encode(&k, &p, frames, buf, sizeof(buf));
+	buf[36] |= HIFI_PARTY_F_SILENCE; /* the flag set on a full packet: retagged, it still doesn't fit */
+	retag(&k, buf, n);
+	CHECK(hifi_party_decode(&k, buf, n, &q, &pl, &plen) != HIFI_PARTY_OK);
+	/* a CLOCK with no audio */
+	c.flags = HIFI_PARTY_F_NOAUDIO;
+	n = hifi_party_encode(&k, &c, bssid, buf, sizeof(buf));
+	CHECK(hifi_party_decode(&k, buf, n, &q, &pl, &plen) == HIFI_PARTY_OK && (q.flags & HIFI_PARTY_F_NOAUDIO));
 }
 
 /* A DAC whose crystal is ppm off, its writes returning late by an
@@ -235,6 +266,26 @@ static void jitter_buffer(void) {
 	int c = hifi_party_jb_nacks(&jb, 3000000, ks, 16);
 	CHECK(c == NS - 1);
 	for (int i = 0; i < c; i++) CHECK(ks[i] >= jb.floor * HIFI_PARTY_FRAMES);
+	/* a jump back: reading at 36 lowers the floor so 35 and 36, late or
+	 * resent, are taken (not old); never below a buffer under the top */
+	CHECK(hifi_party_jb_read(&jb, 36 * HIFI_PARTY_FRAMES, out, HIFI_PARTY_FRAMES) == HIFI_PARTY_FRAMES);
+	CHECK(jb.floor == 35);
+	CHECK(hifi_party_jb_put(&jb, 36 * HIFI_PARTY_FRAMES, fr, HIFI_PARTY_FRAMES, 0) == HIFI_PARTY_PUT_OK);
+	CHECK(hifi_party_jb_put(&jb, 35 * HIFI_PARTY_FRAMES, fr, HIFI_PARTY_FRAMES, 0) == HIFI_PARTY_PUT_OK);
+	CHECK(hifi_party_jb_read(&jb, 2 * HIFI_PARTY_FRAMES, out, HIFI_PARTY_FRAMES) == HIFI_PARTY_FRAMES);
+	CHECK(jb.floor == 40 - NS + 1);
+	CHECK(hifi_party_jb_put(&jb, 3 * HIFI_PARTY_FRAMES, fr, HIFI_PARTY_FRAMES, 0) == HIFI_PARTY_PUT_OLD);
+
+	/* a silence packet is held as zeros, where samples were before */
+	put_packet(&jb, 41, 0);
+	CHECK(hifi_party_jb_put(&jb, 42 * HIFI_PARTY_FRAMES, NULL, HIFI_PARTY_FRAMES, 0) == HIFI_PARTY_PUT_OK);
+	CHECK(hifi_party_jb_put(&jb, 42 * HIFI_PARTY_FRAMES, NULL, HIFI_PARTY_FRAMES, 0) == HIFI_PARTY_PUT_DUP);
+	put_packet(&jb, 41 + NS, 0); /* reuses 41's slot */
+	CHECK(hifi_party_jb_put(&jb, (41 + 2 * NS) * HIFI_PARTY_FRAMES, NULL, HIFI_PARTY_FRAMES, 0) == HIFI_PARTY_PUT_OK);
+	CHECK(hifi_party_jb_read(&jb, (41 + 2 * NS) * HIFI_PARTY_FRAMES, out, HIFI_PARTY_FRAMES) == 0);
+	int nz = 0;
+	for (int i = 0; i < HIFI_PARTY_FRAMES; i++) nz += out[i] != 0;
+	CHECK(nz == 0);
 	free(mem);
 }
 
@@ -339,6 +390,41 @@ static void gain_and_hist(void) {
 	free(mem);
 }
 
+static void bursts(void) {
+	hifi_party_bursts_t r = {0};
+	CHECK(!hifi_party_bursts_get(&r, 0));
+	hifi_party_bursts_add(&r, 1000, 1, 12);
+	hifi_party_bursts_add(&r, 1100, 1, 0);
+	hifi_party_bursts_add(&r, 1100 + HIFI_PARTY_BURST_GAP_MS, 2, 11); /* just within the gap: the same burst */
+	const hifi_party_burst_t *b = hifi_party_bursts_get(&r, 0);
+	CHECK(r.n == 1 && r.total == 1);
+	CHECK(b && b->at_ms == 1000 && b->dur_ms == 100 + HIFI_PARTY_BURST_GAP_MS && b->count == 4 && b->code == 11);
+	hifi_party_bursts_add(&r, 1351 + HIFI_PARTY_BURST_GAP_MS, 5, 0); /* past it: a new one */
+	CHECK(r.n == 2 && r.total == 2);
+	b = hifi_party_bursts_get(&r, 0);
+	CHECK(b && b->at_ms == 1351 + HIFI_PARTY_BURST_GAP_MS && b->dur_ms == 0 && b->count == 5 && b->code == 0);
+	b = hifi_party_bursts_get(&r, 1);
+	CHECK(b && b->at_ms == 1000 && b->count == 4);
+	CHECK(!hifi_party_bursts_get(&r, 2) && !hifi_party_bursts_get(&r, -1));
+	/* the ring keeps the newest, newest first */
+	for (uint32_t i = 0; i < 2 * HIFI_PARTY_BURSTS; i++) hifi_party_bursts_add(&r, 10000 + i * 1000, i + 1, 0);
+	CHECK(r.n == HIFI_PARTY_BURSTS && r.total == 2 + 2 * HIFI_PARTY_BURSTS);
+	b = hifi_party_bursts_get(&r, 0);
+	CHECK(b && b->count == 2 * HIFI_PARTY_BURSTS);
+	b = hifi_party_bursts_get(&r, HIFI_PARTY_BURSTS - 1);
+	CHECK(b && b->count == HIFI_PARTY_BURSTS + 1);
+	/* a clock that went back (a reset log) starts a new burst, not a huge one */
+	hifi_party_bursts_add(&r, 500, 1, 0);
+	b = hifi_party_bursts_get(&r, 0);
+	CHECK(b && b->at_ms == 500 && b->dur_ms == 0 && b->count == 1);
+	/* the millisecond clock wrapping inside a burst */
+	hifi_party_bursts_t w = {0};
+	hifi_party_bursts_add(&w, 0xFFFFFFF0u, 1, 0);
+	hifi_party_bursts_add(&w, 0x10, 1, 0);
+	b = hifi_party_bursts_get(&w, 0);
+	CHECK(w.n == 1 && b && b->dur_ms == 0x20 && b->count == 2);
+}
+
 int main(void) {
 	packets();
 	clock_fit();
@@ -348,5 +434,6 @@ int main(void) {
 	controller(-30);
 	controller(250);
 	gain_and_hist();
+	bursts();
 	return check_report("party");
 }

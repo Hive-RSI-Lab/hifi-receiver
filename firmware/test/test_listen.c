@@ -30,6 +30,8 @@ int main(void) {
 	CHECK(!hifi_listen_allowed(&(hifi_sock_t) T(443), true));
 	CHECK(hifi_listen_allowed(&(hifi_sock_t) LO_T(23), false));   /* loopback only */
 	CHECK(hifi_listen_allowed(&(hifi_sock_t) U(5353), false));
+	CHECK(hifi_listen_allowed(&(hifi_sock_t) U(4951), false));    /* party mode */
+	CHECK(!hifi_listen_allowed(&(hifi_sock_t) T(4951), false));
 	CHECK(hifi_listen_allowed(&(hifi_sock_t) U(68), false));
 	CHECK(!hifi_listen_allowed(&(hifi_sock_t) U(67), false));     /* DHCP server off the AP */
 	CHECK(!hifi_listen_allowed(&(hifi_sock_t) U(53), false));     /* an open resolver */

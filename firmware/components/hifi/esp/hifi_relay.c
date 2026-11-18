@@ -335,9 +335,18 @@ static int f_open(void *ctx, size_t size, const char **slot, const char **err) {
 	ota_t0 = esp_timer_get_time();
 	ota_flash_us = 0;
 	ota_bytes = 0;
+	/* the music stops gracefully before the flash is touched; an update
+	 * that doesn't go ahead gives it back (f_abort) */
+	hifi_quiet_stop("update", false);
 	ota_part = esp_ota_get_next_update_partition(NULL);
-	if (!ota_part) return *err = "no app slot to write", -1;
-	if (esp_ota_begin(ota_part, size, &ota_handle) != ESP_OK) return *err = "couldn't open the app slot", -1;
+	if (!ota_part) {
+		hifi_quiet_release();
+		return *err = "no app slot to write", -1;
+	}
+	if (esp_ota_begin(ota_part, size, &ota_handle) != ESP_OK) {
+		hifi_quiet_release();
+		return *err = "couldn't open the app slot", -1;
+	}
 	ota_flash_us += esp_timer_get_time() - ota_t0;
 	*slot = ota_part->label;
 	return 0;
@@ -363,7 +372,10 @@ static int f_commit(void *ctx, const char **err) {
 	return 0;
 }
 
-static void f_abort(void *ctx) { esp_ota_abort(ota_handle); }
+static void f_abort(void *ctx) {
+	esp_ota_abort(ota_handle);
+	hifi_quiet_release();
+}
 
 /* the web server, the relay and the URL job share the session (L10) */
 static SemaphoreHandle_t ota_mux;
@@ -459,6 +471,7 @@ static void relay_task(void *arg) {
 	for (;;) {
 		vTaskDelay(pdMS_TO_TICKS(2000));
 		hifi_diag_tick();
+		if (hifi_party_poll) hifi_party_poll();
 		uint32_t now = esp_timer_get_time() / 1000000;
 		bool up = hifi_net_ip(NULL, 0);
 		hifi_listen_tick(up);
