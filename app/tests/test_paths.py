@@ -109,6 +109,30 @@ class Paths(unittest.TestCase):
         self.no("Looking for the receiver")
         self.assertTrue(p.js("document.querySelector('#conn').classList.contains('on')"))
 
+    def test_rejoining_the_network_it_is_on_waits_for_the_firmware(self):
+        p = self.open("#setup")
+        self.see("signal")  # on Home already
+        p.type("input[type=text]", "Home", within="Wi-Fi")
+        p.type("input[type=password]", "wrong", within="Wi-Fi")
+        p.click("Join", within="Wi-Fi")
+        self.toast_is("Joining Home")
+        time.sleep(2.5)  # a poll: still on Home, but the new password hasn't been tried yet
+        self.no("Joined Home")
+        p.js("(() => { const n = Date.now; Date.now = () => n() + 11000; })()")  # still on it after a while
+        self.see("Joined Home.")
+
+    def test_a_bug_in_a_page_is_not_a_lost_receiver(self):
+        p = self.open()
+        self.see("Teardrop")
+        infos = len([u for m, u in [c[:2] for c in p.calls("GET")] if u.endswith("api/v1/info")])
+        p.js("window.__play = PAGES.play; PAGES.play = () => { throw new Error('a bug'); }")
+        time.sleep(4.5)  # two polls
+        self.assertTrue(p.js("document.querySelector('#conn').classList.contains('on')"))
+        self.assertEqual(len([u for m, u in [c[:2] for c in p.calls("GET")] if u.endswith("api/v1/info")]), infos)
+        p.js("PAGES.play = window.__play")
+        self.see("Teardrop")
+        self.no("Looking for the receiver")
+
     def test_while_joining_the_lost_receiver_card_says_where_to_look(self):
         p = self.first_run_join("hunter22")
         self.m.srv.rx.fail["state"] = (503, "gone")  # the phone left the receiver's network
@@ -177,7 +201,8 @@ class Paths(unittest.TestCase):
     def test_dj_direct_and_back(self):
         p = self.open()
         p.click("DJ direct", within="Input")
-        self.see("Playing what is plugged into the RCA line in.")
+        self.see("Playing from an input")
+        self.see("The RCA line in, straight to the amplifier.")
         self.assertEqual(p.js("document.querySelector('.np-title').textContent"), "DJ direct")
         p.tab("Sound")
         self.see("DJ direct is on, so the line in skips the EQ")

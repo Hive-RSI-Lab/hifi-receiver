@@ -23,6 +23,9 @@ const INPUT_NOTES = {
   line: 'The RCA line in through the digital path, so the volume, EQ and the sub settings apply. Adds about 0.1 s of delay.',
   optical: 'The optical (TOSLINK) input, through EQ and the sub settings.',
 };
+// the Play card while an input plays
+const DIRECT_NOTES = { dj_direct: 'The RCA line in, straight to the amplifier.',
+  line: 'The RCA line in, through the EQ and the sub settings.', optical: 'The optical (TOSLINK) input.' };
 const IR_ACTIONS = { volup: 'Volume up', voldown: 'Volume down', mute: 'Mute', toggle: 'Play / pause',
   next: 'Next', prev: 'Previous', input: 'Input', power: 'Standby' };
 // The firmware's self-test names (docs/test-api.md), as a person reads them.
@@ -39,8 +42,10 @@ let scan = null;       // Wi-Fi networks from the last scan
 let selftest = null;   // the last self-test result
 let P;                 // GET party, read on the Play page; null when the build has no party mode
 let check = null;      // the last online update check: the reply, or {error} when it failed
-let joining = null;    // {ssid, at}: the Wi-Fi join this page asked for
+let joining = null;    // {ssid, at, was}: the Wi-Fi join this page asked for, and the network it was on
 const JOIN_WAIT_MS = 45000; // a join that hasn't landed by then has failed
+const JOIN_SAME_MS = 10000; // re-joining the network it is on: on it this long after asking counts as joined
+const JOIN_KEEP_MS = 300000; // then the page forgets the join
 
 const $ = (sel, el = document) => el.querySelector(sel);
 
@@ -123,9 +128,10 @@ async function poll() {
     // info again after a restart (an update changes the firmware version) or a gap
     if (!I || !online || (S && st.uptime_s < S.uptime_s)) I = await api('info');
     if (P !== null && tab === 'play') P = await api('party').catch((e) => (e.status === 404 ? null : P));
-    take(st);
+    if (st && st.audio) S = st;
     online = true;
   } catch { online = false; }
+  // one draw per poll; a bug in a page isn't the receiver going away, and
   // whatever went wrong, keep polling
   try { draw(); } finally { $('#conn').classList.toggle('on', online); setTimeout(poll, POLL_MS); }
 }
@@ -184,13 +190,13 @@ function pagePlay() {
   const idle = direct || a.source === 'idle' || !(np.title || np.state === 'play' || np.state === 'pause');
   const title = direct ? INPUTS[a.input] : idle ? 'Nothing playing'
     : np.title || (np.state === 'pause' ? 'Paused' : 'Playing');
-  const sub = direct ? 'Playing what is plugged into the RCA line in.'
+  const sub = direct ? DIRECT_NOTES[a.input] || ''
     : idle ? `Play to “${I.name}” from Spotify, AirPlay, Bluetooth or Lyrion.`
       : [np.artist, np.album].filter(Boolean).join(' — ');
   return [
     powerNotice(),
     h('div.card', {},
-      h('h2', {}, direct ? 'Line in' : idle ? 'Ready' : `Playing from ${SOURCES[a.source] || a.source}`),
+      h('h2', {}, direct ? 'Playing from an input' : idle ? 'Ready' : `Playing from ${SOURCES[a.source] || a.source}`),
       h('div.np-title', {}, title), h('div.np-sub', {}, sub),
       !idle && h('div.row', { style: 'justify-content:center;margin-top:14px' },
         h('button.icon', { 'aria-label': 'Previous', onclick: () => set('control', { action: 'prev' }) }, '⏮'),
@@ -359,7 +365,8 @@ function wifiCard() {
   const join = async (ssid) => {
     if (!ssid) return toast('Choose a network');
     pw.blur(); other.blur(); // or the page stays as it was while the keyboard is up
-    if (await set('wifi', { ssid, password: pw.value })) { joining = { ssid, at: Date.now() }; toast(`Joining ${ssid}…`); draw(); }
+    const was = n.mode === 'sta' ? n.ssid : null;
+    if (await set('wifi', { ssid, password: pw.value })) { joining = { ssid, at: Date.now(), was }; toast(`Joining ${ssid}…`); draw(); }
   };
   const nets = scan || [];
   const j = n.join || joinNow(n);
@@ -367,7 +374,7 @@ function wifiCard() {
     n.mode === 'sta' && h('div.row', {}, h('span.grow', {}, h('b', {}, n.ssid), h('div.dim', {},
       `${n.ip} · signal ${bars(n.rssi)}` + (n.eth ? ' · Ethernet connected' : ''))),
       h('button', { onclick: () => confirm(`Forget ${n.ssid}? The receiver goes back to its own HiFi-… network.`) &&
-        set('wifi/forget', {}) }, 'Forget')),
+        set('wifi/forget', {}).then((ok) => { if (ok) joining = null; }) }, 'Forget')),
     j && h('p', { className: j.state === 'failed' ? 'bad' : 'dim' },
       j.state === 'failed' ? `Could not join ${j.ssid}: ${j.reason || 'wrong password?'}`
         : j.state === 'ok' ? `Joined ${j.ssid}. Reconnect this phone to it and open http://${n.hostname}.local (${j.ip}).`
@@ -386,9 +393,12 @@ function wifiCard() {
 // The firmware answers a join at once and says nothing more: the result
 // shows in net (on the network asked for, or not yet when the wait is up).
 function joinNow(n) {
+  if (joining && Date.now() - joining.at > JOIN_KEEP_MS) joining = null;
   if (!joining) return null;
-  const { ssid, at } = joining;
-  if (n.mode === 'sta' && n.ssid === ssid && n.ip) return { ssid, state: 'ok', ip: n.ip };
+  const { ssid, at, was } = joining;
+  // already on it: the firmware hasn't tried the new password yet, so wait a little
+  const settled = was !== ssid || Date.now() - at > JOIN_SAME_MS;
+  if (n.mode === 'sta' && n.ssid === ssid && n.ip && settled) return { ssid, state: 'ok', ip: n.ip };
   if (Date.now() - at > JOIN_WAIT_MS) return { ssid, state: 'failed', reason: 'check the password and that it is a 2.4 GHz network' };
   return { ssid, state: 'joining' };
 }
