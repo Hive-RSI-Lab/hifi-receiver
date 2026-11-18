@@ -300,6 +300,15 @@ int hifi_party_jb_put(hifi_party_jb_t *jb, int64_t k, const void *frames, int n,
 	if (jb->floor < 0) jb->floor = p;
 	if (p < jb->floor) {
 		jb->old++;
+		int64_t behind = jb->floor + 1 - p; /* packets behind the one playing */
+		if (behind < jb->nslots && jb->have[p % jb->nslots] == p) {
+			jb->old_dup++;
+		} else {
+			static const int64_t bound[] = HIFI_PARTY_LATE_BOUNDS;
+			int b = 0;
+			while (b < HIFI_PARTY_LATE_BINS - 1 && behind > bound[b]) b++;
+			jb->late[b]++;
+		}
 		return HIFI_PARTY_PUT_OLD;
 	}
 	if (p >= jb->floor + jb->nslots) {

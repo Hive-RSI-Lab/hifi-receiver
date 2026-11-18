@@ -187,6 +187,11 @@ double hifi_party_target(int64_t k_ref, int64_t t_ref, uint32_t rate_mhz, double
 
 /* ------------------------------------------------------------ jitter buffer */
 
+/* late-packet bins, upper bounds in packets (about 8 ms each): 0-50 ms,
+ * 50-100, 100-300, 300-600, more */
+#define HIFI_PARTY_LATE_BINS 5
+#define HIFI_PARTY_LATE_BOUNDS {6, 12, 37, 75}
+
 typedef enum {
 	HIFI_PARTY_PUT_OK = 0,
 	HIFI_PARTY_PUT_DUP = 1,  /* held already */
@@ -209,6 +214,10 @@ typedef struct {
 	int gap_run, fade_in;
 	/* counters */
 	uint32_t got, dup, old, bad, skipped, nacked, missing_frames, gaps;
+	/* the old ones split: old_dup a packet already played (still in its slot),
+	 * late[] the rest by how far behind the play position they came, in
+	 * packets (HIFI_PARTY_LATE_BOUNDS: up to 6, 12, 37, 75, more) */
+	uint32_t old_dup, late[HIFI_PARTY_LATE_BINS];
 } hifi_party_jb_t;
 
 /* bytes of caller memory a buffer of nslots needs */

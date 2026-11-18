@@ -707,7 +707,10 @@ answers `on` with 409 (party carries 16-bit).
 
 `GET /api/v1/party/stats` (409 when party is off): the clock offsets, the
 jitter buffer's counts (`got`, `dup`, `old`, `skip`, `gaps`, `miss`), the
-rate controller and the heap, for the bench's `party_run.py`.
+rate controller and the heap, for the bench's `party_run.py`. Of `old`,
+`od` counts packets that had played already, and `ol` the rest by how late
+they came: up to 6 packets behind the one playing, 12, 37, 75, more (about
+50, 100, 300, 600 ms).
 
 ## Wi-Fi and updates from the app
 
