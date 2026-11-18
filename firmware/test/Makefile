@@ -45,7 +45,7 @@ UP := $(BIN)/upstream
 CSPOT := components/spotify/cspot
 BELL := $(CSPOT)/bell/main
 NANOPB := $(CSPOT)/bell/external/nanopb
-UP_FILES = components/squeezelite/controls.c components/driver_bt/bt_app_sink.c \
+UP_FILES = components/squeezelite/controls.c components/squeezelite/decode_external.c components/driver_bt/bt_app_sink.c \
 	components/driver_bt/bt_app_core.c components/spotify/Shim.cpp components/spotify/cspot/src/LoginBlob.cpp \
 	components/spotify/cspot_private.h components/spotify/cspot_sink.h $(CSPOT)/include/LoginBlob.h \
 	$(CSPOT)/include/ConstantParameters.h $(CSPOT)/bell/external/cJSON/cJSON.c $(CSPOT)/bell/external/cJSON/cJSON.h \
@@ -83,18 +83,23 @@ upstream:
 	python3 upstream/upstream.py extract $(UP)/components/squeezelite/controls.c \
 	  connect_cli_socket cli_send_cmd > $(UP)/gen/controls_fns.c && \
 	python3 upstream/upstream.py extract $(UP)/components/driver_bt/bt_app_sink.c \
-	  IDLE_RELEASE_S IDLE_CHECK_S idle_check LET_GO_MS let_go_check bt_sink_let_go bt_disconnect \
-	  bt_av_hdl_a2d_evt > $(UP)/gen/bt_fns.c && \
+	  IDLE_RELEASE_S IDLE_CHECK_S idle_check LET_GO_MS HOLD_NO_RN_MS HOLD_MAX_MS let_go_check hold_cancel \
+	  bt_sink_let_go bt_disconnect bt_sink_take hold_expired hold_check bt_av_hdl_a2d_evt \
+	  bt_av_notify_evt_handler > $(UP)/gen/bt_fns.c && \
 	python3 upstream/upstream.py extract $(UP)/components/raop/rtp.c \
 	  rtp_take_from rtp_check_stalled > $(UP)/gen/rtp_fns.c && \
+	python3 upstream/upstream.py extract $(UP)/components/squeezelite/decode_external.c \
+	  source_decide phone_takeover sink_data_handler cspot_volume_apply cspot_cmd_handler \
+	  decode_phones_yield > $(UP)/gen/ext_fns.c && \
 	$(CC) $(UP_CFLAGS) -o $(UP)/test_up_controls upstream/test_up_controls.c && \
 	$(CC) $(UP_CFLAGS) -o $(UP)/test_up_bt upstream/test_up_bt.c && \
 	$(CC) $(UP_CFLAGS) -I$(UP)/components/raop -o $(UP)/test_up_dmap upstream/test_up_dmap.c && \
-	$(CC) $(UP_CFLAGS) -o $(UP)/test_up_rtp upstream/test_up_rtp.c || exit 1; \
+	$(CC) $(UP_CFLAGS) -o $(UP)/test_up_rtp upstream/test_up_rtp.c && \
+	$(CC) $(UP_CFLAGS) -o $(UP)/test_up_ext upstream/test_up_ext.c -lm || exit 1; \
 	mkdir -p $(UP)/alac && (cd $(UP)/alac && $(CC) $(ALAC_FLAGS) -c $(addprefix $(abspath $(UP))/$(ALAC_DIR)/,$(ALAC_C))) && \
 	$(CXX) $(ALAC_FLAGS) -o $(UP)/test_up_alac upstream/test_up_alac.cpp $(ALAC_SRCS) $(UP)/alac/*.o || exit 1; \
 	fail=0; $(UP)/test_up_controls || fail=1; $(UP)/test_up_bt || fail=1; $(UP)/test_up_dmap || fail=1; \
-	$(UP)/test_up_rtp || fail=1; \
+	$(UP)/test_up_rtp || fail=1; $(UP)/test_up_ext || fail=1; \
 	$(UP)/test_up_alac || fail=1; \
 	$(CC) -std=gnu11 -w -DPUBLIC -I$(UP)/components/codecs/inc/mad -o $(UP)/mad_layout_h mad/layout.c && \
 	$(CC) -std=gnu11 -w -include mad/host_config.h -I$(MAD_SRC) -o $(UP)/mad_layout_lib mad/layout.c && \

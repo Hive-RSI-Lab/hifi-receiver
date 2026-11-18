@@ -468,8 +468,10 @@ void hifi_quiet_release(void) {
 
 /* A phone source hands the output to another (decode_external.c's
  * phone_takeover, patch 0034): squeezelite's gain fades to 0 before the old
- * source is paused and the buffer emptied, and is held there until the new
- * source owns the output, so the switch has no pop. Only the digital gain:
+ * source is paused and the buffer emptied, and comes back once the buffer is
+ * empty, a moment before the new source claims the output: nothing plays in
+ * between, so the switch has no pop. Blocks the caller's task for the 200 ms
+ * of the ramp. Only the digital gain:
  * the amps and the codec stay on, the next source plays at once */
 static volatile bool handover;
 
