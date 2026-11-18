@@ -75,8 +75,8 @@ typedef struct {
 	bool limiting;
 	uint32_t events;
 	int amps;          /* stereo amps playing the program: Ultra's zone B makes 2 */
-	/* which side both speakers play after the governor (hifi_chan_t: the
-	 * Lite's mixers route after it), so left/right count that side twice */
+	/* which side both speakers play after the governor (hifi_chan_t:
+	 * hifi_chan_mix runs after it on the Lite), so left/right count that side twice */
 	int chan;
 	float heat_def_w, heat_def2_w; /* the board's thermal_out_w and _out2_w */
 	hifi_gov_why_t why;

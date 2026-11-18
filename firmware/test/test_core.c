@@ -322,20 +322,39 @@ static void chan_regs(void) {
 	CHECK(r.mix[0] == 0x58 && r.mix[1] == 0x18 && r.mix[2] == 0x18 && r.mix[3] == 0x58 && r.dac_vol == 0);
 	hifi_chan_regs(HIFI_CHAN_STEREO, true, 3, false, &r); /* muted: nothing in the mix */
 	CHECK(r.mix[0] == 0x18 && r.mix[1] == 0x18 && r.mix[2] == 0x18 && r.mix[3] == 0x18);
-	/* left: the left side to both outputs, the right side nowhere */
-	hifi_chan_regs(HIFI_CHAN_LEFT, false, 7, true, &r);
-	CHECK(r.mix[0] == 0xB8 && r.mix[1] == 0x38 && r.mix[2] == 0xB8 && r.mix[3] == 0x38 && r.dac_vol == 0);
-	hifi_chan_regs(HIFI_CHAN_RIGHT, false, 7, true, &r);
-	CHECK(r.mix[0] == 0x38 && r.mix[1] == 0xB8 && r.mix[2] == 0x38 && r.mix[3] == 0xB8 && r.dac_vol == 0);
+	/* the cross mixes do nothing on the ES8388: a stream stays stereo on the
+	 * codec in every mode (hifi_chan_mix does the channel), at 0 dB */
+	for (int c = HIFI_CHAN_LEFT; c <= HIFI_CHAN_MONO; c++) {
+		hifi_chan_regs((hifi_chan_t) c, false, 7, true, &r);
+		CHECK(r.mix[0] == 0xB8 && r.mix[1] == 0x38 && r.mix[2] == 0x38 && r.mix[3] == 0xB8 && r.dac_vol == 0);
+	}
+	/* DJ direct can't cross: left or right plays that side on its own output */
+	hifi_chan_regs(HIFI_CHAN_LEFT, true, 3, true, &r);
+	CHECK(r.mix[0] == 0x58 && r.mix[1] == 0x18 && r.mix[2] == 0x18 && r.mix[3] == 0x18);
 	hifi_chan_regs(HIFI_CHAN_RIGHT, true, 3, true, &r);
-	CHECK(r.mix[0] == 0x18 && r.mix[1] == 0x58 && r.mix[2] == 0x18 && r.mix[3] == 0x58);
-	/* mono: both sides to both outputs at half level: DAC -6 dB, LIN a further -6 dB */
-	hifi_chan_regs(HIFI_CHAN_MONO, false, 7, true, &r);
-	CHECK(r.mix[0] == 0xB8 && r.mix[1] == 0xB8 && r.mix[2] == 0xB8 && r.mix[3] == 0xB8 && r.dac_vol == 12);
+	CHECK(r.mix[0] == 0x18 && r.mix[1] == 0x18 && r.mix[2] == 0x18 && r.mix[3] == 0x58);
+	/* and mono plays stereo, at the set level */
 	hifi_chan_regs(HIFI_CHAN_MONO, true, 3, true, &r);
-	CHECK(r.mix[0] == 0x68 && r.mix[1] == 0x68 && r.mix[2] == 0x68 && r.mix[3] == 0x68 && r.dac_vol == 0);
+	CHECK(r.mix[0] == 0x58 && r.mix[1] == 0x18 && r.mix[2] == 0x18 && r.mix[3] == 0x58 && r.dac_vol == 0);
 	hifi_chan_regs(HIFI_CHAN_MONO, true, 3, false, &r);
-	CHECK(r.mix[0] == 0x28 && r.mix[3] == 0x28);
+	CHECK(r.mix[0] == 0x18 && r.mix[3] == 0x18);
+
+	/* the channel in the DSP, on 16- and 32-bit frames */
+	int16_t s16[4] = {1000, -3000, 32767, 32767};
+	hifi_chan_mix(HIFI_CHAN_STEREO, s16, 2, 4);
+	CHECK(s16[0] == 1000 && s16[1] == -3000);
+	hifi_chan_mix(HIFI_CHAN_MONO, s16, 2, 4);
+	CHECK(s16[0] == -1000 && s16[1] == -1000 && s16[2] == 32767 && s16[3] == 32767); /* no wrap at full scale */
+	int16_t l16[2] = {5, 9}, r16[2] = {5, 9};
+	hifi_chan_mix(HIFI_CHAN_LEFT, l16, 1, 4);
+	hifi_chan_mix(HIFI_CHAN_RIGHT, r16, 1, 4);
+	CHECK(l16[0] == 5 && l16[1] == 5 && r16[0] == 9 && r16[1] == 9);
+	int32_t s32[4] = {INT32_MAX, INT32_MAX, INT32_MIN, 2};
+	hifi_chan_mix(HIFI_CHAN_MONO, s32, 2, 8);
+	CHECK(s32[0] == INT32_MAX && s32[1] == INT32_MAX && s32[2] == INT32_MIN / 2 + 1 && s32[3] == s32[2]);
+	int32_t l32[2] = {7, -7};
+	hifi_chan_mix(HIFI_CHAN_RIGHT, l32, 1, 8);
+	CHECK(l32[0] == -7 && l32[1] == -7);
 
 	/* the same routing as gains, for the self-test's loopback check */
 	float g[2];

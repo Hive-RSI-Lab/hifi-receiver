@@ -160,7 +160,7 @@ static esp_err_t codec_apply(hifi_input_t in, bool on, float sub_db, const hifi_
 		err |= hifi_i2c_write(ES8388_ADDR, ES8388_LOUT1VOL, ES8388_OUT1_FULL);
 		err |= hifi_i2c_write(ES8388_ADDR, ES8388_ROUT1VOL, ES8388_OUT1_FULL);
 	}
-	/* which side reaches which mixer (and mono's half-level DAC) */
+	/* the mixers: stereo for the DAC, DJ direct's side (hifi_chan_regs) */
 	for (int i = 0; i < 4; i++) err |= hifi_i2c_write(ES8388_ADDR, HIFI_CHAN_MIX_FIRST + i, cr.mix[i]);
 	err |= hifi_i2c_write(ES8388_ADDR, HIFI_CHAN_DACVOL_L, cr.dac_vol);
 	err |= hifi_i2c_write(ES8388_ADDR, HIFI_CHAN_DACVOL_R, cr.dac_vol);
