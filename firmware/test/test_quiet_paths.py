@@ -118,6 +118,10 @@ check("quiet_mux" in rel and "quiet_mux" in code(body(main, "void hifi_quiet_sto
 # nothing raises squeezelite's gain while a stop holds it at 0
 check("!quiet_req" in code(body(main, "static void apply_volume(void) {")), "apply_volume: must not raise the gain during a stop")
 check("quiet_req" in code(body(main, "bool hifi_volume_hook(")), "hifi_volume_hook: must hold the stream at 0 during a stop")
+# squeezelite's unity save/restore writes its gain directly: no tone or line copy starts or stops during a stop
+check("quiet_req" in code(body(main, "static int op_tone_start(")), "op_tone_start: must refuse during a stop")
+check("quiet_req" in code(body(main, "static void tone_main(")), "tone_main: must not stop the sink during a stop")
+check(code(body(main, "static void line_main(")).count("quiet_req") >= 2, "line_main: no line start or stop during a stop")
 
 # 6. Lite's boot: SDZ is driven low before the pin becomes an output
 init = code(body(read(HIFI, "esp", "board_lite.c"), "void hifi_bsp_init("))

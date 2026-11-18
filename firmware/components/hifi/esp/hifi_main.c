@@ -720,6 +720,8 @@ static void tone_main(void *arg) {
 			hifi_sink_write((const uint8_t *) buf, n * 4);
 		}
 		for (int i = 0; i < 50 && hifi_sink_queued_ms() > 0; i++) vTaskDelay(pdMS_TO_TICKS(10));
+		/* squeezelite's stop puts its saved gain back past our gate: not during a stop */
+		while (quiet_req) vTaskDelay(pdMS_TO_TICKS(20));
 		hifi_sink_stop();
 		apply_volume(); /* anything set while the tone played */
 	}
@@ -754,11 +756,11 @@ static void line_main(void *arg) {
 		}
 		int src = hifi_sink_source ? hifi_sink_source() : 0;
 		if (owns && src != 6) owns = false; /* a tone or a stream took the output */
-		if (!want && owns) {
+		if (!want && owns && !quiet_req) { /* a stop holds the gain where it is */
 			hifi_sink_stop();
 			owns = false;
 		}
-		if (want && ((!owns && src == 0 && !tone_active) || (owns && owned_dj != dj))) {
+		if (want && !quiet_req && ((!owns && src == 0 && !tone_active) || (owns && owned_dj != dj))) {
 			hifi_line_start(LINE_RATE, dj);
 			owns = true;
 			owned_dj = dj;
@@ -941,6 +943,10 @@ static int op_tone_start(const hifi_tone_params_t *p, bool force, const char **e
 	if (!hifi_sink_start || !tone_task) {
 		*err = "this build has no audio output";
 		return 500;
+	}
+	if (quiet_req) { /* squeezelite's unity step would get past the stop's ramp */
+		*err = "a restart or an update is under way";
+		return 409;
 	}
 	LOCK();
 	hifi_pwr_state_t st = power.state;
