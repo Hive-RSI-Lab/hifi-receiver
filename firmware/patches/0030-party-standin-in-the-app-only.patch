@@ -1,0 +1,20 @@
+hifi party stand-in (CONFIG_HIFI_PARTY_STANDIN, board/lite-party-standin): the
+stand-in (components/hifi/esp/party_standin.c) links into the app only, like
+patch 0017 does for the lab's Bluetooth experiments. hifi_main.c refers to it
+weakly, so the recovery image never sends. Measurement images only.
+
+diff --git a/components/platform_console/app_squeezelite/CMakeLists.txt b/components/platform_console/app_squeezelite/CMakeLists.txt
+--- a/components/platform_console/app_squeezelite/CMakeLists.txt
++++ b/components/platform_console/app_squeezelite/CMakeLists.txt
+@@ -27,6 +27,11 @@ endif()
+ if(CONFIG_HIFI_LAB_PSRAM_STACKS)
+ 	target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=lab_flac")
+ endif()
++# hifi: and the party stand-in, a measurement task that sends to one board;
++# the recovery app must never send
++if(CONFIG_HIFI_PARTY_STANDIN)
++	target_link_libraries(${COMPONENT_LIB} INTERFACE "-Wl,--undefined=hifi_party_standin_start")
++endif()
+ 
+ idf_build_get_property(project_ver PROJECT_VER)
+ message("******************* ${project_ver}")

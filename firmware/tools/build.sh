@@ -97,6 +97,16 @@ for lab in lab_flac:0027 lab_party:0031; do
 		exit 1
 	fi
 done
+# the party stand-in (a measurement task that sends) is in the app when the
+# sdkconfig asks for it, and never in recovery (patch 0030)
+if grep -q '^CONFIG_HIFI_PARTY_STANDIN=y' sdkconfig && ! grep -q "(party_standin.c.obj)" build/squeezelite.map; then
+	echo "build.sh: the party stand-in is enabled but not linked into the app (patch 0030)" >&2
+	exit 1
+fi
+if grep -q "(party_standin.c.obj)" build/recovery.map; then
+	echo "build.sh: the party stand-in is linked into the recovery image (patch 0030)" >&2
+	exit 1
+fi
 # boot the main app (ota_0) after a flash from scratch, not the recovery app
 # that IDF's all-0xff otadata selects (tools/otadata.py says why)
 python3 "$FW/tools/otadata.py" build/ota_data_initial.bin

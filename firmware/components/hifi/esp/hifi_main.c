@@ -54,7 +54,9 @@
 #include "hifi_lab_esp.h"
 #endif
 #ifdef CONFIG_HIFI_PARTY_STANDIN
-void hifi_party_standin_start(void); /* esp/party_standin.c, a measurement image only */
+/* esp/party_standin.c, a measurement image only, linked into the app alone
+ * (patch 0030): weak, so the recovery image has none and never sends */
+void hifi_party_standin_start(void) __attribute__((weak));
 #endif
 #include "hifi_json.h"
 #include "hifi_line.h"
@@ -1322,6 +1324,10 @@ static void op_selftest(hifi_selftest_t *t) {
 	}
 	int strays = hifi_listen_now(why, sizeof(why));
 	hifi_selftest_add(t, "listeners", strays == 0, "%s", why);
+#ifdef CONFIG_HIFI_PARTY_STANDIN
+	hifi_selftest_add(t, "party_standin", false, "measurement image, %s to %s",
+			  hifi_party_standin_start ? "sending" : "not linked", CONFIG_HIFI_PARTY_STANDIN_PEER);
+#endif
 #ifdef CONFIG_HIFI_LAB
 	hifi_lab_esp_selftest(t);
 #endif
@@ -1811,7 +1817,7 @@ static bool hifi_init(void) {
 	hifi_lab_esp_init();
 #endif
 #ifdef CONFIG_HIFI_PARTY_STANDIN
-	hifi_party_standin_start();
+	if (hifi_party_standin_start) hifi_party_standin_start();
 #endif
 	hifi_remote_start(&hifi_ops);
 	hifi_bsp_start();

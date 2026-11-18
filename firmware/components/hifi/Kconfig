@@ -51,15 +51,15 @@ config HIFI_PSRAM_STACKS
 
 config HIFI_PARTY_STANDIN
 	bool "A stand-in for the party leader's worker (a measurement image)"
-	depends on SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY
 	default n
 	help
 		esp/party_standin.c: a task of the party worker's shape (6 KB stack
-		in PSRAM, one UDP socket, about 125 packets of 1452 B a second) that
-		sends to one follower, so the leader's internal RAM can be measured
+		in PSRAM, one UDP socket, 125 packets of 1454 B a second) that
+		sends to one follower on the station's subnet, so the leader's internal RAM can be measured
 		with Bluetooth or another source playing before the real worker is
-		on a board. Set only by board/lite-party-standin; never in a
-		product image.
+		on a board. Needs SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY. The app only
+		(patch 0030), never recovery; the self-test fails while it is in.
+		Set only by board/lite-party-standin; never in a product image.
 
 config HIFI_PARTY_STANDIN_PEER
 	string "The follower's IPv4 address the stand-in sends to"
