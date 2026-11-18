@@ -771,6 +771,9 @@ on the router: no UPnP, no port forward, broadcast only on the subnet.
   longest wait).
 - `bt`: whether the Bluetooth sink is on. It stays on only on a picked
   leader or while Bluetooth plays: connect the phone before switching party on.
+  A follower keeps its Wi-Fi awake (station power save none) once its
+  Bluetooth is off, and goes back to power save min before Bluetooth comes
+  back on (party off, or it leads).
 
 `POST /api/v1/party` with `{"op": ...}` replies with the same JSON:
 
