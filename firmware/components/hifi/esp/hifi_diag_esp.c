@@ -10,6 +10,9 @@
 #include <string.h>
 
 #include "esp_event.h"
+#include "esp_freertos_hooks.h"
+#include "esp_private/esp_clk.h"
+#include "hal/cpu_hal.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
 #include "esp_timer.h"
@@ -39,6 +42,26 @@ static bool events_on;
 static SemaphoreHandle_t task_lock;
 static hifi_diag_tasks_t *last; /* the last CPU sample, PSRAM */
 
+/* Free CPU, lab probe: each core's idle hook returns false, so the idle task
+ * spins (no WAITI) and the hook sees the cycle counter at every pass. A gap no
+ * longer than a few passes is time nothing else had the core, neither a task
+ * nor an interrupt; a longer one is something that ran. FreeRTOS run-time
+ * stats bill interrupt time to the task they cut into, so idle_pct counts the
+ * Wi-Fi and Bluetooth interrupts on core 0 as idle; this doesn't. Each counter
+ * is written only by its own core; 32 bits wrap after ~17 s at 240 MHz, far
+ * more than the 1 s sample. */
+static volatile uint32_t free_cyc[2];
+static uint32_t last_cc[2], min_gap[2] = {UINT32_MAX, UINT32_MAX};
+
+static bool free_hook(void) {
+	int c = xPortGetCoreID();
+	uint32_t now = cpu_hal_get_cycle_count(), gap = now - last_cc[c];
+	last_cc[c] = now;
+	if (gap < min_gap[c] && gap >= 20) min_gap[c] = gap;
+	if (min_gap[c] != UINT32_MAX && gap <= min_gap[c] * 3 + 64) free_cyc[c] += gap;
+	return false;
+}
+
 static uint32_t now_ms(void) { return (uint32_t) (esp_timer_get_time() / 1000); }
 
 /* ------------------------------------------------------------------ boot */
@@ -46,6 +69,8 @@ static uint32_t now_ms(void) { return (uint32_t) (esp_timer_get_time() / 1000); 
 void hifi_diag_init(void) {
 	boot_app_ms = now_ms();
 	task_lock = xSemaphoreCreateMutex();
+	esp_register_freertos_idle_hook_for_cpu(free_hook, 0);
+	esp_register_freertos_idle_hook_for_cpu(free_hook, 1);
 	if (hifi_crash_restart_cause()) ESP_LOGW(TAG, "last restart: %s", hifi_crash_restart_cause());
 	nvs_handle_t h;
 	if (nvs_open(NS, NVS_READWRITE, &h) != ESP_OK) {
@@ -218,14 +243,18 @@ static int tasks(hifi_diag_tasks_t *out, bool fresh) {
 		hifi_diag_tasks_t *b = heap_caps_calloc(1, sizeof(*b), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
 		uint32_t t0 = 0, t1 = 0;
 		if (st && a && b && sample(b, st, &t0)) {
+			uint32_t f0[2] = {free_cyc[0], free_cyc[1]};
 			int na = b->n;
 			memcpy(a, b->t, sizeof(a[0]) * (size_t) na);
 			vTaskDelay(pdMS_TO_TICKS(1000));
 			if (sample(b, st, &t1)) {
+				uint32_t f1[2] = {free_cyc[0], free_cyc[1]};
 				/* the counter is esp_timer µs, the same on both cores */
 				uint32_t el = t1 - t0;
 				b->sample_ms = el / 1000;
 				hifi_diag_cpu(a, na, b, el);
+				double cyc = (double) el * (esp_clk_cpu_freq() / 1000000);
+				for (int c = 0; c < 2; c++) b->free_pct[c] = cyc > 0 ? (float) (100.0 * (uint32_t) (f1[c] - f0[c]) / cyc) : NAN;
 				*last = *b;
 			} else {
 				r = b->n < 0 ? -b->n : -2;

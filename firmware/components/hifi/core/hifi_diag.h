@@ -36,6 +36,7 @@ typedef struct {
 	int n;
 	uint32_t sample_ms; /* how long the CPU sample ran; 0: no CPU figures */
 	float idle_pct[2];  /* each core's idle task, % of that core; NaN: unknown */
+	float free_pct[2];  /* each core's cycles the idle task spun through unbroken (no task, no interrupt), %; 0 or NaN: not measured */
 	hifi_diag_task_t t[HIFI_DIAG_TASKS_MAX];
 } hifi_diag_tasks_t;
 
