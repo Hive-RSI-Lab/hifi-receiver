@@ -701,13 +701,17 @@ on the router: no UPnP, no port forward, broadcast only on the subnet.
 | `lead` | LAN, USB, Hive | this board leads; the old leader follows it. 409 when party is off or memory is low, 429 a few seconds after its own last `lead`. |
 | `key` | USB, Hive | `{"op": "key", "secret": "<64 hex>"}` sets the party key (all zeros is refused). Never shown back; `key_id` is one byte of its hash. |
 | `tone` | USB, Hive | `{"op": "tone", "on": true}`: the leader's sync test tone, for the bench. An idle leader takes the output at 44.1 kHz for it. |
+| `pair` | USB, Hive | `{"op": "pair", "n": 2}`: the leader starts a stream packet only with two ready and sends them back to back, so the radio can send both in one exchange. `n` is 1 (the default) or 2; it holds across party off and on until a restart. For the bench's A/B. |
 
-`key` and `tone` from the LAN are 403. An image built for 32-bit frames
+`key`, `tone` and `pair` from the LAN are 403. An image built for 32-bit frames
 answers `on` with 409 (party carries 16-bit).
 
 `GET /api/v1/party/stats` (409 when party is off): the clock offsets, the
 jitter buffer's counts (`got`, `dup`, `old`, `skip`, `gaps`, `miss`), the
-rate controller and the heap, for the bench's `party_run.py`.
+rate controller and the heap, for the bench's `party_run.py`. On a leader,
+`net.pk` counts stream packets sent (no resends or clocks; one held and then
+dropped as too late is also in `net.hold[1]`) and `net.pair` is the `pair`
+setting.
 
 ## Wi-Fi and updates from the app
 
