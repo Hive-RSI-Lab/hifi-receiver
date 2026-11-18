@@ -47,6 +47,10 @@ void hifi_bsp_quiet_mute(bool on);
 void hifi_bsp_amp_off_now(void);
 void hifi_bsp_quiet_release(void); /* forget the ramp's starting levels */
 
+/* The volume buttons (true = held), for the − + pairing combo (hifi_pair.h);
+ * false on a board whose buttons the firmware can't read this way. */
+bool hifi_bsp_vol_buttons(bool *down, bool *up);
+
 /*
  * Puts the input (stream or DJ direct), the sub and, where the analog path
  * skips squeezelite, the volume onto the board's parts. Returns false

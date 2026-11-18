@@ -57,9 +57,9 @@ enclosure on main at 18ceb29.
 | Plus and Ultra rear panels, size, terminals | their enclosures | TBD |
 | Ventilation clearance: 5 cm above and behind | the manual | proposed |
 
-**Mismatch left for the board and enclosure:** both READMEs call SW3 "play/source
-(hold = BT pairing)". The firmware has no pairing mode and maps hold to standby;
-the manual follows the firmware.
+Both board READMEs call SW3 "play/source (hold = BT pairing)". The firmware
+now matches that: ▶ held 1 s starts Bluetooth pairing mode (see the 2026-11-18
+section below).
 
 ## From the firmware (261028-165619-70c34f28b3)
 
@@ -69,8 +69,8 @@ and `firmware/patches/0001-hifi-receiver-hooks.patch`, and what its worker told 
 | Fact | Manual | Status |
 |---|---|---|
 | Hostname `hifi-lite` (`hifi-lite.local`); a second box is `hifi-lite-2.local` | §6, §8 | source |
-| Lite buttons: − press = volume down, hold 1 s = previous; + press = up, hold = next; ▶ press = play/pause, hold = standby; no double press | QS 5, §8 | source |
-| No Bluetooth pairing mode: discoverable whenever no phone is connected | QS 4, §7 | source |
+| Lite buttons: − press = volume down, hold 1 s = previous; + press = up, hold = next; ▶ press = play/pause, hold = standby; no double press | QS 5, §8 | superseded: ▶ taps and hold, and the − + combo (below) |
+| No Bluetooth pairing mode: discoverable whenever no phone is connected | QS 4, §7 | superseded: pairing mode (below) |
 | Factory reset from the app only (`POST /api/v1/reset {factory:true}`); it erases all of NVS, so Bluetooth phones and remote keys too | §10 | source |
 | Status light blinks during Wi-Fi setup; no blue | §11 | source; the steady pattern is TBD at bring-up |
 | Setup network: SSID `hifi-lite` with squeezelite-esp32's MAC suffix (`register_default_with_mac`), password `squeezelite`, portal at 192.168.4.1 | QS 3, §6, §10 | source (sdkconfig); the exact suffix format is to confirm at bring-up |
@@ -96,7 +96,7 @@ Its `docs/app.md` and `app/web/app.js`.
 |---|---|
 | Tabs **Play**, **Sound**, **Setup**; the app shows only what `caps` says the tier has | source |
 | Play: now playing, Previous, Play / pause, Next, Volume, Mute, **Input** (Streaming, DJ direct; Plus/Ultra Line in; Ultra Optical), Zone B speakers | source |
-| No source picker for streams; no Bluetooth pair button (the Name card says the receiver can be found when no other phone is connected) | source |
+| No source picker for streams; no Bluetooth pair button (the Name card says the receiver can be found when no other phone is connected) | superseded: Setup → Bluetooth → Pair a new phone (below) |
 | Sound: Equaliser (10 bands, ±12 dB, presets Flat, Bass +, Loudness, Vocal, Treble -), Subwoofers (Sub outputs, Level, Crossover 40–160 Hz, Take the deep bass off the main speakers; per sub Trim −12..+6 dB, Delay 0–20 ms, Phase 0°/180°), Volume limit 30–100 | source |
 | Setup: Wi-Fi (Scan for networks, Choose, Join, Forget), Name, Remote (Teach per action, Forget all), Updates (Check for updates, Install, From a file…), About and diagnostics (Run self-test, Restart, Factory reset) | source |
 | Notices: Speakers off: charger too weak; Speakers off: the supply is out of range; Power limit; Amplifier fault + Clear; Update failed; "Looking for the receiver…" | source |
@@ -111,6 +111,20 @@ Its `docs/app.md` and `app/web/app.js`.
   level stops at −9 dB (0.35 Vrms, enough for a sub's line input with its
   own gain knob). The manual gives no range for Level.
 - No balance control in either, so the manual dropped it.
+
+## Bluetooth pairing mode and chimes (2026-11-18)
+
+From `firmware/components/hifi/core/hifi_pair.c/.h`, `hifi_main.c`, patch
+`0037-bt-hidden-pairing-mode-chimes.patch`, `app/web/app.js` (`btCard`) and
+`docs/test-api.md` (`POST /api/v1/bt/pair`).
+
+| Fact | Manual | Status |
+|---|---|---|
+| The Bluetooth sink is connectable but not discoverable, except in pairing mode; paired phones reconnect as before | QS 4, §7, §12 | source; board check pending |
+| Pairing mode: − and + held together 2 s (Lite), ▶ (Ultra: knob) held 1 s, or the app's **Pair a new phone**; 120 s; ends on timeout, when a phone connects, or **Cancel**; starting it drops a connected phone | QS 4, QS 5, §7, §8 | source |
+| Lite ▶: 1 tap play/pause, 2 next, 3 previous (`hifi_tap`); hold 1 s pairing mode | QS 5, §8 | source |
+| Chimes: pairing mode three notes up (C6 E6 G6), connect two up (G5 C6), disconnect two down (C6 G5); 0.33–0.44 s; generated, not stored | §7 | source |
+| Chime level: −14 dBFS at volume 100 scaled by the volume, never above −20 dBFS after it; none when muted; only when nothing else is playing (not over line in or a stream) | §7 | source |
 
 ## From the bench (`bench/`, `docs/bench.md`)
 

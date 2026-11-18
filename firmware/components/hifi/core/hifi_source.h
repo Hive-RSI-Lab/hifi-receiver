@@ -17,6 +17,12 @@
  * its audio starts, and that start takes the output), so a stray resume
  * can't leave the output running with no owner; while LMS, a test signal,
  * the line in or a party plays it is refused, as before.
+ *
+ * A chime (hifi_pair.h: pairing mode, a phone connected or gone) owns the
+ * output for half a second but yields to everything: any source's event is
+ * allowed outright, so Bluetooth audio starting just after a connect chime
+ * starts as it would have, and the chime stops (its task sees it lost the
+ * output).
  */
 #ifndef HIFI_SOURCE_H
 #define HIFI_SOURCE_H
@@ -24,7 +30,8 @@
 #include <stdbool.h>
 
 /* who owns the output: decode_external.c's DECODE_* values */
-enum { HIFI_SRC_NONE = 0, HIFI_SRC_BT, HIFI_SRC_RAOP, HIFI_SRC_CSPOT, HIFI_SRC_TEST, HIFI_SRC_LINE, HIFI_SRC_PARTY };
+enum { HIFI_SRC_NONE = 0, HIFI_SRC_BT, HIFI_SRC_RAOP, HIFI_SRC_CSPOT, HIFI_SRC_TEST, HIFI_SRC_LINE, HIFI_SRC_PARTY,
+       HIFI_SRC_CHIME };
 
 typedef enum {
 	HIFI_EV_START,   /* the source starts playing: may take the output */

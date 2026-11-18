@@ -85,6 +85,8 @@ def initial_state(model: str, ap: bool, pdo: tuple[float, float], fault: bool) -
         "sys": {"heap_free": 81234, "psram_free": 3912345},
         "update": {"state": "idle", "progress": 0},
         "ir": {"learning": None, "learned": [], "last_code": None},
+        # the Bluetooth sink: hidden unless pairing mode is on (POST bt/pair)
+        "bt": {"on": True, "pairing": False, "pairing_left_s": 0, "connected": False},
     }
     if CAPS[model]["backlight"]:
         s["controls"] = {"last": None, "backlight": "auto"}
@@ -97,6 +99,7 @@ def initial_state(model: str, ap: bool, pdo: tuple[float, float], fault: bool) -
     return s
 
 
+PAIR_S = 120  # pairing mode's length (hifi_pair.h HIFI_PAIR_S)
 ARM_S = 600  # an armed factory reset waits this long for the unplug
 
 class Receiver:
@@ -177,6 +180,11 @@ class Receiver:
             ir["learned"] = [x for x in IR_ACTIONS if x in set(ir["learned"]) | {ir["learning"]}]
             ir["learning"] = None
             ir["last_code"] = "0x00ff40bf"
+        # pairing mode runs out after PAIR_S, as the firmware's
+        bt = s.get("bt")
+        if bt and bt["pairing"]:
+            left = math.ceil(getattr(self, "pair_until", 0) - time.time())
+            bt.update(pairing=left > 0, pairing_left_s=max(0, left))
 
     def post(self, path: str, b: dict) -> dict:
         """Apply one write; return the reply. Raises ValueError for a request
@@ -330,6 +338,16 @@ class Receiver:
                     raise ValueError("url must be http(s)")
                 s["update"] = {"state": "downloading", "progress": 0}
                 threading.Thread(target=self._fake_update, daemon=True).start()
+            elif path == "bt/pair":
+                # as the firmware's op_bt_pair: {} starts PAIR_S of pairing mode, {"on": false} ends it
+                bt = s["bt"]
+                on = boolean(b, "on") if "on" in b else True
+                if not bt["on"]:
+                    raise Conflict("the Bluetooth sink isn't running")
+                self.pair_until = time.time() + PAIR_S
+                bt.update(pairing=on, pairing_left_s=PAIR_S if on else 0)
+                self._tick()
+                return {"bt": copy.deepcopy(bt)}
             elif path == "reboot":
                 self.t0 = time.time()
             elif path == "reset":
@@ -552,6 +570,7 @@ def handler(rx: Receiver):
                 self.send(403, {"error": str(e)})
             except (ValueError, json.JSONDecodeError) as e:
                 self.send(400, {"error": str(e)})
+    H.rx = rx
     return H
 
 

@@ -5,7 +5,7 @@ bool hifi_source_is_phone(int src) {
 }
 
 int hifi_source_decide(int owner, bool busy, int own, int ev) {
-	if (owner == own) return HIFI_SRC_ALLOW;
+	if (owner == own || owner == HIFI_SRC_CHIME) return HIFI_SRC_ALLOW; /* a chime yields to all */
 	switch (ev) {
 	case HIFI_EV_START:
 		if (hifi_source_is_phone(owner)) return HIFI_SRC_TAKEOVER;

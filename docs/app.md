@@ -88,6 +88,10 @@ what is playing; it doesn't choose it.
 **Setup**
 - **Wi-Fi:** scan, choose, password, join and forget. 2.4 GHz only.
 - **Name:** what Spotify, AirPlay and Bluetooth show the receiver as.
+- **Bluetooth:** whether a phone is connected, and **Pair a new phone**. The
+  receiver is hidden from new phones except in pairing mode (2 minutes, or
+  until a phone connects); the card counts it down and has **Cancel**. The
+  same as holding − and + on the box for 2 s. Shown when `state.bt` is there.
 - **Remote:** teach any IR remote. Tap Teach next to an action, then press
   the button on the remote. The actions are volume up/down, mute,
   play/pause, next, previous, input and standby.
@@ -207,6 +211,7 @@ those controls the app shows.
 | `net.join` | not sent by the firmware yet; if sent, `{ssid, state: "joining"\|"ok"\|"failed", ip, reason}` |
 | `update` | `{state: "idle"\|"downloading"\|"flashing"\|"done"\|"error", progress, error}` |
 | `ir` | `{learning: <action>\|null, learned: [<action>…], last_code}` |
+| `bt` | `{on, pairing, pairing_left_s, connected}`: the Bluetooth sink running, pairing mode on and its seconds left, a phone connected |
 
 **Writes:**
 
@@ -225,6 +230,7 @@ those controls the app shows.
 | `POST wifi/forget` | |
 | `POST ir/learn` | `{action}`: the next IR code the receiver sees is bound to that action |
 | `POST ir/forget` | `{}` for all, or `{action}` for one |
+| `POST bt/pair` | `{}` starts 120 s of pairing mode, `{on: false}` ends it. Replies `{bt: {…}}` (as `state.bt`), not the full state; 409 when the Bluetooth sink isn't running |
 | `GET update/check` | replies `{current, latest, url, notes}`; optional |
 | `POST update` | `{url}` |
 | `POST update/upload` | a raw `.bin` body |
@@ -240,8 +246,9 @@ stable.
 **What was dropped from the first draft, and why:**
 - **A source picker.** squeezelite-esp32 can't start Spotify or AirPlay from
   the box.
-- **A Bluetooth pair button.** The sink is discoverable whenever no phone is
-  connected, so the Name card says that instead.
+- **A Bluetooth pair button** was dropped at first, while the sink was
+  discoverable whenever no phone was connected. It came back on 2026-11-18
+  with the hidden-by-default sink and pairing mode (the Bluetooth card).
 - **Lite's "through EQ" line-in mode.** The Lite firmware routes the line in
   only through the ES8388's analog bypass.
 

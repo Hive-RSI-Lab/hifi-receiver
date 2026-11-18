@@ -47,6 +47,14 @@ void hifi_bsp_init(hifi_power_cfg_t *pc, hifi_gov_cfg_t *gc) {
 
 void hifi_bsp_start(void) {}
 
+/* a pin squeezelite hasn't set up yet reads low (held): the combo waits
+ * until it has seen both up before it counts a hold */
+bool hifi_bsp_vol_buttons(bool *down, bool *up) {
+	*down = !gpio_get_level(PIN_BTN_VOLDOWN);
+	*up = !gpio_get_level(PIN_BTN_VOLUP);
+	return true;
+}
+
 static float read_div(adc1_channel_t ch, float divider) {
 	uint32_t sum = 0;
 	for (int i = 0; i < 8; i++) sum += adc1_get_raw(ch);

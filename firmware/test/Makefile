@@ -11,7 +11,7 @@ LDLIBS := -lm
 
 SRCS := $(wildcard $(CORE)/*.c)
 BIN := build
-TESTS := test_json_pd test_power test_gov_tone test_boost test_vol_ir_meta test_api test_remote test_core test_line test_tap test_gate test_listen test_diag test_lab test_scan test_party test_party_group test_quiet test_source sim_party
+TESTS := test_json_pd test_power test_gov_tone test_boost test_vol_ir_meta test_api test_remote test_core test_line test_tap test_gate test_listen test_diag test_lab test_scan test_party test_party_group test_quiet test_source test_pair sim_party
 
 # test_remote signs and checks commands with real Ed25519 where the host has
 # OpenSSL's libcrypto, and with a stand-in signature where it doesn't.
@@ -83,7 +83,7 @@ upstream:
 	python3 upstream/upstream.py extract $(UP)/components/squeezelite/controls.c \
 	  connect_cli_socket cli_send_cmd > $(UP)/gen/controls_fns.c && \
 	python3 upstream/upstream.py extract $(UP)/components/driver_bt/bt_app_sink.c \
-	  IDLE_RELEASE_S IDLE_CHECK_S idle_check LET_GO_MS HOLD_NO_RN_MS HOLD_MAX_MS let_go_check hold_cancel \
+	  IDLE_RELEASE_S IDLE_CHECK_S scan_idle bt_sink_set_discoverable bt_sink_discoverable idle_check LET_GO_MS HOLD_NO_RN_MS HOLD_MAX_MS let_go_check hold_cancel \
 	  bt_sink_let_go bt_disconnect bt_sink_take hold_expired hold_check bt_av_hdl_a2d_evt \
 	  bt_av_notify_evt_handler > $(UP)/gen/bt_fns.c && \
 	python3 upstream/upstream.py extract $(UP)/components/raop/rtp.c \
