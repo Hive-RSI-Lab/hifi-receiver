@@ -225,10 +225,13 @@ clamped. Kept across restarts. Reply: the full `/state`.
 ## `POST /api/v1/channel`
 
 `{"channel": "stereo"|"left"|"right"|"mono"}`: which side the speaker output
-plays, on every input (stream, line, DJ direct). Lite only (404 on others).
-Done in the ES8388 output mixers (and, for mono, a -6 dB DAC volume or a
-lower analog gain in DJ direct), so SUB OUT (LOUT2/ROUT2, on the same
-mixers) follows it. `stereo` is the default and the old behaviour. Kept
+plays. Lite only (404 on others). A stream (and a test tone) gets it in the DSP,
+after the governor: `left` or `right` plays that side on both outputs,
+`mono` plays (L + R) / 2 on both. The ES8388's cross-mix registers do
+nothing, so the codec stays stereo. DJ direct is analog and can't cross
+sides: `left` or `right` plays that side on its own output only (the other
+is silent) and `mono` plays stereo. SUB OUT (LOUT2/ROUT2) follows the
+mode as played. `stereo` is the default and the old behaviour. Kept
 across restarts. Shown as `audio.channel` in `/state`. Reply: the full
 `/state`; 400 on a bad value.
 

@@ -123,7 +123,7 @@ static bool heat_trip_any;
 static volatile uint32_t selftest_hold_until; /* keeps the amp awake for the self-test */
 static volatile bool capture_busy;   /* the codec's ADC is ours until the capture ends */
 /* the self-test's loopback check measures with the user's sound settings
- * out: no EQ or loudness (hifi_eq_bypass), stereo on the codec */
+ * out: no EQ or loudness (hifi_eq_bypass), stereo (hifi_chan_mix and the codec) */
 static volatile bool loop_flat;
 
 static hifi_vol_t vol;               /* under lock, like what follows */
@@ -1049,7 +1049,7 @@ static int op_set_channel(hifi_chan_t c) {
 	LOCK();
 	channel = c;
 	gov.chan = c;
-	if (!loop_flat) hifi_bsp_channel(c); /* else the loopback check puts it on the codec when it ends */
+	if (!loop_flat) hifi_bsp_channel(c); /* else the loopback check does when it ends */
 	UNLOCK();
 	config_set_value(NVS_TYPE_STR, "hifi_channel", hifi_chan_name(c));
 	codec_dirty = true;
@@ -1432,9 +1432,9 @@ out:
  * whole cycles of 1 kHz, and hifi_capture_tone_rms takes off the ADC's
  * offset and its drift while it settles after a boot. It measures the
  * board, not the user's sound: the tone plays at unity with Boost out
- * (hifi_dsp_process), the EQ and loudness out (hifi_eq_bypass) and the codec
- * routed stereo whatever the channel mode, so it is judged as stereo, and
- * the user's routing goes back on the codec when it ends. LOOP_TAP_GAIN is
+ * (hifi_dsp_process), the EQ and loudness out (hifi_eq_bypass) and stereo
+ * whatever the channel mode (hifi_chan_mix, the codec), so it is judged
+ * as stereo, and the user's mode comes back when it ends. LOOP_TAP_GAIN is
  * the taps' RMS per RMS of the tone, measured on Lite 2 (2026-11-17) with
  * the EQ flat: one leg of the bridge, 1.2 dB under the nominal chain.
  */
@@ -1714,6 +1714,10 @@ void hifi_dsp_process(uint8_t *buf, uint32_t frames, int bytes_per_frame, uint32
 	}
 	hifi_gov_process(&gov, buf, frames, bytes_per_frame, rate);
 	audio_active = gov.ms_avg > 1e-8f; /* above about -77 dBFS */
+	/* the channel mode, after the governor (it models it, and judges each
+	 * side as played): the codec can't cross sides itself. The loopback
+	 * check measures both sides apart, so it plays stereo */
+	hifi_chan_mix(loop_flat ? HIFI_CHAN_STEREO : channel, buf, frames, bytes_per_frame);
 	hifi_bsp_audio(buf, frames, bytes_per_frame);
 }
 
