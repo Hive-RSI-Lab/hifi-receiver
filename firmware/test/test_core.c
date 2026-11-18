@@ -9,6 +9,9 @@
 #include "hifi_update.h"
 #include "hifi_chan.h"
 #include "hifi_vol.h"
+#include "hifi_pair.h"
+#include "hifi_capture.h"
+#include <stdlib.h>
 
 /* the core board's expander: knob on P12/P13, knob push P14, buttons P15/P16 */
 /* as board_core.c wires it: Alps A (P12, bit 10) is the decoder's enc_b (R5-UF-1) */
@@ -382,6 +385,65 @@ static void chan_regs(void) {
 	CHECK_STR(hifi_chan_name((hifi_chan_t) 9), "stereo");
 }
 
+/* the armed chime capture: the real chimes, rendered, found note by note */
+static void chime_notes(void) {
+	static int16_t pcm[2 * 48000];
+	static const float hz[] = {784.0f, 1046.5f, 1318.5f, 1568.0f};
+	struct {
+		hifi_chime_kind_t k;
+		int n;
+		float f[3];
+		int len[3];
+	} want[] = {{HIFI_CHIME_PAIR, 3, {1046.5f, 1318.5f, 1568.0f}, {110, 110, 220}},
+		    {HIFI_CHIME_CONNECT, 2, {784.0f, 1046.5f}, {110, 220}},
+		    {HIFI_CHIME_DISCONNECT, 2, {1046.5f, 784.0f}, {110, 220}}};
+	for (int w = 0; w < 3; w++) {
+		/* 83 ms of noise first (not a whole block), the chime at -40 dBFS
+		 * peak on the left and 6 dB down on the right, then noise again */
+		unsigned seed = 7;
+		for (int i = 0; i < 48000; i++) {
+			seed = seed * 1103515245u + 12345u;
+			int nz = (int) ((seed >> 16) % 13) - 6; /* about -78 dBFS */
+			pcm[2 * i] = pcm[2 * i + 1] = (int16_t) nz;
+		}
+		hifi_chime_t c;
+		CHECK(hifi_chime_start(&c, want[w].k, 0.01f, 48000));
+		static int16_t buf[2 * 256];
+		size_t at = 3984, n;
+		while ((n = hifi_chime_render(&c, buf, 256)) > 0) {
+			for (size_t i = 0; i < n && at + i < 48000; i++) {
+				pcm[2 * (at + i)] += buf[2 * i];
+				pcm[2 * (at + i) + 1] += buf[2 * i + 1] / 2;
+			}
+			at += n;
+		}
+		hifi_cap_note_t notes[HIFI_CAP_NOTES_MAX];
+		float floor_fs[2];
+		int got = hifi_capture_find_notes(pcm, 48000, 48000, hz, 4, 0.0005f, 3, notes, HIFI_CAP_NOTES_MAX, floor_fs);
+		CHECK(got == want[w].n);
+		for (int i = 0; i < got && i < want[w].n; i++) {
+			CHECK(notes[i].hz == want[w].f[i]);
+			/* the onset to a block or two: the soft rise and the block edges */
+			int on = 83 + (i ? want[w].len[0] : 0) + (i > 1 ? want[w].len[1] : 0);
+			CHECK(abs(notes[i].on_ms - on) <= 20);
+			/* the next note cuts a note short; a last note fades out under the floor:
+			 * at -40 dBFS its (1 - t)^2 fall is under min_fs for its last third */
+			CHECK(notes[i].len_ms >= want[w].len[i] / 2 && notes[i].len_ms <= want[w].len[i] + 20);
+			/* about the note's RMS at its loudest: -43 dBFS left, 6 dB down right */
+			CHECK(notes[i].rms_fs[0] > 0.004f && notes[i].rms_fs[0] < 0.0075f);
+			CHECK(fabsf(20 * log10f(notes[i].rms_fs[1] / notes[i].rms_fs[0]) + 6) < 1);
+		}
+		CHECK(floor_fs[0] > 0 && floor_fs[0] < 0.0003f);
+	}
+	/* nothing there: no notes, and a cut-short buffer finds nothing */
+	memset(pcm, 0, sizeof(pcm));
+	hifi_cap_note_t one[1];
+	CHECK(hifi_capture_find_notes(pcm, 48000, 48000, hz, 4, 0.0005f, 3, one, 1, NULL) == 0);
+	CHECK(hifi_capture_find_notes(pcm, 100, 48000, hz, 4, 0.0005f, 3, one, 1, NULL) == 0);
+	CHECK_STR(hifi_capch_state_name(HIFI_CAPCH_DONE), "done");
+	CHECK_STR(hifi_capch_state_name((hifi_capch_state_t) 42), "idle");
+}
+
 /* the self-test's loopback check: the 1 kHz reading and the judging */
 static void loop_check(void) {
 	static int16_t pcm[2 * 4800];
@@ -444,6 +506,7 @@ static void loop_check(void) {
 int main(void) {
 	chan_regs();
 	loop_check();
+	chime_notes();
 	knob_detents();
 	buttons();
 	knob_volume();

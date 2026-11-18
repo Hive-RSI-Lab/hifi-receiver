@@ -170,6 +170,13 @@ static volatile uint32_t pair_started_ms;
 static volatile uint8_t chime_req;
 static volatile uint32_t chime_req_ms;
 static volatile bool chime_active;    /* keeps the amp awake while one plays */
+/* an armed capture of the next chime (op_capture_arm): the chime that
+ * plays, and when it was asked for, for the recording's task */
+static volatile bool chime_cap_armed, chime_cap_recording;
+static volatile uint8_t chime_playing;
+static volatile uint32_t chime_playing_req_ms;
+#define CHIME_LEAD_MS 450  /* silence ahead of an armed chime: the ADC takes about 370 ms */
+#define CHIME_TAIL_MS 1500 /* silence after it, at most, while the recording ends */
 
 #define LOCK() xSemaphoreTake(lock, portMAX_DELAY)
 #define UNLOCK() xSemaphoreGive(lock)
@@ -847,10 +854,27 @@ static void play_chime(int16_t *buf, size_t frames) {
 	for (int i = 0; i < 100 && now_ms() - amp_off_ms < 100; i++) vTaskDelay(pdMS_TO_TICKS(10));
 	if (!quiet_req && !tone_active && hifi_sink_source() == 0) {
 		ESP_LOGI(TAG, "chime: %s", hifi_chime_name(k));
+		chime_playing_req_ms = chime_req_ms;
+		chime_playing = k;
+		/* armed (op_capture_arm): silence first while the ADC comes up, and
+		 * after the notes until the recording has them all */
+		bool armed = chime_cap_armed;
+		size_t lead = armed ? (size_t) CHIME_LEAD_MS * TONE_RATE / 1000 : 0;
+		uint32_t tail_at = 0;
 		hifi_chime_sink_start(TONE_RATE);
 		apply_volume();
 		size_t n;
-		while ((n = hifi_chime_render(&c, buf, frames)) > 0) {
+		for (;;) {
+			if (lead) {
+				n = lead < frames ? lead : frames;
+				memset(buf, 0, n * 4);
+				lead -= n;
+			} else if (!(n = hifi_chime_render(&c, buf, frames))) {
+				if (!armed || !tail_at) tail_at = now_ms();
+				if (!armed || !chime_cap_recording || now_ms() - tail_at > CHIME_TAIL_MS) break;
+				n = frames;
+				memset(buf, 0, n * 4);
+			}
 			while (hifi_sink_queued_ms() > 100 && hifi_sink_source() == 8) vTaskDelay(pdMS_TO_TICKS(10));
 			if (tone_active || quiet_req || hifi_sink_source() != 8) break;
 			hifi_sink_write((const uint8_t *) buf, n * 4);
@@ -859,6 +883,7 @@ static void play_chime(int16_t *buf, size_t frames) {
 			vTaskDelay(pdMS_TO_TICKS(10));
 		hifi_chime_sink_stop(); /* only if it still holds the output */
 	}
+	chime_playing = HIFI_CHIME_NONE;
 	chime_active = false;
 }
 
@@ -1519,6 +1544,7 @@ static bool has_taps(void) {
 	return on;
 }
 
+static uint32_t cap_start_ms; /* when op_capture's kept samples began */
 #define CAP_LEADIN_MS 100 /* fresh input op_capture drops ahead of what it keeps */
 
 /*
@@ -1530,7 +1556,7 @@ static bool has_taps(void) {
  */
 static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_info_t *info, const char **err) {
 	if (src == HIFI_CAP_LOOPBACK && !has_taps()) return *err = "this board revision has no loopback taps", 409;
-	if (!tone_active && !audio_active && input != HIFI_INPUT_DJ_DIRECT)
+	if (!tone_active && !audio_active && !chime_active && input != HIFI_INPUT_DJ_DIRECT)
 		return *err = "output idle: play a tone or a stream first", 409;
 	if (!codec_up) return *err = "codec not started yet", 409; /* squeezelite's init still writes CHIPPOWER */
 	if (capture_busy) return *err = "a capture is running", 409;
@@ -1591,6 +1617,7 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 		if (i2s_read(CONFIG_I2S_NUM, pcm, n, &got, pdMS_TO_TICKS(300)) != ESP_OK || !got) break;
 	}
 	size_t have = 0;
+	cap_start_ms = now_ms();
 	while (have < want) {
 		if (i2s_read(CONFIG_I2S_NUM, (uint8_t *) pcm + have, want - have, &got, pdMS_TO_TICKS(300)) != ESP_OK || !got) break;
 		have += got;
@@ -1618,6 +1645,97 @@ out:
 	capture_busy = false;
 	codec_dirty = true; /* back to the routing for the input in use */
 	return st;
+}
+
+/*
+ * A capture of the next chime (hifi_capture.h, docs/test-api.md): a task
+ * waits for a chime to take the output, records it with op_capture while the
+ * chime's silent lead-in covers the ADC's start, and finds its notes. One at
+ * a time; the result stays until the next arming.
+ */
+#define CHIME_CAP_MS 900
+static hifi_cap_chime_t chime_cap; /* under LOCK */
+static hifi_cap_src_t chime_cap_src;
+static uint32_t chime_cap_at, chime_cap_until;
+
+static void chime_cap_done(const hifi_cap_chime_t *r) {
+	LOCK();
+	chime_cap = *r;
+	UNLOCK();
+	chime_cap_recording = false;
+	chime_cap_armed = false;
+}
+
+static void chime_cap_task(void *arg) {
+	(void) arg;
+	hifi_cap_chime_t r = {.state = HIFI_CAPCH_FAILED, .err = "no chime while armed"};
+	while ((int32_t) (now_ms() - chime_cap_until) < 0 && !(chime_active && chime_playing && hifi_sink_source() == 8))
+		vTaskDelay(pdMS_TO_TICKS(5));
+	if (!(chime_active && chime_playing && hifi_sink_source() == 8)) {
+		chime_cap_done(&r);
+		vTaskDelete(NULL);
+		return;
+	}
+	hifi_chime_kind_t k = (hifi_chime_kind_t) chime_playing;
+	uint32_t req = chime_playing_req_ms;
+	chime_cap_recording = true;
+	LOCK();
+	chime_cap.state = HIFI_CAPCH_RECORDING;
+	UNLOCK();
+	int frames = CHIME_CAP_MS * TONE_RATE / 1000;
+	int16_t *pcm = heap_caps_malloc((size_t) frames * 4, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+	if (!pcm) {
+		r.err = "no memory for the recording";
+		chime_cap_done(&r);
+		vTaskDelete(NULL);
+		return;
+	}
+	r.info = (hifi_cap_info_t){.rate = TONE_RATE, .v_per_fs = {NAN, NAN}};
+	const char *err = "can't capture now";
+	if (op_capture(chime_cap_src, pcm, frames, &r.info, &err)) {
+		r.err = err;
+	} else {
+		static const float hz[] = {784.0f, 1046.5f, 1318.5f, 1568.0f};
+		r.state = HIFI_CAPCH_DONE;
+		r.err = NULL;
+		r.kind = hifi_chime_name(k);
+		r.frames = frames;
+		r.armed_ms = (int32_t) (req - chime_cap_at);
+		r.start_ms = (int32_t) (cap_start_ms - req);
+		/* -66 dBFS: over the taps' floor (about -74), under a chime at a low volume */
+		r.n = hifi_capture_find_notes(pcm, frames, TONE_RATE, hz, 4, 0.0005f, 3, r.notes, HIFI_CAP_NOTES_MAX, r.floor_fs);
+	}
+	free(pcm);
+	chime_cap_done(&r);
+	vTaskDelete(NULL);
+}
+
+static int op_capture_arm(hifi_cap_src_t src, int wait_s, const char **err) {
+	if (src == HIFI_CAP_LOOPBACK && !has_taps()) return *err = "this board revision has no loopback taps", 409;
+	LOCK();
+	if (chime_cap_armed) {
+		UNLOCK();
+		return *err = "a chime capture is armed already", 409;
+	}
+	chime_cap_armed = true;
+	chime_cap_src = src;
+	chime_cap_at = now_ms();
+	chime_cap_until = chime_cap_at + (uint32_t) wait_s * 1000u;
+	chime_cap = (hifi_cap_chime_t){.state = HIFI_CAPCH_ARMED};
+	UNLOCK();
+	/* an internal stack: has no flash work, but i2s and i2c stay off PSRAM stacks */
+	if (xTaskCreatePinnedToCore(chime_cap_task, "hifi_chcap", 4096, NULL, ESP_TASK_PRIO_MIN + 2, NULL, 1) != pdPASS) {
+		hifi_cap_chime_t r = {.state = HIFI_CAPCH_FAILED, .err = "no memory for the task"};
+		chime_cap_done(&r);
+		return *err = "no memory for the task", 500;
+	}
+	return 0;
+}
+
+static void op_capture_chime(hifi_cap_chime_t *out) {
+	LOCK();
+	*out = chime_cap;
+	UNLOCK();
 }
 
 /*
@@ -1809,7 +1927,7 @@ const hifi_ops_t hifi_ops = {
 	.factory_reset = op_factory_reset, .factory_arm = op_factory_arm, .control = op_control, .selftest = op_selftest,
 	.set_volume = op_set_volume, .ir_learn = op_ir_learn, .ir_forget = op_ir_forget,
 #if HIFI_HAS_CAPTURE
-	.capture = op_capture,
+	.capture = op_capture, .capture_arm = op_capture_arm, .capture_chime = op_capture_chime,
 #endif
 	.set_wifi = op_set_wifi, .remote_status = hifi_remote_status,
 	.remote_set = hifi_remote_set, .ota = &hifi_ota_session, .ota_status = hifi_ota_status,

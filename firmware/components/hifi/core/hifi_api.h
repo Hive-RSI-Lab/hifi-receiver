@@ -213,6 +213,10 @@ typedef struct {
 	 * or 409 for capture). */
 	/* fills frames of interleaved stereo; 0, or an HTTP status with *err */
 	int (*capture)(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_info_t *info, const char **err);
+	/* arms a capture of the next chime for up to wait_s (0, or 409 with *err),
+	 * and the armed capture's state and result (hifi_capture.h) */
+	int (*capture_arm)(hifi_cap_src_t src, int wait_s, const char **err);
+	void (*capture_chime)(hifi_cap_chime_t *out);
 	int (*set_wifi)(const char *ssid, const char *password); /* 0: joining */
 	void (*remote_status)(hifi_remote_status_t *out);
 	/* key: the board's own key for the Hive's wss:// endpoint (64 hex), or "" for MQTT */
