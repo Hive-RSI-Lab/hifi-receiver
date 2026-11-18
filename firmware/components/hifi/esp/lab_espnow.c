@@ -126,6 +126,11 @@ typedef struct {
 	uint8_t rhead, rn;
 } rt_t;
 static rt_t *rt;
+/* the ping role's one-way delays (hifi_link_tx_keep_oneway), in PSRAM:
+ * 4096 pongs is 81 s at 50 Hz; past that the rest are counted, not kept */
+#define OW_CAP 4096
+static hifi_link_ow_t *ow;
+static int32_t *ow_scratch;
 static portMUX_TYPE rt_mux = portMUX_INITIALIZER_UNLOCKED;
 static uint32_t retry, retry_ms, sync_us, win_us, off_us;
 static volatile uint32_t retries, recovered, gave_up, rq_full, outside_win;
@@ -570,6 +575,11 @@ static int start(uint32_t run_n, const char *body, char *err, size_t n) {
 	for (uint32_t i = 0; i < window; i++) xSemaphoreGive(window_sem);
 	hifi_link_tx_init(tx, esp_random());
 	hifi_link_rx_init(rx);
+	if (role == ROLE_PING) { /* without the room the run goes on, without one-way delays */
+		if (!ow) ow = heap_caps_malloc(OW_CAP * sizeof(*ow), MALLOC_CAP_SPIRAM);
+		if (!ow_scratch) ow_scratch = heap_caps_malloc(OW_CAP * sizeof(*ow_scratch), MALLOC_CAP_SPIRAM);
+		if (ow && ow_scratch) hifi_link_tx_keep_oneway(tx, ow, OW_CAP);
+	}
 	q_full = other = report_timeouts = no_mem = 0;
 	retries = recovered = gave_up = rq_full = outside_win = 0;
 	memset(rt, 0, sizeof(*rt));
@@ -747,6 +757,16 @@ static void result(void *hj) {
 	hj_obj(j, "tx");
 	hifi_link_tx_json(tx, j);
 	hj_obj_end(j);
+	/* after the run only: the worker records pongs (and the clock's fit)
+	 * without the lab's lock */
+	if (role == ROLE_PING && tx->ow && ow_scratch) {
+		if (alive) hj_str(j, "oneway_us", "at the end");
+		else {
+			hj_obj(j, "oneway_us");
+			hifi_link_tx_oneway_json(tx, ow_scratch, j);
+			hj_obj_end(j);
+		}
+	}
 	if (role == ROLE_ECHO) {
 		hj_obj(j, "rx");
 		hifi_link_rx_json(rx, j);

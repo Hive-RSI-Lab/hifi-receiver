@@ -157,10 +157,10 @@ static void governor(void) {
 	hifi_gov_init(&g, &cfg);
 	hifi_tone_params_t p = {.type = HIFI_TONE_SINE, .freq_hz = 1000, .level_dbfs = 0, .duration_s = 1};
 
-	/* the lite chain: 0 dBFS sine = 17.98 V peak = 40.4 W per channel into 4 ohm */
+	/* the lite chain: 0 dBFS sine = 18.2 V peak = 41.4 W per channel into 4 ohm */
 	hifi_gov_set_supply(&g, 20, 1000);
 	play(&g, &p, 6);
-	CHECK_NEAR(hifi_gov_out_w(&g), 2 * 40.4, 1.0);
+	CHECK_NEAR(hifi_gov_out_w(&g), 2 * 41.4, 1.0);
 	CHECK(!g.limiting && g.gain == 1.0f);
 
 	/* on a 65 W charger both channels at 0 dBFS would draw ~94 W:

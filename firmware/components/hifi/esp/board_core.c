@@ -380,6 +380,22 @@ void hifi_bsp_power_in(uint32_t now, hifi_bsp_power_t *p) {
 	}
 }
 
+/* The quiet stop (hifi_quiet.h): the Sabre's volume is squeezelite's
+ * digital gain, which hifi_main.c ramps on every board, so there is no codec
+ * level here. The amps go into reset through the I/O expander now if its
+ * lock is free, and on the power task's next step anyway (hifi_main.c holds
+ * them there). */
+void hifi_bsp_quiet_level(float frac) { (void) frac; }
+void hifi_bsp_quiet_mute(bool on) { (void) on; }
+void hifi_bsp_quiet_release(void) {}
+void hifi_bsp_amp_off_now(void) {
+	if (!exp_lock || xPortInIsrContext() || xTaskGetSchedulerState() != taskSCHEDULER_RUNNING) return;
+	if (xSemaphoreTake(exp_lock, pdMS_TO_TICKS(20)) != pdTRUE) return;
+	uint8_t v = hifi_exp_bit(hifi_exp_bit(out0, EXP_AMP_A_RST, false), EXP_AMP_B_RST, false);
+	if (v != out0) exp_out(v);
+	xSemaphoreGive(exp_lock);
+}
+
 void hifi_bsp_power_out(const hifi_power_out_t *o) {
 	bool a = o->amp_on, b = a && (zone_b || HIFI_SPLIT);
 	/* zone B runs off zone A's clock and syncs only when both leave reset
@@ -663,7 +679,7 @@ void hifi_bsp_info(hifi_info_t *i) {
 	i->psram_mb = heap_caps_get_total_size(MALLOC_CAP_SPIRAM) ? 8 : 0; /* WROVER-E N8R8 */
 	i->caps = (hifi_caps_t) {
 		.dj_direct = true, .line = true, .eq_min_db = -12, .eq_max_db = 12,
-		.sub_count = 2, .sub_crossover = false, .sub_per_sub = false,
+		.sub_count = 2, .sub_crossover = false, .sub_per_sub = false, .sub_max_db = 0,
 		.zones = HIFI_ZONES, .eth = true, .pdo_v_max = 28,
 	};
 }

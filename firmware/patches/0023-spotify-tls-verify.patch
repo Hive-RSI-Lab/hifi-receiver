@@ -1,0 +1,149 @@
+diff --git a/components/spotify/cspot/bell/main/io/TLSSocket.cpp b/components/spotify/cspot/bell/main/io/TLSSocket.cpp
+index 489748d..9747754 100644
+--- a/components/spotify/cspot/bell/main/io/TLSSocket.cpp
++++ b/components/spotify/cspot/bell/main/io/TLSSocket.cpp
+@@ -9,6 +9,14 @@
+ 
+ #include "BellLogger.h"  // for AbstractLogger, BELL_LOG
+ #include "X509Bundle.h"  // for shouldVerify, attach
++#ifdef ESP_PLATFORM
++// hifi: on the board every bell TLS connection (apresolve, the token
++// fetch, spclient, the audio CDN) is checked against ESP-IDF's certificate
++// bundle, the one the relay and the updater use. Bell's own X509Bundle was
++// never initialised, so cspot took any certificate: anyone on the path could
++// read the Spotify tokens. (The access point login isn't TLS: patch 0025.)
++#include "esp_crt_bundle.h"
++#endif
+ 
+ /**
+  * Platform TLSSocket implementation for the mbedtls
+@@ -19,9 +27,11 @@ bell::TLSSocket::TLSSocket() {
+   mbedtls_ssl_init(&ssl);
+   mbedtls_ssl_config_init(&conf);
+ 
++#ifndef ESP_PLATFORM
+   if (bell::X509Bundle::shouldVerify()) {
+     bell::X509Bundle::attach(&conf);
+   }
++#endif
+ 
+   mbedtls_ctr_drbg_init(&ctr_drbg);
+   mbedtls_entropy_init(&entropy);
+@@ -53,12 +63,22 @@ void bell::TLSSocket::open(const std::string& hostUrl, uint16_t port) {
+     throw std::runtime_error("mbedtls_ssl_config_defaults failed");
+   }
+ 
++#ifdef ESP_PLATFORM
++  // hifi: always verify, against the IDF bundle (see the include above)
++  if ((ret = esp_crt_bundle_attach(&conf)) != ESP_OK) {
++    BELL_LOG(error, "http_tls", "failed! certificate bundle returned %d\n",
++             ret);
++    throw std::runtime_error("esp_crt_bundle_attach failed");
++  }
++  mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_REQUIRED);
++#else
+   // Only verify if the X509 bundle is present
+   if (bell::X509Bundle::shouldVerify()) {
+     mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_REQUIRED);
+   } else {
+     mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_NONE);
+   }
++#endif
+ 
+   mbedtls_ssl_conf_rng(&conf, mbedtls_ctr_drbg_random, &ctr_drbg);
+   mbedtls_ssl_setup(&ssl, &conf);
+diff --git a/components/spotify/cspot/src/AccessKeyFetcher.cpp b/components/spotify/cspot/src/AccessKeyFetcher.cpp
+index 053b927..e66c5ab 100644
+--- a/components/spotify/cspot/src/AccessKeyFetcher.cpp
++++ b/components/spotify/cspot/src/AccessKeyFetcher.cpp
+@@ -76,31 +76,46 @@ void AccessKeyFetcher::updateAccessKey() {
+         "&client_secret=" + ctx->config.clientSecret;
+     std::vector<uint8_t> body(credentials.begin(), credentials.end());
+ 
+-    auto response = bell::HTTPClient::post(
+-        "https://accounts.spotify.com/api/token",
+-        {{"Content-Type", "application/x-www-form-urlencoded"}}, body);
++    // hifi: a refused certificate (or any network error) throws out of the
++    // HTTP client; caught here it is a failed fetch that is tried again, not
++    // an exception that ends the TrackQueue task and restarts the board.
++    // A reply without the fields is a failed fetch too, not a NULL read.
++    try {
++      auto response = bell::HTTPClient::post(
++          "https://accounts.spotify.com/api/token",
++          {{"Content-Type", "application/x-www-form-urlencoded"}}, body);
+ 
+ #ifdef BELL_ONLY_CJSON
+-    cJSON* root = cJSON_ParseWithLength(response->body().data(), response->body().size());
+-    if (!cJSON_GetObjectItem(root, "error")) {
+-      accessKey =
+-          std::string(cJSON_GetObjectItem(root, "access_token")->valuestring);
+-      int expiresIn = cJSON_GetObjectItem(root, "expires_in")->valueint;
+-      cJSON_Delete(root);
++      cJSON* root = cJSON_ParseWithLength(response->body().data(),
++                                          response->body().size());
++      cJSON* token = cJSON_GetObjectItem(root, "access_token");
++      cJSON* expires = cJSON_GetObjectItem(root, "expires_in");
++      if (root && !cJSON_GetObjectItem(root, "error") &&
++          cJSON_IsString(token) && cJSON_IsNumber(expires)) {
++        accessKey = std::string(token->valuestring);
++        int expiresIn = expires->valueint;
++        cJSON_Delete(root);
+ #else
+-    auto root = nlohmann::json::parse(response->bytes());
+-    if (!root.contains("error")) {
+-      accessKey = std::string(root["access_token"]);
+-      int expiresIn = root["expires_in"];
++      auto root = nlohmann::json::parse(response->bytes());
++      if (!root.contains("error")) {
++        accessKey = std::string(root["access_token"]);
++        int expiresIn = root["expires_in"];
+ #endif
+-      // Successfully received an auth token
+-      CSPOT_LOG(info, "Access token sucessfully fetched");
+-      success = true;
+-
+-      this->expiresAt =
+-          ctx->timeProvider->getSyncedTimestamp() + (expiresIn * 1000);
+-    } else {
+-      CSPOT_LOG(error, "Failed to fetch access token");
++        // Successfully received an auth token
++        CSPOT_LOG(info, "Access token sucessfully fetched");
++        success = true;
++
++        this->expiresAt =
++            ctx->timeProvider->getSyncedTimestamp() + (expiresIn * 1000);
++      } else {
++#ifdef BELL_ONLY_CJSON
++        cJSON_Delete(root);
++#endif
++        CSPOT_LOG(error, "Failed to fetch access token");
++        BELL_SLEEP_MS(3000);
++      }
++    } catch (const std::exception& e) {
++      CSPOT_LOG(error, "Failed to fetch access token: %s", e.what());
+       BELL_SLEEP_MS(3000);
+     }
+ 
+diff --git a/components/tools/tools.c b/components/tools/tools.c
+index 7f9f5ab..2e61326 100644
+--- a/components/tools/tools.c
++++ b/components/tools/tools.c
+@@ -16,6 +16,7 @@
+ #include "esp_task.h"
+ #include "esp_tls.h"
+ #include "esp_http_client.h"
++#include "esp_crt_bundle.h"
+ #include "esp_heap_caps.h"
+ #include "esp_log.h"
+ #include "tools.h"
+@@ -253,6 +254,10 @@ void http_download(char *url, size_t max, http_download_cb_t callback, void *con
+ 		.url = url,
+ 		.event_handler = http_event_handler,
+ 		.user_data = http_context,
++		/* hifi: Spotify's cover art (i.scdn.co) comes over https; the
++		 * sdkconfig's ESP_TLS_SKIP_SERVER_CERT_VERIFY would take any
++		 * certificate, so check it against the IDF bundle as cspot does */
++		.crt_bundle_attach = esp_crt_bundle_attach,
+ 	};
+ 
+ 	http_context->callback = callback;

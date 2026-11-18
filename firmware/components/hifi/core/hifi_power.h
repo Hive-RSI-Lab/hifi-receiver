@@ -95,4 +95,7 @@ void hifi_power_init(hifi_power_t *p, const hifi_power_cfg_t *cfg, uint32_t now_
 const hifi_power_out_t *hifi_power_step(hifi_power_t *p, const hifi_power_in_t *in);
 void hifi_power_amp_enable(hifi_power_t *p, bool enable);
 void hifi_power_amp_reset(hifi_power_t *p);
+/* the newest fault was heat the caller has answered (a lower heat cap): it
+ * still backs off but doesn't count towards the latch */
+void hifi_power_forgive_fault(hifi_power_t *p, uint32_t now);
 const char *hifi_power_state_name(hifi_pwr_state_t s);

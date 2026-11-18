@@ -40,6 +40,8 @@
 /* ES8388 registers this component touches (datasheet rev 5.0) */
 #define ES8388_ADCPOWER 0x03 /* bit7/6 power down the analog inputs */
 #define ES8388_DACPOWER 0x04 /* bits 5..2: LOUT1 ROUT1 LOUT2 ROUT2 on */
+#define ES8388_DACCONTROL3 0x19  /* bit2 mutes the DAC (soft ramp: squeezelite's controlset sets bit5) */
+#define ES8388_DAC_MUTE 0x04
 #define ES8388_DACCONTROL17 0x27 /* left mixer: bit7 DAC, bit6 LIN, bits5:3 LIN gain */
 #define ES8388_DACCONTROL20 0x2A /* right mixer, same layout */
 #define ES8388_LOUT1VOL 0x2E /* speaker amp L: same scale as LOUT2 */
@@ -55,7 +57,8 @@
 #define TONE_RATE 48000
 
 /* what this board's firmware does besides the shared parts */
-#define HIFI_HAS_CHANNEL 1 /* the output mixers pick the side (core/hifi_chan.h) */
+#define HIFI_HAS_CHANNEL 1 /* left/right/mono (core/hifi_chan.h) */
+#define HIFI_HAS_BOOST 1   /* Boost and a heat cap above the default (hifi_boost.c, hifi_gov.c) */
 #define HIFI_HAS_CAPTURE 1 /* the ES8388's ADC: line in and the loopback taps */
 
 /* ES8388 ADC, for the captures (docs/remote.md). Values from the datasheet;

@@ -16,6 +16,7 @@
 #include "hifi_chan.h"
 #include "hifi_esp.h"
 #include "hifi_pd.h"
+#include "hifi_quiet.h"
 
 static esp_adc_cal_characteristics_t adc_chars;
 static uint32_t last_pd;
@@ -77,6 +78,44 @@ void hifi_bsp_power_out(const hifi_power_out_t *o) {
 	if (o->amp_on) gpio_set_level(PIN_AMP_SDZ, 1);
 }
 
+/* The quiet stop (hifi_quiet.h). The speaker outputs (LOUT1/ROUT1, which
+ * also carry DJ direct's analog bypass) and the sub outs (LOUT2/ROUT2) ramp
+ * from the codes they held to 0 (-45 dB); the DAC then soft-mutes. The sub
+ * outs have no amp of their own to shut down: they end at -45 dB, muted. */
+static const uint8_t quiet_regs[4] = {ES8388_LOUT1VOL, ES8388_ROUT1VOL, ES8388_LOUT2VOL, ES8388_ROUT2VOL};
+static int quiet_start[4] = {-1, -1, -1, -1};
+static int quiet_dac3 = -1;
+
+void hifi_bsp_quiet_level(float frac) {
+	for (int i = 0; i < 4; i++) {
+		uint8_t v;
+		if (quiet_start[i] < 0 && hifi_i2c_read(ES8388_ADDR, quiet_regs[i], &v) == ESP_OK) quiet_start[i] = v & 0x3F;
+		if (quiet_start[i] >= 0) hifi_i2c_write(ES8388_ADDR, quiet_regs[i], hifi_quiet_code(quiet_start[i], frac));
+		if (frac >= 1) quiet_start[i] = -1; /* put back: the next ramp reads them again */
+	}
+}
+
+void hifi_bsp_quiet_mute(bool on) {
+	uint8_t v;
+	if (on) {
+		if (quiet_dac3 < 0 && hifi_i2c_read(ES8388_ADDR, ES8388_DACCONTROL3, &v) == ESP_OK) quiet_dac3 = v;
+		if (quiet_dac3 >= 0) hifi_i2c_write(ES8388_ADDR, ES8388_DACCONTROL3, quiet_dac3 | ES8388_DAC_MUTE);
+	} else if (quiet_dac3 >= 0) {
+		/* clear only the mute: the routing may have moved the rest since */
+		if (hifi_i2c_read(ES8388_ADDR, ES8388_DACCONTROL3, &v) == ESP_OK)
+			hifi_i2c_write(ES8388_ADDR, ES8388_DACCONTROL3, v & ~ES8388_DAC_MUTE);
+		quiet_dac3 = -1;
+	}
+}
+
+/* an update that didn't go ahead: the routing writes the levels again */
+void hifi_bsp_quiet_release(void) {
+	for (int i = 0; i < 4; i++) quiet_start[i] = -1;
+}
+
+/* R52 holds SDZ low through the reset that follows */
+void hifi_bsp_amp_off_now(void) { gpio_set_level(PIN_AMP_SDZ, 0); }
+
 /* ------------------------------------------------------------------ codec */
 
 /* LOUT2/ROUT2 volume code, 1.5 dB a step, 30 = 0 dB. At most 24 (-9 dB):
@@ -121,7 +160,7 @@ static esp_err_t codec_apply(hifi_input_t in, bool on, float sub_db, const hifi_
 		err |= hifi_i2c_write(ES8388_ADDR, ES8388_LOUT1VOL, ES8388_OUT1_FULL);
 		err |= hifi_i2c_write(ES8388_ADDR, ES8388_ROUT1VOL, ES8388_OUT1_FULL);
 	}
-	/* which side reaches which mixer (and mono's half-level DAC) */
+	/* the mixers: stereo for the DAC, DJ direct's side (hifi_chan_regs) */
 	for (int i = 0; i < 4; i++) err |= hifi_i2c_write(ES8388_ADDR, HIFI_CHAN_MIX_FIRST + i, cr.mix[i]);
 	err |= hifi_i2c_write(ES8388_ADDR, HIFI_CHAN_DACVOL_L, cr.dac_vol);
 	err |= hifi_i2c_write(ES8388_ADDR, HIFI_CHAN_DACVOL_R, cr.dac_vol);
@@ -147,6 +186,7 @@ void hifi_bsp_info(hifi_info_t *i) {
 	i->caps = (hifi_caps_t) {
 		.dj_direct = true, .eq_min_db = -12, .eq_max_db = 12,
 		.sub_count = 2, .sub_crossover = false, .sub_per_sub = false,
+		.sub_max_db = (SUB_CODE_MAX - 30) * 1.5f,
 		.zones = 1, .eth = false, .pdo_v_max = 20,
 	};
 }

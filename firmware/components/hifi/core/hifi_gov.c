@@ -1,13 +1,19 @@
 #include "hifi_gov.h"
+#include "hifi_api.h" /* hifi_chan_t */
 
 #include <math.h>
 #include <string.h>
 
 void hifi_gov_cfg_lite(hifi_gov_cfg_t *cfg) {
 	*cfg = (hifi_gov_cfg_t) {
-		/* 0.9 Vrms x -3 dB x 19.95 (26 dB) x sqrt 2 = 17.98 V peak; to be
-		 * calibrated at bring-up with a 1 kHz sine into a dummy load */
-		.vfs_peak_v = 0.9f * 0.7079f * 19.95f * 1.4142f,
+		/* 18.2 V peak: the ES8388's ~1.08 Vrms full scale at OUT1's -4.5 dB
+		 * (code 27, ES8388_OUT1_FULL) x 19.95 (26 dB) x sqrt 2
+		 * (docs/review-2/firmware-requirements.md L3: at 0 dB OUT1 would
+		 * overdrive the amp by 4.1 dB at 20 V, so raising OUT1 gains nothing;
+		 * Boost adds loudness instead). The higher figure of the two
+		 * estimates (the other gave 17.98 V), so Boost's clip ceiling errs
+		 * low. To be calibrated with a 1 kHz sine into a dummy load */
+		.vfs_peak_v = 18.2f,
 		/* measured on hwde's made TPA3118 board: 95.3% of the supply */
 		.swing = 0.953f,
 		/* the Viennas' 4 ohm: the worst case for the charger */
@@ -34,6 +40,13 @@ void hifi_gov_cfg_lite(hifi_gov_cfg_t *cfg) {
 		 * R3-LAYOUT-13, docs/review-3/sims/layout/thermal_calc.py) */
 		.thermal_out_w = 18.0f,
 		.thermal_tau_s = 30.0f,
+		/* the app's heat cap goes to 15 W a channel (k2388: "heat trips or a
+		 * fan are fine"). The thermal model puts Tj at the 150 C shutdown
+		 * near 15 W in a warm box, so past 9 W the amp may cut out: Lite has
+		 * no OTW pin, and hifi_main answers each trip above the default
+		 * with 2 W less cap and 3 dB less gain. 22 W needs a fan, a heatsink
+		 * and a measurement first (Opus review of k2388) */
+		.thermal_max_w = 30.0f,
 	};
 }
 
@@ -56,6 +69,9 @@ void hifi_gov_cfg_core(hifi_gov_cfg_t *cfg) {
 	 * heatsink-options.md). Plus splits its pair across both chips and
 	 * raises this in board_core.c. Peaks pass; the minute doesn't */
 	cfg->thermal_out_w = 9.0f;
+	/* no heat cap above the default: the TPA3220 has no heatsink, and its
+	 * OTW pin backs it off; the Lite's 15 W top is not for this amp */
+	cfg->thermal_max_w = 0;
 	cfg->thermal_out2_w = 17.0f;
 	cfg->thermal_tau_s = 60.0f;
 }
@@ -65,6 +81,8 @@ void hifi_gov_init(hifi_gov_t *g, const hifi_gov_cfg_t *cfg) {
 	g->cfg = *cfg;
 	g->gain = g->target = g->trim = 1.0f;
 	g->amps = 1;
+	g->heat_def_w = cfg->thermal_out_w;
+	g->heat_def2_w = cfg->thermal_out2_w;
 	/* until a contract is known: a USB 2.0 port */
 	hifi_gov_set_supply(g, 5.0f, 2.5f);
 }
@@ -113,7 +131,10 @@ void hifi_gov_process(hifi_gov_t *g, void *buf, size_t frames, int bytes_per_fra
 	float msl = (float) (sl / frames), msr = (float) (sr / frames);
 	float dt = (float) frames / rate;
 	float a = 1.0f - expf(-dt / c->tau_s);
-	float p_now = (channel_w(g, msl) + channel_w(g, msr)) * g->amps;
+	/* left or right: the mixers play that side on both speakers after this,
+	 * so it draws twice its own power (mono sums at -6 dB: no more than stereo) */
+	float pl = channel_w(g, msl), pr = channel_w(g, msr);
+	float p_now = (g->chan == HIFI_CHAN_LEFT ? 2 * pl : g->chan == HIFI_CHAN_RIGHT ? 2 * pr : pl + pr) * g->amps;
 	g->p_out_pre += a * (p_now - g->p_out_pre);
 	if (c->thermal_out_w > 0 && c->thermal_tau_s > 0)
 		g->p_out_slow += (1.0f - expf(-dt / c->thermal_tau_s)) * (p_now - g->p_out_slow);
@@ -126,26 +147,38 @@ void hifi_gov_process(hifi_gov_t *g, void *buf, size_t frames, int bytes_per_fra
 	/* gain^2 * p_out / eff + idle = budget */
 	float avail = (g->budget_w - c->p_idle_w) * c->efficiency;
 	float target = 1.0f;
+	hifi_gov_why_t why = HIFI_GOV_FREE;
 	if (g->p_out_pre > 1e-6f && avail < g->p_out_pre) {
 		target = avail > 0 ? sqrtf(avail / g->p_out_pre) : 0.0f;
 		if (target < c->min_gain) target = c->min_gain;
+		why = HIFI_GOV_CHARGER;
 	}
 	/* the charger's current limit: the loudest recent block */
 	float avail_pk = (g->contract_w * c->peak_frac - c->p_idle_w) * c->efficiency;
 	if (c->peak_frac > 0 && g->p_out_peak > 1e-6f && avail_pk < g->p_out_peak) {
 		float t3 = avail_pk > 0 ? sqrtf(avail_pk / g->p_out_peak) : 0.0f;
 		if (t3 < c->min_gain) t3 = c->min_gain;
-		if (t3 < target) target = t3;
+		if (t3 < target) {
+			target = t3;
+			why = HIFI_GOV_CHARGER_PEAK;
+		}
 	}
 	/* the amps' heat: the slow average of what they would play */
 	float cap = g->amps > 1 && c->thermal_out2_w > 0 ? c->thermal_out2_w : c->thermal_out_w * g->amps;
 	if (c->thermal_out_w > 0 && g->p_out_slow > cap) {
 		float t2 = sqrtf(cap / g->p_out_slow);
 		if (t2 < c->min_gain) t2 = c->min_gain;
-		if (t2 < target) target = t2;
+		if (t2 < target) {
+			target = t2;
+			why = HIFI_GOV_HEAT;
+		}
 	}
-	if (g->trim < target) target = g->trim < c->min_gain ? c->min_gain : g->trim;
+	if (g->trim < target) {
+		target = g->trim < c->min_gain ? c->min_gain : g->trim;
+		why = HIFI_GOV_AMP_HOT;
+	}
 	bool limiting = target < 0.999f;
+	g->why = limiting ? why : HIFI_GOV_FREE;
 	if (limiting && !g->limiting) g->events++;
 	g->limiting = limiting;
 	g->target = target;
@@ -191,4 +224,53 @@ float hifi_gov_level_dbfs(const hifi_gov_t *g) {
 	float ms = g->ms_avg * g->gain * g->gain;
 	if (ms < 1e-12f) return -120.0f;
 	return 10.0f * log10f(2.0f * ms);
+}
+
+float hifi_gov_heat_def_w(const hifi_gov_t *g) { return g->heat_def_w / 2; }
+
+float hifi_gov_heat_max_w(const hifi_gov_t *g) {
+	float m = g->cfg.thermal_max_w > g->heat_def_w ? g->cfg.thermal_max_w : g->heat_def_w;
+	return m / 2;
+}
+
+float hifi_gov_heat_w(const hifi_gov_t *g) { return g->cfg.thermal_out_w / 2; }
+
+float hifi_gov_set_heat_w(hifi_gov_t *g, float w) {
+	if (g->heat_def_w <= 0) return 0; /* a board without a thermal limit */
+	if (!(w > 0)) w = hifi_gov_heat_def_w(g);
+	float mx = hifi_gov_heat_max_w(g);
+	if (w < HIFI_GOV_HEAT_MIN_W) w = HIFI_GOV_HEAT_MIN_W;
+	if (w > mx) w = mx;
+	w = roundf(w * 2.0f) / 2.0f; /* 0.5 W steps */
+	if (w > mx) w = mx;
+	float k = 2 * w / g->heat_def_w;
+	g->cfg.thermal_out_w = 2 * w;
+	g->cfg.thermal_out2_w = g->heat_def2_w * k;
+	return w;
+}
+
+float hifi_gov_heat_now_w(const hifi_gov_t *g) {
+	int a = g->amps > 0 ? g->amps : 1;
+	return g->p_out_slow * g->gain * g->gain / (2 * a);
+}
+
+const char *hifi_gov_why(const hifi_gov_t *g) {
+	switch (g->why) {
+	case HIFI_GOV_CHARGER: return "charger";
+	case HIFI_GOV_CHARGER_PEAK: return "charger_peak";
+	case HIFI_GOV_HEAT: return "heat";
+	case HIFI_GOV_AMP_HOT: return "amp_hot";
+	default: return "";
+	}
+}
+
+void hifi_gov_set_pvdd(hifi_gov_t *g, float pvdd_v) { g->pvdd_v = pvdd_v > 0 ? pvdd_v : 0; }
+
+float hifi_gov_clip_fs(const hifi_gov_t *g) {
+	if (!(g->cfg.vfs_peak_v > 0) || !(g->vsupply > 0)) return 1.0f;
+	float v = g->pvdd_v > 0 && g->pvdd_v < g->vsupply ? g->pvdd_v : g->vsupply;
+	/* -0.5 dB: ~1.7 V lost in hot switches and coil at 4.75 A peak (review
+	 * of k2388); replace with a measured swing */
+	float f = 0.944f * g->cfg.swing * v / g->cfg.vfs_peak_v;
+	return f < 1.0f ? f : 1.0f;
 }

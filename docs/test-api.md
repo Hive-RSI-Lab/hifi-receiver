@@ -39,9 +39,15 @@ What the box is.
  "caps": {"line_modes": ["dj_direct"],
           "eq_bands": [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000],
           "eq_min": -12, "eq_max": 12,
-          "sub": {"count": 2, "crossover": false, "per_sub": false},
-          "zones": 1, "eth": false, "pdo_v_max": 20}}
+          "sub": {"count": 2, "crossover": false, "per_sub": false, "max_db": -9.0},
+          "zones": 1, "eth": false, "pdo_v_max": 20,
+          "channel": true, "led": false, "backlight": false}}
 ```
+
+`channel`, `led` and `backlight` say whether this model answers
+`POST channel`, `POST led` and `POST backlight` (a 404 where false): Lite
+has the speaker side and neither of the others; Plus and Ultra have the LED
+test; only Ultra has the backlight.
 
 `name` is the player name people see in AirPlay, Bluetooth, Spotify and
 LMS. `caps` says what this tier can do, so one web app serves all three:
@@ -213,23 +219,69 @@ subs apply, about 0.1 s behind.
 turns them off (either or both). Lite: the ES8388's LOUT2/ROUT2, 1.5 dB steps
 up to +4.5 dB, so the level it reports is the one it could set. Plus/Ultra:
 a digital gain on the sub DAC's stream, −40 to 0 dB in 0.5 dB steps (more
-would clip). Kept across restarts. Reply: the full `/state`.
+would clip). A level above the board's `info.caps.sub.max_db` is a 400, not
+clamped. Kept across restarts. Reply: the full `/state`.
 
 ## `POST /api/v1/channel`
 
 `{"channel": "stereo"|"left"|"right"|"mono"}`: which side the speaker output
-plays, on every input (stream, line, DJ direct). Lite only (404 on others).
-Done in the ES8388 output mixers (and, for mono, a -6 dB DAC volume or a
-lower analog gain in DJ direct), so SUB OUT (LOUT2/ROUT2, on the same
-mixers) follows it. `stereo` is the default and the old behaviour. Kept
+plays. Lite only (404 on others). A stream (and a test tone) gets it in the DSP,
+after the governor: `left` or `right` plays that side on both outputs,
+`mono` plays (L + R) / 2 on both. The ES8388's cross-mix registers do
+nothing, so the codec stays stereo. DJ direct is analog and can't cross
+sides: `left` or `right` plays that side on its own output only (the other
+is silent) and `mono` plays stereo. SUB OUT (LOUT2/ROUT2) follows the
+mode as played. `stereo` is the default and the old behaviour. Kept
 across restarts. Shown as `audio.channel` in `/state`. Reply: the full
 `/state`; 400 on a bad value.
+
+## `POST /api/v1/led` and `POST /api/v1/backlight`
+
+`{"mode": "test"|"auto"}` lights the board's LEDs (Ultra: the front LED too)
+for a few seconds, then hands them back. `{"mode": "on"|"off"|"auto"}` sets
+Ultra's front-panel backlight, shown as `controls.backlight` in `/state`.
+Not kept across restarts. Only on models whose `info.caps` has `led` or
+`backlight` true (404 elsewhere); reply `{"ok": true}`, 400 on a bad mode.
 
 ## `POST /api/v1/eq`
 
 `{"gains": [0, 0, 2, 0, 0, 0, 0, 0, -1, 0]}`: squeezelite-esp32's 10-band
 equalizer (bands in `info.caps.eq_bands`), whole dB, `eq_min` to `eq_max`.
 Applied at once and kept. Reply: the full `/state`.
+
+## `POST /api/v1/loudness`
+
+`{"boost_db": 6}`, `{"heat_cap_w": 12}`, or both; each is optional, and a
+body with neither is a 400. Only boards whose `info.caps.loudness` is there
+take it (Lite); elsewhere it is a 404 and `caps.loudness` is missing.
+- **`boost_db`:** 0 to `caps.loudness.boost_max_db` (9), a number. Digital
+  gain before the power governor, with a lookahead peak limiter (1 ms
+  lookahead at 48 kHz, 25 ms hold, 0.15 s release) that keeps the boosted
+  signal under the governor's clip ceiling, so a loud master gets louder
+  without hard clipping. While Boost is on, the audio runs 48 frames late;
+  turning Boost up from 0 crossfades into that delay over 4 ms, with no
+  gap. The ceiling is the amp's clip point from the lower of the charger
+  contract and the measured PVDD, 0.5 dB under the datasheet swing; while
+  audio plays it ignores moves under 2% (PVDD read noise). Test tones and
+  line-in at unity skip it, and after one Boost ramps up from unity again.
+- **`heat_cap_w`:** sustained watts a channel the governor allows, from
+  `heat_min_w` to `heat_max_w` (15), default `heat_def_w` (9). Above 9 W
+  the amp may cut out when it gets hot; a fan helps. Lite's TPA3118 has no
+  warning pin, so a trip is forgiven (not counted towards the amp's
+  3-trips latch) only when the cap is above the default, the amp had been
+  on at least 5 s, the governor's heat estimate is above the default, and
+  no other trip was forgiven in the last fault window. A forgiven trip
+  lowers the cap by 2 W (saved, shown in `heat_cap_w`), holds the gain 3 dB
+  down for 60 s and keeps the amp off 15 s. Any other trip (a short trips
+  at once, or again soon) counts and latches as before. The cap tops out
+  at 15 W: the thermal model reaches the 150 C shutdown near there, so
+  more needs a fan, a heatsink and a measurement.
+
+Both are checked before either is set, and kept across restarts. Shown as
+`audio.boost` (`db`, `limit_db`: the gain the limiter is taking off now,
+`limiting`, `limit_events`) and `governor.heat_cap_w` / `heat_w` in
+`/state`, with `amp.hot` when the warning pin is low. Reply: the full
+`/state`; 400 on a bad value.
 
 ## `POST /api/v1/name`
 
@@ -321,7 +373,7 @@ Reply: `{"ok": true}`.
 
 ## `POST /api/v1/selftest`
 
-Runs every check the board can do on itself in about 2 s and returns them.
+Runs every check the board can do on itself in about 3 s and returns them.
 Nothing in it needs a speaker or a load.
 
 ```json
@@ -334,6 +386,7 @@ Nothing in it needs a speaker or a load.
   {"name": "pvdd_on",       "pass": true,  "value": "on"},
   {"name": "pvdd_sensed",   "pass": true,  "value": "PVDD 19.95 V of VBUS 20.12 V"},
   {"name": "amp_no_fault",  "pass": true,  "value": "FAULTZ high after 200 ms enabled"},
+  {"name": "loopback",      "pass": true,  "value": "stereo: L +0.1/-43.4, R -42.1/-0.1 dB"},
   {"name": "psram",         "pass": true,  "value": "8 MB"},
   {"name": "heap",          "pass": true,  "value": "81234 B free"},
   {"name": "network",       "pass": false, "value": "not connected"}]}
@@ -346,6 +399,26 @@ expected, and the bench script knows it.
 After a remote link drop since boot, a `link_drop` check follows `network`:
 it always passes, and its value is how long ago and why
 (`"120s ago: TCP gave up: keepalive or resends"`, see `diag/net`).
+
+On a board with loopback taps (the Lite; see `capture`), `loopback` checks
+the speaker path end to end: a 1 kHz tone at -50 dBFS on the left side, then
+the right, each read back on both taps. A speaker plugged in gives a faint
+beep. The check measures the bare path, not the user's sound settings: for
+the measurement it routes stereo and skips the EQ (Boost already skips test
+tones), then puts the user's channel mode and EQ back. Its value is the mode
+it measured in (always `stereo`), then for the left tone and the right tone
+what the left and right taps read, in dB against the level the path should
+give (`"stereo: L +0.1/-43.4, R -42.1/-0.1 dB"`: the left tone reaches the
+left output only, the right tone the right). A fed output must read within
+3 dB of 0 dB; the other must read 20 dB down or more. The quiet legs read the
+taps' noise in the 1 kHz bin, with the capture's mean and slope taken out
+first so a DC offset still settling after boot doesn't leak into it; expect
+about -40 to -60 dB.
+With a stream, a test tone, a connected source or DJ direct playing, the
+check is skipped and passes (`"skipped: a stream plays"`, `"skipped: a source
+is connected"`), and the same if a source connects while it runs; a second
+self-test that starts while one runs skips it too (`"skipped: another
+self-test runs it"`). With the amp off it fails (`"amp not on"`).
 
 Plus and Ultra have no `vbus_matches` or `codec_i2c`; their board checks
 are `expander_i2c` (the I/O expander at 0x20, or 0x74–0x77 for the

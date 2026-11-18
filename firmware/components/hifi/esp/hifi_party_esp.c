@@ -8,8 +8,8 @@
  * follows is core/hifi_party_group.c; the packet, the jitter buffer and the
  * controller are core/hifi_party.c; the clocks are core/hifi_party_sync.c.
  * All three run on the host (firmware/test). This file is the radio, the
- * output hooks (patch 0021), the output itself (patch 0023) and Bluetooth
- * (patch 0024).
+ * output hooks (patch 0021), the output itself (patch 0032) and Bluetooth
+ * (patch 0033).
  *
  *   api party                         on, role, leader, followers, why
  *   api party '{"op":"on"}'           also off, lead

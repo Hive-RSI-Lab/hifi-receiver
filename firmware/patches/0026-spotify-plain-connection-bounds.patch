@@ -1,0 +1,82 @@
+diff --git a/components/spotify/cspot/src/PlainConnection.cpp b/components/spotify/cspot/src/PlainConnection.cpp
+index ab5ef73..926eb54 100644
+--- a/components/spotify/cspot/src/PlainConnection.cpp
++++ b/components/spotify/cspot/src/PlainConnection.cpp
+@@ -52,8 +52,11 @@ void PlainConnection::connect(const std::string& apAddress) {
+   h.ai_protocol = IPPROTO_IP;
+ 
+   // Lookup host
+-  if (getaddrinfo(hostname.c_str(), portStr.c_str(), &h, &airoot)) {
++  if (getaddrinfo(hostname.c_str(), portStr.c_str(), &h, &airoot) || !airoot) {
+     CSPOT_LOG(error, "getaddrinfo failed");
++    // hifi: the loop below would find nothing and the session carry on
++    // with no socket
++    throw std::runtime_error("Can't resolve spotify servers");
+   }
+ 
+   // find the right ai, connect to server
+@@ -94,10 +97,14 @@ void PlainConnection::connect(const std::string& apAddress) {
+     ::close(this->apSock);
+ #endif
+     apSock = -1;
+-    throw std::runtime_error("Can't connect to spotify servers");
++    // hifi: try the next address; the throw is after the loop, once the
++    // list is freed (it leaked one per refused connect, and a LAN host that
++    // resets every connect made that one a second)
+   }
+ 
+   freeaddrinfo(airoot);
++  if (this->apSock < 0)
++    throw std::runtime_error("Can't connect to spotify servers");
+   CSPOT_LOG(debug, "Connected to spotify server");
+ }
+ 
+@@ -107,6 +114,14 @@ std::vector<uint8_t> PlainConnection::recvPacket() {
+   readBlock(packetBuffer.data(), 4);
+   uint32_t packetSize = ntohl(extract<uint32_t>(packetBuffer, 0));
+ 
++  // hifi: the size counts its own 4 bytes. One below 4 made packetSize - 4
++  // wrap to about 4 GB and readBlock wrote the socket's bytes past a 0-3 byte
++  // buffer; this read is the AP's handshake answer, before its signature is
++  // checked, so anyone on the path could send it. The answer is well under
++  // 64 KB.
++  if (packetSize < 4 || packetSize > 65536)
++    throw std::runtime_error("Bad packet size from the access point");
++
+   packetBuffer.resize(packetSize, 0);
+ 
+   // Read actual data
+diff --git a/components/spotify/cspot/src/ShannonConnection.cpp b/components/spotify/cspot/src/ShannonConnection.cpp
+index ebfe091..655180d 100644
+--- a/components/spotify/cspot/src/ShannonConnection.cpp
++++ b/components/spotify/cspot/src/ShannonConnection.cpp
+@@ -82,6 +82,10 @@ cspot::Packet ShannonConnection::recvPacket() {
+ 
+   if (mac != mac2) {
+     CSPOT_LOG(error, "Shannon read: Mac doesn't match");
++    // hifi: a packet that fails its MAC isn't from the access point (or is
++    // broken): drop the connection rather than parse it; the session
++    // reconnects (MercurySession::runTask catches this)
++    throw std::runtime_error("Shannon MAC mismatch");
+   }
+ 
+   // Update the nonce
+diff --git a/components/spotify/Shim.cpp b/components/spotify/Shim.cpp
+--- a/components/spotify/Shim.cpp
++++ b/components/spotify/Shim.cpp
+@@ -489,7 +489,14 @@
+         
+         if (!attempts) continue;
+ 
+-        ctx->config.authData = ctx->session->authenticate(blob);
++        // a refused or broken login (a MAC mismatch, a reset, a stall) throws:
++        // fail it like a refused login instead of letting it end the task
++        try {
++            ctx->config.authData = ctx->session->authenticate(blob);
++        } catch (const std::exception& e) {
++            CSPOT_LOG(error, "Login failed: %s", e.what());
++            ctx->config.authData.clear();
++        }
+         ctx->config.clientId = CLIENT_ID;
+         ctx->config.clientSecret = CLIENT_SECRET;
+ 

@@ -27,13 +27,13 @@ CONTROL = ("volup", "voldown", "toggle", "play", "pause", "stop", "next", "prev"
 IR_ACTIONS = ("volup", "voldown", "mute", "toggle", "next", "prev", "input", "power")
 
 CAPS = {
-    "lite": {"line_modes": ["dj_direct"], "sub": {"count": 2, "crossover": False, "per_sub": False},
-             "zones": 1, "eth": False, "pdo_v_max": 20},
-    "plus": {"line_modes": ["dj_direct", "line"], "sub": {"count": 2, "crossover": True, "per_sub": True},
-             "zones": 1, "eth": True, "pdo_v_max": 28},
+    "lite": {"line_modes": ["dj_direct"], "sub": {"count": 2, "crossover": False, "per_sub": False, "max_db": -9.0},
+             "zones": 1, "eth": False, "pdo_v_max": 20, "channel": True, "led": False, "backlight": False},
+    "plus": {"line_modes": ["dj_direct", "line"], "sub": {"count": 2, "crossover": True, "per_sub": True, "max_db": 0.0},
+             "zones": 1, "eth": True, "pdo_v_max": 28, "channel": False, "led": True, "backlight": False},
     "ultra": {"line_modes": ["dj_direct", "line", "optical"],
-              "sub": {"count": 2, "crossover": True, "per_sub": True},
-              "zones": 2, "eth": True, "pdo_v_max": 28},
+              "sub": {"count": 2, "crossover": True, "per_sub": True, "max_db": 0.0},
+              "zones": 2, "eth": True, "pdo_v_max": 28, "channel": False, "led": True, "backlight": True},
 }
 BOARDS = {"lite": "lite-main", "plus": "core", "ultra": "core+ultra-front"}
 SCAN = [{"ssid": "Home", "rssi": -48, "secure": True},
@@ -48,6 +48,8 @@ PLAYING = {"state": "play", "title": "Teardrop", "artist": "Massive Attack", "al
 def initial_info(model: str) -> dict:
     caps = copy.deepcopy(CAPS[model])
     caps.update(eq_bands=EQ_BANDS, eq_min=-12, eq_max=12)
+    if model == "lite":  # Boost and the heat cap are Lite only (HIFI_HAS_BOOST)
+        caps["loudness"] = {"boost_max_db": 9.0, "heat_cap_w": {"min": 2.0, "max": 15.0, "default": 9.0}}
     return {"model": "hifi-" + model, "board": BOARDS[model], "fw": "0.1.0",
             "upstream": "squeezelite-esp32 (mock)", "api": 1, "mac": "24:0a:c4:12:34:56",
             "hostname": "hifi-" + model, "name": "HiFi " + model.capitalize(),
@@ -68,11 +70,14 @@ def initial_state(model: str, ap: bool, pdo: tuple[float, float], fault: bool) -
                   "contract": {"protocol": "pd", "epr": v > 20, "v": v, "i_max_a": a, "w": round(v * a, 1)},
                   "pvdd_on": pd_ok, "pvdd_v": None, "vbus_i_a": None},
         "amp": {"enabled": pd_ok and not fault, "fault": False, "faults": 3 if fault else 0,
-                "latched": fault, "temp_c": None if model == "lite" else 46},
+                "latched": fault, "temp_c": None if model == "lite" else 46, "hot": False},
         "governor": {"budget_w": round(0.9 * v * a, 1), "in_w": 7.9, "out_w": 4.4,
-                     "gain_db": 0.0, "limiting": False, "limit_events": 0},
+                     "gain_db": 0.0, "limiting": False, "limit_events": 0,
+                     "reason": None, "heat_cap_w": 9.0, "heat_w": 2.2},
         "audio": {"source": "spotify", "input": "stream", "tone": None, "level_dbfs": -23.4,
-                  "volume": 35, "mute": False, "max_volume": 100, "eq": [0] * len(EQ_BANDS),
+                  "volume": 35, "mute": False, "max_volume": 100,
+                  "boost": {"db": 0.0, "limit_db": 0.0, "limiting": False, "limit_events": 0},
+                  "eq": [0] * len(EQ_BANDS), "channel": "stereo",
                   "sub": sub, "playing": dict(PLAYING)},
         "net": {"mode": "sta", "ssid": "Home", "ip": "192.168.1.40", "rssi": -52,
                 "hostname": "hifi-" + model, "eth": model != "lite", "join": None},
@@ -80,6 +85,8 @@ def initial_state(model: str, ap: bool, pdo: tuple[float, float], fault: bool) -
         "update": {"state": "idle", "progress": 0},
         "ir": {"learning": None, "learned": [], "last_code": None},
     }
+    if CAPS[model]["backlight"]:
+        s["controls"] = {"last": None, "backlight": "auto"}
     if CAPS[model]["zones"] > 1:
         # core's zone B amp takes zone A's signal: it has no level of its own
         s["audio"]["zone_b"] = {"on": False, "volume": None}
@@ -156,6 +163,41 @@ class Receiver:
                 a["eq"] = [clamp(num({"g": x}, "g"), caps["eq_min"], caps["eq_max"], int) for x in g]
             elif path == "sub":
                 self._sub(b, a["sub"], caps["sub"])
+            elif path == "loudness":
+                # as the firmware: both checked before either is set
+                if "loudness" not in caps:
+                    raise KeyError(path)  # 404, as the firmware on a board without Boost
+                L = caps["loudness"]
+                bd = None if b.get("boost_db") is None else num(b, "boost_db")
+                hw = None if b.get("heat_cap_w") is None else num(b, "heat_cap_w")
+                if bd is None and hw is None:
+                    raise ValueError("send boost_db and/or heat_cap_w")
+                if bd is not None and not 0 <= bd <= L["boost_max_db"]:
+                    raise ValueError("boost_db is out of range")
+                if hw is not None and not L["heat_cap_w"]["min"] <= hw <= L["heat_cap_w"]["max"]:
+                    raise ValueError("heat_cap_w is out of range")
+                if bd is not None:
+                    a["boost"]["db"] = round(bd * 10) / 10
+                    a["boost"]["limiting"] = bd > 0
+                    a["boost"]["limit_db"] = -round(bd / 3, 1)
+                if hw is not None:
+                    s["governor"]["heat_cap_w"] = round(hw * 2) / 2
+            elif path == "channel":
+                # as the firmware: Lite's ES8388 mixers pick the side; 404 elsewhere
+                if not caps["channel"]:
+                    raise KeyError(path)
+                if b.get("channel") not in ("stereo", "left", "right", "mono"):
+                    raise ValueError("channel must be stereo, left, right or mono")
+                a["channel"] = b["channel"]
+            elif path in ("led", "backlight"):
+                modes = ("test", "auto") if path == "led" else ("on", "off", "auto")
+                if not caps[path]:
+                    raise KeyError(path)
+                if b.get("mode") not in modes:
+                    raise ValueError("mode must be " + ", ".join(modes[:-1]) + " or " + modes[-1])
+                if path == "backlight":
+                    s["controls"]["backlight"] = b["mode"]
+                return {"ok": True}
             elif path == "zone":
                 if caps["zones"] < 2 or b.get("zone") != "b":
                     raise ValueError("no such zone")
@@ -262,7 +304,10 @@ class Receiver:
                 one["invert"] = boolean(b, "invert")
             return
         if "level_db" in b:  # the ES8388's LOUT2/ROUT2 in 1.5 dB steps on Lite (test-api.md)
-            sub["level_db"] = round(clamp(num(b, "level_db"), -30, 6, float) / 1.5) * 1.5
+            v = num(b, "level_db")
+            if not -30 <= v <= c["max_db"]:
+                raise ValueError(f"level_db must be -30 to {c['max_db']:+.1f} on this model")
+            sub["level_db"] = round(v / 1.5) * 1.5
         if "on" in b:
             sub["on"] = boolean(b, "on")
         for k, lo, hi in (("xover_hz", 40, 160),):
@@ -293,6 +338,8 @@ class Receiver:
             {"name": "pvdd_on", "pass": on, "value": "on" if on else "off: " + p["state"]},
             {"name": "amp_no_fault", "pass": on and not s["amp"]["latched"],
              "value": "latched" if s["amp"]["latched"] else "FAULTZ high after 200 ms enabled"},
+            {"name": "loopback", "pass": on and not s["amp"]["latched"],
+             "value": "stereo: L +0.1/-43.4, R -42.1/-0.1 dB" if on and not s["amp"]["latched"] else "amp not on"},
             {"name": "psram", "pass": True, "value": "8 MB"},
             {"name": "heap", "pass": True, "value": f"{s['sys']['heap_free']} B free"},
             {"name": "network", "pass": s["net"]["mode"] == "sta",

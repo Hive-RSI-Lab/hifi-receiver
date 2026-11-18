@@ -37,6 +37,15 @@ void hifi_bsp_power_in(uint32_t now_ms, hifi_bsp_power_t *p);
 /* Drives PVDD and the amps in a safe order: amps into shutdown before PVDD
  * opens, out of it after PVDD is up. */
 void hifi_bsp_power_out(const hifi_power_out_t *o);
+/* The quiet stop's parts (hifi_quiet.h), from any task:
+ * the outputs at frac of their level when the ramp began (1 puts them back);
+ * the DAC's soft mute on, or off back to what it was;
+ * the amps into shutdown at once, where a GPIO can (the power task's next
+ * step does it too, on every board). */
+void hifi_bsp_quiet_level(float frac);
+void hifi_bsp_quiet_mute(bool on);
+void hifi_bsp_amp_off_now(void);
+void hifi_bsp_quiet_release(void); /* forget the ramp's starting levels */
 
 /*
  * Puts the input (stream or DJ direct), the sub and, where the analog path
