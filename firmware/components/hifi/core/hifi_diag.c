@@ -71,6 +71,31 @@ bool hifi_diag_is_power_cut(const char *reason, uint32_t boots_before) {
 	return !strcmp(reason, "power_on") || !strcmp(reason, "brownout");
 }
 
+/* ------------------------------------------------------------------ failed allocations */
+
+void hifi_diag_caps_text(char *out, size_t cap, uint32_t caps) {
+	/* esp_heap_caps.h's MALLOC_CAP_ bits, in bit order */
+	static const char *const names[] = {"EXEC", "32BIT", "8BIT", "DMA", "PID2", "PID3", "PID4", "PID5",
+					    "PID6", "PID7", "SPIRAM", "INTERNAL", "DEFAULT", "IRAM_8BIT", "RETENTION",
+					    "RTCRAM"};
+	const int known = (int) (sizeof(names) / sizeof(names[0]));
+	if (!cap) return;
+	out[0] = '\0';
+	if (!caps) {
+		snprintf(out, cap, "0");
+		return;
+	}
+	size_t len = 0;
+	for (int b = 0; b < known; b++) {
+		if (!(caps & (1u << b))) continue;
+		int w = snprintf(out + len, cap - len, "%s%s", len ? "|" : "", names[b]);
+		if (w < 0 || (size_t) w >= cap - len) return; /* cut, like snprintf */
+		len += (size_t) w;
+	}
+	uint32_t rest = caps & ~((1u << known) - 1u);
+	if (rest) snprintf(out + len, cap - len, "%s0x%x", len ? "|" : "", (unsigned) rest);
+}
+
 /* ------------------------------------------------------------------ underruns */
 
 int hifi_diag_underrun_step(uint8_t *state, bool running, uint32_t frames, bool live, bool flushed) {
@@ -89,7 +114,9 @@ int hifi_diag_underrun_step(uint8_t *state, bool running, uint32_t frames, bool 
 
 /* ------------------------------------------------------------------ writers */
 
-static void heap(hj_t *j, const char *key, const hifi_diag_heap_t *h) {
+/* floor: the self-test's floor; under: say whether the low since boot went
+ * to it or under, as a warning; with floor 0 too, only that */
+static void heap(hj_t *j, const char *key, const hifi_diag_heap_t *h, uint32_t floor, bool under) {
 	if (!h->total) {
 		hj_null(j, key);
 		return;
@@ -99,6 +126,24 @@ static void heap(hj_t *j, const char *key, const hifi_diag_heap_t *h) {
 	hj_int(j, "min", h->min);
 	hj_int(j, "largest", h->largest);
 	hj_int(j, "total", h->total);
+	if (floor) hj_int(j, "floor", floor);
+	if (under) hj_bool(j, "under_floor", h->min <= floor);
+	hj_obj_end(j);
+}
+
+/* "alloc_fail": the count, and with detail the last failure's */
+static void alloc_fail(hj_t *j, const hifi_diag_alloc_t *a, bool detail) {
+	hj_obj(j, "alloc_fail");
+	hj_int(j, "n", a->n);
+	if (a->n && detail) {
+		char caps[128];
+		hifi_diag_caps_text(caps, sizeof(caps), a->caps);
+		hj_int(j, "size", a->size);
+		hj_str(j, "caps", caps);
+		hj_str(j, "fn", a->fn);
+		hj_int(j, "at_s", a->at_s);
+		hj_int(j, "largest", a->largest);
+	}
 	hj_obj_end(j);
 }
 
@@ -107,9 +152,18 @@ static void ms_or_null(hj_t *j, const char *key, uint32_t ms) {
 	else hj_null(j, key);
 }
 
-void hifi_diag_write_sys(const hifi_diag_sys_t *s, char *out, size_t cap) {
+/*
+ * What sys adds to the reply it had before the floor and the failed
+ * allocations, most first; the writer steps down until the reply fits the
+ * page whole, so the widest one is the old reply and still closes:
+ * 0 all, 1 alloc_fail without the last failure's details, 2 the floor's
+ * value left out (under_floor still says), 3 under_floor alone, 4 neither.
+ */
+#define SYS_LEVELS 5
+
+static bool write_sys(const hifi_diag_sys_t *s, char *out, size_t lim, int level) {
 	hj_t j;
-	hj_init(&j, out, cap < HIFI_DIAG_PAGE + 1 ? cap : HIFI_DIAG_PAGE + 1);
+	hj_init(&j, out, lim);
 	hj_obj(&j, NULL);
 	hj_int(&j, "uptime_s", s->uptime_s);
 	hj_obj(&j, "boot_ms");
@@ -117,8 +171,9 @@ void hifi_diag_write_sys(const hifi_diag_sys_t *s, char *out, size_t cap) {
 	ms_or_null(&j, "ip", s->boot_ip_ms);
 	ms_or_null(&j, "link", s->boot_link_ms);
 	hj_obj_end(&j);
-	heap(&j, "heap", &s->internal);
-	heap(&j, "psram", &s->psram);
+	bool floor = s->heap_floor && level < 4;
+	heap(&j, "heap", &s->internal, floor && level < 2 ? s->heap_floor : 0, floor);
+	heap(&j, "psram", &s->psram, 0, false);
 	hj_str(&j, "reset_reason", s->reset_reason);
 	hj_str(&j, "resets", s->reset_hist);
 	hj_int(&j, "boots", s->boots);
@@ -155,18 +210,28 @@ void hifi_diag_write_sys(const hifi_diag_sys_t *s, char *out, size_t cap) {
 	} else {
 		hj_null(&j, "power");
 	}
+	if (level < 3) alloc_fail(&j, &s->alloc_fail, level < 1);
 	/* last, and only when it still fits the page with the closing brace: a
 	 * reply as wide as sys can get leaves it out rather than cut the reply
-	 * (GET /api/v1/state/sys always has it) */
+	 * (GET /api/v1/state/sys always has it); it was here before the extras,
+	 * so they give way to it first */
 	if (s->restart_cause) {
 		hj_t keep = j;
 		hj_str(&j, "restart_cause", s->restart_cause);
 		if (j.overflow || j.len + 1 >= j.cap) {
+			if (level < SYS_LEVELS - 1) return false;
 			j = keep;
 			j.buf[j.len] = '\0';
 		}
 	}
 	hj_obj_end(&j);
+	return !j.overflow;
+}
+
+void hifi_diag_write_sys(const hifi_diag_sys_t *s, char *out, size_t cap) {
+	size_t lim = cap < HIFI_DIAG_PAGE + 1 ? cap : HIFI_DIAG_PAGE + 1;
+	for (int level = 0; !write_sys(s, out, lim, level) && level < SYS_LEVELS - 1; level++) {
+	}
 }
 
 void hifi_diag_write_tasks(const hifi_diag_tasks_t *t, int from, char *out, size_t cap) {

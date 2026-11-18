@@ -445,7 +445,8 @@ fits a remote bench's reply line; the task list pages. On the console:
 ```json
 {"uptime_s": 5321,
  "boot_ms": {"app": 812, "ip": 4210, "link": 6034},
- "heap": {"free": 61234, "min": 38012, "largest": 31744, "total": 290000},
+ "heap": {"free": 61234, "min": 38012, "largest": 31744, "total": 290000,
+          "floor": 12000, "under_floor": false},
  "psram": {"free": 3911000, "min": 3700000, "largest": 3866624, "total": 4192000},
  "reset_reason": "restart", "resets": "restart,panic,power_on", "boots": 14,
  "nvs": {"nvs": {"used": 210, "free": 294, "total": 504, "namespaces": 6, "used_pct": 41.7},
@@ -453,6 +454,8 @@ fits a remote bench's reply line; the task list pages. On the console:
  "power": {"state": "on", "vbus_v": 20.08, "vbus_i_a": 0.31, "pvdd_v": 19.9, "pg": true,
            "proto": "pd", "contract_v": 20.0, "contract_a": 3.25,
            "amp_on": true, "amp_fault": false, "amp_faults": 0, "amp_temp_c": null},
+ "alloc_fail": {"n": 2, "size": 1024, "caps": "8BIT|DEFAULT", "fn": "heap_caps_malloc",
+                "at_s": 4410, "largest": 896},
  "restart_cause": "api_reboot by esp_timer at 0x400e9a10 after 329 s"}
 ```
 
@@ -465,6 +468,24 @@ fits a remote bench's reply line; the task list pages. On the console:
 - `heap` is internal, byte-addressable RAM (what `malloc` of an internal
   buffer can use; the IRAM-only part isn't counted), `psram` the PSRAM (`null` with none fitted): free
   now, the least free since boot, the largest free block and the size.
+  `heap` also has `floor`, the self-test's internal RAM floor (12,000 B), and
+  `under_floor`, `true` once the least free since boot (`min`) has gone to the
+  floor or under it. That is a warning only: the self-test still checks just
+  the free RAM when it runs against the floor, and doesn't fail on the low.
+- `alloc_fail` counts the allocations that failed since boot (`n`, always
+  there; the heap's failed-allocation callback, after its own fallbacks to
+  other RAM have failed). From the first one on it also has the last one: its
+  `size` in bytes, its `caps` (the `MALLOC_CAP_` bits by name, `8BIT|DEFAULT`
+  for a plain `malloc`; bits without a name show as `0x...`), `fn` (the heap
+  function that failed), `at_s` (the uptime then) and `largest` (internal
+  RAM's largest free block then). The first 20 failures also go to the
+  console.
+- The reply stays within the page by leaving these extras out, the least
+  needed first, before anything it had already: first the last failure's
+  details, then `floor` (`under_floor` still says), then `alloc_fail`, then
+  `under_floor`. A real board's reply has room for all of them; only a reply
+  near its widest (the longest reset history with every count at its largest)
+  goes without.
 - `resets` is the reset history, newest first, up to 8 reasons, kept in NVS
   (namespace `hifi_diag`) with the `boots` counter. The reasons are
   `power_on`, `external`, `restart` (a software restart: an update, `restart`
