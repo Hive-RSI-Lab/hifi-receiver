@@ -170,11 +170,11 @@ static esp_err_t file_handler(httpd_req_t *req) {
 	file_tag(f, tag);
 	httpd_resp_set_hdr(req, "ETag", tag);
 	httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
+	httpd_resp_set_type(req, f->content_type);
 	if (httpd_req_get_hdr_value_str(req, "If-None-Match", seen, sizeof(seen)) == ESP_OK && !strcmp(seen, tag)) {
 		httpd_resp_set_status(req, "304 Not Modified");
 		return httpd_resp_send(req, NULL, 0);
 	}
-	httpd_resp_set_type(req, f->content_type);
 	httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
 	return httpd_resp_send(req, (const char *) f->data, f->len);
 }
