@@ -719,11 +719,11 @@ static void got(uint32_t src, const uint8_t *d, size_t len, int64_t now) {
 	act(r);
 }
 
-/* source 1 to 6 but the test signal: something of this board's own plays */
-static bool local_playing(int64_t now) {
+/* something of this board's own plays (hifi_party_local_source: never the
+ * test signal, and line in only when the board isn't following) */
+static bool local_playing(int64_t now, hifi_party_role_t role) {
 	if (now < grace_until) return false;
-	int s = source();
-	return s == 1 || s == 2 || s == 3 || s == 4 || s == 6;
+	return hifi_party_local_source(role, source());
 }
 
 static void load_name(void) {
@@ -834,14 +834,16 @@ static void task_main(void *arg) {
 		int r = __atomic_exchange_n(&pend_do, 0, __ATOMIC_SEQ_CST); /* a Lead from the API, a new address */
 		if (now >= next_tick) {
 			glock();
-			r |= hifi_party_group_tick(&st->g, (uint32_t) (now / 1000), esp_random(), local_playing(now), h < HEAP_FLOOR);
+			r |= hifi_party_group_tick(&st->g, (uint32_t) (now / 1000), esp_random(), local_playing(now, st->g.role), h < HEAP_FLOOR);
 			gunlock();
 			next_tick = now + TICK_US;
 		}
 		act(r);
 		/* a follower whose output something else took and then let go (a test
-		 * tone ends with the output idle) takes it back, at most once a second */
-		if (hrole == HIFI_PARTY_ROLE_FOLLOWER && now >= grace_until && now >= retake_at && source() == 0) {
+		 * tone ends with the output idle) takes it back, at most once a second.
+		 * It also takes it from line in, which can start first when a tone
+		 * ends: a following board stays a follower (hifi_party_retakes) */
+		if (now >= grace_until && now >= retake_at && hifi_party_retakes(hrole, source())) {
 			retake_at = now + 1000000;
 			retaken++;
 			follower_start();

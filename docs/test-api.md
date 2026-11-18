@@ -679,7 +679,10 @@ on the router: no UPnP, no port forward, broadcast only on the subnet.
 - `why`: why it isn't playing in step yet: `low memory`, `another access
   point` (the leader is on another AP, so their clocks differ), `leader lost`,
   `no party key`. `full: true` when the leader has all the followers it
-  takes; `other_ap: true` as in `why`.
+  takes; `other_ap: true` as in `why`. It needs two announces from one
+  address whose TSF moves on with the time between them, so one replayed
+  announce doesn't set it, but a recorded run of them played back at its own
+  pace can.
 - `bt`: whether the Bluetooth sink is on. It stays on only on a picked
   leader or while Bluetooth plays: connect the phone before switching party on.
 

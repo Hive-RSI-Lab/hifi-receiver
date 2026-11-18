@@ -32,6 +32,7 @@ typedef struct {
 	uint32_t gkey_group;
 	uint32_t rnd;
 	bool source, low_heap;
+	bool line; /* input=line, and line in holds the output (source 6) */
 	int64_t nvs_term; /* NVS: kept across a power cut */
 	bool nvs_picked;
 	int nvs_writes;
@@ -202,7 +203,10 @@ static void step(void) {
 	for (int i = 0; i < L.nb; i++) {
 		board_t *b = &L.b[i];
 		if (!b->up) continue;
-		act(b, hifi_party_group_tick(&b->g, L.now, xs(&b->rnd), b->source, b->low_heap));
+		/* a follower takes its output back from line in: the line stops */
+		if (b->line && hifi_party_retakes(b->g.role, 6)) b->line = false;
+		bool own = b->source || (b->line && hifi_party_local_source(b->g.role, 6));
+		act(b, hifi_party_group_tick(&b->g, L.now, xs(&b->rnd), own, b->low_heap));
 		if (b->g.role == HIFI_PARTY_ROLE_LEADER && L.now - b->last_clock >= 200) {
 			b->last_clock = L.now;
 			static const uint8_t bssid[6] = {2, 0, 0, 0, 0, 1};
@@ -618,6 +622,37 @@ static void local_source(void) {
 	CHECK(L.b[a].g.follows == f[0] && L.b[b].g.follows == f[1] && L.b[c].g.follows == f[2] && leaders() == 1);
 }
 
+static void line_in(void) {
+	/* a follower set to input=line: line in takes the output when a test
+	 * signal ends. The board stays a follower and takes the output back;
+	 * line in doesn't lead the group from it */
+	reset(0);
+	int a = add("A", 10, 1), b = add("B", 11, 1);
+	switch_on(a);
+	run(3000);
+	switch_on(b);
+	run(4000);
+	CHECK(follows(b, a));
+	uint32_t fb = L.b[b].g.follows, la = L.b[a].g.leads;
+	for (int i = 0; i < 20; i++) {
+		L.b[b].line = true;
+		CHECK(!hifi_party_local_source(role(b), 6) && hifi_party_retakes(role(b), 6));
+		run(1000);
+		CHECK(follows(b, a) && !L.b[b].line);
+	}
+	CHECK(role(a) == HIFI_PARTY_ROLE_LEADER && L.b[a].g.leads == la && L.b[b].g.follows == fb);
+	CHECK(L.b[b].lost == 0 && leaders() == 1);
+	/* off the party, line in is the board's own source and leads */
+	switch_off(b);
+	run(1000);
+	switch_on(b);
+	L.b[b].line = true;
+	run(1);
+	CHECK(role(b) == HIFI_PARTY_ROLE_LEADER && L.b[b].g.picked);
+	run(4000);
+	CHECK(follows(a, b) && leaders() == 1);
+}
+
 static void output_stopped(void) {
 	/* the leader's output stopped, or at 48 kHz: CLOCKs with "no audio" keep the group */
 	reset(0);
@@ -819,6 +854,15 @@ static void units(void) {
 	CHECK(hifi_party_group_nack_ok(&g, n | 9, 5) && !hifi_party_group_nack_ok(&g, n | 9, 5) && hifi_party_group_nack_ok(&g, n | 9, 6));
 	CHECK(!hifi_party_group_nack_ok(&g, n | 40, 1));
 
+	/* the board's own source: never idle, the test signal or the party; line
+	 * in except on a follower, which takes the output back from it */
+	for (int r = HIFI_PARTY_ROLE_OFF; r <= HIFI_PARTY_ROLE_FOLLOWER; r++) {
+		for (int src = 0; src <= 7; src++) {
+			bool own = src >= 1 && src <= 4 ? true : src == 6 ? r != HIFI_PARTY_ROLE_FOLLOWER : false;
+			CHECK(hifi_party_local_source((hifi_party_role_t) r, src) == own);
+			CHECK(hifi_party_retakes((hifi_party_role_t) r, src) == (r == HIFI_PARTY_ROLE_FOLLOWER && (src == 0 || src == 6)));
+		}
+	}
 	/* the stranger budget */
 	int ok = 0;
 	for (int i = 0; i < 100; i++) ok += hifi_party_group_admit(&g, 5000, n | 50, HIFI_PARTY_JOIN);
@@ -869,6 +913,7 @@ int main(void) {
 	replays();
 	flood();
 	local_source();
+	line_in();
 	output_stopped();
 	low_heap();
 	other_ap();

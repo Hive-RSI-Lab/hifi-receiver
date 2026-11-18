@@ -280,6 +280,15 @@ static int decide(hifi_party_group_t *g, uint32_t now, uint32_t rnd) {
 	return start_lead(g, now, rnd, g->picked);
 }
 
+bool hifi_party_local_source(hifi_party_role_t role, int source) {
+	if (source == 6) return role != HIFI_PARTY_ROLE_FOLLOWER;
+	return source >= 1 && source <= 4;
+}
+
+bool hifi_party_retakes(hifi_party_role_t role, int source) {
+	return role == HIFI_PARTY_ROLE_FOLLOWER && (source == 0 || source == 6);
+}
+
 int hifi_party_group_tick(hifi_party_group_t *g, uint32_t now, uint32_t rnd, bool local_source, bool low_heap) {
 	if (low_heap && !g->heap_low) g->low_heap++;
 	g->heap_low = low_heap;

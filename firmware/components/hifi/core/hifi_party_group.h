@@ -167,6 +167,17 @@ int hifi_party_group_lead(hifi_party_group_t *g, uint32_t now, uint32_t rnd);
  * takes the lead); low_heap: internal RAM is under the floor (a leader stops,
  * nobody starts leading) */
 int hifi_party_group_tick(hifi_party_group_t *g, uint32_t now, uint32_t rnd, bool local_source, bool low_heap);
+/* source: hifi_sink_source()'s number for what the output plays (0 idle,
+ * 1 LMS, 2 Bluetooth, 3 AirPlay, 4 Spotify, 5 test signal, 6 line in, 7 party).
+ * Whether it is the board's own source, which takes the lead (tick's
+ * local_source). The test signal never is. Line in is only on a board that
+ * isn't following: a follower stays a follower, and its retake takes the
+ * output back from line in (hifi_party_retakes), so line in never leads the
+ * group from a follower. */
+bool hifi_party_local_source(hifi_party_role_t role, int source);
+/* whether a follower takes its output back: the output is idle (a test signal
+ * ended), or line in took it */
+bool hifi_party_retakes(hifi_party_role_t role, int source);
 /* an announce that passed hifi_party_announce_parse */
 int hifi_party_group_announce(hifi_party_group_t *g, uint32_t now, const hifi_party_announce_t *a);
 /* an announce from ip whose tag passed but whose TSF (tsf_us) is off ours:
