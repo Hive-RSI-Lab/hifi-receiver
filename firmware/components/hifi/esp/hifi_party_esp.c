@@ -181,6 +181,9 @@ static volatile int64_t marks_seen_us;
 
 /* the worker's own */
 static int sock = -1;
+/* LAB ONLY (a7fcd TOS A/B): the IP TOS byte the party socket sends with, set
+ * by the op tos (0 BE, 0xA0 puts the stream on the VI queue), kept across reopens */
+static int party_tos;
 static uint32_t self_ip, self_mask;
 static uint8_t my_bssid[6];
 static bool have_bssid;
@@ -482,6 +485,7 @@ static void net_refresh(void) {
 		return;
 	}
 	setsockopt(so, SOL_SOCKET, SO_RCVBUF, &rb, sizeof(rb)); /* a burst of resends, a second's announces */
+	if (party_tos) setsockopt(so, IPPROTO_IP, IP_TOS, &party_tos, sizeof(party_tos));
 	sock = so;
 }
 
@@ -1275,6 +1279,7 @@ static void stats_json(hj_t *j) {
 		hj_int(j, NULL, txe_other);
 		hj_arr_end(j);
 	}
+	hj_int(j, "tos", party_tos);
 	hj_int(j, "rx", rx_ok);
 	hj_int(j, "bad", rx_bad);
 	hj_int(j, "oth", rx_other);
@@ -1369,10 +1374,64 @@ static void wake(void) {
 	if (worker) xTaskNotifyGive(worker);
 }
 
+/* LAB ONLY (a7fcd #269 board check): party/wifi reads the power save and the
+ * Wi-Fi counters, read-only (no ps op), so the check sees what #269 set. */
+extern uint32_t g_lmac_cnt[45];
+extern uint32_t g_pm_cnt[18];
+/* rx_suc, rx_end, full#1, full#2: the MAC's own registers, as the dump reads them */
+#define WIFI_RX_REG(a) (*(volatile uint32_t *) (a))
+
+static void wifi_json(hj_t *j) {
+	wifi_ps_type_t ps = WIFI_PS_NONE;
+	esp_wifi_get_ps(&ps);
+	hj_str(j, "ps", ps == WIFI_PS_NONE ? "none" : ps == WIFI_PS_MIN_MODEM ? "min" : "max");
+	const uint8_t *b = (const uint8_t *) g_lmac_cnt;
+	hj_arr(j, "tx"); /* per queue: [tx_all, lrc, src, age, to] */
+	for (int q = 0; q < 5; q++) {
+		const uint8_t *e = b + 120 + 8 * q;
+		uint32_t all;
+		memcpy(&all, e, 4);
+		hj_arr(j, NULL);
+		hj_int(j, NULL, all);
+		for (int i = 4; i < 8; i++) hj_int(j, NULL, e[i]);
+		hj_arr_end(j);
+	}
+	hj_arr_end(j);
+	hj_obj(j, "rx");
+	hj_int(j, "ampdu", g_lmac_cnt[40]);
+	hj_int(j, "mpdu", g_lmac_cnt[41]);
+	hj_int(j, "mgmt", g_lmac_cnt[42]);
+	hj_int(j, "ctrl", g_lmac_cnt[43]);
+	hj_int(j, "frag", (uint16_t) g_lmac_cnt[44]);
+	hj_int(j, "suc", WIFI_RX_REG(0x3ff732cc));
+	hj_int(j, "end", WIFI_RX_REG(0x3ff732d0));
+	hj_int(j, "full1", WIFI_RX_REG(0x3ff732ac));
+	hj_int(j, "full2", WIFI_RX_REG(0x3ff732dc));
+	hj_obj_end(j);
+	static const char *pm[] = {"beacon", "tbtt", "timset", "dtimset", "tbttdrm", "actto", "txwake", "null1", "null0", "bcndly", "sleep", "wake"};
+	hj_obj(j, "pm");
+	for (int i = 0; i < 12; i++) hj_int(j, pm[i], g_pm_cnt[i]);
+	uint64_t slept, total;
+	memcpy(&slept, &g_pm_cnt[12], 8);
+	memcpy(&total, &g_pm_cnt[16], 8);
+	hj_int(j, "waket", g_pm_cnt[14]);
+	hj_num(j, "slept_s", (double) slept / 1e6, 1);
+	hj_num(j, "total_s", (double) total / 1e6, 1);
+	hj_obj_end(j);
+}
+
 /* party (GET: the state; POST: op on|off|lead, and from the Hive or USB
  * only, key and tone) and party/stats. Returns the HTTP status. */
 int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *out, size_t cap) {
 	hj_t j;
+	if (sub && !strcmp(sub, "wifi")) {
+		if (post) return err(out, cap, 405, "party/wifi is read with GET");
+		hj_init(&j, out, cap);
+		hj_obj(&j, NULL);
+		wifi_json(&j);
+		hj_obj_end(&j);
+		return 200;
+	}
 	if (sub && !strcmp(sub, "stats")) {
 		if (post) return err(out, cap, 405, "party/stats is read with GET");
 		if (!active) return err(out, cap, 409, "party is off");
@@ -1385,11 +1444,16 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 	if (sub && *sub) return err(out, cap, 404, "no such party route");
 	if (post) {
 		char op[16];
-		if (!body || !hj_get_str(body, "op", op, sizeof(op))) return err(out, cap, 400, "op must be on, off, lead, key or tone");
-		bool key = !strcmp(op, "key"), tone = !strcmp(op, "tone");
-		if ((key || tone) && lan) return err(out, cap, 403, "the party key and the test tone are set by the Hive or over USB, not from the LAN");
+		if (!body || !hj_get_str(body, "op", op, sizeof(op))) return err(out, cap, 400, "op must be on, off, lead, key, tone or tos");
+		bool key = !strcmp(op, "key"), tone = !strcmp(op, "tone"), tos = !strcmp(op, "tos");
+		if ((key || tone || tos) && lan) return err(out, cap, 403, "the party key, the test tone and the TOS are set by the Hive or over USB, not from the LAN");
 		if (!alloc_once()) return err(out, cap, 503, "out of memory");
-		if (key) {
+		if (tos) {
+			double v;
+			if (!hj_get_num(body, "v", &v) || v < 0 || v > 255 || v != (int) v) return err(out, cap, 400, "v (0 to 255) is required");
+			party_tos = (int) v;
+			if (sock >= 0 && setsockopt(sock, IPPROTO_IP, IP_TOS, &party_tos, sizeof(party_tos))) return err(out, cap, 500, "the socket refused the TOS");
+		} else if (key) {
 			char hex[2 * HIFI_PARTY_SECRET + 2];
 			uint8_t sec[HIFI_PARTY_SECRET];
 			bool ok = hj_get_str(body, "secret", hex, sizeof(hex)) && hifi_party_parse_secret(hex, sec);
@@ -1446,7 +1510,7 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 			if (r < 0) return err(out, cap, 409, "this board can't lead now (party is off, or memory is low)");
 			wake();
 		} else
-			return err(out, cap, 400, "op must be on, off, lead, key or tone");
+			return err(out, cap, 400, "op must be on, off, lead, key, tone or tos");
 		/* the worker takes on and off within its 200 ms wait */
 		for (int i = 0; i < 30 && (want_on && have_secret) != active; i++) vTaskDelay(pdMS_TO_TICKS(20));
 	}
