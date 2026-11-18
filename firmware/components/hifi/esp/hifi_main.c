@@ -53,6 +53,9 @@
 #ifdef CONFIG_HIFI_LAB
 #include "hifi_lab_esp.h"
 #endif
+#ifdef CONFIG_HIFI_PARTY_STANDIN
+void hifi_party_standin_start(void); /* esp/party_standin.c, a measurement image only */
+#endif
 #include "hifi_json.h"
 #include "hifi_line.h"
 #include "hifi_meta.h"
@@ -1806,6 +1809,9 @@ static bool hifi_init(void) {
 	tap_task = task_psram(tap_main, "hifi_tap", 4096, ESP_TASK_PRIO_MIN + 2, tskNO_AFFINITY);
 #ifdef CONFIG_HIFI_LAB
 	hifi_lab_esp_init();
+#endif
+#ifdef CONFIG_HIFI_PARTY_STANDIN
+	hifi_party_standin_start();
 #endif
 	hifi_remote_start(&hifi_ops);
 	hifi_bsp_start();

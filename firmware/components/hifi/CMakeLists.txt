@@ -38,6 +38,11 @@ if(CONFIG_HIFI_LAB)
 	endif()
 endif()
 
+# the party stand-in (board/lite-party-standin): a measurement image only
+if(CONFIG_HIFI_PARTY_STANDIN)
+	list(APPEND srcs esp/party_standin.c)
+endif()
+
 # app/build.py writes the web app here (firmware/tools/fetch.sh runs it);
 # without it a placeholder page is served.
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/esp/webapp/webapp_files.c")

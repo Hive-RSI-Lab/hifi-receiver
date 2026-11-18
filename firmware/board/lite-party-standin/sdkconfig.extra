@@ -1,0 +1,8 @@
+# The party stand-in image (projects/hifi-lite-lab, lane esp32-lab): the
+# product image (lite-main) plus a task of the party leader's worker's shape
+# sending to one follower (esp/party_standin.c), to measure the leader's
+# internal RAM with Bluetooth playing before the real worker is on a board.
+# No lab frame: what it measures is the product image. A measurement image,
+# not for a listener's speaker.
+CONFIG_HIFI_PARTY_STANDIN=y
+CONFIG_HIFI_PARTY_STANDIN_PEER="192.168.2.221"
