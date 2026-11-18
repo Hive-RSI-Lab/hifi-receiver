@@ -119,7 +119,8 @@ static TaskHandle_t power_task_h;
 static uint32_t otw_ms, otw_clear_ms, otw_high_ms; /* the OTW step-down (C2) */
 /* a trip taken as heat (Lite, cap above the default): the last one, the
  * gain trim held until, and when the amp was last off (a short trips at once) */
-static uint32_t heat_trip_ms, trim_hold_until, amp_off_ms;
+static uint32_t heat_trip_ms, trim_hold_until;
+static volatile uint32_t amp_off_ms; /* the last power-task pass with the amp off */
 static bool heat_trip_any;
 static volatile uint32_t selftest_hold_until; /* keeps the amp awake for the self-test */
 static volatile bool capture_busy;   /* the codec's ADC is ours until the capture ends */
@@ -1471,8 +1472,14 @@ out:
  * as stereo, and the user's mode comes back when it ends. LOOP_TAP_GAIN is
  * the taps' RMS per RMS of the tone, measured on Lite 2 (2026-11-17) with
  * the EQ flat: one leg of the bridge, 1.2 dB under the nominal chain.
+ * The check waits until the amp has been out of shutdown for
+ * LOOP_AMP_SETTLE_MS: on Lite 3 the first self-test after a boot, with the
+ * amp woken from cold about 0.5 s before the left side's capture, failed 2
+ * runs in 4 (L -11.2/+0.2, L +4.7/-4.6 dB: the taps aren't settled yet),
+ * and 4 runs in 4 passed when a tone had kept the amp on for 4 s first.
  */
 #define LOOP_TONE_DBFS -50.0f
+#define LOOP_AMP_SETTLE_MS 2000
 #define LOOP_FRAMES 4800
 #define LOOP_TAP_GAIN 0.386f
 static const char *loop_busy(void) {
@@ -1515,8 +1522,13 @@ static void selftest_loopback(hifi_selftest_t *t, bool amp_on) {
 		UNLOCK();
 		return;
 	}
+	/* the amp out of shutdown long enough for its output to settle; the
+	 * hold keeps it awake meanwhile */
+	selftest_hold_until = now_ms() + LOOP_AMP_SETTLE_MS + 1500;
+	for (int i = 0; i < LOOP_AMP_SETTLE_MS / 10 && now_ms() - amp_off_ms < LOOP_AMP_SETTLE_MS; i++)
+		vTaskDelay(pdMS_TO_TICKS(10));
 	float got[2][2] = {{0}};
-	const char *err = NULL;
+	const char *err = now_ms() - amp_off_ms < LOOP_AMP_SETTLE_MS ? "the amp didn't stay on for the 2 s it settles in" : NULL;
 	LOCK();
 	loop_flat = true;
 	hifi_bsp_channel(HIFI_CHAN_STEREO);
