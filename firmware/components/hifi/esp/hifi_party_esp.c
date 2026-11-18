@@ -133,6 +133,8 @@ static StaticTask_t worker_tcb;
 
 /* the switch: the API sets these and wakes the worker */
 static volatile bool want_on, restart, have_secret, tone_on;
+/* the test tone took an idle output at party's rate (the op "tone"), to give back */
+static bool tone_held;
 static volatile int pend_do;
 static volatile bool active;   /* the worker has party on */
 static volatile uint32_t ticked_ms;
@@ -457,7 +459,10 @@ static void act(int r) {
 		unlock();
 		sending = false;
 		if (now == HIFI_PARTY_ROLE_FOLLOWER) follower_start();
-		else if (was == HIFI_PARTY_ROLE_FOLLOWER && source() == SRC_PARTY && hifi_sink_stop) hifi_sink_stop();
+		else if ((was == HIFI_PARTY_ROLE_FOLLOWER || now != HIFI_PARTY_ROLE_LEADER) && source() == SRC_PARTY && hifi_sink_stop) {
+			hifi_sink_stop();
+			tone_held = false;
+		}
 		ESP_LOGI(TAG, "%s, group %08x", hifi_party_role_name(now), (unsigned) group);
 	}
 	if (r & HIFI_PARTY_DO_LOST) {
@@ -748,7 +753,8 @@ static void party_down(void) {
 	clk_ok = false;
 	unlock();
 	sock_close();
-	if (was_follower && source() == SRC_PARTY && hifi_sink_stop) hifi_sink_stop();
+	if ((was_follower || tone_held) && source() == SRC_PARTY && hifi_sink_stop) hifi_sink_stop();
+	tone_held = false;
 	glock();
 	hifi_link_key_wipe(&st->gkey);
 	hifi_link_key_wipe(&st->akey);
@@ -1160,6 +1166,16 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 			bool v;
 			if (!hj_get_bool(body, "on", &v)) return err(out, cap, 400, "on (true or false) is required");
 			tone_on = v;
+			/* the tone is written in the I2S block hook, so the output has to
+			 * run at party's rate: an idle leader takes it as a follower does
+			 * (the idle output keeps whatever rate it last played) */
+			if (v && !tone_held && hrole == HIFI_PARTY_ROLE_LEADER && source() == 0 && hifi_party_sink_start) {
+				hifi_party_sink_start(RATE);
+				tone_held = true;
+			} else if (!v && tone_held) {
+				if (hrole != HIFI_PARTY_ROLE_FOLLOWER && source() == SRC_PARTY && hifi_sink_stop) hifi_sink_stop();
+				tone_held = false;
+			}
 		} else if (!strcmp(op, "on")) {
 #ifdef HIFI_PARTY_NO_AUDIO
 			return err(out, cap, 409, "this image plays 32-bit frames, which party mode doesn't carry");
