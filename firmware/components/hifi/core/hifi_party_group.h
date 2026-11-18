@@ -57,6 +57,9 @@
 #define HIFI_PARTY_LEAD_GAP_MS 5000u   /* the shortest time between two leads a board takes */
 #define HIFI_PARTY_TSF_SKEW_US 2000000 /* an announce whose TSF is further from ours: a replay, or another AP */
 #define HIFI_PARTY_STRANGERS_PER_S 20  /* packets from outside the group hashed per second */
+#define HIFI_PARTY_STRANGER_SRC_PER_S 4 /* of those, from any one address */
+#define HIFI_PARTY_STRANGER_SRCS 8     /* addresses whose share the board keeps */
+#define HIFI_PARTY_OTHER_AP_SLACK_US 500000 /* an off-TSF announce's clock may run this far from ours between two */
 #define HIFI_PARTY_JOIN_SEEN 8         /* JOIN senders whose last TSF the leader keeps */
 
 typedef enum {
@@ -93,6 +96,11 @@ typedef struct {
 } hifi_party_seen_t;
 
 typedef struct {
+	uint32_t ip, at; /* at: the start of its second */
+	int n;           /* hashed in that second */
+} hifi_party_stranger_t;
+
+typedef struct {
 	hifi_party_role_t role;
 	uint32_t self_ip, mask;
 	bool orphan;          /* listening after a lost leader, or after a lead stopped: never leads by itself */
@@ -112,8 +120,10 @@ typedef struct {
 	bool heap_low;        /* the last tick's low_heap */
 	uint32_t dead_group;  /* joined, never had a CLOCK: skipped */
 	int64_t dead_term;
-	uint32_t other_ap_at; /* last announce whose tag checked but whose TSF was off */
+	uint32_t other_ap_at; /* last announce whose tag checked but whose TSF was off, confirmed by an earlier one */
 	bool other_ap;
+	uint32_t off_ip, off_at; /* the last off-TSF announce: from, when, its TSF */
+	int64_t off_tsf;
 	/* leader */
 	int npeers;
 	uint32_t peers[HIFI_PARTY_FOLLOWERS], peer_seen[HIFI_PARTY_FOLLOWERS], peer_nack_seq[HIFI_PARTY_FOLLOWERS];
@@ -133,6 +143,7 @@ typedef struct {
 	/* the stranger budget (hifi_party_group_admit) */
 	uint32_t budget_at;
 	int budget;
+	hifi_party_stranger_t strangers[HIFI_PARTY_STRANGER_SRCS];
 	/* counters */
 	uint32_t leads, follows, losses, refused, replays, dropped, other_aps, low_heap;
 } hifi_party_group_t;
@@ -156,10 +167,25 @@ int hifi_party_group_lead(hifi_party_group_t *g, uint32_t now, uint32_t rnd);
  * takes the lead); low_heap: internal RAM is under the floor (a leader stops,
  * nobody starts leading) */
 int hifi_party_group_tick(hifi_party_group_t *g, uint32_t now, uint32_t rnd, bool local_source, bool low_heap);
+/* source: hifi_sink_source()'s number for what the output plays (0 idle,
+ * 1 LMS, 2 Bluetooth, 3 AirPlay, 4 Spotify, 5 test signal, 6 line in, 7 party).
+ * Whether it is the board's own source, which takes the lead (tick's
+ * local_source). The test signal never is. Line in is only on a board that
+ * isn't following: a follower stays a follower, and its retake takes the
+ * output back from line in (hifi_party_retakes), so line in never leads the
+ * group from a follower. */
+bool hifi_party_local_source(hifi_party_role_t role, int source);
+/* whether a follower takes its output back: the output is idle (a test signal
+ * ended), or line in took it */
+bool hifi_party_retakes(hifi_party_role_t role, int source);
 /* an announce that passed hifi_party_announce_parse */
 int hifi_party_group_announce(hifi_party_group_t *g, uint32_t now, const hifi_party_announce_t *a);
-/* an announce whose tag passed but whose TSF is off ours (another AP) */
-void hifi_party_group_other_ap(hifi_party_group_t *g, uint32_t now);
+/* an announce from ip whose tag passed but whose TSF (tsf_us) is off ours:
+ * another AP, or a replay. It counts as another AP only when the last such
+ * announce was from the same ip within HIFI_PARTY_LOSS_MS and its TSF has
+ * moved on by the time between them (within HIFI_PARTY_OTHER_AP_SLACK_US):
+ * one replayed announce, sent again and again, never does. */
+void hifi_party_group_other_ap(hifi_party_group_t *g, uint32_t now, uint32_t ip, int64_t tsf_us);
 /* A JOIN (or leave) under the group key that passed hifi_party_join_parse:
  * false when the board isn't leading, the TSF isn't past the last JOIN from
  * that IPv4 (a replay), or HIFI_PARTY_FOLLOWERS others are served. */
@@ -175,7 +201,8 @@ bool hifi_party_group_is_peer(const hifi_party_group_t *g, uint32_t ip);
 bool hifi_party_group_nack_ok(hifi_party_group_t *g, uint32_t ip, uint32_t seq);
 /* Before the HMAC: hash a datagram of type (its byte 3, unchecked) from
  * src_ip? Members (the leader, the followers) always; an ANNOUNCE or JOIN
- * from anyone else within HIFI_PARTY_STRANGERS_PER_S; nothing else. */
+ * from anyone else within HIFI_PARTY_STRANGER_SRC_PER_S from that address and
+ * HIFI_PARTY_STRANGERS_PER_S in all; nothing else. */
 bool hifi_party_group_admit(hifi_party_group_t *g, uint32_t now, uint32_t src_ip, uint8_t type);
 
 /* ip is another host on the subnet (self_ip, mask) */
@@ -187,7 +214,7 @@ void hifi_party_group_key(const uint8_t secret[HIFI_PARTY_SECRET], uint32_t grou
 void hifi_party_announce_key(const uint8_t secret[HIFI_PARTY_SECRET], uint8_t key[HIFI_LINK_KEY]);
 uint8_t hifi_party_secret_id(const uint8_t secret[HIFI_PARTY_SECRET]);
 /* the secret from 64 hex digits (as the Hive gives it and NVS keeps it);
- * false, and secret untouched, for anything else */
+ * false, and secret untouched, for anything else (all zeros too) */
 bool hifi_party_parse_secret(const char *s, uint8_t secret[HIFI_PARTY_SECRET]);
 
 /* The leader's announce: the packet header (type, group, term, TSF, n,

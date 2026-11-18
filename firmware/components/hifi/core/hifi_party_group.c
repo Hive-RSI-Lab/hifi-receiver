@@ -96,7 +96,7 @@ static int hexval(char c) {
 
 bool hifi_party_parse_secret(const char *s, uint8_t secret[HIFI_PARTY_SECRET]) {
 	if (!s || strlen(s) != 2 * HIFI_PARTY_SECRET) return false;
-	uint8_t k[HIFI_PARTY_SECRET];
+	uint8_t k[HIFI_PARTY_SECRET], any = 0;
 	for (int i = 0; i < HIFI_PARTY_SECRET; i++) {
 		int hi = hexval(s[2 * i]), lo = hexval(s[2 * i + 1]);
 		if (hi < 0 || lo < 0) {
@@ -104,7 +104,9 @@ bool hifi_party_parse_secret(const char *s, uint8_t secret[HIFI_PARTY_SECRET]) {
 			return false;
 		}
 		k[i] = (uint8_t) (hi << 4 | lo);
+		any |= k[i];
 	}
+	if (!any) return false; /* all zeros: a blank, not a key */
 	memcpy(secret, k, sizeof(k));
 	hifi_link_wipe(k, sizeof(k));
 	return true;
@@ -278,6 +280,15 @@ static int decide(hifi_party_group_t *g, uint32_t now, uint32_t rnd) {
 	return start_lead(g, now, rnd, g->picked);
 }
 
+bool hifi_party_local_source(hifi_party_role_t role, int source) {
+	if (source == 6) return role != HIFI_PARTY_ROLE_FOLLOWER;
+	return source >= 1 && source <= 4;
+}
+
+bool hifi_party_retakes(hifi_party_role_t role, int source) {
+	return role == HIFI_PARTY_ROLE_FOLLOWER && (source == 0 || source == 6);
+}
+
 int hifi_party_group_tick(hifi_party_group_t *g, uint32_t now, uint32_t rnd, bool local_source, bool low_heap) {
 	if (low_heap && !g->heap_low) g->low_heap++;
 	g->heap_low = low_heap;
@@ -391,7 +402,15 @@ int hifi_party_group_announce(hifi_party_group_t *g, uint32_t now, const hifi_pa
 	}
 }
 
-void hifi_party_group_other_ap(hifi_party_group_t *g, uint32_t now) {
+void hifi_party_group_other_ap(hifi_party_group_t *g, uint32_t now, uint32_t ip, int64_t tsf_us) {
+	bool same = ip && ip == g->off_ip && !since(now, g->off_at, HIFI_PARTY_LOSS_MS);
+	if (same && tsf_us <= g->off_tsf) return; /* the same or an older one again: keep the one to beat */
+	int64_t d = tsf_us - g->off_tsf - (int64_t) (now - g->off_at) * 1000; /* its clock against ours */
+	bool moved = same && d <= HIFI_PARTY_OTHER_AP_SLACK_US && d >= -HIFI_PARTY_OTHER_AP_SLACK_US;
+	g->off_ip = ip;
+	g->off_at = now;
+	g->off_tsf = tsf_us;
+	if (!moved) return;
 	g->other_ap = true;
 	g->other_ap_at = now;
 	g->other_aps++;
@@ -485,6 +504,29 @@ bool hifi_party_group_nack_ok(hifi_party_group_t *g, uint32_t ip, uint32_t seq) 
 	return true;
 }
 
+/* src_ip's own share of the stranger budget: a slot per address, the
+ * longest-unused one taken for a new address */
+static bool stranger_share(hifi_party_group_t *g, uint32_t now, uint32_t ip) {
+	hifi_party_stranger_t *s = NULL, *old = &g->strangers[0];
+	for (int i = 0; i < HIFI_PARTY_STRANGER_SRCS && !s; i++) {
+		hifi_party_stranger_t *e = &g->strangers[i];
+		if (e->ip == ip) s = e;
+		else if (now - e->at > now - old->at) old = e;
+	}
+	if (!s) {
+		s = old;
+		s->ip = ip;
+		s->n = 0;
+		s->at = now;
+	} else if (since(now, s->at, 1000)) {
+		s->at = now;
+		s->n = 0;
+	}
+	if (s->n >= HIFI_PARTY_STRANGER_SRC_PER_S) return false;
+	s->n++;
+	return true;
+}
+
 bool hifi_party_group_admit(hifi_party_group_t *g, uint32_t now, uint32_t src_ip, uint8_t type) {
 	if (g->role == HIFI_PARTY_ROLE_OFF) return false;
 	if (g->role == HIFI_PARTY_ROLE_LEADER && hifi_party_group_is_peer(g, src_ip)) return true;
@@ -494,7 +536,7 @@ bool hifi_party_group_admit(hifi_party_group_t *g, uint32_t now, uint32_t src_ip
 			g->budget_at = now;
 			g->budget = HIFI_PARTY_STRANGERS_PER_S;
 		}
-		if (g->budget > 0) {
+		if (g->budget > 0 && stranger_share(g, now, src_ip)) {
 			g->budget--;
 			return true;
 		}

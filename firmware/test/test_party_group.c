@@ -32,6 +32,7 @@ typedef struct {
 	uint32_t gkey_group;
 	uint32_t rnd;
 	bool source, low_heap;
+	bool line; /* input=line, and line in holds the output (source 6) */
 	int64_t nvs_term; /* NVS: kept across a power cut */
 	bool nvs_picked;
 	int nvs_writes;
@@ -175,7 +176,7 @@ static void receive(board_t *b, const dgram_t *d) {
 		if (r > 0)
 			act(b, hifi_party_group_announce(&b->g, L.now, &a));
 		else if (r < 0)
-			hifi_party_group_other_ap(&b->g, L.now);
+			hifi_party_group_other_ap(&b->g, L.now, d->src, p.t);
 		break;
 	}
 	case HIFI_PARTY_JOIN: {
@@ -202,7 +203,10 @@ static void step(void) {
 	for (int i = 0; i < L.nb; i++) {
 		board_t *b = &L.b[i];
 		if (!b->up) continue;
-		act(b, hifi_party_group_tick(&b->g, L.now, xs(&b->rnd), b->source, b->low_heap));
+		/* a follower takes its output back from line in: the line stops */
+		if (b->line && hifi_party_retakes(b->g.role, 6)) b->line = false;
+		bool own = b->source || (b->line && hifi_party_local_source(b->g.role, 6));
+		act(b, hifi_party_group_tick(&b->g, L.now, xs(&b->rnd), own, b->low_heap));
 		if (b->g.role == HIFI_PARTY_ROLE_LEADER && L.now - b->last_clock >= 200) {
 			b->last_clock = L.now;
 			static const uint8_t bssid[6] = {2, 0, 0, 0, 0, 1};
@@ -531,11 +535,14 @@ static void replays(void) {
 	}
 	CHECK(L.b[b].lost == 1 && role(b) == HIFI_PARTY_ROLE_LISTENING);
 
-	/* an announce played back: its TSF is off ours, so it's another AP */
+	/* an announce played back, again and again: its TSF is off ours but
+	 * never moves on, so it isn't taken for another AP */
 	run(5000);
-	inject(&ann);
-	run(20);
-	CHECK(L.b[b].g.other_aps == 1 && role(b) == HIFI_PARTY_ROLE_LISTENING);
+	for (int i = 0; i < 3; i++) {
+		inject(&ann);
+		run(1000);
+	}
+	CHECK(L.b[b].g.other_aps == 0 && !L.b[b].g.other_ap && role(b) == HIFI_PARTY_ROLE_LISTENING);
 	/* the AP restarts and its TSF comes round to the capture's: joined,
 	 * no CLOCK, so the group is dead and its announces skipped after */
 	run(3000);
@@ -583,7 +590,7 @@ static void flood(void) {
 	}
 	CHECK(L.b[b].lost == 0 && L.b[c].lost == 0 && L.b[a].g.npeers == 2);
 	CHECK(L.b[a].g.dropped > 40000);
-	CHECK(L.b[a].bad_tag - tags <= 11 * HIFI_PARTY_STRANGERS_PER_S); /* hashed at most 20 a second */
+	CHECK(L.b[a].bad_tag - tags <= 11 * HIFI_PARTY_STRANGER_SRC_PER_S); /* one address: hashed at most 4 a second */
 }
 
 static void local_source(void) {
@@ -613,6 +620,37 @@ static void local_source(void) {
 	uint32_t f[3] = {L.b[a].g.follows, L.b[b].g.follows, L.b[c].g.follows};
 	run(20000);
 	CHECK(L.b[a].g.follows == f[0] && L.b[b].g.follows == f[1] && L.b[c].g.follows == f[2] && leaders() == 1);
+}
+
+static void line_in(void) {
+	/* a follower set to input=line: line in takes the output when a test
+	 * signal ends. The board stays a follower and takes the output back;
+	 * line in doesn't lead the group from it */
+	reset(0);
+	int a = add("A", 10, 1), b = add("B", 11, 1);
+	switch_on(a);
+	run(3000);
+	switch_on(b);
+	run(4000);
+	CHECK(follows(b, a));
+	uint32_t fb = L.b[b].g.follows, la = L.b[a].g.leads;
+	for (int i = 0; i < 20; i++) {
+		L.b[b].line = true;
+		CHECK(!hifi_party_local_source(role(b), 6) && hifi_party_retakes(role(b), 6));
+		run(1000);
+		CHECK(follows(b, a) && !L.b[b].line);
+	}
+	CHECK(role(a) == HIFI_PARTY_ROLE_LEADER && L.b[a].g.leads == la && L.b[b].g.follows == fb);
+	CHECK(L.b[b].lost == 0 && leaders() == 1);
+	/* off the party, line in is the board's own source and leads */
+	switch_off(b);
+	run(1000);
+	switch_on(b);
+	L.b[b].line = true;
+	run(1);
+	CHECK(role(b) == HIFI_PARTY_ROLE_LEADER && L.b[b].g.picked);
+	run(4000);
+	CHECK(follows(a, b) && leaders() == 1);
 }
 
 static void output_stopped(void) {
@@ -740,7 +778,12 @@ static void units(void) {
 		hex[63] = 0;
 		CHECK(!hifi_party_parse_secret(hex, got));
 		CHECK(!hifi_party_parse_secret("", got) && !hifi_party_parse_secret(NULL, got));
+		memset(hex, '0', 64);
+		hex[64] = 0;
+		CHECK(!hifi_party_parse_secret(hex, got)); /* all zeros is a blank */
 		CHECK(got[0] == 0x55 && got[31] == 0x55); /* untouched on a failure */
+		hex[5] = '1';
+		CHECK(hifi_party_parse_secret(hex, got) && got[2] == 0x01 && got[0] == 0);
 	}
 	/* HMAC-SHA256 itself, RFC 4231 case 2 does not fit a 32 B key; check
 	 * the construction against a key of 0x0b * 32 computed with OpenSSL:
@@ -811,15 +854,44 @@ static void units(void) {
 	CHECK(hifi_party_group_nack_ok(&g, n | 9, 5) && !hifi_party_group_nack_ok(&g, n | 9, 5) && hifi_party_group_nack_ok(&g, n | 9, 6));
 	CHECK(!hifi_party_group_nack_ok(&g, n | 40, 1));
 
+	/* the board's own source: never idle, the test signal or the party; line
+	 * in except on a follower, which takes the output back from it */
+	for (int r = HIFI_PARTY_ROLE_OFF; r <= HIFI_PARTY_ROLE_FOLLOWER; r++) {
+		for (int src = 0; src <= 7; src++) {
+			bool own = src >= 1 && src <= 4 ? true : src == 6 ? r != HIFI_PARTY_ROLE_FOLLOWER : false;
+			CHECK(hifi_party_local_source((hifi_party_role_t) r, src) == own);
+			CHECK(hifi_party_retakes((hifi_party_role_t) r, src) == (r == HIFI_PARTY_ROLE_FOLLOWER && (src == 0 || src == 6)));
+		}
+	}
 	/* the stranger budget */
 	int ok = 0;
 	for (int i = 0; i < 100; i++) ok += hifi_party_group_admit(&g, 5000, n | 50, HIFI_PARTY_JOIN);
-	CHECK(ok == HIFI_PARTY_STRANGERS_PER_S);
+	CHECK(ok == HIFI_PARTY_STRANGER_SRC_PER_S); /* one address gets its share */
+	for (uint32_t i = 60; i < 100; i++) ok += hifi_party_group_admit(&g, 5000, n | i, HIFI_PARTY_ANNOUNCE);
+	CHECK(ok == HIFI_PARTY_STRANGERS_PER_S); /* the others the rest, up to the cap */
 	CHECK(hifi_party_group_admit(&g, 5000, n | 9, HIFI_PARTY_NACK)); /* a follower, past the budget */
 	CHECK(!hifi_party_group_admit(&g, 5000, n | 50, HIFI_PARTY_NACK));
 	CHECK(!hifi_party_group_admit(&g, 5000, n | 50, HIFI_PARTY_AUDIO));
 	CHECK(hifi_party_group_admit(&g, 6000, n | 50, HIFI_PARTY_ANNOUNCE));
 	CHECK(hifi_party_group_off(&g) == HIFI_PARTY_DO_ROLE && !hifi_party_group_admit(&g, 9000, n | 9, HIFI_PARTY_JOIN));
+
+	/* another AP: two announces from one address whose TSF moves on with ours */
+	hifi_party_group_init(&g, n | 1, MASK, 0, false);
+	int64_t t0 = 900000000;
+	for (int i = 0; i < 5; i++) hifi_party_group_other_ap(&g, 1000u + 1000u * (uint32_t) i, n | 7, t0); /* one replayed */
+	CHECK(!g.other_ap && g.other_aps == 0);
+	hifi_party_group_other_ap(&g, 7000, n | 7, t0 + 5000000); /* moved on, but not by the 2 s since */
+	CHECK(!g.other_ap);
+	hifi_party_group_other_ap(&g, 8000, n | 8, t0 + 6000000); /* another address */
+	CHECK(!g.other_ap);
+	hifi_party_group_other_ap(&g, 8500, n | 8, t0 + 1000000); /* an older one in between */
+	hifi_party_group_other_ap(&g, 9000, n | 8, t0 + 7000000 + 30000);
+	CHECK(g.other_ap && g.other_ap_at == 9000 && g.other_aps == 1);
+	hifi_party_group_other_ap(&g, 9000, n | 8, t0 + 7000000 + 30000); /* the same again */
+	hifi_party_group_other_ap(&g, 10000, n | 8, t0 + 8000000);
+	CHECK(g.other_aps == 2 && g.other_ap_at == 10000);
+	hifi_party_group_other_ap(&g, 14000, n | 8, t0 + 12000000); /* after HIFI_PARTY_LOSS_MS: starts over */
+	CHECK(g.other_aps == 2);
 
 	/* times far apart, and a ms clock about to wrap: a fresh state counts as long ago */
 	hifi_party_group_init(&g, n | 1, MASK, 0, false);
@@ -841,6 +913,7 @@ int main(void) {
 	replays();
 	flood();
 	local_source();
+	line_in();
 	output_stopped();
 	low_heap();
 	other_ap();

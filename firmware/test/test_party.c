@@ -390,6 +390,41 @@ static void gain_and_hist(void) {
 	free(mem);
 }
 
+static void bursts(void) {
+	hifi_party_bursts_t r = {0};
+	CHECK(!hifi_party_bursts_get(&r, 0));
+	hifi_party_bursts_add(&r, 1000, 1, 12);
+	hifi_party_bursts_add(&r, 1100, 1, 0);
+	hifi_party_bursts_add(&r, 1100 + HIFI_PARTY_BURST_GAP_MS, 2, 11); /* just within the gap: the same burst */
+	const hifi_party_burst_t *b = hifi_party_bursts_get(&r, 0);
+	CHECK(r.n == 1 && r.total == 1);
+	CHECK(b && b->at_ms == 1000 && b->dur_ms == 100 + HIFI_PARTY_BURST_GAP_MS && b->count == 4 && b->code == 11);
+	hifi_party_bursts_add(&r, 1351 + HIFI_PARTY_BURST_GAP_MS, 5, 0); /* past it: a new one */
+	CHECK(r.n == 2 && r.total == 2);
+	b = hifi_party_bursts_get(&r, 0);
+	CHECK(b && b->at_ms == 1351 + HIFI_PARTY_BURST_GAP_MS && b->dur_ms == 0 && b->count == 5 && b->code == 0);
+	b = hifi_party_bursts_get(&r, 1);
+	CHECK(b && b->at_ms == 1000 && b->count == 4);
+	CHECK(!hifi_party_bursts_get(&r, 2) && !hifi_party_bursts_get(&r, -1));
+	/* the ring keeps the newest, newest first */
+	for (uint32_t i = 0; i < 2 * HIFI_PARTY_BURSTS; i++) hifi_party_bursts_add(&r, 10000 + i * 1000, i + 1, 0);
+	CHECK(r.n == HIFI_PARTY_BURSTS && r.total == 2 + 2 * HIFI_PARTY_BURSTS);
+	b = hifi_party_bursts_get(&r, 0);
+	CHECK(b && b->count == 2 * HIFI_PARTY_BURSTS);
+	b = hifi_party_bursts_get(&r, HIFI_PARTY_BURSTS - 1);
+	CHECK(b && b->count == HIFI_PARTY_BURSTS + 1);
+	/* a clock that went back (a reset log) starts a new burst, not a huge one */
+	hifi_party_bursts_add(&r, 500, 1, 0);
+	b = hifi_party_bursts_get(&r, 0);
+	CHECK(b && b->at_ms == 500 && b->dur_ms == 0 && b->count == 1);
+	/* the millisecond clock wrapping inside a burst */
+	hifi_party_bursts_t w = {0};
+	hifi_party_bursts_add(&w, 0xFFFFFFF0u, 1, 0);
+	hifi_party_bursts_add(&w, 0x10, 1, 0);
+	b = hifi_party_bursts_get(&w, 0);
+	CHECK(w.n == 1 && b && b->dur_ms == 0x20 && b->count == 2);
+}
+
 int main(void) {
 	packets();
 	clock_fit();
@@ -399,5 +434,6 @@ int main(void) {
 	controller(-30);
 	controller(250);
 	gain_and_hist();
+	bursts();
 	return check_report("party");
 }

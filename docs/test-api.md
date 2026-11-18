@@ -679,7 +679,10 @@ on the router: no UPnP, no port forward, broadcast only on the subnet.
 - `why`: why it isn't playing in step yet: `low memory`, `another access
   point` (the leader is on another AP, so their clocks differ), `leader lost`,
   `no party key`. `full: true` when the leader has all the followers it
-  takes; `other_ap: true` as in `why`.
+  takes; `other_ap: true` as in `why`. It needs two announces from one
+  address whose TSF moves on with the time between them, so one replayed
+  announce doesn't set it, but a recorded run of them played back at its own
+  pace can.
 - `bt`: whether the Bluetooth sink is on. It stays on only on a picked
   leader or while Bluetooth plays: connect the phone before switching party on.
 
@@ -689,7 +692,7 @@ on the router: no UPnP, no port forward, broadcast only on the subnet.
 |---|---|---|
 | `on`, `off` | LAN, USB, Hive | switch party on or off (kept across restarts). `on` without a key is 409. |
 | `lead` | LAN, USB, Hive | this board leads; the old leader follows it. 409 when party is off or memory is low, 429 a few seconds after its own last `lead`. |
-| `key` | USB, Hive | `{"op": "key", "secret": "<64 hex>"}` sets the party key. Never shown back; `key_id` is one byte of its hash. |
+| `key` | USB, Hive | `{"op": "key", "secret": "<64 hex>"}` sets the party key (all zeros is refused). Never shown back; `key_id` is one byte of its hash. |
 | `tone` | USB, Hive | `{"op": "tone", "on": true}`: the leader's sync test tone, for the bench. An idle leader takes the output at 44.1 kHz for it. |
 
 `key` and `tone` from the LAN are 403. An image built for 32-bit frames

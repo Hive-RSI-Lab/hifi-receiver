@@ -535,3 +535,27 @@ const uint8_t *hifi_party_hist_get(const hifi_party_hist_t *h, int64_t k, size_t
 	if (len) *len = h->len[s];
 	return h->pkts + (size_t) s * HIFI_PARTY_MAX;
 }
+
+/* ---------------------------------------------------------------- bursts */
+
+void hifi_party_bursts_add(hifi_party_bursts_t *r, uint32_t now_ms, uint32_t count, int32_t code) {
+	if (r->n) {
+		hifi_party_burst_t *l = &r->b[(r->head + HIFI_PARTY_BURSTS - 1) % HIFI_PARTY_BURSTS];
+		uint32_t end = l->at_ms + l->dur_ms;
+		if (now_ms - end <= HIFI_PARTY_BURST_GAP_MS && now_ms - l->at_ms < 0x80000000u) {
+			l->dur_ms = now_ms - l->at_ms;
+			l->count += count;
+			if (code) l->code = code;
+			return;
+		}
+	}
+	r->b[r->head] = (hifi_party_burst_t){now_ms, 0, count, code};
+	r->head = (r->head + 1) % HIFI_PARTY_BURSTS;
+	if (r->n < HIFI_PARTY_BURSTS) r->n++;
+	r->total++;
+}
+
+const hifi_party_burst_t *hifi_party_bursts_get(const hifi_party_bursts_t *r, int i) {
+	if (i < 0 || i >= r->n) return NULL;
+	return &r->b[(r->head + HIFI_PARTY_BURSTS - 1 - i) % HIFI_PARTY_BURSTS];
+}

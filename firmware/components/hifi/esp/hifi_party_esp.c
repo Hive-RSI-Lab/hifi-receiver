@@ -27,6 +27,7 @@
  * key), is never logged or shown (only a one-byte id), and the keys made
  * from it are wiped when party goes off.
  */
+#include <errno.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -162,7 +163,7 @@ static uint32_t prev_out;
 static frames_t last_block;
 static int cur_delay, old_delay, want_delay, xfade;
 static int64_t alone_since;
-static uint32_t wrong_rate, blocks, muted, output_lost, unaligned;
+static uint32_t wrong_rate, blocks, muted, output_lost, unaligned, retaken;
 static int64_t last_clock_us;
 static bool clk_ok;
 static int64_t clk_k, clk_t;
@@ -182,9 +183,14 @@ static uint32_t tx_seq;
 static bool sending;
 static int64_t k_sent;
 static uint32_t clk_sent_seq;
-static int64_t clk_sent_us, noaudio_us, grace_until;
+static int64_t clk_sent_us, noaudio_us, grace_until, retake_at;
 static uint32_t sent, send_fail, send_skipped, resent, resend_gone, nacks_sent, rx_ok, rx_bad, rx_other, clocks_sent, noaudio_sent;
 static uint32_t heap_start, heap_min;
+/* the leader's failed sends by errno (ENOMEM, EAGAIN, any other) and in
+ * bursts, and a follower's concealed frames in bursts: with both boards'
+ * clocks in the stats, a run can tell sending trouble from the radio's */
+static uint32_t txe_nomem, txe_again, txe_other;
+static hifi_party_bursts_t tx_bursts, gap_bursts; /* one writer each: the radio task, the audio task */
 
 static uint32_t heap_now(void) { return heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); }
 static uint32_t ms_now(void) { return (uint32_t) (esp_timer_get_time() / 1000); }
@@ -209,12 +215,35 @@ static void mark_add(int64_t k, double tsf, bool have_ref) {
 }
 
 static void counters_reset(void) {
-	wrong_rate = blocks = muted = output_lost = unaligned = 0;
+	wrong_rate = blocks = muted = output_lost = unaligned = retaken = 0;
 	marks_head = marks_n = offs_n = 0;
 	last_mark_k = 0;
 	marks_missed = 0;
 	sent = send_fail = send_skipped = resent = resend_gone = nacks_sent = rx_ok = rx_bad = rx_other = 0;
 	clocks_sent = noaudio_sent = 0;
+	txe_nomem = txe_again = txe_other = 0;
+	memset(&tx_bursts, 0, sizeof(tx_bursts));
+	memset(&gap_bursts, 0, sizeof(gap_bursts));
+}
+
+static void bursts_json(hj_t *j, const char *key, const hifi_party_bursts_t *r) {
+	hifi_party_bursts_t c = *r; /* a copy: its task may add to it meanwhile */
+	if (!c.total) return;
+	hj_obj(j, key);
+	hj_int(j, "n", c.total);
+	hj_arr(j, "b");
+	for (int i = 0; i < HIFI_PARTY_BURSTS; i++) {
+		const hifi_party_burst_t *e = hifi_party_bursts_get(&c, i);
+		if (!e) break;
+		hj_arr(j, NULL);
+		hj_int(j, NULL, e->at_ms);
+		hj_int(j, NULL, e->dur_ms);
+		hj_int(j, NULL, e->count);
+		hj_int(j, NULL, e->code);
+		hj_arr_end(j);
+	}
+	hj_arr_end(j);
+	hj_obj_end(j);
 }
 
 /* ------------------------------------------------------------------ hooks */
@@ -292,7 +321,9 @@ static void follower_block(uint32_t *b, int n, int64_t now) {
 	double target;
 	int32_t gain = (int32_t) party_gain;
 	if (hifi_party_sync_target(&st->sync, w_pos, now, &target)) {
+		uint32_t miss0 = st->jb.missing_frames;
 		hifi_party_render(&st->ctl, &st->jb, target, b, n, 65536, 65536);
+		if (st->jb.missing_frames != miss0) hifi_party_bursts_add(&gap_bursts, (uint32_t) (now / 1000), st->jb.missing_frames - miss0, 0);
 		if (now - marks_seen_us < MARKS_FOR_US)
 			for (int i = 0; i < n; i++)
 				if (b[i] == MARKER && (i ? b[i - 1] : prev_out) != MARKER) {
@@ -354,8 +385,17 @@ void hifi_party_i2s_wrote(frames_t frames, int64_t t0, int64_t t1) {
 static void send_to(uint32_t ip, const uint8_t *p, size_t n) {
 	if (sock < 0) return;
 	struct sockaddr_in to = {.sin_family = AF_INET, .sin_port = htons(HIFI_PARTY_PORT), .sin_addr.s_addr = htonl(ip)};
-	if (sendto(sock, p, n, 0, (struct sockaddr *) &to, sizeof(to)) == (int) n) sent++;
-	else send_fail++; /* the radio's queue is full: a follower asks again */
+	int r = sendto(sock, p, n, 0, (struct sockaddr *) &to, sizeof(to));
+	if (r == (int) n) {
+		sent++;
+		return;
+	}
+	send_fail++; /* mostly the radio's queue is full: a follower asks again */
+	int e = r < 0 ? errno : 0;
+	if (e == ENOMEM) txe_nomem++;
+	else if (e == EAGAIN || e == EWOULDBLOCK) txe_again++;
+	else txe_other++;
+	hifi_party_bursts_add(&tx_bursts, ms_now(), 1, e);
 }
 
 static int64_t tsf_now(void) { return esp_wifi_get_tsf_time(WIFI_IF_STA); }
@@ -622,7 +662,7 @@ static void got(uint32_t src, const uint8_t *d, size_t len, int64_t now) {
 		glock();
 		int ok = hifi_party_announce_parse(&p, pl, pn, src, self_ip, self_mask, tsf, &a);
 		if (ok > 0) r = hifi_party_group_announce(&st->g, ms, &a);
-		else if (ok < 0) hifi_party_group_other_ap(&st->g, ms);
+		else if (ok < 0) hifi_party_group_other_ap(&st->g, ms, src, p.t);
 		gunlock();
 		break;
 	}
@@ -679,11 +719,11 @@ static void got(uint32_t src, const uint8_t *d, size_t len, int64_t now) {
 	act(r);
 }
 
-/* source 1 to 6 but the test signal: something of this board's own plays */
-static bool local_playing(int64_t now) {
+/* something of this board's own plays (hifi_party_local_source: never the
+ * test signal, and line in only when the board isn't following) */
+static bool local_playing(int64_t now, hifi_party_role_t role) {
 	if (now < grace_until) return false;
-	int s = source();
-	return s == 1 || s == 2 || s == 3 || s == 4 || s == 6;
+	return hifi_party_local_source(role, source());
 }
 
 static void load_name(void) {
@@ -703,7 +743,7 @@ static void party_up(void) {
 	have_bssid = false;
 	tx_seq = esp_random() >> 8; /* a reboot doesn't start the seqs from 0 again */
 	sending = false;
-	clk_sent_us = noaudio_us = grace_until = 0;
+	clk_sent_us = noaudio_us = grace_until = retake_at = 0;
 	glock();
 	uint8_t raw[HIFI_LINK_KEY];
 	hifi_party_announce_key(st->secret, raw);
@@ -794,11 +834,20 @@ static void task_main(void *arg) {
 		int r = __atomic_exchange_n(&pend_do, 0, __ATOMIC_SEQ_CST); /* a Lead from the API, a new address */
 		if (now >= next_tick) {
 			glock();
-			r |= hifi_party_group_tick(&st->g, (uint32_t) (now / 1000), esp_random(), local_playing(now), h < HEAP_FLOOR);
+			r |= hifi_party_group_tick(&st->g, (uint32_t) (now / 1000), esp_random(), local_playing(now, st->g.role), h < HEAP_FLOOR);
 			gunlock();
 			next_tick = now + TICK_US;
 		}
 		act(r);
+		/* a follower whose output something else took and then let go (a test
+		 * tone ends with the output idle) takes it back, at most once a second.
+		 * It also takes it from line in, which can start first when a tone
+		 * ends: a following board stays a follower (hifi_party_retakes) */
+		if (now >= grace_until && now >= retake_at && hifi_party_retakes(hrole, source())) {
+			retake_at = now + 1000000;
+			retaken++;
+			follower_start();
+		}
 		if (sock < 0) {
 			vTaskDelay(pdMS_TO_TICKS(20));
 			continue;
@@ -1049,6 +1098,13 @@ static void stats_json(hj_t *j) {
 	hj_obj(j, "net");
 	hj_int(j, "tx", sent);
 	hj_int(j, "txf", send_fail);
+	if (send_fail) {
+		hj_arr(j, "txe");
+		hj_int(j, NULL, txe_nomem);
+		hj_int(j, NULL, txe_again);
+		hj_int(j, NULL, txe_other);
+		hj_arr_end(j);
+	}
 	hj_int(j, "rx", rx_ok);
 	hj_int(j, "bad", rx_bad);
 	hj_int(j, "oth", rx_other);
@@ -1081,6 +1137,7 @@ static void stats_json(hj_t *j) {
 		hj_obj_end(j);
 		hj_int(j, "mute", muted);
 		if (output_lost) hj_int(j, "lost", output_lost);
+		if (retaken) hj_int(j, "retake", retaken);
 	}
 	hj_arr(j, "heap"); /* internal RAM free: when party came on, the least since, now */
 	hj_int(j, NULL, heap_start);
@@ -1088,6 +1145,12 @@ static void stats_json(hj_t *j) {
 	hj_int(j, NULL, heap_now());
 	hj_arr_end(j);
 	if (marks_missed) hj_int(j, "mm", marks_missed);
+	/* the bursts, newest first: "evt" failed sends, "evg" concealed frames,
+	 * each [at ms, length ms, count, errno]; "ms" is now on the same clock,
+	 * so a poller can place them in wall time */
+	hj_int(j, "ms", ms_now());
+	bursts_json(j, "evt", &tx_bursts);
+	if (!lead) bursts_json(j, "evg", &gap_bursts);
 	int on = offs_n;
 	if (on && sorted) {
 		double sum = 0, mx_abs = 0;
@@ -1161,7 +1224,7 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 			}
 			hifi_link_wipe(hex, sizeof(hex));
 			hifi_link_wipe(sec, sizeof(sec));
-			if (!ok) return err(out, cap, 400, "secret must be 64 hex digits");
+			if (!ok) return err(out, cap, 400, "secret must be 64 hex digits, not all zeros");
 		} else if (tone) {
 			bool v;
 			if (!hj_get_bool(body, "on", &v)) return err(out, cap, 400, "on (true or false) is required");
