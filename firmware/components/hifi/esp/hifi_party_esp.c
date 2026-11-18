@@ -184,6 +184,11 @@ static bool have_bssid;
 static uint32_t tx_seq;
 static bool sending;
 static int64_t k_sent;
+/* a pass starts the stream only with this many packets ready (1 or 2), so a
+ * pair reaches the driver together and can share one AMPDU exchange. 1 is the
+ * old way; the lab sets 2 with op pair to compare them in one session */
+static volatile int pair_send = 1;
+static uint32_t stream_sent; /* stream packets made and handed to the radio (no resends, no clocks) */
 static uint32_t clk_sent_seq;
 static int64_t clk_sent_us, noaudio_us, grace_until, retake_at;
 static uint32_t sent, send_fail, send_skipped, resent, resend_gone, nacks_sent, rx_ok, rx_bad, rx_other, clocks_sent, noaudio_sent;
@@ -244,7 +249,7 @@ static void counters_reset(void) {
 	marks_missed = 0;
 	sent = send_fail = send_skipped = resent = resend_gone = nacks_sent = rx_ok = rx_bad = rx_other = 0;
 	held_ok = held_late = resend_late = resend_busy = 0;
-	clocks_sent = noaudio_sent = 0;
+	clocks_sent = noaudio_sent = stream_sent = 0;
 	txe_nomem = txe_again = txe_other = 0;
 	memset(&tx_bursts, 0, sizeof(tx_bursts));
 	memset(&gap_bursts, 0, sizeof(gap_bursts));
@@ -681,6 +686,7 @@ static void leader_send(int64_t now) {
 	}
 	uint32_t group = hgroup;
 	bool marks = tone_on;
+	int fresh = 0; /* stream packets sent this pass */
 	for (int burst = 0; burst < SEND_BURST; burst++) {
 		lock();
 		int64_t pos = s_pos;
@@ -697,7 +703,7 @@ static void leader_send(int64_t now) {
 			k_sent = to;
 		}
 		int64_t avail = s_pos - k_sent;
-		if (avail < HIFI_PARTY_FRAMES) {
+		if (avail < HIFI_PARTY_FRAMES * (fresh ? 1 : pair_send)) {
 			unlock();
 			break;
 		}
@@ -709,6 +715,8 @@ static void leader_send(int64_t now) {
 		size_t n = hifi_party_encode(&st->gkey, &p, st->frames, st->pkt, sizeof(st->pkt));
 		int64_t k = k_sent;
 		k_sent += HIFI_PARTY_FRAMES;
+		fresh++;
+		stream_sent++;
 		if (n) {
 			hifi_party_hist_put(&st->hist, k, st->pkt, n);
 			if (!send_all(k, st->pkt, n, ips, np, false)) return;
@@ -1244,6 +1252,10 @@ static void stats_json(hj_t *j) {
 	hj_obj(j, "net");
 	hj_int(j, "tx", sent);
 	hj_int(j, "txf", send_fail);
+	if (lead) {
+		hj_int(j, "pk", stream_sent);
+		hj_int(j, "pair", pair_send);
+	}
 	if (send_fail) {
 		hj_arr(j, "txe");
 		hj_int(j, NULL, txe_nomem);
@@ -1357,9 +1369,9 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 	if (sub && *sub) return err(out, cap, 404, "no such party route");
 	if (post) {
 		char op[16];
-		if (!body || !hj_get_str(body, "op", op, sizeof(op))) return err(out, cap, 400, "op must be on, off, lead, key or tone");
-		bool key = !strcmp(op, "key"), tone = !strcmp(op, "tone");
-		if ((key || tone) && lan) return err(out, cap, 403, "the party key and the test tone are set by the Hive or over USB, not from the LAN");
+		if (!body || !hj_get_str(body, "op", op, sizeof(op))) return err(out, cap, 400, "op must be on, off, lead, key, tone or pair");
+		bool key = !strcmp(op, "key"), tone = !strcmp(op, "tone"), pair = !strcmp(op, "pair");
+		if ((key || tone || pair) && lan) return err(out, cap, 403, "the party key, the test tone and pair sending are set by the Hive or over USB, not from the LAN");
 		if (!alloc_once()) return err(out, cap, 503, "out of memory");
 		if (key) {
 			char hex[2 * HIFI_PARTY_SECRET + 2];
@@ -1391,6 +1403,10 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 				if (hrole != HIFI_PARTY_ROLE_FOLLOWER && source() == SRC_PARTY && hifi_sink_stop) hifi_sink_stop();
 				tone_held = false;
 			}
+		} else if (pair) {
+			double v;
+			if (!hj_get_num(body, "n", &v) || (v != 1 && v != 2)) return err(out, cap, 400, "n (1 or 2) is required");
+			pair_send = (int) v;
 		} else if (!strcmp(op, "on")) {
 #ifdef HIFI_PARTY_NO_AUDIO
 			return err(out, cap, 409, "this image plays 32-bit frames, which party mode doesn't carry");
@@ -1418,7 +1434,7 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 			if (r < 0) return err(out, cap, 409, "this board can't lead now (party is off, or memory is low)");
 			wake();
 		} else
-			return err(out, cap, 400, "op must be on, off, lead, key or tone");
+			return err(out, cap, 400, "op must be on, off, lead, key, tone or pair");
 		/* the worker takes on and off within its 200 ms wait */
 		for (int i = 0; i < 30 && (want_on && have_secret) != active; i++) vTaskDelay(pdMS_TO_TICKS(20));
 	}
