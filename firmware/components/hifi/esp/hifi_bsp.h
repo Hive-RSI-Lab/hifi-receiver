@@ -45,6 +45,7 @@ void hifi_bsp_power_out(const hifi_power_out_t *o);
 void hifi_bsp_quiet_level(float frac);
 void hifi_bsp_quiet_mute(bool on);
 void hifi_bsp_amp_off_now(void);
+void hifi_bsp_quiet_release(void); /* forget the ramp's starting levels */
 
 /*
  * Puts the input (stream or DJ direct), the sub and, where the analog path

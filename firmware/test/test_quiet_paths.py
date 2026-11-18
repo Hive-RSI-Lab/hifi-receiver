@@ -99,8 +99,19 @@ check(fin.count("hifi_ota_abort(") >= 3, "hifi_ota_finish: a failed update must 
 pt = code(body(read(HIFI, "esp", "hifi_main.c"), "static void power_task("))
 check("!quiet_req" in pt, "power_task: the routing must stop once quiet_req is set")
 before(pt, "hifi_quiet_amp_allowed(", "hifi_bsp_power_out(", "power_task: hifi_quiet_amp_allowed must gate the amp before hifi_bsp_power_out")
-check(re.search(r"hifi_quiet_amp_allowed\(codec_up, amp_hold_until,", pt) is not None,
-      "power_task: the amp gate must use codec_up and amp_hold_until")
+check(re.search(r"hifi_quiet_amp_allowed\(codec_up, amp_hold_until, amp_off \|\| in_recovery,", pt) is not None,
+      "power_task: the amp gate must use codec_up, amp_hold_until and amp_off (not quiet_req: "
+      "the amp would go off before the ramp and the mute)")
+check(re.search(r"\bamp_off\s*=\s*amp_off_req\b", pt) is not None, "power_task: amp_off must be read from amp_off_req")
+main = code(read(HIFI, "esp", "hifi_main.c"))
+sets = [m.start() for m in re.finditer(r"\bamp_off_req\s*=\s*true", main)]
+qa = body(main, "static void q_amp_off(")
+check(len(sets) == 1 and "amp_off_req = true" in code(qa),
+      "hifi_main.c: amp_off_req must be set only in q_amp_off (after the ramp and the mute)")
+# a restart's stop is final: no release can undo it
+check(re.search(r"hifi_quiet_stop\([^;]*,\s*true\)", code(read(HIFI, "esp", "hifi_crash.c"))) is not None,
+      "hifi_crash.c: the esp_restart wrap must call hifi_quiet_stop(..., true)")
+check("quiet_final" in code(body(main, "void hifi_quiet_release(")), "hifi_quiet_release: must not undo a restart's stop")
 
 # 6. Lite's boot: SDZ is driven low before the pin becomes an output
 init = code(body(read(HIFI, "esp", "board_lite.c"), "void hifi_bsp_init("))

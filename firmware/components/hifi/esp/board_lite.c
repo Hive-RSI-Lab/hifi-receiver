@@ -101,9 +101,16 @@ void hifi_bsp_quiet_mute(bool on) {
 		if (quiet_dac3 < 0 && hifi_i2c_read(ES8388_ADDR, ES8388_DACCONTROL3, &v) == ESP_OK) quiet_dac3 = v;
 		if (quiet_dac3 >= 0) hifi_i2c_write(ES8388_ADDR, ES8388_DACCONTROL3, quiet_dac3 | ES8388_DAC_MUTE);
 	} else if (quiet_dac3 >= 0) {
-		hifi_i2c_write(ES8388_ADDR, ES8388_DACCONTROL3, quiet_dac3);
+		/* clear only the mute: the routing may have moved the rest since */
+		if (hifi_i2c_read(ES8388_ADDR, ES8388_DACCONTROL3, &v) == ESP_OK)
+			hifi_i2c_write(ES8388_ADDR, ES8388_DACCONTROL3, v & ~ES8388_DAC_MUTE);
 		quiet_dac3 = -1;
 	}
+}
+
+/* an update that didn't go ahead: the routing writes the levels again */
+void hifi_bsp_quiet_release(void) {
+	for (int i = 0; i < 4; i++) quiet_start[i] = -1;
 }
 
 /* R52 holds SDZ low through the reset that follows */

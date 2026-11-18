@@ -94,7 +94,7 @@ void __wrap_esp_restart(void) {
 	restart_rec = r;
 	/* every planned restart, updates and rollbacks included, goes quiet
 	 * first: no pop or burst reaches a speaker (hifi_quiet.h) */
-	hifi_quiet_stop(r.note[0] ? r.note : "restart");
+	hifi_quiet_stop(r.note[0] ? r.note : "restart", true);
 	__real_esp_restart();
 }
 

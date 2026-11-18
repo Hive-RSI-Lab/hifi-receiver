@@ -66,7 +66,7 @@ static void codes_ramp_to_the_bottom(void) {
 	CHECK(hifi_quiet_code(33, NAN) == 0);
 }
 
-/* the boot: the codec answers at 400 ms, the board's route waits 2 s for
+/* the boot: the codec answers at 2.4 s (as the loop below has it), the board's route waits 2 s for
  * squeezelite's init and then takes; the amp waits 2.5 s more */
 static void amp_stays_off_at_boot_until_audio_is_steady(void) {
 	bool up = false;

@@ -337,7 +337,7 @@ static int f_open(void *ctx, size_t size, const char **slot, const char **err) {
 	ota_bytes = 0;
 	/* the music stops gracefully before the flash is touched; an update
 	 * that doesn't go ahead gives it back (f_abort) */
-	hifi_quiet_stop("update");
+	hifi_quiet_stop("update", false);
 	ota_part = esp_ota_get_next_update_partition(NULL);
 	if (!ota_part) {
 		hifi_quiet_release();

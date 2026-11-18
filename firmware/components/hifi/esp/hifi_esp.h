@@ -31,8 +31,9 @@ void hifi_main_gov_amps(int n);    /* stereo amps playing: 2 with Ultra's zone B
  * puts the amps into shutdown, once, and holds them there. Every planned
  * restart (the esp_restart wrap, hifi_crash.c) and every update (the OTA
  * writer, before the slot opens) calls it first. From an ISR, or with the
- * scheduler stopped, it only drops the amp. why goes to the log. */
-void hifi_quiet_stop(const char *why);
+ * scheduler stopped, it only drops the amp. why goes to the log; restart
+ * marks it final, so no release can undo it. */
+void hifi_quiet_stop(const char *why, bool restart);
 /* An update that failed or was abandoned: the DAC unmutes, the routing goes
  * back on and the amp comes back after a short hold. */
 void hifi_quiet_release(void);

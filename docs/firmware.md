@@ -91,12 +91,14 @@ designer on 2026-10-28.
 No planned restart or update may put a pop, click or burst on a connected
 speaker. `hifi_quiet_stop()` (`esp/hifi_main.c`) runs once before any of them:
 
-1. ramp the outputs down over 200 ms in 10 steps (Lite: LOUT1/ROUT1 and the
-   sub outs LOUT2/ROUT2 toward 0, −45 dB);
+1. ramp the outputs down over 200 ms in 10 steps: squeezelite's digital
+   gain on every board (the core board's only ramp: the Sabre's volume is
+   that gain), and on Lite the codec's LOUT1/ROUT1 and sub outs LOUT2/ROUT2
+   toward 0, −45 dB. The routing stops from here, so nothing raises them;
 2. soft-mute the DAC (ES8388 DACCONTROL3 bit 2) and wait 25 ms;
 3. put the amp into shutdown (Lite: SDZ low at once; the core board: the
-   power task's next step, which also stops the routing from raising the
-   outputs again) and wait 30 ms;
+   expander's reset lines at once if its lock is free; both: the power
+   task's next step, which holds them there) and wait 30 ms;
 4. only then restart, or open the app slot for an update.
 
 - **Every restart goes through it.** The link wraps `esp_restart`
@@ -114,7 +116,19 @@ speaker. `hifi_quiet_stop()` (`esp/hifi_main.c`) runs once before any of them:
   on it and 2.5 s more have passed (`hifi_quiet_amp_allowed`); the recovery
   app never turns it on.
 - **The stream isn't paused**, only muted: whatever plays is cut at −∞ by
-  the mute and the amp, and squeezelite stops when the chip restarts.
+  the mute and the amp, and squeezelite stops when the chip restarts. A
+  volume change from the source while it holds stays silent.
+- **A restart's stop is final** (`hifi_quiet_stop(why, true)`): no release
+  can undo it. An update's stop isn't, so the sound is off for the whole
+  download and comes back (after a 300 ms hold for the amp) only if it
+  fails or is aborted; the self-test reports no amp while one runs.
+- **Not covered:** a panic, a watchdog reset, a brown-out and the
+  bootloader's own rollback after a crashed trial don't run the quiet stop
+  (the chip is already down); the amp then drops with SDZ at reset (R52 on
+  Lite). The `api reboot` callback runs its 300 ms on the esp_timer task.
+  Squeezelite's own codec writes at its start aren't gated, as before; the
+  recovery app's update path (upstream `squeezelite-ota.c`) isn't scanned
+  by the test, since the amp is never on in recovery.
 - **Checked by** `test/test_quiet.c` (the order and timings, the boot gate)
   and `test/test_quiet_paths.py` (every restart and update path calls it).
 
