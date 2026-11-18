@@ -33,7 +33,12 @@ void hj_int(hj_t *j, const char *key, long long val);
 void hj_bool(hj_t *j, const char *key, bool val);
 void hj_null(hj_t *j, const char *key);
 
-/* Reader: each returns false if the key is missing or of another type. */
+/* Reader: each returns false if the key is missing or of another type.
+ * hj_get_str decodes every JSON escape (\uXXXX as UTF-8) and cuts a long
+ * string at a whole character. hj_valid_object, which every reader runs
+ * first, refuses the whole text if any string in it holds \u0000, an unknown
+ * escape, bad hex or a lone surrogate, so no handler sees one and a field
+ * the caller treats as optional can't be dropped by a typo in it. */
 bool hj_get_str(const char *json, const char *key, char *out, size_t n);
 bool hj_get_num(const char *json, const char *key, double *out);
 /* true if `key` holds what reads as a number but isn't a finite one (-nan,

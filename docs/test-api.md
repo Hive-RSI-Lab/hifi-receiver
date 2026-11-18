@@ -285,9 +285,13 @@ Both are checked before either is set, and kept across restarts. Shown as
 
 ## `POST /api/v1/name`
 
-`{"name": "Kitchen"}`, 1–32 characters: the player name in AirPlay,
-Bluetooth, Spotify and LMS. The services take it at the next restart. The
-hostname stays `hifi-lite`. Reply: the full `/state`.
+`{"name": "Kitchen"}`, 1–32 bytes of UTF-8 (`\u00e9` counts as two): the
+player name in AirPlay, Bluetooth, Spotify and LMS. The services take it at
+the next restart. The hostname stays `hifi-lite`. Reply: the full `/state`.
+A 400 for a control character (`\r`, `\u001f`, DEL), or `"` or `\`, which
+would reach squeezelite's command line. A body with `\u0000`, an unknown
+escape, bad hex or a lone surrogate in any string is refused whole ("body
+must be a JSON object"), on every POST.
 
 ## `POST /api/v1/reboot`, `POST /api/v1/reset`
 

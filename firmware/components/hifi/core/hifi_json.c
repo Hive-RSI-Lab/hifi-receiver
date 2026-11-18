@@ -119,16 +119,95 @@ static const char *ws(const char *p) {
 	return p;
 }
 
-/* Skips a string starting at '"'; returns the char after the closing quote. */
-static const char *skip_str(const char *p) {
-	for (p++; *p; p++) {
-		if (*p == '\\') {
-			if (!*++p) return NULL;
-		} else if (*p == '"') {
-			return p + 1;
-		}
+static int hex4(const char *p) {
+	int v = 0;
+	for (int d = 0; d < 4; d++) {
+		char c = p[d];
+		v <<= 4;
+		if (c >= '0' && c <= '9') v |= c - '0';
+		else if (c >= 'a' && c <= 'f') v |= c - 'a' + 10;
+		else if (c >= 'A' && c <= 'F') v |= c - 'A' + 10;
+		else return -1;
 	}
-	return NULL;
+	return v;
+}
+
+/* Reads one character of a JSON string at *pp into b and moves *pp past it.
+ * Returns its length in bytes (1..4), 0 at the closing quote, or -1 when the
+ * string isn't one we take: the end of the text, an unknown escape, bad hex, a
+ * lone surrogate or \u0000 (no C string can hold it). Every escape JSON has is
+ * decoded, \uXXXX as UTF-8 and a pair of surrogates as one character. A raw
+ * UTF-8 sequence comes back whole, so a cut never splits it. skip_str and
+ * hj_get_str both read through here: a body that one would refuse, the
+ * other never sees (hj_valid_object turns it into a 400 before any handler). */
+static int str_char(const char **pp, char b[4]) {
+	const char *p = *pp;
+	int len = 1;
+	if (!*p) return -1;
+	if (*p == '"') return 0;
+	b[0] = *p;
+	if (*p == '\\') {
+		switch (*++p) {
+		case '"': case '\\': case '/': b[0] = *p; break;
+		case 'b': b[0] = '\b'; break;
+		case 'f': b[0] = '\f'; break;
+		case 'n': b[0] = '\n'; break;
+		case 'r': b[0] = '\r'; break;
+		case 't': b[0] = '\t'; break;
+		case 'u': {
+			long cp = hex4(p + 1);
+			if (cp < 0) return -1;
+			p += 4;
+			if (cp >= 0xdc00 && cp <= 0xdfff) return -1;
+			if (cp >= 0xd800 && cp <= 0xdbff) {
+				int lo = p[1] == '\\' && p[2] == 'u' ? hex4(p + 3) : -1;
+				if (lo < 0xdc00 || lo > 0xdfff) return -1;
+				cp = 0x10000 + ((cp - 0xd800) << 10) + (lo - 0xdc00);
+				p += 6;
+			}
+			if (cp == 0) return -1;
+			if (cp < 0x80) {
+				b[0] = (char) cp;
+			} else if (cp < 0x800) {
+				b[0] = (char) (0xc0 | cp >> 6);
+				b[1] = (char) (0x80 | (cp & 0x3f));
+				len = 2;
+			} else if (cp < 0x10000) {
+				b[0] = (char) (0xe0 | cp >> 12);
+				b[1] = (char) (0x80 | (cp >> 6 & 0x3f));
+				b[2] = (char) (0x80 | (cp & 0x3f));
+				len = 3;
+			} else {
+				b[0] = (char) (0xf0 | cp >> 18);
+				b[1] = (char) (0x80 | (cp >> 12 & 0x3f));
+				b[2] = (char) (0x80 | (cp >> 6 & 0x3f));
+				b[3] = (char) (0x80 | (cp & 0x3f));
+				len = 4;
+			}
+			break;
+		}
+		default: return -1;
+		}
+	} else if ((unsigned char) *p >= 0xc0) {
+		/* a raw lead byte and the continuation bytes after it: one unit */
+		while (len < 4 && ((unsigned char) p[len] & 0xc0) == 0x80) {
+			b[len] = p[len];
+			len++;
+		}
+		p += len - 1;
+	}
+	*pp = p + 1;
+	return len;
+}
+
+/* Skips a string starting at '"'; returns the char after the closing quote,
+ * or NULL if it isn't a string hj_get_str would take. */
+static const char *skip_str(const char *p) {
+	char b[4];
+	int len;
+	for (p++; (len = str_char(&p, b)) > 0;)
+		;
+	return len < 0 ? NULL : p + 1;
 }
 
 static const char *skip_value(const char *p);
@@ -176,9 +255,9 @@ bool hj_valid_object(const char *json) {
 	return p && *ws(p) == '\0';
 }
 
-/* Finds the value of a top-level key; returns a pointer to it or NULL. */
-static const char *find(const char *json, const char *k) {
-	if (!hj_valid_object(json)) return NULL;
+/* Finds the value of a top-level key in text already checked by
+ * hj_valid_object; returns a pointer to it or NULL. */
+static const char *find_in(const char *json, const char *k) {
 	size_t klen = strlen(k);
 	const char *p = ws(ws(json) + 1);
 	while (*p == '"') {
@@ -193,22 +272,36 @@ static const char *find(const char *json, const char *k) {
 	return NULL;
 }
 
+static const char *find(const char *json, const char *k) {
+	return hj_valid_object(json) ? find_in(json, k) : NULL;
+}
+
+/* Decodes a JSON string (see str_char). Text that hj_valid_object refuses
+ * (a bad string anywhere in it) leaves out "" and returns false. A long one is cut at a whole character,
+ * escaped or raw UTF-8, and still terminated. */
 bool hj_get_str(const char *json, const char *k, char *out, size_t n) {
-	const char *p = find(json, k);
-	if (!p || *p != '"' || !n) return false;
+	if (!n) return false;
+	if (!hj_valid_object(json)) {
+		out[0] = '\0'; /* a caller that ignores the answer reads "" */
+		return false;
+	}
+	const char *p = find_in(json, k);
+	if (!p || *p != '"') return false;
 	size_t i = 0;
-	for (p++; *p && *p != '"'; p++) {
-		char c = *p;
-		if (c == '\\') {
-			c = *++p;
-			if (c == 'n') c = '\n';
-			else if (c == 't') c = '\t';
-			else if (c == 'u') { /* keep it simple: non-ASCII escapes become '?' */
-				c = '?';
-				for (int d = 0; d < 4 && p[1]; d++) p++;
-			}
+	bool full = false;
+	char b[4];
+	int len;
+	for (p++; (len = str_char(&p, b)) > 0;) {
+		if (full || i + (size_t) len >= n) {
+			full = true; /* cut here: nothing after a character that didn't fit */
+			continue;
 		}
-		if (i + 1 < n) out[i++] = c;
+		memcpy(out + i, b, (size_t) len);
+		i += (size_t) len;
+	}
+	if (len < 0) { /* can't happen: hj_valid_object read the same string */
+		out[0] = '\0';
+		return false;
 	}
 	out[i] = '\0';
 	return true;

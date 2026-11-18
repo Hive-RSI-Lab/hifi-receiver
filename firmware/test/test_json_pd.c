@@ -74,6 +74,48 @@ static void reader(void) {
 	CHECK(hj_get_str(body, "type", tiny, sizeof(tiny)));
 	CHECK_STR(tiny, "si");
 
+	/* every JSON escape decodes (a CR used to come out as "r") */
+	char e[32];
+	CHECK(hj_get_str("{\"s\":\"a\\rb\"}", "s", e, sizeof(e)) && !strcmp(e, "a\rb"));
+	CHECK(hj_get_str("{\"s\":\"a\\nb\\tc\"}", "s", e, sizeof(e)) && !strcmp(e, "a\nb\tc"));
+	CHECK(hj_get_str("{\"s\":\"a\\bb\"}", "s", e, sizeof(e)) && !strcmp(e, "a\bb"));
+	CHECK(hj_get_str("{\"s\":\"a\\fb\"}", "s", e, sizeof(e)) && !strcmp(e, "a\fb"));
+	CHECK(hj_get_str("{\"s\":\"a\\/b\\\\c\\\"d\"}", "s", e, sizeof(e)) && !strcmp(e, "a/b\\c\"d"));
+	/* \uXXXX as UTF-8: one, two, three bytes, and a surrogate pair as four */
+	CHECK(hj_get_str("{\"s\":\"\\u0041\\u000d\"}", "s", e, sizeof(e)) && !strcmp(e, "A\r"));
+	CHECK(hj_get_str("{\"s\":\"caf\\u00E9\"}", "s", e, sizeof(e)) && !strcmp(e, "caf\xc3\xa9"));
+	CHECK(hj_get_str("{\"s\":\"\\u20ac\"}", "s", e, sizeof(e)) && !strcmp(e, "\xe2\x82\xac"));
+	CHECK(hj_get_str("{\"s\":\"\\ud83d\\ude00!\"}", "s", e, sizeof(e)) && !strcmp(e, "\xf0\x9f\x98\x80!"));
+	/* not a C string or not JSON: refused, out left "" */
+	strcpy(e, "x");
+	CHECK(!hj_get_str("{\"s\":\"a\\u0000b\"}", "s", e, sizeof(e)) && !e[0]);
+	CHECK(!hj_get_str("{\"s\":\"a\\qb\"}", "s", e, sizeof(e)) && !e[0]);
+	CHECK(!hj_get_str("{\"s\":\"\\u12g4\"}", "s", e, sizeof(e)) && !e[0]);
+	CHECK(!hj_get_str("{\"s\":\"\\u12\"}", "s", e, sizeof(e)) && !e[0]);
+	CHECK(!hj_get_str("{\"s\":\"\\ude00\"}", "s", e, sizeof(e)) && !e[0]);
+	CHECK(!hj_get_str("{\"s\":\"\\ud83dx\"}", "s", e, sizeof(e)) && !e[0]);
+	CHECK(!hj_get_str("{\"s\":\"\\ud83d\\u0041\"}", "s", e, sizeof(e)) && !e[0]);
+	/* a cut never splits a character, and nothing after it slips in */
+	char four[4];
+	CHECK(hj_get_str("{\"s\":\"a\\u20acb\"}", "s", four, sizeof(four)) && !strcmp(four, "a"));
+	CHECK(hj_get_str("{\"s\":\"ab\\u00e9c\"}", "s", four, sizeof(four)) && !strcmp(four, "ab"));
+	/* raw UTF-8, as JSON.stringify sends it, is cut the same way */
+	CHECK(hj_get_str("{\"s\":\"ab\xc3\xa9\"}", "s", four, sizeof(four)) && !strcmp(four, "ab"));
+	CHECK(hj_get_str("{\"s\":\"a\xe2\x82\xac" "b\"}", "s", four, sizeof(four)) && !strcmp(four, "a"));
+	CHECK(hj_get_str("{\"s\":\"\xf0\x9f\x98\x80\"}", "s", four, sizeof(four)) && !strcmp(four, ""));
+	char five[5];
+	CHECK(hj_get_str("{\"s\":\"ab\xc3\xa9\"}", "s", five, sizeof(five)) && !strcmp(five, "ab\xc3\xa9"));
+	/* a stray lead or continuation byte passes through as it came */
+	CHECK(hj_get_str("{\"s\":\"a\xc3" "b\x80\"}", "s", e, sizeof(e)) && !strcmp(e, "a\xc3" "b\x80"));
+	/* a bad string anywhere refuses the whole text: no field reads as missing */
+	CHECK(!hj_valid_object("{\"a\":\"\\q\"}"));
+	CHECK(!hj_valid_object("{\"a\":{\"b\":[\"\\u0000\"]}}"));
+	CHECK(!hj_valid_object("{\"\\ud800\":1}"));
+	CHECK(!hj_valid_object("{\"a\":\"\\u12\"}"));
+	CHECK(hj_valid_object("{\"a\":\"\\ud83d\\ude00 \\r\\/\"}"));
+	strcpy(e, "x");
+	CHECK(!hj_get_str("{\"s\":\"ok\",\"t\":\"\\q\"}", "s", e, sizeof(e)) && !e[0]);
+
 	CHECK(hj_valid_object("{}"));
 	CHECK(!hj_valid_object("{"));
 	CHECK(!hj_valid_object("{\"a\":}"));
