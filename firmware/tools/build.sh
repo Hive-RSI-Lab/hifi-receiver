@@ -26,6 +26,29 @@ fi
 # fetch.sh needs IDF_PATH too (idf-patches/)
 DEST=$("$FW/tools/fetch.sh" "${1:-${HOME}/fw-build/squeezelite-esp32}" | tail -1)
 
+# The makers' build (a board folder with a 'makers' file, board/lite-makers):
+# the image anyone may flash, so nothing private goes in. No Spotify key, no
+# Hive key, relay or update URL, no LAN signature, and tools/makers_check.py
+# scans the result. HIFI_MAKERS_TWIN=1 builds its lab twin: the same config
+# plus the Hive key alone, the only image of it a lab board may run (docs/install/README.md).
+MAKERS=
+if [ -f "$FW/board/${HIFI_BOARD:-lite-main}/makers" ]; then
+	MAKERS=1
+	for v in HIFI_RELAY_URL HIFI_RELAY_USER HIFI_RELAY_PASS HIFI_UPDATE_URL HIFI_SIGN_KEY; do
+		[ -z "${!v:-}" ] || { echo "build.sh: $v is set; the makers' build takes none" >&2; exit 1; }
+	done
+	if [ "${HIFI_MAKERS_TWIN:-}" = 1 ]; then
+		[ -n "${HIFI_HIVE_PUBKEY:-}" ] || HIFI_HIVE_PUBKEY=$(python3 "$HOME/modules/dash/remote_bench.py" pubkey 2>/dev/null || true)
+		[ -n "$HIFI_HIVE_PUBKEY" ] || { echo "build.sh: the lab twin needs the Hive key" >&2; exit 1; }
+	elif [ -n "${HIFI_HIVE_PUBKEY:-}" ]; then
+		echo "build.sh: HIFI_HIVE_PUBKEY is set; the makers' build takes none (HIFI_MAKERS_TWIN=1 is its lab twin)" >&2
+		exit 1
+	fi
+	unset SPOTIFY_CLIENT_ID SPOTIFY_CLIENT_SECRET
+	HIFI_SECRETS_DIR=/nonexistent
+	echo "build.sh: makers' build${HIFI_MAKERS_TWIN:+ (lab twin: the Hive key only)}"
+fi
+
 # Spotify Connect needs a Spotify developer app's client id and secret built in
 # (cspot fetches a Web API token with them; without one a track never starts):
 # from SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET, else files of those names in
@@ -41,7 +64,11 @@ if [ -n "$sp_id" ] && [ -n "$sp_secret" ]; then
 	echo "build.sh: Spotify Connect key: set"
 else
 	unset SPOTIFY_SECRET
-	echo "build.sh: Spotify Connect key: missing, Spotify will connect but play nothing" >&2
+	if [ -n "$MAKERS" ]; then
+		echo "build.sh: Spotify Connect: left out (the makers' build)"
+	else
+		echo "build.sh: Spotify Connect key: missing, Spotify will connect but play nothing" >&2
+	fi
 fi
 unset sp_id sp_secret
 
@@ -49,7 +76,7 @@ unset sp_id sp_secret
 # updates over Wi-Fi (hifi_relay.c): from HIFI_HIVE_PUBKEY, else the bench
 # endpoint's tool if this machine has one. A build without it can only be
 # flashed by USB, and the bench refuses to send it over the air.
-if [ -z "${HIFI_HIVE_PUBKEY:-}" ] && [ -r "$HOME/modules/dash/remote_bench.py" ]; then
+if [ -z "$MAKERS" ] && [ -z "${HIFI_HIVE_PUBKEY:-}" ] && [ -r "$HOME/modules/dash/remote_bench.py" ]; then
 	HIFI_HIVE_PUBKEY=$(python3 "$HOME/modules/dash/remote_bench.py" pubkey 2>/dev/null || true)
 fi
 if [ -n "${HIFI_HIVE_PUBKEY:-}" ]; then
@@ -115,7 +142,7 @@ done
 python3 "$FW/tools/otadata.py" build/ota_data_initial.bin
 # sign the app for updates from the LAN, which the board refuses unsigned
 # (tools/sign_fw.py; security.md). The relay and USB don't need it.
-python3 "$FW/tools/sign_fw.py" build/squeezelite.bin ${HIFI_SIGN_KEY:+--key "$HIFI_SIGN_KEY"}
+[ -n "$MAKERS" ] || python3 "$FW/tools/sign_fw.py" build/squeezelite.bin ${HIFI_SIGN_KEY:+--key "$HIFI_SIGN_KEY"}
 ls -l build/squeezelite.bin build/recovery.bin
 # squeezelite's build doesn't check the recovery image against its slot: do
 # it here for both, since an image that outgrows its slot can't be flashed
@@ -133,3 +160,13 @@ for img, slot in ((sys.argv[2], "factory"), (sys.argv[3], "ota_0")):
     bad |= n > cap
 sys.exit(bad)
 EOF
+# the makers' build: refuse any private part in it (tools/makers_check.py),
+# then the one file ESP Web Tools flashes and its manifest (tools/makers_image.py)
+if [ -n "$MAKERS" ]; then
+	if [ "${HIFI_MAKERS_TWIN:-}" = 1 ]; then
+		python3 "$FW/tools/makers_check.py" --twin build
+	else
+		python3 "$FW/tools/makers_check.py" build
+		python3 "$FW/tools/makers_image.py" build "$FW/../docs/install/firmware"
+	fi
+fi

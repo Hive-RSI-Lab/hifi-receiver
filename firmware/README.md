@@ -15,6 +15,7 @@ each part does, is in [`docs/firmware.md`](../docs/firmware.md); the API is
 | `components/hifi/core/` | the logic, in plain C: PD contract, power sequencer, governor, tones, test API, console parser, the knob and buttons, the update manifest |
 | `components/hifi/esp/` | the board code on ESP-IDF: tasks, HTTP, mDNS, console, Wi-Fi scan and updates; `board_lite.c` or `board_core.c` (`hifi_bsp.h`) for each board's pins and parts |
 | `board/lite-main/` | the build configuration for Lite (`HIFI_LITE`) |
+| `board/lite-makers/` | the makers' build: Lite with no Spotify and no lab or private part, for anyone to flash from a browser ([`docs/install/`](../docs/install/README.md)); `tools/makers_check.py` fails the build if one is in it |
 | `board/core/`, `board/ultra/` | Plus (`HIFI_PLUS`) and Ultra (`HIFI_ULTRA`), both on the core board |
 | `test/` | host unit tests for `core/` |
 | `tools/fetch.sh`, `tools/build.sh` | get upstream, patch it, build |

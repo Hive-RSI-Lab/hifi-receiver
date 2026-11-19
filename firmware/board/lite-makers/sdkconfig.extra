@@ -1,0 +1,9 @@
+# lite-makers: the Lite image anyone may flash (docs/install/README.md).
+# lite-main's defaults with the parts that need the Hive's or our private
+# keys taken out. tools/build.sh sees the 'makers' file in this folder and
+# builds it with no Spotify key, Hive key, relay or update URL and unsigned,
+# then tools/makers_check.py scans the images and refuses a leak.
+# Spotify Connect needs our Spotify developer key built in; without it the
+# speaker would show up in the Spotify app and play nothing, so it is off.
+# CONFIG_CSPOT_SINK is not set
+# CONFIG_HIFI_LAB is not set

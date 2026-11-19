@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Install HiFi Lite firmware (makers' build)</title>
+<!-- ESP Web Tools from its CDN: the button flashes firmware/manifest.json over Web Serial -->
+<script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; max-width: 44rem; margin: 2rem auto; padding: 0 1rem; color: #222; }
+  h1 { font-size: 1.6rem; margin-bottom: .2rem; }
+  h2 { font-size: 1.15rem; margin-top: 2rem; }
+  .sub { color: #666; margin-top: 0; }
+  .box { border: 1px solid #ddd; border-radius: 8px; padding: 1rem 1.2rem; margin: 1.2rem 0; }
+  code { background: #f3f3f3; padding: 0 .25rem; border-radius: 3px; }
+  small { color: #666; }
+</style>
+</head>
+<body>
+<h1>HiFi Lite firmware: the makers' build</h1>
+<p class="sub">Flash a HiFi Lite (ESP32-WROVER-E, 8 MB flash) from this page with Chrome or Edge on a computer.</p>
+
+<div class="box">
+  <p>Plug the board into this computer over USB, then press the button and pick its serial port.</p>
+  <esp-web-install-button manifest="firmware/manifest.json">
+    <span slot="unsupported">This browser can't reach a serial port. Use Chrome or Edge on a desktop or laptop.</span>
+    <span slot="not-allowed">The page has to be opened over https (or from localhost) to use the serial port.</span>
+  </esp-web-install-button>
+  <p><small>A first install offers to erase the board: say yes, so no old settings are left behind.
+  The whole flash is about 5 MB and takes a minute or two.</small></p>
+</div>
+
+<h2>What you get</h2>
+<ul>
+  <li><b>AirPlay</b>: the speaker shows up as <code>hifi-lite</code> on an iPhone, iPad or Mac.</li>
+  <li><b>Bluetooth</b>: pair a phone with <code>hifi-lite</code>.</li>
+  <li><b>Lyrion Music Server (LMS)</b>: the board is a Squeezebox player on your network.</li>
+  <li><b>The app</b>: open <code>http://hifi-lite.local</code> (or the board's IP address) in a phone's browser for volume, sources, sound settings and the other speakers on your Wi-Fi. Add it to the home screen to open it like an app.</li>
+  <li><b>Updates by USB</b>: come back to this page for a newer build.</li>
+</ul>
+
+<h2>What's missing</h2>
+<ul>
+  <li><b>Spotify Connect.</b> It needs a Spotify developer key built into the firmware, and that key can't be shared,
+  so this build leaves Spotify out. You can build your own with your own key
+  (<a href="README.md">how to rebuild</a>).</li>
+  <li><b>Updates over Wi-Fi and the lab's remote tools.</b> They need the lab's keys, which only the lab's own boards carry.</li>
+</ul>
+
+<h2>First start</h2>
+<ol>
+  <li>After the flash the board restarts and, with no Wi-Fi saved, opens its own network:
+  <code>hifi-lite</code>, password <code>squeezelite</code>.</li>
+  <li>Join it from a phone or laptop and open <code>http://192.168.4.1</code>.</li>
+  <li>Pick your home Wi-Fi and type its password. The board joins it and closes its own network.</li>
+  <li>Back on your home Wi-Fi, open <code>http://hifi-lite.local</code>.</li>
+</ol>
+
+<h2>Licence</h2>
+<p>This firmware is built on <a href="https://github.com/sle118/squeezelite-esp32">squeezelite-esp32</a>,
+which includes squeezelite and other parts under the GNU General Public License version 3, so the
+firmware as a whole is distributed under the GPLv3. It comes with no warranty. You may copy, change and
+share it under that licence's terms. The full source of this build, and the steps to rebuild it, are in
+this repository: <code>firmware/</code>, built with <code>firmware/tools/build.sh</code>
+(<a href="README.md">README</a>). The licence text is at
+<a href="https://www.gnu.org/licenses/gpl-3.0.html">gnu.org/licenses/gpl-3.0.html</a>.</p>
+</body>
+</html>

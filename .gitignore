@@ -2,3 +2,5 @@ bench/rig.json
 bench/results/mock-*/
 __pycache__/
 *.py[co]
+# the makers' install file: built by tools/build.sh (docs/install/README.md), never committed
+docs/install/firmware/
