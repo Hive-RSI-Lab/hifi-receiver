@@ -5,6 +5,11 @@ libsodium against the public key compiled into its firmware.
 Slow (a few ms a signature) and not constant-time, which is fine for a bench
 that signs a handful of commands from a machine it trusts. Only the RFC's
 pure Ed25519, no context or prehash variants.
+
+The arithmetic follows the Python reference code in RFC 8032 section 6:
+Copyright (c) 2017 IETF Trust and the persons identified as authors of the
+code. All rights reserved. Licensed under the Simplified BSD License
+(BSD-2-Clause, LICENSES/BSD-2-Clause.txt), as are this file's changes.
 """
 from __future__ import annotations
 
