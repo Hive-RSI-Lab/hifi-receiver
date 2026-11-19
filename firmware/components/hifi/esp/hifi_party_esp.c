@@ -29,6 +29,7 @@
  */
 #include <errno.h>
 #include <math.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -184,6 +185,21 @@ static int sock = -1;
 /* LAB ONLY (a7fcd TOS A/B): the IP TOS byte the party socket sends with, set
  * by the op tos (0 BE, 0xA0 puts the stream on the VI queue), kept across reopens */
 static int party_tos;
+/* LAB ONLY (af2aa, party-mode.md 8.14): the leader's send margin and resend
+ * hold, set by the ops sm and rw, in ms. sm: extra margin on every deadline
+ * (0 none, -1 the queue-wait estimate qw). rw: a NACK for a packet that went
+ * into the driver less than this long ago is let go (0 off, -1 qw). qw is the
+ * smoothed time from a send the queue turned away to the next that went: a
+ * proxy for the driver's queue wait, which IDF 4.4 doesn't expose. */
+static int lab_sm, lab_rw;
+static int64_t qfail_us;            /* the first refused send since the last that went, 0 none */
+static int32_t qw_ms;               /* the smoothed refused-to-sent time */
+static int32_t qf_max, lag_min = INT32_MAX;     /* since the last read: the longest refused-to-sent, the least spare on the stream */
+static uint32_t rw_skipped;
+static struct {
+	int64_t k;
+	int64_t t;
+} sent_at[HIST_SLOTS];                     /* when each history packet last went into the driver */
 static uint32_t self_ip, self_mask;
 static uint8_t my_bssid[6];
 static bool have_bssid;
@@ -252,6 +268,9 @@ static void counters_reset(void) {
 	held_ok = held_late = resend_late = resend_busy = 0;
 	clocks_sent = noaudio_sent = 0;
 	txe_nomem = txe_again = txe_other = 0;
+	rw_skipped = 0;
+	qf_max = 0;
+	lag_min = INT32_MAX;
 	memset(&tx_bursts, 0, sizeof(tx_bursts));
 	memset(&gap_bursts, 0, sizeof(gap_bursts));
 }
@@ -421,9 +440,16 @@ static int send_one(uint32_t ip, const uint8_t *p, size_t n, bool count) {
 	int r = sendto(sock, p, n, 0, (struct sockaddr *) &to, sizeof(to));
 	if (r == (int) n) {
 		sent++;
+		if (qfail_us) {
+			int32_t d = (int32_t) ((esp_timer_get_time() - qfail_us) / 1000);
+			qfail_us = 0;
+			if (d > qf_max) qf_max = d;
+			qw_ms += (d - qw_ms) / 4;
+		}
 		return 0;
 	}
 	int e = r < 0 ? errno : 0;
+	if (!qfail_us && (e == ENOMEM || e == EAGAIN || e == EWOULDBLOCK)) qfail_us = esp_timer_get_time();
 	if (!count) return e ? e : -1;
 	send_fail++; /* mostly the radio's queue is full: a follower asks again */
 	if (e == ENOMEM) txe_nomem++;
@@ -581,11 +607,13 @@ static int peers_now(uint32_t *ips) {
 /* packet k is due while it can still reach a follower LATE_MARGIN before
  * its first frame plays: the follower plays frame k as the leader writes
  * frame k + DELAY (pos) */
-static bool too_late(int64_t k, int64_t pos) { return k + DELAY - LATE_MARGIN < pos; }
+static int32_t lab_ms(int v) { return v < 0 ? qw_ms : v; }
+static int64_t margin(void) { return LATE_MARGIN + (int64_t) lab_ms(lab_sm) * RATE / 1000; }
+static bool too_late(int64_t k, int64_t pos) { return k + DELAY - margin() < pos; }
 
 /* the first packet still due at pos */
 static int64_t first_due(int64_t pos) {
-	int64_t s = pos - DELAY + LATE_MARGIN;
+	int64_t s = pos - DELAY + margin();
 	return s > 0 ? (s + HIFI_PARTY_FRAMES - 1) / HIFI_PARTY_FRAMES * HIFI_PARTY_FRAMES : 0;
 }
 
@@ -644,7 +672,13 @@ static bool resend_drain(int64_t pos) {
  * follower asks again. */
 static bool send_all(int64_t k, const uint8_t *p, size_t n, const uint32_t *ips, int np, bool retry) {
 	for (int i = 0; i < np; i++) {
-		if (!queue_full(send_one(ips[i], p, n, !retry || i > 0))) continue;
+		int e = send_one(ips[i], p, n, !retry || i > 0);
+		if (!e) {
+			int si = (int) ((k / HIFI_PARTY_FRAMES) % HIST_SLOTS);
+			sent_at[si].k = k;
+			sent_at[si].t = esp_timer_get_time();
+		}
+		if (!queue_full(e)) continue;
 		held = true;
 		held_k = k;
 		held_n = np - i;
@@ -716,6 +750,8 @@ static void leader_send(int64_t now) {
 		size_t n = hifi_party_encode(&st->gkey, &p, st->frames, st->pkt, sizeof(st->pkt));
 		int64_t k = k_sent;
 		k_sent += HIFI_PARTY_FRAMES;
+		int32_t spare = (int32_t) ((k + DELAY - pos) * 1000 / RATE);
+		if (spare < lag_min) lag_min = spare;
 		if (n) {
 			hifi_party_hist_put(&st->hist, k, st->pkt, n);
 			if (!send_all(k, st->pkt, n, ips, np, false)) return;
@@ -856,6 +892,9 @@ static void got(uint32_t src, const uint8_t *d, size_t len, int64_t now) {
 			int64_t k = hifi_party_nack_k(pl, i);
 			if (k < 0 || k > pos) resend_gone++;
 			else if (too_late(k, pos)) resend_late++;
+			else if (lab_rw && sent_at[(k / HIFI_PARTY_FRAMES) % HIST_SLOTS].k == k &&
+				 esp_timer_get_time() - sent_at[(k / HIFI_PARTY_FRAMES) % HIST_SLOTS].t < (int64_t) lab_ms(lab_rw) * 1000)
+				rw_skipped++; /* its first copy may still be queued: the follower asks again */
 			else resend_add(k, src);
 		}
 		if (!held) resend_drain(pos);
@@ -1289,6 +1328,15 @@ static void stats_json(hj_t *j) {
 		hj_int(j, "skip", send_skipped);
 		hj_int(j, "rsl", resend_late);
 		hj_int(j, "rsb", resend_busy);
+		/* LAB ONLY (af2aa 8.14): the switches, what they let go, the queue proxy */
+		hj_int(j, "sm", lab_sm);
+		hj_int(j, "rw", lab_rw);
+		hj_int(j, "rsw", rw_skipped);
+		hj_int(j, "qw", qw_ms);
+		hj_int(j, "qf", qf_max);
+		hj_int(j, "lag", lag_min == INT32_MAX ? -1 : lag_min);
+		qf_max = 0;
+		lag_min = INT32_MAX;
 		hj_arr(j, "hold");
 		hj_int(j, NULL, held_ok);
 		hj_int(j, NULL, held_late);
@@ -1444,9 +1492,22 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 	if (sub && *sub) return err(out, cap, 404, "no such party route");
 	if (post) {
 		char op[16];
-		if (!body || !hj_get_str(body, "op", op, sizeof(op))) return err(out, cap, 400, "op must be on, off, lead, key, tone or tos");
+		if (!body || !hj_get_str(body, "op", op, sizeof(op))) return err(out, cap, 400, "op must be on, off, lead, key, tone, tos, sm or rw");
 		bool key = !strcmp(op, "key"), tone = !strcmp(op, "tone"), tos = !strcmp(op, "tos");
-		if ((key || tone || tos) && lan) return err(out, cap, 403, "the party key, the test tone and the TOS are set by the Hive or over USB, not from the LAN");
+		bool sm = !strcmp(op, "sm"), rw = !strcmp(op, "rw");
+		if ((key || tone || tos || sm || rw) && lan) return err(out, cap, 403, "the party key, the test tone and the lab switches are set by the Hive or over USB, not from the LAN");
+		if (sm || rw) {
+			double v;
+			if (!hj_get_num(body, "ms", &v) || v < -1 || v > 300 || v != (int) v) return err(out, cap, 400, "ms (-1 for the queue estimate, 0 off, up to 300) is required");
+			if (sm) lab_sm = (int) v;
+			else lab_rw = (int) v;
+			hj_init(&j, out, cap);
+			hj_obj(&j, NULL);
+			hj_int(&j, "sm", lab_sm);
+			hj_int(&j, "rw", lab_rw);
+			hj_obj_end(&j);
+			return 200;
+		}
 		if (!alloc_once()) return err(out, cap, 503, "out of memory");
 		if (tos) {
 			double v;
@@ -1510,7 +1571,7 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 			if (r < 0) return err(out, cap, 409, "this board can't lead now (party is off, or memory is low)");
 			wake();
 		} else
-			return err(out, cap, 400, "op must be on, off, lead, key, tone or tos");
+			return err(out, cap, 400, "op must be on, off, lead, key, tone, tos, sm or rw");
 		/* the worker takes on and off within its 200 ms wait */
 		for (int i = 0; i < 30 && (want_on && have_secret) != active; i++) vTaskDelay(pdMS_TO_TICKS(20));
 	}
