@@ -7,27 +7,34 @@ licence texts are in LICENSES/.
 
 Hardware: CERN-OHL-P-2.0 (LICENSES/CERN-OHL-P-2.0.txt)
   boards/     KiCad sources, schematics, layouts, Gerbers, renders and
-              reports, except the aiee libraries named below
-  enclosure/  case CAD sources and their outputs (STL, 3MF, renders)
+              reports, except the third-party files named below and the
+              scripts (.py, .sh), which are code and MIT
+  enclosure/  case CAD sources, including the .py scripts that generate the
+              case, and their outputs (STL, 3MF, renders)
 
 Our own code and documents: MIT (the text is at the end of this file and in
 LICENSES/MIT.txt)
   app/, bench/, tools/, docs/
+  scripts (.py, .sh) under boards/
   firmware/components/hifi/, firmware/board/, firmware/test/, firmware/tools/
   firmware/README.md, firmware/fw.json, firmware/upstream.lock
   everything else in this repository not named in this file
 
 Firmware patches: each change takes the licence of the file it changes
   firmware/patches/      changes to squeezelite-esp32. squeezelite's own
-                         files are GPL-3.0-or-later. squeezelite-esp32's
-                         ESP32 files are mostly MIT. The libraries it
-                         carries keep their own terms. The header of each
-                         changed file decides. New files that a patch adds
-                         are ours and MIT.
+                         files are GPL-3.0-or-later. Many of squeezelite-
+                         esp32's ESP32 files carry no licence header; for
+                         those, the licence of the component the file sits
+                         in decides: cspot and bell are GPL-3.0-or-later,
+                         nanopb is zlib, wifi-manager is MIT, and anything
+                         else follows squeezelite-esp32's own terms. A file
+                         with a header follows its header. New files that a
+                         patch adds are ours and MIT.
   firmware/idf-patches/  changes to ESP-IDF v4.4.8. Most of its files are
-                         Apache-2.0 (LICENSES/Apache-2.0.txt). lwIP and
-                         wpa_supplicant files are BSD-3-Clause. The header
-                         of each changed file decides.
+                         Apache-2.0 (LICENSES/Apache-2.0.txt), mbedtls
+                         included. lwIP and wpa_supplicant files are
+                         BSD-3-Clause. The header of each changed file
+                         decides.
 
 Not ours: these keep their own terms
   firmware/third_party/libmad/src/ and .../patches/
@@ -38,16 +45,61 @@ Not ours: these keep their own terms
               footprints, symbols and 3D models made by easyeda2kicad from
               EasyEDA / LCSC part data, as their headers say. The licences
               above do not cover them; they keep whatever terms their
-              source sets.
+              source sets. Renders of the boards show these 3D models too,
+              so a render's CERN-OHL-P grant covers our design, not the
+              part models in it.
+  boards/*/parts/easyeda/*.json, boards/*/parts/lcsc/*.json,
+  boards/*/parts/search/*.json
+              part data fetched from EasyEDA and LCSC, kept as a record.
+              They keep their source's terms.
+  KiCad's stock symbol, footprint and 3D libraries, which the boards also
+              use, are CC-BY-SA-4.0 with KiCad's exception that lets you use
+              them in your own designs under any licence.
+  bench/hifibench/ed25519.py
+              follows the Python reference code in RFC 8032 section 6,
+              which is under the Simplified BSD licence (BSD-2-Clause,
+              copyright the IETF Trust and the RFC's authors). The file is
+              BSD-2-Clause (LICENSES/BSD-2-Clause.txt); its header says so.
+  docs/review-3/sims/fix/lite_mute/models.inc,
+  docs/review-4/sims/als/models_r3.inc
+              the 2N3904 transistor model is Fairchild's published SPICE
+              model; the rest of each file is ours and MIT.
 
 Firmware builds: GPL-3.0 (LICENSES/GPL-3.0.txt)
   A firmware image built from this repository links squeezelite, so the
   image as a whole is distributed under version 3 of the GNU General Public
   License. squeezelite's own files allow any later version. Our MIT files in
-  the image stay MIT, and you may reuse them on their own under MIT. Each
-  published image names its exact source: this repository's commit,
-  firmware/upstream.lock (the squeezelite-esp32 commit and the ESP-IDF
-  version), the patches, and the build steps in firmware/README.md.
+  the image stay MIT, and you may reuse them on their own under MIT.
+
+  No AAC in published images. squeezelite-esp32 links a prebuilt Helix AAC
+  decoder (components/codecs/lib/libhelix-aac-sbr.a or libhelix-aac.a),
+  which is under RealNetworks' RPSL/RCSL. That licence does not fit with
+  the GPL, so an image we publish is built without it, and its build fails
+  if "libhelix" appears in the link map.
+
+  Corresponding Source. Each published image names its exact source:
+  this repository's commit, firmware/upstream.lock (the squeezelite-esp32
+  commit and the ESP-IDF version), the patches, the build steps in
+  firmware/README.md, and the source of every prebuilt library the image
+  links. squeezelite-esp32 ships these codecs as compiled archives in
+  components/codecs/lib/:
+    libFLAC, libogg, libopus, libvorbisidec (Tremor)
+              Xiph.Org libraries, BSD-3-Clause. Source: xiph.org.
+    libresample16
+              a fixed-point resampler; its origin and licence are not
+              recorded upstream and are still being traced.
+    libalac, libmad
+              not used: our builds compile ALAC (from cspot/bell, Apache-
+              2.0) and libmad (firmware/third_party/libmad) from source
+              (patches 0021 and 0029).
+  An image is published only once the source of each archive it links is
+  pinned to the version built and published with it, or the archive is
+  built from source or left out.
+
+  The ESP32's Wi-Fi, Bluetooth and PHY binary libraries from ESP-IDF
+  (Apache-2.0) are treated as System Libraries under section 1 of the
+  GPL-3.0: they come with the ESP-IDF toolchain for the chip, not with
+  this work.
 
 Copyright holders: the hifi-receiver authors (Hive-RSI-Lab). Third-party
 files keep their own copyright notices.
