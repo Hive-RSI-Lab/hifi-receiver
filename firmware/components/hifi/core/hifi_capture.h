@@ -6,6 +6,10 @@
  */
 #pragma once
 
+#ifdef ESP_PLATFORM
+#include "sdkconfig.h"
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -32,6 +36,16 @@ void hifi_capture_stats(const int16_t *pcm, int frames, int ch, hifi_cap_stats_t
  * the frames hold whole cycles of it. */
 float hifi_capture_tone_rms(const int16_t *pcm, int frames, int ch, float freq_hz, int rate);
 
+
+/* The chime capture (route, ops, and the main's lead-in/tail) is test gear: an
+ * ESP build has it only with CONFIG_HIFI_LAB; the host tests always have it. */
+#ifndef HIFI_CHIME_CAPTURE
+#if defined(ESP_PLATFORM) && !defined(CONFIG_HIFI_LAB)
+#define HIFI_CHIME_CAPTURE 0
+#else
+#define HIFI_CHIME_CAPTURE 1
+#endif
+#endif
 
 /* ------------------------------------------------------------ chime capture */
 

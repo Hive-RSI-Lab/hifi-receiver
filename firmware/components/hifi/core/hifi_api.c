@@ -1013,6 +1013,7 @@ static int r_capture(const hifi_ops_t *ops, const char *body, char *out, size_t 
 	return 200;
 }
 
+#if HIFI_CHIME_CAPTURE
 /* POST arms a capture of the next chime; GET gives the last one's notes */
 static int r_capture_chime(const hifi_ops_t *ops, bool post, const char *body, char *out, size_t cap) {
 	if (!ops->capture_arm || !ops->capture_chime) return error(out, cap, 404, "no chime capture in this build");
@@ -1069,6 +1070,7 @@ static int r_capture_chime(const hifi_ops_t *ops, bool post, const char *body, c
 	hj_obj_end(&j);
 	return j.overflow ? error(out, cap, 500, "reply buffer too small") : 200;
 }
+#endif
 
 static int r_wifi(const hifi_ops_t *ops, const char *body, char *out, size_t cap) {
 	if (!ops->set_wifi) return error(out, cap, 404, "no Wi-Fi setup in this build");
@@ -1216,7 +1218,9 @@ static int r_update(const hifi_ops_t *ops, bool lan, const char *body, char *out
 }
 
 size_t hifi_api_reply_cap(const char *path, const char *body) {
+#if HIFI_CHIME_CAPTURE
 	if (path && strstr(path, PREFIX "capture/chime") == path) return 4096;
+#endif
 	if (path && strstr(path, PREFIX "capture") == path) {
 		int f = capture_frames(body);
 		if (f < 64) f = 64;
@@ -1283,7 +1287,9 @@ int hifi_api_handle_from(const hifi_ops_t *ops, hifi_src_t src, const char *meth
 	else if (!strcmp(route, "bt/pair")) status = post ? r_bt_pair(ops, body, out, cap) : -1;
 	else if (!strncmp(route, "ota/", 4)) status = post ? r_ota(ops, lan, route + 4, body, out, cap) : -1;
 	else if (!strcmp(route, "capture")) status = post ? r_capture(ops, body, out, cap) : -1;
+#if HIFI_CHIME_CAPTURE
 	else if (!strcmp(route, "capture/chime")) status = get || post ? r_capture_chime(ops, post, body, out, cap) : -1;
+#endif
 	else if (!strcmp(route, "wifi")) status = post ? r_wifi(ops, body, out, cap) : -1;
 	else if (!strcmp(route, "wifi/scan")) status = get ? r_wifi_scan(ops, out, cap) : -1;
 	else if (!strcmp(route, "wifi/forget")) status = post ? r_wifi_forget(ops, out, cap) : -1;
