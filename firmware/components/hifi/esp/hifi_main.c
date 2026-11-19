@@ -170,6 +170,7 @@ static volatile uint32_t pair_started_ms;
 static volatile uint8_t chime_req;
 static volatile uint32_t chime_req_ms;
 static volatile bool chime_active;    /* keeps the amp awake while one plays */
+#if HIFI_CHIME_CAPTURE
 /* an armed capture of the next chime (op_capture_arm): the chime that
  * plays, and when it was asked for, for the recording's task */
 static volatile bool chime_cap_armed, chime_cap_recording;
@@ -181,6 +182,12 @@ static volatile uint32_t chime_cap_gen, chime_playing_gen;
 static volatile bool chime_cut;
 #define CHIME_LEAD_MS 450  /* silence ahead of an armed chime: the ADC takes about 370 ms */
 #define CHIME_TAIL_MS 1500 /* silence after it, at most, while the recording ends */
+#else
+#define chime_cap_armed false
+#define chime_cap_recording false
+#define CHIME_LEAD_MS 0
+#define CHIME_TAIL_MS 0
+#endif
 
 #define LOCK() xSemaphoreTake(lock, portMAX_DELAY)
 #define UNLOCK() xSemaphoreGive(lock)
@@ -861,10 +868,12 @@ static void play_chime(int16_t *buf, size_t frames) {
 		/* armed (op_capture_arm): silence first while the ADC comes up, and
 		 * after the notes until the recording has them all */
 		bool armed = chime_cap_armed;
+#if HIFI_CHIME_CAPTURE
 		chime_playing_gen = armed ? chime_cap_gen : 0;
 		chime_cut = false;
 		chime_playing_req_ms = chime_req_ms;
 		chime_playing = k;
+#endif
 		size_t lead = armed ? (size_t) CHIME_LEAD_MS * TONE_RATE / 1000 : 0;
 		uint32_t tail_at = 0;
 		hifi_chime_sink_start(TONE_RATE);
@@ -883,17 +892,23 @@ static void play_chime(int16_t *buf, size_t frames) {
 			}
 			while (hifi_sink_queued_ms() > 100 && hifi_sink_source() == 8) vTaskDelay(pdMS_TO_TICKS(10));
 			if (tone_active || quiet_req || hifi_sink_source() != 8) {
+#if HIFI_CHIME_CAPTURE
 				if (!tail_at) chime_cut = true; /* before its last note ended */
+#endif
 				break;
 			}
 			hifi_sink_write((const uint8_t *) buf, n * 4);
 		}
+#if HIFI_CHIME_CAPTURE
 		chime_playing = HIFI_CHIME_NONE; /* the drain below is no chime for a new arming */
+#endif
 		for (int i = 0; i < 50 && hifi_sink_queued_ms() > 0 && hifi_sink_source() == 8 && !tone_active; i++)
 			vTaskDelay(pdMS_TO_TICKS(10));
 		hifi_chime_sink_stop(); /* only if it still holds the output */
 	}
+#if HIFI_CHIME_CAPTURE
 	chime_playing = HIFI_CHIME_NONE;
+#endif
 	chime_active = false;
 }
 
@@ -1554,7 +1569,9 @@ static bool has_taps(void) {
 	return on;
 }
 
+#if HIFI_CHIME_CAPTURE
 static uint32_t cap_start_ms; /* when op_capture's kept samples began */
+#endif
 #define CAP_LEADIN_MS 100 /* fresh input op_capture drops ahead of what it keeps */
 
 /*
@@ -1566,7 +1583,7 @@ static uint32_t cap_start_ms; /* when op_capture's kept samples began */
  */
 static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_info_t *info, const char **err) {
 	if (src == HIFI_CAP_LOOPBACK && !has_taps()) return *err = "this board revision has no loopback taps", 409;
-	if (!tone_active && !audio_active && !chime_active && input != HIFI_INPUT_DJ_DIRECT)
+	if (!tone_active && !audio_active && !(HIFI_CHIME_CAPTURE && chime_active) && input != HIFI_INPUT_DJ_DIRECT)
 		return *err = "output idle: play a tone or a stream first", 409;
 	if (!codec_up) return *err = "codec not started yet", 409; /* squeezelite's init still writes CHIPPOWER */
 	/* the API and the chime capture task both come here */
@@ -1627,7 +1644,9 @@ static int op_capture(hifi_cap_src_t src, int16_t *pcm, int frames, hifi_cap_inf
 		if (i2s_read(CONFIG_I2S_NUM, pcm, n, &got, pdMS_TO_TICKS(300)) != ESP_OK || !got) break;
 	}
 	size_t have = 0;
+#if HIFI_CHIME_CAPTURE
 	cap_start_ms = now_ms();
+#endif
 	while (have < want) {
 		if (i2s_read(CONFIG_I2S_NUM, (uint8_t *) pcm + have, want - have, &got, pdMS_TO_TICKS(300)) != ESP_OK || !got) break;
 		have += got;
@@ -1657,6 +1676,7 @@ out:
 	return st;
 }
 
+#if HIFI_CHIME_CAPTURE
 /*
  * A capture of the next chime (hifi_capture.h, docs/test-api.md): a task
  * waits for a chime to take the output, records it with op_capture while the
@@ -1757,6 +1777,7 @@ static void op_capture_chime(hifi_cap_chime_t *out) {
 	*out = chime_cap;
 	UNLOCK();
 }
+#endif
 
 /*
  * The self-test's speaker path, end to end: a quiet 1 kHz tone on the left
@@ -1947,7 +1968,10 @@ const hifi_ops_t hifi_ops = {
 	.factory_reset = op_factory_reset, .factory_arm = op_factory_arm, .control = op_control, .selftest = op_selftest,
 	.set_volume = op_set_volume, .ir_learn = op_ir_learn, .ir_forget = op_ir_forget,
 #if HIFI_HAS_CAPTURE
-	.capture = op_capture, .capture_arm = op_capture_arm, .capture_chime = op_capture_chime,
+	.capture = op_capture,
+#if HIFI_CHIME_CAPTURE
+	.capture_arm = op_capture_arm, .capture_chime = op_capture_chime,
+#endif
 #endif
 	.set_wifi = op_set_wifi, .remote_status = hifi_remote_status,
 	.remote_set = hifi_remote_set, .ota = &hifi_ota_session, .ota_status = hifi_ota_status,

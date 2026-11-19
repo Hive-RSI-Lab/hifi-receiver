@@ -695,6 +695,9 @@ datasheet figure until bring-up calibrates it.
 
 ### `POST|GET /api/v1/capture/chime`
 
+Lab builds only (`CONFIG_HIFI_LAB`): the product image has no `capture/chime`
+route, no capture ops for it, and no chime lead-in or tail.
+
 A chime lasts under half a second, and `capture` takes about 370 ms to bring
 the ADC up, so it can't catch one. `POST {"source": "loopback", "wait_s": 60}`
 arms a capture of the next chime instead (`wait_s` 1 to 600; 409 if one is
