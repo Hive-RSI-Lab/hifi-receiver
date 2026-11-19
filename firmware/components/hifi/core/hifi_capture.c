@@ -43,6 +43,7 @@ float hifi_capture_tone_rms(const int16_t *pcm, int frames, int ch, float freq_h
 	return (float) (sqrt(2 * (p > 0 ? p : 0)) / frames);
 }
 
+#if HIFI_CHIME_CAPTURE
 const char *hifi_capch_state_name(hifi_capch_state_t s) {
 	static const char *n[] = {"idle", "armed", "recording", "done", "failed"};
 	return (unsigned) s < sizeof(n) / sizeof(n[0]) ? n[s] : "idle";
@@ -107,3 +108,4 @@ int hifi_capture_find_notes(const int16_t *pcm, int frames, int rate, const floa
 		for (int c = 0; c < 2; c++) floor_fs[c] = best_floor[c] > 0 ? best_floor[c] : 0;
 	return found;
 }
+#endif

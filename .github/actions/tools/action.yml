@@ -10,6 +10,7 @@ runs:
     - uses: actions/checkout@v4
       with:
         repository: ${{ env.HWDE_REPO }}
+        ref: ${{ env.HWDE_REF }}
         path: .ci/hive-hwde
         persist-credentials: false
     - name: hive-hwde commit
