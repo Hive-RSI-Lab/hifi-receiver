@@ -10,3 +10,12 @@ The WiiM-Ultra-like hi-fi streaming receiver/amp product in tiers (barebones, me
 - [docs/order-readiness.md](docs/order-readiness.md): where each board stands before the order (gates, sims, reviews, firmware, bring-up plans) and what needs the person.
 - [docs/manual/](docs/manual/user-manual.md): the user manual for all three tiers, the one-page [quick start](docs/manual/quick-start.md) for the box, and [sources.md](docs/manual/sources.md): where each fact comes from and what is still to be confirmed.
 - [docs/app.md](docs/app.md) + `app/`: the web app (PWA) the firmware serves: what it does, the API it needs beyond docs/test-api.md, a mock receiver (`python3 app/mock/server.py`), the firmware pack (`python3 app/build.py`), tests (`python3 app/tests/test_app.py`) and screenshots.
+
+## Licence
+
+- **Hardware** (`boards/`, `enclosure/`): [CERN-OHL-P-2.0](LICENSES/CERN-OHL-P-2.0.txt).
+- **Our own code and documents** (`app/`, `bench/`, `tools/`, `docs/`, scripts under `boards/`, and in `firmware/` the `components/hifi`, `board`, `test` and `tools` folders): [MIT](LICENSES/MIT.txt).
+- **Firmware builds**, including the makers' image, are [GPL-3.0](LICENSES/GPL-3.0.txt) as a whole, because they link squeezelite. Each build names its exact source: this repo's commit, `firmware/upstream.lock`, the patches, the build steps and the source of each prebuilt codec library it links. Published images leave out the Helix AAC decoder and Espressif's binary equalizer (`libesp_processing`), whose licences do not fit with the GPL.
+- **Not ours:** `firmware/third_party/libmad` is GPL-2.0-or-later. The `boards/*/lib/aiee.*` footprints and 3D models and the `boards/*/parts/` JSON come from EasyEDA and LCSC and keep their own terms. `bench/hifibench/ed25519.py` follows RFC 8032's reference code and is BSD-2-Clause. A change in `firmware/patches` or `firmware/idf-patches` takes the licence of the file it changes.
+
+The full map is in [LICENSE](LICENSE), and the licence texts are in [LICENSES/](LICENSES/).
