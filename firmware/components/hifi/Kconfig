@@ -48,3 +48,17 @@ config HIFI_PSRAM_STACKS
 		is off), nor call Bluetooth or Wi-Fi APIs directly; neither does
 		today (config_set_value only edits the RAM copy; the commit timer
 		writes NVS). Set by board/lite-main.
+
+config HIFI_PUBLISHABLE_CODECS
+	bool "Only codecs whose source can be published with the image"
+	default n
+	help
+		Leaves out the two prebuilt codec archives that can't ship in a
+		GPL image anyone may download: Helix AAC (lib/libhelix-aac*.a,
+		RealNetworks' RPSL/RCSL, so no AAC from a music server) and
+		libresample16 (lib/libresample16.a, origin not recorded, so no
+		squeezelite -R resampling, which the Lite's command line doesn't
+		use). It also builds libogg, Tremor, opus and libFLAC from the
+		pinned sources in firmware/third_party/xiph instead of their
+		prebuilt archives, whose sources upstream doesn't record. Patch
+		0038. Set by board/lite-makers.

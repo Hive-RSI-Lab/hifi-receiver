@@ -60,6 +60,42 @@ cp -R "$FW/components/hifi" "$DEST/components/hifi"
 rm -rf "$DEST/components/codecs/libmad"
 cp -R "$FW/third_party/libmad/src" "$DEST/components/codecs/libmad"
 
+# A board with CONFIG_HIFI_PUBLISHABLE_CODECS=y (lite-makers) gets libogg,
+# Tremor, opus and libFLAC from the pinned sources in third_party/xiph,
+# built by components/codecs in place of the prebuilt lib/*.a (patch 0038),
+# and loses the prebuilt Helix AAC and libresample16 altogether
+rm -rf "$DEST/components/codecs/xiph"
+if grep -qs '^CONFIG_HIFI_PUBLISHABLE_CODECS=y' "$FW/board/$BOARD/sdkconfig.extra" "$FW/board/$BOARD/sdkconfig.defaults"; then
+	XC=${HIFI_XIPH_CACHE:-$HOME/.cache/hifi-xiph}
+	X=$DEST/components/codecs/xiph
+	mkdir -p "$XC" "$X/include/ogg" "$X/include/FLAC" "$X/include/vorbis"
+	grep -v '^#' "$FW/third_party/xiph/sources.lock" | while read -r name ver sum url; do
+		[ -n "$name" ] || continue
+		f=$XC/${url##*/}
+		if [ ! -f "$f" ] || [ "$(sha256sum "$f" | cut -d' ' -f1)" != "$sum" ]; then
+			curl -fsSL --retry 3 -o "$f.part" "$url"
+			mv "$f.part" "$f"
+		fi
+		[ "$(sha256sum "$f" | cut -d' ' -f1)" = "$sum" ] || {
+			echo "fetch.sh: $f does not match sources.lock's sha256 for $name $ver" >&2
+			exit 1
+		}
+		mkdir -p "$X/$name"
+		tar -xf "$f" -C "$X/$name" --strip-components=1
+	done
+	cp "$FW/third_party/xiph/xiph.cmake" "$X/"
+	cp "$X/ogg/include/ogg/ogg.h" "$X/ogg/include/ogg/os_types.h" "$X/include/ogg/"
+	cp "$FW/third_party/xiph/include/ogg/config_types.h" "$X/include/ogg/"
+	cp "$X/flac/include/FLAC/"*.h "$X/include/FLAC/"
+	cp "$X/tremor/ivorbiscodec.h" "$X/tremor/ivorbisfile.h" "$X/include/vorbis/"
+	cp "$X/opus/include/"*.h "$X/include/"
+	C=$DEST/components/codecs
+	rm -f "$C"/lib/libhelix-aac*.a "$C/lib/libresample16.a" "$C/lib/libFLAC.a" \
+		"$C/lib/libogg.a" "$C/lib/libopus.a" "$C/lib/libvorbisidec.a"
+	rm -rf "$C/inc/helix-aac" "$C/inc/resample16" "$C/inc/FLAC" "$C/inc/ogg" \
+		"$C/inc/opus" "$C/inc/vorbis"
+fi
+
 # The web app (app/, built by app/build.py) is served at '/'; without it the
 # firmware serves a placeholder page that links to squeezelite's own UI.
 if [ -f "$REPO/app/build.py" ]; then

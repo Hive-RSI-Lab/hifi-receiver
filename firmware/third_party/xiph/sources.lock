@@ -1,0 +1,9 @@
+# The Xiph codec sources the makers' image builds from (README.md), in place
+# of squeezelite-esp32's prebuilt components/codecs/lib/lib*.a. fetch.sh
+# downloads each into ~/.cache/hifi-xiph, refuses a sha256 mismatch and
+# unpacks it to components/codecs/xiph/<name>.
+# name     version   sha256                                                            url
+ogg        1.3.6     5c8253428e181840cd20d41f3ca16557a9cc04bad4a3d04cce84808677fa1061  https://downloads.xiph.org/releases/ogg/libogg-1.3.6.tar.xz
+opus       1.5.2     65c1d2f78b9f2fb20082c38cbe47c951ad5839345876e46941612ee87f9a7ce1  https://downloads.xiph.org/releases/opus/opus-1.5.2.tar.gz
+flac       1.5.0     f2c1c76592a82ffff8413ba3c4a1299b6c7ab06c734dee03fd88630485c2b920  https://downloads.xiph.org/releases/flac/flac-1.5.0.tar.xz
+tremor     820fb3237ea81af44c9cc468c8b4e20128e3e5ad  3974455fe776a41615f60e05c85733c1bb78bff310794cbb0236f8af4b44f583  https://gitlab.xiph.org/xiph/tremor/-/archive/820fb3237ea81af44c9cc468c8b4e20128e3e5ad/tremor-820fb3237ea81af44c9cc468c8b4e20128e3e5ad.tar.gz

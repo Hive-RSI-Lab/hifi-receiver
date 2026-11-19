@@ -23,7 +23,9 @@ Every .bin under it is read as bytes and searched for:
 and the config and link maps for the lab and Spotify parts: CONFIG_HIFI_LAB
 and CONFIG_CSPOT_SINK off, no lab_*.c or hifi_lab_esp.c object and no cspot
 code linked (a member of libcspot.a: the library itself stays on the link
-line). An item whose source isn't on this machine is said to be unchecked,
+line); CONFIG_HIFI_PUBLISHABLE_CODECS on and nothing from libhelix (Helix
+AAC), libresample16 or a prebuilt libFLAC, libogg, libopus or libvorbisidec
+archive in either map (patch 0038, third_party/xiph/README.md). An item whose source isn't on this machine is said to be unchecked,
 not passed (with --strict, failed: build.sh passes it on the lab's machine,
 where every source should be). Values are never printed, only each item's name.
 Exit 0 when the scan passes, 1 when it finds anything (or, with --twin, when
@@ -110,11 +112,18 @@ def config_checks(build):
     """[(name, ok)] for the sdkconfig and the link maps"""
     sdk = (build.parent / "sdkconfig").read_text()
     out = [("CONFIG_HIFI_LAB off", not re.search(r"^CONFIG_HIFI_LAB=y", sdk, re.M)),
-           ("CONFIG_CSPOT_SINK off", not re.search(r"^CONFIG_CSPOT_SINK=y", sdk, re.M))]
+           ("CONFIG_CSPOT_SINK off", not re.search(r"^CONFIG_CSPOT_SINK=y", sdk, re.M)),
+           ("CONFIG_HIFI_PUBLISHABLE_CODECS on", bool(re.search(r"^CONFIG_HIFI_PUBLISHABLE_CODECS=y", sdk, re.M)))]
     for m in sorted(build.glob("*.map")):
         t = m.read_text(errors="replace")
         out.append((f"no lab object in {m.name}", not re.search(r"\((?:lab_\w+|hifi_lab_esp)\.c\.obj\)", t)))
         out.append((f"no cspot code in {m.name}", not re.search(r"libcspot[\w-]*\.a\(", t)))  # a member pulled in, not just the library on the link line
+        # patch 0038: Helix AAC's licence (RPSL/RCSL) doesn't fit with the GPL, libresample16's
+        # origin isn't recorded, and the Xiph codecs must come from third_party/xiph's sources
+        out.append((f"no libhelix in {m.name}", "libhelix" not in t.lower()))
+        out.append((f"no libresample16 in {m.name}", "libresample16" not in t))
+        out.append((f"no prebuilt Xiph archive in {m.name}",
+                    not re.search(r"\blib(?:FLAC|ogg|opus|vorbisidec)\.a\b", t)))
     return out
 
 

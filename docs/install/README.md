@@ -19,6 +19,15 @@ part taken out, from a config of its own, `firmware/board/lite-makers/`:
 | The LAN signature | made with the bench's signing key (`tools/sign_fw.py`). Without it, a board refuses LAN updates; update it by USB from the page. |
 | Lab tools (`CONFIG_HIFI_LAB` off) | the bench's test hooks (`lab_*.c`, `hifi_lab_esp.c`). |
 | Wi-Fi credentials | none are built in. The board starts its setup network the first time. |
+| AAC (Helix, `lib/libhelix-aac-sbr.a`) | RealNetworks' RPSL/RCSL licence doesn't fit with the GPL, so the image can't carry it. The board plays no AAC; MP3, FLAC, ALAC, Vorbis, Opus and PCM all play, and AirPlay and Bluetooth bring their own codecs. |
+| squeezelite's `-R` resampler (`lib/libresample16.a`) | Upstream records no origin or source for it. The Lite doesn't use it. |
+
+The other prebuilt codec archives upstream links (`libogg`, `libvorbisidec`,
+`libopus`, `libFLAC`) name no source either, so the image builds those four
+from pinned Xiph.Org releases instead (`firmware/third_party/xiph/README.md`,
+`sources.lock`: each one's version, URL and SHA-256). ALAC and libmad were
+already built from source. `CONFIG_HIFI_PUBLISHABLE_CODECS` in the board's
+`sdkconfig.extra` turns this on; every other board links upstream's archives.
 
 Wi-Fi onboarding uses the firmware's own **setup AP** (squeezelite-esp32's
 wifi-manager), not Improv: with no Wi-Fi saved the board opens `hifi-lite-` plus the
@@ -46,8 +55,9 @@ HIFI_BOARD=lite-makers firmware/tools/build.sh ~/fw-build/makers
   against the partition table and writes `docs/install/firmware/`:
   `hifi-lite-makers.bin` (the merged image, flashed at 0),
   `manifest.json`, and `hifi-lite-makers.json` (each part's offset, size and
-  SHA-256, the merged file's, and the source: this repo's commit and the
-  squeezelite-esp32 commit and IDF from `firmware/upstream.lock`; the page
+  SHA-256, the merged file's, and the source: this repo's commit, the
+  squeezelite-esp32 commit and IDF from `firmware/upstream.lock`, and each
+  codec source from `sources.lock`; the page
   shows them, for the GPL's source offer). It refuses a `firmware/` with
   uncommitted changes unless given `--dirty` (`HIFI_MAKERS_DIRTY=1` for build.sh), which marks the file dirty;
 - scans the merged file too, and deletes the output if that scan fails.
@@ -74,8 +84,9 @@ public key, the bench signing seed, the bench host and its Cloudflare Access
 team, the Access token's id and secret, the Spotify key, the saved Wi-Fi
 network and password, every other file in `~/.config/h2/secrets` (named by
 file), and any `--ssid` given. It also checks that
-`CONFIG_HIFI_LAB` and `CONFIG_CSPOT_SINK` are off, that the link maps hold no
-lab object and no cspot library, and that no image ends in a LAN signature.
+`CONFIG_HIFI_LAB` and `CONFIG_CSPOT_SINK` are off and `CONFIG_HIFI_PUBLISHABLE_CODECS`
+is on, that the link maps hold no lab object, no cspot library, no `libhelix`,
+no `libresample16` and none of the four prebuilt Xiph archives, and that no image ends in a LAN signature.
 It prints only each item's name, never its value; an item whose source isn't
 on the machine shows as *not checked*, not passed. `--file F` scans another
 file too (the merged image). `--strict` fails on any *not checked* item;

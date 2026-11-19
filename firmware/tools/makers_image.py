@@ -57,14 +57,27 @@ def esptool():
 
 
 def source():
-    """the commits this build came from: {repo, commit, dirty, upstream: {...}}"""
+    """the commits this build came from: {repo, commit, dirty, upstream: {...}, codecs: {...}}"""
     fw = Path(__file__).resolve().parent.parent
     git = lambda *a: subprocess.run(["git", "-C", str(fw), *a], capture_output=True, text=True).stdout.strip()
     lock = dict(l.split("=", 1) for l in (fw / "upstream.lock").read_text().splitlines()
                 if "=" in l and not l.startswith("#"))
     return {"repo": "https://github.com/Hive-RSI-Lab/hifi-receiver", "commit": git("rev-parse", "HEAD"),
             "dirty": bool(git("status", "--porcelain", "--", ".")),
-            "upstream": {k: lock.get(k) for k in ("url", "commit", "idf")}}
+            "upstream": {k: lock.get(k) for k in ("url", "commit", "idf")},
+            "codecs": codecs(fw)}
+
+
+def codecs(fw):
+    """the codec sources built into the image in place of upstream's prebuilt
+    archives (third_party/xiph/sources.lock), and the ones left out"""
+    rows = [l.split() for l in (fw / "third_party/xiph/sources.lock").read_text().splitlines()
+            if l.strip() and not l.startswith("#")]
+    return {"built": [{"name": n, "version": v, "sha256": h, "url": u} for n, v, h, u in rows]
+            + [{"name": "alac", "from": "Apple ALAC in squeezelite-esp32 components/spotify/cspot/bell/external/alac (patch 0021)"},
+               {"name": "libmad", "from": "firmware/third_party/libmad (patch 0029)"}],
+            "left_out": ["helix-aac (RPSL/RCSL, not GPL-compatible): no AAC",
+                         "libresample16 (origin not recorded): no -R resampling"]}
 
 
 def main():

@@ -7,3 +7,7 @@
 # speaker would show up in the Spotify app and play nothing, so it is off.
 # CONFIG_CSPOT_SINK is not set
 # CONFIG_HIFI_LAB is not set
+# No Helix AAC (RealNetworks' licence doesn't fit with the GPL) and no
+# libresample16 (origin not recorded); libogg, Tremor, opus and libFLAC are
+# built from the pinned sources in third_party/xiph (patch 0038)
+CONFIG_HIFI_PUBLISHABLE_CODECS=y

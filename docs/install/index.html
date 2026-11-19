@@ -44,6 +44,9 @@
   <li><b>Spotify Connect.</b> It needs a Spotify developer key built into the firmware, and that key can't be shared,
   so this build leaves Spotify out. You can build your own with your own key
   (<a href="README.md">how to rebuild</a>).</li>
+  <li><b>AAC.</b> The only AAC decoder squeezelite-esp32 offers (Helix) is under a licence that doesn't fit with the GPL,
+  so this build plays no AAC. MP3, FLAC, ALAC, Ogg Vorbis, Opus and WAV/AIFF all play, and so do AirPlay and Bluetooth.
+  If your music server sends AAC, set it to convert AAC to FLAC.</li>
   <li><b>Updates over Wi-Fi and the lab's remote tools.</b> They need the lab's keys, which only the lab's own boards carry.</li>
 </ul>
 
@@ -62,7 +65,9 @@ which includes squeezelite and other parts under the GNU General Public License 
 firmware as a whole is distributed under the GPLv3. It comes with no warranty. You may copy, change and
 share it under that licence's terms. The full source of this build, and the steps to rebuild it, are in
 this repository: <code>firmware/</code>, built with <code>firmware/tools/build.sh</code>
-(<a href="README.md">README</a>). This file was built from
+(<a href="README.md">README</a>). Its Ogg, Vorbis, Opus and FLAC decoders are built from Xiph.Org's released
+sources (BSD licence), each named with its version and checksum in <code>firmware/third_party/xiph/sources.lock</code>
+and in <a href="firmware/hifi-lite-makers.json">hifi-lite-makers.json</a>. This file was built from
 <span id="src">the commit named in <a href="firmware/hifi-lite-makers.json">hifi-lite-makers.json</a></span>. The licence text is at
 <a href="https://www.gnu.org/licenses/gpl-3.0.html">gnu.org/licenses/gpl-3.0.html</a>.</p>
 <script>
