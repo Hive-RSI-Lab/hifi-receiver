@@ -162,11 +162,20 @@ sys.exit(bad)
 EOF
 # the makers' build: refuse any private part in it (tools/makers_check.py),
 # then the one file ESP Web Tools flashes and its manifest (tools/makers_image.py)
+# (the merged file is scanned too, and removed if the scan fails). On the lab's
+# machine (~/modules/dash there) every private item must be checkable: --strict.
 if [ -n "$MAKERS" ]; then
+	STRICT=
+	[ -d "$HOME/modules/dash" ] && STRICT=--strict
 	if [ "${HIFI_MAKERS_TWIN:-}" = 1 ]; then
-		python3 "$FW/tools/makers_check.py" --twin build
+		python3 "$FW/tools/makers_check.py" $STRICT --twin build
 	else
-		python3 "$FW/tools/makers_check.py" build
-		python3 "$FW/tools/makers_image.py" build "$FW/../docs/install/firmware"
+		OUT="$FW/../docs/install/firmware"
+		python3 "$FW/tools/makers_check.py" $STRICT build
+		python3 "$FW/tools/makers_image.py" ${HIFI_MAKERS_DIRTY:+--dirty} build "$OUT"
+		python3 "$FW/tools/makers_check.py" $STRICT --file "$OUT/hifi-lite-makers.bin" build || {
+			rm -f "$OUT/hifi-lite-makers.bin" "$OUT/hifi-lite-makers.json" "$OUT/manifest.json"
+			exit 1
+		}
 	fi
 fi

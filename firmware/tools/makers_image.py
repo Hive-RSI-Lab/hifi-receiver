@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The makers' install file: one merged image and its ESP Web Tools manifest.
 
-    makers_image.py BUILD OUTDIR
+    makers_image.py [--dirty] BUILD OUTDIR
 
 BUILD is the makers' ESP-IDF build folder (board/lite-makers, built by
 tools/build.sh). Writes to OUTDIR:
@@ -12,7 +12,11 @@ tools/build.sh). Writes to OUTDIR:
 - manifest.json: ESP Web Tools' manifest for it (chip family ESP32, one part
   at offset 0, new_install_prompt_erase so a first install starts clean)
 - hifi-lite-makers.json: what went in, each part's offset, size and SHA-256,
-  and the merged file's SHA-256, for the page and for checking a download
+  the merged file's SHA-256, and the source it was built from (this repo's
+  commit, and squeezelite-esp32's commit and the IDF from upstream.lock), for
+  the page, the GPL's source offer and checking a download. A tree with
+  uncommitted changes under firmware/ is refused unless --dirty is given,
+  and is then marked dirty.
 
 Before merging it checks every offset in flash_args against the partition
 table the build used (partitions-hifi.csv beside BUILD) and that each image
@@ -52,10 +56,26 @@ def esptool():
     return [sys.executable, "-m", "esptool"]
 
 
+def source():
+    """the commits this build came from: {repo, commit, dirty, upstream: {...}}"""
+    fw = Path(__file__).resolve().parent.parent
+    git = lambda *a: subprocess.run(["git", "-C", str(fw), *a], capture_output=True, text=True).stdout.strip()
+    lock = dict(l.split("=", 1) for l in (fw / "upstream.lock").read_text().splitlines()
+                if "=" in l and not l.startswith("#"))
+    return {"repo": "https://github.com/Hive-RSI-Lab/hifi-receiver", "commit": git("rev-parse", "HEAD"),
+            "dirty": bool(git("status", "--porcelain", "--", ".")),
+            "upstream": {k: lock.get(k) for k in ("url", "commit", "idf")}}
+
+
 def main():
-    if len(sys.argv) != 3:
+    args = [a for a in sys.argv[1:] if a != "--dirty"]
+    if len(args) != 2:
         sys.exit(__doc__)
-    build, out = Path(sys.argv[1]), Path(sys.argv[2])
+    build, out = Path(args[0]), Path(args[1])
+    src = source()
+    if src["dirty"] and "--dirty" not in sys.argv:
+        sys.exit("makers_image: firmware/ has uncommitted changes, so the image wouldn't match a commit; "
+                 "commit first, or pass --dirty to mark it")
     words = shlex.split((build / "flash_args").read_text())
     flags = [w for w in words[:6]]
     pairs = [(int(words[i], 0), words[i + 1]) for i in range(6, len(words), 2)]
@@ -93,13 +113,15 @@ def main():
         "name": "HiFi Lite (makers' build)",
         "version": build_no,
         "new_install_prompt_erase": True,
+        "new_install_improv_wait_time": 0,  # no Improv: the board onboards by its setup AP
         "builds": [{"chipFamily": "ESP32", "parts": [{"path": NAME, "offset": 0}]}],
     }
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     (out / "hifi-lite-makers.json").write_text(json.dumps({
-        "build": build_no, "flash": dict(zip(flags[::2], flags[1::2])), "parts": info,
+        "build": build_no, "source": src, "flash": dict(zip(flags[::2], flags[1::2])), "parts": info,
         "merged": {"file": NAME, "size": merged.stat().st_size, "sha256": sha(merged)}}, indent=2) + "\n")
-    print(f"makers_image: {merged} ({merged.stat().st_size} bytes, sha256 {sha(merged)}), build {build_no}")
+    print(f"makers_image: {merged} ({merged.stat().st_size} bytes, sha256 {sha(merged)}), build {build_no}, "
+          f"source {src['commit'][:12]}{' (dirty)' if src['dirty'] else ''}")
 
 
 if __name__ == "__main__":

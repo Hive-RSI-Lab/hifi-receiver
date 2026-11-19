@@ -4,6 +4,7 @@
     makers_check.py BUILD            the makers' image: every item below absent
     makers_check.py --twin BUILD     its lab twin: the Hive key present, the rest absent
     makers_check.py --file F BUILD   scan F (a merged image, say) as well; repeatable
+    makers_check.py --strict BUILD   also fail on any item that can't be checked here
 
 BUILD is the ESP-IDF build folder (DEST/build, with DEST/sdkconfig beside it).
 Every .bin under it is read as bytes and searched for:
@@ -15,6 +16,7 @@ Every .bin under it is read as bytes and searched for:
 - the Spotify developer key, the saved Wi-Fi network and its password
   (SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, WIFI_NETWORK, WIFI_PASSWORD in
   HIFI_SECRETS_DIR, default ~/.config/h2/secrets)
+- every other file in that folder (tokens, keys, PINs), named by file only
 - any --ssid given (the lab boards' networks)
 - the LAN signature trailer at an image's end, which would mean the bench key signed it
 
@@ -22,7 +24,8 @@ and the config and link maps for the lab and Spotify parts: CONFIG_HIFI_LAB
 and CONFIG_CSPOT_SINK off, no lab_*.c or hifi_lab_esp.c object and no cspot
 code linked (a member of libcspot.a: the library itself stays on the link
 line). An item whose source isn't on this machine is said to be unchecked,
-not passed. Values are never printed, only each item's name.
+not passed (with --strict, failed: build.sh passes it on the lab's machine,
+where every source should be). Values are never printed, only each item's name.
 Exit 0 when the scan passes, 1 when it finds anything (or, with --twin, when
 the Hive key is missing: the twin is the positive control that the scan sees it).
 """
@@ -39,6 +42,7 @@ HOME = Path.home()
 SECRETS = Path(os.environ.get("HIFI_SECRETS_DIR") or HOME / ".config/h2/secrets")
 if not SECRETS.is_dir():  # build.sh points the makers' build at no secrets; the scan still reads them
     SECRETS = HOME / ".config/h2/secrets"
+KNOWN = {"SPOTIFY_CLIENT_ID", "SPOTIFY_CLIENT_SECRET", "WIFI_NETWORK", "WIFI_PASSWORD"}
 
 
 def text(path):
@@ -86,6 +90,17 @@ def items(ssids):
     for k in ("SPOTIFY_CLIENT_ID", "SPOTIFY_CLIENT_SECRET", "WIFI_NETWORK", "WIFI_PASSWORD"):
         v = text(SECRETS / k)
         out.append((k, needles(v) if v else None))
+    # every other secret on the machine, named by its file: the whole value, and
+    # each long piece of it (a cookie jar's values, say)
+    for f in sorted(SECRETS.iterdir()) if SECRETS.is_dir() else []:
+        if f.name in KNOWN or not f.is_file():
+            continue
+        v = text(f)
+        if not v:
+            out.append((f"secret {f.name}", None))
+            continue
+        pieces = {v} | {w for w in re.split(r"[\s\"';,=:{}\[\]]+", v) if len(w) >= 16}
+        out.append((f"secret {f.name}", sorted({n for w in pieces for n in needles(w)})))
     for i, s in enumerate(ssids):
         out.append((f"lab SSID #{i + 1}", needles(s)))
     return out
@@ -109,6 +124,7 @@ def main():
     ap.add_argument("--twin", action="store_true")
     ap.add_argument("--file", action="append", default=[], type=Path)
     ap.add_argument("--ssid", action="append", default=[])
+    ap.add_argument("--strict", action="store_true")
     a = ap.parse_args()
     bins = sorted(p for p in a.build.rglob("*.bin") if "CMakeFiles" not in p.parts and "esp-idf" not in p.parts) + a.file
     if not bins:
@@ -118,8 +134,8 @@ def main():
     bad = False
     for name, ns in items(a.ssid):
         if ns is None:
-            bad |= a.twin and name == "Hive public key"
-            print(f"  {name}: not checked (no source on this machine)")
+            bad |= a.strict or (a.twin and name == "Hive public key")
+            print(f"  {name}: not checked (no source on this machine){' FAILED (--strict)' if a.strict else ''}")
             continue
         hits = [p.name for p, d in blobs.items() if any(n in d for n in ns)]
         want = a.twin and name == "Hive public key"

@@ -32,8 +32,8 @@
 
 <h2>What you get</h2>
 <ul>
-  <li><b>AirPlay</b>: the speaker shows up as <code>hifi-lite</code> on an iPhone, iPad or Mac.</li>
-  <li><b>Bluetooth</b>: pair a phone with <code>hifi-lite</code>.</li>
+  <li><b>AirPlay</b>: the speaker shows up as <code>hifi-lite-</code> and a few letters and digits of its own (from its hardware address, such as <code>hifi-lite-8a0cbe</code>) on an iPhone, iPad or Mac.</li>
+  <li><b>Bluetooth</b>: pair a phone with the same <code>hifi-lite-…</code> name.</li>
   <li><b>Lyrion Music Server (LMS)</b>: the board is a Squeezebox player on your network.</li>
   <li><b>The app</b>: open <code>http://hifi-lite.local</code> (or the board's IP address) in a phone's browser for volume, sources, sound settings and the other speakers on your Wi-Fi. Add it to the home screen to open it like an app.</li>
   <li><b>Updates by USB</b>: come back to this page for a newer build.</li>
@@ -50,9 +50,9 @@
 <h2>First start</h2>
 <ol>
   <li>After the flash the board restarts and, with no Wi-Fi saved, opens its own network:
-  <code>hifi-lite</code>, password <code>squeezelite</code>.</li>
+  <code>hifi-lite-…</code> (the same name as above), password <code>squeezelite</code>.</li>
   <li>Join it from a phone or laptop and open <code>http://192.168.4.1</code>.</li>
-  <li>Pick your home Wi-Fi and type its password. The board joins it and closes its own network.</li>
+  <li>Pick your home Wi-Fi and type its password. The board joins it. Its own network may stay up for a while; you can ignore it.</li>
   <li>Back on your home Wi-Fi, open <code>http://hifi-lite.local</code>.</li>
 </ol>
 
@@ -62,7 +62,19 @@ which includes squeezelite and other parts under the GNU General Public License 
 firmware as a whole is distributed under the GPLv3. It comes with no warranty. You may copy, change and
 share it under that licence's terms. The full source of this build, and the steps to rebuild it, are in
 this repository: <code>firmware/</code>, built with <code>firmware/tools/build.sh</code>
-(<a href="README.md">README</a>). The licence text is at
+(<a href="README.md">README</a>). This file was built from
+<span id="src">the commit named in <a href="firmware/hifi-lite-makers.json">hifi-lite-makers.json</a></span>. The licence text is at
 <a href="https://www.gnu.org/licenses/gpl-3.0.html">gnu.org/licenses/gpl-3.0.html</a>.</p>
+<script>
+// name the exact source of the file on offer (the GPL's source offer): this repo's commit and squeezelite-esp32's
+fetch("firmware/hifi-lite-makers.json").then(r => r.json()).then(j => {
+  const s = j.source, u = s.upstream, el = document.getElementById("src");
+  el.textContent = "";
+  const a = (href, txt) => { const x = document.createElement("a"); x.href = href; x.textContent = txt; return x; };
+  el.append("build " + j.build + ", from hifi-receiver commit ", a(s.repo + "/tree/" + s.commit, s.commit.slice(0, 12)),
+    s.dirty ? " (with uncommitted changes)" : "", " on squeezelite-esp32 commit ",
+    a(u.url + "/tree/" + u.commit, u.commit.slice(0, 12)), ", built with ESP-IDF " + u.idf);
+}).catch(() => {});
+</script>
 </body>
 </html>

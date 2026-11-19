@@ -21,8 +21,9 @@ part taken out, from a config of its own, `firmware/board/lite-makers/`:
 | Wi-Fi credentials | none are built in. The board starts its setup network the first time. |
 
 Wi-Fi onboarding uses the firmware's own **setup AP** (squeezelite-esp32's
-wifi-manager), not Improv: with no Wi-Fi saved the board opens `hifi-lite`
-(password `squeezelite`). Join it and open `http://192.168.4.1` to pick a
+wifi-manager), not Improv: with no Wi-Fi saved the board opens `hifi-lite-` plus the
+last three bytes of its MAC in hex (`hifi-lite-8a0cbe`; AirPlay and Bluetooth
+use the same name), password `squeezelite`. Join it and open `http://192.168.4.1` to pick a
 network.
 
 ## Rebuild it
@@ -45,7 +46,11 @@ HIFI_BOARD=lite-makers firmware/tools/build.sh ~/fw-build/makers
   against the partition table and writes `docs/install/firmware/`:
   `hifi-lite-makers.bin` (the merged image, flashed at 0),
   `manifest.json`, and `hifi-lite-makers.json` (each part's offset, size and
-  SHA-256, and the merged file's).
+  SHA-256, the merged file's, and the source: this repo's commit and the
+  squeezelite-esp32 commit and IDF from `firmware/upstream.lock`; the page
+  shows them, for the GPL's source offer). It refuses a `firmware/` with
+  uncommitted changes unless given `--dirty` (`HIFI_MAKERS_DIRTY=1` for build.sh), which marks the file dirty;
+- scans the merged file too, and deletes the output if that scan fails.
 
 `docs/install/firmware/` is in `.gitignore`: the image is built, never
 committed. To try the page, serve `docs/install/` on localhost (Web Serial
@@ -67,12 +72,14 @@ That image carries your key, so don't share it.
 for each private item as hex in either case and as raw bytes: the Hive's
 public key, the bench signing seed, the bench host and its Cloudflare Access
 team, the Access token's id and secret, the Spotify key, the saved Wi-Fi
-network and password, and any `--ssid` given. It also checks that
+network and password, every other file in `~/.config/h2/secrets` (named by
+file), and any `--ssid` given. It also checks that
 `CONFIG_HIFI_LAB` and `CONFIG_CSPOT_SINK` are off, that the link maps hold no
 lab object and no cspot library, and that no image ends in a LAN signature.
 It prints only each item's name, never its value; an item whose source isn't
 on the machine shows as *not checked*, not passed. `--file F` scans another
-file too (the merged image).
+file too (the merged image). `--strict` fails on any *not checked* item;
+`build.sh` passes it on the lab's machine (where `~/modules/dash` is).
 
 ## The lab twin
 
