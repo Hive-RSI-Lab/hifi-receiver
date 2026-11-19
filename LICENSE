@@ -1,0 +1,76 @@
+hifi-receiver licences
+======================
+
+This repository holds hardware, our own code and documents, firmware patches
+and a little third-party material. Each part has its own licence. The full
+licence texts are in LICENSES/.
+
+Hardware: CERN-OHL-P-2.0 (LICENSES/CERN-OHL-P-2.0.txt)
+  boards/     KiCad sources, schematics, layouts, Gerbers, renders and
+              reports, except the aiee libraries named below
+  enclosure/  case CAD sources and their outputs (STL, 3MF, renders)
+
+Our own code and documents: MIT (the text is at the end of this file and in
+LICENSES/MIT.txt)
+  app/, bench/, tools/, docs/
+  firmware/components/hifi/, firmware/board/, firmware/test/, firmware/tools/
+  firmware/README.md, firmware/fw.json, firmware/upstream.lock
+  everything else in this repository not named in this file
+
+Firmware patches: each change takes the licence of the file it changes
+  firmware/patches/      changes to squeezelite-esp32. squeezelite's own
+                         files are GPL-3.0-or-later. squeezelite-esp32's
+                         ESP32 files are mostly MIT. The libraries it
+                         carries keep their own terms. The header of each
+                         changed file decides. New files that a patch adds
+                         are ours and MIT.
+  firmware/idf-patches/  changes to ESP-IDF v4.4.8. Most of its files are
+                         Apache-2.0 (LICENSES/Apache-2.0.txt). lwIP and
+                         wpa_supplicant files are BSD-3-Clause. The header
+                         of each changed file decides.
+
+Not ours: these keep their own terms
+  firmware/third_party/libmad/src/ and .../patches/
+              libmad 0.15.1b and the patches to it (Debian's fixes and our
+              port changes), GPL-2.0-or-later (its own COPYING; also
+              LICENSES/GPL-2.0.txt). Our README.md there is MIT.
+  boards/*/lib/aiee.pretty/, boards/*/lib/aiee.3dshapes/, boards/*/lib/aiee.kicad_sym
+              footprints, symbols and 3D models made by easyeda2kicad from
+              EasyEDA / LCSC part data, as their headers say. The licences
+              above do not cover them; they keep whatever terms their
+              source sets.
+
+Firmware builds: GPL-3.0 (LICENSES/GPL-3.0.txt)
+  A firmware image built from this repository links squeezelite, so the
+  image as a whole is distributed under version 3 of the GNU General Public
+  License. squeezelite's own files allow any later version. Our MIT files in
+  the image stay MIT, and you may reuse them on their own under MIT. Each
+  published image names its exact source: this repository's commit,
+  firmware/upstream.lock (the squeezelite-esp32 commit and the ESP-IDF
+  version), the patches, and the build steps in firmware/README.md.
+
+Copyright holders: the hifi-receiver authors (Hive-RSI-Lab). Third-party
+files keep their own copyright notices.
+
+The MIT licence
+---------------
+
+Copyright (c) 2026 the hifi-receiver authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

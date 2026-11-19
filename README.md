@@ -10,3 +10,12 @@ The WiiM-Ultra-like hi-fi streaming receiver/amp product in tiers (barebones, me
 - [docs/order-readiness.md](docs/order-readiness.md): where each board stands before the order (gates, sims, reviews, firmware, bring-up plans) and what needs the person.
 - [docs/manual/](docs/manual/user-manual.md): the user manual for all three tiers, the one-page [quick start](docs/manual/quick-start.md) for the box, and [sources.md](docs/manual/sources.md): where each fact comes from and what is still to be confirmed.
 - [docs/app.md](docs/app.md) + `app/`: the web app (PWA) the firmware serves: what it does, the API it needs beyond docs/test-api.md, a mock receiver (`python3 app/mock/server.py`), the firmware pack (`python3 app/build.py`), tests (`python3 app/tests/test_app.py`) and screenshots.
+
+## Licence
+
+- **Hardware** (`boards/`, `enclosure/`): [CERN-OHL-P-2.0](LICENSES/CERN-OHL-P-2.0.txt).
+- **Our own code and documents** (`app/`, `bench/`, `tools/`, `docs/`, and in `firmware/` the `components/hifi`, `board`, `test` and `tools` folders): [MIT](LICENSES/MIT.txt).
+- **Firmware builds**, including the makers' image, are [GPL-3.0](LICENSES/GPL-3.0.txt) as a whole, because they link squeezelite. Each build names its exact source: this repo's commit, `firmware/upstream.lock`, the patches and the build steps.
+- **Not ours:** `firmware/third_party/libmad` is GPL-2.0-or-later. The `boards/*/lib/aiee.*` footprints and 3D models come from EasyEDA parts through easyeda2kicad and keep their own terms. A change in `firmware/patches` or `firmware/idf-patches` takes the licence of the file it changes.
+
+The full map is in [LICENSE](LICENSE), and the licence texts are in [LICENSES/](LICENSES/).
