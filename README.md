@@ -15,7 +15,7 @@ The WiiM-Ultra-like hi-fi streaming receiver/amp product in tiers (barebones, me
 
 - **Hardware** (`boards/`, `enclosure/`): [CERN-OHL-P-2.0](LICENSES/CERN-OHL-P-2.0.txt).
 - **Our own code and documents** (`app/`, `bench/`, `tools/`, `docs/`, scripts under `boards/`, and in `firmware/` the `components/hifi`, `board`, `test` and `tools` folders): [MIT](LICENSES/MIT.txt).
-- **Firmware builds**, including the makers' image, are [GPL-3.0](LICENSES/GPL-3.0.txt) as a whole, because they link squeezelite. Each build names its exact source: this repo's commit, `firmware/upstream.lock`, the patches, the build steps and the source of each prebuilt codec library it links. Published images leave out the Helix AAC decoder, whose licence does not fit with the GPL.
+- **Firmware builds**, including the makers' image, are [GPL-3.0](LICENSES/GPL-3.0.txt) as a whole, because they link squeezelite. Each build names its exact source: this repo's commit, `firmware/upstream.lock`, the patches, the build steps and the source of each prebuilt codec library it links. Published images leave out the Helix AAC decoder and Espressif's binary equalizer (`libesp_processing`), whose licences do not fit with the GPL.
 - **Not ours:** `firmware/third_party/libmad` is GPL-2.0-or-later. The `boards/*/lib/aiee.*` footprints and 3D models and the `boards/*/parts/` JSON come from EasyEDA and LCSC and keep their own terms. `bench/hifibench/ed25519.py` follows RFC 8032's reference code and is BSD-2-Clause. A change in `firmware/patches` or `firmware/idf-patches` takes the licence of the file it changes.
 
 The full map is in [LICENSE](LICENSE), and the licence texts are in [LICENSES/](LICENSES/).

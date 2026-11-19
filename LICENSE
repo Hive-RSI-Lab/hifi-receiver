@@ -77,6 +77,13 @@ Firmware builds: GPL-3.0 (LICENSES/GPL-3.0.txt)
   the GPL, so an image we publish is built without it, and its build fails
   if "libhelix" appears in the link map.
 
+  No Espressif equalizer in published images. squeezelite-esp32 also links
+  components/audio/lib/libesp_processing.a, Espressif's ESP-ADF equalizer.
+  It comes as a binary with no source, and ESP-ADF's licence allows its use
+  only on Espressif products. Neither fits with the GPL, so a published
+  image is built without it (the EQ dropped or replaced by our own), and
+  its build fails if "libesp_processing" appears in the link map.
+
   Corresponding Source. Each published image names its exact source:
   this repository's commit, firmware/upstream.lock (the squeezelite-esp32
   commit and the ESP-IDF version), the patches, the build steps in
@@ -96,8 +103,8 @@ Firmware builds: GPL-3.0 (LICENSES/GPL-3.0.txt)
   pinned to the version built and published with it, or the archive is
   built from source or left out.
 
-  The ESP32's Wi-Fi, Bluetooth and PHY binary libraries from ESP-IDF
-  (Apache-2.0) are treated as System Libraries under section 1 of the
+  ESP-IDF's binary libraries (Wi-Fi, Bluetooth, PHY, Xtensa HAL;
+  Apache-2.0) are treated as System Libraries under section 1 of the
   GPL-3.0: they come with the ESP-IDF toolchain for the chip, not with
   this work.
 
