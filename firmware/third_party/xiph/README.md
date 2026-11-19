@@ -63,4 +63,5 @@ all (`components/hifi/Kconfig`, `HIFI_PUBLISHABLE_CODECS`):
 `libhelix`, `libresample16` or one of the four prebuilt archives.
 
 ALAC and libmad were already built from source (patches 0021 and 0029,
-`../libmad/README.md`).
+`../libmad/README.md`). The equalizer is our own too, in place of Espressif's
+`libesp_processing.a` (`../eq/README.md`).

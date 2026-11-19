@@ -24,8 +24,9 @@ and the config and link maps for the lab and Spotify parts: CONFIG_HIFI_LAB
 and CONFIG_CSPOT_SINK off, no lab_*.c or hifi_lab_esp.c object and no cspot
 code linked (a member of libcspot.a: the library itself stays on the link
 line); CONFIG_HIFI_PUBLISHABLE_CODECS on and nothing from libhelix (Helix
-AAC), libresample16 or a prebuilt libFLAC, libogg, libopus or libvorbisidec
-archive in either map (patch 0038, third_party/xiph/README.md). An item whose source isn't on this machine is said to be unchecked,
+AAC), libresample16, Espressif's equalizer (libesp_processing) or a prebuilt
+libFLAC, libogg, libopus or libvorbisidec archive in either map (patch 0038,
+third_party/xiph/README.md, third_party/eq/README.md). An item whose source isn't on this machine is said to be unchecked,
 not passed (with --strict, failed: build.sh passes it on the lab's machine,
 where every source should be). Values are never printed, only each item's name.
 Exit 0 when the scan passes, 1 when it finds anything (or, with --twin, when
@@ -122,6 +123,8 @@ def config_checks(build):
         # origin isn't recorded, and the Xiph codecs must come from third_party/xiph's sources
         out.append((f"no libhelix in {m.name}", "libhelix" not in t.lower()))
         out.append((f"no libresample16 in {m.name}", "libresample16" not in t))
+        # Espressif's equalizer: no source, and only Espressif products may carry it (third_party/eq)
+        out.append((f"no libesp_processing in {m.name}", "libesp_processing" not in t))
         out.append((f"no prebuilt Xiph archive in {m.name}",
                     not re.search(r"\blib(?:FLAC|ogg|opus|vorbisidec)\.a\b", t)))
     return out

@@ -94,6 +94,12 @@ if grep -qs '^CONFIG_HIFI_PUBLISHABLE_CODECS=y' "$FW/board/$BOARD/sdkconfig.extr
 		"$C/lib/libogg.a" "$C/lib/libopus.a" "$C/lib/libvorbisidec.a"
 	rm -rf "$C/inc/helix-aac" "$C/inc/resample16" "$C/inc/FLAC" "$C/inc/ogg" \
 		"$C/inc/opus" "$C/inc/vorbis"
+	# and our own equalizer in place of Espressif's prebuilt one, which only
+	# Espressif products may carry (third_party/eq/README.md)
+	A=$DEST/components/audio
+	rm -f "$A/lib/libesp_processing.a" "$A/inc/esp_equalizer.h" "$A/component.mk"
+	cp "$FW/third_party/eq/CMakeLists.txt" "$FW/third_party/eq/hifi_eq.c" "$A/"
+	cp "$FW/third_party/eq/esp_equalizer.h" "$A/inc/"
 fi
 
 # The web app (app/, built by app/build.py) is served at '/'; without it the

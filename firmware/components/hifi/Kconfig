@@ -60,5 +60,7 @@ config HIFI_PUBLISHABLE_CODECS
 		squeezelite -R resampling, which the Lite's command line doesn't
 		use). It also builds libogg, Tremor, opus and libFLAC from the
 		pinned sources in firmware/third_party/xiph instead of their
-		prebuilt archives, whose sources upstream doesn't record. Patch
-		0038. Set by board/lite-makers.
+		prebuilt archives, whose sources upstream doesn't record, and
+		our own equalizer (firmware/third_party/eq) instead of
+		Espressif's libesp_processing.a, which only Espressif products
+		may carry. Patch 0038 and tools/fetch.sh. Set by board/lite-makers.

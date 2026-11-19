@@ -29,6 +29,12 @@ from pinned Xiph.Org releases instead (`firmware/third_party/xiph/README.md`,
 already built from source. `CONFIG_HIFI_PUBLISHABLE_CODECS` in the board's
 `sdkconfig.extra` turns this on; every other board links upstream's archives.
 
+The equalizer behind the app's sound settings and loudness is squeezelite's,
+but upstream runs it on Espressif's ESP-ADF filters (`libesp_processing.a`),
+which come with no source and may only ship on Espressif products. This image
+runs it on a small biquad equalizer of our own instead
+(`firmware/third_party/eq/README.md`), so the app's equalizer still works.
+
 Wi-Fi onboarding uses the firmware's own **setup AP** (squeezelite-esp32's
 wifi-manager), not Improv: with no Wi-Fi saved the board opens `hifi-lite-` plus the
 last three bytes of its MAC in hex (`hifi-lite-8a0cbe`; AirPlay and Bluetooth
@@ -86,7 +92,7 @@ network and password, every other file in `~/.config/h2/secrets` (named by
 file), and any `--ssid` given. It also checks that
 `CONFIG_HIFI_LAB` and `CONFIG_CSPOT_SINK` are off and `CONFIG_HIFI_PUBLISHABLE_CODECS`
 is on, that the link maps hold no lab object, no cspot library, no `libhelix`,
-no `libresample16` and none of the four prebuilt Xiph archives, and that no image ends in a LAN signature.
+no `libresample16`, no `libesp_processing` and none of the four prebuilt Xiph archives, and that no image ends in a LAN signature.
 It prints only each item's name, never its value; an item whose source isn't
 on the machine shows as *not checked*, not passed. `--file F` scans another
 file too (the merged image). `--strict` fails on any *not checked* item;

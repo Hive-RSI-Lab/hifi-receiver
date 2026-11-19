@@ -9,5 +9,6 @@
 # CONFIG_HIFI_LAB is not set
 # No Helix AAC (RealNetworks' licence doesn't fit with the GPL) and no
 # libresample16 (origin not recorded); libogg, Tremor, opus and libFLAC are
-# built from the pinned sources in third_party/xiph (patch 0038)
+# built from the pinned sources in third_party/xiph (patch 0038), and the
+# equalizer is our own (third_party/eq), not Espressif's prebuilt one
 CONFIG_HIFI_PUBLISHABLE_CODECS=y

@@ -69,13 +69,15 @@ def source():
 
 
 def codecs(fw):
-    """the codec sources built into the image in place of upstream's prebuilt
-    archives (third_party/xiph/sources.lock), and the ones left out"""
+    """the codec and equalizer sources built into the image in place of
+    upstream's prebuilt archives (third_party/xiph/sources.lock,
+    third_party/eq), and the ones left out"""
     rows = [l.split() for l in (fw / "third_party/xiph/sources.lock").read_text().splitlines()
             if l.strip() and not l.startswith("#")]
     return {"built": [{"name": n, "version": v, "sha256": h, "url": u} for n, v, h, u in rows]
             + [{"name": "alac", "from": "Apple ALAC in squeezelite-esp32 components/spotify/cspot/bell/external/alac (patch 0021)"},
-               {"name": "libmad", "from": "firmware/third_party/libmad (patch 0029)"}],
+               {"name": "libmad", "from": "firmware/third_party/libmad (patch 0029)"},
+               {"name": "equalizer", "from": "firmware/third_party/eq, our own, in place of Espressif's libesp_processing.a"}],
             "left_out": ["helix-aac (RPSL/RCSL, not GPL-compatible): no AAC",
                          "libresample16 (origin not recorded): no -R resampling"]}
 
