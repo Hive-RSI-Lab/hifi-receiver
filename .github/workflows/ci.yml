@@ -19,11 +19,11 @@ permissions:
   contents: read
 env:
   # The tools the Hive's own check uses (/hive/tools): KiCad 10.0.6 as an AppDir, and hive-hwde,
-  # from their public repositories. hwde is pinned to HWDE_REF, the commit main last went green
-  # on (2026-11-15): later hwde checks (check_ep_paste, check_current's bent-pour tap) fail core
-  # and lite-main on real board findings, and main gates every board. Unpin once those boards are
-  # fixed (issue #107 wanted the current hwde).
-  HWDE_REF: 7fb04f580c0d86b81c23b7bec9a20796633d8a80
+  # from their public repositories. hwde is pinned to HWDE_REF, the hwde main's last green run used
+  # (run 43726310747, 2026-11-15): later hwde checks (dfm's slot-to-copper, check_ep_paste,
+  # check_current's bent-pour tap) fail core and lite-main on real board findings, and main gates
+  # every board (#271). Unpin once those boards are fixed (issue #107 wanted the current hwde).
+  HWDE_REF: 8c6c1ec6ba00437b108fdf3ff97a6173f2d69fec
   KICAD_VERSION: 10.0.6
   KICAD_APPIMAGE: https://github.com/pkgforge-dev/KiCad-AppImage/releases/download/10.0.6-2%402026-10-01_1790876568/KiCad-10.0.6-2-anylinux-x86_64.AppImage
   HWDE_REPO: Hive-RSI-Lab/hive-hwde
