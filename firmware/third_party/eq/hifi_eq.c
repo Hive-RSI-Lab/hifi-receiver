@@ -121,7 +121,8 @@ int esp_equalizer_process(void *handle, unsigned char *pcm_buf, int length, int 
 				b->x2 = b->x1; b->x1 = x; b->y2 = b->y1; b->y1 = y;
 				x = y;
 			}
-			*p = x > 32767.0f ? 32767 : x < -32768.0f ? -32768 : (int16_t)lrintf(x);
+			/* round half away from zero by hand: newlib's lrintf is a library call */
+			*p = x >= 32767.0f ? 32767 : x <= -32768.0f ? -32768 : (int16_t)(x >= 0 ? x + 0.5f : x - 0.5f);
 		}
 	}
 	return 0;
