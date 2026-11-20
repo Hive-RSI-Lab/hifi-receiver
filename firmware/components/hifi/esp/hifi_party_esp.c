@@ -213,6 +213,11 @@ static volatile bool noise_on;
 static hifi_party_noise_t noise_st = {0x2545f491u, 0, 0};
 static uint32_t coded_n, code_us_max, uncode_bad;
 static uint64_t code_us, audio_bytes, audio_n;
+/* how long each audio packet took to make, in buckets up to these µs (the
+ * last, over one packet's 7982 µs, has no top): the field time's spread */
+static const uint16_t ct_top[] = {500, 750, 1000, 1250, 1500, 2000, 2500, 3000, 4000, 6000, 7982};
+#define CT_N (sizeof(ct_top) / sizeof(ct_top[0]) + 1)
+static uint32_t ct[CT_N];
 /* resends the followers asked for, not yet sent: they go before the held
  * packet and the stream, which play later. tried: the queue was full for it
  * once already, so a failure isn't counted again */
@@ -260,6 +265,7 @@ static void counters_reset(void) {
 	held_ok = held_late = resend_late = resend_busy = 0;
 	coded_n = code_us_max = uncode_bad = 0;
 	code_us = audio_bytes = audio_n = 0;
+	memset(ct, 0, sizeof(ct));
 	clocks_sent = noaudio_sent = 0;
 	txe_nomem = txe_again = txe_other = 0;
 	memset(&tx_bursts, 0, sizeof(tx_bursts));
@@ -729,6 +735,9 @@ static void leader_send(int64_t now) {
 			uint32_t us = (uint32_t) (esp_timer_get_time() - t0);
 			code_us += us;
 			if (us > code_us_max) code_us_max = us;
+			size_t b = 0;
+			while (b < CT_N - 1 && us > ct_top[b]) b++;
+			ct[b]++;
 			audio_bytes += n;
 			audio_n++;
 			if (n < HIFI_PARTY_MAX) coded_n++;
@@ -1336,6 +1345,10 @@ static void stats_json(hj_t *j) {
 		hj_int(j, NULL, (int64_t) code_us);
 		hj_int(j, NULL, code_us_max);
 		hj_int(j, NULL, noise_on);
+		hj_arr_end(j);
+		/* packets by the time they took to make: [<= 500, <= 750, ... <= 7982 µs, more] */
+		hj_arr(j, "ct");
+		for (size_t b = 0; b < CT_N; b++) hj_int(j, NULL, ct[b]);
 		hj_arr_end(j);
 	} else {
 		hj_arr(j, "code"); /* [coded packets in, ones that didn't decode] */
