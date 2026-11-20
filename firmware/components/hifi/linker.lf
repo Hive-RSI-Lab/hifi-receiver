@@ -1,7 +1,0 @@
-# party mode's coder and the packet HMAC run on every packet the leader
-# sends: in IRAM, not run from flash through the cache (party-mode 8.17)
-[mapping:hifi]
-archive: libhifi.a
-entries:
-    hifi_party_code (noflash)
-    hifi_sha256 (noflash)

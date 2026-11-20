@@ -194,11 +194,7 @@ static void put_rice(wr_t *w, const uint32_t *u, int n, int k) {
 
 size_t hifi_party_code(const uint32_t *frames, int n, uint8_t *out, size_t cap) {
 	if (!frames || !out || n < 1 || n > HIFI_PARTY_FRAMES) return 0;
-	/* one task codes: the leader's. The frames are read three times, so
-	 * they're copied here first: a board's may be in PSRAM, slow to read */
-	static uint32_t u[2][HIFI_PARTY_FRAMES], in[HIFI_PARTY_FRAMES];
-	memcpy(in, frames, (size_t) n * sizeof(*in));
-	frames = in;
+	static uint32_t u[2][HIFI_PARTY_FRAMES]; /* one task codes: the leader's */
 	uint64_t sum[SIGS][ORDERS], est[SIGS];
 	int ord[SIGS], kk[SIGS];
 	int ns = (n + SUB - 1) / SUB; /* the packet's first ns frames */
