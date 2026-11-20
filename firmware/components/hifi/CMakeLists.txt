@@ -59,6 +59,7 @@ idf_component_register(
 	PRIV_INCLUDE_DIRS esp ${webapp_dir} ${lab_inc}
 	EMBED_FILES ${lab_embed}
 	REQUIRES esp_http_server
+	LDFRAGMENTS linker.lf
 	PRIV_REQUIRES driver esp_adc_cal mdns console nvs_flash esp_wifi pthread
 		      platform_config services wifi-manager tools
 		      app_update mqtt libsodium mbedtls lwip esp_http_client json
@@ -80,7 +81,7 @@ endif()
 
 target_compile_options(${COMPONENT_LIB} PRIVATE -Wall -Wno-format-truncation)
 # party mode's coder and the packet HMAC run on every packet the leader
-# sends: -O2 there, against the -Os of the rest (8.17)
+# sends: -O2 there, against the -Os of the rest, and in IRAM (linker.lf) (8.17)
 set_source_files_properties(core/hifi_party_code.c core/hifi_sha256.c PROPERTIES COMPILE_OPTIONS "-O2")
 
 # party mode carries 16-bit frames; squeezelite built 32-bit (DEPTH 32) calls
