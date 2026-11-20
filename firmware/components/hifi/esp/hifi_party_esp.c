@@ -1326,7 +1326,8 @@ static void stats_json(hj_t *j) {
 		hj_int(j, NULL, held_late);
 		hj_arr_end(j);
 		if (noaudio_sent) hj_int(j, "na", noaudio_sent);
-		/* the code: [on, coded packets, audio packets, their bytes, us making the packets (code and HMAC), the most one took] */
+		/* the code: [on, coded packets, audio packets, their bytes, us making the packets (code and HMAC), the most one took,
+		 * the lab's noise on (it is sent only while this board leads)] */
 		hj_arr(j, "code");
 		hj_int(j, NULL, code_on);
 		hj_int(j, NULL, coded_n);
@@ -1334,6 +1335,7 @@ static void stats_json(hj_t *j) {
 		hj_int(j, NULL, (int64_t) audio_bytes);
 		hj_int(j, NULL, (int64_t) code_us);
 		hj_int(j, NULL, code_us_max);
+		hj_int(j, NULL, noise_on);
 		hj_arr_end(j);
 	} else {
 		hj_arr(j, "code"); /* [coded packets in, ones that didn't decode] */
