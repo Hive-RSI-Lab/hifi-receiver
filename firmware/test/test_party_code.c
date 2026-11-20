@@ -160,7 +160,7 @@ static void packets(void) {
 	uint32_t nz[N];
 	for (int i = 0; i < N; i++) nz[i] = rnd();
 	n = hifi_party_encode(&k, &p, nz, buf, sizeof(buf));
-	CHECK(n == HIFI_PARTY_MAX);
+	CHECK(n == HIFI_PARTY_MAX && buf[2] == 1);
 	CHECK(hifi_party_decode(&k, buf, n, &q, &pl, &plen) == HIFI_PARTY_OK && q.flags == HIFI_PARTY_F_MARKS);
 	CHECK(hifi_party_audio_frames(&q, pl, plen, out) && memcmp(out, nz, sizeof(nz)) == 0);
 
@@ -168,6 +168,8 @@ static void packets(void) {
 	p.flags = 0;
 	n = hifi_party_encode(&k, &p, f, buf, sizeof(buf));
 	CHECK(n == HIFI_PARTY_MAX);
+	/* only a coded packet says version 2, so a v1 board still reads the rest */
+	CHECK(buf[2] == 1);
 	/* a version 1 leader's packet still decodes */
 	buf[2] = 1;
 	retag(&k, buf, n);
@@ -247,8 +249,34 @@ static void music(const char *path) {
 		       (unsigned long long) coded, 1e6 * secs / (double) pkts);
 }
 
+/* the lab's noise codes like music, round-trips, and never clips */
+static void noise(void) {
+	hifi_party_noise_t st = {0x12345678u, 0, 0};
+	uint32_t f[HIFI_PARTY_FRAMES], back[HIFI_PARTY_FRAMES];
+	uint8_t out[HIFI_PARTY_FRAMES * 4];
+	uint64_t sent = 0, pcm = 0;
+	int clips = 0, bad = 0;
+	for (int p = 0; p < 1000; p++) {
+		for (int i = 0; i < HIFI_PARTY_FRAMES; i++) {
+			f[i] = hifi_party_noise(&st);
+			int16_t l = (int16_t) (f[i] & 0xffff), r = (int16_t) (f[i] >> 16);
+			clips += l == 32767 || l == -32768 || r == 32767 || r == -32768;
+		}
+		size_t n = hifi_party_code(f, HIFI_PARTY_FRAMES, out, sizeof(out));
+		if (!n || !hifi_party_uncode(out, n, HIFI_PARTY_FRAMES, back) || memcmp(back, f, sizeof(f))) bad++;
+		sent += n;
+		pcm += sizeof(f);
+	}
+	double ratio = (double) sent / (double) pcm;
+	CHECK(bad == 0);
+	CHECK(clips == 0);
+	CHECK(ratio > 0.55 && ratio < 0.70);
+	printf("noise: payload %.1f%% of PCM\n", 100.0 * ratio);
+}
+
 int main(void) {
 	round_trips();
+	noise();
 	hostile();
 	packets();
 	const char *m = getenv("HIFI_PARTY_MUSIC");

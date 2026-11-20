@@ -90,7 +90,10 @@ size_t hifi_party_encode(const hifi_link_key_t *key, const hifi_party_pkt_t *p, 
 	if (len > cap || len > HIFI_PARTY_MAX) return 0;
 	buf[0] = HIFI_PARTY_MAGIC0;
 	buf[1] = HIFI_PARTY_MAGIC1;
-	buf[2] = HIFI_PARTY_VERSION;
+	/* 2 only on a coded packet: a version 1 board refuses a packet by its
+	 * version alone, so everything else stays version 1, and a v1 follower
+	 * under a v2 leader keeps its clock, its group and every PCM packet */
+	buf[2] = flags & HIFI_PARTY_F_CODED ? HIFI_PARTY_VERSION : HIFI_PARTY_VERSION_MIN;
 	buf[3] = p->type;
 	put16(buf + 4, (uint16_t) len);
 	put32(buf + 6, p->group);

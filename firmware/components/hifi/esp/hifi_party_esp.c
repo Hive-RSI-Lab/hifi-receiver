@@ -207,6 +207,10 @@ static uint32_t held_ok, held_late, resend_late, resend_busy;
  * "code"); the leader's coded packets, their bytes and its time coding, the
  * follower's coded packets it couldn't decode */
 static volatile bool code_on = true;
+/* the lab's music-like noise in place of what a leader plays (op "noise"),
+ * so a coder A/B sends what music would cost and not a tone's few percent */
+static volatile bool noise_on;
+static hifi_party_noise_t noise_st = {0x2545f491u, 0, 0};
 static uint32_t coded_n, code_us_max, uncode_bad;
 static uint64_t code_us, audio_bytes, audio_n;
 /* resends the followers asked for, not yet sent: they go before the held
@@ -322,7 +326,7 @@ static void leader_block(uint32_t *b, int n, int64_t now) {
 	}
 	int64_t s0 = s_pos;
 	for (int i = 0; i < n; i++, s_pos++) {
-		uint32_t in = test ? tone() : b[i];
+		uint32_t in = test ? tone() : noise_on && leading ? hifi_party_noise(&noise_st) : b[i];
 		if (test && s_sec == 0) in = MARKER;
 		ring[RI(s_pos)] = in;
 		uint32_t out = ring_at(s_pos - cur_delay);
@@ -1228,6 +1232,7 @@ static void state_json(hj_t *j) {
 	if (have_secret) hj_int(j, "key_id", hifi_party_secret_id(st->secret));
 	hj_bool(j, "key", have_secret);
 	if (!code_on) hj_bool(j, "code", false);
+	if (noise_on) hj_bool(j, "noise", true);
 	hj_int(j, "term", active ? g->term : saved_term);
 	hj_bool(j, "picked", active ? g->picked : saved_pick);
 	if (active && g->role == HIFI_PARTY_ROLE_FOLLOWER) {
@@ -1321,7 +1326,7 @@ static void stats_json(hj_t *j) {
 		hj_int(j, NULL, held_late);
 		hj_arr_end(j);
 		if (noaudio_sent) hj_int(j, "na", noaudio_sent);
-		/* the code: [on, coded packets, audio packets, their bytes, us coding, the most us one took] */
+		/* the code: [on, coded packets, audio packets, their bytes, us making the packets (code and HMAC), the most one took] */
 		hj_arr(j, "code");
 		hj_int(j, NULL, code_on);
 		hj_int(j, NULL, coded_n);
@@ -1430,9 +1435,9 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 	if (sub && *sub) return err(out, cap, 404, "no such party route");
 	if (post) {
 		char op[16];
-		if (!body || !hj_get_str(body, "op", op, sizeof(op))) return err(out, cap, 400, "op must be on, off, lead, key, tone or code");
-		bool key = !strcmp(op, "key"), tone = !strcmp(op, "tone"), code = !strcmp(op, "code");
-		if ((key || tone || code) && lan) return err(out, cap, 403, "the party key, the test tone and the code switch are set by the Hive or over USB, not from the LAN");
+		if (!body || !hj_get_str(body, "op", op, sizeof(op))) return err(out, cap, 400, "op must be on, off, lead, key, tone, code or noise");
+		bool key = !strcmp(op, "key"), tone = !strcmp(op, "tone"), code = !strcmp(op, "code"), noise = !strcmp(op, "noise");
+		if ((key || tone || code || noise) && lan) return err(out, cap, 403, "the party key, the test tone, the noise and the code switch are set by the Hive or over USB, not from the LAN");
 		if (!alloc_once()) return err(out, cap, 503, "out of memory");
 		if (key) {
 			char hex[2 * HIFI_PARTY_SECRET + 2];
@@ -1450,6 +1455,12 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 			hifi_link_wipe(hex, sizeof(hex));
 			hifi_link_wipe(sec, sizeof(sec));
 			if (!ok) return err(out, cap, 400, "secret must be 64 hex digits, not all zeros");
+		} else if (noise) {
+			/* only a leader's own input is replaced, while it plays (an
+			 * A2DP stream keeps running under it, so the radio load stays) */
+			bool v;
+			if (!hj_get_bool(body, "on", &v)) return err(out, cap, 400, "on (true or false) is required");
+			noise_on = v;
 		} else if (code) {
 			/* the lab's A/B switch: a leader sends PCM with it off (until
 			 * a reboot; followers decode either) */
@@ -1497,7 +1508,7 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 			if (r < 0) return err(out, cap, 409, "this board can't lead now (party is off, or memory is low)");
 			wake();
 		} else
-			return err(out, cap, 400, "op must be on, off, lead, key, tone or code");
+			return err(out, cap, 400, "op must be on, off, lead, key, tone, code or noise");
 		/* the worker takes on and off within its 200 ms wait */
 		for (int i = 0; i < 30 && (want_on && have_secret) != active; i++) vTaskDelay(pdMS_TO_TICKS(20));
 	}

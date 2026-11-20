@@ -151,7 +151,7 @@ size_t hifi_party_code(const uint32_t *frames, int n, uint8_t *out, size_t cap) 
 		put(&w, (uint32_t) ch->k, 5);
 	}
 	for (int j = 0; j < 2; j++) put_rice(&w, u[mode_sig[mode][j]], n, c[mode_sig[mode][j]].k);
-	if (w.nacc) put(&w, 0, 8 - w.nacc);
+	if (!w.full && w.nacc) put(&w, 0, 8 - w.nacc);
 	return w.full ? 0 : w.len;
 }
 
@@ -194,7 +194,10 @@ bool hifi_party_uncode(const uint8_t *in, size_t len, int n, uint32_t *frames) {
 	if (!get(&r, 2, &mode)) return false;
 	for (int j = 0; j < 2; j++)
 		if (!get(&r, 2, &order[j]) || !get(&r, 5, &k[j]) || k[j] > HIFI_PARTY_CODE_KMAX) return false;
-	int32_t x[2][HIFI_PARTY_FRAMES];
+	/* channel 0 goes into frames (as int32) and channel 1 here: half the
+	 * stack two arrays would take on the party task */
+	int32_t x1[HIFI_PARTY_FRAMES];
+	int32_t *x[2] = {(int32_t *) frames, x1};
 	for (int j = 0; j < 2; j++) {
 		int s = mode_sig[mode][j];
 		int32_t a = 0, b = 0, c = 0;
@@ -236,4 +239,23 @@ bool hifi_party_uncode(const uint8_t *in, size_t len, int n, uint32_t *frames) {
 		frames[i] = (uint32_t) (uint16_t) (int16_t) l | (uint32_t) (uint16_t) (int16_t) rr << 16;
 	}
 	return true;
+}
+
+static uint32_t xs32(uint32_t *s) {
+	uint32_t x = *s ? *s : 0x9e3779b9u;
+	x ^= x << 13;
+	x ^= x >> 17;
+	x ^= x << 5;
+	return *s = x;
+}
+
+static int32_t clamp16(int32_t v) { return v > 32767 ? 32767 : v < -32768 ? -32768 : v; }
+
+uint32_t hifi_party_noise(hifi_party_noise_t *st) {
+	int32_t w1 = (int32_t) (xs32(&st->r) >> 20) - 2048; /* 12 bits */
+	int32_t w2 = (int32_t) (xs32(&st->r) >> 22) - 512;  /* 10 bits */
+	st->c += w1 - (st->c >> 4);
+	st->d += w2 - (st->d >> 4);
+	int32_t l = clamp16((st->c + st->d) >> 2), r = clamp16((st->c - st->d) >> 2);
+	return (uint32_t) (uint16_t) (int16_t) l | (uint32_t) (uint16_t) (int16_t) r << 16;
 }

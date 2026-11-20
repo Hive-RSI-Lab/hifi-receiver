@@ -149,8 +149,21 @@ bool hifi_party_audio_frames(const hifi_party_pkt_t *p, const uint8_t *payload, 
  * returns the bytes, or 0 when they don't fit cap. */
 #define HIFI_PARTY_CODE_KMAX 20
 size_t hifi_party_code(const uint32_t *frames, int n, uint8_t *out, size_t cap);
-/* true when the len bytes are a whole code of exactly n frames */
+/* true when the len bytes are a whole code of exactly n frames (when
+ * false, frames may hold part of a decode: don't play them) */
 bool hifi_party_uncode(const uint8_t *in, size_t len, int n, uint32_t *frames);
+
+/* The lab's music-like noise (api party '{"op":"noise","on":true}' on a
+ * leader): a common and a difference signal, each white noise through a
+ * one-pole low-pass, made into L and R. Peaks near -18 dBFS; the coder
+ * makes it about 63% of PCM, between the two pieces of music it was
+ * measured on (54% and 69%), where a pure tone codes to a few percent. One
+ * frame per call; st starts as any non-zero seed. */
+typedef struct {
+	uint32_t r;
+	int32_t c, d;
+} hifi_party_noise_t;
+uint32_t hifi_party_noise(hifi_party_noise_t *st);
 
 /* the k values of a NACK payload, and a CLOCK's BSSID */
 int64_t hifi_party_nack_k(const uint8_t *payload, int i);

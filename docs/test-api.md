@@ -848,8 +848,9 @@ on the router: no UPnP, no port forward, broadcast only on the subnet.
 | `key` | USB, Hive | `{"op": "key", "secret": "<64 hex>"}` sets the party key (all zeros is refused). Never shown back; `key_id` is one byte of its hash. |
 | `tone` | USB, Hive | `{"op": "tone", "on": true}`: the leader's sync test tone, for the bench. An idle leader takes the output at 44.1 kHz for it. |
 | `code` | USB, Hive | `{"op": "code", "on": false}`: the leader sends its audio raw instead of losslessly coded (on by default; not kept across restarts), for the bench's coded-vs-raw A/B. The state then shows `"code": false`. |
+| `noise` | USB, Hive | `{"op": "noise", "on": true}`: a leader plays (and sends) music-like noise in place of its input, peaks near −18 dBFS, which the coder makes about 63% of PCM (a test tone codes to a few percent). An A2DP stream under it keeps running, so a coder A/B keeps the radio load. Off by default and after a restart; the state shows `"noise": true` while on. |
 
-`key`, `tone` and `code` from the LAN are 403. An image built for 32-bit frames
+`key`, `tone`, `code` and `noise` from the LAN are 403. An image built for 32-bit frames
 answers `on` with 409 (party carries 16-bit).
 
 `GET /api/v1/party/stats` (409 when party is off): the clock offsets, the
