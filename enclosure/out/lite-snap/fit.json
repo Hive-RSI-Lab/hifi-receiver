@@ -20,8 +20,16 @@
   },
   {
    "name": "parts_apart",
-   "ok": true,
-   "clashes": []
+   "ok": false,
+   "clashes": [
+    {
+     "parts": [
+      "base",
+      "lid"
+     ],
+     "overlap_mm3": 4.86
+    }
+   ]
   },
   {
    "name": "parts_clear",
@@ -223,9 +231,9 @@
   {
    "name": "bridge_lid",
    "ok": true,
-   "flat_faces": 12,
+   "flat_faces": 10,
    "worst_bridge_mm": 2.25,
-   "worst_ledge_mm": 1.01,
+   "worst_ledge_mm": 0.11,
    "max_bridge_mm": 15.0,
    "max_ledge_mm": 1.0,
    "unsupported": []
@@ -302,9 +310,9 @@
    "solid_petg_g": 71.2
   },
   "lid": {
-   "volume_cm3": 30.9,
+   "volume_cm3": 31.0,
    "solid_petg_g": 39.3
   }
  },
- "build_s": 1.8
+ "build_s": 2.8
 }

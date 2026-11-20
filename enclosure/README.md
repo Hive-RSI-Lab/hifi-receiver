@@ -76,12 +76,15 @@ down to 0.3 mm over the board round each hole, so the board can't move once
 the lid is on. The lid clicks on: a 1.6 mm x 18 mm hook hangs inside the W and
 E walls at y = 50, and its 1.8 mm catch springs out into a window in the wall
 that leaves 0.6 mm of play over it. (The first version, a 1 mm catch with
-0.1 mm of play, didn't engage.) To open,
+0.1 mm of play, didn't engage.) The catch's top is a 45-degree wedge that
+meets the window's top edge while the hook is still bent 0.6 mm in, so the
+hook's spring pulls the lid down tight on the rim and the two hooks centre it
+(v2's flat-topped catch let the lid rattle in the play). To open,
 push each catch in through its window (pen tip or fingernail) and lift that
 side. Print files: `out/lite-snap/a1mini-pla-base/lite-snap-base.3mf`
-(1 h 47, 72 g) and `out/lite-snap/a1mini-pla-lid/lite-snap-lid.3mf`
-(1 h 23, 36 g), PLA Matte, same settings as the lid above. If the catch is too stiff or too
-loose, change `CATCH` or `HOOK_T`; if the board won't drop on, change `PIN_D`.
+(1 h 47, 72 g) and `out/lite-snap/a1mini-pla-lid-v3/lite-snap-lid-v3.3mf`
+(1 h 23, 36 g, smooth PEI plate), PLA Matte, same settings as the lid above. If the catch is too stiff or too
+loose, change `CATCH` or `HOOK_T`; if it still rattles or won't seat, change `WEDGE_PRELOAD`; if the board won't drop on, change `PIN_D`.
 
 ### Antenna
 

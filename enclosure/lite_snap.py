@@ -42,6 +42,12 @@ CATCH_HOLD = 1.0    # the flat (holding) part of the catch's top; outside it the
 WIN_PLAY = 0.6      # window top over the catch: room for the lid sitting a little high
 WIN_EDGE = 0.5      # window wider than the hook each side
 WIN_BELOW = 4.2     # window bottom under the catch's top: room to get a tip onto the catch
+# v3 lid (same base): v2's flat-topped catch left the lid free to rattle in the window's 0.6 mm of play. Its top
+# is now a 45-degree wedge set so the window's top edge meets it while the hook is still bent 0.6 mm in: the
+# hook's spring pushes the catch out along the wedge and that pulls the lid down tight onto the rim, and the two
+# hooks pulling out against each other centre it across the box. The wedge spans 1.8 mm of travel, so it takes up
+# about +/-0.5 mm of print error in either direction before the lid would rattle again.
+WEDGE_PRELOAD = 0.6  # how far the hook is still bent in when the lid sits on the rim
 
 
 def base(t: CoreTray, feats: dict, ports=("J1", "U9")):
@@ -82,7 +88,9 @@ def catch_z(t):
 
 def hook(t, side):
     """The hook inside the `side` ("W" or "E") wall: a tab off the lid's underside, its catch facing out.
-    Square on top (it holds), 45 degrees underneath (it rides over the wall's top edge going on)."""
+    The catch's top is a 45-degree wedge that the window's top edge bears on (it holds and pulls the lid down);
+    45 degrees underneath too (it rides over the wall's top edge going on). Both slopes print without support
+    on the flipped lid."""
     from build123d import Plane, Polygon, extrude
     s = -1 if side == "W" else 1                       # outward along x
     xi = t.inner[0] if side == "W" else t.inner[2]     # the wall's inner face
@@ -90,10 +98,12 @@ def hook(t, side):
     xo = xi - s * lg                                   # the hook's outer face
     xn = xo - s * HOOK_T                               # its inner face
     xc = xo + s * CATCH                                # the catch's outer face
-    zc = catch_z(t)
+    zw = catch_z(t) + WIN_PLAY                         # the base's window top (v2's, unchanged)
+    z_hi = zw + lg + WEDGE_PRELOAD                     # the wedge at the hook's face: 45 deg, so it meets the
+    z_tip = z_hi - CATCH                               # window's edge lg + WEDGE_PRELOAD out from the bent hook
     zt, zb = t.z_top + 0.01, t.z_top - HOOK_L
-    xh, zs = xo + s * CATCH_HOLD, zc - (CATCH - CATCH_HOLD)
-    pts = [(xn, zt), (xo, zt), (xo, zc), (xh, zc), (xc, zs), (xc, zs - CATCH_FLAT), (xo, zb), (xn, zb)]
+    pts = [(xn, zt), (xo, zt), (xo, z_hi), (xc, z_tip), (xc, zb + CATCH), (xo, zb), (xn, zb)]
+    assert zb + CATCH < z_tip, "no square face left on the catch"
     prof = Polygon(*[(x, z) for x, z in pts], align=None)
     solid = extrude(Plane.XZ * prof, amount=HOOK_W)    # Plane.XZ's normal is -y
     bb = solid.bounding_box()
