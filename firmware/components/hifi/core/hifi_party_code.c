@@ -48,13 +48,28 @@ static int32_t sig_of(int s, uint32_t f) {
 	}
 }
 
-static uint32_t rice_bits(const uint32_t *u, int n, int k) {
-	uint32_t bits = 0;
-	for (int i = 0; i < n; i++) {
-		uint32_t q = u[i] >> k;
-		bits += q < ESC ? q + 1 + (uint32_t) k : ESC + RAW;
+/* The search, made cheap for the leader's CPU (8.17: the exact search took
+ * 43% of a core on a Lite). One pass over the packet keeps, for each of the
+ * 4 signals and 4 orders, only the sum of the folded residuals; the order
+ * and the mode come from the bits that sum predicts with its best k (as
+ * FLAC picks its fixed order), and only the two signals the mode codes are
+ * then made and costed exactly, their three k at once. */
+
+/* the Rice bits of n residuals that sum to sum, with the best k: each
+ * costs k + 1 and about u >> k more */
+static uint64_t est_bits(uint64_t sum, int n, int *kout) {
+	uint64_t mean = sum / (uint64_t) n;
+	int k0 = 0;
+	while (k0 < HIFI_PARTY_CODE_KMAX && (2ull << k0) <= mean) k0++;
+	uint64_t b = UINT64_MAX;
+	for (int k = k0 > 0 ? k0 - 1 : 0; k <= k0 + 1 && k <= HIFI_PARTY_CODE_KMAX; k++) {
+		uint64_t e = (uint64_t) n * (uint64_t) (k + 1) + (sum >> k);
+		if (e < b) {
+			b = e;
+			*kout = k;
+		}
 	}
-	return bits;
+	return b;
 }
 
 typedef struct {
@@ -62,34 +77,52 @@ typedef struct {
 	uint32_t bits;
 } choice_t;
 
-/* the cheapest order and k for one signal; u gets that order's residuals */
-static choice_t best(const uint32_t *frames, int n, int s, uint32_t *u, uint32_t *scratch) {
-	choice_t b = {0, 0, UINT32_MAX};
-	for (int o = 0; o < ORDERS; o++) {
-		uint32_t *w = scratch; /* this order's residuals */
-		int32_t a = 0, bb = 0, c = 0;
-		uint64_t sum = 0;
-		for (int i = 0; i < n; i++) {
-			int32_t x = sig_of(s, frames[i]);
-			w[i] = fold(x - predict(o, a, bb, c));
-			sum += w[i];
-			c = bb;
-			bb = a;
-			a = x;
+/* the residuals of signal s at its order into u, and their exact cost at
+ * the k next to the estimate's */
+static choice_t make(const uint32_t *frames, int n, int s, int order, int kest, uint32_t *u) {
+	int32_t a = 0, bb = 0, c = 0;
+	int k0 = kest > 0 ? kest - 1 : 0, nk = 0;
+	uint32_t bits[3] = {0, 0, 0};
+	for (int k = k0; k <= kest + 1 && k <= HIFI_PARTY_CODE_KMAX; k++) nk++;
+	for (int i = 0; i < n; i++) {
+		int32_t x = sig_of(s, frames[i]);
+		uint32_t w = fold(x - predict(order, a, bb, c));
+		u[i] = w;
+		for (int j = 0; j < nk; j++) {
+			uint32_t q = w >> (k0 + j);
+			bits[j] += q < ESC ? q + 1 + (uint32_t) (k0 + j) : ESC + RAW;
 		}
-		/* k near log2 of the mean, then its neighbours, exactly costed */
-		uint64_t mean = sum / (uint64_t) n;
-		int k0 = 0;
-		while (k0 < HIFI_PARTY_CODE_KMAX && (2ull << k0) <= mean) k0++;
-		for (int k = k0 > 0 ? k0 - 1 : 0; k <= k0 + 1 && k <= HIFI_PARTY_CODE_KMAX; k++) {
-			uint32_t bits = rice_bits(w, n, k);
-			if (bits < b.bits) {
-				b = (choice_t){o, k, bits};
-				memcpy(u, w, (size_t) n * sizeof(*u));
-			}
+		c = bb;
+		bb = a;
+		a = x;
+	}
+	choice_t ch = {order, k0, bits[0]};
+	for (int j = 1; j < nk; j++)
+		if (bits[j] < ch.bits) ch = (choice_t){order, k0 + j, bits[j]};
+	return ch;
+}
+
+/* the 4 orders' folded-residual sums of the 4 signals, in one pass */
+static void sums(const uint32_t *frames, int n, uint64_t sum[SIGS][ORDERS]) {
+	int32_t a[SIGS] = {0}, b[SIGS] = {0}, c[SIGS] = {0};
+	uint32_t acc[SIGS][ORDERS] = {{0}}; /* 352 residuals under 2^20 each: no overflow */
+	for (int i = 0; i < n; i++) {
+		uint32_t f = frames[i];
+		int32_t l = (int16_t) (uint16_t) f, r = (int16_t) (uint16_t) (f >> 16);
+		int32_t x[SIGS] = {l, r, l - r, (l + r) >> 1};
+		for (int s = 0; s < SIGS; s++) {
+			int32_t d1 = x[s] - a[s], d2 = d1 - (a[s] - b[s]), d3 = d2 - (a[s] - 2 * b[s] + c[s]);
+			acc[s][0] += fold(x[s]);
+			acc[s][1] += fold(d1);
+			acc[s][2] += fold(d2);
+			acc[s][3] += fold(d3);
+			c[s] = b[s];
+			b[s] = a[s];
+			a[s] = x[s];
 		}
 	}
-	return b;
+	for (int s = 0; s < SIGS; s++)
+		for (int o = 0; o < ORDERS; o++) sum[s][o] = acc[s][o];
 }
 
 typedef struct {
@@ -100,25 +133,46 @@ typedef struct {
 	bool full;
 } wr_t;
 
+/* bits <= 32 into acc (under 32 bits held), 4 bytes out at a time */
 static void put(wr_t *w, uint32_t v, int bits) {
-	/* bits <= 32 */
 	w->acc = (w->acc << bits) | (v & (bits == 32 ? 0xffffffffu : ((1u << bits) - 1)));
 	w->nacc += bits;
-	while (w->nacc >= 8) {
-		w->nacc -= 8;
+	if (w->nacc < 32) return;
+	w->nacc -= 32;
+	uint32_t x = (uint32_t) (w->acc >> w->nacc);
+	if (w->len + 4 > w->cap) {
+		w->full = true;
+		return;
+	}
+	w->p[w->len] = (uint8_t) (x >> 24);
+	w->p[w->len + 1] = (uint8_t) (x >> 16);
+	w->p[w->len + 2] = (uint8_t) (x >> 8);
+	w->p[w->len + 3] = (uint8_t) x;
+	w->len += 4;
+}
+
+/* what acc still holds, then zero bits to the byte */
+static void flush(wr_t *w) {
+	while (w->nacc > 0 && !w->full) {
 		if (w->len >= w->cap) {
 			w->full = true;
 			return;
 		}
-		w->p[w->len++] = (uint8_t) (w->acc >> w->nacc);
+		int sh = w->nacc - 8;
+		w->p[w->len++] = (uint8_t) (sh >= 0 ? w->acc >> sh : w->acc << -sh);
+		w->nacc = sh > 0 ? sh : 0;
 	}
 }
 
 static void put_rice(wr_t *w, const uint32_t *u, int n, int k) {
+	uint32_t kmask = k ? (1u << k) - 1 : 0;
 	for (int i = 0; i < n && !w->full; i++) {
 		uint32_t q = u[i] >> k;
-		if (q < ESC) {
-			/* q ones and a zero (q < ESC, so at most 24 bits), then k bits */
+		if (q < ESC && q + 1 + (uint32_t) k <= 32) {
+			/* q ones, a zero and k bits, in one go */
+			uint32_t v = (((1u << q) - 1) << 1) << k | (u[i] & kmask);
+			put(w, v, (int) q + 1 + k);
+		} else if (q < ESC) {
 			put(w, ((1u << q) - 1) << 1, (int) q + 1);
 			if (k) put(w, u[i], k);
 		} else {
@@ -130,28 +184,45 @@ static void put_rice(wr_t *w, const uint32_t *u, int n, int k) {
 
 size_t hifi_party_code(const uint32_t *frames, int n, uint8_t *out, size_t cap) {
 	if (!frames || !out || n < 1 || n > HIFI_PARTY_FRAMES) return 0;
-	static uint32_t u[SIGS][HIFI_PARTY_FRAMES], scratch[HIFI_PARTY_FRAMES]; /* one task codes: the leader's */
-	choice_t c[SIGS];
-	for (int s = 0; s < SIGS; s++) c[s] = best(frames, n, s, u[s], scratch);
+	static uint32_t u[2][HIFI_PARTY_FRAMES]; /* one task codes: the leader's */
+	uint64_t sum[SIGS][ORDERS], est[SIGS];
+	int ord[SIGS], kk[SIGS];
+	sums(frames, n, sum);
+	for (int s = 0; s < SIGS; s++) {
+		est[s] = UINT64_MAX;
+		for (int o = 0; o < ORDERS; o++) {
+			int k = 0;
+			uint64_t e = est_bits(sum[s][o], n, &k);
+			if (e < est[s]) {
+				est[s] = e;
+				ord[s] = o;
+				kk[s] = k;
+			}
+		}
+	}
 	int mode = 0;
 	uint64_t mb = UINT64_MAX;
 	for (int m = 0; m < 4; m++) {
-		uint64_t b = (uint64_t) c[mode_sig[m][0]].bits + c[mode_sig[m][1]].bits;
+		uint64_t b = est[mode_sig[m][0]] + est[mode_sig[m][1]];
 		if (b < mb) {
 			mb = b;
 			mode = m;
 		}
 	}
-	if ((2 + 2 * 7 + mb + 7) / 8 > cap) return 0;
+	choice_t c[2];
+	for (int j = 0; j < 2; j++) {
+		int s = mode_sig[mode][j];
+		c[j] = make(frames, n, s, ord[s], kk[s], u[j]);
+	}
+	if ((2 + 2 * 7 + (uint64_t) c[0].bits + c[1].bits + 7) / 8 > cap) return 0;
 	wr_t w = {.p = out, .cap = cap};
 	put(&w, (uint32_t) mode, 2);
 	for (int j = 0; j < 2; j++) {
-		const choice_t *ch = &c[mode_sig[mode][j]];
-		put(&w, (uint32_t) ch->order, 2);
-		put(&w, (uint32_t) ch->k, 5);
+		put(&w, (uint32_t) c[j].order, 2);
+		put(&w, (uint32_t) c[j].k, 5);
 	}
-	for (int j = 0; j < 2; j++) put_rice(&w, u[mode_sig[mode][j]], n, c[mode_sig[mode][j]].k);
-	if (!w.full && w.nacc) put(&w, 0, 8 - w.nacc);
+	for (int j = 0; j < 2; j++) put_rice(&w, u[j], n, c[j].k);
+	flush(&w);
 	return w.full ? 0 : w.len;
 }
 
