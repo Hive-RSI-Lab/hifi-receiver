@@ -122,6 +122,7 @@ typedef struct {
 	float offs[OFFS];
 	uint8_t pkt[HIFI_PARTY_MAX], rx[HIFI_PARTY_MAX + 64];
 	uint32_t frames[HIFI_PARTY_FRAMES];
+	uint32_t rxf[HIFI_PARTY_FRAMES]; /* a coded AUDIO's frames, on the receive task */
 	int64_t nk[HIFI_PARTY_NACK_MAX];
 	uint8_t nack_pl[HIFI_PARTY_NACK_MAX * 8];
 	uint8_t secret[HIFI_PARTY_SECRET];
@@ -202,6 +203,21 @@ static int held_n;
  * first; resends asked for too late to be played, and dropped while the
  * queue was full */
 static uint32_t held_ok, held_late, resend_late, resend_busy;
+/* the lossless code (v2): on unless the lab turns it off for an A/B (op
+ * "code"); the leader's coded packets, their bytes and its time coding, the
+ * follower's coded packets it couldn't decode */
+static volatile bool code_on = true;
+/* the lab's music-like noise in place of what a leader plays (op "noise"),
+ * so a coder A/B sends what music would cost and not a tone's few percent */
+static volatile bool noise_on;
+static hifi_party_noise_t noise_st = {0x2545f491u, 0, 0};
+static uint32_t coded_n, code_us_max, uncode_bad;
+static uint64_t code_us, audio_bytes, audio_n;
+/* how long each audio packet took to make, in buckets up to these µs (the
+ * last, over one packet's 7982 µs, has no top): the field time's spread */
+static const uint16_t ct_top[] = {500, 750, 1000, 1250, 1500, 2000, 2500, 3000, 4000, 6000, 7982};
+#define CT_N (sizeof(ct_top) / sizeof(ct_top[0]) + 1)
+static uint32_t ct[CT_N];
 /* resends the followers asked for, not yet sent: they go before the held
  * packet and the stream, which play later. tried: the queue was full for it
  * once already, so a failure isn't counted again */
@@ -247,6 +263,9 @@ static void counters_reset(void) {
 	marks_missed = 0;
 	sent = send_fail = send_skipped = resent = resend_gone = nacks_sent = rx_ok = rx_bad = rx_other = 0;
 	held_ok = held_late = resend_late = resend_busy = 0;
+	coded_n = code_us_max = uncode_bad = 0;
+	code_us = audio_bytes = audio_n = 0;
+	memset(ct, 0, sizeof(ct));
 	clocks_sent = noaudio_sent = 0;
 	txe_nomem = txe_again = txe_other = 0;
 	memset(&tx_bursts, 0, sizeof(tx_bursts));
@@ -313,7 +332,7 @@ static void leader_block(uint32_t *b, int n, int64_t now) {
 	}
 	int64_t s0 = s_pos;
 	for (int i = 0; i < n; i++, s_pos++) {
-		uint32_t in = test ? tone() : b[i];
+		uint32_t in = test ? tone() : noise_on && leading ? hifi_party_noise(&noise_st) : b[i];
 		if (test && s_sec == 0) in = MARKER;
 		ring[RI(s_pos)] = in;
 		uint32_t out = ring_at(s_pos - cur_delay);
@@ -708,8 +727,21 @@ static void leader_send(int64_t now) {
 		for (int i = 0; i < HIFI_PARTY_FRAMES; i++) any |= st->frames[i] = ring[RI(k_sent + i)];
 		unlock();
 		hifi_party_pkt_t p = {.type = HIFI_PARTY_AUDIO, .group = group, .seq = ++tx_seq, .k = k_sent, .rate = RATE,
-				      .n = HIFI_PARTY_FRAMES, .flags = (any ? 0 : HIFI_PARTY_F_SILENCE) | (marks ? HIFI_PARTY_F_MARKS : 0)};
+				      .n = HIFI_PARTY_FRAMES,
+				      .flags = (any ? (code_on ? HIFI_PARTY_F_CODED : 0) : HIFI_PARTY_F_SILENCE) | (marks ? HIFI_PARTY_F_MARKS : 0)};
+		int64_t t0 = esp_timer_get_time();
 		size_t n = hifi_party_encode(&st->gkey, &p, st->frames, st->pkt, sizeof(st->pkt));
+		if (any && n) {
+			uint32_t us = (uint32_t) (esp_timer_get_time() - t0);
+			code_us += us;
+			if (us > code_us_max) code_us_max = us;
+			size_t b = 0;
+			while (b < CT_N - 1 && us > ct_top[b]) b++;
+			ct[b]++;
+			audio_bytes += n;
+			audio_n++;
+			if (n < HIFI_PARTY_MAX) coded_n++;
+		}
 		int64_t k = k_sent;
 		k_sent += HIFI_PARTY_FRAMES;
 		if (n) {
@@ -830,8 +862,20 @@ static void got(uint32_t src, const uint8_t *d, size_t len, int64_t now) {
 		gunlock();
 		if (!ok) break;
 		if (p.flags & HIFI_PARTY_F_MARKS) marks_seen_us = now;
+		/* PCM goes in as it came; a code is decoded first (here, off the
+		 * lock), and one that doesn't decode is lost like a bad packet */
+		const void *fr = NULL;
+		if (!(p.flags & HIFI_PARTY_F_SILENCE)) {
+			if (!(p.flags & HIFI_PARTY_F_CODED)) fr = pl;
+			else if (hifi_party_audio_frames(&p, pl, pn, st->rxf)) fr = st->rxf;
+			else {
+				uncode_bad++;
+				break;
+			}
+			if (p.flags & HIFI_PARTY_F_CODED) coded_n++;
+		}
 		lock();
-		hifi_party_jb_put(&st->jb, p.k, (p.flags & HIFI_PARTY_F_SILENCE) ? NULL : pl, p.n, now);
+		hifi_party_jb_put(&st->jb, p.k, fr, p.n, now);
 		unlock();
 		break;
 	}
@@ -1196,6 +1240,8 @@ static void state_json(hj_t *j) {
 	hj_str(j, "role", active ? hifi_party_role_name(g->role) : "off");
 	if (have_secret) hj_int(j, "key_id", hifi_party_secret_id(st->secret));
 	hj_bool(j, "key", have_secret);
+	if (!code_on) hj_bool(j, "code", false);
+	if (noise_on) hj_bool(j, "noise", true);
 	hj_int(j, "term", active ? g->term : saved_term);
 	hj_bool(j, "picked", active ? g->picked : saved_pick);
 	if (active && g->role == HIFI_PARTY_ROLE_FOLLOWER) {
@@ -1289,7 +1335,26 @@ static void stats_json(hj_t *j) {
 		hj_int(j, NULL, held_late);
 		hj_arr_end(j);
 		if (noaudio_sent) hj_int(j, "na", noaudio_sent);
+		/* the code: [on, coded packets, audio packets, their bytes, us making the packets (code and HMAC), the most one took,
+		 * the lab's noise on (it is sent only while this board leads)] */
+		hj_arr(j, "code");
+		hj_int(j, NULL, code_on);
+		hj_int(j, NULL, coded_n);
+		hj_int(j, NULL, audio_n);
+		hj_int(j, NULL, (int64_t) audio_bytes);
+		hj_int(j, NULL, (int64_t) code_us);
+		hj_int(j, NULL, code_us_max);
+		hj_int(j, NULL, noise_on);
+		hj_arr_end(j);
+		/* packets by the time they took to make: [<= 500, <= 750, ... <= 7982 µs, more] */
+		hj_arr(j, "ct");
+		for (size_t b = 0; b < CT_N; b++) hj_int(j, NULL, ct[b]);
+		hj_arr_end(j);
 	} else {
+		hj_arr(j, "code"); /* [coded packets in, ones that didn't decode] */
+		hj_int(j, NULL, coded_n);
+		hj_int(j, NULL, uncode_bad);
+		hj_arr_end(j);
 		hj_int(j, "nack", nacks_sent);
 		hj_int(j, "oldc", sy->old_clocks);
 		hj_int(j, "bss", sy->bssid_wrong);
@@ -1385,9 +1450,9 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 	if (sub && *sub) return err(out, cap, 404, "no such party route");
 	if (post) {
 		char op[16];
-		if (!body || !hj_get_str(body, "op", op, sizeof(op))) return err(out, cap, 400, "op must be on, off, lead, key or tone");
-		bool key = !strcmp(op, "key"), tone = !strcmp(op, "tone");
-		if ((key || tone) && lan) return err(out, cap, 403, "the party key and the test tone are set by the Hive or over USB, not from the LAN");
+		if (!body || !hj_get_str(body, "op", op, sizeof(op))) return err(out, cap, 400, "op must be on, off, lead, key, tone, code or noise");
+		bool key = !strcmp(op, "key"), tone = !strcmp(op, "tone"), code = !strcmp(op, "code"), noise = !strcmp(op, "noise");
+		if ((key || tone || code || noise) && lan) return err(out, cap, 403, "the party key, the test tone, the noise and the code switch are set by the Hive or over USB, not from the LAN");
 		if (!alloc_once()) return err(out, cap, 503, "out of memory");
 		if (key) {
 			char hex[2 * HIFI_PARTY_SECRET + 2];
@@ -1405,6 +1470,18 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 			hifi_link_wipe(hex, sizeof(hex));
 			hifi_link_wipe(sec, sizeof(sec));
 			if (!ok) return err(out, cap, 400, "secret must be 64 hex digits, not all zeros");
+		} else if (noise) {
+			/* only a leader's own input is replaced, while it plays (an
+			 * A2DP stream keeps running under it, so the radio load stays) */
+			bool v;
+			if (!hj_get_bool(body, "on", &v)) return err(out, cap, 400, "on (true or false) is required");
+			noise_on = v;
+		} else if (code) {
+			/* the lab's A/B switch: a leader sends PCM with it off (until
+			 * a reboot; followers decode either) */
+			bool v;
+			if (!hj_get_bool(body, "on", &v)) return err(out, cap, 400, "on (true or false) is required");
+			code_on = v;
 		} else if (tone) {
 			bool v;
 			if (!hj_get_bool(body, "on", &v)) return err(out, cap, 400, "on (true or false) is required");
@@ -1446,7 +1523,7 @@ int hifi_party_op(const char *sub, bool post, bool lan, const char *body, char *
 			if (r < 0) return err(out, cap, 409, "this board can't lead now (party is off, or memory is low)");
 			wake();
 		} else
-			return err(out, cap, 400, "op must be on, off, lead, key or tone");
+			return err(out, cap, 400, "op must be on, off, lead, key, tone, code or noise");
 		/* the worker takes on and off within its 200 ms wait */
 		for (int i = 0; i < 30 && (want_on && have_secret) != active; i++) vTaskDelay(pdMS_TO_TICKS(20));
 	}

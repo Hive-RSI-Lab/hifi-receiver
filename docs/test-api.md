@@ -847,8 +847,10 @@ on the router: no UPnP, no port forward, broadcast only on the subnet.
 | `lead` | LAN, USB, Hive | this board leads; the old leader follows it. 409 when party is off or memory is low, 429 a few seconds after its own last `lead`. |
 | `key` | USB, Hive | `{"op": "key", "secret": "<64 hex>"}` sets the party key (all zeros is refused). Never shown back; `key_id` is one byte of its hash. |
 | `tone` | USB, Hive | `{"op": "tone", "on": true}`: the leader's sync test tone, for the bench. An idle leader takes the output at 44.1 kHz for it. |
+| `code` | USB, Hive | `{"op": "code", "on": false}`: the leader sends its audio raw instead of losslessly coded (on by default; not kept across restarts), for the bench's coded-vs-raw A/B. The state then shows `"code": false`. |
+| `noise` | USB, Hive | `{"op": "noise", "on": true}`: a leader plays (and sends) music-like noise in place of its input, peaks near −18 dBFS, which the coder makes about 63% of PCM (a test tone codes to a few percent). An A2DP stream under it keeps running, so a coder A/B keeps the radio load. Off by default and after a restart; the state shows `"noise": true` while on. A follower takes it but plays its input until it leads. |
 
-`key` and `tone` from the LAN are 403. An image built for 32-bit frames
+`key`, `tone`, `code` and `noise` from the LAN are 403. An image built for 32-bit frames
 answers `on` with 409 (party carries 16-bit).
 
 `GET /api/v1/party/stats` (409 when party is off): the clock offsets, the
@@ -856,7 +858,12 @@ jitter buffer's counts (`got`, `dup`, `old`, `skip`, `gaps`, `miss`), the
 rate controller and the heap, for the bench's `party_run.py`. Of `old`,
 `od` counts packets that had played already, and `ol` the rest by how late
 they came: up to 6 packets behind the one playing, 12, 37, 75, more (about
-50, 100, 300, 600 ms).
+50, 100, 300, 600 ms). `code` on a leader is `[on, coded, audio, bytes,
+us_sum, us_max, noise]`: whether it codes, how many of its audio packets went coded,
+how many audio packets in all, their audio bytes as sent, and the coding time
+in µs (sum and worst; one packet's audio is 7982 µs, so us_sum / (audio ×
+7982) is the share of a core), and whether the lab's noise is on; on a follower `[coded, bad]`, the coded
+packets it decoded and those that failed to decode (dropped).
 
 ## Wi-Fi and updates from the app
 

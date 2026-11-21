@@ -59,7 +59,8 @@
 
 #define HIFI_PARTY_MAGIC0 'H'
 #define HIFI_PARTY_MAGIC1 'P'
-#define HIFI_PARTY_VERSION 1
+#define HIFI_PARTY_VERSION 2    /* 2: AUDIO may carry the lossless code (F_CODED); a 1 is still read */
+#define HIFI_PARTY_VERSION_MIN 1
 #define HIFI_PARTY_HDR 38      /* magic 2, version 1, type 1, length 2, group 4, seq 4, k 8, t 8, rate 4, n 2, flags 2 */
 #define HIFI_PARTY_TAG 8
 #define HIFI_PARTY_FRAMES 352  /* frames per AUDIO packet: 8 ms at 44.1 kHz, 1408 bytes */
@@ -99,6 +100,8 @@ typedef enum {
 /* flags of an AUDIO packet */
 #define HIFI_PARTY_F_SILENCE 1 /* silence (the leader's player paused or idle): n frames of it, no samples sent */
 #define HIFI_PARTY_F_MARKS 2   /* the stream carries the test tone's markers (a follower looks for them) */
+#define HIFI_PARTY_F_CODED 4   /* the payload is the lossless code of the n frames (hifi_party_code), not PCM.
+				* To hifi_party_encode: code them if that is smaller; it clears the flag when not */
 /* flags of a CLOCK */
 #define HIFI_PARTY_F_NOAUDIO 1 /* the leader sends no audio (its output stopped, or a rate party can't carry) */
 
@@ -113,7 +116,7 @@ typedef struct {
 } hifi_party_pkt_t;
 
 /* Writes the packet with its payload (AUDIO: n frames, none with
- * F_SILENCE; CLOCK: the 6-byte
+ * F_SILENCE, coded with F_CODED when that saves bytes; CLOCK: the 6-byte
  * BSSID; NACK: n little-endian k values, 8 bytes each; ANNOUNCE and JOIN:
  * as above) and tag into buf.
  * Returns its length, or 0 if the key isn't ready, cap is too small or the
@@ -132,6 +135,35 @@ typedef enum {
 /* Checks the tag first, then the fields. On HIFI_PARTY_OK fills p and points
  * *payload into buf (*plen bytes). */
 int hifi_party_decode(const hifi_link_key_t *key, const uint8_t *buf, size_t n, hifi_party_pkt_t *p, const uint8_t **payload, size_t *plen);
+
+/* The n frames of a decoded AUDIO packet (not F_SILENCE): its PCM copied, or
+ * its code undone, into out. False when a code doesn't make exactly n
+ * frames (it can't, from a leader whose tag passed, unless that leader's
+ * coder is wrong). */
+bool hifi_party_audio_frames(const hifi_party_pkt_t *p, const uint8_t *payload, size_t plen, uint32_t *out);
+
+/* The lossless coder (hifi_party_code.c): per packet, a stereo mode (L/R,
+ * L/side, side/R or mid/side), a fixed polynomial predictor of order 0 to 3
+ * per channel and Rice codes with one k per channel. No tables, no state
+ * between packets, so each packet decodes alone. Codes n frames into out;
+ * returns the bytes, or 0 when they don't fit cap. */
+#define HIFI_PARTY_CODE_KMAX 20
+size_t hifi_party_code(const uint32_t *frames, int n, uint8_t *out, size_t cap);
+/* true when the len bytes are a whole code of exactly n frames (when
+ * false, frames may hold part of a decode: don't play them) */
+bool hifi_party_uncode(const uint8_t *in, size_t len, int n, uint32_t *frames);
+
+/* The lab's music-like noise (api party '{"op":"noise","on":true}' on a
+ * leader): a common and a difference signal, each white noise through a
+ * one-pole low-pass, made into L and R. Peaks near -18 dBFS; the coder
+ * makes it about 63% of PCM, between the two pieces of music it was
+ * measured on (54% and 69%), where a pure tone codes to a few percent. One
+ * frame per call; st starts as any non-zero seed. */
+typedef struct {
+	uint32_t r;
+	int32_t c, d;
+} hifi_party_noise_t;
+uint32_t hifi_party_noise(hifi_party_noise_t *st);
 
 /* the k values of a NACK payload, and a CLOCK's BSSID */
 int64_t hifi_party_nack_k(const uint8_t *payload, int i);

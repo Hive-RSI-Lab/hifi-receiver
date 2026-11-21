@@ -58,7 +58,8 @@ static long payload_len(uint8_t type, uint16_t n, uint16_t flags) {
 	switch (type) {
 	case HIFI_PARTY_AUDIO:
 		if (n < 1 || n > HIFI_PARTY_FRAMES) return -1;
-		return (flags & HIFI_PARTY_F_SILENCE) ? 0 : (long) n * HIFI_PARTY_FRAME_BYTES;
+		if ((flags & HIFI_PARTY_F_SILENCE) && (flags & HIFI_PARTY_F_CODED)) return -1;
+		return (flags & HIFI_PARTY_F_SILENCE) ? 0 : (long) n * HIFI_PARTY_FRAME_BYTES; /* coded: at most this, less 1 */
 	case HIFI_PARTY_CLOCK: return n == 0 ? 6 : -1;
 	case HIFI_PARTY_NACK: return (n >= 1 && n <= HIFI_PARTY_NACK_MAX) ? (long) n * 8 : -1;
 	case HIFI_PARTY_ANNOUNCE: return n <= HIFI_PARTY_FOLLOWERS ? HIFI_PARTY_ANNOUNCE_LEN : -1;
@@ -73,10 +74,26 @@ size_t hifi_party_encode(const hifi_link_key_t *key, const hifi_party_pkt_t *p, 
 	if (l < 0 || (l && !payload)) return 0;
 	size_t pl = (size_t) l;
 	size_t len = HIFI_PARTY_HDR + pl + HIFI_PARTY_TAG;
+	uint16_t flags = p->flags;
+	if (p->type == HIFI_PARTY_AUDIO && (flags & HIFI_PARTY_F_CODED)) {
+		/* the code goes straight to its place; raw PCM when it saves nothing
+		 * (noise), or wouldn't fit what the caller gave */
+		size_t room = cap > HIFI_PARTY_HDR + HIFI_PARTY_TAG ? cap - HIFI_PARTY_HDR - HIFI_PARTY_TAG : 0;
+		size_t c = hifi_party_code(payload, p->n, buf + HIFI_PARTY_HDR, room < pl - 1 ? room : pl - 1);
+		if (c) {
+			pl = c;
+			len = HIFI_PARTY_HDR + pl + HIFI_PARTY_TAG;
+		} else {
+			flags &= (uint16_t) ~HIFI_PARTY_F_CODED;
+		}
+	}
 	if (len > cap || len > HIFI_PARTY_MAX) return 0;
 	buf[0] = HIFI_PARTY_MAGIC0;
 	buf[1] = HIFI_PARTY_MAGIC1;
-	buf[2] = HIFI_PARTY_VERSION;
+	/* 2 only on a coded packet: a version 1 board refuses a packet by its
+	 * version alone, so everything else stays version 1, and a v1 follower
+	 * under a v2 leader keeps its clock, its group and every PCM packet */
+	buf[2] = flags & HIFI_PARTY_F_CODED ? HIFI_PARTY_VERSION : HIFI_PARTY_VERSION_MIN;
 	buf[3] = p->type;
 	put16(buf + 4, (uint16_t) len);
 	put32(buf + 6, p->group);
@@ -85,8 +102,8 @@ size_t hifi_party_encode(const hifi_link_key_t *key, const hifi_party_pkt_t *p, 
 	put64(buf + 22, p->t);
 	put32(buf + 30, p->rate);
 	put16(buf + 34, p->n);
-	put16(buf + 36, p->flags);
-	if (pl) memcpy(buf + HIFI_PARTY_HDR, payload, pl);
+	put16(buf + 36, flags);
+	if (pl && !(flags & HIFI_PARTY_F_CODED)) memcpy(buf + HIFI_PARTY_HDR, payload, pl);
 	tag(key, buf, HIFI_PARTY_HDR + pl, buf + HIFI_PARTY_HDR + pl);
 	return len;
 }
@@ -96,7 +113,8 @@ int hifi_party_decode(const hifi_link_key_t *key, const uint8_t *buf, size_t n, 
 	if (!buf || n < HIFI_PARTY_HDR + HIFI_PARTY_TAG || n > HIFI_PARTY_MAX) return HIFI_PARTY_E_SHORT;
 	/* a cheap filter before the HMAC: stray datagrams on the port cost a
 	 * compare, not a hash. Nothing here is believed until the tag passes. */
-	if (buf[0] != HIFI_PARTY_MAGIC0 || buf[1] != HIFI_PARTY_MAGIC1 || buf[2] != HIFI_PARTY_VERSION) return HIFI_PARTY_E_MAGIC;
+	if (buf[0] != HIFI_PARTY_MAGIC0 || buf[1] != HIFI_PARTY_MAGIC1 || buf[2] < HIFI_PARTY_VERSION_MIN || buf[2] > HIFI_PARTY_VERSION)
+		return HIFI_PARTY_E_MAGIC;
 	uint8_t t[HIFI_PARTY_TAG], diff = 0;
 	tag(key, buf, n - HIFI_PARTY_TAG, t);
 	for (int i = 0; i < HIFI_PARTY_TAG; i++) diff |= t[i] ^ buf[n - HIFI_PARTY_TAG + i]; /* constant time */
@@ -113,13 +131,27 @@ int hifi_party_decode(const hifi_link_key_t *key, const uint8_t *buf, size_t n, 
 		.flags = get16(buf + 36),
 	};
 	long l = payload_len(q.type, q.n, q.flags);
-	if (l < 0 || HIFI_PARTY_HDR + (size_t) l + HIFI_PARTY_TAG != n) return HIFI_PARTY_E_FORMAT;
-	size_t pl = (size_t) l;
+	if (l < 0) return HIFI_PARTY_E_FORMAT;
+	size_t pl = n - HIFI_PARTY_HDR - HIFI_PARTY_TAG;
+	if (q.type == HIFI_PARTY_AUDIO && (q.flags & HIFI_PARTY_F_CODED)) {
+		/* a code is shorter than the PCM it stands for, and only version 2 has it */
+		if (buf[2] < 2 || pl < 2 || pl >= (size_t) l) return HIFI_PARTY_E_FORMAT;
+	} else if ((size_t) l != pl) {
+		return HIFI_PARTY_E_FORMAT;
+	}
 	if (q.type == HIFI_PARTY_AUDIO && (q.k < 0 || q.k % HIFI_PARTY_FRAMES)) return HIFI_PARTY_E_FORMAT;
 	if (p) *p = q;
 	if (payload) *payload = buf + HIFI_PARTY_HDR;
 	if (plen) *plen = pl;
 	return HIFI_PARTY_OK;
+}
+
+bool hifi_party_audio_frames(const hifi_party_pkt_t *p, const uint8_t *payload, size_t plen, uint32_t *out) {
+	if (!p || !payload || !out || p->type != HIFI_PARTY_AUDIO || (p->flags & HIFI_PARTY_F_SILENCE)) return false;
+	if (p->flags & HIFI_PARTY_F_CODED) return hifi_party_uncode(payload, plen, p->n, out);
+	if (plen != (size_t) p->n * HIFI_PARTY_FRAME_BYTES) return false;
+	memcpy(out, payload, plen);
+	return true;
 }
 
 int64_t hifi_party_nack_k(const uint8_t *payload, int i) {

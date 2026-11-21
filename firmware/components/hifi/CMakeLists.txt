@@ -3,7 +3,7 @@
 # host-tested (firmware/test); esp/ ties it to ESP-IDF and squeezelite-esp32.
 set(srcs
 	core/hifi_api.c core/hifi_b64.c core/hifi_boost.c core/hifi_boot.c core/hifi_capture.c core/hifi_diag.c core/hifi_exp.c core/hifi_gate.c
-	core/hifi_gov.c core/hifi_ir.c core/hifi_json.c core/hifi_lab.c core/hifi_line.c core/hifi_link.c core/hifi_listen.c core/hifi_meta.c core/hifi_ota.c core/hifi_pair.c core/hifi_party.c
+	core/hifi_gov.c core/hifi_ir.c core/hifi_json.c core/hifi_lab.c core/hifi_line.c core/hifi_link.c core/hifi_listen.c core/hifi_meta.c core/hifi_ota.c core/hifi_pair.c core/hifi_party.c core/hifi_party_code.c
 	core/hifi_party_group.c core/hifi_party_sync.c core/hifi_pd.c core/hifi_peers.c
 	core/hifi_power.c core/hifi_quiet.c core/hifi_remote.c core/hifi_scan.c core/hifi_sha256.c core/hifi_source.c core/hifi_tap.c core/hifi_tone.c core/hifi_update.c
 	core/hifi_chan.c core/hifi_vol.c core/hifi_ws_proto.c esp/hifi_main.c esp/hifi_crash.c esp/hifi_diag_esp.c esp/hifi_dl.c esp/hifi_http.c esp/hifi_listen_esp.c esp/hifi_net.c esp/hifi_party_esp.c esp/hifi_peers_esp.c esp/hifi_relay.c esp/hifi_ws.c)
@@ -79,6 +79,9 @@ if(DEFINED ENV{HIFI_FW_BUILD})
 endif()
 
 target_compile_options(${COMPONENT_LIB} PRIVATE -Wall -Wno-format-truncation)
+# party mode's coder and the packet HMAC run on every packet the leader
+# sends: -O2 there, against the -Os of the rest (8.17)
+set_source_files_properties(core/hifi_party_code.c core/hifi_sha256.c PROPERTIES COMPILE_OPTIONS "-O2")
 
 # party mode carries 16-bit frames; squeezelite built 32-bit (DEPTH 32) calls
 # none of its output hooks (patches/0021), so party says it can't play there
