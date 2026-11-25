@@ -71,7 +71,7 @@ pinout and the power tree are in
 | Rails | SY8303 VBUS to 5.1 V; SY8089 5 V to 3.3 V; LP5907 3.3 V analog; ferrite-fed +5VA and +3V3E |
 | Processor | ESP32-WROVER-E-N8R8; CH340B USB-serial on the same USB-C (auto-reset, flashing from a laptop) |
 | Ethernet | LAN8720A + HR911105A magjack, gated 50 MHz RMII clock |
-| Mains DAC | ES9018K2M at 49.152 MHz MCLK, OPA1678 differential-to-single-ended stage |
+| Mains DAC | ES9018K2M at 49.152 MHz MCLK, OPA1688 differential-to-single-ended stage |
 | Sub DAC | PCM5102A to a stacked dual RCA (SUB1, SUB2) |
 | Line in | stacked dual RCA, ES7243E ADC, TS5A23157 DAC/DJ-direct selector |
 | Self-measurement | zone A's A_SPK_L+/R+ through 150k/10k, 470 pF, 1 uF onto a 1.65 V bias; TS5A23157 U20 picks RCA input (default) or the taps for the ADC; select from expander P17 through Q7 |
@@ -162,6 +162,7 @@ pin-to-pad) read this board from its KiCad files and the vendor datasheets:
 | DFM-4 (major): IR receiver looking at the lid | IRM-H638T | front-facing IRM-3638T at the front edge |
 | PARTS-3/AUDIO-10, DIGITAL-5, AUDIO-5 (minor) | 50 MHz Y1, C47 100 nF, 1 uF ADC caps | 49.152 MHz, 1 uF, 4.7 uF |
 | Stock | CH340C | CH340B |
+| Stock (2026-11-25): OPA1678IDR C192421 out at JLC | U11 OPA1678 | OPA1688IDR C206212, same pinout and 5 V input range, 8 vs 4.5 nV/rtHz |
 
 Ultra's zone-B speaker taps (the bring-up ask) were left out: no control line
 is left to choose a zone, and the extra switch crowded the ADC; zone B is

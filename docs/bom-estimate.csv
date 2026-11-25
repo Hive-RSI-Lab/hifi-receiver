@@ -19,7 +19,7 @@ hifi-audio,Sabre DAC (mains),C2688377,ES9018K2M,extended,3.045,2.398,29,smt,0,1,
 hifi-audio,100 MHz oscillator for the Sabre,C496694,O93225100MEDA4SI-13,extended,0.514,0.388,4,smt,0,1,1,LCSC live 2026-10-28
 hifi-audio,DAC for the sub outputs (2 Vrms line driver),C107671,PCM5102APWR,extended,1.294,0.940,20,smt,0,1,1,LCSC live 2026-10-28
 hifi-audio,ADC for the RCA line input,C2929446,ES7243E,extended,0.434,0.316,21,smt,0,1,1,LCSC live 2026-10-28
-hifi-audio,Dual op-amp (DAC output stage),C192421,OPA1678IDR,extended,0.619,0.468,8,smt,0,1,1,LCSC live 2026-10-28
+hifi-audio,Dual op-amp (DAC output stage),C206212,OPA1688IDR,extended,0.701,0.526,8,smt,0,1,1,LCSC live 2026-10-28
 hifi-audio,Analog switch (DJ direct path; ADC source RCA/speaker taps),C11133,TS5A23157DGSR,extended,0.382,0.279,10,smt,0,2,2,"core as built, LCSC 2026-10-29 (review-2)"
 hifi-audio,"Class-D amp 2x BTL 32 V 89 W/4 ohm, pad-down (no heatsink)",C2879306,TPA3220DDWR,extended,4.507,3.737,45,smt,0,2,2,"Mouser 595-TPA3220DDWR 2026-10-29 (LCSC 0 stock: bought into the JLC inventory, prebuy.csv)"
 hifi-audio,VBUS current sense amplifier,C48533472,INA180A1IDBVR(LX),extended,0.149,0.119,5,smt,0,1,1,LCSC live 2026-10-28

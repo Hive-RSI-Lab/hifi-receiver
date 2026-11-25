@@ -1335,7 +1335,7 @@
 				)
 			)
 		)
-		(symbol "aiee:OPA1678IDR"
+		(symbol "aiee:OPA1688IDR"
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "U"
@@ -1347,7 +1347,7 @@
 					)
 				)
 			)
-			(property "Value" "OPA1678IDR"
+			(property "Value" "OPA1688IDR"
 				(id 1)
 				(at 0 -8.89 0)
 				(effects
@@ -1365,7 +1365,7 @@
 					) hide
 				)
 			)
-			(property "Datasheet" "https://lcsc.com/product-detail/Others_Texas-Instruments_OPA1678IDR_Texas-Instruments-TI-OPA1678IDR_C192421.html"
+			(property "Datasheet" "https://www.ti.com/lit/ds/symlink/opa1688.pdf"
 				(id 3)
 				(at 0 -13.97 0)
 				(effects
@@ -1383,7 +1383,7 @@
 					) hide
 				)
 			)
-			(property "MPN" "OPA1678IDR"
+			(property "MPN" "OPA1688IDR"
 				(id 5)
 				(at 0 -19.05 0)
 				(effects
@@ -1392,7 +1392,7 @@
 					) hide
 				)
 			)
-			(property "LCSC Part" "C192421"
+			(property "LCSC Part" "C206212"
 				(id 6)
 				(at 0 -21.59 0)
 				(effects
@@ -1410,7 +1410,7 @@
 					) hide
 				)
 			)
-			(symbol "OPA1678IDR_0_1"
+			(symbol "OPA1688IDR_0_1"
 				(rectangle
 					(start -12.7 6.35)
 					(end 12.7 -6.35)
@@ -4518,7 +4518,7 @@
 		)
 	)
 	(symbol
-		(lib_id "aiee:OPA1678IDR")
+		(lib_id "aiee:OPA1688IDR")
 		(at 415.29 39.37 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -4536,7 +4536,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "OPA1678"
+		(property "Value" "OPA1688"
 			(at 412.0146 46.99 0.0000)
 			(effects
 				(font
@@ -4554,7 +4554,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C192421"
+		(property "LCSC" "C206212"
 			(at 417.83 44.4499 0)
 			(effects
 				(font
