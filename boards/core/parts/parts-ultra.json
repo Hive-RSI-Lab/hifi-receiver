@@ -2730,42 +2730,61 @@
    "refdes_class": {
     "U11": "smt_placed"
    },
-   "lcsc": "C192421",
-   "mpn": "OPA1678",
-   "value": "OPA1678",
+   "lcsc": "C206212",
+   "mpn": "OPA1688",
+   "value": "OPA1688",
    "package": "SOIC-8_L5.0-W4.0-P1.27-LS6.0-BL",
    "block": "dac",
    "basic": false,
    "role": "DAC output stage",
-   "price": 0.7195,
+   "price": 0.8765,
    "price_breaks": [
     {
      "qty": 1,
-     "price": 0.7195
+     "price": 0.8765
     },
     {
      "qty": 10,
-     "price": 0.6064
+     "price": 0.7012
     },
     {
      "qty": 30,
-     "price": 0.5245
+     "price": 0.6127
     },
     {
      "qty": 100,
-     "price": 0.4589
+     "price": 0.5259
     },
     {
      "qty": 500,
-     "price": 0.395
+     "price": 0.4735
     },
     {
      "qty": 1000,
-     "price": 0.3835
+     "price": 0.4473
     }
    ],
-   "stock": 11484,
-   "description": "-18V~-2.25V、2.25V~18V -40℃~+85℃ 10pA 10pA 110dB 16MHz 2 2mA 2uV/℃ 4.5V~36V 4.5nV/√Hz@1kHz 500uV 50mA 9V/us Built-in compensation、ESD protection Rail-to-rail output SOIC-8-150mil Operational Amplifier ROHS"
+   "stock": 7645,
+   "description": "-18V~-2.25V、2.25V~18V -40℃~+85℃ 0.00005% 1.6mA SOP-8 Operational Amplifier ROHS",
+   "attributes": [
+    {
+     "name": "Operating Temperature",
+     "value": "-40℃~+85℃"
+    },
+    {
+     "name": "Total Harmonic Distortion + Noise (THD+N)",
+     "value": "0.00005%"
+    },
+    {
+     "name": "Voltage - Supply",
+     "value": "-18V~-2.25V、2.25V~18V"
+    },
+    {
+     "name": "Quiescent Current",
+     "value": "1.6mA"
+    }
+   ],
+   "datasheet": "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/1912111437_Texas-Instruments-OPA1688IDR_C206212.pdf"
   },
   {
    "refdes": [

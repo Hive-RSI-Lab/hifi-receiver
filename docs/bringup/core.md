@@ -330,7 +330,7 @@ Note the gain you measure, and the firmware constant to set, in the record sheet
 
 **On a fail:** if ISENSE reads 0, check U3's supply (pin 3 at 3.3 V) and ISNS_P/ISNS_N at C9. If ISENSE reads full scale, U3's inputs are swapped or bridged.
 
-**5.3 DAC (U10 ES9018K2M, U11 OPA1678, U12 PCM5102A sub).**
+**5.3 DAC (U10 ES9018K2M, U11 OPA1688, U12 PCM5102A sub).**
 
 - **Static checks:**
   - +3V3A at U10 pins 15-17.

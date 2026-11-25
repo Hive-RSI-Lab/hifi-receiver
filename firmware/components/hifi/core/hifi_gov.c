@@ -52,7 +52,7 @@ void hifi_gov_cfg_lite(hifi_gov_cfg_t *cfg) {
 
 void hifi_gov_cfg_core(hifi_gov_cfg_t *cfg) {
 	hifi_gov_cfg_lite(cfg);
-	/* the ES9018K2M's OPA1678 stage gives about 1.15 Vrms at full scale
+	/* the ES9018K2M's OPA1688 stage gives about 1.15 Vrms at full scale
 	 * (boards/core/architecture/blocks.md B7), the TPA3220 24 dB: 1.15 x
 	 * 15.85 x sqrt 2 = 25.8 V peak, near the 28 V rail. Not yet measured */
 	cfg->vfs_peak_v = 1.15f * 15.85f * 1.4142f;

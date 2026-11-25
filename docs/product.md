@@ -216,7 +216,8 @@ Sabre DAC.
 ### DAC and the audio path
 
 - **Plus/Ultra mains: ESS ES9018K2M Sabre** (C2688377, $2.40 at 100, 706 in
-  stock), 127 dB DNR, with a 100 MHz oscillator and an OPA1678 output stage.
+  stock), 127 dB DNR, with a 100 MHz oscillator and an OPA1688 output stage (OPA1678 until it
+  went out of stock at JLC, 2026-11-25).
   - **Why this Sabre:** the person asked for "some sabre dac". The WiiM
     Ultra uses the ES9038Q2M, but LCSC has 0 in stock; it is listed at
     $4.91. The ES9033Q, ES9039Q2M and ES9028Q2M are all 0 in stock.
@@ -347,7 +348,7 @@ capacitors are basic.
 | 100 MHz oscillator | C496694 | $0.39 |
 | Sub DAC | PCM5102APWR (C107671) | $0.94 |
 | ADC | ES7243E (C2929446) | $0.32 |
-| Op-amp | OPA1678IDR (C192421) | $0.47 |
+| Op-amp | OPA1688IDR (C206212) | $0.53 |
 | Analog switch | TS5A23157 (C11133) | $0.28 |
 | Amp (Plus/Ultra) | TPA3220DDWR (C2879306, Mouser; LCSC has none) | $3.74 |
 | Current sense | INA180A1 (C48533472) | $0.12 |

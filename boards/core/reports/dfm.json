@@ -4,8 +4,8 @@
   "phase": "P9",
   "tool": "dfm",
   "input": "kicad/core.kicad_pcb",
-  "input_digest": "sexpr_no_uuid:382fc41d71321377f2a49ee00b12ea8736fe9cf2cd6d2076f234276df233e8d0",
-  "status": "pass",
+  "input_digest": "sexpr_no_uuid:905811035b049db078f9cf7b52460d3c8809077c4a41841032fe59acece81510",
+  "status": "fail",
   "criteria": {
     "fail_severities": [
       "error"
@@ -13,19 +13,964 @@
     "max_count": 0
   },
   "counts": {
-    "total": 20,
+    "total": 63,
     "by_severity": {
-      "warning": 20
+      "error": 25,
+      "warning": 30,
+      "info": 8
     },
     "by_source": {
-      "check.dfm": 19,
+      "check.dfm": 62,
       "https://jlcpcb.com/capabilities/pcb-assembly-capabilities": 1
     }
   },
-  "failing_count": 0,
-  "failing": [],
-  "warnings_count": 20,
+  "failing_count": 25,
+  "failing": [
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        39.337,
+        176.58
+      ],
+      "layer": "F.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            39.337,
+            176.58
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        39.337,
+        177.43
+      ],
+      "layer": "F.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            39.337,
+            177.43
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        39.337,
+        178.28
+      ],
+      "layer": "F.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            39.337,
+            178.28
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        39.337,
+        179.13
+      ],
+      "layer": "F.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            39.337,
+            179.13
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        39.337,
+        179.98
+      ],
+      "layer": "F.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            39.337,
+            179.98
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        39.337,
+        180.83
+      ],
+      "layer": "F.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            39.337,
+            180.83
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        40.687,
+        176.58
+      ],
+      "layer": "F.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            40.687,
+            176.58
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        40.687,
+        177.42
+      ],
+      "layer": "F.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            40.687,
+            177.42
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        40.687,
+        178.28
+      ],
+      "layer": "F.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            40.687,
+            178.28
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        40.687,
+        179.12
+      ],
+      "layer": "F.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            40.687,
+            179.12
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        40.687,
+        179.98
+      ],
+      "layer": "F.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            40.687,
+            179.98
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        40.687,
+        180.82
+      ],
+      "layer": "F.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on F.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            40.687,
+            180.82
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        39.337,
+        176.58
+      ],
+      "layer": "B.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            39.337,
+            176.58
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        39.337,
+        177.43
+      ],
+      "layer": "B.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            39.337,
+            177.43
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        39.337,
+        178.28
+      ],
+      "layer": "B.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            39.337,
+            178.28
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        39.337,
+        179.13
+      ],
+      "layer": "B.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            39.337,
+            179.13
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        39.337,
+        179.98
+      ],
+      "layer": "B.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            39.337,
+            179.98
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        39.337,
+        180.83
+      ],
+      "layer": "B.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            39.337,
+            180.83
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        40.687,
+        176.58
+      ],
+      "layer": "B.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            40.687,
+            176.58
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        40.687,
+        177.42
+      ],
+      "layer": "B.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            40.687,
+            177.42
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        40.687,
+        178.28
+      ],
+      "layer": "B.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            40.687,
+            178.28
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        40.687,
+        179.12
+      ],
+      "layer": "B.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            40.687,
+            179.12
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        40.687,
+        179.98
+      ],
+      "layer": "B.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            40.687,
+            179.98
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": [
+        40.687,
+        180.82
+      ],
+      "layer": "B.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated slot 0.2521 mm from copper on B.Cu, JLC minimum 0.28 mm",
+          "pos": [
+            40.687,
+            180.82
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track",
+      "distance_mm": 0.2521,
+      "min_mm": 0.28,
+      "hole": "plated slot"
+    },
+    {
+      "check": "dfm",
+      "severity": "error",
+      "pos": null,
+      "layer": null,
+      "net": null,
+      "refs": [
+        "D3"
+      ],
+      "msg": "D3: its outline's cut corners are at pad 2, the board's A pad, not pad 1 (centre (-1.55, 0)). JLC places by the silkscreen when it disagrees with the CPL, so this part would go on turned: fix the footprint's mark",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "D3: its outline's cut corners are at pad 2, the board's A pad, not pad 1 (centre (-1.55, 0)). JLC places by the silkscreen when it disagrees with the CPL, so this part would go on turned: fix the footprint's mark",
+          "pos": null
+        }
+      ],
+      "kind": "cpl_silk_mark",
+      "pin": "1",
+      "marks": [
+        [
+          -1.55,
+          0.0
+        ]
+      ]
+    }
+  ],
+  "warnings_count": 38,
   "warnings": [
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        46.087,
+        162.997
+      ],
+      "layer": "B.Cu",
+      "net": null,
+      "refs": [],
+      "msg": "26 plated holes near copper between JLC's minimum 0.28 mm and the 0.35 mm a design is held to (worst 0.2794 mm): JLC builds it; keep it only on purpose",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "plated holes near copper 0.2794 mm",
+          "pos": [
+            46.087,
+            162.997
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.2811 mm",
+          "pos": [
+            44.587,
+            162.997
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.2811 mm",
+          "pos": [
+            46.087,
+            161.697
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.2811 mm",
+          "pos": [
+            75.987,
+            162.997
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.2908 mm",
+          "pos": [
+            49.087,
+            162.997
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.2963 mm",
+          "pos": [
+            81.987,
+            162.997
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3000 mm",
+          "pos": [
+            137.35,
+            120.597
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3000 mm",
+          "pos": [
+            152.649,
+            120.597
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3000 mm",
+          "pos": [
+            158.649,
+            120.597
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3000 mm",
+          "pos": [
+            173.95,
+            120.597
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3000 mm",
+          "pos": [
+            137.35,
+            120.597
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3000 mm",
+          "pos": [
+            152.649,
+            120.597
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3000 mm",
+          "pos": [
+            158.649,
+            120.597
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3000 mm",
+          "pos": [
+            173.95,
+            120.597
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3000 mm",
+          "pos": [
+            39.337,
+            181.68
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3000 mm",
+          "pos": [
+            39.337,
+            181.68
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3018 mm",
+          "pos": [
+            43.087,
+            162.997
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3018 mm",
+          "pos": [
+            44.587,
+            161.697
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3100 mm",
+          "pos": [
+            39.337,
+            175.72
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3100 mm",
+          "pos": [
+            40.687,
+            175.72
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3100 mm",
+          "pos": [
+            39.337,
+            175.72
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3100 mm",
+          "pos": [
+            40.687,
+            175.72
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3100 mm",
+          "pos": [
+            40.687,
+            181.68
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3100 mm",
+          "pos": [
+            40.687,
+            181.68
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3292 mm",
+          "pos": [
+            47.587,
+            162.997
+          ]
+        },
+        {
+          "msg": "plated holes near copper 0.3300 mm",
+          "pos": [
+            39.707,
+            183.03
+          ]
+        }
+      ],
+      "kind": "dfm_hole_to_track_preferred",
+      "count": 26,
+      "min_mm": 0.28,
+      "preferred_mm": 0.35,
+      "distance_mm": 0.2794
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        137.35,
+        120.597
+      ],
+      "layer": null,
+      "net": null,
+      "refs": [],
+      "msg": "10 plated slots shorter than 2x their width (shortest 3.0000 x 2.0000 mm): JLC asks for at least 2x",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "slot 2.4000 x 1.6000 mm",
+          "pos": [
+            140.999,
+            123.747
+          ]
+        },
+        {
+          "msg": "slot 2.4000 x 1.6000 mm",
+          "pos": [
+            148.999,
+            123.747
+          ]
+        },
+        {
+          "msg": "slot 2.4000 x 1.6000 mm",
+          "pos": [
+            162.299,
+            123.747
+          ]
+        },
+        {
+          "msg": "slot 2.4000 x 1.6000 mm",
+          "pos": [
+            170.299,
+            123.747
+          ]
+        },
+        {
+          "msg": "slot 2.8000 x 1.7000 mm",
+          "pos": [
+            84.337,
+            212.447
+          ]
+        },
+        {
+          "msg": "slot 2.8000 x 1.7000 mm",
+          "pos": [
+            96.837,
+            212.447
+          ]
+        },
+        {
+          "msg": "slot 3.0000 x 2.0000 mm",
+          "pos": [
+            137.35,
+            120.597
+          ]
+        },
+        {
+          "msg": "slot 3.0000 x 2.0000 mm",
+          "pos": [
+            152.649,
+            120.597
+          ]
+        },
+        {
+          "msg": "slot 3.0000 x 2.0000 mm",
+          "pos": [
+            158.649,
+            120.597
+          ]
+        },
+        {
+          "msg": "slot 3.0000 x 2.0000 mm",
+          "pos": [
+            173.95,
+            120.597
+          ]
+        }
+      ],
+      "kind": "dfm_slot_size_preferred",
+      "count": 10,
+      "length_mm": 3.0,
+      "width_mm": 2.0,
+      "ratio": 2.0
+    },
     {
       "check": "dfm",
       "severity": "warning",
@@ -556,35 +1501,1873 @@
     },
     {
       "check": "dfm",
+      "severity": "info",
+      "pos": [
+        75.511,
+        174.359
+      ],
+      "layer": "F.Cu",
+      "net": "/rails/BUCK5_LX",
+      "refs": [
+        "C12"
+      ],
+      "msg": "C12 (/rails/BUCK5_LX end 0.8 mm of copper leaving it, /rails/BUCK5_BS end 0.21 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "C12 (/rails/BUCK5_LX end 0.8 mm of copper leaving it, /rails/BUCK5_BS end 0.21 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+          "pos": [
+            75.511,
+            174.359
+          ]
+        }
+      ],
+      "kind": "dfm_tombstone_traces",
+      "pad": "2",
+      "heavy_net": "/rails/BUCK5_LX",
+      "light_net": "/rails/BUCK5_BS",
+      "heavy_mm": 0.8,
+      "light_mm": 0.21
+    },
+    {
+      "check": "dfm",
+      "severity": "info",
+      "pos": [
+        60.987,
+        176.107
+      ],
+      "layer": "F.Cu",
+      "net": "/power_in/PVDD_G",
+      "refs": [
+        "C4"
+      ],
+      "msg": "C4 (/power_in/PVDD_G end 1.24 mm of copper leaving it, PVDD end 0.25 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "C4 (/power_in/PVDD_G end 1.24 mm of copper leaving it, PVDD end 0.25 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+          "pos": [
+            60.987,
+            176.107
+          ]
+        }
+      ],
+      "kind": "dfm_tombstone_traces",
+      "pad": "1",
+      "heavy_net": "/power_in/PVDD_G",
+      "light_net": "PVDD",
+      "heavy_mm": 1.24,
+      "light_mm": 0.25
+    },
+    {
+      "check": "dfm",
+      "severity": "info",
+      "pos": [
+        80.064,
+        177.083
+      ],
+      "layer": "F.Cu",
+      "net": "+5V",
+      "refs": [
+        "FB1"
+      ],
+      "msg": "FB1 (+5V end 1.4 mm of copper leaving it, +5VA end 0.2 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "FB1 (+5V end 1.4 mm of copper leaving it, +5VA end 0.2 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+          "pos": [
+            80.064,
+            177.083
+          ]
+        }
+      ],
+      "kind": "dfm_tombstone_traces",
+      "pad": "1",
+      "heavy_net": "+5V",
+      "light_net": "+5VA",
+      "heavy_mm": 1.4,
+      "light_mm": 0.2
+    },
+    {
+      "check": "dfm",
+      "severity": "info",
+      "pos": [
+        117.287,
+        155.679
+      ],
+      "layer": "F.Cu",
+      "net": "/linein/LDIV_L",
+      "refs": [
+        "R100"
+      ],
+      "msg": "R100 (/linein/LDIV_L end 1.05 mm of copper leaving it, /linein/LIN_L end 0.2 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "R100 (/linein/LDIV_L end 1.05 mm of copper leaving it, /linein/LIN_L end 0.2 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+          "pos": [
+            117.287,
+            155.679
+          ]
+        }
+      ],
+      "kind": "dfm_tombstone_traces",
+      "pad": "2",
+      "heavy_net": "/linein/LDIV_L",
+      "light_net": "/linein/LIN_L",
+      "heavy_mm": 1.05,
+      "light_mm": 0.2
+    },
+    {
+      "check": "dfm",
+      "severity": "info",
+      "pos": [
+        49.503,
+        173.559
+      ],
+      "layer": "F.Cu",
+      "net": "+5V",
+      "refs": [
+        "R203"
+      ],
+      "msg": "R203 (+5V end 0.82 mm of copper leaving it, /amp_a/A_AVDD end 0.2 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "R203 (+5V end 0.82 mm of copper leaving it, /amp_a/A_AVDD end 0.2 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+          "pos": [
+            49.503,
+            173.559
+          ]
+        }
+      ],
+      "kind": "dfm_tombstone_traces",
+      "pad": "1",
+      "heavy_net": "+5V",
+      "light_net": "/amp_a/A_AVDD",
+      "heavy_mm": 0.82,
+      "light_mm": 0.2
+    },
+    {
+      "check": "dfm",
+      "severity": "info",
+      "pos": [
+        52.127,
+        176.83
+      ],
+      "layer": "F.Cu",
+      "net": "+5V",
+      "refs": [
+        "R205"
+      ],
+      "msg": "R205 (+5V end 0.82 mm of copper leaving it, /amp_a/A_GVDD end 0.2 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "R205 (+5V end 0.82 mm of copper leaving it, /amp_a/A_GVDD end 0.2 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+          "pos": [
+            52.127,
+            176.83
+          ]
+        }
+      ],
+      "kind": "dfm_tombstone_traces",
+      "pad": "1",
+      "heavy_net": "+5V",
+      "light_net": "/amp_a/A_GVDD",
+      "heavy_mm": 0.82,
+      "light_mm": 0.2
+    },
+    {
+      "check": "dfm",
+      "severity": "info",
+      "pos": [
+        51.187,
+        132.997
+      ],
+      "layer": "F.Cu",
+      "net": "/A_SPK_L+",
+      "refs": [
+        "R230"
+      ],
+      "msg": "R230 (/A_SPK_L+ end 0.86 mm of copper leaving it, /amp_a/A_OUT1P_SN end 0.2 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "R230 (/A_SPK_L+ end 0.86 mm of copper leaving it, /amp_a/A_OUT1P_SN end 0.2 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+          "pos": [
+            51.187,
+            132.997
+          ]
+        }
+      ],
+      "kind": "dfm_tombstone_traces",
+      "pad": "1",
+      "heavy_net": "/A_SPK_L+",
+      "light_net": "/amp_a/A_OUT1P_SN",
+      "heavy_mm": 0.86,
+      "light_mm": 0.2
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        98.307,
+        180.134
+      ],
+      "layer": "F.Cu",
+      "net": "+3V3",
+      "refs": [
+        "R34"
+      ],
+      "msg": "R34 (+3V3 end 1.22 mm of copper leaving it, /I2C_SDA end 0.4 mm): the via in pad 1 (0.30 mm) runs down to a +3V3 plane, which pulls heat from that end at reflow and the part can stand up on the other - move the via out of the pad onto a thin track, or tie the other end as heavily",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "R34 (+3V3 end 1.22 mm of copper leaving it, /I2C_SDA end 0.4 mm): the via in pad 1 (0.30 mm) runs down to a +3V3 plane, which pulls heat from that end at reflow and the part can stand up on the other - move the via out of the pad onto a thin track, or tie the other end as heavily",
+          "pos": [
+            98.307,
+            180.134
+          ]
+        }
+      ],
+      "kind": "dfm_tombstone",
+      "pad": "1",
+      "heavy_net": "+3V3",
+      "light_net": "/I2C_SDA",
+      "heavy_mm": 1.22,
+      "light_mm": 0.4
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        63.45,
+        176.76
+      ],
+      "layer": "F.Cu",
+      "net": "VBUS",
+      "refs": [
+        "R404"
+      ],
+      "msg": "R404 (VBUS end 1.66 mm of copper leaving it, /power_in/PVDD_PD end 0.25 mm): the via in pad 1 (0.30 mm) runs down to a VBUS plane, which pulls heat from that end at reflow and the part can stand up on the other - move the via out of the pad onto a thin track, or tie the other end as heavily",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "R404 (VBUS end 1.66 mm of copper leaving it, /power_in/PVDD_PD end 0.25 mm): the via in pad 1 (0.30 mm) runs down to a VBUS plane, which pulls heat from that end at reflow and the part can stand up on the other - move the via out of the pad onto a thin track, or tie the other end as heavily",
+          "pos": [
+            63.45,
+            176.76
+          ]
+        }
+      ],
+      "kind": "dfm_tombstone",
+      "pad": "1",
+      "heavy_net": "VBUS",
+      "light_net": "/power_in/PVDD_PD",
+      "heavy_mm": 1.66,
+      "light_mm": 0.25
+    },
+    {
+      "check": "dfm",
+      "severity": "info",
+      "pos": [
+        122.907,
+        160.502
+      ],
+      "layer": "F.Cu",
+      "net": "/dac/OPL_P",
+      "refs": [
+        "R72"
+      ],
+      "msg": "R72 (/dac/OPL_P end 0.96 mm of copper leaving it, /dac/DACL_N end 0.26 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "R72 (/dac/OPL_P end 0.96 mm of copper leaving it, /dac/DACL_N end 0.26 mm): the ends are unequal by track width (or thermal-relief spokes) - a part this small can stand up on the end that wets first; match the tracks if the part tombstones",
+          "pos": [
+            122.907,
+            160.502
+          ]
+        }
+      ],
+      "kind": "dfm_tombstone_traces",
+      "pad": "2",
+      "heavy_net": "/dac/OPL_P",
+      "light_net": "/dac/DACL_N",
+      "heavy_mm": 0.96,
+      "light_mm": 0.26
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        54.074,
+        156.45
+      ],
+      "layer": "F.Cu",
+      "net": "/amp_a/A_OUT2M",
+      "refs": [
+        "C224"
+      ],
+      "msg": "the /amp_a/A_OUT2M pour on F.Cu joins one end of 1 0603-or-smaller chip(s) with far more copper than their other end (C224): the pour pulls heat from that end at reflow and the part can stand up on the other - give those pads a thermal relief (zone connect thermal), or match the other end",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "C224 (/amp_a/A_OUT2M end 1.19 mm of copper leaving it, /amp_a/A_BST2M end 0.3 mm)",
+          "pos": [
+            54.074,
+            156.45
+          ]
+        }
+      ],
+      "kind": "dfm_tombstone",
+      "zone": null,
+      "parts": [
+        {
+          "ref": "C224",
+          "pad": "2",
+          "heavy_mm": 1.19,
+          "light_mm": 0.3
+        }
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        86.974,
+        156.45
+      ],
+      "layer": "F.Cu",
+      "net": "/amp_b/B_OUT2M",
+      "refs": [
+        "C322"
+      ],
+      "msg": "the /amp_b/B_OUT2M pour on F.Cu joins one end of 1 0603-or-smaller chip(s) with far more copper than their other end (C322): the pour pulls heat from that end at reflow and the part can stand up on the other - give those pads a thermal relief (zone connect thermal), or match the other end",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "C322 (/amp_b/B_OUT2M end 1.19 mm of copper leaving it, /amp_b/B_BST2M end 0.3 mm)",
+          "pos": [
+            86.974,
+            156.45
+          ]
+        }
+      ],
+      "kind": "dfm_tombstone",
+      "zone": null,
+      "parts": [
+        {
+          "ref": "C322",
+          "pad": "2",
+          "heavy_mm": 1.19,
+          "light_mm": 0.3
+        }
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        38.1,
+        156.45
+      ],
+      "layer": "F.Cu",
+      "net": "/amp_a/A_OUT1P",
+      "refs": [
+        "C223"
+      ],
+      "msg": "the /amp_a/A_OUT1P pour on F.Cu joins one end of 1 0603-or-smaller chip(s) with far more copper than their other end (C223): the pour pulls heat from that end at reflow and the part can stand up on the other - give those pads a thermal relief (zone connect thermal), or match the other end",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "C223 (/amp_a/A_OUT1P end 1.09 mm of copper leaving it, /amp_a/A_BST1P end 0.3 mm)",
+          "pos": [
+            38.1,
+            156.45
+          ]
+        }
+      ],
+      "kind": "dfm_tombstone",
+      "zone": null,
+      "parts": [
+        {
+          "ref": "C223",
+          "pad": "2",
+          "heavy_mm": 1.09,
+          "light_mm": 0.3
+        }
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        71.0,
+        156.45
+      ],
+      "layer": "F.Cu",
+      "net": "/amp_b/B_OUT1P",
+      "refs": [
+        "C321"
+      ],
+      "msg": "the /amp_b/B_OUT1P pour on F.Cu joins one end of 1 0603-or-smaller chip(s) with far more copper than their other end (C321): the pour pulls heat from that end at reflow and the part can stand up on the other - give those pads a thermal relief (zone connect thermal), or match the other end",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "C321 (/amp_b/B_OUT1P end 1.09 mm of copper leaving it, /amp_b/B_BST1P end 0.3 mm)",
+          "pos": [
+            71.0,
+            156.45
+          ]
+        }
+      ],
+      "kind": "dfm_tombstone",
+      "zone": null,
+      "parts": [
+        {
+          "ref": "C321",
+          "pad": "2",
+          "heavy_mm": 1.09,
+          "light_mm": 0.3
+        }
+      ]
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": [
+        139.04,
+        149.16
+      ],
+      "layer": "F.Cu",
+      "net": "GND",
+      "refs": [
+        "C102",
+        "C11",
+        "C112",
+        "C120",
+        "C121",
+        "C122",
+        "C123",
+        "C124",
+        "C125",
+        "C130",
+        "C132",
+        "C136",
+        "C15",
+        "C18",
+        "C19",
+        "C2",
+        "C201",
+        "C202",
+        "C204",
+        "C206",
+        "C21",
+        "C211",
+        "C22",
+        "C228",
+        "C231",
+        "C234",
+        "C237",
+        "C3",
+        "C302",
+        "C304",
+        "C306",
+        "C31",
+        "C312",
+        "C32",
+        "C326",
+        "C329",
+        "C33",
+        "C332",
+        "C335",
+        "C34",
+        "C37",
+        "C39",
+        "C40",
+        "C400",
+        "C41",
+        "C42",
+        "C43",
+        "C44",
+        "C45",
+        "C46",
+        "C47",
+        "C50",
+        "C51",
+        "C52",
+        "C53",
+        "C54",
+        "C55",
+        "C56",
+        "C57",
+        "C58",
+        "C59",
+        "C66",
+        "C67",
+        "C68",
+        "C69",
+        "C70",
+        "C71",
+        "C72",
+        "D3",
+        "R101",
+        "R11",
+        "R111",
+        "R12",
+        "R120",
+        "R131",
+        "R134",
+        "R137",
+        "R14",
+        "R149",
+        "R150",
+        "R16",
+        "R2",
+        "R212",
+        "R214",
+        "R215",
+        "R217",
+        "R313",
+        "R40",
+        "R41",
+        "R42",
+        "R43",
+        "R44",
+        "R45",
+        "R57",
+        "R61",
+        "R7",
+        "R9",
+        "R91"
+      ],
+      "msg": "the GND pour on F.Cu joins one end of 98 0603-or-smaller chip(s) with far more copper than their other end (C102, C11, C112, C120, C121, C122, C123, C124, C125, C130, C132, C136 ...): the pour pulls heat from that end at reflow and the part can stand up on the other - give those pads a thermal relief (zone connect thermal), or match the other end",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "C102 (GND end 3.71 mm of copper leaving it, /linein/ADC_LN end 0.27 mm)",
+          "pos": [
+            139.04,
+            149.16
+          ]
+        },
+        {
+          "msg": "C11 (GND end 2.21 mm of copper leaving it, VBUS end 0.44 mm)",
+          "pos": [
+            72.015,
+            174.483
+          ]
+        },
+        {
+          "msg": "C112 (GND end 4.37 mm of copper leaving it, /linein/ADC_RN end 0.29 mm)",
+          "pos": [
+            140.3,
+            152.8
+          ]
+        },
+        {
+          "msg": "C120 (GND end 2.39 mm of copper leaving it, +3V3 end 0.3 mm)",
+          "pos": [
+            135.529,
+            155.229
+          ]
+        },
+        {
+          "msg": "C121 (GND end 2.34 mm of copper leaving it, +3V3 end 0.3 mm)",
+          "pos": [
+            138.387,
+            152.687
+          ]
+        },
+        {
+          "msg": "C122 (GND end 2.31 mm of copper leaving it, +3V3A end 0.4 mm)",
+          "pos": [
+            134.306,
+            148.042
+          ]
+        },
+        {
+          "msg": "C123 (GND end 3.33 mm of copper leaving it, /linein/ADC_REFQ end 0.2 mm)",
+          "pos": [
+            137.176,
+            147.066
+          ]
+        },
+        {
+          "msg": "C124 (GND end 1.97 mm of copper leaving it, /linein/ADC_REFP end 0.2 mm)",
+          "pos": [
+            131.135,
+            148.154
+          ]
+        },
+        {
+          "msg": "C125 (GND end 1.91 mm of copper leaving it, +5VA end 0.4 mm)",
+          "pos": [
+            109.587,
+            166.167
+          ]
+        },
+        {
+          "msg": "C130 (GND end 3.04 mm of copper leaving it, /linein/TAPA_L end 0.25 mm)",
+          "pos": [
+            97.2,
+            144.0
+          ]
+        },
+        {
+          "msg": "C132 (GND end 2.39 mm of copper leaving it, +5VA end 0.52 mm)",
+          "pos": [
+            101.36,
+            157.7
+          ]
+        },
+        {
+          "msg": "C136 (GND end 3.71 mm of copper leaving it, /linein/TAPA_R end 0.0 mm)",
+          "pos": [
+            102.8,
+            144.0
+          ]
+        },
+        {
+          "msg": "C15 (GND end 3.71 mm of copper leaving it, +5V end 0.35 mm)",
+          "pos": [
+            66.466,
+            179.276
+          ]
+        },
+        {
+          "msg": "C18 (GND end 3.07 mm of copper leaving it, +5V end 0.7 mm)",
+          "pos": [
+            128.433,
+            173.643
+          ]
+        },
+        {
+          "msg": "C19 (GND end 3.33 mm of copper leaving it, +3V3A end 0.2 mm)",
+          "pos": [
+            125.58,
+            174.144
+          ]
+        },
+        {
+          "msg": "C2 (GND end 2.39 mm of copper leaving it, +3V3 end 0.3 mm)",
+          "pos": [
+            50.537,
+            184.627
+          ]
+        },
+        {
+          "msg": "C201 (GND end 4.54 mm of copper leaving it, +5V end 0.35 mm)",
+          "pos": [
+            37.231,
+            166.01
+          ]
+        },
+        {
+          "msg": "C202 (GND end 2.39 mm of copper leaving it, +5V end 0.35 mm)",
+          "pos": [
+            41.41,
+            168.052
+          ]
+        },
+        {
+          "msg": "C204 (GND end 2.39 mm of copper leaving it, /amp_a/A_AVDD end 0.4 mm)",
+          "pos": [
+            52.41,
+            167.994
+          ]
+        },
+        {
+          "msg": "C206 (GND end 2.39 mm of copper leaving it, /amp_a/A_GVDD end 0.2 mm)",
+          "pos": [
+            54.757,
+            165.077
+          ]
+        },
+        {
+          "msg": "C21 (GND end 3.9 mm of copper leaving it, +5VA end 0.2 mm)",
+          "pos": [
+            91.589,
+            165.125
+          ]
+        },
+        {
+          "msg": "C211 (GND end 2.94 mm of copper leaving it, /amp_a/A_CMUTE end 0.2 mm)",
+          "pos": [
+            49.449,
+            168.295
+          ]
+        },
+        {
+          "msg": "C22 (GND end 3.69 mm of copper leaving it, +3V3E end 0.4 mm)",
+          "pos": [
+            83.655,
+            171.535
+          ]
+        },
+        {
+          "msg": "C228 (GND end 3.64 mm of copper leaving it, /amp_a/A_OUT1M_SN end 0.2 mm)",
+          "pos": [
+            42.787,
+            131.547
+          ]
+        },
+        {
+          "msg": "C231 (GND end 4.58 mm of copper leaving it, /amp_a/A_OUT1P_SN end 0.2 mm)",
+          "pos": [
+            52.887,
+            131.547
+          ]
+        },
+        {
+          "msg": "C234 (GND end 3.64 mm of copper leaving it, /amp_a/A_OUT2M_SN end 0.2 mm)",
+          "pos": [
+            59.687,
+            131.547
+          ]
+        },
+        {
+          "msg": "C237 (GND end 3.64 mm of copper leaving it, /amp_a/A_OUT2P_SN end 0.2 mm)",
+          "pos": [
+            69.787,
+            131.547
+          ]
+        },
+        {
+          "msg": "C3 (GND end 2.39 mm of copper leaving it, /ISENSE end 0.2 mm)",
+          "pos": [
+            141.809,
+            188.828
+          ]
+        },
+        {
+          "msg": "C302 (GND end 2.39 mm of copper leaving it, +5V end 0.7 mm)",
+          "pos": [
+            67.546,
+            166.574
+          ]
+        },
+        {
+          "msg": "C304 (GND end 2.33 mm of copper leaving it, /amp_b/B_AVDD end 0.4 mm)",
+          "pos": [
+            85.31,
+            167.994
+          ]
+        },
+        {
+          "msg": "C306 (GND end 2.25 mm of copper leaving it, /amp_b/B_GVDD end 0.46 mm)",
+          "pos": [
+            87.657,
+            165.077
+          ]
+        },
+        {
+          "msg": "C31 (GND end 2.39 mm of copper leaving it, +3V3 end 0.5 mm)",
+          "pos": [
+            149.49,
+            187.9
+          ]
+        },
+        {
+          "msg": "C312 (GND end 3.71 mm of copper leaving it, /amp_b/B_CMUTE end 0.2 mm)",
+          "pos": [
+            81.314,
+            174.302
+          ]
+        },
+        {
+          "msg": "C32 (GND end 2.01 mm of copper leaving it, /mcu/ESP_EN end 0.51 mm)",
+          "pos": [
+            144.406,
+            186.073
+          ]
+        },
+        {
+          "msg": "C326 (GND end 4.58 mm of copper leaving it, /amp_b/B_OUT1M_SN end 0.2 mm)",
+          "pos": [
+            75.687,
+            131.547
+          ]
+        },
+        {
+          "msg": "C329 (GND end 3.64 mm of copper leaving it, /amp_b/B_OUT1P_SN end 0.2 mm)",
+          "pos": [
+            85.787,
+            131.547
+          ]
+        },
+        {
+          "msg": "C33 (GND end 2.21 mm of copper leaving it, +3V3 end 0.3 mm)",
+          "pos": [
+            79.263,
+            195.143
+          ]
+        },
+        {
+          "msg": "C332 (GND end 4.65 mm of copper leaving it, /amp_b/B_OUT2M_SN end 0.26 mm)",
+          "pos": [
+            92.587,
+            131.547
+          ]
+        },
+        {
+          "msg": "C335 (GND end 4.58 mm of copper leaving it, /amp_b/B_OUT2P_SN end 0.2 mm)",
+          "pos": [
+            94.787,
+            136.097
+          ]
+        },
+        {
+          "msg": "C34 (GND end 2.39 mm of copper leaving it, +3V3 end 0.3 mm)",
+          "pos": [
+            107.033,
+            179.508
+          ]
+        },
+        {
+          "msg": "C37 (GND end 2.39 mm of copper leaving it, /ENC_A end 0.4 mm)",
+          "pos": [
+            88.864,
+            200.177
+          ]
+        },
+        {
+          "msg": "C39 (GND end 2.39 mm of copper leaving it, /ENC_SW end 0.4 mm)",
+          "pos": [
+            103.767,
+            199.562
+          ]
+        },
+        {
+          "msg": "C40 (GND end 1.95 mm of copper leaving it, /ethernet/PHY_VDDCR end 0.2 mm)",
+          "pos": [
+            66.579,
+            206.729
+          ]
+        },
+        {
+          "msg": "C400 (GND end 3.71 mm of copper leaving it, /ui/IR_VCC end 0.47 mm)",
+          "pos": [
+            79.329,
+            213.558
+          ]
+        },
+        {
+          "msg": "C41 (GND end 2.39 mm of copper leaving it, /ethernet/PHY_VDDCR end 0.2 mm)",
+          "pos": [
+            68.788,
+            205.248
+          ]
+        },
+        {
+          "msg": "C42 (GND end 2.39 mm of copper leaving it, +3V3E end 0.4 mm)",
+          "pos": [
+            63.625,
+            206.951
+          ]
+        },
+        {
+          "msg": "C43 (GND end 1.66 mm of copper leaving it, +3V3E end 0.2 mm)",
+          "pos": [
+            59.491,
+            202.24
+          ]
+        },
+        {
+          "msg": "C44 (GND end 2.18 mm of copper leaving it, +3V3 end 0.63 mm)",
+          "pos": [
+            68.417,
+            202.947
+          ]
+        },
+        {
+          "msg": "C45 (GND end 2.39 mm of copper leaving it, +3V3E end 0.2 mm)",
+          "pos": [
+            88.623,
+            167.899
+          ]
+        },
+        {
+          "msg": "C46 (GND end 2.39 mm of copper leaving it, +3V3 end 0.3 mm)",
+          "pos": [
+            67.0,
+            197.65
+          ]
+        },
+        {
+          "msg": "C47 (GND end 2.23 mm of copper leaving it, /ethernet/PHY_NRST end 0.26 mm)",
+          "pos": [
+            63.156,
+            198.542
+          ]
+        },
+        {
+          "msg": "C50 (GND end 3.15 mm of copper leaving it, +3V3A end 0.4 mm)",
+          "pos": [
+            125.587,
+            147.777
+          ]
+        },
+        {
+          "msg": "C51 (GND end 2.39 mm of copper leaving it, +3V3A end 0.5 mm)",
+          "pos": [
+            124.23,
+            144.4
+          ]
+        },
+        {
+          "msg": "C52 (GND end 3.33 mm of copper leaving it, +3V3A end 0.2 mm)",
+          "pos": [
+            126.379,
+            150.624
+          ]
+        },
+        {
+          "msg": "C53 (GND end 2.04 mm of copper leaving it, +3V3A end 0.2 mm)",
+          "pos": [
+            116.762,
+            145.136
+          ]
+        },
+        {
+          "msg": "C54 (GND end 2.36 mm of copper leaving it, +3V3A end 0.2 mm)",
+          "pos": [
+            126.345,
+            144.886
+          ]
+        },
+        {
+          "msg": "C55 (GND end 2.39 mm of copper leaving it, +3V3 end 0.3 mm)",
+          "pos": [
+            115.733,
+            151.304
+          ]
+        },
+        {
+          "msg": "C56 (GND end 3.71 mm of copper leaving it, /dac/DAC_DVDD end 0.2 mm)",
+          "pos": [
+            116.746,
+            141.433
+          ]
+        },
+        {
+          "msg": "C57 (GND end 3.33 mm of copper leaving it, +3V3 end 0.3 mm)",
+          "pos": [
+            124.907,
+            142.317
+          ]
+        },
+        {
+          "msg": "C58 (GND end 2.39 mm of copper leaving it, +5VA end 0.54 mm)",
+          "pos": [
+            112.501,
+            160.78
+          ]
+        },
+        {
+          "msg": "C59 (GND end 3.09 mm of copper leaving it, +5VA end 0.2 mm)",
+          "pos": [
+            93.899,
+            174.033
+          ]
+        },
+        {
+          "msg": "C66 (GND end 4.54 mm of copper leaving it, /dac/SUB_VNEG end 0.2 mm)",
+          "pos": [
+            111.094,
+            153.997
+          ]
+        },
+        {
+          "msg": "C67 (GND end 3.69 mm of copper leaving it, /dac/SUB_LDOO end 0.2 mm)",
+          "pos": [
+            106.553,
+            145.683
+          ]
+        },
+        {
+          "msg": "C68 (GND end 2.12 mm of copper leaving it, +3V3A end 0.2 mm)",
+          "pos": [
+            106.673,
+            148.398
+          ]
+        },
+        {
+          "msg": "C69 (GND end 1.86 mm of copper leaving it, +3V3A end 0.2 mm)",
+          "pos": [
+            113.344,
+            151.144
+          ]
+        },
+        {
+          "msg": "C70 (GND end 2.39 mm of copper leaving it, +3V3 end 0.3 mm)",
+          "pos": [
+            106.673,
+            142.658
+          ]
+        },
+        {
+          "msg": "C71 (GND end 2.39 mm of copper leaving it, /dac/SUB1_OUT end 0.44 mm)",
+          "pos": [
+            112.134,
+            140.144
+          ]
+        },
+        {
+          "msg": "C72 (GND end 2.37 mm of copper leaving it, /dac/SUB2_OUT end 0.72 mm)",
+          "pos": [
+            105.243,
+            140.151
+          ]
+        },
+        {
+          "msg": "D3 (GND end 3.51 mm of copper leaving it, /ui/LED_A end 0.2 mm)",
+          "pos": [
+            66.837,
+            219.497
+          ]
+        },
+        {
+          "msg": "R101 (GND end 2.52 mm of copper leaving it, /linein/LDIV_L end 0.46 mm)",
+          "pos": [
+            110.271,
+            160.23
+          ]
+        },
+        {
+          "msg": "R11 (GND end 2.52 mm of copper leaving it, /rails/BUCK5_EN end 0.2 mm)",
+          "pos": [
+            63.821,
+            164.699
+          ]
+        },
+        {
+          "msg": "R111 (GND end 2.52 mm of copper leaving it, /linein/LDIV_R end 0.45 mm)",
+          "pos": [
+            112.587,
+            157.915
+          ]
+        },
+        {
+          "msg": "R12 (GND end 2.52 mm of copper leaving it, /rails/BUCK5_FS end 0.2 mm)",
+          "pos": [
+            68.162,
+            176.959
+          ]
+        },
+        {
+          "msg": "R120 (GND end 2.52 mm of copper leaving it, /I2S_DIN end 0.4 mm)",
+          "pos": [
+            140.127,
+            172.402
+          ]
+        },
+        {
+          "msg": "R131 (GND end 2.52 mm of copper leaving it, /linein/TAPA_L end 0.46 mm)",
+          "pos": [
+            96.93,
+            142.4
+          ]
+        },
+        {
+          "msg": "R134 (GND end 2.52 mm of copper leaving it, /linein/TAP_B end 0.21 mm)",
+          "pos": [
+            107.28,
+            157.03
+          ]
+        },
+        {
+          "msg": "R137 (GND end 2.52 mm of copper leaving it, /linein/TAPA_R end 0.38 mm)",
+          "pos": [
+            102.53,
+            142.4
+          ]
+        },
+        {
+          "msg": "R14 (GND end 1.94 mm of copper leaving it, /rails/BUCK5_FB end 0.2 mm)",
+          "pos": [
+            60.911,
+            162.37
+          ]
+        },
+        {
+          "msg": "R149 (GND end 2.52 mm of copper leaving it, /linein/TAP_L end 0.24 mm)",
+          "pos": [
+            94.15,
+            144.66
+          ]
+        },
+        {
+          "msg": "R150 (GND end 2.52 mm of copper leaving it, /linein/TAP_R end 0.18 mm)",
+          "pos": [
+            103.24,
+            145.7
+          ]
+        },
+        {
+          "msg": "R16 (GND end 3.47 mm of copper leaving it, /rails/BUCK3_FB end 0.2 mm)",
+          "pos": [
+            68.284,
+            185.678
+          ]
+        },
+        {
+          "msg": "R2 (GND end 2.52 mm of copper leaving it, /power_in/PD_CFG1 end 0.2 mm)",
+          "pos": [
+            38.289,
+            185.331
+          ]
+        },
+        {
+          "msg": "R212 (GND end 2.52 mm of copper leaving it, /amp_a/A_GAIN end 0.4 mm)",
+          "pos": [
+            49.858,
+            175.753
+          ]
+        },
+        {
+          "msg": "R214 (GND end 2.52 mm of copper leaving it, /amp_a/A_FREQ end 0.4 mm)",
+          "pos": [
+            53.334,
+            182.155
+          ]
+        },
+        {
+          "msg": "R215 (GND end 2.52 mm of copper leaving it, /amp_a/A_FREQ end 0.2 mm)",
+          "pos": [
+            56.294,
+            182.699
+          ]
+        },
+        {
+          "msg": "R217 (GND end 2.16 mm of copper leaving it, /AMP_OSCP end 0.2 mm)",
+          "pos": [
+            72.247,
+            176.749
+          ]
+        },
+        {
+          "msg": "R313 (GND end 3.47 mm of copper leaving it, /amp_b/B_GAIN end 0.2 mm)",
+          "pos": [
+            81.984,
+            168.027
+          ]
+        },
+        {
+          "msg": "R40 (GND end 2.44 mm of copper leaving it, /AMP_A_RST end 0.2 mm)",
+          "pos": [
+            77.63,
+            177.417
+          ]
+        },
+        {
+          "msg": "R41 (GND end 2.52 mm of copper leaving it, /AMP_B_RST end 0.4 mm)",
+          "pos": [
+            95.757,
+            176.473
+          ]
+        },
+        {
+          "msg": "R42 (GND end 2.52 mm of copper leaving it, /DJ_DIRECT end 0.2 mm)",
+          "pos": [
+            107.012,
+            182.884
+          ]
+        },
+        {
+          "msg": "R43 (GND end 3.39 mm of copper leaving it, /PVDD_EN end 0.2 mm)",
+          "pos": [
+            114.91,
+            188.272
+          ]
+        },
+        {
+          "msg": "R44 (GND end 2.21 mm of copper leaving it, /DAC_EN end 0.66 mm)",
+          "pos": [
+            110.569,
+            157.011
+          ]
+        },
+        {
+          "msg": "R45 (GND end 2.52 mm of copper leaving it, /PHY_RST end 0.2 mm)",
+          "pos": [
+            92.282,
+            192.647
+          ]
+        },
+        {
+          "msg": "R57 (GND end 2.24 mm of copper leaving it, /LCD_CS end 0.27 mm)",
+          "pos": [
+            82.907,
+            197.792
+          ]
+        },
+        {
+          "msg": "R61 (GND end 2.52 mm of copper leaving it, /ethernet/PHY_RBIAS end 0.2 mm)",
+          "pos": [
+            59.511,
+            205.593
+          ]
+        },
+        {
+          "msg": "R7 (GND end 3.44 mm of copper leaving it, /power_in/PVDD_ENG end 0.2 mm)",
+          "pos": [
+            71.481,
+            178.83
+          ]
+        },
+        {
+          "msg": "R9 (GND end 1.99 mm of copper leaving it, /power_in/OV_B end 0.2 mm)",
+          "pos": [
+            61.472,
+            187.698
+          ]
+        },
+        {
+          "msg": "R91 (GND end 3.47 mm of copper leaving it, /VREF end 0.2 mm)",
+          "pos": [
+            117.53,
+            172.935
+          ]
+        }
+      ],
+      "kind": "dfm_tombstone",
+      "zone": null,
+      "parts": [
+        {
+          "ref": "C102",
+          "pad": "2",
+          "heavy_mm": 3.71,
+          "light_mm": 0.27
+        },
+        {
+          "ref": "C11",
+          "pad": "2",
+          "heavy_mm": 2.21,
+          "light_mm": 0.44
+        },
+        {
+          "ref": "C112",
+          "pad": "2",
+          "heavy_mm": 4.37,
+          "light_mm": 0.29
+        },
+        {
+          "ref": "C120",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.3
+        },
+        {
+          "ref": "C121",
+          "pad": "2",
+          "heavy_mm": 2.34,
+          "light_mm": 0.3
+        },
+        {
+          "ref": "C122",
+          "pad": "2",
+          "heavy_mm": 2.31,
+          "light_mm": 0.4
+        },
+        {
+          "ref": "C123",
+          "pad": "2",
+          "heavy_mm": 3.33,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C124",
+          "pad": "2",
+          "heavy_mm": 1.97,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C125",
+          "pad": "2",
+          "heavy_mm": 1.91,
+          "light_mm": 0.4
+        },
+        {
+          "ref": "C130",
+          "pad": "2",
+          "heavy_mm": 3.04,
+          "light_mm": 0.25
+        },
+        {
+          "ref": "C132",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.52
+        },
+        {
+          "ref": "C136",
+          "pad": "2",
+          "heavy_mm": 3.71,
+          "light_mm": 0.0
+        },
+        {
+          "ref": "C15",
+          "pad": "2",
+          "heavy_mm": 3.71,
+          "light_mm": 0.35
+        },
+        {
+          "ref": "C18",
+          "pad": "2",
+          "heavy_mm": 3.07,
+          "light_mm": 0.7
+        },
+        {
+          "ref": "C19",
+          "pad": "2",
+          "heavy_mm": 3.33,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C2",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.3
+        },
+        {
+          "ref": "C201",
+          "pad": "2",
+          "heavy_mm": 4.54,
+          "light_mm": 0.35
+        },
+        {
+          "ref": "C202",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.35
+        },
+        {
+          "ref": "C204",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.4
+        },
+        {
+          "ref": "C206",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C21",
+          "pad": "2",
+          "heavy_mm": 3.9,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C211",
+          "pad": "2",
+          "heavy_mm": 2.94,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C22",
+          "pad": "2",
+          "heavy_mm": 3.69,
+          "light_mm": 0.4
+        },
+        {
+          "ref": "C228",
+          "pad": "2",
+          "heavy_mm": 3.64,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C231",
+          "pad": "2",
+          "heavy_mm": 4.58,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C234",
+          "pad": "2",
+          "heavy_mm": 3.64,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C237",
+          "pad": "2",
+          "heavy_mm": 3.64,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C3",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C302",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.7
+        },
+        {
+          "ref": "C304",
+          "pad": "2",
+          "heavy_mm": 2.33,
+          "light_mm": 0.4
+        },
+        {
+          "ref": "C306",
+          "pad": "2",
+          "heavy_mm": 2.25,
+          "light_mm": 0.46
+        },
+        {
+          "ref": "C31",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.5
+        },
+        {
+          "ref": "C312",
+          "pad": "2",
+          "heavy_mm": 3.71,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C32",
+          "pad": "2",
+          "heavy_mm": 2.01,
+          "light_mm": 0.51
+        },
+        {
+          "ref": "C326",
+          "pad": "2",
+          "heavy_mm": 4.58,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C329",
+          "pad": "2",
+          "heavy_mm": 3.64,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C33",
+          "pad": "2",
+          "heavy_mm": 2.21,
+          "light_mm": 0.3
+        },
+        {
+          "ref": "C332",
+          "pad": "2",
+          "heavy_mm": 4.65,
+          "light_mm": 0.26
+        },
+        {
+          "ref": "C335",
+          "pad": "2",
+          "heavy_mm": 4.58,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C34",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.3
+        },
+        {
+          "ref": "C37",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.4
+        },
+        {
+          "ref": "C39",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.4
+        },
+        {
+          "ref": "C40",
+          "pad": "2",
+          "heavy_mm": 1.95,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C400",
+          "pad": "2",
+          "heavy_mm": 3.71,
+          "light_mm": 0.47
+        },
+        {
+          "ref": "C41",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C42",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.4
+        },
+        {
+          "ref": "C43",
+          "pad": "2",
+          "heavy_mm": 1.66,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C44",
+          "pad": "2",
+          "heavy_mm": 2.18,
+          "light_mm": 0.63
+        },
+        {
+          "ref": "C45",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C46",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.3
+        },
+        {
+          "ref": "C47",
+          "pad": "2",
+          "heavy_mm": 2.23,
+          "light_mm": 0.26
+        },
+        {
+          "ref": "C50",
+          "pad": "2",
+          "heavy_mm": 3.15,
+          "light_mm": 0.4
+        },
+        {
+          "ref": "C51",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.5
+        },
+        {
+          "ref": "C52",
+          "pad": "2",
+          "heavy_mm": 3.33,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C53",
+          "pad": "2",
+          "heavy_mm": 2.04,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C54",
+          "pad": "2",
+          "heavy_mm": 2.36,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C55",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.3
+        },
+        {
+          "ref": "C56",
+          "pad": "2",
+          "heavy_mm": 3.71,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C57",
+          "pad": "2",
+          "heavy_mm": 3.33,
+          "light_mm": 0.3
+        },
+        {
+          "ref": "C58",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.54
+        },
+        {
+          "ref": "C59",
+          "pad": "2",
+          "heavy_mm": 3.09,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C66",
+          "pad": "2",
+          "heavy_mm": 4.54,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C67",
+          "pad": "2",
+          "heavy_mm": 3.69,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C68",
+          "pad": "2",
+          "heavy_mm": 2.12,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C69",
+          "pad": "2",
+          "heavy_mm": 1.86,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "C70",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.3
+        },
+        {
+          "ref": "C71",
+          "pad": "2",
+          "heavy_mm": 2.39,
+          "light_mm": 0.44
+        },
+        {
+          "ref": "C72",
+          "pad": "2",
+          "heavy_mm": 2.37,
+          "light_mm": 0.72
+        },
+        {
+          "ref": "D3",
+          "pad": "2",
+          "heavy_mm": 3.51,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R101",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.46
+        },
+        {
+          "ref": "R11",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R111",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.45
+        },
+        {
+          "ref": "R12",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R120",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.4
+        },
+        {
+          "ref": "R131",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.46
+        },
+        {
+          "ref": "R134",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.21
+        },
+        {
+          "ref": "R137",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.38
+        },
+        {
+          "ref": "R14",
+          "pad": "2",
+          "heavy_mm": 1.94,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R149",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.24
+        },
+        {
+          "ref": "R150",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.18
+        },
+        {
+          "ref": "R16",
+          "pad": "2",
+          "heavy_mm": 3.47,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R2",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R212",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.4
+        },
+        {
+          "ref": "R214",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.4
+        },
+        {
+          "ref": "R215",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R217",
+          "pad": "2",
+          "heavy_mm": 2.16,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R313",
+          "pad": "2",
+          "heavy_mm": 3.47,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R40",
+          "pad": "2",
+          "heavy_mm": 2.44,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R41",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.4
+        },
+        {
+          "ref": "R42",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R43",
+          "pad": "2",
+          "heavy_mm": 3.39,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R44",
+          "pad": "2",
+          "heavy_mm": 2.21,
+          "light_mm": 0.66
+        },
+        {
+          "ref": "R45",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R57",
+          "pad": "2",
+          "heavy_mm": 2.24,
+          "light_mm": 0.27
+        },
+        {
+          "ref": "R61",
+          "pad": "2",
+          "heavy_mm": 2.52,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R7",
+          "pad": "2",
+          "heavy_mm": 3.44,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R9",
+          "pad": "2",
+          "heavy_mm": 1.99,
+          "light_mm": 0.2
+        },
+        {
+          "ref": "R91",
+          "pad": "2",
+          "heavy_mm": 3.47,
+          "light_mm": 0.2
+        }
+      ]
+    },
+    {
+      "check": "dfm",
       "severity": "warning",
       "pos": null,
       "layer": null,
       "net": null,
       "refs": [
-        "C207",
-        "C208",
-        "C209",
-        "C210",
-        "C218",
-        "C220",
-        "C307",
-        "C308",
-        "C309",
-        "C310",
         "D6",
         "D7",
         "D8",
         "D9"
       ],
-      "msg": "14 bottom part(s): bottom-side rotations follow (180 - kicad + correction), from two community exporters and the geometry, not from a JLC statement: check these parts' pin 1 in JLC's order preview before ordering",
+      "msg": "4 bottom part(s): bottom-side rotations follow (180 - kicad + correction), from two community exporters and the geometry, not from a JLC statement: check these parts' pin 1 in JLC's order preview before ordering",
       "source": "check.dfm",
       "items": [
         {
-          "msg": "14 bottom part(s): bottom-side rotations follow (180 - kicad + correction), from two community exporters and the geometry, not from a JLC statement: check these parts' pin 1 in JLC's order preview before ordering",
+          "msg": "4 bottom part(s): bottom-side rotations follow (180 - kicad + correction), from two community exporters and the geometry, not from a JLC statement: check these parts' pin 1 in JLC's order preview before ordering",
           "pos": null
         }
       ],
       "kind": "cpl_bottom_preview"
+    },
+    {
+      "check": "dfm",
+      "severity": "warning",
+      "pos": null,
+      "layer": null,
+      "net": null,
+      "refs": [
+        "U18",
+        "U21"
+      ],
+      "msg": "2 part(s): no pin-1 dot or chamfer (or, on a diode, LED or polarised cap, no cathode bar or \"+\" off centre) found on the part's own silkscreen. JLC can't read the polarity with no mark and confirms by email, which holds the order: add a mark at pin 1, or answer the email (reference/jlc_bga_cpl.md)",
+      "source": "check.dfm",
+      "items": [
+        {
+          "msg": "2 part(s): no pin-1 dot or chamfer (or, on a diode, LED or polarised cap, no cathode bar or \"+\" off centre) found on the part's own silkscreen. JLC can't read the polarity with no mark and confirms by email, which holds the order: add a mark at pin 1, or answer the email (reference/jlc_bga_cpl.md)",
+          "pos": null
+        }
+      ],
+      "kind": "cpl_no_silk_mark"
     },
     {
       "check": "dfm",
@@ -628,7 +3411,8 @@
       "release",
       "castellation",
       "netlist",
-      "teardrop"
+      "teardrop",
+      "tombstone"
     ],
     "ran": [
       "copper",
@@ -643,24 +3427,27 @@
       "release",
       "castellation",
       "netlist",
-      "teardrop"
+      "teardrop",
+      "tombstone"
     ],
     "passed": [
       "copper",
       "copper_to_edge",
       "zone_fill",
-      "drill",
       "hole_to_edge",
       "silk",
       "polarity",
-      "placement",
       "bom",
       "release",
       "castellation",
       "netlist",
-      "teardrop"
+      "teardrop",
+      "tombstone"
     ],
-    "failed": [],
+    "failed": [
+      "drill",
+      "placement"
+    ],
     "waived": [],
     "not_applicable": {},
     "skipped_error": {
@@ -670,12 +3457,12 @@
   "record_result": {
     "ok": true,
     "recorded": true,
-    "workspace": "/home/hive2/.cache/h2-tmp/a2446-core/boards/core",
+    "workspace": "/home/hive2/.cache/h2-tmp/a2446-u11/boards/core",
     "gate": "dfm",
-    "status": "pass",
+    "status": "fail",
     "attempts": 15,
     "inputs": {
-      "pcb": "sexpr_no_uuid:382fc41d71321377f2a49ee00b12ea8736fe9cf2cd6d2076f234276df233e8d0",
+      "pcb": "sexpr_no_uuid:905811035b049db078f9cf7b52460d3c8809077c4a41841032fe59acece81510",
       "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
       "parts": null
     }

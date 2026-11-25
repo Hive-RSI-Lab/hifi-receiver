@@ -4,7 +4,7 @@
  "workspace_schema": 2,
  "workspace": "/work/boards/core",
  "created": "2026-10-28T11:07:23",
- "updated": "2026-11-01T00:03:48",
+ "updated": "2026-11-25T02:50:54",
  "phase": "P9",
  "gates": {
   "erc": {
@@ -690,17 +690,17 @@
   "drc_routed": {
    "phase": "P7",
    "status": "pass",
-   "attempts": 352,
+   "attempts": 354,
    "last": {
-    "ts": "2026-11-01T00:02:15",
+    "ts": "2026-11-25T02:47:20",
     "status": "pass",
     "failing_count": 0,
     "total": 0,
     "inputs": {
-     "pcb": "sexpr_no_uuid:9404a8f45ec38bad54a9b99a380066a7e7f45cdb3be2048ff5c4594627d2b906",
+     "pcb": "sexpr_no_uuid:905811035b049db078f9cf7b52460d3c8809077c4a41841032fe59acece81510",
      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
      "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
-     "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
+     "dru": "text_eol:ad451e573d8caefb08f5a51334afebb5b4a810f63b945aa6d8835b4b0c35627d"
     }
    },
    "history": [
@@ -4927,23 +4927,47 @@
       "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
       "dru": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202"
      }
+    },
+    {
+     "ts": "2026-11-25T02:37:15",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:905811035b049db078f9cf7b52460d3c8809077c4a41841032fe59acece81510",
+      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
+      "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
+      "dru": "text_eol:ad451e573d8caefb08f5a51334afebb5b4a810f63b945aa6d8835b4b0c35627d"
+     }
+    },
+    {
+     "ts": "2026-11-25T02:47:20",
+     "status": "pass",
+     "failing_count": 0,
+     "total": 0,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:905811035b049db078f9cf7b52460d3c8809077c4a41841032fe59acece81510",
+      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
+      "pro": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
+      "dru": "text_eol:ad451e573d8caefb08f5a51334afebb5b4a810f63b945aa6d8835b4b0c35627d"
+     }
     }
    ]
   },
   "verify": {
    "phase": "P8",
-   "status": "pass",
-   "attempts": 12,
+   "status": "fail",
+   "attempts": 13,
    "last": {
-    "ts": "2026-10-29T11:14:08",
-    "status": "pass",
-    "failing_count": 0,
-    "total": 177,
+    "ts": "2026-11-25T02:43:35",
+    "status": "fail",
+    "failing_count": 17,
+    "total": 429,
     "inputs": {
-     "pcb": "sexpr_no_uuid:3223986cd3ce0a73f676b4a992e72cd1ccbdfd4cd2c9b67474aa04e0f9812d5b",
-     "constraints": "json_canonical:6f0866f02a4f89d73bae6df5c9fda405cf4fa28296844884f5b3827bb41f2614",
+     "pcb": "sexpr_no_uuid:905811035b049db078f9cf7b52460d3c8809077c4a41841032fe59acece81510",
+     "constraints": "json_canonical:f4da247099df494d760deb2798a933e84909d31d56027ce1bc51328676f910ab",
      "decoupling": "json_canonical:7e759350e42c493293b29d46193ba5934d5c131dd8262b3f6f08de943ba02362",
-     "waivers": "json_canonical:b617b01d130b74a9c5e33240470e7ef866d297c5b8d1032d7b06f0753517010a"
+     "waivers": "json_canonical:235c81e71847bdb08d6de987549d415bdc9f91ece166a32817a1c28fea85e3f6"
     }
    },
    "history": [
@@ -5090,101 +5114,32 @@
       "decoupling": "json_canonical:7e759350e42c493293b29d46193ba5934d5c131dd8262b3f6f08de943ba02362",
       "waivers": "json_canonical:b617b01d130b74a9c5e33240470e7ef866d297c5b8d1032d7b06f0753517010a"
      }
-    }
-   ],
-   "stale": [
-    {
-     "ts": "2026-10-31T14:44:13",
-     "edit_class": "swap_part_same_fp",
-     "refs": [
-      "C228",
-      "C231",
-      "C234",
-      "C237",
-      "C326",
-      "C329",
-      "C332",
-      "C335"
-     ],
-     "human_hold": 2
     },
     {
-     "ts": "2026-10-31T15:25:03",
-     "edit_class": "add_part",
-     "refs": [
-      "D6",
-      "D7",
-      "D8",
-      "D9"
-     ],
-     "human_hold": 2
-    },
-    {
-     "ts": "2026-10-31T20:04:50",
-     "edit_class": "add_part",
-     "refs": [
-      "J20",
-      "J21",
-      "J22",
-      "J23",
-      "J24",
-      "J25",
-      "J26",
-      "J27"
-     ],
-     "human_hold": 2
-    },
-    {
-     "ts": "2026-10-31T20:04:50",
-     "edit_class": "del_part",
-     "refs": [
-      "J10",
-      "J11",
-      "J6",
-      "J7"
-     ],
-     "human_hold": 2
-    },
-    {
-     "ts": "2026-10-31T23:23:14",
-     "edit_class": "swap_part_same_fp",
-     "refs": [
-      "C4",
-      "C8"
-     ],
-     "human_hold": 2
-    },
-    {
-     "ts": "2026-10-31T23:25:29",
-     "edit_class": "swap_part_same_fp",
-     "refs": [
-      "C4",
-      "C8"
-     ],
-     "human_hold": 2
-    },
-    {
-     "ts": "2026-10-31T23:26:18",
-     "edit_class": "swap_part_same_fp",
-     "refs": [
-      "C4",
-      "C8"
-     ],
-     "human_hold": 2
+     "ts": "2026-11-25T02:43:35",
+     "status": "fail",
+     "failing_count": 17,
+     "total": 429,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:905811035b049db078f9cf7b52460d3c8809077c4a41841032fe59acece81510",
+      "constraints": "json_canonical:f4da247099df494d760deb2798a933e84909d31d56027ce1bc51328676f910ab",
+      "decoupling": "json_canonical:7e759350e42c493293b29d46193ba5934d5c131dd8262b3f6f08de943ba02362",
+      "waivers": "json_canonical:235c81e71847bdb08d6de987549d415bdc9f91ece166a32817a1c28fea85e3f6"
+     }
     }
    ]
   },
   "dfm": {
    "phase": "P9",
-   "status": "pass",
-   "attempts": 13,
+   "status": "fail",
+   "attempts": 15,
    "last": {
-    "ts": "2026-11-01T00:03:48",
-    "status": "pass",
-    "failing_count": 0,
-    "total": 6,
+    "ts": "2026-11-25T02:50:54",
+    "status": "fail",
+    "failing_count": 25,
+    "total": 63,
     "inputs": {
-     "pcb": "sexpr_no_uuid:9404a8f45ec38bad54a9b99a380066a7e7f45cdb3be2048ff5c4594627d2b906",
+     "pcb": "sexpr_no_uuid:905811035b049db078f9cf7b52460d3c8809077c4a41841032fe59acece81510",
      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
      "parts": null
     }
@@ -5332,6 +5287,28 @@
       "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
       "parts": null
      }
+    },
+    {
+     "ts": "2026-11-25T02:46:58",
+     "status": "fail",
+     "failing_count": 25,
+     "total": 63,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:905811035b049db078f9cf7b52460d3c8809077c4a41841032fe59acece81510",
+      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
+      "parts": null
+     }
+    },
+    {
+     "ts": "2026-11-25T02:50:54",
+     "status": "fail",
+     "failing_count": 25,
+     "total": 63,
+     "inputs": {
+      "pcb": "sexpr_no_uuid:905811035b049db078f9cf7b52460d3c8809077c4a41841032fe59acece81510",
+      "sch": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
+      "parts": null
+     }
     }
    ]
   }
@@ -5342,31 +5319,31 @@
    "path": "kicad/core.kicad_sch",
    "kind": "sch",
    "sha256": "sexpr_no_uuid:c55b039920eba1accb45b5a27c17f104bb57fdae2beaa929676ec0bd5f3b93b8",
-   "hashed": "2026-11-01T00:03:48"
+   "hashed": "2026-11-25T02:50:54"
   },
   "pro": {
    "path": "kicad/core.kicad_pro",
    "kind": "pro",
    "sha256": "json_canonical:42925dd8a0c1216e069ccc2ed2fa0cbfe77b2d528c605ebaf41900fd755f9b9e",
-   "hashed": "2026-11-01T00:02:15"
+   "hashed": "2026-11-25T02:47:20"
   },
   "pcb": {
    "path": "kicad/core.kicad_pcb",
    "kind": "pcb",
-   "sha256": "sexpr_no_uuid:9404a8f45ec38bad54a9b99a380066a7e7f45cdb3be2048ff5c4594627d2b906",
-   "hashed": "2026-11-01T00:03:48"
+   "sha256": "sexpr_no_uuid:905811035b049db078f9cf7b52460d3c8809077c4a41841032fe59acece81510",
+   "hashed": "2026-11-25T02:50:54"
   },
   "constraints": {
    "path": "kicad/constraints.json",
    "kind": "constraints",
-   "sha256": "json_canonical:6f0866f02a4f89d73bae6df5c9fda405cf4fa28296844884f5b3827bb41f2614",
-   "hashed": "2026-10-29T11:14:08"
+   "sha256": "json_canonical:f4da247099df494d760deb2798a933e84909d31d56027ce1bc51328676f910ab",
+   "hashed": "2026-11-25T02:43:35"
   },
   "decoupling": {
    "path": "kicad/decoupling.json",
    "kind": "decoupling",
    "sha256": "json_canonical:7e759350e42c493293b29d46193ba5934d5c131dd8262b3f6f08de943ba02362",
-   "hashed": "2026-10-29T11:14:08"
+   "hashed": "2026-11-25T02:43:35"
   },
   "place_waivers": {
    "path": "reports/place-waivers.json",
@@ -5377,20 +5354,20 @@
   "dru": {
    "path": "kicad/core.kicad_dru",
    "kind": "dru",
-   "sha256": "text_eol:c177b210be31868735c5b9abbf69f708f5f9323ea51180f0c1f8f095ea824202",
-   "hashed": "2026-11-01T00:02:15"
+   "sha256": "text_eol:ad451e573d8caefb08f5a51334afebb5b4a810f63b945aa6d8835b4b0c35627d",
+   "hashed": "2026-11-25T02:47:20"
   },
   "waivers": {
    "path": "reports/verify-waivers.json",
    "kind": "waivers",
-   "sha256": "json_canonical:b617b01d130b74a9c5e33240470e7ef866d297c5b8d1032d7b06f0753517010a",
-   "hashed": "2026-10-29T11:14:08"
+   "sha256": "json_canonical:235c81e71847bdb08d6de987549d415bdc9f91ece166a32817a1c28fea85e3f6",
+   "hashed": "2026-11-25T02:43:35"
   },
   "parts": {
    "path": "kicad/parts.json",
    "kind": "parts",
    "sha256": null,
-   "hashed": "2026-11-01T00:03:48"
+   "hashed": "2026-11-25T02:50:54"
   },
   "netlist": {
    "path": "kicad/core.net",
@@ -9558,6 +9535,46 @@
    "status": "pass",
    "attempt": 13,
    "failing_count": 0
+  },
+  {
+   "ts": "2026-11-25T02:37:15",
+   "event": "gate",
+   "gate": "drc_routed",
+   "status": "pass",
+   "attempt": 353,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-11-25T02:43:35",
+   "event": "gate",
+   "gate": "verify",
+   "status": "fail",
+   "attempt": 13,
+   "failing_count": 17
+  },
+  {
+   "ts": "2026-11-25T02:46:58",
+   "event": "gate",
+   "gate": "dfm",
+   "status": "fail",
+   "attempt": 14,
+   "failing_count": 25
+  },
+  {
+   "ts": "2026-11-25T02:47:20",
+   "event": "gate",
+   "gate": "drc_routed",
+   "status": "pass",
+   "attempt": 354,
+   "failing_count": 0
+  },
+  {
+   "ts": "2026-11-25T02:50:54",
+   "event": "gate",
+   "gate": "dfm",
+   "status": "fail",
+   "attempt": 15,
+   "failing_count": 25
   }
  ]
 }

@@ -32,11 +32,14 @@ P("Y1", A + "SX3M49.152B10F20TNN", "49.152MHz", A + "OSC-SMD_4P-L3.2-W2.5-BL",
   lcsc="C7431354", role="DAC master clock, 1.7 % under the 50 MHz internal-DVDD limit")
 C("C57", "100nF", "+3V3", ic="Y1", pin="4")
 R("R71", "33R", "OSC_OUT", "DAC_MCLK")
-# OPA1678: differential to single-ended, gain 1.5k/(2k+806R) = 0.53
-P("U11", A + "OPA1678IDR", "OPA1678", A + "SOIC-8_L5.0-W4.0-P1.27-LS6.0-BL",
+# OPA1688: differential to single-ended, gain 1.3k/(2k+806R) = 0.46.
+# OPA1688, not OPA1678: the OPA1678 (C192421) went out of stock at JLC
+# (2026-11-25). Same SOIC-8 dual pinout, same (V+)-2 V input top on 5 V,
+# input down to (V-)-0.1 V, output to 0.35 V of the rails; 8 vs 4.5 nV/rtHz.
+P("U11", A + "OPA1688IDR", "OPA1688", A + "SOIC-8_L5.0-W4.0-P1.27-LS6.0-BL",
   {"n:INA+": "OPL_P", "n:INA-": "OPL_N", "n:OUTA": "MAIN_L",
    "n:INB+": "OPR_P", "n:INB-": "OPR_N", "n:OUTB": "MAIN_R",
-   "n:V+": "+5VA", "n:V-": "GND"}, lcsc="C192421", role="DAC output stage")
+   "n:V+": "+5VA", "n:V-": "GND"}, lcsc="C206212", role="DAC output stage")
 C("C58", "100nF", "+5VA", ic="U11", pin="8")
 C("C59", "10uF", "+5VA", pkg="0603")
 for ch, n in (("L", 72), ("R", 80)):

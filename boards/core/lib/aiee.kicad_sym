@@ -1332,7 +1332,7 @@
     )
   )
 
-  (symbol "OPA1678IDR"
+  (symbol "OPA1688IDR"
     (in_bom yes)
     (on_board yes)
     (property
@@ -1344,7 +1344,7 @@
     )
     (property
       "Value"
-      "OPA1678IDR"
+      "OPA1688IDR"
       (id 1)
       (at 0 -8.89 0)
       (effects (font (size 1.27 1.27) ) )
@@ -1358,7 +1358,7 @@
     )
     (property
       "Datasheet"
-      "https://lcsc.com/product-detail/Others_Texas-Instruments_OPA1678IDR_Texas-Instruments-TI-OPA1678IDR_C192421.html"
+      "https://www.ti.com/lit/ds/symlink/opa1688.pdf"
       (id 3)
       (at 0 -13.97 0)
       (effects (font (size 1.27 1.27) ) hide)
@@ -1372,14 +1372,14 @@
     )
     (property
       "MPN"
-      "OPA1678IDR"
+      "OPA1688IDR"
       (id 5)
       (at 0 -19.05 0)
       (effects (font (size 1.27 1.27) ) hide)
     )
     (property
       "LCSC Part"
-      "C192421"
+      "C206212"
       (id 6)
       (at 0 -21.59 0)
       (effects (font (size 1.27 1.27) ) hide)
@@ -1391,7 +1391,7 @@
       (at 0 -24.13 0)
       (effects (font (size 1.27 1.27) ) hide)
     )
-    (symbol "OPA1678IDR_0_1"
+    (symbol "OPA1688IDR_0_1"
       (rectangle
         (start -12.70 6.35)
         (end 12.70 -6.35)
