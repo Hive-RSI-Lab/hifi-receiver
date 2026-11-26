@@ -53,7 +53,9 @@ static char url[128], *headers;
 static size_t msg_max;
 static hifi_ws_msg_cb_t on_msg;
 static hifi_ws_up_cb_t on_up;
+static hifi_ws_bin_cb_t on_bin; /* binary frames: the printer relay's streams (hifi_tcp.c) */
 static volatile bool running, up, broken;
+static volatile uint32_t gen; /* +1 each time the link comes up and each time it drops */
 static int64_t last_tx;
 static hifi_ws_stats_t stats; /* hifi_ws_stats(); 64-bit fields, so under stats_mux */
 static portMUX_TYPE stats_mux = portMUX_INITIALIZER_UNLOCKED;
@@ -138,6 +140,7 @@ static void drop(void) {
 		hifi_ws_drop_text(why, sizeof(why), cause, cause_code, wifi_down);
 		ESP_LOGW(TAG, "the link dropped: %s", why);
 	}
+	if (up) gen++;
 	up = false;
 	if (ssl) {
 		esp_transport_close(ssl);
@@ -273,6 +276,8 @@ static void read_frame(void) {
 		goto out;
 	}
 	take = h.op == 1 && h.fin && h.len > 0 && h.len <= msg_max;
+	bool bin = on_bin && h.op == 2 && h.fin && h.len > 0 && h.len <= HIFI_WS_BIN_MAX;
+	take = take || bin;
 	bool ctl = h.op >= 8;
 	if (take || ctl) {
 		m = malloc((size_t) h.len + 1);
@@ -308,6 +313,11 @@ static void read_frame(void) {
 	}
 out:
 	xSemaphoreGive(lock);
+	if (m && take && !broken && h.op == 2) {
+		on_bin((const uint8_t *) m, (size_t) h.len); /* no lock: it may block on a socket */
+		free(m);
+		return;
+	}
 	if (m && take && !broken) {
 		on_msg(m, (size_t) h.len);
 		return;
@@ -352,6 +362,7 @@ static void ws_task(void *arg) {
 			cause_code = 0;
 			on_sta = sta;
 			sta_drops_at_up = sta_drops;
+			gen++;
 			up = true;
 			xSemaphoreGive(lock);
 			if (on_up) on_up();
@@ -396,7 +407,7 @@ static bool task_make(void) {
 	return false;
 }
 
-bool hifi_ws_start(const char *u, const char *h, size_t max, hifi_ws_msg_cb_t m, hifi_ws_up_cb_t cb) {
+bool hifi_ws_start(const char *u, const char *h, size_t max, hifi_ws_msg_cb_t m, hifi_ws_up_cb_t cb, hifi_ws_bin_cb_t b) {
 	if (running || !m || strlen(u) >= sizeof(url)) return false;
 	if (!lock) lock = xSemaphoreCreateMutex();
 	if (!done) done = xSemaphoreCreateBinary();
@@ -410,6 +421,7 @@ bool hifi_ws_start(const char *u, const char *h, size_t max, hifi_ws_msg_cb_t m,
 	msg_max = max;
 	on_msg = m;
 	on_up = cb;
+	on_bin = b;
 	running = true;
 	xSemaphoreGive(go);
 	return true;
@@ -425,6 +437,8 @@ void hifi_ws_stop(void) {
 
 bool hifi_ws_up(void) { return up; }
 
+uint32_t hifi_ws_gen(void) { return gen; }
+
 void hifi_ws_stats(hifi_ws_stats_t *out) {
 	portENTER_CRITICAL(&stats_mux);
 	*out = stats;
@@ -435,6 +449,22 @@ bool hifi_ws_send(const char *text, size_t len) {
 	if (!up || !len) return false;
 	xSemaphoreTake(lock, portMAX_DELAY);
 	bool ok = up && ssl && write_frame(1, text, len);
+	if (ok) last_tx = now_s();
+	else broken = up;
+	xSemaphoreGive(lock);
+	return ok;
+}
+
+bool hifi_ws_send_bin(const uint8_t *data, size_t len) { return hifi_ws_send_bin_on(0, data, len); }
+
+bool hifi_ws_send_bin_on(uint32_t g, const uint8_t *data, size_t len) {
+	if (!up || !len) return false;
+	xSemaphoreTake(lock, portMAX_DELAY);
+	bool ok = up && ssl && (!g || g == gen) && write_frame(2, (const char *) data, len);
+	if (!ok && g && g != gen) {
+		xSemaphoreGive(lock);
+		return false; /* another link's stream: not this one's to break */
+	}
 	if (ok) last_tx = now_s();
 	else broken = up;
 	xSemaphoreGive(lock);
