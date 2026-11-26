@@ -25,6 +25,11 @@ typedef struct {
 	hifi_verify_fn verify;
 	uint64_t last_id;   /* the newest command taken; ids only go up */
 	uint32_t accepted, rejected;
+	/* the printer relay's commands (core/hifi_tcp.h): a signed command whose
+	 * path starts /relay/ goes here, never to the test API, so the LAN's
+	 * HTTP and the console can't reach it. Writes a JSON body into out and
+	 * returns the status. NULL: those paths are 404. */
+	int (*relay)(const char *method, const char *path, const char *body, char *out, size_t cap);
 } hifi_remote_t;
 
 /* Reads a key list "hex64[,hex64]" (the build's HIFI_HIVE_PUBKEY); returns

@@ -141,7 +141,12 @@ int hifi_remote_handle(hifi_remote_t *r, const hifi_ops_t *ops, const char *msg,
 		goto done;
 	}
 	r->accepted++; /* counted once, as accepted or as rejected */
-	st = hifi_api_handle(ops, method, path, body, out + pre, cap - pre - 20);
+	if (!strncmp(path, "/relay/", 7)) {
+		if (r->relay) st = r->relay(method, path, body, out + pre, cap - pre - 20);
+		else st = 404, snprintf(out + pre, cap - pre - 20, "{\"error\":\"no relay in this build\"}");
+	} else {
+		st = hifi_api_handle(ops, method, path, body, out + pre, cap - pre - 20);
+	}
 	size_t used = strlen(out);
 	snprintf(out + used, cap - used, ",\"status\":%d}", st);
 	free(body);

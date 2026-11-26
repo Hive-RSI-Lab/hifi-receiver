@@ -157,6 +157,63 @@ The ESP side isn't built on the tower (no IDF toolchain there); the plain
 parts are host-tested in `firmware/test/test_remote.c`, and the endpoint's
 side with a fake board in the H2 dashboard's tests.
 
+### The TCP relay (a printer on the board's network)
+
+Over the bench endpoint's link (above) the board can also carry TCP streams
+from the Hive to one printer on its own network: the Bambu A1 mini, for
+status, its file list and uploads (the Hive's `printer` module; prints still
+need the person's go for each one). Ruled on by the warden on 2026-11-26
+(post 112600386dea); its conditions are what this does:
+
+- **Only the Hive opens streams.** The commands are signed requests like
+  any other (`core/hifi_remote.c` hands the `/relay/` paths to the relay,
+  only on a verified frame): `POST /relay/enable {"ip", "sha256"}`,
+  `/relay/disable`, `/relay/open {"sid": 1-255, "port"}`,
+  `/relay/close {"sid"}` (0 closes all) and `GET /relay/state`. Nothing
+  the board receives on the printer's side, and no unsigned frame, can open
+  a stream or a connection anywhere.
+- **One address, one certificate.** Enable takes a dotted IPv4 address (no
+  names, no DNS) and the SHA-256 of the printer's DER certificate; the board
+  does a TLS handshake to it on 8883 and keeps the pair (NVS `hifi_tcp_ip`,
+  `hifi_tcp_fp`) only if they match. An open re-checks the certificate when
+  the last check is over 60 s old. A mismatch turns the relay off and clears
+  NVS, and the answer is 409 `{"error", "seen": <the certificate seen>}`;
+  only a new signed enable turns it on again. The Hive posts the mismatch.
+  While a stream stays open the board checks again every 10 minutes
+  (between file transfers); a mismatch it finds that way turns the relay
+  off at once, and the next open answers the same 409.
+- **Ports:** 8883 (MQTT), 990 (FTPS), and one stream at a time on 1024 and
+  up, only while a 990 stream is open (FTPS's passive data); it is closed
+  when the last 990 stream ends. Anything else is 400, 403 or 409. At most
+  four streams (`HIFI_TCP_STREAMS`).
+- **Bytes** go as WebSocket binary frames, `[sid][up to 4096 bytes]` both
+  ways. From the board, a frame of the sid alone means the printer ended
+  that stream; the Hive ends one with `/relay/close` (the board ignores an
+  empty frame from the Hive). The board drops a frame for a sid it hasn't
+  opened, and a frame the printer's socket doesn't take within 1 s ends that
+  stream, so a stalled printer never holds up the link. A stream idle 120 s
+  is closed (an FTPS control stream isn't idle while its data stream moves a
+  file). Each stream belongs to the link it was opened on: when that link
+  drops, its streams close, even if a new link is already up.
+- **Flow control.** The board acknowledges what it has written to the
+  printer: a binary frame `[0][sid][4 bytes, big-endian, wrapping]`, the
+  stream's running total (sid 0 is never a stream, so an endpoint that
+  doesn't know it drops it), and says so in the open's answer (`"ack":
+  true`). The Hive then keeps at most 64 KB (`HIFI_TCP_WINDOW`) in flight past
+  the last acknowledgement, so a file upload never piles megabytes into the
+  link's buffers (the board's link reaches the tower through a proxy that
+  holds a lot): a signed command, a disable above all, never waits behind
+  them, and the client sees the real pace. A full window with no
+  acknowledgement for 60 s ends the stream.
+- **Code:** `core/hifi_tcp.c` (parsing and checks, host-tested in
+  `test/test_tcp.c`), `esp/hifi_tcp.c` (one task: sockets, the certificate
+  check with mbedtls, NVS), binary frames in `esp/hifi_ws.c`.
+
+The Hive's side is the bench endpoint's (`remote_bench.py` in H2's dash
+module): a unix socket `printer.sock` (0600, never TCP) where the `printer`
+module asks for a port, the Agents switch gating every stream, and the
+off switches listed in H2's `modules/printer/docs/a1-mini-relay.md`.
+
 ## Firmware updates the Hive pushes, with rollback
 
 **Partition table:** two app slots plus the factory recovery app, so a new

@@ -1058,6 +1058,13 @@ static void test_ws_frames(void) {
 
 static hifi_remote_t rem;
 
+static char relay_seen[128];
+static int relay_hook(const char *method, const char *path, const char *body, char *o, size_t cap) {
+	snprintf(relay_seen, sizeof(relay_seen), "%s %s %s", method, path, body ? body : "null");
+	snprintf(o, cap, "{\"open\":1}");
+	return 200;
+}
+
 static int remote(const char *msg, int64_t now) {
 	return hifi_remote_handle(&rem, &ops, msg, strlen(msg), now, out, sizeof(out));
 }
@@ -1124,6 +1131,26 @@ static void test_remote(void) {
 		rem.accepted--; /* keep the count below about this file's own commands */
 	}
 #endif
+
+	/* a /relay/ path goes to the relay's hook, signed only; never to the test API */
+	m = signed_msg("{\"v\":1,\"dev\":\"240ac4123456\",\"id\":1761700001010,\"ts\":1761700004,\"method\":\"GET\",\"path\":\"/relay/state\",\"body\":null}");
+	CHECK(remote(m, 0) == 404); /* no hook set */
+	CHECK_HAS(out, "no relay in this build");
+	free(m);
+	rem.relay = relay_hook;
+	m = signed_msg("{\"v\":1,\"dev\":\"240ac4123456\",\"id\":1761700001020,\"ts\":1761700004,\"method\":\"POST\",\"path\":\"/relay/open\",\"body\":{\"sid\":1,\"port\":8883}}");
+	CHECK(remote(m, 0) == 200);
+	CHECK_STR(relay_seen, "POST /relay/open {\"sid\":1,\"port\":8883}");
+	CHECK_HAS(out, "\"body\":{\"open\":1}");
+	free(m);
+	relay_seen[0] = '\0';
+	CHECK(remote("{\"v\":1,\"dev\":\"240ac4123456\",\"id\":1761700001030,\"method\":\"POST\",\"path\":\"/relay/open\",\"body\":{}}\nAAAA", 0) == 401);
+	CHECK(!relay_seen[0]); /* unsigned: the hook never sees it */
+	/* nor does the LAN reach it through the test API */
+	CHECK(lan("POST", "/relay/open", "{\"sid\":1,\"port\":8883}") == 404);
+	CHECK(!relay_seen[0]);
+	rem.relay = NULL;
+	rem.accepted -= 2;
 
 	/* signed, but not a command */
 	m = signed_msg("{\"v\":2,\"dev\":\"240ac4123456\",\"id\":1761700000600}");

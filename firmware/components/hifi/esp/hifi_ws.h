@@ -17,15 +17,29 @@ typedef void (*hifi_ws_msg_cb_t)(char *data, size_t len);
 /* Each time the link comes up (the board sends its status then). */
 typedef void (*hifi_ws_up_cb_t)(void);
 
+/* A whole binary message (the printer relay's [sid][data], hifi_tcp.c), on
+ * the link's task with no lock held; the buffer is freed after it returns. */
+typedef void (*hifi_ws_bin_cb_t)(const uint8_t *data, size_t len);
+#define HIFI_WS_BIN_MAX 8192 /* a bigger binary frame is read and dropped */
+
 /* Starts the link; url and headers are copied. msg_max is the biggest
- * message taken (a bigger one is read and dropped). False if it can't start. */
-bool hifi_ws_start(const char *url, const char *headers, size_t msg_max, hifi_ws_msg_cb_t on_msg, hifi_ws_up_cb_t on_up);
+ * message taken (a bigger one is read and dropped). on_bin may be NULL:
+ * binary frames are dropped then. False if it can't start. */
+bool hifi_ws_start(const char *url, const char *headers, size_t msg_max, hifi_ws_msg_cb_t on_msg, hifi_ws_up_cb_t on_up,
+		   hifi_ws_bin_cb_t on_bin);
 /* Closes the link and waits for its task to end. */
 void hifi_ws_stop(void);
 /* True while the link is up. */
 bool hifi_ws_up(void);
 /* Sends one text message; false if the link is down or the send failed. */
 bool hifi_ws_send(const char *text, size_t len);
+/* Sends one binary message; the same. */
+bool hifi_ws_send_bin(const uint8_t *data, size_t len);
+/* The link's generation: it changes each time the link comes up or drops,
+ * so a stream opened on one link is known not to belong to the next. */
+uint32_t hifi_ws_gen(void);
+/* hifi_ws_send_bin, only while the link is still generation g (0: any). */
+bool hifi_ws_send_bin_on(uint32_t g, const uint8_t *data, size_t len);
 
 /* The link's counters since boot, for `api diag/net`: bytes on the TLS
  * socket (frames and their headers; not the TLS overhead), the times an up

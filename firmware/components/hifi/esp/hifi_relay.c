@@ -33,6 +33,7 @@
 #include "hifi_esp.h"
 #include "hifi_json.h"
 #include "hifi_remote.h"
+#include "hifi_tcp_esp.h"
 #include "hifi_ws.h"
 #include "hifi_ws_proto.h"
 
@@ -318,7 +319,7 @@ static void ws_start(void) {
 		ws_bad = true;
 		return;
 	}
-	ws_on = hifi_ws_start(url, h, MSG_MAX, on_ws_msg, on_ws_up);
+	ws_on = hifi_ws_start(url, h, MSG_MAX, on_ws_msg, on_ws_up, hifi_tcp_on_bin);
 	memset(h, 0, sizeof(h));
 	if (!ws_on) {
 		ESP_LOGE(TAG, "couldn't start the link to %s", url);
@@ -617,6 +618,7 @@ void hifi_remote_start(const hifi_ops_t *o) {
 	hifi_remote_dev_id(mac, rem.dev);
 	if (sodium_init() < 0) ESP_LOGE(TAG, "libsodium didn't start");
 	rem.verify = verify;
+	rem.relay = hifi_tcp_relay; /* signed commands only (core/hifi_remote.c) */
 	if (!hifi_remote_set_keys(&rem, HIFI_HIVE_PUBKEY)) ESP_LOGW(TAG, "no Hive key in this build: relay commands are refused");
 
 	load_settings();
@@ -639,6 +641,7 @@ void hifi_remote_start(const hifi_ops_t *o) {
 	if (!build) ESP_LOGW(TAG, "no build number in this build: updates from the LAN are refused");
 	hifi_ota_set_running(&hifi_ota_session, app->project_name, build);
 
+	hifi_tcp_start();
 	inbox = xQueueCreate(INBOX_N, sizeof(msg_t));
 	xTaskCreate(worker, "hifi_cmd", 6144, NULL, ESP_TASK_PRIO_MIN + 2, NULL);
 	/* 5 KB: it parses JSON, and 4 KB left only 708 B unused on a bench run */
